@@ -31,7 +31,7 @@ jobs:
         context: docker
         push: false
         load: true
-        tags: claasp-lib:latest
+        tags: claasp-lib
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
@@ -41,4 +41,4 @@ jobs:
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
     - name: Run tests
-      run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib:latest make pytest-coverage
+      run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make pytest-coverage
