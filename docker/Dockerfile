@@ -23,9 +23,9 @@ RUN apt-get install -y build-essential \
   wget \
   z3
 
-COPY required_dependencies/assess.c /opt/
-COPY required_dependencies/utilities.c /opt/
-COPY required_dependencies/utilities.h /opt/
+COPY tii-claasp/required_dependencies/assess.c /opt/
+COPY tii-claasp/required_dependencies/utilities.c /opt/
+COPY tii-claasp/required_dependencies/utilities.h /opt/
 
 WORKDIR /opt
 
