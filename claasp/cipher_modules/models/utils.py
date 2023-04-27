@@ -84,13 +84,16 @@ def convert_solver_solution_to_dictionary(cipher_id, model_type, solver_name, so
 
 def create_directory(file_path, library_path):
     folder_path, file_name = os.path.split(file_path)
+    print("file_name: ", file_name)
+    print("library_path: ", library_path)
     folder_path = os.path.join(library_path, folder_path)
+    print("folder_path: ", folder_path)
     if not os.path.isdir(folder_path):
         os.makedirs(folder_path)
 
 
 def get_library_path():
-    library_path = os.path.dirname(os.path.abspath(__file__)).split(f'claasp{os.sep}')[0]
+    library_path = os.path.dirname(os.path.abspath(__file__)).split(f'{os.sep}claasp{os.sep}')[0]
 
     return library_path
 
