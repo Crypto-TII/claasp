@@ -1,0 +1,44 @@
+name: Run pytest
+on:
+  push:
+    branches:
+      - '**'
+jobs:
+  run-pytest:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Build
+      uses: docker/build-push-action@v4
+      id: built-image
+      with:
+        context: docker
+        push: false
+        load: true
+        tags: claasp-lib:latest
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+    - name: Move cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+    - name: Run tests
+      run: docker run --rm -v $PWD:/home/generate-documentation-automatically claasp-lib:latest make pytest-coverage
