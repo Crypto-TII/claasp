@@ -1,0 +1,1000 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Sbox component &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Variable rotate component" href="variable_rotate_component.html" />
+    <link rel="prev" title="Word permutation component" href="word_permutation_component.html" />
+    <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
+    <script src="../_static/thebe.js" type="text/javascript"></script>
+    <script src="../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="variable_rotate_component.html" title="Variable rotate component"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="word_permutation_component.html" title="Word permutation component"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Sbox component</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-components.sbox_component">
+<span id="sbox-component"></span><h1>Sbox component<a class="headerlink" href="#module-components.sbox_component" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SBOX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_round_number_of_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_box_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.component.Component</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.algebraic_polynomials">
+<span class="sig-name descname"><span class="pre">algebraic_polynomials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.algebraic_polynomials" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of SBOX polynomials.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.algebraic.algebraic_model</span> <span class="kn">import</span> <span class="n">AlgebraicModel</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">algebraic</span> <span class="o">=</span> <span class="n">AlgebraicModel</span><span class="p">(</span><span class="n">fancy</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">algebraic_polynomials</span><span class="p">(</span><span class="n">algebraic</span><span class="p">)</span>
+<span class="go">[sbox_0_0_y2 + sbox_0_0_x1,</span>
+<span class="go"> sbox_0_0_x0*sbox_0_0_y0 + sbox_0_0_x0*sbox_0_0_x3,</span>
+<span class="go"> ...</span>
+<span class="go"> sbox_0_0_y1*sbox_0_0_y3 + sbox_0_0_x0*sbox_0_0_x2,</span>
+<span class="go"> sbox_0_0_y2*sbox_0_0_y3 + sbox_0_0_x1*sbox_0_0_x2]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.as_python_dictionary">
+<span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.check_output_size">
+<span class="sig-name descname"><span class="pre">check_output_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">available_word_sizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.check_output_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cms_constraints">
+<span class="sig-name descname"><span class="pre">cms_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cms_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for S-BOX in CMS CIPHER model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">cms_constraints</span><span class="p">()</span>
+<span class="go">([&#39;sbox_0_2_0&#39;, &#39;sbox_0_2_1&#39;, &#39;sbox_0_2_2&#39;, &#39;sbox_0_2_3&#39;],</span>
+<span class="go"> [&#39;xor_0_0_4 xor_0_0_5 xor_0_0_6 xor_0_0_7 sbox_0_2_0&#39;,</span>
+<span class="go">  &#39;xor_0_0_4 xor_0_0_5 xor_0_0_6 xor_0_0_7 sbox_0_2_1&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;-xor_0_0_4 -xor_0_0_5 -xor_0_0_6 -xor_0_0_7 -sbox_0_2_1&#39;,</span>
+<span class="go">  &#39;-xor_0_0_4 -xor_0_0_5 -xor_0_0_6 -xor_0_0_7 sbox_0_2_2&#39;,</span>
+<span class="go">  &#39;-xor_0_0_4 -xor_0_0_5 -xor_0_0_6 -xor_0_0_7 -sbox_0_2_3&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cms_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cms_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cms_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cms_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cms_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cms_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cp_constraints">
+<span class="sig-name descname"><span class="pre">cp_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sbox_mant</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cp_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for SBOX component for CP CIPHER model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sbox_mant</span></code> – <strong>list of objects</strong>; the list of the S-boxes already encountered so that there is no need to calculate the constraints again</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">cp_constraints</span><span class="p">([])</span>
+<span class="go">([&#39;array [1..16, 1..8] of int: table_sbox_0_5 = array2d(1..16, 1..8, [0,0,0,0,1,1,0,0,0,0,0,1,1,0,1,0,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,1,0,1,0,0,1,1,1,0,0,1,0,1,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,0,0,1,0,0,0,1,0,0,1,1,0,0,1,1,0,1,0,0,0,0,1,1,0,1,1,0,1,0,1,1,1,0,0,0,0,0,0,1,1,0,1,0,0,1,0,1,1,1,0,0,1,0,0,1,1,1,1,0,1,1,0]);&#39;],</span>
+<span class="go"> [&#39;constraint table([xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]++[sbox_0_5[0]]++[sbox_0_5[1]]++[sbox_0_5[2]]++[sbox_0_5[3]], table_sbox_0_5);&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cp_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">cp_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cp_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for SBOX component for CP deterministic truncated xor differential.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">inverse</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>)</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">cp_deterministic_truncated_xor_differential_constraints</span><span class="p">()</span>
+<span class="go">([],</span>
+<span class="go"> [&#39;constraint if xor_0_0[0] == 0 /\\ xor_0_0[1] == 0 /\\ xor_0_0[2] == 0 /\\ xor_0_0[3] == 0 /\\ xor_0_0[4] == 0 /\\ xor_0_0[5] == 0 /\\ xor_0_0[6] == 0 /\\ xor_0_0[7] then forall(i in 0..7)(sbox_0_1[i] = 0) else forall(i in 0..7)(sbox_0_1[i] = 2) endif;&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cp_deterministic_truncated_xor_differential_trail_constraints">
+<span class="sig-name descname"><span class="pre">cp_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cp_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cp_wordwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">cp_wordwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cp_wordwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for SBOX component for CP wordwise deterministic truncated xor differential.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">cp_wordwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
+<span class="go">([],</span>
+<span class="go"> [&#39;constraint if xor_0_0_value[0]_active==0 then sbox_0_1_active[0] = 0 else sbox_0_1_active[0] = 2 endif;&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cp_xor_differential_first_step_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_differential_first_step_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cp_xor_differential_first_step_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for SBOX component for the CP xor differential first step model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">cp_xor_differential_first_step_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
+<span class="go">([&#39;array[0..0] of var 0..1: sbox_0_1;&#39;],</span>
+<span class="go"> [&#39;constraint sbox_0_1[0] = xor_0_0[0];&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cp_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cp_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for the probability of SBOX component for CP xor differential probability.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">midori</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">cp_xor_differential_propagation_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+<span class="go">([&#39;constraint table([xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]++[sbox_0_5[0]]++[sbox_0_5[1]]++[sbox_0_5[2]]++[sbox_0_5[3]]++[p[0]], DDT_sbox_0_5);&#39;],)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cp_xor_differential_propagation_first_step_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_differential_propagation_first_step_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cp_xor_differential_propagation_first_step_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.cp_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.cp_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for the probability of SBOX component for CP xor linear model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">midori</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">cp_xor_linear_mask_propagation_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+<span class="go">([&#39;constraint table([sbox_0_5_i[0]]++[sbox_0_5_i[1]]++[sbox_0_5_i[2]]++[sbox_0_5_i[3]]++[sbox_0_5_o[0]]++[sbox_0_5_o[1]]++[sbox_0_5_o[2]]++[sbox_0_5_o[3]]++[p[0]],LAT_sbox_0_5);&#39;],)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.description">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#components.sbox_component.SBOX.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.generate_sbox_sign_lat">
+<span class="sig-name descname"><span class="pre">generate_sbox_sign_lat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.generate_sbox_sign_lat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.get_bit_based_c_code">
+<span class="sig-name descname"><span class="pre">get_bit_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.get_bit_based_c_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.get_bit_based_vectorized_python_code">
+<span class="sig-name descname"><span class="pre">get_bit_based_vectorized_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_output_to_bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.get_bit_based_vectorized_python_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.get_byte_based_vectorized_python_code">
+<span class="sig-name descname"><span class="pre">get_byte_based_vectorized_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.get_byte_based_vectorized_python_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.get_graph_representation">
+<span class="sig-name descname"><span class="pre">get_graph_representation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.get_graph_representation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.get_word_based_c_code">
+<span class="sig-name descname"><span class="pre">get_word_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wordstring_variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.get_word_based_c_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#components.sbox_component.SBOX.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.input_bit_positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_bit_positions</span></span><a class="headerlink" href="#components.sbox_component.SBOX.input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.input_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_bit_size</span></span><a class="headerlink" href="#components.sbox_component.SBOX.input_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.input_id_links">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_id_links</span></span><a class="headerlink" href="#components.sbox_component.SBOX.input_id_links" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.is_forbidden">
+<span class="sig-name descname"><span class="pre">is_forbidden</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forbidden_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forbidden_descriptions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.is_forbidden" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.is_id_equal_to">
+<span class="sig-name descname"><span class="pre">is_id_equal_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.is_id_equal_to" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.is_power_of_2_word_based">
+<span class="sig-name descname"><span class="pre">is_power_of_2_word_based</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dto</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.is_power_of_2_word_based" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_large_xor_differential_probability_constraints">
+<span class="sig-name descname"><span class="pre">milp_large_xor_differential_probability_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integer_variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_linear_component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.milp_large_xor_differential_probability_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of variables and constrains modeling SBOX component, with input bit size less or equal to 6.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<blockquote>
+<div><p>This is for MILP large xor differential probability. Constraints extracted from</p>
+</div></blockquote>
+<p><a class="reference external" href="https://tosc.iacr.org/index.php/ToSC/article/view/805/759">https://tosc.iacr.org/index.php/ToSC/article/view/805/759</a>.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">binary_variable</span></code> – <strong>boolean MIPVariable object</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">integer_variable</span></code> – <strong>boolean MIPVariable object</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">non_linear_component_id</span></code> – <strong>string</strong></p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">sage.crypto.sbox</span> <span class="kn">import</span> <span class="n">SBox</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes</span> <span class="kn">import</span> <span class="n">delete_dictionary_that_contains_inequalities_for_large_sboxes</span>
+<span class="gp">sage: </span><span class="n">delete_dictionary_that_contains_inequalities_for_large_sboxes</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_large_xor_differential_probability_constraints</span><span class="p">(</span><span class="n">milp</span><span class="o">.</span><span class="n">binary_variable</span><span class="p">,</span> <span class="n">milp</span><span class="o">.</span><span class="n">integer_variable</span><span class="p">,</span> <span class="n">milp</span><span class="o">.</span><span class="n">_non_linear_component_id</span><span class="p">)</span> <span class="c1"># long</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">variables</span> <span class="c1"># long</span>
+<span class="go">[(&#39;x[xor_0_0_0]&#39;, x_0),</span>
+<span class="go">(&#39;x[xor_0_0_1]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go">(&#39;x[sbox_0_1_6]&#39;, x_14),</span>
+<span class="go">(&#39;x[sbox_0_1_7]&#39;, x_15)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="c1"># long</span>
+<span class="go">[x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 &lt;= 8*x_16,</span>
+<span class="go">1 - x_0 - x_1 - x_2 - x_3 - x_4 - x_5 - x_6 - x_7 &lt;= 8 - 8*x_16,</span>
+<span class="go">x_8 &lt;= x_16]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_large_xor_linear_probability_constraints">
+<span class="sig-name descname"><span class="pre">milp_large_xor_linear_probability_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integer_variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_linear_component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.milp_large_xor_linear_probability_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of variables and constrains modeling SBOX component, with input bit size less or equal to 6.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<blockquote>
+<div><p>This is for MILP large xor linear probability. Constraints extracted from</p>
+</div></blockquote>
+<p><a class="reference external" href="https://tosc.iacr.org/index.php/ToSC/article/view/805/759">https://tosc.iacr.org/index.php/ToSC/article/view/805/759</a>.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">binary_variable</span></code> – <strong>boolean MIPVariable object</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">integer_variable</span></code> – <strong>integer MIPVariable object</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">non_linear_component_id</span></code> – <strong>string</strong></p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_large_xor_linear_probability_constraints</span><span class="p">(</span><span class="n">milp</span><span class="o">.</span><span class="n">binary_variable</span><span class="p">,</span> <span class="n">milp</span><span class="o">.</span><span class="n">integer_variable</span><span class="p">,</span> <span class="n">milp</span><span class="o">.</span><span class="n">_non_linear_component_id</span><span class="p">)</span> <span class="c1"># very long</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[sbox_0_1_0_i]&#39;, x_0),</span>
+<span class="go"> (&#39;x[sbox_0_1_1_i]&#39;, x_1),</span>
+<span class="go"> ...</span>
+<span class="go"> (&#39;x[sbox_0_1_6_o]&#39;, x_14),</span>
+<span class="go"> (&#39;x[sbox_0_1_7_o]&#39;, x_15)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 &lt;= 8*x_16,</span>
+<span class="go">1 - x_0 - x_1 - x_2 - x_3 - x_4 - x_5 - x_6 - x_7 &lt;= 8 - 8*x_16,</span>
+<span class="go">...</span>
+<span class="go">x_17 + x_18 + x_19 + x_20 + x_21 + x_22 + x_23 + x_24 + x_25 + x_26 + x_27 + x_28 + x_29 + x_30 + x_31 + x_32 == x_16,</span>
+<span class="go">x_33 == 60*x_17 + 50*x_18 + 44*x_19 + 40*x_20 + 37*x_21 + 34*x_22 + 32*x_23 + 30*x_24 + 30*x_25 + 32*x_26 + 34*x_27 + 37*x_28 + 40*x_29 + 44*x_30 + 50*x_31 + 60*x_32]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_small_xor_differential_probability_constraints">
+<span class="sig-name descname"><span class="pre">milp_small_xor_differential_probability_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integer_variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_linear_component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.milp_small_xor_differential_probability_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of constrains modeling a component of type SBOX.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<blockquote>
+<div><p>This is for MILP small xor differential probability. Constraints extracted from</p>
+</div></blockquote>
+<p><a class="reference external" href="https://eprint.iacr.org/2014/747.pdf">https://eprint.iacr.org/2014/747.pdf</a> and <a class="reference external" href="https://tosc.iacr.org/index.php/ToSC/article/view/805/759">https://tosc.iacr.org/index.php/ToSC/article/view/805/759</a></p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">binary_variable</span></code> – <strong>boolean MIPVariable object</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">integer_variable</span></code> – <strong>integer MIPVariable object</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">non_linear_component_id</span></code> – <strong>string</strong></p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_small_xor_differential_probability_constraints</span><span class="p">(</span><span class="n">milp</span><span class="o">.</span><span class="n">binary_variable</span><span class="p">,</span> <span class="n">milp</span><span class="o">.</span><span class="n">integer_variable</span><span class="p">,</span> <span class="n">milp</span><span class="o">.</span><span class="n">_non_linear_component_id</span><span class="p">)</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[xor_0_0_0]&#39;, x_0),</span>
+<span class="go">(&#39;x[xor_0_0_1]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go">(&#39;x[sbox_0_1_2]&#39;, x_6),</span>
+<span class="go">(&#39;x[sbox_0_1_3]&#39;, x_7)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_8 &lt;= x_0 + x_1 + x_2 + x_3,</span>
+<span class="go">x_0 &lt;= x_8,</span>
+<span class="go">...</span>
+<span class="go">x_9 + x_10 == x_8,</span>
+<span class="go">x_11 == 30*x_9 + 20*x_10]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_small_xor_linear_probability_constraints">
+<span class="sig-name descname"><span class="pre">milp_small_xor_linear_probability_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integer_variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_linear_component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.milp_small_xor_linear_probability_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of constrains modeling a component of type Sbox.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<blockquote>
+<div><p>This is for MILP small xor linear probability. Constraints extracted from</p>
+</div></blockquote>
+<p><a class="reference external" href="https://eprint.iacr.org/2014/747.pdf">https://eprint.iacr.org/2014/747.pdf</a> (Appendix A) and
+<a class="reference external" href="https://tosc.iacr.org/index.php/ToSC/article/view/805/759">https://tosc.iacr.org/index.php/ToSC/article/view/805/759</a></p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">binary_variable</span></code> – <strong>MIPVariable object</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">integer_variable</span></code> – <strong>MIPVariable object</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">non_linear_component_id</span></code> – <strong>list</strong></p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_small_xor_linear_probability_constraints</span><span class="p">(</span><span class="n">milp</span><span class="o">.</span><span class="n">binary_variable</span><span class="p">,</span> <span class="n">milp</span><span class="o">.</span><span class="n">integer_variable</span><span class="p">,</span> <span class="n">milp</span><span class="o">.</span><span class="n">_non_linear_component_id</span><span class="p">)</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[sbox_0_1_0_i]&#39;, x_0),</span>
+<span class="go">(&#39;x[sbox_0_1_1_i]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go">(&#39;x[sbox_0_1_2_o]&#39;, x_6),</span>
+<span class="go">(&#39;x[sbox_0_1_3_o]&#39;, x_7)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_8 &lt;= x_4 + x_5 + x_6 + x_7,</span>
+<span class="go">x_0 &lt;= x_8,</span>
+<span class="go">...</span>
+<span class="go">x_9 + x_10 + x_11 + x_12 == x_8,</span>
+<span class="go">x_13 == 20*x_9 + 10*x_10 + 10*x_11 + 20*x_12]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">milp_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.milp_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list of variables and constrains modeling a component of type SBOX for MILP xor differential probability.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_xor_differential_propagation_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[xor_0_0_0]&#39;, x_0),</span>
+<span class="go">(&#39;x[xor_0_0_1]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go">(&#39;x[sbox_0_1_2]&#39;, x_6),</span>
+<span class="go">(&#39;x[sbox_0_1_3]&#39;, x_7)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 + x_1 + x_2 + x_3 &lt;= 4*x_8,</span>
+<span class="go">1 - x_0 - x_1 - x_2 - x_3 &lt;= 4 - 4*x_8,</span>
+<span class="go">...</span>
+<span class="go">x_9 + x_10 == x_8,</span>
+<span class="go">x_11 == 30*x_9 + 20*x_10]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">milp_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.milp_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of variables and constraints for the probability of the SBOX component for the MILP xor linear model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_xor_linear_mask_propagation_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[sbox_0_1_0_i]&#39;, x_0),</span>
+<span class="go">(&#39;x[sbox_0_1_1_i]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go">(&#39;x[sbox_0_1_2_o]&#39;, x_6),</span>
+<span class="go">(&#39;x[sbox_0_1_3_o]&#39;, x_7)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_8 &lt;= x_4 + x_5 + x_6 + x_7,</span>
+<span class="go">x_0 &lt;= x_8,</span>
+<span class="go">...</span>
+<span class="go">x_9 + x_10 + x_11 + x_12 == x_8,</span>
+<span class="go">x_13 == 20*x_9 + 10*x_10 + 10*x_11 + 20*x_12]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.output_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_bit_size</span></span><a class="headerlink" href="#components.sbox_component.SBOX.output_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.output_size_for_concatenate">
+<span class="sig-name descname"><span class="pre">output_size_for_concatenate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">available_word_sizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.output_size_for_concatenate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.print" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.print_as_python_dictionary">
+<span class="sig-name descname"><span class="pre">print_as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.print_as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.print_values">
+<span class="sig-name descname"><span class="pre">print_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.print_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.print_word_values">
+<span class="sig-name descname"><span class="pre">print_word_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.print_word_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.sat_constraints">
+<span class="sig-name descname"><span class="pre">sat_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.sat_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for S-BOX in SAT CIPHER model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">sat_constraints</span><span class="p">()</span>
+<span class="go">([&#39;sbox_0_2_0&#39;, &#39;sbox_0_2_1&#39;, &#39;sbox_0_2_2&#39;, &#39;sbox_0_2_3&#39;],</span>
+<span class="go"> [&#39;xor_0_0_4 xor_0_0_5 xor_0_0_6 xor_0_0_7 sbox_0_2_0&#39;,</span>
+<span class="go">  &#39;xor_0_0_4 xor_0_0_5 xor_0_0_6 xor_0_0_7 sbox_0_2_1&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;-xor_0_0_4 -xor_0_0_5 -xor_0_0_6 -xor_0_0_7 -sbox_0_2_1&#39;,</span>
+<span class="go">  &#39;-xor_0_0_4 -xor_0_0_5 -xor_0_0_6 -xor_0_0_7 sbox_0_2_2&#39;,</span>
+<span class="go">  &#39;-xor_0_0_4 -xor_0_0_5 -xor_0_0_6 -xor_0_0_7 -sbox_0_2_3&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.sat_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">sat_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.sat_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for a generic S-BOX in SAT XOR DIFFERENTIAL model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_model</span> <span class="kn">import</span> <span class="n">SatModel</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatModel</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">sat_xor_differential_propagation_constraints</span><span class="p">(</span><span class="n">sat</span><span class="p">)</span>
+<span class="go">([&#39;sbox_0_2_0&#39;,</span>
+<span class="go">  &#39;sbox_0_2_1&#39;,</span>
+<span class="go">  &#39;sbox_0_2_2&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;hw_sbox_0_2_2 -hw_sbox_0_2_3&#39;,</span>
+<span class="go">  &#39;xor_0_0_5 xor_0_0_6 sbox_0_2_0 sbox_0_2_2 -hw_sbox_0_2_1&#39;,</span>
+<span class="go">  &#39;-hw_sbox_0_2_0&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.sat_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">sat_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.sat_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for S-BOX in SAT XOR LINEAR model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_model</span> <span class="kn">import</span> <span class="n">SatModel</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatModel</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">sat_xor_linear_mask_propagation_constraints</span><span class="p">(</span><span class="n">sat</span><span class="p">)</span>
+<span class="go">([&#39;sbox_0_2_0_i&#39;,</span>
+<span class="go">  &#39;sbox_0_2_1_i&#39;,</span>
+<span class="go">  &#39;sbox_0_2_2_i&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;-sbox_0_2_0_i -sbox_0_2_1_i sbox_0_2_2_i sbox_0_2_1_o -hw_sbox_0_2_2_o&#39;,</span>
+<span class="go">  &#39;-hw_sbox_0_2_1_o&#39;,</span>
+<span class="go">  &#39;-hw_sbox_0_2_0_o&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.select_bits">
+<span class="sig-name descname"><span class="pre">select_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.select_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.select_words">
+<span class="sig-name descname"><span class="pre">select_words</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.select_words" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.set_description">
+<span class="sig-name descname"><span class="pre">set_description</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.set_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.set_input_bit_positions">
+<span class="sig-name descname"><span class="pre">set_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.set_input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.set_input_id_links">
+<span class="sig-name descname"><span class="pre">set_input_id_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.set_input_id_links" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.smt_constraints">
+<span class="sig-name descname"><span class="pre">smt_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.smt_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable list and SMT-LIB list asserts for S-BOX in SMT CIPHER model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">key_bit_size</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">smt_constraints</span><span class="p">()</span>
+<span class="go">([&#39;sbox_0_1_0&#39;, &#39;sbox_0_1_1&#39;, &#39;sbox_0_1_2&#39;, &#39;sbox_0_1_3&#39;],</span>
+<span class="go"> [&#39;(assert (=&gt; (and (not xor_0_0_0) (not xor_0_0_1) (not xor_0_0_2) (not xor_0_0_3)) (and sbox_0_1_0 sbox_0_1_1 (not sbox_0_1_2) (not sbox_0_1_3))))&#39;,</span>
+<span class="go">  &#39;(assert (=&gt; (and (not xor_0_0_0) (not xor_0_0_1) (not xor_0_0_2) xor_0_0_3) (and (not sbox_0_1_0) sbox_0_1_1 (not sbox_0_1_2) sbox_0_1_3)))&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;(assert (=&gt; (and xor_0_0_0 xor_0_0_1 (not xor_0_0_2) xor_0_0_3) (and (not sbox_0_1_0) sbox_0_1_1 sbox_0_1_2 sbox_0_1_3)))&#39;,</span>
+<span class="go">  &#39;(assert (=&gt; (and xor_0_0_0 xor_0_0_1 xor_0_0_2 (not xor_0_0_3)) (and (not sbox_0_1_0) (not sbox_0_1_1) (not sbox_0_1_2) sbox_0_1_3)))&#39;,</span>
+<span class="go">  &#39;(assert (=&gt; (and xor_0_0_0 xor_0_0_1 xor_0_0_2 xor_0_0_3) (and (not sbox_0_1_0) (not sbox_0_1_1) sbox_0_1_2 (not sbox_0_1_3))))&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.smt_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">smt_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.smt_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable list and SMT-LIB list asserts for S-BOX in SMT XOR DIFFERENTIAL model <a class="reference internal" href="../references.html#ak2019" id="id1"><span>[AK2019]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.smt.smt_model</span> <span class="kn">import</span> <span class="n">SmtModel</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">smt</span> <span class="o">=</span> <span class="n">SmtModel</span><span class="p">(</span><span class="n">fancy</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">smt_xor_differential_propagation_constraints</span><span class="p">(</span><span class="n">smt</span><span class="p">)</span>
+<span class="go">([&#39;sbox_0_5_0&#39;,</span>
+<span class="go">  &#39;sbox_0_5_1&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;hw_sbox_0_5_2&#39;,</span>
+<span class="go">  &#39;hw_sbox_0_5_3&#39;],</span>
+<span class="go"> [&#39;(assert (or (not plaintext_20) sbox_0_5_3))&#39;,</span>
+<span class="go">  &#39;(assert (or plaintext_20 (not sbox_0_5_3)))&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;(assert (or (not hw_sbox_0_5_1)))&#39;,</span>
+<span class="go">  &#39;(assert (or (not hw_sbox_0_5_0)))&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.smt_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">smt_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.smt_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable list and SMT-LIB list asserts for S-BOX in SMT XOR LINEAR model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.smt.smt_model</span> <span class="kn">import</span> <span class="n">SmtModel</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">smt</span> <span class="o">=</span> <span class="n">SmtModel</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span><span class="o">.</span><span class="n">smt_xor_linear_mask_propagation_constraints</span><span class="p">(</span><span class="n">smt</span><span class="p">)</span>
+<span class="go">([&#39;sbox_0_2_0_i&#39;,</span>
+<span class="go">  &#39;sbox_0_2_1_i&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;hw_sbox_0_2_2_o&#39;,</span>
+<span class="go">  &#39;hw_sbox_0_2_3_o&#39;],</span>
+<span class="go"> [&#39;(assert (or sbox_0_2_0_i sbox_0_2_1_i sbox_0_2_2_i (not sbox_0_2_0_o) sbox_0_2_1_o))&#39;,</span>
+<span class="go">  &#39;(assert (or sbox_0_2_2_i sbox_0_2_3_i sbox_0_2_0_o sbox_0_2_1_o (not sbox_0_2_3_o) hw_sbox_0_2_2_o))&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;(assert (or (not hw_sbox_0_2_1_o)))&#39;,</span>
+<span class="go">  &#39;(assert (or (not hw_sbox_0_2_0_o)))&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.suffixes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">suffixes</span></span><a class="headerlink" href="#components.sbox_component.SBOX.suffixes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#components.sbox_component.SBOX.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.sbox_component.check_table_feasibility">
+<span class="sig-name descname"><span class="pre">check_table_feasibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.check_table_feasibility" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.sbox_component.cp_update_ddt_valid_probabilities">
+<span class="sig-name descname"><span class="pre">cp_update_ddt_valid_probabilities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cp_declarations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_items</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_probabilities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_mant</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.cp_update_ddt_valid_probabilities" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.sbox_component.cp_update_lat_valid_probabilities">
+<span class="sig-name descname"><span class="pre">cp_update_lat_valid_probabilities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_probabilities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_mant</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.cp_update_lat_valid_probabilities" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.sbox_component.milp_large_xor_probability_constraint_for_inequality">
+<span class="sig-name descname"><span class="pre">milp_large_xor_probability_constraint_for_inequality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ineq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_vars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_vars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proba</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_input_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.milp_large_xor_probability_constraint_for_inequality" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.sbox_component.sat_build_table_template">
+<span class="sig-name descname"><span class="pre">sat_build_table_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_hamming_weight_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_len</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.sat_build_table_template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.sbox_component.smt_build_table_template">
+<span class="sig-name descname"><span class="pre">smt_build_table_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_hamming_weight_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_len</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.smt_build_table_template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.sbox_component.smt_get_sbox_probability_constraints">
+<span class="sig-name descname"><span class="pre">smt_get_sbox_probability_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.smt_get_sbox_probability_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="word_permutation_component.html"
+                          title="previous chapter">Word permutation component</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="variable_rotate_component.html"
+                          title="next chapter">Variable rotate component</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/components/sbox_component.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="variable_rotate_component.html" title="Variable rotate component"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="word_permutation_component.html" title="Word permutation component"
+             >previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Sbox component</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>

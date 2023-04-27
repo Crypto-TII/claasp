@@ -1,0 +1,9 @@
+Type, Scheme, Primitive, {{ body['cipher_inputs']|join(', ') }}, Total number of rounds,  Number of round, Tag, Dependence, Weight, Entropy, Dependence (Flip bit key), Weight (Flip bit key), Entropy (Flip bit key)
+{% for element in body['details'] %}
+{% if loop.index == 1 %}
+{{body['type']}},{{body['scheme']}}, {{body['primitive']}},  {{body['cipher_inputs_bit_size']|join(', ')}}, {{body['total_number_rounds']}}, {{ element.values()|join(', ') }}
+{% else %}
+,,,,,, {{ element.values()|join(', ') }}
+{% endif %}
+{% endfor %}
+

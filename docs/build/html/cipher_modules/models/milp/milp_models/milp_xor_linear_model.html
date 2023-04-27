@@ -1,0 +1,784 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Milp xor linear model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sage.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Config" href="../utils/config.html" />
+    <link rel="prev" title="Milp cipher model" href="milp_cipher_model.html" />
+    <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
+    <script src="../../../../_static/thebe.js" type="text/javascript"></script>
+    <script src="../../../../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../utils/config.html" title="Config"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="milp_cipher_model.html" title="Milp cipher model"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../../../../index.html"><img src="../../../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Milp xor linear model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cipher_modules.models.milp.milp_models.milp_xor_linear_model">
+<span id="milp-xor-linear-model"></span><h1>Milp xor linear model<a class="headerlink" href="#module-cipher_modules.models.milp.milp_models.milp_xor_linear_model" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MilpXorLinearModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_window_heuristic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher_modules.models.milp.milp_model.MilpModel</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.add_constraints_to_build_in_sage_milp_class">
+<span class="sig-name descname"><span class="pre">add_constraints_to_build_in_sage_milp_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.add_constraints_to_build_in_sage_milp_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take the constraints contained in self._model_constraints and add them to the build-in sage class.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model_type</span></code> – <strong>string</strong>; the model to solve</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weight</span></code> – <strong>integer</strong> (default: <span class="math">-1</span>); the total weight. It is the negative base-2 logarithm of the total
+correlation of the trail. If negative, no constraints on the weight is added</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_variables</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); dictionaries containing the variables to be fixed in
+standard format</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.set_fixed_variables" title="cipher_modules.models.utils.set_fixed_variables"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code></a></p>
+</div>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">add_constraints_to_build_in_sage_milp_class</span><span class="p">()</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">mip</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">_model</span>
+<span class="gp">sage: </span><span class="n">mip</span><span class="o">.</span><span class="n">number_of_variables</span><span class="p">()</span>
+<span class="go">1018</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.binary_variable">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">binary_variable</span></span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.binary_variable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.branch_xor_linear_constraints">
+<span class="sig-name descname"><span class="pre">branch_xor_linear_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.branch_xor_linear_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of constraints for branch constraints.</p>
+<p>for a 3-way branch, it is a 1-xor:
+X + Y + Z - 2 dummy &gt;= 0
+X + Y + Z &lt;= 2
+dummy - X &gt;= 0
+dummy - Y &gt;= 0
+dummy - Z &gt;= 0</p>
+<p>and more generally, for a k-way branch, it is a (k-2)-xor</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">speck</span><span class="o">.</span><span class="n">remove_key_schedule</span><span class="p">())</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constraints</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">branch_xor_linear_constraints</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 == x_1,</span>
+<span class="go">x_2 == x_3,</span>
+<span class="go">...</span>
+<span class="go">x_316 == x_317,</span>
+<span class="go">x_318 == x_319]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.build_xor_linear_trail_model">
+<span class="sig-name descname"><span class="pre">build_xor_linear_trail_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.build_xor_linear_trail_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the linear model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">weight</span></code> – <strong>integer</strong> (default: <span class="math">-1</span>). By default, the weight corresponds to the negative base-2 logarithm of the
+correlation of the trail.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_variables</span></code> – <strong>list</strong> (default: <span class="math">[]</span>)</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">build_xor_linear_trail_model</span><span class="p">()</span>
+<span class="go">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.cipher">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cipher</span></span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.cipher" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.cipher_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cipher_id</span></span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.cipher_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.exclude_variables_value_xor_linear_constraints">
+<span class="sig-name descname"><span class="pre">exclude_variables_value_xor_linear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.exclude_variables_value_xor_linear_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return constraints list that ensures that at least one of the specified variables is not equal to fixed values.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_variables</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); the variables to be fixed in standard format</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.set_fixed_variables" title="cipher_modules.models.utils.set_fixed_variables"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code></a></p>
+</div>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.simon_block_cipher</span> <span class="kn">import</span> <span class="n">SimonBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="n">simon</span> <span class="o">=</span> <span class="n">SimonBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">simon</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">fixed_variables</span> <span class="o">=</span> <span class="p">[{</span>
+<span class="gp">....: </span>   <span class="s1">&#39;component_id&#39;</span><span class="p">:</span> <span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;constraint_type&#39;</span><span class="p">:</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_positions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="gp">....: </span><span class="p">},</span> <span class="p">{</span>
+<span class="gp">....: </span>   <span class="s1">&#39;component_id&#39;</span><span class="p">:</span> <span class="s1">&#39;cipher_output_2_12&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;constraint_type&#39;</span><span class="p">:</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_positions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">....: </span><span class="p">}]</span>
+<span class="gp">sage: </span><span class="n">constraints</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">exclude_variables_value_xor_linear_constraints</span><span class="p">(</span><span class="n">fixed_variables</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 == 1 - x_1,</span>
+<span class="go"> x_2 == x_3,</span>
+<span class="go"> x_4 == 1 - x_5,</span>
+<span class="go"> x_6 == 1 - x_7,</span>
+<span class="go"> x_8 == 1 - x_9,</span>
+<span class="go"> x_10 == 1 - x_11,</span>
+<span class="go"> x_12 == 1 - x_13,</span>
+<span class="go"> x_14 == x_15,</span>
+<span class="go"> 1 &lt;= x_0 + x_2 + x_4 + x_6 + x_8 + x_10 + x_12 + x_14]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_all_xor_linear_trails_with_fixed_weight">
+<span class="sig-name descname"><span class="pre">find_all_xor_linear_trails_with_fixed_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_all_xor_linear_trails_with_fixed_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all the XOR linear trails with weight equal to <code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> as a solutions list in standard format.
+By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.convert_solver_solution_to_dictionary" title="cipher_modules.models.utils.convert_solver_solution_to_dictionary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_solver_solution_to_dictionary()</span></code></a></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method should be run after you have found the solution with the
+<a class="reference internal" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_lowest_weight_xor_linear_trail" title="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_lowest_weight_xor_linear_trail"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_lowest_weight_xor_linear_trail()</span></code></a> method.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> – <strong>integer</strong>; the weight found using <a class="reference internal" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_lowest_weight_xor_linear_trail" title="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_lowest_weight_xor_linear_trail"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_lowest_weight_xor_linear_trail()</span></code></a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">None</span>); each dictionary contains variables values whose output need
+to be fixed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">GLPK</span>); the name of the solver (if needed)</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">integer_to_bit_list</span><span class="p">,</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">speck</span><span class="o">.</span><span class="n">remove_key_schedule</span><span class="p">())</span>
+<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
+<span class="gp">....: </span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mh">0x0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_all_xor_linear_trails_with_fixed_weight</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">fixed_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">plaintext</span><span class="p">])</span>  <span class="c1"># long</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span> <span class="c1"># long</span>
+<span class="go">12</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_all_xor_linear_trails_with_weight_at_most">
+<span class="sig-name descname"><span class="pre">find_all_xor_linear_trails_with_weight_at_most</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_all_xor_linear_trails_with_weight_at_most" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all XOR linear trails with weight greater than <code class="docutils literal notranslate"><span class="pre">min_weight</span></code> and lower than or equal to <code class="docutils literal notranslate"><span class="pre">max_weight</span></code>.</p>
+<p>The value returned is a list of solutions in standard format.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.convert_solver_solution_to_dictionary" title="cipher_modules.models.utils.convert_solver_solution_to_dictionary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_solver_solution_to_dictionary()</span></code></a></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that the search will start with <code class="docutils literal notranslate"><span class="pre">min_weight</span></code> and should end when the weight reaches a
+value greater than the maximum cipher inputs bit-size. Fix a convenient <code class="docutils literal notranslate"><span class="pre">max_weight</span></code> value.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">min_weight</span></code> – <strong>integer</strong>;  the weight found using <a class="reference internal" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_lowest_weight_xor_linear_trail" title="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_lowest_weight_xor_linear_trail"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_lowest_weight_xor_linear_trail()</span></code></a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_weight</span></code> – <strong>integer</strong>; the upper bound for the weight</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); each dictionary contains variables values whose output need to
+be fixed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">GLPK</span>); the name of the solver (if needed)</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">integer_to_bit_list</span><span class="p">,</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">speck</span><span class="o">.</span><span class="n">remove_key_schedule</span><span class="p">())</span>
+<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not equal&#39;</span><span class="p">,</span> <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mh">0x0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_all_xor_linear_trails_with_weight_at_most</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,[</span><span class="n">plaintext</span><span class="p">])</span> <span class="c1"># long</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span> <span class="c1"># long</span>
+<span class="go">13</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_lowest_weight_xor_linear_trail">
+<span class="sig-name descname"><span class="pre">find_lowest_weight_xor_linear_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_lowest_weight_xor_linear_trail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a XOR linear trail with the lowest weight in standard format, i.e. the solver solution.
+By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.convert_solver_solution_to_dictionary" title="cipher_modules.models.utils.convert_solver_solution_to_dictionary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_solver_solution_to_dictionary()</span></code></a></p>
+</div>
+<p>verified with <a class="reference external" href="https://eprint.iacr.org/2019/019.pdf">https://eprint.iacr.org/2019/019.pdf</a> for Present <a class="reference external" href="https://eprint.iacr.org/2016/407.pdf">https://eprint.iacr.org/2016/407.pdf</a> for
+Speck and <a class="reference external" href="https://eprint.iacr.org/2014/747.pdf">https://eprint.iacr.org/2014/747.pdf</a> (page 17) <a class="reference external" href="https://eprint.iacr.org/2014/973.pdf">https://eprint.iacr.org/2014/973.pdf</a> for SIMON</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); each dictionary contains variables values whose output need to
+be fixed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">GLPK</span>); the name of the solver (if needed)</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># To reproduce the trail of Table 6 from https://eprint.iacr.org/2016/407.pdf run:</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">integer_to_bit_list</span><span class="p">,</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">speck</span><span class="o">.</span><span class="n">remove_key_schedule</span><span class="p">())</span>
+<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mh">0x03805224</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_lowest_weight_xor_linear_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">])</span>  <span class="c1"># doctest: +SKIP</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s2">&quot;total_weight&quot;</span><span class="p">]</span> <span class="c1"># doctest: +SKIP</span>
+<span class="go">14.0</span>
+
+<span class="go"># To reproduce the trail of Table 8 from https://eprint.iacr.org/2014/973.pdf run:</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.simon_block_cipher</span> <span class="kn">import</span> <span class="n">SimonBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">integer_to_bit_list</span><span class="p">,</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">simon</span> <span class="o">=</span> <span class="n">SimonBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">simon</span><span class="o">.</span><span class="n">remove_key_schedule</span><span class="p">())</span>
+<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mh">0x00200000</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_lowest_weight_xor_linear_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">])</span>  <span class="c1"># doctest: +SKIP</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s2">&quot;total_weight&quot;</span><span class="p">]</span> <span class="c1"># doctest: +SKIP</span>
+<span class="go">18.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_one_xor_linear_trail">
+<span class="sig-name descname"><span class="pre">find_one_xor_linear_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_one_xor_linear_trail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a XOR linear trail, not necessarily the one with the lowest weight.
+By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); dictionaries containing the variables to be fixed
+in standard format (see )</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">GLPK</span>); the solver to call</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.set_fixed_variables" title="cipher_modules.models.utils.set_fixed_variables"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code></a></p>
+</div>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">integer_to_bit_list</span><span class="p">,</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">speck</span><span class="o">.</span><span class="n">remove_key_schedule</span><span class="p">())</span>
+<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mh">0x03805224</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_one_xor_linear_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">])</span> <span class="c1"># random</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_one_xor_linear_trail_with_fixed_weight">
+<span class="sig-name descname"><span class="pre">find_one_xor_linear_trail_with_fixed_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_one_xor_linear_trail_with_fixed_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return one XOR linear trail with weight equal to <code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> as a list in standard format.
+By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> – <strong>integer</strong>; the weight found using <a class="reference internal" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_lowest_weight_xor_linear_trail" title="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.find_lowest_weight_xor_linear_trail"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_lowest_weight_xor_linear_trail()</span></code></a></p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); dictionaries containing the variables to be fixed in standard</dt><dd><p>format</p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">GLPK</span>); the solver to call</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.set_fixed_variables" title="cipher_modules.models.utils.set_fixed_variables"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code></a></p>
+</div>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">speck</span><span class="o">.</span><span class="n">remove_key_schedule</span><span class="p">())</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_one_xor_linear_trail_with_fixed_weight</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="go">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.fix_variables_value_constraints">
+<span class="sig-name descname"><span class="pre">fix_variables_value_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.fix_variables_value_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of constraints that fix the input variables to a specific value.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_variables</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); dictionaries containing the variables to be fixed in standard
+format</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.set_fixed_variables" title="cipher_modules.models.utils.set_fixed_variables"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code></a></p>
+</div>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.simon_block_cipher</span> <span class="kn">import</span> <span class="n">SimonBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">simon</span> <span class="o">=</span> <span class="n">SimonBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">simon</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">fixed_variables</span> <span class="o">=</span> <span class="p">[{</span>
+<span class="gp">....: </span>   <span class="s1">&#39;component_id&#39;</span><span class="p">:</span> <span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;constraint_type&#39;</span><span class="p">:</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_positions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="gp">....: </span><span class="p">},</span> <span class="p">{</span>
+<span class="gp">....: </span>   <span class="s1">&#39;component_id&#39;</span><span class="p">:</span> <span class="s1">&#39;cipher_output_1_8&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;constraint_type&#39;</span><span class="p">:</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_positions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">....: </span><span class="p">}]</span>
+<span class="gp">sage: </span><span class="n">constraints</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">fix_variables_value_constraints</span><span class="p">(</span><span class="n">fixed_variables</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 == 1,</span>
+<span class="go"> x_1 == 0,</span>
+<span class="go"> x_2 == 1,</span>
+<span class="go"> x_3 == 1,</span>
+<span class="go"> x_4 == 1 - x_5,</span>
+<span class="go"> x_6 == 1 - x_7,</span>
+<span class="go"> x_8 == 1 - x_9,</span>
+<span class="go"> x_10 == x_11,</span>
+<span class="go"> 1 &lt;= x_4 + x_6 + x_8 + x_10]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.fix_variables_value_xor_linear_constraints">
+<span class="sig-name descname"><span class="pre">fix_variables_value_xor_linear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.fix_variables_value_xor_linear_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of constraints that fix the input variables to a specific value.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_variables</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); dictionaries containing the variables to be fixed in
+standard format</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.set_fixed_variables" title="cipher_modules.models.utils.set_fixed_variables"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code></a></p>
+</div>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.simon_block_cipher</span> <span class="kn">import</span> <span class="n">SimonBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="n">simon</span> <span class="o">=</span> <span class="n">SimonBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">simon</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">fixed_variables</span> <span class="o">=</span> <span class="p">[{</span>
+<span class="gp">....: </span>   <span class="s1">&#39;component_id&#39;</span><span class="p">:</span> <span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;constraint_type&#39;</span><span class="p">:</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_positions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="gp">....: </span><span class="p">},</span> <span class="p">{</span>
+<span class="gp">....: </span>   <span class="s1">&#39;component_id&#39;</span><span class="p">:</span> <span class="s1">&#39;cipher_output_1_8&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;constraint_type&#39;</span><span class="p">:</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_positions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">....: </span><span class="p">}]</span>
+<span class="gp">sage: </span><span class="n">constraints</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">fix_variables_value_xor_linear_constraints</span><span class="p">(</span><span class="n">fixed_variables</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 == 1,</span>
+<span class="go"> x_1 == 0,</span>
+<span class="go"> ...</span>
+<span class="go"> x_10 == x_11,</span>
+<span class="go"> 1 &lt;= x_4 + x_6 + x_8 + x_10]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.get_component_value_weight">
+<span class="sig-name descname"><span class="pre">get_component_value_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probability_variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components_variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.get_component_value_weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.get_final_output">
+<span class="sig-name descname"><span class="pre">get_final_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components_variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probability_variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.get_final_output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.get_fixed_variables_for_all_xor_linear_trails_with_weight_at_most">
+<span class="sig-name descname"><span class="pre">get_fixed_variables_for_all_xor_linear_trails_with_weight_at_most</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.get_fixed_variables_for_all_xor_linear_trails_with_weight_at_most" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.init_model_in_sage_milp_class">
+<span class="sig-name descname"><span class="pre">init_model_in_sage_milp_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.init_model_in_sage_milp_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a MILP instance from the build-in sage class.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong>; the solver to call</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">_model</span>
+<span class="go">Mixed Integer Program (no objective, 0 variables, 0 constraints)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.integer_variable">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">integer_variable</span></span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.integer_variable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.intermediate_output_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">intermediate_output_names</span></span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.intermediate_output_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.model">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.model_constraints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_constraints</span></span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.model_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the model specified by <code class="docutils literal notranslate"><span class="pre">model_type</span></code>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model_type</span></code> – <strong>string</strong>; the model to retrieve</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">model_constraints</span>
+<span class="go">Traceback (most recent call last):</span>
+<span class="go">...</span>
+<span class="go">ValueError: No model generated</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.non_linear_component_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">non_linear_component_id</span></span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.non_linear_component_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the solution of the model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model_type</span></code> – <strong>string</strong>; the model to solve</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">GLPK</span>); the solver to call</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">add_constraints_to_build_in_sage_milp_class</span><span class="p">()</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">solution</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="s2">&quot;xor_differential&quot;</span><span class="p">)</span> <span class="c1"># random</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.update_xor_linear_constraints_for_more_than_two_bits">
+<span class="sig-name descname"><span class="pre">update_xor_linear_constraints_for_more_than_two_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_vars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.update_xor_linear_constraints_for_more_than_two_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.weight_constraints">
+<span class="sig-name descname"><span class="pre">weight_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.weight_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of constraints that fix the total weight to a specific value.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">weight</span></code> – <strong>integer</strong>; the total weight. If negative, no constraints on the weight is added</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.simon_block_cipher</span> <span class="kn">import</span> <span class="n">SimonBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">simon</span> <span class="o">=</span> <span class="n">SimonBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">simon</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">weight_constraints</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;p[probability]&#39;, x_0)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 == 100]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.weight_xor_linear_constraints">
+<span class="sig-name descname"><span class="pre">weight_xor_linear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_xor_linear_model.MilpXorLinearModel.weight_xor_linear_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of constraints that fix the total weight to a specific value.
+By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">weight</span></code> – <strong>integer</strong>; the total weight. By default, it is the negative base-2 logarithm of the total
+correlation of the trail.</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.simon_block_cipher</span> <span class="kn">import</span> <span class="n">SimonBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model</span> <span class="kn">import</span> <span class="n">MilpXorLinearModel</span>
+<span class="gp">sage: </span><span class="n">simon</span> <span class="o">=</span> <span class="n">SimonBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpXorLinearModel</span><span class="p">(</span><span class="n">simon</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">weight_xor_linear_constraints</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;p[probability]&#39;, x_0)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 == 100]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="milp_cipher_model.html"
+                          title="previous chapter">Milp cipher model</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../utils/config.html"
+                          title="next chapter">Config</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../../_sources/cipher_modules/models/milp/milp_models/milp_xor_linear_model.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../utils/config.html" title="Config"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="milp_cipher_model.html" title="Milp cipher model"
+             >previous</a> |</li>
+  
+    
+      <a href="../../../../../index.html"><img src="../../../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Milp xor linear model</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>

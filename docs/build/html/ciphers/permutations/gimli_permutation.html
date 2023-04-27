@@ -1,0 +1,1636 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Gimli permutation &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sage.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Gimli sbox permutation" href="gimli_sbox_permutation.html" />
+    <link rel="prev" title="Chacha permutation" href="chacha_permutation.html" />
+    <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
+    <script src="../../_static/thebe.js" type="text/javascript"></script>
+    <script src="../../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gimli_sbox_permutation.html" title="Gimli sbox permutation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="chacha_permutation.html" title="Chacha permutation"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../../index.html"><img src="../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Gimli permutation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-ciphers.permutations.gimli_permutation">
+<span id="gimli-permutation"></span><h1>Gimli permutation<a class="headerlink" href="#module-ciphers.permutations.gimli_permutation" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GimliPermutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher.Cipher</span></code></p>
+<p>Construct an instance of the GimliPermutation class.</p>
+<p>This class is used to store compact representations of a cipher, used to generate the corresponding cipher.</p>
+<p>INPUT:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_rounds</span></code> – <strong>integer</strong> (default: <span class="math">24</span>); number of rounds of the permutation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">word_size</span></code> – <strong>integer</strong> (default: <span class="math">32</span>); the size of the word</p></li>
+</ul>
+</div></blockquote>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.gimli_permutation</span> <span class="kn">import</span> <span class="n">GimliPermutation</span>
+<span class="gp">sage: </span><span class="n">gimli</span> <span class="o">=</span> <span class="n">GimliPermutation</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">word_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">gimli</span><span class="o">.</span><span class="n">number_of_rounds</span>
+<span class="go">24</span>
+
+<span class="gp">sage: </span><span class="n">gimli</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
+<span class="go">&#39;rot_0_0&#39;</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_AND_component">
+<span class="sig-name descname"><span class="pre">add_AND_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_AND_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_MODADD_component">
+<span class="sig-name descname"><span class="pre">add_MODADD_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_MODADD_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_MODSUB_component">
+<span class="sig-name descname"><span class="pre">add_MODSUB_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_MODSUB_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_NOT_component">
+<span class="sig-name descname"><span class="pre">add_NOT_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_NOT_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_OR_component">
+<span class="sig-name descname"><span class="pre">add_OR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_OR_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_SBOX_component">
+<span class="sig-name descname"><span class="pre">add_SBOX_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_SBOX_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_SHIFT_component">
+<span class="sig-name descname"><span class="pre">add_SHIFT_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_SHIFT_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_XOR_component">
+<span class="sig-name descname"><span class="pre">add_XOR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_XOR_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_cipher_output_component">
+<span class="sig-name descname"><span class="pre">add_cipher_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_cipher_output_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_concatenate_component">
+<span class="sig-name descname"><span class="pre">add_concatenate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_concatenate_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_constant_component">
+<span class="sig-name descname"><span class="pre">add_constant_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_constant_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_intermediate_output_component">
+<span class="sig-name descname"><span class="pre">add_intermediate_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_intermediate_output_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_linear_layer_component">
+<span class="sig-name descname"><span class="pre">add_linear_layer_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_linear_layer_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_mix_column_component">
+<span class="sig-name descname"><span class="pre">add_mix_column_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_column_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_mix_column_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_permutation_component">
+<span class="sig-name descname"><span class="pre">add_permutation_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_permutation_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_reverse_component">
+<span class="sig-name descname"><span class="pre">add_reverse_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_reverse_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_rotate_component">
+<span class="sig-name descname"><span class="pre">add_rotate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_rotate_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_round">
+<span class="sig-name descname"><span class="pre">add_round</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_round_key_output_component">
+<span class="sig-name descname"><span class="pre">add_round_key_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_round_key_output_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_round_output_component">
+<span class="sig-name descname"><span class="pre">add_round_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_round_output_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_shift_rows_component">
+<span class="sig-name descname"><span class="pre">add_shift_rows_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_shift_rows_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_sigma_component">
+<span class="sig-name descname"><span class="pre">add_sigma_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts_parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_sigma_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_theta_keccak_component">
+<span class="sig-name descname"><span class="pre">add_theta_keccak_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_theta_keccak_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_theta_xoodoo_component">
+<span class="sig-name descname"><span class="pre">add_theta_xoodoo_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_theta_xoodoo_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_variable_rotate_component">
+<span class="sig-name descname"><span class="pre">add_variable_rotate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_variable_rotate_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_variable_shift_component">
+<span class="sig-name descname"><span class="pre">add_variable_shift_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_variable_shift_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_word_permutation_component">
+<span class="sig-name descname"><span class="pre">add_word_permutation_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation_description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_word_permutation_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.algebraic_tests">
+<span class="sig-name descname"><span class="pre">algebraic_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.algebraic_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary explaining the result of the algebraic test.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> – <strong>integer</strong>; the timeout for the Grobner basis computation in seconds</p></li>
+</ul>
+<p>OUTPUTS: a dictionary with the following keys:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">npolynomials</span></code> – number of polynomials</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nvariables</span></code> – number of variables</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> – timeout in seconds</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pass</span></code> – whether the algebraic test pass w.r.t the given timeout</p></li>
+</ul>
+</div></blockquote>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">algebraic_tests</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># long time</span>
+<span class="gp">sage: </span><span class="n">d</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;input_parameters&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span> <span class="s1">&#39;test_results&#39;</span><span class="p">:</span>
+<span class="gp">....: </span><span class="p">{</span><span class="s1">&#39;number_of_variables&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">304</span><span class="p">,</span> <span class="mi">800</span><span class="p">],</span>
+<span class="gp">....: </span><span class="s1">&#39;number_of_equations&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">240</span><span class="p">,</span> <span class="mi">688</span><span class="p">],</span> <span class="s1">&#39;number_of_monomials&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">304</span><span class="p">,</span> <span class="mi">800</span><span class="p">],</span>
+<span class="gp">....: </span><span class="s1">&#39;max_degree_of_equations&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;test_passed&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]}}</span>  <span class="c1"># long time</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.analyze_cipher">
+<span class="sig-name descname"><span class="pre">analyze_cipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tests_configuration</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.analyze_cipher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a dictionary with the analysis of the cipher.</p>
+<p>The analysis is related to the following tests:</p>
+<ul class="simple">
+<li><p>Diffusion Tests</p></li>
+</ul>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tests_configuration</span></code> – <strong>python dictionary</strong></p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">sp</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">tests_configuration</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;diffusion_tests&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;run_tests&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;number_of_samples&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s2">&quot;run_avalanche_dependence&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;run_avalanche_dependence_uniform&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s2">&quot;run_avalanche_weight&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;run_avalanche_entropy&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s2">&quot;avalanche_dependence_uniform_bias&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;avalanche_dependence_criterion_threshold&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s2">&quot;avalanche_dependence_uniform_criterion_threshold&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;avalanche_weight_criterion_threshold&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s2">&quot;avalanche_entropy_criterion_threshold&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">},</span> <span class="s2">&quot;component_analysis_tests&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;run_tests&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
+<span class="gp">sage: </span><span class="n">analysis</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">analyze_cipher</span><span class="p">(</span><span class="n">tests_configuration</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">analysis</span><span class="p">[</span><span class="s2">&quot;diffusion_tests&quot;</span><span class="p">][</span><span class="s2">&quot;test_results&quot;</span><span class="p">][</span><span class="s2">&quot;key&quot;</span><span class="p">][</span><span class="s2">&quot;round_output&quot;</span><span class="p">][</span> <span class="c1"># random</span>
+<span class="gp">....: </span><span class="s2">&quot;avalanche_dependence_vectors&quot;</span><span class="p">][</span><span class="s2">&quot;differences&quot;</span><span class="p">][</span><span class="mi">31</span><span class="p">][</span><span class="s2">&quot;output_vectors&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;vector&quot;</span><span class="p">]</span> <span class="c1"># random</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.as_python_dictionary">
+<span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.avalanche_probability_vectors">
+<span class="sig-name descname"><span class="pre">avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the avalanche probability vectors of each input bit difference for each round.</p>
+<p>The inputs considered are plaintext, key, etc.</p>
+<p>The i-th component of the vector is the probability that i-th bit of the output
+flips due to the input bit difference.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>apvs[“key”][“round_output”][position][index_occurrence] = vector of round_output size with input diff
+injected in key</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nb_samples</span></code> – <strong>integer</strong>; used to compute the estimated probability of flipping</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">apvs</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">avalanche_probability_vectors</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">apvs</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">][</span><span class="s2">&quot;round_output&quot;</span><span class="p">][</span><span class="mi">31</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># random</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.component_analysis_tests">
+<span class="sig-name descname"><span class="pre">component_analysis_tests</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.component_analysis_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of dictionaries, each one giving some properties of the cipher’s operations.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">component_analysis_tests</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="go">9</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.component_from">
+<span class="sig-name descname"><span class="pre">component_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.component_from" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.compute_criterion_from_avalanche_probability_vectors">
+<span class="sig-name descname"><span class="pre">compute_criterion_from_avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_apvs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.compute_criterion_from_avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a python dictionary that contains the dictionaries corresponding to each criterion.</p>
+<p>ALGORITHM:</p>
+<p>The avalanche dependence is the number of output bit that flip with respect to an input bit difference,
+for a given round.
+If the worst avalanche dependence for a certain round is close to the output bit size with respect to a certain
+threshold, we say that the cipher satisfies the avalanche dependence criterion for this round.</p>
+<p>The avalanche dependence uniform is the number of output bit that flip with a probability
+<span class="math">\in \left[\frac{1}{2} - \text{bias}; \frac{1}{2} + \text{bias}\right]</span>,
+with respect to an input bit difference, for a given round. If the worst avalanche dependence uniform for a
+certain round is close to the output bit size with respect to a certain threshold,
+we say that the cipher satisfies the avalanche dependence uniform criterion for this round.</p>
+<p>The avalanche weight is the expected Hamming weight of the output difference with respect to an input bit
+difference, for a given round.
+If the avalanche weights of all the input bit differences for a certain round is close to half of
+the output bit size with respect to a certain threshold, we say that the cipher satisfies the
+avalanche criterion for this round.</p>
+<p>The avalanche entropy is defined as uncertainty about whether output bits flip with respect to an input
+bit difference, for a given round.
+If the strict avalanche entropy of all the input bit differences for a certain round is close to
+the output bit size with respect to a certain threshold, we say that the cipher satisfies the
+strict avalanche criterion for this round.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>d[“key”][“round_output”][position][index_occurrence][“avalanche_dependence”] = vector of round_output size
+with input diff injected in key</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">all_apvs</span></code> – <strong>dictionary</strong>; all avalanche probability vectors returned by avalanche_probability_vectors()</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_dependence_uniform_bias</span></code> – <strong>float</strong>; define the range where the probability of flipping should be</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#ciphers.permutations.gimli_permutation.GimliPermutation.avalanche_probability_vectors" title="ciphers.permutations.gimli_permutation.GimliPermutation.avalanche_probability_vectors"><code class="xref py py-meth docutils literal notranslate"><span class="pre">avalanche_probability_vectors()</span></code></a> for the returning vectors.</p>
+</div>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">apvs</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">avalanche_probability_vectors</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">compute_criterion_from_avalanche_probability_vectors</span><span class="p">(</span><span class="n">apvs</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">][</span><span class="s2">&quot;round_output&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;avalanche_dependence_vectors&quot;</span><span class="p">]</span> <span class="c1"># random</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.continuous_avalanche_factor">
+<span class="sig-name descname"><span class="pre">continuous_avalanche_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.continuous_avalanche_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Continuous generalization of the metric Avalanche Factor. This method implements Definition 14 of <a class="reference internal" href="../../references.html#mur2020" id="id1"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lambda_value</span></code> –  <strong>float</strong>; threshold value used to express the input difference</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_samples</span></code> –  <strong>integer</strong>; number of samples used to compute the continuous avalanche factor</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="n">speck_cipher</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">speck_cipher</span><span class="o">.</span><span class="n">continuous_avalanche_factor</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;plaintext&#39;</span><span class="p">][</span><span class="s1">&#39;round_key_output&#39;</span><span class="p">][</span><span class="s1">&#39;continuous_avalanche_factor&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+<span class="go">0.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.continuous_diffusion_factor">
+<span class="sig-name descname"><span class="pre">continuous_diffusion_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.continuous_diffusion_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Continuous Diffusion Factor. This method implements Definition 16 of <a class="reference internal" href="../../references.html#mur2020" id="id2"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">beta_number_of_samples</span></code> – <strong>integer</strong>; number of samples used to compute the continuous measure metric</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gf_number_samples</span></code> – <strong>integer</strong>;  number of vectors used to approximate gf_2</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="n">speck_cipher</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># long time</span>
+<span class="gp">sage: </span><span class="n">output</span> <span class="o">=</span> <span class="n">speck_cipher</span><span class="o">.</span><span class="n">continuous_diffusion_factor</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="c1"># long time</span>
+<span class="gp">sage: </span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;plaintext&#39;</span><span class="p">][</span><span class="s1">&#39;cipher_output&#39;</span><span class="p">][</span><span class="s1">&#39;diffusion_factor&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;2&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="c1"># long time</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.continuous_diffusion_tests">
+<span class="sig-name descname"><span class="pre">continuous_diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">continuous_avalanche_factor_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_for_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_neutrality_measure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_diffusion_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.continuous_diffusion_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a python dictionary that contains the dictionaries corresponding to each metric in <a class="reference internal" href="../../references.html#mur2020" id="id3"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">continuous_avalanche_factor_number_of_samples</span></code> – <strong>integer</strong> (default: <span class="math">100</span>); number of samples
+used to obtain the metric continuous_avalanche_factor</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">threshold_for_avalanche_factor</span></code> – <strong>float</strong> (default: <span class="math">0.001</span>); threshold value used to compute the
+input difference for the metric continuous_avalanche_factor</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">continuous_neutral_measure_beta_number_of_samples</span></code> – <strong>integer</strong> (default: <span class="math">10</span>); number of samples
+used to compute the continuous measure metric</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">continuous_neutral_measure_gf_number_samples</span></code> – <strong>integer</strong> (default: <span class="math">10</span>);  number of vectors used
+to approximate gf_2</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">continuous_diffusion_factor_beta_number_of_samples</span></code> – <strong>integer</strong> (default: <span class="math">10</span>); number of samples
+used to compute the continuous measure metric</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">continuous_diffusion_factor_gf_number_samples</span></code> – <strong>integer</strong> (default: <span class="math">10</span>);  number of vectors
+used to approximate gf_2</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_continuous_avalanche_factor</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); flag indicating if we want the
+continuous_avalanche_factor or not</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_continuous_neutrality_measure</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); flag indicating if we want the
+continuous_neutrality_measure or not</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_diffusion_factor</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); flag indicating if we want the
+continuous_neutrality_measure, or not</p></li>
+</ul>
+<p>OUTPUT:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>A python dictionary that contains the test result to each metric. E.g.: continuous_neutrality_measure,
+continuous_avalanche_factor, diffusion_factor</p></li>
+</ul>
+</div></blockquote>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="n">speck_cipher</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># long time</span>
+<span class="gp">sage: </span><span class="n">output</span> <span class="o">=</span> <span class="n">speck_cipher</span><span class="o">.</span><span class="n">continuous_diffusion_tests</span><span class="p">()</span> <span class="c1"># long time</span>
+<span class="gp">sage: </span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;plaintext&#39;</span><span class="p">][</span><span class="s1">&#39;round_key_output&#39;</span><span class="p">][</span><span class="s1">&#39;continuous_neutrality_measure&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;1&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="c1"># long time</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.continuous_neutrality_measure_for_bit_j">
+<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.continuous_neutrality_measure_for_bit_j" title="Permalink to this definition">¶</a></dt>
+<dd><p>Continuous Neutrality Measure. This method implements Definition 15 of <a class="reference internal" href="../../references.html#mur2020" id="id4"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">beta_number_of_samples</span></code> – <strong>integer</strong>; number of samples used to compute the continuous measure metric</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gf_number_samples</span></code> – <strong>integer</strong>;  number of vectors used to approximate gf_2</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_bit</span></code> – <strong>integer</strong> (default: <span class="math">None</span>); input bit position to be analyzed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_bits</span></code> – <strong>list</strong> (default: <span class="math">None</span>); output bit positions to be analyzed</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="n">output</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">continuous_neutrality_measure_for_bit_j</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span> <span class="c1"># long time</span>
+<span class="gp">sage: </span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;plaintext&#39;</span><span class="p">][</span><span class="s1">&#39;cipher_output&#39;</span><span class="p">][</span><span class="s1">&#39;continuous_neutrality_measure&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;2&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="c1"># long time</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.continuous_neutrality_measure_for_bit_j_and_beta">
+<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j_and_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.continuous_neutrality_measure_for_bit_j_and_beta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.current_round">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.current_round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.current_round_number">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round_number</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.current_round_number" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.current_round_number_of_components">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round_number_of_components</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.current_round_number_of_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.delete_generated_evaluate_c_shared_library">
+<span class="sig-name descname"><span class="pre">delete_generated_evaluate_c_shared_library</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.delete_generated_evaluate_c_shared_library" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the file named &lt;id_cipher&gt;_evaluate.c and the corresponding executable.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
+<span class="gp">sage: </span><span class="n">fancy</span><span class="p">()</span><span class="o">.</span><span class="n">delete_generated_evaluate_c_shared_library</span><span class="p">()</span> <span class="c1"># doctest: +SKIP</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.diffusion_tests">
+<span class="sig-name descname"><span class="pre">diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_weight_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_entropy_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence_uniform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_entropy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.diffusion_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a python dictionary that contains the dictionaries corresponding to each criterion and their analysis.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_samples</span></code> – <strong>integer</strong> (default: <span class="math">5</span>); used to compute the estimated probability of flipping</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_dependence_uniform_bias</span></code> – <strong>float</strong> (default: <span class="math">0.05</span>); define the range where the probability
+of flipping should be</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_dependence_criterion_threshold</span></code> –  <strong>float</strong> (default: <span class="math">0</span>); It is a bias. The criterion is satisfied
+for a given input bit difference if for all output bits of the round under analysis, the corresponding
+avalanche dependence criterion d is such that block_bit_size - bias &lt;= d &lt;= block_bit_size + bias</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_dependence_uniform_criterion_threshold</span></code> –  <strong>float</strong> (default: <span class="math">0</span>); It is a bias. The criterion is
+satisfied for a given input bit difference if for all output bits of the round under analysis, the
+corresponding avalanche dependence uniform criterion d is such that
+block_bit_size - bias &lt;= d &lt;= block_bit_size + bias</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_weight_criterion_threshold</span></code> –  <strong>float</strong> (default: <span class="math">0.01</span>); It is a bias. The criterion is
+satisfied for a given input bit difference if for all output bits of the round under analysis, the
+corresponding avalanche weight criterion is such that block_bit_size/2 - bias &lt;= d &lt;= block_bit_size/2 + bias</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_entropy_criterion_threshold</span></code> –  <strong>float</strong> (default: <span class="math">0.01</span>); It is a bias. The criterion is
+satisfied for a given input bit difference if for all output bits of the round under analysis, the
+corresponding avalanche entropy criterion d is such that block_bit_size - bias &lt;= d &lt;= block_bit_size + bias</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_avalanche_dependence</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); if True, add the avalanche dependence results
+to the output dictionary</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_avalanche_dependence_uniform</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); if True, add the avalanche dependence
+uniform results to the output dictionary</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_avalanche_weight</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); if True, add the avalanche weight results to the
+output dictionary</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_avalanche_entropy</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); if True, add the avalanche entropy results to the
+output dictionary</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>diff inserted in:
+d[“test_results”][“plaintext”][“round_output”][“avalanche_entropy”][“differences”][position][
+“output_vectors”][round]</p>
+</div>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">diffusion_tests</span><span class="p">(</span><span class="n">number_of_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;test_results&quot;</span><span class="p">][</span><span class="s2">&quot;key&quot;</span><span class="p">][</span><span class="s2">&quot;round_output&quot;</span><span class="p">][</span> <span class="c1"># random</span>
+<span class="gp">....: </span><span class="s2">&quot;avalanche_dependence_vectors&quot;</span><span class="p">][</span><span class="s2">&quot;differences&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;output_vectors&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;vector&quot;</span><span class="p">]</span> <span class="c1"># random</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the output of the cipher.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cipher_input</span></code> – <strong>list</strong>; block cipher inputs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">intermediate_output</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to return a dictionary with
+each intermediate output</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output of each
+component</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span> <span class="k">as</span> <span class="n">identity</span>
+<span class="gp">sage: </span><span class="n">identity</span><span class="p">()</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="mh">0x01234567</span><span class="p">,</span><span class="mh">0x89ABCDEF</span><span class="p">])</span>
+<span class="go">19088743</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_using_c">
+<span class="sig-name descname"><span class="pre">evaluate_using_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_using_c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the output of the cipher.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">inputs</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">intermediate_output</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); Set this flag to True in order to return a
+dictionary with each intermediate output</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); Set this flag to True in order to print the input/output of
+each component</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
+<span class="gp">sage: </span><span class="n">fancy</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">evaluate_using_c</span><span class="p">([</span><span class="mh">0x012345</span><span class="p">,</span><span class="mh">0x89ABCD</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span> <span class="c1"># random</span>
+<span class="go">{&#39;round_key_output&#39;: [3502917, 73728],</span>
+<span class="go"> &#39;round_output&#39;: [9834215],</span>
+<span class="go"> &#39;cipher_output&#39;: [7457252]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_vectorized">
+<span class="sig-name descname"><span class="pre">evaluate_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_vectorized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the output of the cipher for multiple inputs.</p>
+<p>The inputs are given as a list cipher_input,such that cipher_inputs[0] contains the first input,
+and cipher_inputs[1] the second.
+Each of the inputs is given as a numpy ndarray of np.uint8, of shape n*m, where n is the size
+(in bytes) of the input, and m is the number of samples.</p>
+<p>The return is a list of m*n ndarrays (format transposed compared to the input format),
+where the list is of size 1 if intermediate_output is False, and NUMBER_OF_ROUNDS otherwise.</p>
+<p>This function determines automatically if a bit-based evaluation is required,
+and does the transformation transparently. The inputs and outputs are similar to evaluate_vectorized_byte.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cipher_input</span></code> – <strong>list</strong>; block cipher inputs (ndarray of uint8 representing one byte each, n rows, m columns,
+with m the number of inputs to evaluate)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">intermediate_outputs</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True in order to print the input/output of
+each component</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">K</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">X</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">result</span><span class="o">=</span><span class="n">speck</span><span class="o">.</span><span class="n">evaluate_vectorized</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">K</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="n">K0Lib</span><span class="o">=</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">K</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(),</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">K1Lib</span><span class="o">=</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">K</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(),</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">X0Lib</span><span class="o">=</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(),</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">X1Lib</span><span class="o">=</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(),</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">C0Lib</span><span class="o">=</span><span class="n">speck</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">X0Lib</span><span class="p">,</span> <span class="n">K0Lib</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="n">C1Lib</span><span class="o">=</span><span class="n">speck</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">X1Lib</span><span class="p">,</span> <span class="n">K1Lib</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(),</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">C0Lib</span>
+<span class="go">True</span>
+<span class="gp">sage: </span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(),</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">C1Lib</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_with_intermediate_outputs_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">evaluate_with_intermediate_outputs_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations_mix_columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_with_intermediate_outputs_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the output of the continuous generalized cipher.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cipher_input</span></code> – <strong>list of Decimal</strong>; block cipher input message</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sbox_precomputations</span></code> <strong>dictionary</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sbox_precomputations_mix_columns</span></code> <strong>dictionary</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True in order to print the input/output of
+each component</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">sage: </span><span class="n">plaintext_input</span> <span class="o">=</span> <span class="p">[</span><span class="n">Decimal</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">)]</span>
+<span class="gp">sage: </span><span class="n">plaintext_input</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="s1">&#39;0.802999073954890452142763024312444031238555908203125&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">key_input</span> <span class="o">=</span> <span class="p">[</span><span class="n">Decimal</span><span class="p">(</span><span class="s1">&#39;-1&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">)]</span>
+<span class="gp">sage: </span><span class="n">cipher_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">plaintext_input</span><span class="p">,</span> <span class="n">key_input</span><span class="p">]</span>
+<span class="gp">sage: </span><span class="n">output</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">evaluate_with_intermediate_outputs_continuous_diffusion_analysis</span><span class="p">(</span>
+<span class="gp">....: </span>    <span class="n">cipher_inputs</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="p">{},</span>
+<span class="gp">....: </span>    <span class="p">{}</span>
+<span class="gp">....: </span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">Decimal</span><span class="p">(</span><span class="s1">&#39;-1.000000000&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.family_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">family_name</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.family_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.file_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file_name</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.file_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.find_good_input_difference_for_neural_distinguisher">
+<span class="sig-name descname"><span class="pre">find_good_input_difference_for_neural_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_generations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_generation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.find_good_input_difference_for_neural_distinguisher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return good neural distinguisher input differences for a cipher.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">difference_positions</span></code> – <strong>table of booleans</strong>; one for each input to the cipher. True in positions where
+differences are allowed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initial_population</span></code> – <strong>integer</strong> (default: <span class="math">32</span>); parameter of the evolutionary algorithm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_generations</span></code> – <strong>integer</strong> (default: <span class="math">50</span>); number of iterations of the evolutionary algorithm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nb_samples</span></code> – <strong>integer</strong> (default: <span class="math">10</span>); number of samples for testing each input difference</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">previous_generation</span></code> – (default: <span class="math">None</span>); optional: initial table of differences to try</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbose</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); verbosity</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.neural_network_tests</span> <span class="kn">import</span> <span class="n">find_good_input_difference_for_neural_distinguisher</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">diff</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">highest_round</span> <span class="o">=</span> <span class="n">find_good_input_difference_for_neural_distinguisher</span><span class="p">(</span><span class="n">cipher</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">number_of_generations</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.generate_bit_based_c_code">
+<span class="sig-name descname"><span class="pre">generate_bit_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.generate_bit_based_c_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string containing the C code that defines the self.evaluate() method.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">intermediate_output</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True in order to return a
+dictionary with each intermediate output</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True in order to make the code print the
+input/output of each component</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
+<span class="gp">sage: </span><span class="n">s</span> <span class="o">=</span> <span class="n">fancy</span><span class="p">()</span><span class="o">.</span><span class="n">generate_bit_based_c_code</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">s</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;#include&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.generate_csv_report">
+<span class="sig-name descname"><span class="pre">generate_csv_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_absolute_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.generate_csv_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a CSV report containing criteria to estimate the vulnerability of the cipher.</p>
+<p>This method generate a CSV report containing the criteria presented in the paper
+“The design of Xoodoo and Xoofff” [1].
+[1] <a class="reference external" href="https://tosc.iacr.org/index.php/ToSC/article/view/7359">https://tosc.iacr.org/index.php/ToSC/article/view/7359</a></p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nb_samples</span></code> – <strong>integer</strong>; number of samples</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_absolute_path</span></code> – <strong>string</strong>; output of the absolute path</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">import</span> <span class="nn">inspect</span>
+<span class="gp">sage: </span><span class="kn">import</span> <span class="nn">claasp</span>
+<span class="gp">sage: </span><span class="kn">import</span> <span class="nn">os.path</span>
+<span class="gp">sage: </span><span class="n">tii_path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">claasp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">tii_dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">tii_path</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span>
+<span class="gp">sage: </span><span class="n">identity</span> <span class="o">=</span> <span class="n">IdentityBlockCipher</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">generate_csv_report</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">sage: </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.generate_evaluate_c_code_shared_library">
+<span class="sig-name descname"><span class="pre">generate_evaluate_c_code_shared_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.generate_evaluate_c_code_shared_library" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the C code in a file named &lt;id_cipher&gt;_evaluate.c, and build the corresponding executable.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">intermediate_output</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True in order to make the C code
+print a dictionary with each intermediate output</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True in order to make the C code print the
+input/output of each component</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
+<span class="gp">sage: </span><span class="n">fancy</span><span class="p">()</span><span class="o">.</span><span class="n">generate_evaluate_c_code_shared_library</span><span class="p">()</span> <span class="c1"># doctest: +SKIP</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.generate_heatmap_graphs_for_avalanche_tests">
+<span class="sig-name descname"><span class="pre">generate_heatmap_graphs_for_avalanche_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">avalanche_results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.generate_heatmap_graphs_for_avalanche_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string containing latex instructions to generate heatmap graphs of the avalanche tests.
+The string can then be printed on a terminal or on a file.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_results</span></code> – <strong>dictionary</strong>; results of the avalanche tests</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">difference_positions</span></code> – <strong>list</strong> (default: <span class="math">None</span>); positions of the differences to inject.</dt><dd><p>The default value is equivalent to pick one of the worst position for a difference and the average value.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">criterion_names</span></code> – <strong>list</strong> (default: <span class="math">None</span>); names of the criteria to observe</dt><dd><p>The default value is equivalent to to pick all of the 4 criteria:
+- “avalanche_dependence_vectors”
+- “avalanche_dependence_uniform_vectors”
+- “avalanche_entropy_vectors”
+- “avalanche_weight_vectors”</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">sp</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diffusion_tests</span><span class="p">(</span><span class="n">number_of_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">h</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">generate_heatmap_graphs_for_avalanche_tests</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">h</span><span class="p">[:</span><span class="mi">20</span><span class="p">]</span>
+<span class="go">&#39;\documentclass[12pt]&#39;</span>
+
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.ascon_permutation</span> <span class="kn">import</span> <span class="n">AsconPermutation</span>
+<span class="gp">sage: </span><span class="n">ascon</span> <span class="o">=</span> <span class="n">AsconPermutation</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">ascon</span><span class="o">.</span><span class="n">diffusion_tests</span><span class="p">(</span><span class="n">number_of_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="c1"># long</span>
+<span class="gp">sage: </span><span class="n">h</span> <span class="o">=</span> <span class="n">ascon</span><span class="o">.</span><span class="n">generate_heatmap_graphs_for_avalanche_tests</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;avalanche_weight_vectors&quot;</span><span class="p">])</span> <span class="c1"># long</span>
+
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.xoodoo_permutation</span> <span class="kn">import</span> <span class="n">XoodooPermutation</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">XoodooPermutation</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">diffusion_tests</span><span class="p">(</span><span class="n">number_of_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="c1"># long</span>
+<span class="gp">sage: </span><span class="n">h</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">generate_heatmap_graphs_for_avalanche_tests</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">193</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;avalanche_dependence_vectors&quot;</span><span class="p">,</span> <span class="s2">&quot;avalanche_entropy_vectors&quot;</span><span class="p">])</span> <span class="c1"># long</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.generate_word_based_c_code">
+<span class="sig-name descname"><span class="pre">generate_word_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.generate_word_based_c_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string containing the optimized C code that defines the self.evaluate() method.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">word_size</span></code> – <strong>integer</strong>; the size of the word</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">intermediate_output</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True in order to return a
+dictionary with each intermediate output</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True in order to make the code print the
+input/output of each component</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="n">word_based_c_code</span> <span class="o">=</span> <span class="n">speck</span><span class="p">()</span><span class="o">.</span><span class="n">generate_word_based_c_code</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">word_based_c_code</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;#include&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_all_components">
+<span class="sig-name descname"><span class="pre">get_all_components</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_all_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_all_components_ids">
+<span class="sig-name descname"><span class="pre">get_all_components_ids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_all_components_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_all_inputs_bit_positions">
+<span class="sig-name descname"><span class="pre">get_all_inputs_bit_positions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_all_inputs_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_component_from_id">
+<span class="sig-name descname"><span class="pre">get_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_component_from_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the component according to the id given as input.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id_component</span></code> – <strong>string</strong>; id of a component</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s1">&#39;sbox_0_0&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">component</span><span class="o">.</span><span class="n">description</span>
+<span class="go">[0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_components_in_round">
+<span class="sig-name descname"><span class="pre">get_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_components_in_round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_current_component_id">
+<span class="sig-name descname"><span class="pre">get_current_component_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_current_component_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this function to get the current component id.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher</span> <span class="kn">import</span> <span class="n">Cipher</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="s2">&quot;permutation&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">add_round</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constant_0_0</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mh">0xF</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">constant_0_1</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mh">0xF</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">add_round</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constant_1_0</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mh">0xF</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">get_current_component_id</span><span class="p">()</span>
+<span class="go">&#39;constant_1_0&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_number_of_components_in_round">
+<span class="sig-name descname"><span class="pre">get_number_of_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_number_of_components_in_round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_round_from_component_id">
+<span class="sig-name descname"><span class="pre">get_round_from_component_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_round_from_component_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the round according to the round of the component id given as input.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id_component</span></code> – <strong>string</strong>; id of a component</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">fancy</span><span class="o">.</span><span class="n">get_round_from_component_id</span><span class="p">(</span><span class="s1">&#39;xor_1_14&#39;</span><span class="p">)</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_sizes_of_components_by_type">
+<span class="sig-name descname"><span class="pre">get_sizes_of_components_by_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_sizes_of_components_by_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.inputs_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs_bit_size</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.inputs_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_algebraically_secure">
+<span class="sig-name descname"><span class="pre">is_algebraically_secure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_algebraically_secure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <span class="math">True</span> if the cipher is resistant against algebraic attack.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> – <strong>integer</strong>; the timeout for the Grobner basis computation in seconds</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_andrx">
+<span class="sig-name descname"><span class="pre">is_andrx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_andrx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the cipher is AndRX, False otherwise.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">midori</span><span class="o">.</span><span class="n">is_andrx</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_arx">
+<span class="sig-name descname"><span class="pre">is_arx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_arx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the cipher is ARX, False otherwise.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">midori</span><span class="o">.</span><span class="n">is_arx</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_power_of_2_word_based">
+<span class="sig-name descname"><span class="pre">is_power_of_2_word_based</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_power_of_2_word_based" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the word size if the cipher is word based (64, 32, 16 or 8 bits), False otherwise.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.xtea_block_cipher</span> <span class="kn">import</span> <span class="n">XTeaBlockCipher</span>
+<span class="gp">sage: </span><span class="n">XTeaBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span><span class="o">.</span><span class="n">is_power_of_2_word_based</span><span class="p">()</span>
+<span class="go">32</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span><span class="o">.</span><span class="n">is_power_of_2_word_based</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_shift_arx">
+<span class="sig-name descname"><span class="pre">is_shift_arx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_shift_arx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the cipher is Shift-ARX, False otherwise.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.xtea_block_cipher</span> <span class="kn">import</span> <span class="n">XTeaBlockCipher</span>
+<span class="gp">sage: </span><span class="n">xtea</span> <span class="o">=</span> <span class="n">XTeaBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">xtea</span><span class="o">.</span><span class="n">is_shift_arx</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_spn">
+<span class="sig-name descname"><span class="pre">is_spn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_spn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the cipher is SPN.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">aes</span><span class="o">.</span><span class="n">is_spn</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.make_cipher_id">
+<span class="sig-name descname"><span class="pre">make_cipher_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.make_cipher_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.make_file_name">
+<span class="sig-name descname"><span class="pre">make_file_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.make_file_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.neural_network_blackbox_distinguisher_tests">
+<span class="sig-name descname"><span class="pre">neural_network_blackbox_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.neural_network_blackbox_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a python dictionary that contains the accuracies corresponding to each round.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nb_samples</span></code> – <strong>integer</strong> (default: <span class="math">10000</span>); how many sample the neural network is trained with</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hidden_layers</span></code> – <strong>list</strong> (default: <span class="math">[32, 32, 32]</span>); a list containing the number of neurons in each
+hidden layer of the neural network</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_epochs</span></code> – <strong>integer</strong> (default: <span class="math">10</span>); how long is the training of the neural network</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="c1">#speck(number_of_rounds=22).neural_network_blackbox_distinguisher_tests(nb_samples = 10) # random</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.neural_network_differential_distinguisher_tests">
+<span class="sig-name descname"><span class="pre">neural_network_differential_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.neural_network_differential_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a python dictionary that contains the accuracies corresponding to each round.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nb_samples</span></code> – <strong>integer</strong> (default: <span class="math">10000</span>); how many sample the neural network is trained with</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hidden_layers</span></code> – <strong>list</strong> (default: <span class="math">[32, 32, 32]</span>); a list containing the number of neurons in each
+hidden layer of the neural network</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_epochs</span></code> – <strong>integer</strong> (default: <span class="math">10</span>); how long is the training of the neural network</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">diff</span></code> – <strong>list</strong> (default: <span class="math">[0x01]</span>); list of input differences</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="c1">#speck(number_of_rounds=22).neural_network_differential_distinguisher_tests(nb_samples = 10) # random</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.number_of_rounds">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_rounds</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.number_of_rounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.output_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_bit_size</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.output_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.polynomial_system">
+<span class="sig-name descname"><span class="pre">polynomial_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.polynomial_system" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a polynomial system for the cipher.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span>
+<span class="gp">sage: </span><span class="n">IdentityBlockCipher</span><span class="p">()</span><span class="o">.</span><span class="n">polynomial_system</span><span class="p">()</span>
+<span class="go">Polynomial Sequence with 128 Polynomials in 256 Variables</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.polynomial_system_at_round">
+<span class="sig-name descname"><span class="pre">polynomial_system_at_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.polynomial_system_at_round" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a polynomial system for the cipher at round <span class="math">r</span>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">r</span></code> – <strong>integer</strong>; round index</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">polynomial_system_at_round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">Polynomial Sequence with 252 Polynomials in 288 Variables</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the structure of the cipher into the sage terminal.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher</span> <span class="kn">import</span> <span class="n">Cipher</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="s2">&quot;permutation&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">],</span> <span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">add_round</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constant_0_0</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mh">0xAB01</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">constant_0_1</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mh">0xAB01</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">print</span><span class="p">()</span>
+<span class="go">cipher_id = cipher_name_i32_o32_r1</span>
+<span class="go">cipher_type = permutation</span>
+<span class="go">cipher_inputs = [&#39;input&#39;]</span>
+<span class="go">cipher_inputs_bit_size = [32]</span>
+<span class="go">cipher_output_bit_size = 32</span>
+<span class="go">cipher_number_of_rounds = 1</span>
+
+<span class="go">    # round = 0 - round component = 0</span>
+<span class="go">    id = constant_0_0</span>
+<span class="go">    type = constant</span>
+<span class="go">    input_bit_size = 0</span>
+<span class="go">    input_id_link = [&#39;&#39;]</span>
+<span class="go">    input_bit_positions = [[]]</span>
+<span class="go">    output_bit_size = 16</span>
+<span class="go">    description = [&#39;0xab01&#39;]</span>
+
+<span class="go">    # round = 0 - round component = 1</span>
+<span class="go">    id = constant_0_1</span>
+<span class="go">    type = constant</span>
+<span class="go">    input_bit_size = 0</span>
+<span class="go">    input_id_link = [&#39;&#39;]</span>
+<span class="go">    input_bit_positions = [[]]</span>
+<span class="go">    output_bit_size = 16</span>
+<span class="go">    description = [&#39;0xab01&#39;]</span>
+<span class="go">cipher_reference_code = None</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_as_python_dictionary">
+<span class="sig-name descname"><span class="pre">print_as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this function to print the cipher as a python dictionary into the sage terminal.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher</span> <span class="kn">import</span> <span class="n">Cipher</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="s2">&quot;block_cipher&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;plaintext&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> <span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">add_round</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constant_0_0</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mh">0xAB01</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">constant_0_1</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mh">0xAB01</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">print_as_python_dictionary</span><span class="p">()</span>
+<span class="go">cipher = {</span>
+<span class="go">&#39;cipher_id&#39;: &#39;cipher_name_k32_p32_o32_r1&#39;,</span>
+<span class="go">&#39;cipher_type&#39;: &#39;block_cipher&#39;,</span>
+<span class="go">&#39;cipher_inputs&#39;: [&#39;key&#39;, &#39;plaintext&#39;],</span>
+<span class="go">&#39;cipher_inputs_bit_size&#39;: [32, 32],</span>
+<span class="go">&#39;cipher_output_bit_size&#39;: 32,</span>
+<span class="go">&#39;cipher_number_of_rounds&#39;: 1,</span>
+<span class="go">&#39;cipher_rounds&#39; : [</span>
+<span class="go">  # round 0</span>
+<span class="go">  [</span>
+<span class="go">  {</span>
+<span class="go">    # round = 0 - round component = 0</span>
+<span class="go">    &#39;id&#39;: &#39;constant_0_0&#39;,</span>
+<span class="go">    &#39;type&#39;: &#39;constant&#39;,</span>
+<span class="go">    &#39;input_bit_size&#39;: 0,</span>
+<span class="go">    &#39;input_id_link&#39;: [&#39;&#39;],</span>
+<span class="go">    &#39;input_bit_positions&#39;: [[]],</span>
+<span class="go">    &#39;output_bit_size&#39;: 16,</span>
+<span class="go">    &#39;description&#39;: [&#39;0xab01&#39;],</span>
+<span class="go">  },</span>
+<span class="go">  {</span>
+<span class="go">    # round = 0 - round component = 1</span>
+<span class="go">    &#39;id&#39;: &#39;constant_0_1&#39;,</span>
+<span class="go">    &#39;type&#39;: &#39;constant&#39;,</span>
+<span class="go">    &#39;input_bit_size&#39;: 0,</span>
+<span class="go">    &#39;input_id_link&#39;: [&#39;&#39;],</span>
+<span class="go">    &#39;input_bit_positions&#39;: [[]],</span>
+<span class="go">    &#39;output_bit_size&#39;: 16,</span>
+<span class="go">    &#39;description&#39;: [&#39;0xab01&#39;],</span>
+<span class="go">  },</span>
+<span class="go">  ],</span>
+<span class="go">  ],</span>
+<span class="go">&#39;cipher_reference_code&#39;: None,</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_as_python_dictionary_to_file">
+<span class="sig-name descname"><span class="pre">print_as_python_dictionary_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_as_python_dictionary_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this function to print the cipher as a python dictionary to a file.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">file_name</span></code> – <strong>string</strong>; a python string representing a valid file name</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher</span> <span class="kn">import</span> <span class="n">Cipher</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="s2">&quot;block_cipher&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;plaintext&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> <span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">print_as_python_dictionary_to_file</span><span class="p">(</span><span class="s2">&quot;claasp/ciphers/dictionary_example.py&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;claasp/ciphers/dictionary_example.py&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_evaluation_python_code">
+<span class="sig-name descname"><span class="pre">print_evaluation_python_code</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_evaluation_python_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the python code that implement the evaluation function of the cipher.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span> <span class="k">as</span> <span class="n">identity</span>
+<span class="gp">sage: </span><span class="n">identity</span><span class="p">()</span><span class="o">.</span><span class="n">print_evaluation_python_code</span><span class="p">()</span> <span class="c1"># random</span>
+<span class="go">from copy import copy</span>
+<span class="go">from bitstring import BitArray</span>
+<span class="go">from claasp.cipher_modules.generic_functions import *</span>
+
+<span class="go">def evaluate(input):</span>
+<span class="go">    plaintext_output = copy(BitArray(uint=input[0], length=32))</span>
+<span class="go">    key_output = copy(BitArray(uint=input[1], length=32))</span>
+<span class="go">    intermediate_output = {}</span>
+<span class="go">    intermediate_output[&#39;cipher_output&#39;] = []</span>
+<span class="go">    intermediate_output[&#39;round_key_output&#39;] = []</span>
+<span class="go">    components_io = {}</span>
+<span class="go">    component_input = BitArray(1)</span>
+
+<span class="go">    # round: 0, component: 0, component_id: concatenate_0_0</span>
+<span class="go">    component_input = select_bits(key_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])</span>
+<span class="go">    output_bit_size = 32</span>
+<span class="go">    concatenate_0_0_output = component_input</span>
+<span class="go">    components_io[&#39;concatenate_0_0&#39;] = [component_input.uint, concatenate_0_0_output.uint]</span>
+
+<span class="go">    # round: 0, component: 1, component_id: intermediate_output_0_1</span>
+<span class="go">    component_input = select_bits(concatenate_0_0_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])</span>
+<span class="go">    output_bit_size = 32</span>
+<span class="go">    intermediate_output_0_1_output = component_input</span>
+<span class="go">    intermediate_output[&#39;round_key_output&#39;].append(intermediate_output_0_1_output.uint)</span>
+<span class="go">    components_io[&#39;intermediate_output_0_1&#39;] = [component_input.uint, intermediate_output_0_1_output.uint]</span>
+
+<span class="go">    # round: 0, component: 2, component_id: concatenate_0_2</span>
+<span class="go">    component_input = select_bits(plaintext_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])</span>
+<span class="go">    output_bit_size = 32</span>
+<span class="go">    concatenate_0_2_output = component_input</span>
+<span class="go">    components_io[&#39;concatenate_0_2&#39;] = [component_input.uint, concatenate_0_2_output.uint]</span>
+
+<span class="go">    # round: 0, component: 3, component_id: cipher_output_0_3</span>
+<span class="go">    component_input = select_bits(concatenate_0_2_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])</span>
+<span class="go">    output_bit_size = 32</span>
+<span class="go">    cipher_output_0_3_output = component_input</span>
+<span class="go">    intermediate_output[&#39;cipher_output&#39;].append(cipher_output_0_3_output.uint)</span>
+<span class="go">    cipher_output = cipher_output_0_3_output.uint</span>
+<span class="go">    components_io[&#39;cipher_output_0_3&#39;] = [component_input.uint, cipher_output_0_3_output.uint]</span>
+
+<span class="go">    return cipher_output, intermediate_output, components_io</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_evaluation_python_code_to_file">
+<span class="sig-name descname"><span class="pre">print_evaluation_python_code_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_evaluation_python_code_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this function to print the python code to a file.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">file_name</span></code> – <strong>string</strong>; name of the output file</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span> <span class="k">as</span> <span class="n">identity</span>
+<span class="gp">sage: </span><span class="n">identity</span> <span class="o">=</span> <span class="n">identity</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">file_name</span>
+<span class="go">&#39;identity_block_cipher_p32_k32_o32_r1.py&#39;</span>
+<span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">print_evaluation_python_code_to_file</span><span class="p">(</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s1">&#39;evaluation.py&#39;</span><span class="p">)</span> <span class="c1"># doctest: +SKIP</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_input_information">
+<span class="sig-name descname"><span class="pre">print_input_information</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_input_information" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a list of the inputs with their corresponding bit size.</p>
+<dl class="simple">
+<dt>Possible cipher inputs are:</dt><dd><ul class="simple">
+<li><p>plaintext</p></li>
+<li><p>key</p></li>
+<li><p>tweak</p></li>
+<li><p>initialization vector</p></li>
+<li><p>nonce</p></li>
+<li><p>constant</p></li>
+<li><p>etc.</p></li>
+</ul>
+</dd>
+</dl>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">fancy</span><span class="o">.</span><span class="n">print_input_information</span><span class="p">()</span>
+<span class="go">plaintext of bit size 24</span>
+<span class="go">key of bit size 24</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.reference_code">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reference_code</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.reference_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.remove_key_schedule">
+<span class="sig-name descname"><span class="pre">remove_key_schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.remove_key_schedule" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.remove_round_component">
+<span class="sig-name descname"><span class="pre">remove_round_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.remove_round_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.remove_round_component_from_id">
+<span class="sig-name descname"><span class="pre">remove_round_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.remove_round_component_from_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.round_constant">
+<span class="sig-name descname"><span class="pre">round_constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.round_constant" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.round_function">
+<span class="sig-name descname"><span class="pre">round_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.round_function" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.rounds">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.rounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.rounds_as_list">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds_as_list</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.rounds_as_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.set_file_name">
+<span class="sig-name descname"><span class="pre">set_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.set_file_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.set_id">
+<span class="sig-name descname"><span class="pre">set_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.set_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.sort_cipher">
+<span class="sig-name descname"><span class="pre">sort_cipher</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.sort_cipher" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.sp_box">
+<span class="sig-name descname"><span class="pre">sp_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.sp_box" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.test_against_reference_code">
+<span class="sig-name descname"><span class="pre">test_against_reference_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_tests</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.test_against_reference_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the graph representation against its reference implementation (if available) with random inputs.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_tests</span></code> – <strong>integer</strong> (default: <span class="math">5</span>); number of tests to execute</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.xtea_block_cipher</span> <span class="kn">import</span> <span class="n">XTeaBlockCipher</span> <span class="k">as</span> <span class="n">xtea</span>
+<span class="gp">sage: </span><span class="n">xtea</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span><span class="o">.</span><span class="n">test_against_reference_code</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.test_vector_check">
+<span class="sig-name descname"><span class="pre">test_vector_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_test_vectors_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_test_vectors_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.test_vector_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Testing the cipher with list of test vectors input and list of test vectors output.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">list_of_test_vectors_input</span></code> – <strong>list</strong>; list of input testing vectors</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">list_of_test_vectors_output</span></code> – <strong>list</strong>; list of the expected output of the corresponding input testing
+vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_vectors_input[i])</p></li>
+</ul>
+<p>OUTPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">test_result</span></code> – output of the testing. True if all the cipher.evaluate(input)=output for every input</p></li>
+</ul>
+<p>test vectors, and False, otherwise.</p>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">key1</span> <span class="o">=</span> <span class="mh">0x1918111009080100</span>
+<span class="gp">sage: </span><span class="n">plaintext1</span> <span class="o">=</span> <span class="mh">0x6574694c</span>
+<span class="gp">sage: </span><span class="n">ciphertext1</span> <span class="o">=</span> <span class="mh">0xa86842f2</span>
+<span class="gp">sage: </span><span class="n">key2</span> <span class="o">=</span> <span class="mh">0x1918111009080100</span>
+<span class="gp">sage: </span><span class="n">plaintext2</span> <span class="o">=</span> <span class="mh">0x6574694d</span>
+<span class="gp">sage: </span><span class="n">ciphertext2</span> <span class="o">=</span> <span class="mh">0x2b5f25d6</span>
+<span class="gp">sage: </span><span class="n">input_list</span><span class="o">=</span><span class="p">[[</span><span class="n">plaintext1</span><span class="p">,</span> <span class="n">key1</span><span class="p">],</span> <span class="p">[</span><span class="n">plaintext2</span><span class="p">,</span> <span class="n">key2</span><span class="p">]]</span>
+<span class="gp">sage: </span><span class="n">output_list</span><span class="o">=</span><span class="p">[</span><span class="n">ciphertext1</span><span class="p">,</span> <span class="n">ciphertext2</span><span class="p">]</span>
+<span class="gp">sage: </span><span class="n">speck</span><span class="o">.</span><span class="n">test_vector_check</span><span class="p">(</span><span class="n">input_list</span><span class="p">,</span> <span class="n">output_list</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">sage: </span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mh">0x11111111</span><span class="p">,</span> <span class="mh">0x1111111111111111</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="n">output_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mh">0xFFFFFFFF</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">speck</span><span class="o">.</span><span class="n">test_vector_check</span><span class="p">(</span><span class="n">input_list</span><span class="p">,</span> <span class="n">output_list</span><span class="p">)</span>
+<span class="go">Testing Failed</span>
+<span class="go">index: 2</span>
+<span class="go">input:  [286331153, 1229782938247303441]</span>
+<span class="go">output:  4294967295</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.big_swap">
+<span class="sig-name descname"><span class="pre">big_swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.big_swap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.small_swap">
+<span class="sig-name descname"><span class="pre">small_swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.small_swap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="chacha_permutation.html"
+                          title="previous chapter">Chacha permutation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="gimli_sbox_permutation.html"
+                          title="next chapter">Gimli sbox permutation</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/ciphers/permutations/gimli_permutation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gimli_sbox_permutation.html" title="Gimli sbox permutation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="chacha_permutation.html" title="Chacha permutation"
+             >previous</a> |</li>
+  
+    
+      <a href="../../../index.html"><img src="../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Gimli permutation</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>
