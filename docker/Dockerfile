@@ -23,6 +23,8 @@ RUN apt-get install -y build-essential \
   wget \
   z3
 
+WORKDIR "/home/sage/tii-claasp"
+
 COPY required_dependencies/assess.c /opt/
 COPY required_dependencies/utilities.c /opt/
 COPY required_dependencies/utilities.h /opt/
