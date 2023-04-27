@@ -42,4 +42,4 @@ jobs:
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
     - name: Run tests
-      run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make pytest-coverage
+      run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make remote-pytest
