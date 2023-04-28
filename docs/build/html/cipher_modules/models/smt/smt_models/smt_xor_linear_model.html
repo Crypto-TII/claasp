@@ -16,7 +16,7 @@
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Utils" href="../utils/utils.html" />
+    <link rel="next" title="Sat model" href="../../sat/sat_model.html" />
     <link rel="prev" title="Smt xor differential model" href="smt_xor_differential_model.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
@@ -33,7 +33,7 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../utils/utils.html" title="Utils"
+          <a href="../../sat/sat_model.html" title="Sat model"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="smt_xor_differential_model.html" title="Smt xor differential model"
@@ -264,7 +264,7 @@ run <a class="reference internal" href="#cipher_modules.models.smt.smt_models.sm
 <span class="gp">....: </span>        <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
 <span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">smt</span><span class="o">.</span><span class="n">find_lowest_weight_xor_linear_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">])</span>
 <span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
-<span class="go">2</span>
+<span class="go">2.0</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -336,7 +336,7 @@ By default, the weight corresponds to the negative base-2 logarithm of the corre
 <span class="gp">....: </span>        <span class="n">bit_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">smt</span><span class="o">.</span><span class="n">find_one_xor_linear_trail_with_fixed_weight</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">])</span>
 <span class="gp">sage: </span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
-<span class="go">7</span>
+<span class="go">7.0</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -517,8 +517,8 @@ By default, the weight corresponds to the negative base-2 logarithm of the corre
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="../utils/utils.html"
-                          title="next chapter">Utils</a></p>
+    <p class="topless"><a href="../../sat/sat_model.html"
+                          title="next chapter">Sat model</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -551,7 +551,7 @@ By default, the weight corresponds to the negative base-2 logarithm of the corre
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../utils/utils.html" title="Utils"
+          <a href="../../sat/sat_model.html" title="Sat model"
              >next</a> |</li>
         <li class="right" >
           <a href="smt_xor_differential_model.html" title="Smt xor differential model"

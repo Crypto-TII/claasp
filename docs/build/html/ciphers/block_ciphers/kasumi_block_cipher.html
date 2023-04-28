@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Hight block cipher &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Kasumi block cipher &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sage.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
@@ -16,8 +16,8 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Constant block cipher" href="constant_block_cipher.html" />
-    <link rel="prev" title="Kasumi block cipher" href="kasumi_block_cipher.html" />
+    <link rel="next" title="Hight block cipher" href="hight_block_cipher.html" />
+    <link rel="prev" title="Aes block cipher" href="aes_block_cipher.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +33,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="constant_block_cipher.html" title="Constant block cipher"
+          <a href="hight_block_cipher.html" title="Hight block cipher"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="kasumi_block_cipher.html" title="Kasumi block cipher"
+          <a href="aes_block_cipher.html" title="Aes block cipher"
              accesskey="P">previous</a> |</li>
   
     
@@ -46,7 +46,7 @@
   
         <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
 
-        <li class="nav-item nav-item-this"><a href="">Hight block cipher</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Kasumi block cipher</a></li> 
       </ul>
     </div>  
 
@@ -55,177 +55,169 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="module-ciphers.block_ciphers.hight_block_cipher">
-<span id="hight-block-cipher"></span><h1>Hight block cipher<a class="headerlink" href="#module-ciphers.block_ciphers.hight_block_cipher" title="Permalink to this headline">¶</a></h1>
+  <section id="module-ciphers.block_ciphers.kasumi_block_cipher">
+<span id="kasumi-block-cipher"></span><h1>Kasumi block cipher<a class="headerlink" href="#module-ciphers.block_ciphers.kasumi_block_cipher" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">HightBlockCipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_bit_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_bit_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_keys_zero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformations_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">KasumiBlockCipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_bit_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_bit_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher.Cipher</span></code></p>
-<p>Construct an instance of the HightBlockCipher class.</p>
-<p>This class is used to store compact representations of a cipher,
-used to generate the corresponding cipher.</p>
+<p>Return a cipher object of Kasumi Block Cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">block_bit_size</span></code> – <strong>integer</strong> (default: <span class="math">64</span>); cipher input and output block bit size of the cipher</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_bit_size</span></code> – <strong>integer</strong> (default: <span class="math">128</span>); cipher key bit size of the cipher</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_rounds</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); number of rounds of the cipher. The cipher uses the
-corresponding amount given the other parameters (if available) when number_of_rounds is 0</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">sub_keys_zero</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">transformations_flag</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>)</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">number_of_rounds</span></code> – <strong>integer</strong> (default: <span class="math">8</span>); number of rounds of the cipher.</dt><dd><p>Must be less or equal to 8</p>
+</dd>
+</dl>
+</li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.hight_block_cipher</span> <span class="kn">import</span> <span class="n">HightBlockCipher</span>
-<span class="gp">sage: </span><span class="n">hight</span> <span class="o">=</span> <span class="n">HightBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">hight</span><span class="o">.</span><span class="n">number_of_rounds</span>
-<span class="go">3</span>
-
-<span class="gp">sage: </span><span class="n">hight</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
-<span class="go">&#39;modadd_0_0&#39;</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.kasumi_block_cipher</span> <span class="kn">import</span> <span class="n">KasumiBlockCipher</span>
+<span class="gp">sage: </span><span class="n">kasumi</span> <span class="o">=</span> <span class="n">KasumiBlockCipher</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="mh">0x9900aabbccddeeff1122334455667788</span>
+<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="mh">0xfedcba0987654321</span>
+<span class="gp">sage: </span><span class="n">ciphertext</span><span class="o">=</span> <span class="mh">0x514896226caa4f20</span>
+<span class="gp">sage: </span><span class="n">kasumi</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">key</span><span class="p">,</span> <span class="n">plaintext</span><span class="p">])</span> <span class="o">==</span> <span class="n">ciphertext</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_AND_component">
-<span class="sig-name descname"><span class="pre">add_AND_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_AND_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_AND_component">
+<span class="sig-name descname"><span class="pre">add_AND_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_AND_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_MODADD_component">
-<span class="sig-name descname"><span class="pre">add_MODADD_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_MODADD_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_MODADD_component">
+<span class="sig-name descname"><span class="pre">add_MODADD_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_MODADD_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_MODSUB_component">
-<span class="sig-name descname"><span class="pre">add_MODSUB_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_MODSUB_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_MODSUB_component">
+<span class="sig-name descname"><span class="pre">add_MODSUB_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_MODSUB_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_NOT_component">
-<span class="sig-name descname"><span class="pre">add_NOT_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_NOT_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_NOT_component">
+<span class="sig-name descname"><span class="pre">add_NOT_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_NOT_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_OR_component">
-<span class="sig-name descname"><span class="pre">add_OR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_OR_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_OR_component">
+<span class="sig-name descname"><span class="pre">add_OR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_OR_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_SBOX_component">
-<span class="sig-name descname"><span class="pre">add_SBOX_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_SBOX_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_SBOX_component">
+<span class="sig-name descname"><span class="pre">add_SBOX_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_SBOX_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_SHIFT_component">
-<span class="sig-name descname"><span class="pre">add_SHIFT_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_SHIFT_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_SHIFT_component">
+<span class="sig-name descname"><span class="pre">add_SHIFT_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_SHIFT_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_XOR_component">
-<span class="sig-name descname"><span class="pre">add_XOR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_XOR_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_XOR_component">
+<span class="sig-name descname"><span class="pre">add_XOR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_XOR_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_cipher_output_component">
-<span class="sig-name descname"><span class="pre">add_cipher_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_cipher_output_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_cipher_output_component">
+<span class="sig-name descname"><span class="pre">add_cipher_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_cipher_output_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_concatenate_component">
-<span class="sig-name descname"><span class="pre">add_concatenate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_concatenate_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_concatenate_component">
+<span class="sig-name descname"><span class="pre">add_concatenate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_concatenate_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_constant_component">
-<span class="sig-name descname"><span class="pre">add_constant_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_constant_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_constant_component">
+<span class="sig-name descname"><span class="pre">add_constant_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_constant_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_intermediate_output_component">
-<span class="sig-name descname"><span class="pre">add_intermediate_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_intermediate_output_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_intermediate_output_component">
+<span class="sig-name descname"><span class="pre">add_intermediate_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_intermediate_output_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_intermediate_output_components">
-<span class="sig-name descname"><span class="pre">add_intermediate_output_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_intermediate_output_components" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_linear_layer_component">
+<span class="sig-name descname"><span class="pre">add_linear_layer_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_linear_layer_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_linear_layer_component">
-<span class="sig-name descname"><span class="pre">add_linear_layer_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_linear_layer_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_mix_column_component">
+<span class="sig-name descname"><span class="pre">add_mix_column_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_column_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_mix_column_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_mix_column_component">
-<span class="sig-name descname"><span class="pre">add_mix_column_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_column_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_mix_column_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_permutation_component">
+<span class="sig-name descname"><span class="pre">add_permutation_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_permutation_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_permutation_component">
-<span class="sig-name descname"><span class="pre">add_permutation_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_permutation_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_reverse_component">
+<span class="sig-name descname"><span class="pre">add_reverse_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_reverse_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_reverse_component">
-<span class="sig-name descname"><span class="pre">add_reverse_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_reverse_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_rotate_component">
+<span class="sig-name descname"><span class="pre">add_rotate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_rotate_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_rotate_component">
-<span class="sig-name descname"><span class="pre">add_rotate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_rotate_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_round">
+<span class="sig-name descname"><span class="pre">add_round</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_round" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_round">
-<span class="sig-name descname"><span class="pre">add_round</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_round_key_output_component">
+<span class="sig-name descname"><span class="pre">add_round_key_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_round_key_output_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_round_key_output_component">
-<span class="sig-name descname"><span class="pre">add_round_key_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_round_key_output_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_round_output_component">
+<span class="sig-name descname"><span class="pre">add_round_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_round_output_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_round_output_component">
-<span class="sig-name descname"><span class="pre">add_round_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_round_output_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_shift_rows_component">
+<span class="sig-name descname"><span class="pre">add_shift_rows_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_shift_rows_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_shift_rows_component">
-<span class="sig-name descname"><span class="pre">add_shift_rows_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_shift_rows_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_sigma_component">
+<span class="sig-name descname"><span class="pre">add_sigma_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts_parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_sigma_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_sigma_component">
-<span class="sig-name descname"><span class="pre">add_sigma_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts_parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_sigma_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_theta_keccak_component">
+<span class="sig-name descname"><span class="pre">add_theta_keccak_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_theta_keccak_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_theta_keccak_component">
-<span class="sig-name descname"><span class="pre">add_theta_keccak_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_theta_keccak_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_theta_xoodoo_component">
+<span class="sig-name descname"><span class="pre">add_theta_xoodoo_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_theta_xoodoo_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_theta_xoodoo_component">
-<span class="sig-name descname"><span class="pre">add_theta_xoodoo_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_theta_xoodoo_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_variable_rotate_component">
+<span class="sig-name descname"><span class="pre">add_variable_rotate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_variable_rotate_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_variable_rotate_component">
-<span class="sig-name descname"><span class="pre">add_variable_rotate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_variable_rotate_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_variable_shift_component">
+<span class="sig-name descname"><span class="pre">add_variable_shift_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_variable_shift_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_variable_shift_component">
-<span class="sig-name descname"><span class="pre">add_variable_shift_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_variable_shift_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_word_permutation_component">
+<span class="sig-name descname"><span class="pre">add_word_permutation_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation_description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.add_word_permutation_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_word_permutation_component">
-<span class="sig-name descname"><span class="pre">add_word_permutation_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation_description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.add_word_permutation_component" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.algebraic_tests">
-<span class="sig-name descname"><span class="pre">algebraic_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.algebraic_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.algebraic_tests">
+<span class="sig-name descname"><span class="pre">algebraic_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.algebraic_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a dictionary explaining the result of the algebraic test.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -254,8 +246,8 @@ corresponding amount given the other parameters (if available) when number_of_ro
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.analyze_cipher">
-<span class="sig-name descname"><span class="pre">analyze_cipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tests_configuration</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.analyze_cipher" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.analyze_cipher">
+<span class="sig-name descname"><span class="pre">analyze_cipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tests_configuration</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.analyze_cipher" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a dictionary with the analysis of the cipher.</p>
 <p>The analysis is related to the following tests:</p>
 <ul class="simple">
@@ -282,13 +274,13 @@ corresponding amount given the other parameters (if available) when number_of_ro
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.as_python_dictionary">
-<span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.as_python_dictionary">
+<span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.avalanche_probability_vectors">
-<span class="sig-name descname"><span class="pre">avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.avalanche_probability_vectors">
+<span class="sig-name descname"><span class="pre">avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the avalanche probability vectors of each input bit difference for each round.</p>
 <p>The inputs considered are plaintext, key, etc.</p>
 <p>The i-th component of the vector is the probability that i-th bit of the output
@@ -312,8 +304,8 @@ injected in key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.component_analysis_tests">
-<span class="sig-name descname"><span class="pre">component_analysis_tests</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.component_analysis_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.component_analysis_tests">
+<span class="sig-name descname"><span class="pre">component_analysis_tests</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.component_analysis_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of dictionaries, each one giving some properties of the cipher’s operations.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -330,13 +322,13 @@ injected in key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.component_from">
-<span class="sig-name descname"><span class="pre">component_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.component_from" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.component_from">
+<span class="sig-name descname"><span class="pre">component_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.component_from" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.compute_criterion_from_avalanche_probability_vectors">
-<span class="sig-name descname"><span class="pre">compute_criterion_from_avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_apvs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.compute_criterion_from_avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.compute_criterion_from_avalanche_probability_vectors">
+<span class="sig-name descname"><span class="pre">compute_criterion_from_avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_apvs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.compute_criterion_from_avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a python dictionary that contains the dictionaries corresponding to each criterion.</p>
 <p>ALGORITHM:</p>
 <p>The avalanche dependence is the number of output bit that flip with respect to an input bit difference,
@@ -370,7 +362,7 @@ with input diff injected in key</p>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.avalanche_probability_vectors" title="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.avalanche_probability_vectors"><code class="xref py py-meth docutils literal notranslate"><span class="pre">avalanche_probability_vectors()</span></code></a> for the returning vectors.</p>
+<p><a class="reference internal" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.avalanche_probability_vectors" title="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.avalanche_probability_vectors"><code class="xref py py-meth docutils literal notranslate"><span class="pre">avalanche_probability_vectors()</span></code></a> for the returning vectors.</p>
 </div>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
@@ -383,8 +375,8 @@ with input diff injected in key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.continuous_avalanche_factor">
-<span class="sig-name descname"><span class="pre">continuous_avalanche_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.continuous_avalanche_factor" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.continuous_avalanche_factor">
+<span class="sig-name descname"><span class="pre">continuous_avalanche_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.continuous_avalanche_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Continuous generalization of the metric Avalanche Factor. This method implements Definition 14 of <a class="reference internal" href="../../references.html#mur2020" id="id1"><span>[MUR2020]</span></a>.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -402,8 +394,8 @@ with input diff injected in key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.continuous_diffusion_factor">
-<span class="sig-name descname"><span class="pre">continuous_diffusion_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.continuous_diffusion_factor" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.continuous_diffusion_factor">
+<span class="sig-name descname"><span class="pre">continuous_diffusion_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.continuous_diffusion_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Continuous Diffusion Factor. This method implements Definition 16 of <a class="reference internal" href="../../references.html#mur2020" id="id2"><span>[MUR2020]</span></a>.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -421,8 +413,8 @@ with input diff injected in key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.continuous_diffusion_tests">
-<span class="sig-name descname"><span class="pre">continuous_diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">continuous_avalanche_factor_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_for_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_neutrality_measure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_diffusion_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.continuous_diffusion_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.continuous_diffusion_tests">
+<span class="sig-name descname"><span class="pre">continuous_diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">continuous_avalanche_factor_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_for_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_neutrality_measure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_diffusion_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.continuous_diffusion_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a python dictionary that contains the dictionaries corresponding to each metric in <a class="reference internal" href="../../references.html#mur2020" id="id3"><span>[MUR2020]</span></a>.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -463,8 +455,8 @@ continuous_avalanche_factor, diffusion_factor</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.continuous_neutrality_measure_for_bit_j">
-<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.continuous_neutrality_measure_for_bit_j" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.continuous_neutrality_measure_for_bit_j">
+<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.continuous_neutrality_measure_for_bit_j" title="Permalink to this definition">¶</a></dt>
 <dd><p>Continuous Neutrality Measure. This method implements Definition 15 of <a class="reference internal" href="../../references.html#mur2020" id="id4"><span>[MUR2020]</span></a>.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -483,33 +475,28 @@ continuous_avalanche_factor, diffusion_factor</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.continuous_neutrality_measure_for_bit_j_and_beta">
-<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j_and_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.continuous_neutrality_measure_for_bit_j_and_beta" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.continuous_neutrality_measure_for_bit_j_and_beta">
+<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j_and_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.continuous_neutrality_measure_for_bit_j_and_beta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.current_round">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.current_round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.current_round_number">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round_number</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.current_round_number" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.current_round_number_of_components">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round_number_of_components</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.current_round_number_of_components" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.create_sub_key">
-<span class="sig-name descname"><span class="pre">create_sub_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_key_temp_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_keys_zero</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.create_sub_key" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.current_round">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.current_round" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.current_round_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round_number</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.current_round_number" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.current_round_number_of_components">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round_number_of_components</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.current_round_number_of_components" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.delete_generated_evaluate_c_shared_library">
-<span class="sig-name descname"><span class="pre">delete_generated_evaluate_c_shared_library</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.delete_generated_evaluate_c_shared_library" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.delete_generated_evaluate_c_shared_library">
+<span class="sig-name descname"><span class="pre">delete_generated_evaluate_c_shared_library</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.delete_generated_evaluate_c_shared_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete the file named &lt;id_cipher&gt;_evaluate.c and the corresponding executable.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -523,8 +510,13 @@ continuous_avalanche_factor, diffusion_factor</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.diffusion_tests">
-<span class="sig-name descname"><span class="pre">diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_weight_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_entropy_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence_uniform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_entropy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.diffusion_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.derived_key">
+<span class="sig-name descname"><span class="pre">derived_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.derived_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.diffusion_tests">
+<span class="sig-name descname"><span class="pre">diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_weight_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_entropy_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence_uniform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_entropy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.diffusion_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a python dictionary that contains the dictionaries corresponding to each criterion and their analysis.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -570,8 +562,8 @@ d[“test_results”][“plaintext”][“round_output”][“avalanche_entropy�
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.evaluate">
-<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.evaluate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the output of the cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -590,8 +582,8 @@ component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.evaluate_using_c">
-<span class="sig-name descname"><span class="pre">evaluate_using_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.evaluate_using_c" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.evaluate_using_c">
+<span class="sig-name descname"><span class="pre">evaluate_using_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.evaluate_using_c" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the output of the cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -612,8 +604,8 @@ each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.evaluate_vectorized">
-<span class="sig-name descname"><span class="pre">evaluate_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.evaluate_vectorized" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.evaluate_vectorized">
+<span class="sig-name descname"><span class="pre">evaluate_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.evaluate_vectorized" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the output of the cipher for multiple inputs.</p>
 <p>The inputs are given as a list cipher_input,such that cipher_inputs[0] contains the first input,
 and cipher_inputs[1] the second.
@@ -653,8 +645,8 @@ each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.evaluate_with_intermediate_outputs_continuous_diffusion_analysis">
-<span class="sig-name descname"><span class="pre">evaluate_with_intermediate_outputs_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations_mix_columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.evaluate_with_intermediate_outputs_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.evaluate_with_intermediate_outputs_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">evaluate_with_intermediate_outputs_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations_mix_columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.evaluate_with_intermediate_outputs_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the output of the continuous generalized cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -683,23 +675,23 @@ each component</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.family_name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">family_name</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.family_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.family_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">family_name</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.family_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.fi_function">
+<span class="sig-name descname"><span class="pre">fi_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ki_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ki_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.fi_function" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.file_name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file_name</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.file_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.file_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file_name</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.file_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.final_transformation">
-<span class="sig-name descname"><span class="pre">final_transformation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plaintext_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">whitening_key_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.final_transformation" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.find_good_input_difference_for_neural_distinguisher">
-<span class="sig-name descname"><span class="pre">find_good_input_difference_for_neural_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_generations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_generation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.find_good_input_difference_for_neural_distinguisher" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.find_good_input_difference_for_neural_distinguisher">
+<span class="sig-name descname"><span class="pre">find_good_input_difference_for_neural_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_generations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_generation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.find_good_input_difference_for_neural_distinguisher" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return good neural distinguisher input differences for a cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -721,8 +713,18 @@ differences are allowed</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.generate_bit_based_c_code">
-<span class="sig-name descname"><span class="pre">generate_bit_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.generate_bit_based_c_code" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.fl_function">
+<span class="sig-name descname"><span class="pre">fl_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.fl_function" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.fo_function">
+<span class="sig-name descname"><span class="pre">fo_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.fo_function" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.generate_bit_based_c_code">
+<span class="sig-name descname"><span class="pre">generate_bit_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.generate_bit_based_c_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing the C code that defines the self.evaluate() method.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -741,8 +743,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.generate_csv_report">
-<span class="sig-name descname"><span class="pre">generate_csv_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_absolute_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.generate_csv_report" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.generate_csv_report">
+<span class="sig-name descname"><span class="pre">generate_csv_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_absolute_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.generate_csv_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a CSV report containing criteria to estimate the vulnerability of the cipher.</p>
 <p>This method generate a CSV report containing the criteria presented in the paper
 “The design of Xoodoo and Xoofff” [1].
@@ -770,8 +772,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.generate_evaluate_c_code_shared_library">
-<span class="sig-name descname"><span class="pre">generate_evaluate_c_code_shared_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.generate_evaluate_c_code_shared_library" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.generate_evaluate_c_code_shared_library">
+<span class="sig-name descname"><span class="pre">generate_evaluate_c_code_shared_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.generate_evaluate_c_code_shared_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store the C code in a file named &lt;id_cipher&gt;_evaluate.c, and build the corresponding executable.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -788,8 +790,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.generate_heatmap_graphs_for_avalanche_tests">
-<span class="sig-name descname"><span class="pre">generate_heatmap_graphs_for_avalanche_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">avalanche_results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.generate_heatmap_graphs_for_avalanche_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.generate_heatmap_graphs_for_avalanche_tests">
+<span class="sig-name descname"><span class="pre">generate_heatmap_graphs_for_avalanche_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">avalanche_results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.generate_heatmap_graphs_for_avalanche_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing latex instructions to generate heatmap graphs of the avalanche tests.
 The string can then be printed on a terminal or on a file.</p>
 <p>INPUT:</p>
@@ -832,8 +834,8 @@ The string can then be printed on a terminal or on a file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.generate_word_based_c_code">
-<span class="sig-name descname"><span class="pre">generate_word_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.generate_word_based_c_code" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.generate_word_based_c_code">
+<span class="sig-name descname"><span class="pre">generate_word_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.generate_word_based_c_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing the optimized C code that defines the self.evaluate() method.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -853,23 +855,23 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_all_components">
-<span class="sig-name descname"><span class="pre">get_all_components</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_all_components" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_all_components">
+<span class="sig-name descname"><span class="pre">get_all_components</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_all_components" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_all_components_ids">
-<span class="sig-name descname"><span class="pre">get_all_components_ids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_all_components_ids" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_all_components_ids">
+<span class="sig-name descname"><span class="pre">get_all_components_ids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_all_components_ids" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_all_inputs_bit_positions">
-<span class="sig-name descname"><span class="pre">get_all_inputs_bit_positions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_all_inputs_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_all_inputs_bit_positions">
+<span class="sig-name descname"><span class="pre">get_all_inputs_bit_positions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_all_inputs_bit_positions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_component_from_id">
-<span class="sig-name descname"><span class="pre">get_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_component_from_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_component_from_id">
+<span class="sig-name descname"><span class="pre">get_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_component_from_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the component according to the id given as input.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -886,13 +888,13 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_components_in_round">
-<span class="sig-name descname"><span class="pre">get_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_components_in_round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_components_in_round">
+<span class="sig-name descname"><span class="pre">get_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_components_in_round" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_current_component_id">
-<span class="sig-name descname"><span class="pre">get_current_component_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_current_component_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_current_component_id">
+<span class="sig-name descname"><span class="pre">get_current_component_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_current_component_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this function to get the current component id.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -913,18 +915,13 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_number_of_components_in_round">
-<span class="sig-name descname"><span class="pre">get_number_of_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_number_of_components_in_round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_number_of_components_in_round">
+<span class="sig-name descname"><span class="pre">get_number_of_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_number_of_components_in_round" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_numbers_of_rounds">
-<span class="sig-name descname"><span class="pre">get_numbers_of_rounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_numbers_of_rounds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_round_from_component_id">
-<span class="sig-name descname"><span class="pre">get_round_from_component_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_round_from_component_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_round_from_component_id">
+<span class="sig-name descname"><span class="pre">get_round_from_component_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_round_from_component_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the round according to the round of the component id given as input.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -940,33 +937,28 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_sizes_of_components_by_type">
-<span class="sig-name descname"><span class="pre">get_sizes_of_components_by_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.get_sizes_of_components_by_type" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_sizes_of_components_by_type">
+<span class="sig-name descname"><span class="pre">get_sizes_of_components_by_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.get_sizes_of_components_by_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.inputs_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs_bit_size</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.inputs_bit_size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.initial_transformation">
-<span class="sig-name descname"><span class="pre">initial_transformation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plaintext_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">whitening_key_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.initial_transformation" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.inputs">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.inputs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.inputs_bit_size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs_bit_size</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.inputs_bit_size" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_algebraically_secure">
-<span class="sig-name descname"><span class="pre">is_algebraically_secure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_algebraically_secure" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_algebraically_secure">
+<span class="sig-name descname"><span class="pre">is_algebraically_secure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_algebraically_secure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <span class="math">True</span> if the cipher is resistant against algebraic attack.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -975,8 +967,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_andrx">
-<span class="sig-name descname"><span class="pre">is_andrx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_andrx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_andrx">
+<span class="sig-name descname"><span class="pre">is_andrx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_andrx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if the cipher is AndRX, False otherwise.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -992,8 +984,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_arx">
-<span class="sig-name descname"><span class="pre">is_arx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_arx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_arx">
+<span class="sig-name descname"><span class="pre">is_arx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_arx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if the cipher is ARX, False otherwise.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1009,8 +1001,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_power_of_2_word_based">
-<span class="sig-name descname"><span class="pre">is_power_of_2_word_based</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_power_of_2_word_based" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_power_of_2_word_based">
+<span class="sig-name descname"><span class="pre">is_power_of_2_word_based</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_power_of_2_word_based" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the word size if the cipher is word based (64, 32, 16 or 8 bits), False otherwise.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1028,8 +1020,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_shift_arx">
-<span class="sig-name descname"><span class="pre">is_shift_arx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_shift_arx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_shift_arx">
+<span class="sig-name descname"><span class="pre">is_shift_arx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_shift_arx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if the cipher is Shift-ARX, False otherwise.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1045,8 +1037,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_spn">
-<span class="sig-name descname"><span class="pre">is_spn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.is_spn" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_spn">
+<span class="sig-name descname"><span class="pre">is_spn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.is_spn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if the cipher is SPN.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1062,18 +1054,18 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.make_cipher_id">
-<span class="sig-name descname"><span class="pre">make_cipher_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.make_cipher_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.make_cipher_id">
+<span class="sig-name descname"><span class="pre">make_cipher_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.make_cipher_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.make_file_name">
-<span class="sig-name descname"><span class="pre">make_file_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.make_file_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.make_file_name">
+<span class="sig-name descname"><span class="pre">make_file_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.make_file_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.neural_network_blackbox_distinguisher_tests">
-<span class="sig-name descname"><span class="pre">neural_network_blackbox_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.neural_network_blackbox_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.neural_network_blackbox_distinguisher_tests">
+<span class="sig-name descname"><span class="pre">neural_network_blackbox_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.neural_network_blackbox_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a python dictionary that contains the accuracies corresponding to each round.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1090,8 +1082,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.neural_network_differential_distinguisher_tests">
-<span class="sig-name descname"><span class="pre">neural_network_differential_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.neural_network_differential_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.neural_network_differential_distinguisher_tests">
+<span class="sig-name descname"><span class="pre">neural_network_differential_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.neural_network_differential_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a python dictionary that contains the accuracies corresponding to each round.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1109,18 +1101,18 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.number_of_rounds">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_rounds</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.number_of_rounds" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.number_of_rounds">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_rounds</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.number_of_rounds" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.output_bit_size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_bit_size</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.output_bit_size" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.output_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_bit_size</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.output_bit_size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.polynomial_system">
-<span class="sig-name descname"><span class="pre">polynomial_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.polynomial_system" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.polynomial_system">
+<span class="sig-name descname"><span class="pre">polynomial_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.polynomial_system" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a polynomial system for the cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1135,8 +1127,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.polynomial_system_at_round">
-<span class="sig-name descname"><span class="pre">polynomial_system_at_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.polynomial_system_at_round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.polynomial_system_at_round">
+<span class="sig-name descname"><span class="pre">polynomial_system_at_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.polynomial_system_at_round" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a polynomial system for the cipher at round <span class="math">r</span>.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1151,8 +1143,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print">
-<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the structure of the cipher into the sage terminal.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1195,8 +1187,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_as_python_dictionary">
-<span class="sig-name descname"><span class="pre">print_as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_as_python_dictionary">
+<span class="sig-name descname"><span class="pre">print_as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_as_python_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this function to print the cipher as a python dictionary into the sage terminal.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1248,8 +1240,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_as_python_dictionary_to_file">
-<span class="sig-name descname"><span class="pre">print_as_python_dictionary_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_as_python_dictionary_to_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_as_python_dictionary_to_file">
+<span class="sig-name descname"><span class="pre">print_as_python_dictionary_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_as_python_dictionary_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this function to print the cipher as a python dictionary to a file.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1265,8 +1257,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_component_analysis_as_radar_charts">
-<span class="sig-name descname"><span class="pre">print_component_analysis_as_radar_charts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_analysis_results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_component_analysis_as_radar_charts" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_component_analysis_as_radar_charts">
+<span class="sig-name descname"><span class="pre">print_component_analysis_as_radar_charts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_analysis_results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_component_analysis_as_radar_charts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a matplotlib object containing the radar charts of the components analysis test</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1283,8 +1275,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_evaluation_python_code">
-<span class="sig-name descname"><span class="pre">print_evaluation_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_evaluation_python_code" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_evaluation_python_code">
+<span class="sig-name descname"><span class="pre">print_evaluation_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_evaluation_python_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the python code that implement the evaluation function of the cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1339,8 +1331,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_evaluation_python_code_to_file">
-<span class="sig-name descname"><span class="pre">print_evaluation_python_code_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_evaluation_python_code_to_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_evaluation_python_code_to_file">
+<span class="sig-name descname"><span class="pre">print_evaluation_python_code_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_evaluation_python_code_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this function to print the python code to a file.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1357,8 +1349,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_input_information">
-<span class="sig-name descname"><span class="pre">print_input_information</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.print_input_information" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_input_information">
+<span class="sig-name descname"><span class="pre">print_input_information</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.print_input_information" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print a list of the inputs with their corresponding bit size.</p>
 <dl class="simple">
 <dt>Possible cipher inputs are:</dt><dd><ul class="simple">
@@ -1387,58 +1379,63 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.reference_code">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reference_code</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.reference_code" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.reference_code">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reference_code</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.reference_code" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.remove_key_schedule">
-<span class="sig-name descname"><span class="pre">remove_key_schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.remove_key_schedule" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.remove_key_schedule">
+<span class="sig-name descname"><span class="pre">remove_key_schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.remove_key_schedule" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.remove_round_component">
-<span class="sig-name descname"><span class="pre">remove_round_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.remove_round_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.remove_round_component">
+<span class="sig-name descname"><span class="pre">remove_round_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.remove_round_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.remove_round_component_from_id">
-<span class="sig-name descname"><span class="pre">remove_round_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.remove_round_component_from_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.remove_round_component_from_id">
+<span class="sig-name descname"><span class="pre">remove_round_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.remove_round_component_from_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.round_function">
-<span class="sig-name descname"><span class="pre">round_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">internal_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.round_function" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.round_initialization">
+<span class="sig-name descname"><span class="pre">round_initialization</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.round_initialization" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.round_key">
+<span class="sig-name descname"><span class="pre">round_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_der</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.round_key" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.rounds">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.rounds" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.rounds">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.rounds" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.rounds_as_list">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds_as_list</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.rounds_as_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.rounds_as_list">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds_as_list</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.rounds_as_list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.set_file_name">
-<span class="sig-name descname"><span class="pre">set_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.set_file_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.set_file_name">
+<span class="sig-name descname"><span class="pre">set_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.set_file_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.set_id">
-<span class="sig-name descname"><span class="pre">set_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.set_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.set_id">
+<span class="sig-name descname"><span class="pre">set_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.set_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.sort_cipher">
-<span class="sig-name descname"><span class="pre">sort_cipher</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.sort_cipher" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.sort_cipher">
+<span class="sig-name descname"><span class="pre">sort_cipher</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.sort_cipher" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.test_against_reference_code">
-<span class="sig-name descname"><span class="pre">test_against_reference_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_tests</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.test_against_reference_code" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.test_against_reference_code">
+<span class="sig-name descname"><span class="pre">test_against_reference_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_tests</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.test_against_reference_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test the graph representation against its reference implementation (if available) with random inputs.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1453,8 +1450,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.test_vector_check">
-<span class="sig-name descname"><span class="pre">test_vector_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_test_vectors_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_test_vectors_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.test_vector_check" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.test_vector_check">
+<span class="sig-name descname"><span class="pre">test_vector_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_test_vectors_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_test_vectors_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.test_vector_check" title="Permalink to this definition">¶</a></dt>
 <dd><p>Testing the cipher with list of test vectors input and list of test vectors output.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1493,26 +1490,11 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.type">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.type" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.init_input">
-<span class="sig-name descname"><span class="pre">init_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_words</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.init_input" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.temp_subkey_generation">
-<span class="sig-name descname"><span class="pre">temp_subkey_generation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">master_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.temp_subkey_generation" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.hight_block_cipher.whitening_key_generation">
-<span class="sig-name descname"><span class="pre">whitening_key_generation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">master_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.hight_block_cipher.whitening_key_generation" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </section>
 
@@ -1525,18 +1507,18 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="kasumi_block_cipher.html"
-                          title="previous chapter">Kasumi block cipher</a></p>
+    <p class="topless"><a href="aes_block_cipher.html"
+                          title="previous chapter">Aes block cipher</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="constant_block_cipher.html"
-                          title="next chapter">Constant block cipher</a></p>
+    <p class="topless"><a href="hight_block_cipher.html"
+                          title="next chapter">Hight block cipher</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../../_sources/ciphers/block_ciphers/hight_block_cipher.rst.txt"
+      <li><a href="../../_sources/ciphers/block_ciphers/kasumi_block_cipher.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -1564,10 +1546,10 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="constant_block_cipher.html" title="Constant block cipher"
+          <a href="hight_block_cipher.html" title="Hight block cipher"
              >next</a> |</li>
         <li class="right" >
-          <a href="kasumi_block_cipher.html" title="Kasumi block cipher"
+          <a href="aes_block_cipher.html" title="Aes block cipher"
              >previous</a> |</li>
   
     
@@ -1577,7 +1559,7 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
   
         <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
 
-        <li class="nav-item nav-item-this"><a href="">Hight block cipher</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Kasumi block cipher</a></li> 
       </ul>
     </div>
     
