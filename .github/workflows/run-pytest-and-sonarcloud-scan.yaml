@@ -1,9 +1,11 @@
 name: Run pytest and SonarCloud Scan
+
 on:
-  push:
+  pull_request:
     branches:
-      - '**'
-      - '!main'
+      - main
+      - develop
+
 jobs:
   run-pytest-and-sonarcloud-scan:
     runs-on: ubuntu-latest
