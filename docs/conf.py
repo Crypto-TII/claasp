@@ -26,10 +26,10 @@ from sage.misc.latex_macros import sage_mathjax_macros
 
 project = u"CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives"
 year = datetime.now().year
-copy_right = str(year) + ', ' + 'Technology Innovation Institute LLC'
+copy_right = str(year)
 package_name = 'claasp'
 package_folder = "../../claasp"
-authors = u"TII Cryptanalysis Team"
+authors = u""
 
 
 try:
@@ -137,7 +137,7 @@ extlinks = {
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'tii'
+html_theme = 'readthedocs'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -162,7 +162,7 @@ html_theme_path = [os.path.join('..', 'theme')]
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = os.path.join('..', 'theme', 'tii', 'static', 'favicon.ico')
+html_favicon = os.path.join('..', 'theme', 'readthedocs', 'static', 'favicon.ico')
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

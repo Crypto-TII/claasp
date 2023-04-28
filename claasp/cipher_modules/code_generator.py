@@ -1,17 +1,16 @@
 
 # ****************************************************************************
-# Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -27,17 +26,17 @@ from claasp.component import free_input
 from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, CONSTANT,
                                   CONCATENATE, PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT)
 
-tii_path = inspect.getfile(claasp)
-tii_dir_path = os.path.dirname(tii_path)
+path = inspect.getfile(claasp)
+dir_path = os.path.dirname(path)
 
-TII_C_LIB_PATH = f'{tii_dir_path}/cipher_modules/'
+C_LIB_PATH = f'{dir_path}/cipher_modules/'
 
 
 def delete_generated_evaluate_c_shared_library(cipher):
     name = cipher.id + "_evaluate"
-    call(["rm", TII_C_LIB_PATH + name + ".c"])
-    call(["rm", TII_C_LIB_PATH + name + ".o"])
-    call(["rm", TII_C_LIB_PATH + "generic_bit_based_c_functions.o"])
+    call(["rm", C_LIB_PATH + name + ".c"])
+    call(["rm", C_LIB_PATH + name + ".o"])
+    call(["rm", C_LIB_PATH + "generic_bit_based_c_functions.o"])
 
 
 def generate_bit_based_c_code(cipher, intermediate_output, verbosity):
@@ -429,35 +428,35 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
     name = cipher.id + "_evaluate"
     cipher_word_size = cipher.is_power_of_2_word_based()
     if cipher_word_size:
-        if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o"):
-            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o", TII_C_LIB_PATH +
+        if not os.path.exists(C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o"):
+            call(["gcc", "-w", "-c", C_LIB_PATH + "generic_word_based_c_functions.c", "-o", C_LIB_PATH +
                   f"generic_word_{cipher_word_size}_based_c_functions.o", "-D", f"word_size={cipher_word_size}"])
 
-        f = open(TII_C_LIB_PATH + name + ".c", "w+")
+        f = open(C_LIB_PATH + name + ".c", "w+")
         f.write(cipher.generate_word_based_c_code(cipher_word_size, intermediate_output, verbosity))
         f.close()
 
         call(["gcc",
               "-w",
-              TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o",
-              TII_C_LIB_PATH + name + ".c",
+              C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o",
+              C_LIB_PATH + name + ".c",
               "-o",
-              TII_C_LIB_PATH + name + ".o",
+              C_LIB_PATH + name + ".o",
               "-D",
               f"word_size={cipher_word_size}"])
 
     else:
         generic_bit_based_c_functions_o_file = "generic_bit_based_c_functions.o"
-        if not os.path.exists(TII_C_LIB_PATH + generic_bit_based_c_functions_o_file):
-            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_c_functions.c",
-                  "-o", TII_C_LIB_PATH + generic_bit_based_c_functions_o_file])
+        if not os.path.exists(C_LIB_PATH + generic_bit_based_c_functions_o_file):
+            call(["gcc", "-w", "-c", C_LIB_PATH + "generic_bit_based_c_functions.c",
+                  "-o", C_LIB_PATH + generic_bit_based_c_functions_o_file])
 
-        f = open(TII_C_LIB_PATH + name + ".c", "w+")
+        f = open(C_LIB_PATH + name + ".c", "w+")
         f.write(cipher.generate_bit_based_c_code(intermediate_output, verbosity))
         f.close()
 
-        call(["gcc", "-w", TII_C_LIB_PATH + generic_bit_based_c_functions_o_file,
-              TII_C_LIB_PATH + name + ".c", "-o", TII_C_LIB_PATH + name + ".o"])
+        call(["gcc", "-w", C_LIB_PATH + generic_bit_based_c_functions_o_file,
+              C_LIB_PATH + name + ".c", "-o", C_LIB_PATH + name + ".o"])
 
 
 def generate_python_code_string(cipher, verbosity=False):

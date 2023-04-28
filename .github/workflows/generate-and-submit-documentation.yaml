@@ -44,7 +44,7 @@ jobs:
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
     - name: Generate documentation
-      run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make doc
+      run: docker run --rm -v $PWD:/home/sage/readthedocsclaasp claasp-lib make doc
 
     - name: Commit & Push changes
       uses: actions-js/push@master

@@ -11,7 +11,7 @@ If you want to have a fast introduction to the SMT module, you can simply run
 the following code. Pay attention, to correctly run the code you need to build
 a reduced version of Speck: block size = 32 (2 words x 16 bits), key size = 64
 (4 words x 16 bits), rounds = 4. Suppose also that the cipher is in 
-`tii.cipher.ciphers.block_ciphers.speck_block_cipher` file.
+`claasp.cipher.ciphers.block_ciphers.speck_block_cipher` file.
 
 ```python
 from claasp.ciphers import SpeckBlockCipher
@@ -30,7 +30,7 @@ M.find_lowest_weight_xor_differential_trail(fixed_values)
 We are going to give a list of commands that you can use to explore trails of
 differential analysis for ARX ciphers.
 
-- `from tii.cipher.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher`  
+- `from claasp.cipher.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher`  
   This command will import the cipher for Speck.
 - `from claasp.cipher_modules.models.smt.smt_model import SmtModel`  
   This command will import the python class that handles the cipher. 
@@ -93,7 +93,7 @@ methods you can call to see a comparison between ciphers/solvers.
 2. `Table.select_cipher('cipher_selected')`  
    Replace `cipher_selected` with the correct name of the file containing it.
    For a list, you can check the directory
-   `tii/cipher_modules/analysis/models/smt/tmp/solver_output/(any_solver)`. Before requesting a cipher
+   `claasp/cipher_modules/analysis/models/smt/tmp/solver_output/(any_solver)`. Before requesting a cipher
    please make sure to have generated it. A table containing information about
    solvers analyzed, time execution and memory consumed will be printed.
 

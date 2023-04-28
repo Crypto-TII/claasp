@@ -8,8 +8,8 @@ CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives and
 Download the source from the git repository:
 
 ```
-     $ git clone https://USERNAME@bitbucket.org/tiicrypto/tii-claasp.git
-     $ cd tii-claasp/
+     $ git clone https://USERNAME@bitbucket.org/repository.git
+     $ cd claasp/
 ```
 
 Change `USERNAME` to your own account in the internal BitBucket.
@@ -53,7 +53,7 @@ root directory of the project:
  
 3. We will now set up PyCharm to use the Python 3 interpreter of SageMath
    1. Click `PyCharm` menu in the top-left toolbar and select `Setting`
-   2. Click the drop-down menu of `Project: tii-claasp` and select `Python Interpreter`
+   2. Click the drop-down menu of `Project: claasp` and select `Python Interpreter`
    3. Click the little-gear icon in the top-right corner next to the drop-down list of available interpreters and
       select `Add Interpreter`
    4. Select `Add Local Interpreter`
@@ -76,12 +76,12 @@ root directory of the project:
    1. Click 'Run' in the top toolbar and select `Edit configurations`
    2. Click the symbol `+` to add a new build configuration and choose `Makefile`
    3. In the field `Name`, type the name of the configuration
-   4. In the field `Makefile`, choose the Makefile in the root folder of `tii-claasp`
+   4. In the field `Makefile`, choose the Makefile in the root folder of `claasp`
    5. In the field `Targets`, choose the target you want to run (e.g. all, install, uninstall, etc)
    6. In the field `Arguments`, type the argument you want to pass when `make <target>`. For examples, if you want to run
       the tests for `claasp/cipher_modules/algebraic_tests.py`, set `test` in the field `Targets` and type 
       `MODULE=claasp/cipher_modules/algebraic_tests.py` in the field `Arguments`.
-   7. In the field `Working Directory`, choose the root folder of `tii-claasp`
+   7. In the field `Working Directory`, choose the root folder of `claasp`
 
 ## How to Configure linter and formatter
 Developers use apps to help us improve the quality of our code. As every programming language has its own standards and good practises, we can take advantage of that and set/follow rules that can be automatically analysed and improved by our IDE (Integrated Development Environment).
@@ -333,7 +333,7 @@ We have developed a guide on how to set [pycodestyle(linter)](https://pypi.org/p
    This way of adding imports should also follow the recommendations described in this section.
 - If we need to add a line of imports that is very long, specify those imports between parenthesis, this will help the formatter to split the import into multiple lines.
    ```
-   from tii.graph_representations.name_mappings import (INTERMEDIATE_OUTPUT,\
+   from claasp.name_mappings import (INTERMEDIATE_OUTPUT,\
     CIPHER_OUTPUT, CONSTANT, WORD_OPERATION, MIX_COLUMN, SBOX)
    ```
 
@@ -406,12 +406,12 @@ Below you can find what it is considered best practises, but ***the most importa
 8. Put relevant keywords in the field `Labels`
 9. If it is necessary to link the issue with existing ones, fill both the `Linked issue` and the `Issue` field.
 
-Now suppose that you want to work on a ticket. We must associate the ticket to a specific branch in `tii-claasp`
+Now suppose that you want to work on a ticket. We must associate the ticket to a specific branch in `claasp`
 repository in the following way
 
 1. Go to the ticket that you want to work on
 2. In the right pane, select `Create branch`. You will be redirected to the bitbucket.
-3. Select the `tii-claasp` in the `Repository` field
+3. Select the `claasp` in the `Repository` field
 4. Choose `Custom` in the `Branch type`
 5. Select the appropriate branch that you want to `Branch from`. Generally, this should be set to `master`.
 6. In the `Branch name`, make sure that it is filled with the same ID as the ticket, i.e. `LIBCA-26`.

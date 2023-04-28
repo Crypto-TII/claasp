@@ -12,6 +12,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Everything! First public release.
-
-[unreleased]: https://bitbucket.org/tiicrypto/tii-claasp/branches/compare/v1.0.0%0DHEAD
-[1.0.0]: https://bitbucket.org/tiicrypto/tii-claasp/commits/tag/v1.0.0

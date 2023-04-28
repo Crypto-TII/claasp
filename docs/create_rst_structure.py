@@ -4,7 +4,7 @@ import sys
 from shutil import copyfile
 from pathlib import Path
 
-EXCLUDED_FOLDERS = ["__pycache__", "DTOs", "tii_reports"]
+EXCLUDED_FOLDERS = ["__pycache__", "DTOs", "reports"]
 EXCLUDED_FILES = ["__init__.py", "constants.py", ".DS_Store", "name_mappings.py", "finalAnalysisReportExample.txt"]
 EXCLUDED_EXTENSIONS = [".md"]
 ROOT_FOLDER = '../claasp/'

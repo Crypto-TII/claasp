@@ -55,8 +55,8 @@ setup(
     long_description=read_file("README.md"),
     long_description_content_type="text/markdown",
     url='',
-    author='TII Cryptanalysis Team',
-    author_email='emanuele.bellini@tii.ae',
+    author='',
+    author_email='',
     license='GNU General Public License v3.0',
     package_data={
         '': [

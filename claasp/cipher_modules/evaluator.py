@@ -1,7 +1,6 @@
 
 # ****************************************************************************
-# Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -40,7 +39,7 @@ def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
     cipher.generate_evaluate_c_code_shared_library(intermediate_output, verbosity)
     name = cipher.id + "_evaluate"
     c_cipher_inputs = [hex(value) for value in inputs]
-    process = Popen([code_generator.TII_C_LIB_PATH + name + ".o"] + c_cipher_inputs, stdout=PIPE)
+    process = Popen([code_generator.C_LIB_PATH + name + ".o"] + c_cipher_inputs, stdout=PIPE)
     output = process.stdout
 
     if verbosity and intermediate_output:

@@ -1,5 +1,10 @@
 # CLAASP: A Cryptographic Library for the Automated Analysis of Symmetric Primitives
 
+_WARNING: this package has been anonymized for the purpose of blind review. 
+Information about the authors, their affiliations and license related statements have been removed.
+The content of this package remains confidential and for review only._
+
+
 This package is designed as a sofware tool to automate as much as possible the analysis of the design of symmetric primitives 
 such as block ciphers, cryptographic permutations, hash functions, and stream ciphers, from a cryptanalytic point of view.
 It is built on the top of [SageMath](http://www.sagemath.org) and

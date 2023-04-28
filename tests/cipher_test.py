@@ -256,13 +256,13 @@ def test_generate_bit_based_c_code():
 
 
 def test_generate_csv_report():
-    tii_path = inspect.getfile(claasp)
-    tii_dir_path = os.path.dirname(tii_path)
+    path = inspect.getfile(claasp)
+    dir_path = os.path.dirname(path)
     identity = IdentityBlockCipher()
-    identity.generate_csv_report(10, f"{tii_dir_path}/{identity.id}_report.csv")
-    assert os.path.isfile(f"{tii_dir_path}/{identity.id}_report.csv")
+    identity.generate_csv_report(10, f"{dir_path}/{identity.id}_report.csv")
+    assert os.path.isfile(f"{dir_path}/{identity.id}_report.csv")
 
-    os.remove(f"{tii_dir_path}/{identity.id}_report.csv")
+    os.remove(f"{dir_path}/{identity.id}_report.csv")
 
 
 def test_generate_heatmap_graphs_for_avalanche_tests():

@@ -21,13 +21,13 @@ builddocker:
 	docker build -f docker/Dockerfile -t $(DOCKER_IMG_NAME) .
 
 rundocker: builddocker
-	docker run -i -v `pwd`:/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) /bin/bash
+	docker run -i -v `pwd`:/home/sage/claasp -t $(DOCKER_IMG_NAME) /bin/bash
 
 builddocker-m1:
 	docker build -f docker/Dockerfile --platform linux/x86_64 -t $(DOCKER_IMG_NAME) .
 
 rundocker-m1: builddocker-m1
-	docker run -i -v `pwd`:/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) /bin/bash
+	docker run -i -v `pwd`:/home/sage/claasp -t $(DOCKER_IMG_NAME) /bin/bash
 
 install:
 	$(SAGE_BIN) -pip install --upgrade --no-index -v .

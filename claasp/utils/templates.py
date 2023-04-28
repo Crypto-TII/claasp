@@ -1,17 +1,16 @@
 
 # ****************************************************************************
-# Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -54,7 +53,7 @@ class TemplateManager:
 class Template:
 
     def __init__(self):
-        self._j2_env = Environment(loader=FileSystemLoader('claasp/utils/tii_reports'),
+        self._j2_env = Environment(loader=FileSystemLoader('claasp/utils/reports'),
                                    trim_blocks=True, autoescape=True)
         self.__header = None
         self.__footer = None
@@ -102,7 +101,7 @@ class LatexBuilder(Builder):
 
     def get_header(self):
         header = Header()
-        header.content = 'TII - Latex - Report'
+        header.content = 'CLAASP - Latex - Report'
 
         return header
 
@@ -132,7 +131,7 @@ class CSVBuilder(Builder):
 
     def get_header(self):
         header = Header()
-        header.content = 'TII - CSV - Report'
+        header.content = 'CLAASP - CSV - Report'
 
         return header
 

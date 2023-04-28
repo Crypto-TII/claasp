@@ -66,12 +66,12 @@ def test_pprint_dictionary_to_file():
                                                "avalanche_weight_criterion_threshold": 0.1,
                                                "avalanche_entropy_criterion_threshold": 0.1},
                            "component_analysis_tests": {"run_tests": True}}
-    tii_path = inspect.getfile(claasp)
-    tii_dir_path = os.path.dirname(tii_path)
+    path = inspect.getfile(claasp)
+    dir_path = os.path.dirname(path)
     analysis = identity.analyze_cipher(tests_configuration)
-    pprint_dictionary_to_file(analysis['diffusion_tests']['input_parameters'], f"{tii_dir_path}/test_json")
-    assert os.path.isfile(f"{tii_dir_path}/test_json") is True
-    os.remove(f"{tii_dir_path}/test_json")
+    pprint_dictionary_to_file(analysis['diffusion_tests']['input_parameters'], f"{dir_path}/test_json")
+    assert os.path.isfile(f"{dir_path}/test_json") is True
+    os.remove(f"{dir_path}/test_json")
 
 
 def test_sgn_function():

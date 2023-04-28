@@ -12,8 +12,8 @@ implemented using [Python3](https://www.python.org/) and [Cython](https://www.cy
 Download the source from the git repository:
 
 ```
-     $ git clone https://USERNAME@bitbucket.org/tiicrypto/tii-claasp.git
-     $ cd tii-claasp/
+     $ git clone https://USERNAME@bitbucket.org/repository.git
+     $ cd claasp/
 ```
 
 Change `USERNAME` to your own account in the internal BitBucket.

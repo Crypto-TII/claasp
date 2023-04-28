@@ -251,4 +251,4 @@ RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libselinux.so.1
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libsystemd.so.0
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libcrypt.so.1
 
-WORKDIR "/home/sage/tii-claasp"
+WORKDIR "/home/sage/claasp"

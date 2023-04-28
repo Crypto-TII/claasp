@@ -1,7 +1,6 @@
 
 # ****************************************************************************
-# Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -32,10 +31,10 @@ from claasp.cipher_modules import continuous_tests, neural_network_tests, code_g
     component_analysis_tests, avalanche_tests, algebraic_tests
 from claasp.name_mappings import CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, MIX_COLUMN, SBOX, WORD_OPERATION
 
-tii_path = inspect.getfile(claasp)
-tii_dir_path = os.path.dirname(tii_path)
+path = inspect.getfile(claasp)
+dir_path = os.path.dirname(path)
 
-TII_C_LIB_PATH = f'{tii_dir_path}/cipher/'
+C_LIB_PATH = f'{dir_path}/cipher/'
 
 
 class Cipher:
@@ -850,7 +849,7 @@ class Cipher:
         """
         return code_generator.generate_bit_based_c_code(self, intermediate_output, verbosity)
 
-    # LM: TII team needs to update this method because the keys from diffusion_tests_results do not correspond
+    # update this method because the keys from diffusion_tests_results do not correspond
     def generate_csv_report(self, nb_samples, output_absolute_path):
         """
         Generate a CSV report containing criteria to estimate the vulnerability of the cipher.
@@ -869,15 +868,15 @@ class Cipher:
             sage: import inspect
             sage: import claasp
             sage: import os.path
-            sage: tii_path = inspect.getfile(claasp)
-            sage: tii_dir_path = os.path.dirname(tii_path)
+            sage: path = inspect.getfile(claasp)
+            sage: dir_path = os.path.dirname(path)
             sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
             sage: identity = IdentityBlockCipher()
-            sage: identity.generate_csv_report(10, f"{tii_dir_path}/{identity.id}_report.csv")
-            sage: os.path.isfile(f"{tii_dir_path}/{identity.id}_report.csv")
+            sage: identity.generate_csv_report(10, f"{dir_path}/{identity.id}_report.csv")
+            sage: os.path.isfile(f"{dir_path}/{identity.id}_report.csv")
             True
             sage: import os
-            sage: os.remove(f"{tii_dir_path}/{identity.id}_report.csv")
+            sage: os.remove(f"{dir_path}/{identity.id}_report.csv")
         """
 
         diffusion_tests_results = self.diffusion_tests(nb_samples)
