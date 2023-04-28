@@ -1,0 +1,27 @@
+name: block-pr
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  reject_pr_job:
+    runs-on: ubuntu-latest
+    if:
+      (
+      github.event.pull_request.head.ref  != 'develop' &&
+      github.event.pull_request.base.ref == 'main'
+      ) ||
+      (
+      github.event.pull_request.head.ref == 'main' &&
+      github.event.pull_request.base.ref == 'develop'
+      )
+    steps:
+      - name: Check branch name
+        run: |
+          if [ $GITHUB_HEAD_REF != "develop" ]; then
+            echo "Pull request not allowed from branch $GITHUB_HEAD_REF."
+            exit 1
+          fi

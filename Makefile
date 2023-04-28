@@ -38,8 +38,8 @@ uninstall:
 develop:
 	$(SAGE_BIN) -pip install --upgrade -e .
 
-jenkins-pytest:
-	pytest -v -n=13 --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/
+remote-pytest:
+	pytest -v -n=auto --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/
 
 pytest:
 	pytest -v -n=auto --dist loadfile tests/
