@@ -39,7 +39,7 @@ develop:
 	$(SAGE_BIN) -pip install --upgrade -e .
 
 remote-pytest:
-	pytest -v -n=5 --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/
+	pytest -v -n=auto --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/
 
 pytest:
 	pytest -v -n=auto --dist loadfile tests/
