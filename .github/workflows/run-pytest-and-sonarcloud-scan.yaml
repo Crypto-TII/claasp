@@ -48,10 +48,11 @@ jobs:
       run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make remote-pytest
 
     - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
+      uses: sonarsource/sonarcloud-github-action@master
       with:
         args: >
           -Dsonar.branch.name=${{ env.GITHUB_HEAD_REF }}
+          -Dsonar.python.coverage.reportPaths=coverage.xml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
