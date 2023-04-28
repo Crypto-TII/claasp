@@ -40,12 +40,13 @@ develop:
 
 remote-pytest:
 	pytest -v -n=auto --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/
+	@echo "Report in: $(PWD)/coverage.xml"
 
 pytest:
 	pytest -v -n=auto --dist loadfile tests/
 
 pytest-coverage:
-	pytest -v -n=auto --dist loadfile --cov-report term-missing --cov=$(PACKAGE) tests/
+	pytest -v -n=2 --dist loadfile --cov-report term-missing --cov=$(PACKAGE) tests/
 
 testfast:
 	$(SAGE_BIN) setup.py testfast
