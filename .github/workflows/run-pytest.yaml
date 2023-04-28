@@ -2,8 +2,7 @@ name: Run pytest
 on:
   push:
     branches:
-      - '**'
-      - '!main'
+      - 'anonymous-project'
 jobs:
   run-pytest:
     runs-on: ubuntu-latest
