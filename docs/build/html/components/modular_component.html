@@ -1,0 +1,740 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Modular component &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Theta xoodoo component" href="theta_xoodoo_component.html" />
+    <link rel="prev" title="Or component" href="or_component.html" />
+    <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
+    <script src="../_static/thebe.js" type="text/javascript"></script>
+    <script src="../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="theta_xoodoo_component.html" title="Theta xoodoo component"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="or_component.html" title="Or component"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Modular component</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-components.modular_component">
+<span id="modular-component"></span><h1>Modular component<a class="headerlink" href="#module-components.modular_component" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="components.modular_component.Modular">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Modular</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_round_number_of_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.component.Component</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.as_python_dictionary">
+<span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.check_output_size">
+<span class="sig-name descname"><span class="pre">check_output_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">available_word_sizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.check_output_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.cms_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cms_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.cms_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.cms_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cms_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.cms_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for fixing variables in CMS XOR LINEAR model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/cms_models/cms_xor_linear_model.html#cms-linear-standard"><span class="std std-ref">CMS XOR LINEAR model</span></a> for the format, <a class="reference internal" href="../references.html#lwr2016" id="id1"><span>[LWR2016]</span></a> for the algorithm.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This method heavily relies on the fact that modular addition/substration is always performed using
+two addenda.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span><span class="o">.</span><span class="n">cms_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;modadd_0_1_0_i&#39;,</span>
+<span class="go">  &#39;modadd_0_1_1_i&#39;,</span>
+<span class="go">  &#39;modadd_0_1_2_i&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;hw_modadd_0_1_14_o -modadd_0_1_14_o modadd_0_1_30_i&#39;,</span>
+<span class="go">  &#39;hw_modadd_0_1_15_o modadd_0_1_15_o -modadd_0_1_31_i&#39;,</span>
+<span class="go">  &#39;hw_modadd_0_1_15_o -modadd_0_1_15_o modadd_0_1_31_i&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.cp_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">cp_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.cp_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of variables and constraints for Modular Addition/Substraction in CP deterministic truncated XOR differential model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">inverse</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>)</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span> <span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span><span class="o">.</span><span class="n">cp_deterministic_truncated_xor_differential_constraints</span><span class="p">()</span>
+<span class="go">([&#39;array[0..15] of var 0..2: pre_modadd_0_1_0;&#39;,</span>
+<span class="go">  &#39;array[0..15] of var 0..2: pre_modadd_0_1_1;&#39;],</span>
+<span class="go"> [&#39;constraint pre_modadd_0_1_0[0] = rot_0_0[0];&#39;,</span>
+<span class="go">   ...</span>
+<span class="go">  &#39;constraint pre_modadd_0_1_1[15] = plaintext[31];&#39;,</span>
+<span class="go">  &#39;constraint modular_addition_word(pre_modadd_0_1_1, pre_modadd_0_1_0, modadd_0_1);&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.cp_deterministic_truncated_xor_differential_trail_constraints">
+<span class="sig-name descname"><span class="pre">cp_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.cp_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.cp_twoterms_xor_differential_probability">
+<span class="sig-name descname"><span class="pre">cp_twoterms_xor_differential_probability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cp_constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cp_declarations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.cp_twoterms_xor_differential_probability" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.cp_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.cp_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for the probability of Modular Addition/Substraction component for CP xor differential probability.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span><span class="o">.</span><span class="n">cp_xor_differential_propagation_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
+<span class="go">([&#39;array[0..15] of var 0..1: pre_modadd_0_1_0;&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;array[0..15] of var 0..1: eq_modadd_0_1 = Eq(Shi_pre_modadd_0_1_1, Shi_pre_modadd_0_1_0, Shi_modadd_0_1);&#39;],</span>
+<span class="go"> [&#39;constraint pre_modadd_0_1_0[0] = rot_0_0[0];&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;constraint pre_modadd_0_1_1[15] = plaintext[31];&#39;,</span>
+<span class="go">  &#39;constraint forall(j in 0..15)(if eq_modadd_0_1[j] = 1 then (sum([pre_modadd_0_1_1[j], pre_modadd_0_1_0[j], modadd_0_1[j]]) mod 2) = Shi_pre_modadd_0_1_0[j] else true endif) /\\ p[0] = 1600-100 * sum(eq_modadd_0_1);&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.cp_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.cp_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for the probability of Modular Addition/Substraction for CP xor linear model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span><span class="o">.</span><span class="n">cp_xor_linear_mask_propagation_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
+<span class="go">([&#39;array[0..31] of var 0..1: modadd_0_1_i;&#39;,</span>
+<span class="go">  &#39;array[0..15] of var 0..1: modadd_0_1_o;&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;constraint pre_modadd_0_1_1[15]=modadd_0_1_i[31];&#39;,</span>
+<span class="go">  &#39;constraint modadd_linear(pre_modadd_0_1_1, pre_modadd_0_1_0, modadd_0_1_o, p[0]);&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.modular_component.Modular.description">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#components.modular_component.Modular.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.get_graph_representation">
+<span class="sig-name descname"><span class="pre">get_graph_representation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.get_graph_representation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.get_word_operation_sign">
+<span class="sig-name descname"><span class="pre">get_word_operation_sign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sign</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.get_word_operation_sign" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.modular_component.Modular.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#components.modular_component.Modular.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.modular_component.Modular.input_bit_positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_bit_positions</span></span><a class="headerlink" href="#components.modular_component.Modular.input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.modular_component.Modular.input_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_bit_size</span></span><a class="headerlink" href="#components.modular_component.Modular.input_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.modular_component.Modular.input_id_links">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_id_links</span></span><a class="headerlink" href="#components.modular_component.Modular.input_id_links" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.is_forbidden">
+<span class="sig-name descname"><span class="pre">is_forbidden</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forbidden_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forbidden_descriptions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.is_forbidden" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.is_id_equal_to">
+<span class="sig-name descname"><span class="pre">is_id_equal_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.is_id_equal_to" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.is_power_of_2_word_based">
+<span class="sig-name descname"><span class="pre">is_power_of_2_word_based</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dto</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.is_power_of_2_word_based" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.milp_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">milp_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.milp_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of constrains modeling a component of type MODADD/MODSUB for MILP xor differential probability.</p>
+<p>The constraints are extracted from <a class="reference internal" href="../references.html#fwgsh2016" id="id2"><span>[FWGSH2016]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">modadd_component</span><span class="o">.</span><span class="n">milp_xor_differential_propagation_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[rot_0_0_0]&#39;, x_0),</span>
+<span class="go">(&#39;x[rot_0_0_1]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go">(&#39;x[modadd_0_1_14]&#39;, x_46),</span>
+<span class="go">(&#39;x[modadd_0_1_15]&#39;, x_47)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_47 &lt;= x_48,</span>
+<span class="go">x_15 &lt;= x_48,</span>
+<span class="go">...</span>
+<span class="go">-2 &lt;= -1*x_0 - x_16 - x_17 + x_32 + x_63,</span>
+<span class="go">x_64 == 10*x_49 + 10*x_50 + 10*x_51 + 10*x_52 + 10*x_53 + 10*x_54 + 10*x_55 + 10*x_56 + 10*x_57 + 10*x_58 + 10*x_59 + 10*x_60 + 10*x_61 + 10*x_62 + 10*x_63]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.milp_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">milp_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.milp_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of variables and constraints for probability of Modular Addition/Substraction for MILP xor linear model, for any arbitrary number of inputs.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">modadd_component</span><span class="o">.</span><span class="n">milp_xor_linear_mask_propagation_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[modadd_0_1_0_i]&#39;, x_0),</span>
+<span class="go"> (&#39;x[modadd_0_1_1_i]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go"> (&#39;x[modadd_0_1_14_o]&#39;, x_46),</span>
+<span class="go"> (&#39;x[modadd_0_1_15_o]&#39;, x_47)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_48 == 0,</span>
+<span class="go">0 &lt;= -1*x_0 - x_16 + x_32 + x_48 + x_49,</span>
+<span class="go">0 &lt;= x_0 + x_16 - x_32 + x_48 - x_49,</span>
+<span class="go">...</span>
+<span class="go"> -4 &lt;= x_15 + x_31 + x_47 + x_63 + x_64,</span>
+<span class="go"> x_65 == x_48 + x_49 + x_50 + x_51 + x_52 + x_53 + x_54 + x_55 + x_56 + x_57 + x_58 + x_59 + x_60 + x_61 + x_62 + x_63,</span>
+<span class="go"> x_66 == 10*x_65]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.minizinc_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">minizinc_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.minizinc_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return variables and constraints for the component Modular Addition/Substraction for MINIZINC xor differential probability.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model</span> <span class="kn">import</span> <span class="n">MinizincXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">minizinc</span> <span class="o">=</span> <span class="n">MinizincXorDifferentialModel</span><span class="p">(</span><span class="n">fancy</span><span class="p">,</span> <span class="n">sat_or_milp</span><span class="o">=</span><span class="s2">&quot;milp&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">_</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">modadd_component</span><span class="o">.</span><span class="n">minizinc_xor_differential_propagation_constraints</span><span class="p">(</span><span class="n">minizinc</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+<span class="go">&#39;constraint modular_addition_word(array1d(0..6-1, [modadd_1_9_x0,modadd_1_9_x1,modadd_1_9_x2,modadd_1_9_x3,modadd_1_9_x4,modadd_1_9_x5]),array1d(0..6-1, [modadd_1_9_x6,modadd_1_9_x7,modadd_1_9_x8,modadd_1_9_x9,modadd_1_9_x10,modadd_1_9_x11]),array1d(0..6-1, [modadd_1_9_y0_0,modadd_1_9_y1_0,modadd_1_9_y2_0,modadd_1_9_y3_0,modadd_1_9_y4_0,modadd_1_9_y5_0]), p_modadd_1_9_0, dummy_modadd_1_9_0, -1)=1;\n&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.modular_component.Modular.output_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_bit_size</span></span><a class="headerlink" href="#components.modular_component.Modular.output_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.output_size_for_concatenate">
+<span class="sig-name descname"><span class="pre">output_size_for_concatenate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">available_word_sizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.output_size_for_concatenate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.print" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.print_as_python_dictionary">
+<span class="sig-name descname"><span class="pre">print_as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.print_as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.print_values">
+<span class="sig-name descname"><span class="pre">print_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.print_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.print_word_values">
+<span class="sig-name descname"><span class="pre">print_word_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.print_word_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.sat_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">sat_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.sat_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for Modular Addition/Substraction in SAT XOR DIFFERENTIAL model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format, <a class="reference internal" href="../references.html#lm2001" id="id3"><span>[LM2001]</span></a> for the algorithm.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This method heavily relies on the fact that modular addition is always performed using two addenda.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_model</span> <span class="kn">import</span> <span class="n">SatModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span><span class="o">.</span><span class="n">sat_xor_differential_propagation_constraints</span><span class="p">(</span><span class="n">sat</span><span class="p">)</span>
+<span class="go">([&#39;modadd_0_1_0&#39;,</span>
+<span class="go">  &#39;modadd_0_1_1&#39;,</span>
+<span class="go">  &#39;modadd_0_1_2&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;modadd_0_1_15 -rot_0_0_15 plaintext_31&#39;,</span>
+<span class="go">  &#39;modadd_0_1_15 rot_0_0_15 -plaintext_31&#39;,</span>
+<span class="go">  &#39;-modadd_0_1_15 -rot_0_0_15 -plaintext_31&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.sat_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">sat_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.sat_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for fixing variables in SAT XOR LINEAR model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format, <a class="reference internal" href="../references.html#lwr2016" id="id4"><span>[LWR2016]</span></a> for the algorithm.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This method heavily relies on the fact that modular addition is always performed using two addenda.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span><span class="o">.</span><span class="n">sat_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;modadd_0_1_0_i&#39;,</span>
+<span class="go">  &#39;modadd_0_1_1_i&#39;,</span>
+<span class="go">  &#39;modadd_0_1_2_i&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;hw_modadd_0_1_14_o -modadd_0_1_14_o modadd_0_1_30_i&#39;,</span>
+<span class="go">  &#39;hw_modadd_0_1_15_o modadd_0_1_15_o -modadd_0_1_31_i&#39;,</span>
+<span class="go">  &#39;hw_modadd_0_1_15_o -modadd_0_1_15_o modadd_0_1_31_i&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.select_bits">
+<span class="sig-name descname"><span class="pre">select_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.select_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.select_words">
+<span class="sig-name descname"><span class="pre">select_words</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.select_words" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.set_description">
+<span class="sig-name descname"><span class="pre">set_description</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.set_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.set_input_bit_positions">
+<span class="sig-name descname"><span class="pre">set_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.set_input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.set_input_id_links">
+<span class="sig-name descname"><span class="pre">set_input_id_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.set_input_id_links" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.smt_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">smt_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.smt_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable list and SMT-LIB list asserts for Modular Addition/Substraction in SMT XOR DIFFERENTIAL model <a class="reference internal" href="../references.html#lm2001" id="id5"><span>[LM2001]</span></a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This method heavily relies on the fact that modular addition is always performed using two addenda.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.tea_block_cipher</span> <span class="kn">import</span> <span class="n">TeaBlockCipher</span>
+<span class="gp">sage: </span><span class="n">tea</span> <span class="o">=</span> <span class="n">TeaBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">tea</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span><span class="o">.</span><span class="n">smt_xor_differential_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;modadd_0_1_0&#39;,</span>
+<span class="go">  &#39;modadd_0_1_1&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;hw_modadd_0_1_30&#39;,</span>
+<span class="go">  &#39;hw_modadd_0_1_31&#39;],</span>
+<span class="go"> [&#39;(assert (= (not hw_modadd_0_1_0) (= shift_0_0_1 key_1 modadd_0_1_1)))&#39;,</span>
+<span class="go">  &#39;(assert (= (not hw_modadd_0_1_1) (= shift_0_0_2 key_2 modadd_0_1_2)))&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;(assert (or hw_modadd_0_1_29 (not (xor shift_0_0_29 key_29 modadd_0_1_29 key_30))))&#39;,</span>
+<span class="go">  &#39;(assert (or hw_modadd_0_1_30 (not (xor shift_0_0_30 key_30 modadd_0_1_30 key_31))))&#39;,</span>
+<span class="go">  &#39;(assert (not (xor modadd_0_1_31 shift_0_0_31 key_31)))&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.smt_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">smt_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.smt_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable list and SMT-LIB list asserts for Modular Addition/Substraction in SMT XOR LINEAR model <a class="reference internal" href="../references.html#lwr2016" id="id6"><span>[LWR2016]</span></a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This method heavily relies on the fact that modular addition is always performed using two addenda.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.tea_block_cipher</span> <span class="kn">import</span> <span class="n">TeaBlockCipher</span>
+<span class="gp">sage: </span><span class="n">tea</span> <span class="o">=</span> <span class="n">TeaBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span> <span class="o">=</span> <span class="n">tea</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">modadd_component</span><span class="o">.</span><span class="n">smt_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;modadd_0_1_0_i&#39;,</span>
+<span class="go">  &#39;modadd_0_1_1_i&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;hw_modadd_0_1_30_o&#39;,</span>
+<span class="go">  &#39;hw_modadd_0_1_31_o&#39;],</span>
+<span class="go"> [&#39;(assert (not hw_modadd_0_1_0_o))&#39;,</span>
+<span class="go">  &#39;(assert (= hw_modadd_0_1_1_o (xor modadd_0_1_0_o modadd_0_1_0_i modadd_0_1_32_i)))&#39;,</span>
+<span class="go">  &#39;(assert (= hw_modadd_0_1_2_o (xor hw_modadd_0_1_1_o modadd_0_1_1_o modadd_0_1_1_i modadd_0_1_33_i)))&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;(assert (=&gt; (xor modadd_0_1_30_o modadd_0_1_62_i) hw_modadd_0_1_30_o))&#39;,</span>
+<span class="go">  &#39;(assert (=&gt; (xor modadd_0_1_31_o modadd_0_1_63_i) hw_modadd_0_1_31_o))&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.modular_component.Modular.suffixes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">suffixes</span></span><a class="headerlink" href="#components.modular_component.Modular.suffixes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.modular_component.Modular.twoterms_milp_probability_xor_linear_constraints">
+<span class="sig-name descname"><span class="pre">twoterms_milp_probability_xor_linear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integer_variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_vars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_vars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.Modular.twoterms_milp_probability_xor_linear_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of variables and constraints for the probability of Modular Addition/Substraction for two inputs MILP xor linear model.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<blockquote>
+<div><p>Using the 8 inequalities as described in Fu2016 <a class="reference external" href="https://eprint.iacr.org/2016/407.pdf">https://eprint.iacr.org/2016/407.pdf</a></p>
+</div></blockquote>
+<p><a class="reference external" href="https://github.com/fukai6/milp_speck/blob/master/speck_diff_find.py">https://github.com/fukai6/milp_speck/blob/master/speck_diff_find.py</a></p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">binary_variable</span></code> – <strong>boolean MIPVariable</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">integer_variable</span></code> – <strong>integer MIPVariable</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_vars</span></code> – <strong>list</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_vars</span></code> – <strong>list</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chunk_number</span></code> – <strong>integer</strong></p></li>
+</ul>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.modular_component.Modular.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#components.modular_component.Modular.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.modular_component.generic_sign_linear_constraints">
+<span class="sig-name descname"><span class="pre">generic_sign_linear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.generic_sign_linear_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the constraints for finding the sign of a MODADD/MODSUB component.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">inputs</span></code> – <strong>list</strong>; a list representing the inputs to the modadd/modsub</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outputs</span></code> – <strong>list</strong>; a list representing the output to the modadd/modsub</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.components.modular_component</span> <span class="kn">import</span> <span class="n">generic_sign_linear_constraints</span>
+<span class="gp">sage: </span><span class="nb">input</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">sage: </span><span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">sage: </span><span class="n">generic_sign_linear_constraints</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+<span class="go">-1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.modular_component.milp_n_window_heuristic">
+<span class="sig-name descname"><span class="pre">milp_n_window_heuristic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_vars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_vars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.milp_n_window_heuristic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.modular_component.sat_n_window_heuristc_bit_level">
+<span class="sig-name descname"><span class="pre">sat_n_window_heuristc_bit_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.modular_component.sat_n_window_heuristc_bit_level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="or_component.html"
+                          title="previous chapter">Or component</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="theta_xoodoo_component.html"
+                          title="next chapter">Theta xoodoo component</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/components/modular_component.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="theta_xoodoo_component.html" title="Theta xoodoo component"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="or_component.html" title="Or component"
+             >previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Modular component</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>

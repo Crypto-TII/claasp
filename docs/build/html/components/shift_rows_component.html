@@ -1,0 +1,797 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Shift rows component &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Xor component" href="xor_component.html" />
+    <link rel="prev" title="Sigma component" href="sigma_component.html" />
+    <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
+    <script src="../_static/thebe.js" type="text/javascript"></script>
+    <script src="../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="xor_component.html" title="Xor component"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sigma_component.html" title="Sigma component"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Shift rows component</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-components.shift_rows_component">
+<span id="shift-rows-component"></span><h1>Shift rows component<a class="headerlink" href="#module-components.shift_rows_component" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ShiftRows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_round_number_of_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.components.rotate_component.Rotate</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.algebraic_polynomials">
+<span class="sig-name descname"><span class="pre">algebraic_polynomials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.algebraic_polynomials" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of polynomials for bitwise ROTATION.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> –  <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.algebraic.algebraic_model</span> <span class="kn">import</span> <span class="n">AlgebraicModel</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;rot_1_11&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">algebraic</span> <span class="o">=</span> <span class="n">AlgebraicModel</span><span class="p">(</span><span class="n">fancy</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">algebraic_polynomials</span><span class="p">(</span><span class="n">algebraic</span><span class="p">)</span>
+<span class="go">[rot_1_11_y0 + rot_1_11_x3,</span>
+<span class="go"> rot_1_11_y1 + rot_1_11_x4,</span>
+<span class="go"> rot_1_11_y2 + rot_1_11_x5,</span>
+<span class="go"> rot_1_11_y3 + rot_1_11_x0,</span>
+<span class="go"> rot_1_11_y4 + rot_1_11_x1,</span>
+<span class="go"> rot_1_11_y5 + rot_1_11_x2]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.as_python_dictionary">
+<span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.check_output_size">
+<span class="sig-name descname"><span class="pre">check_output_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">available_word_sizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.check_output_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cms_constraints">
+<span class="sig-name descname"><span class="pre">cms_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cms_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for ROTATION in CMS CIPHER model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">cms_constraints</span><span class="p">()</span>
+<span class="go">([&#39;rot_1_1_0&#39;,</span>
+<span class="go">  &#39;rot_1_1_1&#39;,</span>
+<span class="go">  &#39;rot_1_1_2&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;key_39 -rot_1_1_14&#39;,</span>
+<span class="go">  &#39;rot_1_1_15 -key_40&#39;,</span>
+<span class="go">  &#39;key_40 -rot_1_1_15&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cms_deterministic_truncated_xor_differential_trail_constraints">
+<span class="sig-name descname"><span class="pre">cms_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cms_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cms_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cms_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cms_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cms_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cms_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cms_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cp_constraints">
+<span class="sig-name descname"><span class="pre">cp_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cp_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for ROTATE component for CP CIPHER model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">cp_constraints</span><span class="p">()</span>
+<span class="go">([],</span>
+<span class="go"> [&#39;constraint rot_0_0[0] = plaintext[9];&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;constraint rot_0_0[15] = plaintext[8];&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cp_deterministic_truncated_xor_differential_trail_constraints">
+<span class="sig-name descname"><span class="pre">cp_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cp_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cp_inverse_constraints">
+<span class="sig-name descname"><span class="pre">cp_inverse_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cp_inverse_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for ROTATE component for CP INVERSE CIPHER model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">cp_inverse_constraints</span><span class="p">()</span>
+<span class="go">([],</span>
+<span class="go"> [&#39;constraint rot_0_0_inverse[0] = plaintext[9];&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;constraint rot_0_0_inverse[15] = plaintext[8];&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cp_wordwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">cp_wordwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cp_wordwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for ROTATE CP deterministic truncated xor differential model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">cp_wordwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
+<span class="go">([],</span>
+<span class="go"> [&#39;constraint rot_0_18[0]_active = sbox_0_6_active[0];&#39;,</span>
+<span class="go">  &#39;constraint rot_0_18[1]_active = sbox_0_10_active[0];&#39;,</span>
+<span class="go">    ...</span>
+<span class="go">  &#39;constraint rot_0_18[2]_value = sbox_0_14_value[0];&#39;,</span>
+<span class="go">  &#39;constraint rot_0_18[3]_value = sbox_0_2_value[0];&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cp_xor_differential_first_step_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_differential_first_step_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cp_xor_differential_first_step_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for ROTATE component for the CP xor differential first step model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">cp_xor_differential_first_step_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
+<span class="go">([&#39;array[0..3] of var 0..1: rot_0_18;&#39;],</span>
+<span class="go"> [&#39;constraint rot_0_18[0] = sbox_0_6[0];&#39;,</span>
+<span class="go">  &#39;constraint rot_0_18[1] = sbox_0_10[0];&#39;,</span>
+<span class="go">  &#39;constraint rot_0_18[2] = sbox_0_14[0];&#39;,</span>
+<span class="go">  &#39;constraint rot_0_18[3] = sbox_0_2[0];&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cp_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cp_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cp_xor_differential_propagation_first_step_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_differential_propagation_first_step_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cp_xor_differential_propagation_first_step_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.cp_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.cp_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for ROTATE component for CP xor linear model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">cp_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;array[0..15] of var 0..1: rot_0_0_i;&#39;,</span>
+<span class="go">  &#39;array[0..15] of var 0..1: rot_0_0_o;&#39;],</span>
+<span class="go"> [&#39;constraint rot_0_0_o[0]=rot_0_0_i[9];&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;constraint rot_0_0_o[15]=rot_0_0_i[8];&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.description">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.get_bit_based_vectorized_python_code">
+<span class="sig-name descname"><span class="pre">get_bit_based_vectorized_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_output_to_bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.get_bit_based_vectorized_python_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.get_byte_based_vectorized_python_code">
+<span class="sig-name descname"><span class="pre">get_byte_based_vectorized_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.get_byte_based_vectorized_python_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.get_graph_representation">
+<span class="sig-name descname"><span class="pre">get_graph_representation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.get_graph_representation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.get_word_based_c_code">
+<span class="sig-name descname"><span class="pre">get_word_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wordstring_variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.get_word_based_c_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.get_word_operation_sign">
+<span class="sig-name descname"><span class="pre">get_word_operation_sign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sign</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.get_word_operation_sign" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.input_bit_positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_bit_positions</span></span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.input_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_bit_size</span></span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.input_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.input_id_links">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_id_links</span></span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.input_id_links" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.is_forbidden">
+<span class="sig-name descname"><span class="pre">is_forbidden</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forbidden_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forbidden_descriptions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.is_forbidden" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.is_id_equal_to">
+<span class="sig-name descname"><span class="pre">is_id_equal_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.is_id_equal_to" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.is_power_of_2_word_based">
+<span class="sig-name descname"><span class="pre">is_power_of_2_word_based</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dto</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.is_power_of_2_word_based" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.milp_constraints">
+<span class="sig-name descname"><span class="pre">milp_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.milp_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of constrains modeling a component of type ROTATE for MILP CIPHER model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;rot_1_1&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">rotate_component</span><span class="o">.</span><span class="n">milp_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[key_32]&#39;, x_0),</span>
+<span class="go">(&#39;x[key_33]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go">(&#39;x[rot_1_1_14]&#39;, x_30),</span>
+<span class="go">(&#39;x[rot_1_1_15]&#39;, x_31)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_16 == x_9,</span>
+<span class="go">x_17 == x_10,</span>
+<span class="go">...</span>
+<span class="go">x_30 == x_7,</span>
+<span class="go">x_31 == x_8]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.milp_deterministic_truncated_xor_differential_trail_constraints">
+<span class="sig-name descname"><span class="pre">milp_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.milp_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.milp_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">milp_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.milp_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.milp_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">milp_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.milp_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of constraints for ROTATE operation in MILP XOR LINEAR model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;rot_1_1&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">rotate_component</span><span class="o">.</span><span class="n">milp_xor_linear_mask_propagation_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go"> [(&#39;x[rot_1_1_0_i]&#39;, x_0),</span>
+<span class="go"> (&#39;x[rot_1_1_1_i]&#39;, x_1),</span>
+<span class="go"> ...</span>
+<span class="go"> (&#39;x[rot_1_1_14_o]&#39;, x_30),</span>
+<span class="go"> (&#39;x[rot_1_1_15_o]&#39;, x_31)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_16 == x_9,</span>
+<span class="go">x_17 == x_10,</span>
+<span class="go">...</span>
+<span class="go">x_30 == x_7,</span>
+<span class="go">x_31 == x_8]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.minizinc_constraints">
+<span class="sig-name descname"><span class="pre">minizinc_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.minizinc_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return variables and constraints for the component ROTATE for MINIZINC CIPHER model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.minizinc.minizinc_model</span> <span class="kn">import</span> <span class="n">MinizincModel</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">minizinc</span> <span class="o">=</span> <span class="n">MinizincModel</span><span class="p">(</span><span class="n">fancy</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;rot_1_11&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">_</span><span class="p">,</span> <span class="n">rotate_mzn_constraints</span> <span class="o">=</span> <span class="n">rotate_component</span><span class="o">.</span><span class="n">minizinc_constraints</span><span class="p">(</span><span class="n">minizinc</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_mzn_constraints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&#39;constraint LRot(array1d(0..6-1, [rot_1_11_x0,rot_1_11_x1,rot_1_11_x2,rot_1_11_x3,rot_1_11_x4,rot_1_11_x5]), 3)=array1d(0..6-1, [rot_1_11_y0,rot_1_11_y1,rot_1_11_y2,rot_1_11_y3,rot_1_11_y4,rot_1_11_y5]);\n&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.minizinc_deterministic_truncated_xor_differential_trail_constraints">
+<span class="sig-name descname"><span class="pre">minizinc_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.minizinc_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.minizinc_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">minizinc_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.minizinc_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.output_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_bit_size</span></span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.output_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.output_size_for_concatenate">
+<span class="sig-name descname"><span class="pre">output_size_for_concatenate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">available_word_sizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.output_size_for_concatenate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.print" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.print_as_python_dictionary">
+<span class="sig-name descname"><span class="pre">print_as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.print_as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.print_values">
+<span class="sig-name descname"><span class="pre">print_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.print_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.print_word_values">
+<span class="sig-name descname"><span class="pre">print_word_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.print_word_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.sat_constraints">
+<span class="sig-name descname"><span class="pre">sat_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.sat_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for ROTATION in SAT CIPHER model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">sat_constraints</span><span class="p">()</span>
+<span class="go">([&#39;rot_1_1_0&#39;,</span>
+<span class="go">  &#39;rot_1_1_1&#39;,</span>
+<span class="go">  &#39;rot_1_1_2&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;key_39 -rot_1_1_14&#39;,</span>
+<span class="go">  &#39;rot_1_1_15 -key_40&#39;,</span>
+<span class="go">  &#39;key_40 -rot_1_1_15&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.sat_deterministic_truncated_xor_differential_trail_constraints">
+<span class="sig-name descname"><span class="pre">sat_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.sat_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.sat_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">sat_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.sat_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.sat_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">sat_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.sat_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for ROTATION in SAT XOR LINEAR model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">sat_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;rot_1_1_0_i&#39;,</span>
+<span class="go">  &#39;rot_1_1_1_i&#39;,</span>
+<span class="go">  &#39;rot_1_1_2_i&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;rot_1_1_7_i -rot_1_1_14_o&#39;,</span>
+<span class="go">  &#39;rot_1_1_15_o -rot_1_1_8_i&#39;,</span>
+<span class="go">  &#39;rot_1_1_8_i -rot_1_1_15_o&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.select_bits">
+<span class="sig-name descname"><span class="pre">select_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.select_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.select_words">
+<span class="sig-name descname"><span class="pre">select_words</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.select_words" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.set_description">
+<span class="sig-name descname"><span class="pre">set_description</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.set_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.set_input_bit_positions">
+<span class="sig-name descname"><span class="pre">set_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.set_input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.set_input_id_links">
+<span class="sig-name descname"><span class="pre">set_input_id_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.set_input_id_links" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.smt_constraints">
+<span class="sig-name descname"><span class="pre">smt_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.smt_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable list and SMT-LIB list asserts representing ROTATION for SMT CIPHER model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">smt_constraints</span><span class="p">()</span>
+<span class="go">([&#39;rot_0_0_0&#39;,</span>
+<span class="go">  &#39;rot_0_0_1&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;rot_0_0_14&#39;,</span>
+<span class="go">  &#39;rot_0_0_15&#39;],</span>
+<span class="go"> [&#39;(assert (= rot_0_0_0 plaintext_9))&#39;,</span>
+<span class="go">  &#39;(assert (= rot_0_0_1 plaintext_10))&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;(assert (= rot_0_0_14 plaintext_7))&#39;,</span>
+<span class="go">  &#39;(assert (= rot_0_0_15 plaintext_8))&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.smt_deterministic_truncated_xor_differential_trail_constraints">
+<span class="sig-name descname"><span class="pre">smt_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.smt_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.smt_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">smt_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.smt_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.smt_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">smt_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.smt_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable list and SMT-LIB list asserts for rotate in SMT XOR LINEAR model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">rotate_component</span><span class="o">.</span><span class="n">smt_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;rot_0_0_0_i&#39;,</span>
+<span class="go">  &#39;rot_0_0_1_i&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;rot_0_0_14_o&#39;,</span>
+<span class="go">  &#39;rot_0_0_15_o&#39;],</span>
+<span class="go"> [&#39;(assert (= rot_0_0_0_o rot_0_0_9_i))&#39;,</span>
+<span class="go">  &#39;(assert (= rot_0_0_1_o rot_0_0_10_i))&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;(assert (= rot_0_0_14_o rot_0_0_7_i))&#39;,</span>
+<span class="go">  &#39;(assert (= rot_0_0_15_o rot_0_0_8_i))&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.suffixes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">suffixes</span></span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.suffixes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.shift_rows_component.ShiftRows.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#components.shift_rows_component.ShiftRows.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="sigma_component.html"
+                          title="previous chapter">Sigma component</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="xor_component.html"
+                          title="next chapter">Xor component</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/components/shift_rows_component.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="xor_component.html" title="Xor component"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sigma_component.html" title="Sigma component"
+             >previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Shift rows component</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>
