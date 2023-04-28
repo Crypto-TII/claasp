@@ -13,10 +13,9 @@
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
     <script src="../../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Mzn predicates" href="mzn_predicates.html" />
+    <link rel="next" title="Smt model" href="../../smt/smt_model.html" />
     <link rel="prev" title="N window heuristic helper" href="n_window_heuristic_helper.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
@@ -33,19 +32,12 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="mzn_predicates.html" title="Mzn predicates"
+          <a href="../../smt/smt_model.html" title="Smt model"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="n_window_heuristic_helper.html" title="N window heuristic helper"
              accesskey="P">previous</a> |</li>
-  
-    
-      <a href="../../../../../index.html"><img src="../../../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
-    
-  
-  
         <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-
         <li class="nav-item nav-item-this"><a href="">Utils</a></li> 
       </ul>
     </div>  
@@ -447,69 +439,9 @@ the whole <code class="docutils literal notranslate"><span class="pre">result</s
 <dd></dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.generate_expanded_links">
-<span class="sig-name descname"><span class="pre">generate_expanded_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.generate_expanded_links" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.get_final_input_positions">
-<span class="sig-name descname"><span class="pre">get_final_input_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_input_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_lengths</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.get_final_input_positions" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.get_unique_links_information">
-<span class="sig-name descname"><span class="pre">get_unique_links_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_links</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.get_unique_links_information" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.is_linear_layer_permutation">
-<span class="sig-name descname"><span class="pre">is_linear_layer_permutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M_T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.is_linear_layer_permutation" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.numerical_cnf_to_dimacs">
 <span class="sig-name descname"><span class="pre">numerical_cnf_to_dimacs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_cnf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.numerical_cnf_to_dimacs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.remove_permutations">
-<span class="sig-name descname"><span class="pre">remove_permutations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_rounds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.remove_permutations" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the <code class="docutils literal notranslate"><span class="pre">cipher_rounds</span></code> of the cipher.</p>
-<p>In the returning value, linear layer components that represent permutations are deleted in the cipher that is kept.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">cipher_rounds</span></code> – <strong>list</strong>; the value of the rounds in the associated cipher</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">remove_permutations</span>
-<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cipher_rounds_without_permutations</span> <span class="o">=</span> <span class="n">remove_permutations</span><span class="p">(</span><span class="n">present</span><span class="o">.</span><span class="n">rounds_as_list</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">cipher_rounds_without_permutations</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="go">23</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.remove_rotations">
-<span class="sig-name descname"><span class="pre">remove_rotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_rounds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.remove_rotations" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the <code class="docutils literal notranslate"><span class="pre">cipher_rounds</span></code> of the cipher.</p>
-<p>In the returning value, rotate components that represent rotations are deleted in the cipher that is kept.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">cipher</span> <span class="pre">_rounds</span></code> – <strong>list</strong>; the value of the rounds in the associated cipher</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">remove_rotations</span>
-<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cipher_rounds_without_rotations</span> <span class="o">=</span> <span class="n">remove_rotations</span><span class="p">(</span><span class="n">speck</span><span class="o">.</span><span class="n">rounds_as_list</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">cipher_rounds_without_rotations</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="go">5</span>
-</pre></div>
-</div>
-</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.run_minisat">
@@ -558,8 +490,8 @@ the whole <code class="docutils literal notranslate"><span class="pre">result</s
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="mzn_predicates.html"
-                          title="next chapter">Mzn predicates</a></p>
+    <p class="topless"><a href="../../smt/smt_model.html"
+                          title="next chapter">Smt model</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -592,19 +524,12 @@ the whole <code class="docutils literal notranslate"><span class="pre">result</s
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="mzn_predicates.html" title="Mzn predicates"
+          <a href="../../smt/smt_model.html" title="Smt model"
              >next</a> |</li>
         <li class="right" >
           <a href="n_window_heuristic_helper.html" title="N window heuristic helper"
              >previous</a> |</li>
-  
-    
-      <a href="../../../../../index.html"><img src="../../../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
-    
-  
-  
         <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-
         <li class="nav-item nav-item-this"><a href="">Utils</a></li> 
       </ul>
     </div>

@@ -13,11 +13,10 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Generic functions" href="generic_functions.html" />
-    <link rel="prev" title="Continuous tests" href="continuous_tests.html" />
+    <link rel="next" title="Tester" href="tester.html" />
+    <link rel="prev" title="Generic word based c functions" href="generic_word_based_c_functions.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
     <script src="../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,19 +32,12 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="generic_functions.html" title="Generic functions"
+          <a href="tester.html" title="Tester"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="continuous_tests.html" title="Continuous tests"
+          <a href="generic_word_based_c_functions.html" title="Generic word based c functions"
              accesskey="P">previous</a> |</li>
-  
-    
-      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
-    
-  
-  
         <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-
         <li class="nav-item nav-item-this"><a href="">Neural network tests</a></li> 
       </ul>
     </div>  
@@ -83,6 +75,21 @@
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.neural_network_tests.get_differential_dataset">
+<span class="sig-name descname"><span class="pre">get_differential_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_differences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.neural_network_tests.get_differential_dataset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.neural_network_tests.integer_to_np">
+<span class="sig-name descname"><span class="pre">integer_to_np</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.neural_network_tests.integer_to_np" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.neural_network_tests.make_resnet">
+<span class="sig-name descname"><span class="pre">make_resnet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_activation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.neural_network_tests.make_resnet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.neural_network_tests.neural_network_blackbox_distinguisher_tests">
 <span class="sig-name descname"><span class="pre">neural_network_blackbox_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.neural_network_tests.neural_network_blackbox_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
 <dd><div class="admonition warning">
@@ -99,6 +106,11 @@
 <p>Tensorflow is used in this method, and currently it is not supported for Apple Silicon chip (M1).</p>
 </div>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.neural_network_tests.neural_staged_training">
+<span class="sig-name descname"><span class="pre">neural_staged_training</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starting_round</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neural_network</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testing_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.neural_network_tests.neural_staged_training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.neural_network_tests.update_blackbox_distinguisher_tests_ds">
@@ -135,13 +147,13 @@
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="continuous_tests.html"
-                          title="previous chapter">Continuous tests</a></p>
+    <p class="topless"><a href="generic_word_based_c_functions.html"
+                          title="previous chapter">Generic word based c functions</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="generic_functions.html"
-                          title="next chapter">Generic functions</a></p>
+    <p class="topless"><a href="tester.html"
+                          title="next chapter">Tester</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -174,19 +186,12 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="generic_functions.html" title="Generic functions"
+          <a href="tester.html" title="Tester"
              >next</a> |</li>
         <li class="right" >
-          <a href="continuous_tests.html" title="Continuous tests"
+          <a href="generic_word_based_c_functions.html" title="Generic word based c functions"
              >previous</a> |</li>
-  
-    
-      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
-    
-  
-  
         <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-
         <li class="nav-item nav-item-this"><a href="">Neural network tests</a></li> 
       </ul>
     </div>

@@ -13,10 +13,9 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Ascon sbox sigma permutation" href="ascon_sbox_sigma_permutation.html" />
+    <link rel="next" title="Grain core permutation" href="grain_core_permutation.html" />
     <link rel="prev" title="Gimli permutation" href="gimli_permutation.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
@@ -33,19 +32,12 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="ascon_sbox_sigma_permutation.html" title="Ascon sbox sigma permutation"
+          <a href="grain_core_permutation.html" title="Grain core permutation"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="gimli_permutation.html" title="Gimli permutation"
              accesskey="P">previous</a> |</li>
-  
-    
-      <a href="../../../index.html"><img src="../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
-    
-  
-  
         <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-
         <li class="nav-item nav-item-this"><a href="">Gimli sbox permutation</a></li> 
       </ul>
     </div>  
@@ -313,9 +305,9 @@ injected in key</p>
 <li><p>None</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
-<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">component_analysis_tests</span><span class="p">()</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">word_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">state_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_analysis_tests</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 <span class="go">9</span>
 </pre></div>
@@ -739,15 +731,15 @@ input/output of each component</p></li>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">import</span> <span class="nn">inspect</span>
 <span class="gp">sage: </span><span class="kn">import</span> <span class="nn">claasp</span>
 <span class="gp">sage: </span><span class="kn">import</span> <span class="nn">os.path</span>
-<span class="gp">sage: </span><span class="n">tii_path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">claasp</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">tii_dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">tii_path</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">claasp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span>
 <span class="gp">sage: </span><span class="n">identity</span> <span class="o">=</span> <span class="n">IdentityBlockCipher</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">generate_csv_report</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">generate_csv_report</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">sage: </span><span class="kn">import</span> <span class="nn">os</span>
-<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1238,8 +1230,26 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.gimli_sbox_permutation.GimliSboxPermutation.print_component_analysis_as_radar_charts">
+<span class="sig-name descname"><span class="pre">print_component_analysis_as_radar_charts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_analysis_results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_sbox_permutation.GimliSboxPermutation.print_component_analysis_as_radar_charts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a matplotlib object containing the radar charts of the components analysis test</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component_analysis_results</span></code> – <strong>list</strong>; results of the component analysis method</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">word_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">state_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_analysis_tests</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">fig</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">print_component_analysis_as_radar_charts</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span> <span class="c1"># doctest: +SKIP</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ciphers.permutations.gimli_sbox_permutation.GimliSboxPermutation.print_evaluation_python_code">
-<span class="sig-name descname"><span class="pre">print_evaluation_python_code</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_sbox_permutation.GimliSboxPermutation.print_evaluation_python_code" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">print_evaluation_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_sbox_permutation.GimliSboxPermutation.print_evaluation_python_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the python code that implement the evaluation function of the cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1490,8 +1500,8 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="ascon_sbox_sigma_permutation.html"
-                          title="next chapter">Ascon sbox sigma permutation</a></p>
+    <p class="topless"><a href="grain_core_permutation.html"
+                          title="next chapter">Grain core permutation</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -1524,19 +1534,12 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="ascon_sbox_sigma_permutation.html" title="Ascon sbox sigma permutation"
+          <a href="grain_core_permutation.html" title="Grain core permutation"
              >next</a> |</li>
         <li class="right" >
           <a href="gimli_permutation.html" title="Gimli permutation"
              >previous</a> |</li>
-  
-    
-      <a href="../../../index.html"><img src="../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
-    
-  
-  
         <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-
         <li class="nav-item nav-item-this"><a href="">Gimli sbox permutation</a></li> 
       </ul>
     </div>

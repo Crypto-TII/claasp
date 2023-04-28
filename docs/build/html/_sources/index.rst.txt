@@ -13,56 +13,12 @@ CLAASP following SageMath guidelines.
 
 .. toctree::
 
-    rounds
     cipher
-    round
-    input
-    editor
     component
-
-Utils
-=====
-
-.. toctree::
-
-    utils/integer
-    utils/templates
-    utils/sage_scripts
-    utils/utils
-    utils/sequence_operations
-    utils/integer_functions
-
-Components
-==========
-
-.. toctree::
-
-    components/variable_shift_component
-    components/and_component
-    components/multi_input_non_linear_logical_operator_component
-    components/or_component
-    components/modular_component
-    components/theta_xoodoo_component
-    components/word_permutation_component
-    components/sbox_component
-    components/variable_rotate_component
-    components/rotate_component
-    components/modadd_component
-    components/constant_component
-    components/cipher_output_component
-    components/shift_component
-    components/not_component
-    components/intermediate_output_component
-    components/reverse_component
-    components/permutation_component
-    components/modsub_component
-    components/theta_keccak_component
-    components/sigma_component
-    components/shift_rows_component
-    components/xor_component
-    components/concatenate_component
-    components/mix_column_component
-    components/linear_layer_component
+    editor
+    input
+    round
+    rounds
 
 Ciphers
 =======
@@ -70,47 +26,33 @@ Ciphers
 .. toctree::
 
 
-Toys
-----
-
-.. toctree::
-
-    ciphers/toys/toyspn2
-    ciphers/toys/toyspn1
-
-Stream ciphers
---------------
-
-.. toctree::
-
-    ciphers/stream_ciphers/chacha_stream_cipher
-
 Block ciphers
 -------------
 
 .. toctree::
 
+    ciphers/block_ciphers/aes_block_cipher
+    ciphers/block_ciphers/constant_block_cipher
+    ciphers/block_ciphers/des_block_cipher
+    ciphers/block_ciphers/des_exact_key_length_block_cipher
+    ciphers/block_ciphers/fancy_block_cipher
+    ciphers/block_ciphers/hight_block_cipher
+    ciphers/block_ciphers/identity_block_cipher
+    ciphers/block_ciphers/kasumi_block_cipher
+    ciphers/block_ciphers/lea_block_cipher
+    ciphers/block_ciphers/lowmc_block_cipher
+    ciphers/block_ciphers/lowmc_generate_matrices
+    ciphers/block_ciphers/midori_block_cipher
+    ciphers/block_ciphers/present_block_cipher
     ciphers/block_ciphers/raiden_block_cipher
     ciphers/block_ciphers/simon_block_cipher
-    ciphers/block_ciphers/constant_block_cipher
-    ciphers/block_ciphers/hight_block_cipher
-    ciphers/block_ciphers/twofish_block_cipher
-    ciphers/block_ciphers/fancy_block_cipher
-    ciphers/block_ciphers/des_block_cipher
-    ciphers/block_ciphers/threefish_block_cipher
-    ciphers/block_ciphers/aes_block_cipher
     ciphers/block_ciphers/skinny_block_cipher
-    ciphers/block_ciphers/lowmc_block_cipher
-    ciphers/block_ciphers/midori_block_cipher
-    ciphers/block_ciphers/lowmc_generate_matrices
-    ciphers/block_ciphers/xtea_block_cipher
-    ciphers/block_ciphers/lea_block_cipher
-    ciphers/block_ciphers/des_exact_key_length_block_cipher
-    ciphers/block_ciphers/present_block_cipher
-    ciphers/block_ciphers/tea_block_cipher
-    ciphers/block_ciphers/speck_block_cipher
-    ciphers/block_ciphers/identity_block_cipher
     ciphers/block_ciphers/sparx_block_cipher
+    ciphers/block_ciphers/speck_block_cipher
+    ciphers/block_ciphers/tea_block_cipher
+    ciphers/block_ciphers/threefish_block_cipher
+    ciphers/block_ciphers/twofish_block_cipher
+    ciphers/block_ciphers/xtea_block_cipher
 
 Hash functions
 --------------
@@ -119,8 +61,8 @@ Hash functions
 
     ciphers/hash_functions/blake2_hash_function
     ciphers/hash_functions/blake_hash_function
-    ciphers/hash_functions/sha1_hash_function
     ciphers/hash_functions/md5_hash_function
+    ciphers/hash_functions/sha1_hash_function
     ciphers/hash_functions/sha2_hash_function
 
 Permutations
@@ -128,49 +70,64 @@ Permutations
 
 .. toctree::
 
-    ciphers/permutations/tinyjambu_32bits_word_permutation
-    ciphers/permutations/gift_sbox_permutation
-    ciphers/permutations/photon_permutation
-    ciphers/permutations/spongent_pi_precomputation_permutation
-    ciphers/permutations/xoodoo_sbox_permutation
+    ciphers/permutations/ascon_permutation
     ciphers/permutations/ascon_sbox_sigma_no_matrix_permutation
-    ciphers/permutations/keccak_permutation
-    ciphers/permutations/tinyjambu_permutation
-    ciphers/permutations/spongent_pi_permutation
+    ciphers/permutations/ascon_sbox_sigma_permutation
     ciphers/permutations/chacha_permutation
+    ciphers/permutations/gift_permutation
+    ciphers/permutations/gift_sbox_permutation
     ciphers/permutations/gimli_permutation
     ciphers/permutations/gimli_sbox_permutation
-    ciphers/permutations/ascon_sbox_sigma_permutation
-    ciphers/permutations/keccak_invertible_permutation
-    ciphers/permutations/xoodoo_invertible_permutation
-    ciphers/permutations/keccak_sbox_permutation
-    ciphers/permutations/gift_permutation
-    ciphers/permutations/ascon_permutation
-    ciphers/permutations/xoodoo_permutation
     ciphers/permutations/grain_core_permutation
+    ciphers/permutations/keccak_invertible_permutation
+    ciphers/permutations/keccak_permutation
+    ciphers/permutations/keccak_sbox_permutation
+    ciphers/permutations/photon_permutation
     ciphers/permutations/sparkle_permutation
+    ciphers/permutations/spongent_pi_permutation
+    ciphers/permutations/spongent_pi_precomputation_permutation
+    ciphers/permutations/tinyjambu_32bits_word_permutation
+    ciphers/permutations/tinyjambu_permutation
+    ciphers/permutations/xoodoo_invertible_permutation
+    ciphers/permutations/xoodoo_permutation
+    ciphers/permutations/xoodoo_sbox_permutation
+
+Stream ciphers
+--------------
+
+.. toctree::
+
+    ciphers/stream_ciphers/chacha_stream_cipher
+
+Toys
+----
+
+.. toctree::
+
+    ciphers/toys/toyspn1
+    ciphers/toys/toyspn2
 
 Cipher modules
 ==============
 
 .. toctree::
 
-    cipher_modules/generic_word_based_c_functions
-    cipher_modules/tester
-    cipher_modules/component_analysis_tests
-    cipher_modules/avalanche_tests
-    cipher_modules/generic_bit_based_c_functions
-    cipher_modules/generic_functions_continuous_diffusion_analysis
-    cipher_modules/generic_word_based_c_functions
-    cipher_modules/generic_functions_vectorized_byte
-    cipher_modules/continuous_tests
-    cipher_modules/neural_network_tests
-    cipher_modules/generic_functions
-    cipher_modules/generic_functions_vectorized_bit
-    cipher_modules/generic_bit_based_c_functions
-    cipher_modules/evaluator
     cipher_modules/algebraic_tests
+    cipher_modules/avalanche_tests
     cipher_modules/code_generator
+    cipher_modules/component_analysis_tests
+    cipher_modules/continuous_tests
+    cipher_modules/evaluator
+    cipher_modules/generic_bit_based_c_functions
+    cipher_modules/generic_bit_based_c_functions
+    cipher_modules/generic_functions
+    cipher_modules/generic_functions_continuous_diffusion_analysis
+    cipher_modules/generic_functions_vectorized_bit
+    cipher_modules/generic_functions_vectorized_byte
+    cipher_modules/generic_word_based_c_functions
+    cipher_modules/generic_word_based_c_functions
+    cipher_modules/neural_network_tests
+    cipher_modules/tester
 
 Models
 ------
@@ -178,6 +135,77 @@ Models
 .. toctree::
 
     cipher_modules/models/utils
+
+Algebraic
+`````````
+
+.. toctree::
+
+    cipher_modules/models/algebraic/algebraic_model
+    cipher_modules/models/algebraic/boolean_polynomial_ring
+    cipher_modules/models/algebraic/constraints
+
+Cp
+``
+
+.. toctree::
+
+    cipher_modules/models/cp/cp_model
+
+Cp models
+'''''''''
+
+.. toctree::
+
+    cipher_modules/models/cp/cp_models/cp_cipher_model
+    cipher_modules/models/cp/cp_models/cp_deterministic_truncated_xor_differential_model
+    cipher_modules/models/cp/cp_models/cp_xor_differential_number_of_active_sboxes_model
+    cipher_modules/models/cp/cp_models/cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model
+    cipher_modules/models/cp/cp_models/cp_xor_differential_trail_search_model
+    cipher_modules/models/cp/cp_models/cp_xor_linear_model
+
+Minizinc functions
+''''''''''''''''''
+
+.. toctree::
+
+    cipher_modules/models/cp/Minizinc_functions/Usefulfunctions
+
+Milp
+````
+
+.. toctree::
+
+    cipher_modules/models/milp/milp_model
+
+Milp models
+'''''''''''
+
+.. toctree::
+
+    cipher_modules/models/milp/milp_models/milp_cipher_model
+    cipher_modules/models/milp/milp_models/milp_deterministic_truncated_xor_differential_model
+    cipher_modules/models/milp/milp_models/milp_xor_differential_model
+    cipher_modules/models/milp/milp_models/milp_xor_linear_model
+
+Tmp
+'''
+
+.. toctree::
+
+    cipher_modules/models/milp/tmp/tea_cipher_xordiff_model
+
+Utils
+'''''
+
+.. toctree::
+
+    cipher_modules/models/milp/utils/config
+    cipher_modules/models/milp/utils/generate_inequalities_for_and_operation_2_input_bits
+    cipher_modules/models/milp/utils/generate_inequalities_for_large_sboxes
+    cipher_modules/models/milp/utils/generate_inequalities_for_xor_with_n_input_bits
+    cipher_modules/models/milp/utils/generate_sbox_inequalities_for_trail_search
+    cipher_modules/models/milp/utils/mzn_predicates
 
 Minizinc
 ````````
@@ -194,6 +222,42 @@ Minizinc models
     cipher_modules/models/minizinc/minizinc_models/minizinc_cipher_model
     cipher_modules/models/minizinc/minizinc_models/minizinc_deterministic_truncated_xor_differential_model
     cipher_modules/models/minizinc/minizinc_models/minizinc_xor_differential_model
+
+Sat
+```
+
+.. toctree::
+
+    cipher_modules/models/sat/sat_model
+
+Cms models
+''''''''''
+
+.. toctree::
+
+    cipher_modules/models/sat/cms_models/cms_cipher_model
+    cipher_modules/models/sat/cms_models/cms_deterministic_truncated_xor_differential_model
+    cipher_modules/models/sat/cms_models/cms_xor_differential_model
+    cipher_modules/models/sat/cms_models/cms_xor_linear_model
+
+Sat models
+''''''''''
+
+.. toctree::
+
+    cipher_modules/models/sat/sat_models/sat_cipher_model
+    cipher_modules/models/sat/sat_models/sat_deterministic_truncated_xor_differential_model
+    cipher_modules/models/sat/sat_models/sat_xor_differential_model
+    cipher_modules/models/sat/sat_models/sat_xor_linear_model
+
+Utils
+'''''
+
+.. toctree::
+
+    cipher_modules/models/sat/utils/mzn_predicates
+    cipher_modules/models/sat/utils/n_window_heuristic_helper
+    cipher_modules/models/sat/utils/utils
 
 Smt
 ```
@@ -219,123 +283,77 @@ Utils
 
     cipher_modules/models/smt/utils/utils
 
-Milp
-````
+Statistical tests
+-----------------
 
 .. toctree::
 
-    cipher_modules/models/milp/milp_model
-    cipher_modules/models/milp/dictionary_containing_xor_inequalities_between_n_input_bits
+    cipher_modules/statistical_tests/dataset_generator
+    cipher_modules/statistical_tests/dieharder_statistical_tests
+    cipher_modules/statistical_tests/input_data_example
+    cipher_modules/statistical_tests/nist_statistical_tests
 
-Milp models
-'''''''''''
-
-.. toctree::
-
-    cipher_modules/models/milp/milp_models/milp_deterministic_truncated_xor_differential_model
-    cipher_modules/models/milp/milp_models/milp_xor_differential_model
-    cipher_modules/models/milp/milp_models/milp_cipher_model
-    cipher_modules/models/milp/milp_models/milp_xor_linear_model
-
-Utils
-'''''
+Components
+==========
 
 .. toctree::
 
-    cipher_modules/models/milp/utils/config
-    cipher_modules/models/milp/utils/generate_sbox_inequalities_for_trail_search
-    cipher_modules/models/milp/utils/generate_inequalities_for_xor_with_n_input_bits
-    cipher_modules/models/milp/utils/generate_inequalities_for_large_sboxes
-    cipher_modules/models/milp/utils/generate_inequalities_for_and_operation_2_input_bits
-    cipher_modules/models/milp/utils/mzn_predicates
+    components/and_component
+    components/cipher_output_component
+    components/concatenate_component
+    components/constant_component
+    components/intermediate_output_component
+    components/linear_layer_component
+    components/mix_column_component
+    components/modadd_component
+    components/modsub_component
+    components/modular_component
+    components/multi_input_non_linear_logical_operator_component
+    components/not_component
+    components/or_component
+    components/permutation_component
+    components/reverse_component
+    components/rotate_component
+    components/sbox_component
+    components/shift_component
+    components/shift_rows_component
+    components/sigma_component
+    components/theta_keccak_component
+    components/theta_xoodoo_component
+    components/variable_rotate_component
+    components/variable_shift_component
+    components/word_permutation_component
+    components/xor_component
 
-Tmp
-'''
+Previous results
+================
 
 .. toctree::
 
-    cipher_modules/models/milp/tmp/tea_cipher_xordiff_model
 
-Algebraic
-`````````
+Speck
+-----
 
 .. toctree::
 
-    cipher_modules/models/algebraic/boolean_polynomial_ring
-    cipher_modules/models/algebraic/algebraic_model
-    cipher_modules/models/algebraic/constraints
 
 Sat
 ```
 
 .. toctree::
 
-    cipher_modules/models/sat/sat_model
-
-Cms models
-''''''''''
-
-.. toctree::
-
-    cipher_modules/models/sat/cms_models/cms_xor_differential_model
-    cipher_modules/models/sat/cms_models/cms_xor_linear_model
-    cipher_modules/models/sat/cms_models/cms_cipher_model
-    cipher_modules/models/sat/cms_models/cms_deterministic_truncated_xor_differential_model
 
 Utils
-'''''
+=====
 
 .. toctree::
 
-    cipher_modules/models/sat/utils/n_window_heuristic_helper
-    cipher_modules/models/sat/utils/utils
-    cipher_modules/models/sat/utils/mzn_predicates
-
-Sat models
-''''''''''
-
-.. toctree::
-
-    cipher_modules/models/sat/sat_models/sat_xor_linear_model
-    cipher_modules/models/sat/sat_models/sat_deterministic_truncated_xor_differential_model
-    cipher_modules/models/sat/sat_models/sat_xor_differential_model
-    cipher_modules/models/sat/sat_models/sat_cipher_model
-
-Cp
-``
-
-.. toctree::
-
-    cipher_modules/models/cp/cp_model
-
-Cp models
-'''''''''
-
-.. toctree::
-
-    cipher_modules/models/cp/cp_models/cp_deterministic_truncated_xor_differential_model
-    cipher_modules/models/cp/cp_models/cp_xor_differential_trail_search_model
-    cipher_modules/models/cp/cp_models/cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model
-    cipher_modules/models/cp/cp_models/cp_xor_linear_model
-    cipher_modules/models/cp/cp_models/cp_xor_differential_number_of_active_sboxes_model
-    cipher_modules/models/cp/cp_models/cp_cipher_model
-
-Minizinc functions
-''''''''''''''''''
-
-.. toctree::
-
-    cipher_modules/models/cp/Minizinc_functions/Usefulfunctions
-
-Statistical tests
------------------
-
-.. toctree::
-
-    cipher_modules/statistical_tests/dieharder_statistical_tests
-    cipher_modules/statistical_tests/input_data_example
-    cipher_modules/statistical_tests/dataset_generator
-    cipher_modules/statistical_tests/nist_statistical_tests
+    utils/integer
+    utils/integer_functions
+    utils/sage_scripts
+    utils/sequence_operations
+    utils/templates
+    utils/utils
 
 
 

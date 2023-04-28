@@ -13,11 +13,10 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Modular component" href="modular_component.html" />
-    <link rel="prev" title="Multi input non linear logical operator component" href="multi_input_non_linear_logical_operator_component.html" />
+    <link rel="next" title="Permutation component" href="permutation_component.html" />
+    <link rel="prev" title="Not component" href="not_component.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
     <script src="../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,19 +32,12 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="modular_component.html" title="Modular component"
+          <a href="permutation_component.html" title="Permutation component"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="multi_input_non_linear_logical_operator_component.html" title="Multi input non linear logical operator component"
+          <a href="not_component.html" title="Not component"
              accesskey="P">previous</a> |</li>
-  
-    
-      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
-    
-  
-  
         <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-
         <li class="nav-item nav-item-this"><a href="">Or component</a></li> 
       </ul>
     </div>  
@@ -199,9 +191,9 @@
 <span class="gp">sage: </span><span class="n">and_component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">and_component</span><span class="o">.</span><span class="n">cp_xor_differential_propagation_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
 <span class="go">([],</span>
-<span class="go"> [&#39;constraint table([xor_0_7[0]]++[key[12]]++[and_0_8[0]]++[p[0]],and_DDT_2);&#39;,</span>
+<span class="go"> [&#39;constraint table([xor_0_7[0]]++[key[12]]++[and_0_8[0]]++[p[0]],and2inputs_DDT);&#39;,</span>
 <span class="go">   ...</span>
-<span class="go">  &#39;constraint table([xor_0_7[11]]++[key[23]]++[and_0_8[11]]++[p[11]],and_DDT_2);&#39;])</span>
+<span class="go">  &#39;constraint table([xor_0_7[11]]++[key[23]]++[and_0_8[11]]++[p[11]],and2inputs_DDT);&#39;])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -658,13 +650,13 @@ Also see <a class="reference external" href="https://eprint.iacr.org/2020/290.pd
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="multi_input_non_linear_logical_operator_component.html"
-                          title="previous chapter">Multi input non linear logical operator component</a></p>
+    <p class="topless"><a href="not_component.html"
+                          title="previous chapter">Not component</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="modular_component.html"
-                          title="next chapter">Modular component</a></p>
+    <p class="topless"><a href="permutation_component.html"
+                          title="next chapter">Permutation component</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -697,19 +689,12 @@ Also see <a class="reference external" href="https://eprint.iacr.org/2020/290.pd
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="modular_component.html" title="Modular component"
+          <a href="permutation_component.html" title="Permutation component"
              >next</a> |</li>
         <li class="right" >
-          <a href="multi_input_non_linear_logical_operator_component.html" title="Multi input non linear logical operator component"
+          <a href="not_component.html" title="Not component"
              >previous</a> |</li>
-  
-    
-      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
-    
-  
-  
         <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-
         <li class="nav-item nav-item-this"><a href="">Or component</a></li> 
       </ul>
     </div>
