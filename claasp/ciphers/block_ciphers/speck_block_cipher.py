@@ -90,8 +90,9 @@ class SpeckBlockCipher(Cipher):
             if round_number != 0:
                 # constant r-1
                 self.add_constant_component(self.WORD_SIZE, round_number - 1)
+                self.get_current_component().set_tags(["key_schedule"])
                 const_r = ComponentState([self.get_current_component_id()], [list(range(self.WORD_SIZE))])
-                key_left, key_right = self.round_function(key_left, key_right, const_r)
+                key_left, key_right = self.round_function(key_left, key_right, const_r, "key_schedule")
                 left_schedule.append(key_left)
                 key_schedule.append(key_right)
 
@@ -100,9 +101,11 @@ class SpeckBlockCipher(Cipher):
             key_right = key_schedule[round_number]
 
             # round encryption
-            p1, p2 = self.round_function(p1, p2, key_right)
+            p1, p2 = self.round_function(p1, p2, key_right, "data_schedule")
             self.add_round_key_output_component(key_right.id, key_right.input_bit_positions, self.WORD_SIZE)
+            self.get_current_component().set_tags(["key_schedule"])
             self.add_output_component(block_bit_size, n, p1, p2, round_number)
+            self.get_current_component().set_tags(["data_schedule"])
 
     def add_output_component(self, block_bit_size, n, p1, p2, round_number):
         if round_number == n - 1:
@@ -126,25 +129,33 @@ class SpeckBlockCipher(Cipher):
 
         return key_schedule, l_schedule
 
-    def round_function(self, p1, p2, key):
+    def round_function(self, p1, p2, key, tag=None):
+        def set_tag():
+            if tag is not None:
+                self.get_current_component().set_tags([tag])
         # p1 >>> alpha
         self.add_rotate_component(p1.id, p1.input_bit_positions, self.WORD_SIZE, self.ROT_ALPHA)
+        set_tag()
         p1 = ComponentState([self.get_current_component_id()], [list(range(self.WORD_SIZE))])
 
         # p1 = modadd(p1, p2)
         self.add_MODADD_component(p1.id + p2.id, p1.input_bit_positions + p2.input_bit_positions, self.WORD_SIZE)
+        set_tag()
         p1 = ComponentState([self.get_current_component_id()], [list(range(self.WORD_SIZE))])
 
         # p1 = p1 ^ round_key
         self.add_XOR_component(p1.id + key.id, p1.input_bit_positions + key.input_bit_positions, self.WORD_SIZE)
+        set_tag()
         p1 = ComponentState([self.get_current_component_id()], [list(range(self.WORD_SIZE))])
 
         # p2 <<< beta
         self.add_rotate_component(p2.id, p2.input_bit_positions, self.WORD_SIZE, -self.ROT_BETA)
+        set_tag()
         p2 = ComponentState([self.get_current_component_id()], [list(range(self.WORD_SIZE))])
 
         # p2 = p1 ^ p2
         self.add_XOR_component(p1.id + p2.id, p1.input_bit_positions + p2.input_bit_positions, self.WORD_SIZE)
+        set_tag()
         p2 = ComponentState([self.get_current_component_id()], [list(range(self.WORD_SIZE))])
 
         return p1, p2

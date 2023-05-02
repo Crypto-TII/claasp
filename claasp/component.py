@@ -68,7 +68,7 @@ def free_input(code):
 
 
 class Component:
-    def __init__(self, component_id, component_type, component_input, output_bit_size, description):
+    def __init__(self, component_id, component_type, component_input, output_bit_size, description, tags=[]):
         if not isinstance(component_input.id_links, list):
             print("type of [input_id_link] should be a list")
             return
@@ -98,6 +98,7 @@ class Component:
         self._output_bit_size = output_bit_size
         self._description = description
         self._suffixes = ['_i', '_o']
+        self._tags = tags
 
     def _create_minizinc_1d_array_from_list(self, mzn_list):
         mzn_list_size = len(mzn_list)
@@ -237,7 +238,8 @@ class Component:
             'input_id_link': self.input_id_links,
             'input_bit_positions': self.input_bit_positions,
             'output_bit_size': self._output_bit_size,
-            'description': self._description
+            'description': self._description,
+            'tags': self._tags
         }
 
     def get_graph_representation(self):
@@ -248,7 +250,8 @@ class Component:
             "input_id_link": deepcopy(self._input.id_links),
             "input_bit_positions": deepcopy(self._input.bit_positions),
             "output_bit_size": self._output_bit_size,
-            "description": self._description
+            "description": self._description,
+            'tags': self._tags
         }
 
     def is_id_equal_to(self, component_id):
@@ -384,6 +387,9 @@ class Component:
                 f'\tmemcpy({self.id} -> '
                 f'list, (Word[]) {{{", ".join(word_list)}}}, {len(word_list)} * sizeof(Word));')
 
+    def set_tags(self, tags):
+        self._tags = tags
+
     @property
     def description(self):
         return self._description
@@ -415,3 +421,7 @@ class Component:
     @property
     def type(self):
         return self._type
+
+    @property
+    def tags(self):
+        return self._tags
