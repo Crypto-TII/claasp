@@ -1,10 +1,14 @@
 name: Run pytest and SonarCloud Scan
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - '**'
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches:
       - develop
+      - main
 
 jobs:
   run-pytest-and-sonarcloud-scan:

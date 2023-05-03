@@ -8,11 +8,9 @@ CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives and
 Download the source from the git repository:
 
 ```
-     $ git clone https://USERNAME@bitbucket.org/tiicrypto/tii-claasp.git
+     $ git clone https://github.com/Crypto-TII/claasp.git
      $ cd tii-claasp/
 ```
-
-Change `USERNAME` to your own account in the internal BitBucket.
 
 CLAASP library is built on the top of SageMath, and it will try to pick the `sage` binary from `PATH`
 environment variable. Alternatively, you can specify different sage binary in the file `SAGE_BIN_PATH` 
@@ -410,7 +408,7 @@ Now suppose that you want to work on a ticket. We must associate the ticket to a
 repository in the following way
 
 1. Go to the ticket that you want to work on
-2. In the right pane, select `Create branch`. You will be redirected to the bitbucket.
+2. In the right pane, select `Create branch`. You will be redirected to the Github.
 3. Select the `tii-claasp` in the `Repository` field
 4. Choose `Custom` in the `Branch type`
 5. Select the appropriate branch that you want to `Branch from`. Generally, this should be set to `master`.
