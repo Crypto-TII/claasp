@@ -12,11 +12,9 @@ implemented using [Python3](https://www.python.org/) and [Cython](https://www.cy
 Download the source from the git repository:
 
 ```
-     $ git clone https://USERNAME@bitbucket.org/tiicrypto/tii-claasp.git
+     $ git clone https://github.com/Crypto-TII/claasp.git
      $ cd tii-claasp/
 ```
-
-Change `USERNAME` to your own account in the internal BitBucket.
 
 CLAASP library is built on the top of SageMath, and it will try to pick the `sage` binary from `PATH`
 environment variable. Alternatively, you can specify different sage binary in the file `SAGE_BIN_PATH` 
