@@ -568,6 +568,12 @@ def cnf_and_linear(mask_in_0, mask_in_1, mask_out, hw):
 # ---------------------------- #
 
 
+def _get_data_kissat(data_keywords, lines):
+    data_line = [line for line in lines if data_keywords in line][0]
+    data = float(re.findall(r'[0-9]+\.?[0-9]*\sseconds', data_line)[0].split()[0])
+    return data
+
+
 def _get_data(data_keywords, lines):
     data_line = [line for line in lines if data_keywords in line][0]
     data = float(re.findall(r'[0-9]+\.?[0-9]*', data_line)[0])
@@ -590,7 +596,10 @@ def run_sat_solver(solver_name, options, dimacs_input, host=None):
             if line.startswith('v'):
                 values.extend(line.split()[1:])
         values = values[:-1]
-    time = _get_data(solver_specs['time'], solver_output)
+    if solver_name == 'kissat':
+        time = _get_data_kissat(solver_specs['time'], solver_output)
+    else:
+        time = _get_data(solver_specs['time'], solver_output)
     memory = float('inf')
     memory_keywords = solver_specs['memory']
     if memory_keywords:
