@@ -570,8 +570,12 @@ def cnf_and_linear(mask_in_0, mask_in_1, mask_out, hw):
 
 def _get_data_kissat(data_keywords, lines):
     data_line = [line for line in lines if data_keywords in line][0]
-    data = float(re.findall(r'[0-9]+(?:\.[0-9]+)?\sseconds', data_line)[0].split()[0])
-    return data
+    seconds_str_index = data_line.find("seconds") - 2
+    output_str = ""
+    while data_line[seconds_str_index] != " ":
+        output_str += data_line[seconds_str_index]
+        seconds_str_index -= 1
+    return float(output_str[::-1])
 
 
 def _get_data(data_keywords, lines):
