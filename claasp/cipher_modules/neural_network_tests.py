@@ -119,9 +119,10 @@ def update_blackbox_distinguisher_tests_ds(base_inputs, base_output, cipher, ds,
                         dtype=np.float32))
                     
 
-def update_blackbox_distinguisher_vectorized_tests_ds(base_inputs, cipher, d, ds, index, labels, nb_samples):
+def update_blackbox_distinguisher_vectorized_tests_ds(base_inputs, base_output, cipher, ds, index, labels, nb_samples):
     input_lengths = cipher.inputs_bit_size
     random_labels_size = nb_samples - np.count_nonzero(np.array(labels))
+    #cipher_output = base_output
 
     base_inputs_np = [np.broadcast_to(
         np.array([b for b in x.to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
