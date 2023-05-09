@@ -145,12 +145,24 @@ class Component:
 
         return self.input_bit_size, input_bit_ids
 
+    def _generate_input_double_ids(self):
+        _, in_ids_0 = self._generate_input_ids(suffix='_0')
+        _, in_ids_1 = self._generate_input_ids(suffix='_1')
+
+        return in_ids_0, in_ids_1
+
     def _generate_output_ids(self, suffix=''):
         output_id_link = self.id
         output_bit_size = self.output_bit_size
         output_bit_ids = [f'{output_id_link}_{j}{suffix}' for j in range(output_bit_size)]
 
         return output_bit_size, output_bit_ids
+
+    def _generate_output_double_ids(self):
+        out_len, out_ids_0 = self._generate_output_ids(suffix='_0')
+        _, out_ids_1 = self._generate_output_ids(suffix='_1')
+
+        return out_len, out_ids_0, out_ids_1
 
     def _get_independent_input_output_variables(self):
         """

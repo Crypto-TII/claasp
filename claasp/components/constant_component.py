@@ -458,9 +458,37 @@ class Constant(Component):
         return output_bit_ids, constraints
 
     def sat_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.sat_xor_differential_propagation_constraints()
+        """
+        Return a list of variables and a list of clauses for CONSTANT in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
 
-    def sat_xor_differential_propagation_constraints(self, model=None):
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: constant_component = speck.component_from(2, 0)
+            sage: constant_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            (['constant_2_0_0_0',
+              'constant_2_0_1_0',
+              'constant_2_0_2_0',
+              ...
+              '-constant_2_0_13_1',
+              '-constant_2_0_14_1',
+              '-constant_2_0_15_1'])
+        """
+        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        constraints = [f'-{out_id}' for out_id in out_ids_0] + [f'-{out_id}' for out_id in out_ids_1]
+        return out_ids_0 + out_ids_1, constraints
+
+    def sat_xor_differential_propagation_constraints(self):
         """
         Return lists of variables and strings representing clauses for CONSTANT for SAT xor differential.
 
@@ -470,7 +498,7 @@ class Constant(Component):
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - None
 
         EXAMPLES::
 
@@ -486,8 +514,8 @@ class Constant(Component):
               '-constant_2_0_14',
               '-constant_2_0_15'])
         """
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        constraints = [f'-{output_bit_ids[i]}' for i in range(output_bit_len)]
+        _, output_bit_ids = self._generate_output_ids()
+        constraints = [f'-{output_bit_id}' for output_bit_id in output_bit_ids]
         result = output_bit_ids, constraints
         return result
 

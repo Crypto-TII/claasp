@@ -687,6 +687,54 @@ class Modular(Component):
         result = output_bit_ids + dummy_bit_ids + hw_bit_ids, constraints
         return result
 
+    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
+        """
+        Return a list of variables and a list of clauses for Modular Addition
+        in DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: modadd_component = speck.component_from(0, 1)
+            sage: modadd_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            (['modadd_0_1_0_0',
+              'modadd_0_1_1_0',
+              'modadd_0_1_2_0',
+              ...
+              'rot_0_0_15_0 plaintext_31_0 -rot_0_0_15_1 -modadd_0_1_15_0',
+              'rot_0_0_15_0 plaintext_31_0 -plaintext_31_1 -modadd_0_1_15_0',
+              'modadd_0_1_15_0 -rot_0_0_15_1 -plaintext_31_1 -modadd_0_1_15_1'])
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        constraints = []
+        for i in range(out_len):
+            pivot = (in_ids_0[i], in_ids_1[i], in_ids_0[i + out_len], in_ids_1[i + out_len])
+            for j in range(0, i):
+                constraints.extend(f'{out_ids_0[j]} -{p}' for p in pivot)
+            for j in range(i + 1, out_len):
+                constraints.extend(f'-{in_ids_0[j]} -{p}' for p in pivot)
+                constraints.extend(f'-{in_ids_1[j]} -{p}' for p in pivot)
+                constraints.extend(f'-{in_ids_0[j + out_len]} -{p}' for p in pivot)
+                constraints.extend(f'-{in_ids_1[j + out_len]} -{p}' for p in pivot)
+                constraints.extend(f'-{out_ids_0[j]} -{p}' for p in pivot)
+                constraints.extend(f'-{out_ids_1[j]} -{p}' for p in pivot)
+            xor_constraints = sat_utils.cnf_xor_in_modadd_truncated((out_ids_0[i], out_ids_1[i]),
+                                                                    (pivot[0], pivot[1]),
+                                                                    (pivot[2], pivot[3]))
+            constraints.extend(xor_constraints)
+
+        return out_ids_0 + out_ids_1, constraints
+
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses for fixing variables in SAT XOR LINEAR model.
