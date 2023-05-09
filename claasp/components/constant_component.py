@@ -488,7 +488,7 @@ class Constant(Component):
         constraints = [f'-{out_id}' for out_id in out_ids_0] + [f'-{out_id}' for out_id in out_ids_1]
         return out_ids_0 + out_ids_1, constraints
 
-    def sat_xor_differential_propagation_constraints(self):
+    def sat_xor_differential_propagation_constraints(self, model=None):
         """
         Return lists of variables and strings representing clauses for CONSTANT for SAT xor differential.
 
@@ -498,7 +498,7 @@ class Constant(Component):
 
         INPUT:
 
-        - None
+        - ``model`` -- **model object** (default: `None`); a model instance
 
         EXAMPLES::
 

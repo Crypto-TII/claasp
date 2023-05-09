@@ -53,9 +53,9 @@ class SatDeterministicTruncatedXorDifferentialModel(SatModel):
         self._model_constraints = constraints
 
         for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION]
+            component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION)
             operation = component.description[0]
-            operation_types = ["ROTATE", "SHIFT"]
+            operation_types = ('MODADD', 'ROTATE', 'SHIFT', 'XOR')
 
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.sat_deterministic_truncated_xor_differential_trail_constraints()

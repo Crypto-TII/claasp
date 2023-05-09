@@ -758,10 +758,10 @@ class XOR(Component):
 
         return out_ids_0 + out_ids_1, constraints
 
-    def sat_xor_differential_propagation_constraints(self):
+    def sat_xor_differential_propagation_constraints(self, model=None):
         return self.sat_constraints()
 
-    def sat_xor_linear_mask_propagation_constraints(self):
+    def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses for XOR operation in SAT XOR LINEAR model.
 
