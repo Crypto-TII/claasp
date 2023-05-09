@@ -959,16 +959,17 @@ def fsr(input, polynomial_index_list, output_len, verbosity=False):
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
     """
     output = BitArray(output_len)
-    R = BooleanPolynomialRing(input.len)
+    number_of_variables = input.len - output_len + 1
+    R = BooleanPolynomialRing(number_of_variables)
     p = R(0)
     for _ in range(polynomial_index_list):
         m = 1
         for i in range(len(_)):
-            m = m ^ R.i
+            m = m * R.i
         p += m
 
     for i in range(output_len):
-        output[i] = p.evaluate(input[i:])
+        output[i] = p.evaluate(input[i:i+number_of_variables])
 
     if verbosity:
         print("FSR:")
