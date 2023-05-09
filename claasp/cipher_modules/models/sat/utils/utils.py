@@ -627,6 +627,34 @@ def run_minisat(options, dimacs_input, input_file_name, output_file_name):
     return status, time, memory, values
 
 
+def run_parkissat(options, dimacs_input, input_file_name):
+    """Call the Parkissat solver specified in `solver_specs`, using input and output files."""
+    with open(input_file_name, 'wt') as input_file:
+        input_file.write(dimacs_input)
+    solver_specs = constants.SAT_SOLVERS['parkissat']
+    import time
+    command = solver_specs['command'][:] + options
+    command.append(input_file_name)
+    start = time.time()
+    solver_process = subprocess.run(command, capture_output=True, text=True)
+    end = time.time()
+    solver_output = solver_process.stdout.splitlines()
+    time = end - start
+    memory = 0
+    status = solver_output[0].split()[1]
+    values = ""
+    if status == 'SATISFIABLE':
+        solver_output = solver_output[1:]
+        solver_output = list(map(lambda s: s.replace('v ', ''), solver_output))
+        values = []
+        for element in solver_output:
+            substrings = element.split()
+            values.extend(substrings)
+    os.remove(input_file_name)
+
+    return status, time, memory, values
+
+
 def run_yices(options, dimacs_input, input_file_name):
     """Call the Yices SAT solver specified in `solver_specs`, using input file."""
     with open(input_file_name, 'wt') as input_file:

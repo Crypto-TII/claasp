@@ -106,6 +106,19 @@ WORKDIR /opt
 
 ENV PATH="/opt/kissat-rel-3.0.0/build/:${PATH}"
 
+# Installing Parkissat
+RUN wget -O parkissat.tar.gz https://github.com/songfu1983/ParKissat-RS/archive/refs/heads/master.tar.gz \
+    && ls / \
+    && tar -xf parkissat.tar.gz \
+    && rm parkissat.tar.gz
+
+RUN cd ./ParKissat-RS-master/ \
+    && make
+
+WORKDIR /opt
+
+ENV PATH="/opt/ParKissat-RS-master/:${PATH}"
+
 # Installing Glucose
 RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1.tgz  \
     && tar -xf glucose-syrup-4.1.tgz \
