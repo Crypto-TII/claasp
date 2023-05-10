@@ -631,6 +631,8 @@ def build_function_call(component):
         return "component_input"
     elif component.type == PADDING:
         return "padding(component_input)"
+    elif component.type == FSR:
+        return f"fsr(component_input, {component.description}, output_bit_size)"
     elif component.type == INTERMEDIATE_OUTPUT:
         return "component_input"
     elif component.type == CIPHER_OUTPUT:
