@@ -653,39 +653,6 @@ def cnf_xor_truncated_seq(results, variables):
     return model
 
 
-def cnf_xor_in_modadd_truncated(result, variable_0, variable_1):
-    """
-    Return a list of strings representing the CNF of the Boolean XOR when
-    searching the MODADD component for DETERMINISTIC TRUNCATED XOR
-    DIFFERENTIAL.
-
-    INPUT:
-
-    - ``result`` -- **tuple of two strings**; the result variable
-    - ``variable_0`` -- **tuple of two string**; the first variable
-    - ``variable_1`` -- **tuple of two string**; the second variable
-
-    EXAMPLES::
-
-        sage: from claasp.cipher_modules.models.sat.utils.utils import cnf_xor_in_modadd_truncated
-        sage: cnf_xor_in_modadd_truncated(('r0', 'r1'), ('a0', 'a1'), ('b0', 'b1'))
-        ['r0 -a0',
-         'r0 -b0',
-         'a1 r0 r1 -b1',
-         'b1 r0 r1 -a1',
-         'a0 b0 -a1 -r0',
-         'a0 b0 -b1 -r0',
-         'r0 -a1 -b1 -r1']
-    """
-    return [f'{result[0]} -{variable_0[0]}',
-            f'{result[0]} -{variable_1[0]}',
-            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
-            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
-            f'{variable_0[0]} {variable_1[0]} -{variable_0[1]} -{result[0]}',
-            f'{variable_0[0]} {variable_1[0]} -{variable_1[1]} -{result[0]}',
-            f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
-
-
 # ---------------------------- #
 #    - Running SAT solver -    #
 # ---------------------------- #

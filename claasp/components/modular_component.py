@@ -728,9 +728,9 @@ class Modular(Component):
                 constraints.extend(f'-{in_ids_1[j + out_len]} -{p}' for p in pivot)
                 constraints.extend(f'-{out_ids_0[j]} -{p}' for p in pivot)
                 constraints.extend(f'-{out_ids_1[j]} -{p}' for p in pivot)
-            xor_constraints = sat_utils.cnf_xor_in_modadd_truncated((out_ids_0[i], out_ids_1[i]),
-                                                                    (pivot[0], pivot[1]),
-                                                                    (pivot[2], pivot[3]))
+            xor_constraints = sat_utils.cnf_xor_truncated((out_ids_0[i], out_ids_1[i]),
+                                                          (pivot[0], pivot[1]),
+                                                          (pivot[2], pivot[3]))
             constraints.extend(xor_constraints)
 
         return out_ids_0 + out_ids_1, constraints
