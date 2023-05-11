@@ -406,7 +406,41 @@ class CipherOutput(Component):
         return output_bit_ids, constraints
 
     def sat_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.sat_constraints()
+        """
+        Return a list of variables and a list of clauses for OUTPUT in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: output_component = speck.component_from(2, 12)
+            sage: output_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            (['cipher_output_2_12_0_0',
+              'cipher_output_2_12_1_0',
+              'cipher_output_2_12_2_0',
+              ...
+              'xor_2_10_14_1 -cipher_output_2_12_30_1',
+              'cipher_output_2_12_31_1 -xor_2_10_15_1',
+              'xor_2_10_15_1 -cipher_output_2_12_31_1'])
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        constraints = []
+        for out_id, in_id in zip(out_ids_0, in_ids_0):
+            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
+        for out_id, in_id in zip(out_ids_1, in_ids_1):
+            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
+
+        return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model):
         return self.sat_constraints()
