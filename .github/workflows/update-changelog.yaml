@@ -1,0 +1,64 @@
+name: Update changelog
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  update-changelog:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run bash file
+        run: |
+          git fetch 
+          chmod 777 run_update_changelog.sh
+          repository_name="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+          should_add_last_changes_to_master=$(./run_update_changelog.sh $repository_name)
+          echo "should_add_last_changes_to_master=$should_add_last_changes_to_master" >> $GITHUB_ENV
+
+      - name: Commit push changes
+        uses: actions-js/push@master
+        if: ${{env.should_add_last_changes_to_master == 'true'}}
+        with:
+          github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
+          message: 'Changelog version updated'
+          tags: true
+          force: true
+
+      - name: Create tags
+        if: ${{env.should_add_last_changes_to_master == 'true'}}
+        run: |
+          project_version=$(cat VERSION)
+          tag_name="$project_version"
+          release_message="Version $project_version"
+          echo "tag_name=$tag_name" >> $GITHUB_ENV
+          echo "release_message=$release_message" >> $GITHUB_ENV
+
+      - name: Create push tag
+        if: ${{env.should_add_last_changes_to_master == 'true'}}
+        id: 'tag_create'
+        uses: rickstaa/action-create-tag@v1
+        with:
+          github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
+          tag: ${{env.tag_name}}
+          tag_exists_error: false
+          message: ${{env.release_message}}
+
+      - name: Update develop branch
+        uses: morbalint/git-merge-action@v1
+        with:
+          target: 'develop'
+          source: 'main'
+          token: ${{ secrets.AUTHORIZATION_TOKEN }}
+          strategy_options: 'ours'

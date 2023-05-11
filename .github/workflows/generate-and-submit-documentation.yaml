@@ -51,3 +51,11 @@ jobs:
       with:
         github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
         message: "Update documentation"
+
+    - name: Update develop branch
+      uses: morbalint/git-merge-action@v1
+      with:
+        target: 'develop'
+        source: 'main'
+        token: ${{ secrets.AUTHORIZATION_TOKEN }}
+        strategy_options: 'ours'
