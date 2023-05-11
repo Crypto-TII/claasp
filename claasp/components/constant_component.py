@@ -484,7 +484,7 @@ class Constant(Component):
               '-constant_2_0_14_1',
               '-constant_2_0_15_1'])
         """
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = [f'-{out_id}' for out_id in out_ids_0] + [f'-{out_id}' for out_id in out_ids_1]
         return out_ids_0 + out_ids_1, constraints
 

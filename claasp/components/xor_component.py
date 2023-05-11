@@ -588,7 +588,7 @@ class XOR(Component):
         x = model.binary_variable
         output_bit_size = self.output_bit_size
         ind_input_vars, ind_output_vars = self._get_independent_input_output_variables()
-        input_vars, output_vars = self._get_input_output_variables()
+        input_vars, _ = self._get_input_output_variables()
 
         variables = [(f"x[{var}]", x[var]) for var in ind_input_vars + ind_output_vars]
         constraints = []
