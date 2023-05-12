@@ -475,6 +475,41 @@ class LinearLayer(Component):
 
         return output_bit_ids, constraints
 
+    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
+        """
+        Return a list of variables and a list of clauses for LINEAR LAYER in
+        SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: linear_layer_component = fancy.component_from(0, 6)
+            sage: constraints = linear_layer_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            sage: constraints[1][-1]
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        matrix = self.description
+        constraints = []
+        for i, out_ids_pair in enumerate(zip(out_ids_0, out_ids_1)):
+            operands = [in_ids_pair for j, in_ids_pair in enumerate(zip(in_ids_0, in_ids_1))
+                        if matrix[j][i]]
+            result_ids = [(f'inter_{j}_{self.id}_{i}_0', f'inter_{j}_{self.id}_{i}_1')
+                          for j in range(len(operands) - 2)]
+            result_ids.append(out_ids_pair)
+            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, operands))
+
+        return out_ids_0 + out_ids_1, constraints
+
     def sat_xor_differential_propagation_constraints(self, model):
         return self.sat_constraints()
 

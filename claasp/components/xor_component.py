@@ -751,9 +751,8 @@ class XOR(Component):
         out_ids = [(id_0, id_1) for id_0, id_1 in zip(out_ids_0, out_ids_1)]
         constraints = []
         for i, out_id in enumerate(out_ids):
-            result_ids_0 = [f'inter_{j}_{out_id}_0' for j in range(self.description[1] - 2)]
-            result_ids_1 = [f'inter_{j}_{out_id}_1' for j in range(self.description[1] - 2)]
-            result_ids = [(id_0, id_1) for id_0, id_1 in zip(result_ids_0, result_ids_1)] + [out_id]
+            result_ids = [(f'inter_{j}_{self.id}_{i}_0', f'inter_{j}_{self.id}_{i}_1')
+                          for j in range(self.description[1] - 2)] + [out_id]
             constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::out_len]))
 
         return out_ids_0 + out_ids_1, constraints
