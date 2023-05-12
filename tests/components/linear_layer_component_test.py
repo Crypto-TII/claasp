@@ -186,6 +186,16 @@ def test_sat_constraints():
                                  '-sbox_0_4_3 -sbox_0_5_1 -sbox_0_5_2 -sbox_0_5_3'
 
 
+def test_sat_deterministic_truncated_xor_differential_trail_constraints():
+    fancy = FancyBlockCipher(number_of_rounds=3)
+    linear_layer_component = fancy.component_from(0, 6)
+    output_bit_ids, constraints = linear_layer_component.sat_constraints()
+
+    assert constraints[1][10] == 'inter_0_linear_layer_0_6_0_1 sbox_0_1_0_1 inter_1_linear_layer_0_6_0_0 -inter_1_linear_layer_0_6_0_1'
+    assert constraints[1][70] == 'inter_0_linear_layer_0_6_1_0 -sbox_0_0_1_0'
+    assert constraints[1][100] == 'inter_3_linear_layer_0_6_1_0 sbox_0_1_3_0 -inter_4_linear_layer_0_6_1_0'
+
+
 def test_sat_xor_linear_mask_propagation_constraints():
     fancy = FancyBlockCipher(number_of_rounds=3)
     linear_layer_component = fancy.component_from(0, 6)

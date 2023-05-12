@@ -494,7 +494,8 @@ class LinearLayer(Component):
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: constraints = linear_layer_component.sat_deterministic_truncated_xor_differential_trail_constraints()
-            sage: constraints[1][-1]
+            sage: constraints[1][11]
+            'inter_0_linear_layer_0_6_0_1 inter_1_linear_layer_0_6_0_0 inter_1_linear_layer_0_6_0_1 -sbox_0_1_0_1'
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
