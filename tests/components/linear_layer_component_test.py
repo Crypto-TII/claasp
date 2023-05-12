@@ -191,9 +191,9 @@ def test_sat_deterministic_truncated_xor_differential_trail_constraints():
     linear_layer_component = fancy.component_from(0, 6)
     output_bit_ids, constraints = linear_layer_component.sat_constraints()
 
-    assert constraints[1][10] == 'inter_0_linear_layer_0_6_0_1 sbox_0_1_0_1 inter_1_linear_layer_0_6_0_0 -inter_1_linear_layer_0_6_0_1'
-    assert constraints[1][70] == 'inter_0_linear_layer_0_6_1_0 -sbox_0_0_1_0'
-    assert constraints[1][100] == 'inter_3_linear_layer_0_6_1_0 sbox_0_1_3_0 -inter_4_linear_layer_0_6_1_0'
+    assert constraints[10] == 'inter_0_linear_layer_0_6_0_1 sbox_0_1_0_1 inter_1_linear_layer_0_6_0_0 -inter_1_linear_layer_0_6_0_1'
+    assert constraints[70] == 'inter_0_linear_layer_0_6_1_0 -sbox_0_0_1_0'
+    assert constraints[100] == 'inter_3_linear_layer_0_6_1_0 sbox_0_1_3_0 -inter_4_linear_layer_0_6_1_0'
 
 
 def test_sat_xor_linear_mask_propagation_constraints():
