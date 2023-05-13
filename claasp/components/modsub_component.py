@@ -35,9 +35,9 @@ def cp_twoterms(input_1, input_2, out, component_name, input_length, cp_constrai
 
 class MODSUB(Modular):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
+                 input_id_links, input_bit_positions, output_bit_size, suffix=''):
         super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, 'modsub')
+                         input_id_links, input_bit_positions, output_bit_size, 'modsub', suffix)
 
     def cms_constraints(self):
         """

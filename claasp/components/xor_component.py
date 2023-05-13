@@ -130,8 +130,8 @@ def get_milp_constraints_from_inequalities(inequalities, input_vars, number_of_i
 
 class XOR(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
-        component_id = f'xor_{current_round_number}_{current_round_number_of_components}'
+                 input_id_links, input_bit_positions, output_bit_size, suffix=''):
+        component_id = f'xor_{current_round_number}_{current_round_number_of_components}{suffix}'
         component_type = 'word_operation'
         input_len = sum(map(len, input_bit_positions))
         description = ['XOR', int(input_len / output_bit_size)]

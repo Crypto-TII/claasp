@@ -22,8 +22,8 @@ from claasp.components.rotate_component import Rotate
 
 class ShiftRows(Rotate):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, parameter):
+                 input_id_links, input_bit_positions, output_bit_size, parameter, suffix=''):
         super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, parameter)
-        self._id = f'shift_rows_{current_round_number}_{current_round_number_of_components}'
+                         input_id_links, input_bit_positions, output_bit_size, parameter, suffix)
+        self._id = f'shift_rows_{current_round_number}_{current_round_number_of_components}{suffix}'
         self._type = 'word_operation'

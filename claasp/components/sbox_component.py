@@ -168,8 +168,8 @@ def smt_get_sbox_probability_constraints(bit_ids, template):
 
 class SBOX(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, s_box_description):
-        component_id = f'sbox_{current_round_number}_{current_round_number_of_components}'
+                 input_id_links, input_bit_positions, output_bit_size, s_box_description, suffix=''):
+        component_id = f'sbox_{current_round_number}_{current_round_number_of_components}{suffix}'
         component_type = 'sbox'
         input_len = sum(map(len, input_bit_positions))
         description = s_box_description

@@ -81,10 +81,10 @@ def cp_get_all_inputs(word_size, input_bit_positions, input_id_link, numb_of_inp
 
 class MixColumn(LinearLayer):
     def __init__(self, current_round_number, current_round_number_of_components, input_id_links,
-                 input_bit_positions, output_bit_size, description):
+                 input_bit_positions, output_bit_size, description, suffix=''):
         super().__init__(current_round_number, current_round_number_of_components, input_id_links,
-                         input_bit_positions, output_bit_size, description)
-        self._id = f'mix_column_{current_round_number}_{current_round_number_of_components}'
+                         input_bit_positions, output_bit_size, description, suffix)
+        self._id = f'mix_column_{current_round_number}_{current_round_number_of_components}{suffix}'
         self._type = 'mix_column'
 
     def _cp_add_declarations_and_constraints(self, word_size, mix_column_mant, list_of_xor_components,

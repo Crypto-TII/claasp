@@ -99,6 +99,9 @@ class Component:
         self._description = description
         self._suffixes = ['_i', '_o']
 
+    def replace_input_id_links(self, input_id_links):
+        self._input_id_links = input_id_links
+
     def _create_minizinc_1d_array_from_list(self, mzn_list):
         mzn_list_size = len(mzn_list)
         lst_temp = f'[{",".join(mzn_list)}]'
@@ -253,6 +256,13 @@ class Component:
 
     def is_id_equal_to(self, component_id):
         return self._id == component_id
+
+    def is_type_equal_to(self, component_type):
+        print("component_typeeee", component_type, self._type)
+        return self._type == component_type
+
+    def is_description_equal_to(self, component_description):
+        return self._description == component_description
 
     def is_power_of_2_word_based(self, dto):
         available_word_sizes = [64, 32, 16, 8]

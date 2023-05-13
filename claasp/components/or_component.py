@@ -23,9 +23,9 @@ from claasp.components.multi_input_non_linear_logical_operator_component import 
 
 class OR(MultiInputNonlinearLogicalOperator):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
+                 input_id_links, input_bit_positions, output_bit_size, suffix=''):
         super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, 'or')
+                         input_id_links, input_bit_positions, output_bit_size, 'or', suffix)
 
     def algebraic_polynomials(self, model):
         """

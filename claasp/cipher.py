@@ -41,7 +41,7 @@ TII_C_LIB_PATH = f'{tii_dir_path}/cipher/'
 class Cipher:
     def __init__(self, family_name, cipher_type, cipher_inputs,
                  cipher_inputs_bit_size, cipher_output_bit_size,
-                 cipher_reference_code=None):
+                 cipher_reference_code=None, suffix=''):
         """
         Construct an instance of the Cipher class.
 
@@ -145,6 +145,7 @@ class Cipher:
         self._reference_code = cipher_reference_code
         self._id = self.make_cipher_id()
         self._file_name = self.make_file_name()
+        self.suffix = suffix
 
     def _are_there_not_forbidden_components(self, forbidden_types, forbidden_descriptions):
         return self._rounds.are_there_not_forbidden_components(forbidden_types, forbidden_descriptions)
@@ -1575,6 +1576,25 @@ class Cipher:
             False
         """
         return tester.test_vector_check(self, list_of_test_vectors_input, list_of_test_vectors_output)
+
+    def add_suffix_to_input(self, suffix, cipher_input):
+        new_cipher_input = f'{cipher_input}{suffix}'
+        for round_number in range(self.number_of_rounds):
+            round_object = self.rounds.round_at(round_number)
+            for component_index in range(len(round_object.components)):
+                component_by_index = round_object.components[component_index]
+                input_id_links = component_by_index.input_id_links
+                if cipher_input in input_id_links:
+                    new_input_id_links = [word.replace(cipher_input, new_cipher_input) for word in input_id_links]
+                    component_by_index.set_input_id_links(new_input_id_links)
+        self._inputs = [word.replace(cipher_input, new_cipher_input) for word in self._inputs]
+
+    def add_suffix_to_inputs(self, suffix):
+        for cipher_input in self._inputs:
+            self.add_suffix_to_input(suffix, cipher_input)
+
+    def set_suffix(self, suffix):
+        self.suffix = suffix
 
     @property
     def current_round(self):

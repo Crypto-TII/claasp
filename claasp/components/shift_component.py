@@ -25,7 +25,7 @@ from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 
 class SHIFT(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, parameter):
+                 input_id_links, input_bit_positions, output_bit_size, parameter, suffix=''):
         component_id = f'shift_{current_round_number}_{current_round_number_of_components}'
         component_type = 'word_operation'
         description = ['SHIFT', parameter]

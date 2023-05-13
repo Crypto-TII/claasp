@@ -62,7 +62,7 @@ class SpeckBlockCipher(Cipher):
         'rot_0_0'
     """
 
-    def __init__(self, block_bit_size=32, key_bit_size=64, rotation_alpha=None, rotation_beta=None, number_of_rounds=0):
+    def __init__(self, block_bit_size=32, key_bit_size=64, rotation_alpha=None, rotation_beta=None, number_of_rounds=0, suffix_id=''):
         self.WORD_SIZE = int(block_bit_size / 2)
         if self.WORD_SIZE == 16:
             self.ROT_ALPHA = 7 if rotation_alpha is None else rotation_alpha
@@ -75,7 +75,7 @@ class SpeckBlockCipher(Cipher):
                          cipher_type="block_cipher",
                          cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
                          cipher_inputs_bit_size=[block_bit_size, key_bit_size],
-                         cipher_output_bit_size=block_bit_size)
+                         cipher_output_bit_size=block_bit_size, suffix=suffix_id)
 
         key_schedule, left_schedule = self.key_initialization(key_bit_size)
         p1, p2 = self.round_initialization()

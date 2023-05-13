@@ -132,9 +132,8 @@ def add_cipher_output_component(cipher, input_id_links, input_bit_positions, out
     if cipher.current_round_number is None:
         print(cipher_round_not_found_error)
         return None
-
     new_component = CipherOutput(cipher.current_round_number, cipher.current_round_number_of_components,
-                                 input_id_links, input_bit_positions, output_bit_size)
+                                 input_id_links, input_bit_positions, output_bit_size, False, "", cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -183,7 +182,7 @@ def add_concatenate_component(cipher, input_id_links, input_bit_positions, outpu
         return None
 
     new_component = Concatenate(cipher.current_round_number, cipher.current_round_number_of_components,
-                                input_id_links, input_bit_positions, output_bit_size)
+                                input_id_links, input_bit_positions, output_bit_size, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -237,7 +236,7 @@ def add_constant_component(cipher, output_bit_size, value):
         return None
 
     new_component = Constant(cipher.current_round_number, cipher.current_round_number_of_components,
-                             output_bit_size, value)
+                             output_bit_size, value, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -283,7 +282,7 @@ def add_intermediate_output_component(cipher, input_id_links, input_bit_position
         return None
 
     new_component = IntermediateOutput(cipher.current_round_number, cipher.current_round_number_of_components,
-                                       input_id_links, input_bit_positions, output_bit_size, output_tag)
+                                       input_id_links, input_bit_positions, output_bit_size, output_tag, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -330,7 +329,7 @@ def add_linear_layer_component(cipher, input_id_links, input_bit_positions, outp
         return None
 
     new_component = LinearLayer(cipher.current_round_number, cipher.current_round_number_of_components, input_id_links,
-                                input_bit_positions, output_bit_size, description)
+                                input_bit_positions, output_bit_size, description, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -376,7 +375,7 @@ def add_mix_column_component(cipher, input_id_links, input_bit_positions, output
         return None
 
     new_component = MixColumn(cipher.current_round_number, cipher.current_round_number_of_components, input_id_links,
-                              input_bit_positions, output_bit_size, mix_column_description)
+                              input_bit_positions, output_bit_size, mix_column_description, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -421,7 +420,7 @@ def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit
         return None
 
     new_component = MODADD(cipher.current_round_number, cipher.current_round_number_of_components,
-                           input_id_links, input_bit_positions, output_bit_size)
+                           input_id_links, input_bit_positions, output_bit_size, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -466,7 +465,7 @@ def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit
         return None
 
     new_component = MODSUB(cipher.current_round_number, cipher.current_round_number_of_components,
-                           input_id_links, input_bit_positions, output_bit_size)
+                           input_id_links, input_bit_positions, output_bit_size, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -511,7 +510,7 @@ def add_NOT_component(cipher, input_id_links, input_bit_positions, output_bit_si
         return None
 
     new_component = NOT(cipher.current_round_number, cipher.current_round_number_of_components,
-                        input_id_links, input_bit_positions, output_bit_size)
+                        input_id_links, input_bit_positions, output_bit_size, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -556,7 +555,7 @@ def add_OR_component(cipher, input_id_links, input_bit_positions, output_bit_siz
         return None
 
     new_component = OR(cipher.current_round_number, cipher.current_round_number_of_components,
-                       input_id_links, input_bit_positions, output_bit_size)
+                       input_id_links, input_bit_positions, output_bit_size, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -603,7 +602,8 @@ def add_permutation_component(cipher, input_id_links, input_bit_positions, outpu
         return None
 
     new_component = Permutation(cipher.current_round_number, cipher.current_round_number_of_components,
-                                input_id_links, input_bit_positions, output_bit_size, permutation_description)
+                                input_id_links, input_bit_positions, output_bit_size, permutation_description,
+                                cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -649,7 +649,7 @@ def add_reverse_component(cipher, input_id_links, input_bit_positions, output_bi
         return None
 
     new_component = Reverse(cipher.current_round_number, cipher.current_round_number_of_components,
-                            input_id_links, input_bit_positions, output_bit_size)
+                            input_id_links, input_bit_positions, output_bit_size, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -696,7 +696,7 @@ def add_rotate_component(cipher, input_id_links, input_bit_positions, output_bit
         return None
 
     new_component = Rotate(cipher.current_round_number, cipher.current_round_number_of_components,
-                           input_id_links, input_bit_positions, output_bit_size, parameter)
+                           input_id_links, input_bit_positions, output_bit_size, parameter, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -776,7 +776,8 @@ def add_round_key_output_component(cipher, input_id_links, input_bit_positions, 
         return None
 
     new_component = IntermediateOutput(cipher.current_round_number, cipher.current_round_number_of_components,
-                                       input_id_links, input_bit_positions, output_bit_size, 'round_key_output')
+                                       input_id_links, input_bit_positions, output_bit_size, 'round_key_output',
+                                       cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -821,7 +822,8 @@ def add_round_output_component(cipher, input_id_links, input_bit_positions, outp
         return None
 
     new_component = IntermediateOutput(cipher.current_round_number, cipher.current_round_number_of_components,
-                                       input_id_links, input_bit_positions, output_bit_size, 'round_output')
+                                       input_id_links, input_bit_positions, output_bit_size, 'round_output',
+                                       cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -868,7 +870,7 @@ def add_SBOX_component(cipher, input_id_links, input_bit_positions, output_bit_s
         return None
 
     new_component = SBOX(cipher.current_round_number, cipher.current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, description)
+                         input_id_links, input_bit_positions, output_bit_size, description, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -915,7 +917,7 @@ def add_SHIFT_component(cipher, input_id_links, input_bit_positions, output_bit_
         return None
 
     new_component = SHIFT(cipher.current_round_number, cipher.current_round_number_of_components,
-                          input_id_links, input_bit_positions, output_bit_size, parameter)
+                          input_id_links, input_bit_positions, output_bit_size, parameter, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -962,7 +964,7 @@ def add_shift_rows_component(cipher, input_id_links, input_bit_positions, output
         return None
 
     new_component = ShiftRows(cipher.current_round_number, cipher.current_round_number_of_components,
-                              input_id_links, input_bit_positions, output_bit_size, parameter)
+                              input_id_links, input_bit_positions, output_bit_size, parameter, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -1014,7 +1016,7 @@ def add_sigma_component(cipher, input_id_links, input_bit_positions, output_bit_
 
     linear_layer_component = Sigma(cipher.current_round_number, cipher.current_round_number_of_components,
                                    input_id_links, input_bit_positions,
-                                   output_bit_size, rotation_amounts_parameter)
+                                   output_bit_size, rotation_amounts_parameter, cipher.suffix)
     add_component(cipher, linear_layer_component)
     return linear_layer_component
 
@@ -1049,7 +1051,7 @@ def add_theta_keccak_component(cipher, input_id_links, input_bit_positions, outp
         return None
 
     new_component = ThetaKeccak(cipher.current_round_number, cipher.current_round_number_of_components,
-                                input_id_links, input_bit_positions, output_bit_size)
+                                input_id_links, input_bit_positions, output_bit_size, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -1084,7 +1086,7 @@ def add_theta_xoodoo_component(cipher, input_id_links, input_bit_positions, outp
         return None
 
     theta_xoodoo_component = ThetaXoodoo(cipher.current_round_number, cipher.current_round_number_of_components,
-                                         input_id_links, input_bit_positions, output_bit_size)
+                                         input_id_links, input_bit_positions, output_bit_size, cipher.suffix)
     add_component(cipher, theta_xoodoo_component)
     return deepcopy(theta_xoodoo_component)
 
@@ -1132,7 +1134,7 @@ def add_variable_rotate_component(cipher, input_id_links, input_bit_positions, o
         return None
 
     new_component = VariableRotate(cipher.current_round_number, cipher.current_round_number_of_components,
-                                   input_id_links, input_bit_positions, output_bit_size, parameter)
+                                   input_id_links, input_bit_positions, output_bit_size, parameter, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -1178,7 +1180,7 @@ def add_variable_shift_component(cipher, input_id_links, input_bit_positions, ou
         return None
 
     new_component = VariableShift(cipher.current_round_number, cipher.current_round_number_of_components,
-                                  input_id_links, input_bit_positions, output_bit_size, parameter)
+                                  input_id_links, input_bit_positions, output_bit_size, parameter, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -1227,7 +1229,7 @@ def add_word_permutation_component(cipher, input_id_links, input_bit_positions, 
 
     new_component = WordPermutation(cipher.current_round_number, cipher.current_round_number_of_components,
                                     input_id_links, input_bit_positions,
-                                    output_bit_size, permutation_description, word_size)
+                                    output_bit_size, permutation_description, word_size, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 
@@ -1272,7 +1274,7 @@ def add_XOR_component(cipher, input_id_links, input_bit_positions, output_bit_si
         return None
 
     new_component = XOR(cipher.current_round_number, cipher.current_round_number_of_components,
-                        input_id_links, input_bit_positions, output_bit_size)
+                        input_id_links, input_bit_positions, output_bit_size, cipher.suffix)
     add_component(cipher, new_component)
     return new_component
 

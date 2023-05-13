@@ -25,14 +25,14 @@ from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 
 class CipherOutput(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, is_intermediate=False, output_tag=""):
+                 input_id_links, input_bit_positions, output_bit_size, is_intermediate=False, output_tag="", suffix=''):
         if is_intermediate:
             component_type = 'intermediate_output'
             description = [output_tag]
         else:
             component_type = 'cipher_output'
             description = ['cipher_output']
-        component_id = f'{component_type}_{current_round_number}_{current_round_number_of_components}'
+        component_id = f'{component_type}_{current_round_number}_{current_round_number_of_components}{suffix}'
         component_input = Input(output_bit_size, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
         self._suffixes = ['_o']

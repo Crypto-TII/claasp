@@ -22,11 +22,11 @@ from claasp.components.linear_layer_component import LinearLayer
 
 class Permutation(LinearLayer):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, permutation_description):
+                 input_id_links, input_bit_positions, output_bit_size, permutation_description, suffix=''):
         matrix = []
         for i in range(output_bit_size):
             row = [0] * output_bit_size
             row[permutation_description[i]] = 1
             matrix.append(row)
         super().__init__(current_round_number, current_round_number_of_components, input_id_links,
-                         input_bit_positions, output_bit_size, matrix)
+                         input_bit_positions, output_bit_size, matrix, suffix)

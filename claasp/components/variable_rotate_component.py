@@ -23,8 +23,8 @@ from claasp.component import Component
 
 class VariableRotate(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, parameter):
-        component_id = f'var_rot_{current_round_number}_{current_round_number_of_components}'
+                 input_id_links, input_bit_positions, output_bit_size, parameter, suffix=''):
+        component_id = f'var_rot_{current_round_number}_{current_round_number_of_components}{suffix}'
         component_type = 'word_operation'
         input_len = 0
         for bits in input_bit_positions:

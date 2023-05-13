@@ -38,8 +38,8 @@ def constant_to_repr(val, output_size):
 class Constant(Component):
 
     def __init__(self, current_round_number, current_round_number_of_components,
-                 output_bit_size, value):
-        component_id = f'constant_{current_round_number}_{current_round_number_of_components}'
+                 output_bit_size, value, suffix=''):
+        component_id = f'constant_{current_round_number}_{current_round_number_of_components}{suffix}'
         component_type = 'constant'
         if output_bit_size % 4 == 0:
             description = [f"{value:#0{(output_bit_size // 4) + 2}x}"]

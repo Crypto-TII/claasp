@@ -94,9 +94,9 @@ def cp_xor_linear_probability_lat(numadd):
 
 class AND(MultiInputNonlinearLogicalOperator):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
+                 input_id_links, input_bit_positions, output_bit_size, suffix=''):
         super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, 'and')
+                         input_id_links, input_bit_positions, output_bit_size, 'and', suffix)
 
     def algebraic_polynomials(self, model):
         """

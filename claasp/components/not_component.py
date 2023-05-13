@@ -25,8 +25,8 @@ from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 
 class NOT(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
-        component_id = f'not_{current_round_number}_{current_round_number_of_components}'
+                 input_id_links, input_bit_positions, output_bit_size, suffix=''):
+        component_id = f'not_{current_round_number}_{current_round_number_of_components}{suffix}'
         component_type = 'word_operation'
         description = ['NOT', 0]
         component_input = Input(output_bit_size, input_id_links, input_bit_positions)

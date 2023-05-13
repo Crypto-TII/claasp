@@ -25,10 +25,10 @@ from claasp.components.linear_layer_component import LinearLayer
 
 class Sigma(LinearLayer):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, rotation_amounts_parameter):
+                 input_id_links, input_bit_positions, output_bit_size, rotation_amounts_parameter, suffix=''):
         binary_matrix = linear_layer_to_binary_matrix(SIGMA, output_bit_size, output_bit_size, [rotation_amounts_parameter])
         description = list(binary_matrix.transpose())
         super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, description)
-        self._id = f'sigma_{current_round_number}_{current_round_number_of_components}'
+                         input_id_links, input_bit_positions, output_bit_size, description, suffix)
+        self._id = f'sigma_{current_round_number}_{current_round_number_of_components}{suffix}'
         self._input = Input(output_bit_size, input_id_links, input_bit_positions)

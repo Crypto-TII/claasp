@@ -28,8 +28,8 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_and_opera
 class MultiInputNonlinearLogicalOperator(Component):
 
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, operation):
-        component_id = f'{operation}_{current_round_number}_{current_round_number_of_components}'
+                 input_id_links, input_bit_positions, output_bit_size, operation, suffix=''):
+        component_id = f'{operation}_{current_round_number}_{current_round_number_of_components}{suffix}'
         component_type = 'word_operation'
         input_len = 0
         for bits in input_bit_positions:

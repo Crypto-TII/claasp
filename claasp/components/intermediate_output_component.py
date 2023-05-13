@@ -51,9 +51,9 @@ def update_xor_linear_constraints_for_more_than_one_bit(constraints, intermediat
 
 class IntermediateOutput(CipherOutput):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, output_tag):
+                 input_id_links, input_bit_positions, output_bit_size, output_tag, suffix=''):
         super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, True, output_tag)
+                         input_id_links, input_bit_positions, output_bit_size, True, output_tag, suffix)
         self._suffixes = ['_i', '_o']
 
     def cp_xor_linear_mask_propagation_constraints(self, model):

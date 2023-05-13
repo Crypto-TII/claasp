@@ -23,7 +23,7 @@ from claasp.components.mix_column_component import MixColumn
 class WordPermutation(MixColumn):
     def __init__(self, current_round_number, current_round_number_of_components,
                  input_id_links, input_bit_positions,
-                 output_bit_size, permutation_description, word_size):
+                 output_bit_size, permutation_description, word_size, suffix=''):
         matrix = []
         for i in range(len(permutation_description)):
             row = [0] * len(permutation_description)
@@ -31,4 +31,4 @@ class WordPermutation(MixColumn):
             matrix.append(row)
         description = [matrix, 0, word_size]
         super().__init__(current_round_number, current_round_number_of_components, input_id_links,
-                         input_bit_positions, output_bit_size, description)
+                         input_bit_positions, output_bit_size, description, suffix)

@@ -25,8 +25,8 @@ from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 
 class Rotate(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, parameter):
-        component_id = f'rot_{current_round_number}_{current_round_number_of_components}'
+                 input_id_links, input_bit_positions, output_bit_size, parameter, suffix=''):
+        component_id = f'rot_{current_round_number}_{current_round_number_of_components}{suffix}'
         component_type = 'word_operation'
         description = ['ROTATE', parameter]
         component_input = Input(output_bit_size, input_id_links, input_bit_positions)

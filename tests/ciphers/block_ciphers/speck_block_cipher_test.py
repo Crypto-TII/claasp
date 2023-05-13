@@ -25,3 +25,16 @@ def test_speck_block_cipher():
     key = 0x131211100b0a090803020100
     ciphertext = 0x9f7952ec4175946c
     assert speck.evaluate([plaintext, key]) == ciphertext
+
+    speck = SpeckBlockCipher(block_bit_size=64, key_bit_size=96, suffix_id='_test_suffix')
+    plaintext = 0x74614620736e6165
+    key = 0x131211100b0a090803020100
+    ciphertext = 0x9f7952ec4175946c
+    assert speck.evaluate([plaintext, key]) == ciphertext
+
+    speck = SpeckBlockCipher(block_bit_size=64, key_bit_size=96, suffix_id='_test_suffix')
+    speck.add_suffix_to_inputs("_input_suffix")
+    plaintext = 0x74614620736e6165
+    key = 0x131211100b0a090803020100
+    ciphertext = 0x9f7952ec4175946c
+    assert speck.evaluate([plaintext, key]) == ciphertext

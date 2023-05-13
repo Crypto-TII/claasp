@@ -25,10 +25,10 @@ from claasp.cipher_modules.generic_functions import THETA_XOODOO
 
 class ThetaXoodoo(LinearLayer):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
+                 input_id_links, input_bit_positions, output_bit_size, suffix=''):
         binary_matrix = linear_layer_to_binary_matrix(THETA_XOODOO, output_bit_size, output_bit_size, [])
         description = list(binary_matrix.transpose())
         super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, description)
-        self._id = f'theta_xoodoo_{current_round_number}_{current_round_number_of_components}'
+                         input_id_links, input_bit_positions, output_bit_size, description, suffix)
+        self._id = f'theta_xoodoo_{current_round_number}_{current_round_number_of_components}{suffix}'
         self._input = Input(output_bit_size, input_id_links, input_bit_positions)
