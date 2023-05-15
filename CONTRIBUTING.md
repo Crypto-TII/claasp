@@ -123,7 +123,7 @@ rejected.
 
 # Best practices for development
 The purposes of implementing these in our daily basis are:
-- Keep an homogeneous code style throughout the project.
+- Keep a homogeneous code style throughout the project.
 - Follow most of `PEP8` standard rules.
 - Make code easier to read and understand.
 - Reduce tendency to errors.
@@ -335,7 +335,7 @@ def test_aes_block_cipher():
 
 # Code analysis with SonarCloud
 SonarCloud is a platform to evaluate the quality of the source code of a project detecting errors, vulnerabilities and 
-bugs in software. Claasp SonarCluod project can be found 
+bugs in software. Claasp SonarCloud project can be found 
 [here](https://sonarcloud.io/project/overview?id=Crypto-TII_claasp).
 
 ## Project overview
@@ -391,10 +391,9 @@ Request is merged from the `develop` branch to the `main` branch.
 This script analyzes the name of the branches to determine the type of version increment and the commit messages to 
 determine the information that should be added to the `CHANGELOG.md`.
 
-<aside style="background-color: #232323; padding: 25px;">
-⚠️ It is important to follow the following rules only in case we want to upgrade the project version at the end of the 
-   task. Otherwise, do not follow the following rules as it will cause an unwanted change in the project version.
-</aside>
+> ⚠️ It is important to follow the following rules only in case we want to upgrade the project version at the end of the 
+> task. Otherwise, do not follow the following rules as it will cause an unwanted change in the project version. ⚠️ 
+
 
 ## Versioning
 There are three types of versioning changes, as you can check in [Semantic Versioning](https://semver.org/):
