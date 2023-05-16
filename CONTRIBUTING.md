@@ -173,7 +173,7 @@ This way of adding imports should also follow the recommendations described in t
 - If we need to add a line of imports that is very long, specify those imports between parenthesis, this will help the 
 formatter to split the import into multiple lines.
 ```python
-from tii.graph_representations.name_mappings import (INTERMEDIATE_OUTPUT,\
+from graph_representations.name_mappings import (INTERMEDIATE_OUTPUT,\
  CIPHER_OUTPUT, CONSTANT, WORD_OPERATION, MIX_COLUMN, SBOX)
 ```
 
@@ -335,8 +335,7 @@ def test_aes_block_cipher():
 
 # Code analysis with SonarCloud
 SonarCloud is a platform to evaluate the quality of the source code of a project detecting errors, vulnerabilities and 
-bugs in software. Claasp SonarCloud project can be found 
-[here](https://sonarcloud.io/project/overview?id=Crypto-TII_claasp).
+bugs in software.
 
 ## Project overview
 SonarCloud is responsible for the analysis of our code once a pull request has been created.
@@ -418,7 +417,7 @@ We will look in the commits merged into `develop` to obtain the highest version 
 ### Commits messages
 The information that will be included in the new version will be taken from the messages of the commits of all the Pull 
 Requests that have been merged into `develop`. Then, we will check the commits between the last merge from `develop` 
-to `main`. Those merge commits will have a message like this: **"Merge pull request #x from Crypto-TII/develop"**.
+to `main`. Those merge commits will have a message like this: **"Merge pull request #x from /develop"**.
 
 The selected commit messages to be included in the description of the new version must start with these keywords 
 followed by colon as showed below added to their corresponding section in the `CHANGELOG.md`:

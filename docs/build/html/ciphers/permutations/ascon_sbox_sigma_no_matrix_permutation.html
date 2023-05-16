@@ -13,11 +13,10 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Gimli permutation" href="gimli_permutation.html" />
-    <link rel="prev" title="Spongent pi permutation" href="spongent_pi_permutation.html" />
+    <link rel="next" title="Keccak sbox permutation" href="keccak_sbox_permutation.html" />
+    <link rel="prev" title="Chacha stream cipher" href="../stream_ciphers/chacha_stream_cipher.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,19 +32,12 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="gimli_permutation.html" title="Gimli permutation"
+          <a href="keccak_sbox_permutation.html" title="Keccak sbox permutation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="spongent_pi_permutation.html" title="Spongent pi permutation"
+          <a href="../stream_ciphers/chacha_stream_cipher.html" title="Chacha stream cipher"
              accesskey="P">previous</a> |</li>
-  
-    
-      <a href="../../../index.html"><img src="../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
-    
-  
-  
         <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-
         <li class="nav-item nav-item-this"><a href="">Ascon sbox sigma no matrix permutation</a></li> 
       </ul>
     </div>  
@@ -737,15 +729,15 @@ input/output of each component</p></li>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">import</span> <span class="nn">inspect</span>
 <span class="gp">sage: </span><span class="kn">import</span> <span class="nn">claasp</span>
 <span class="gp">sage: </span><span class="kn">import</span> <span class="nn">os.path</span>
-<span class="gp">sage: </span><span class="n">tii_path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">claasp</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">tii_dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">tii_path</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">claasp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span>
 <span class="gp">sage: </span><span class="n">identity</span> <span class="o">=</span> <span class="n">IdentityBlockCipher</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">generate_csv_report</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">generate_csv_report</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">sage: </span><span class="kn">import</span> <span class="nn">os</span>
-<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1481,13 +1473,13 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="spongent_pi_permutation.html"
-                          title="previous chapter">Spongent pi permutation</a></p>
+    <p class="topless"><a href="../stream_ciphers/chacha_stream_cipher.html"
+                          title="previous chapter">Chacha stream cipher</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="gimli_permutation.html"
-                          title="next chapter">Gimli permutation</a></p>
+    <p class="topless"><a href="keccak_sbox_permutation.html"
+                          title="next chapter">Keccak sbox permutation</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -1520,19 +1512,12 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="gimli_permutation.html" title="Gimli permutation"
+          <a href="keccak_sbox_permutation.html" title="Keccak sbox permutation"
              >next</a> |</li>
         <li class="right" >
-          <a href="spongent_pi_permutation.html" title="Spongent pi permutation"
+          <a href="../stream_ciphers/chacha_stream_cipher.html" title="Chacha stream cipher"
              >previous</a> |</li>
-  
-    
-      <a href="../../../index.html"><img src="../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
-    
-  
-  
         <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-
         <li class="nav-item nav-item-this"><a href="">Ascon sbox sigma no matrix permutation</a></li> 
       </ul>
     </div>
