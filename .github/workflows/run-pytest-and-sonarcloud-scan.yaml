@@ -49,10 +49,10 @@ jobs:
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
     - name: Run tests
-      run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make remote-pytest
+      run: docker run --rm -v $PWD:/home/sage/claasp claasp-lib make remote-pytest
 
     - name: Override Coverage Source Path for Sonar
-      run: sed -i "s/<source>\/home\/sage\/tii-claasp\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
+      run: sed -i "s/<source>\/home\/sage\/claasp\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
 
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
