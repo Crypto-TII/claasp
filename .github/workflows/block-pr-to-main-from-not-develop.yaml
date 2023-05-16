@@ -2,12 +2,13 @@ name: block-pr
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited]
     branches:
       - main
       - develop
 
 jobs:
-  reject_pr_job:
+  block-pr-to-main-from-not-develop:
     runs-on: ubuntu-latest
     if:
       (
@@ -22,6 +23,6 @@ jobs:
       - name: Check branch name
         run: |
           if [ $GITHUB_HEAD_REF != "develop" ]; then
-            echo "Pull request not allowed from branch $GITHUB_HEAD_REF."
+            echo "Pull request not allowed from branch $GITHUB_HEAD_REF to main."
             exit 1
           fi

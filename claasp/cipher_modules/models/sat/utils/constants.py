@@ -29,6 +29,11 @@ SAT_SOLVERS = {
         'time': 'process-time',
         'memory': 'maximum-resident-set-size'
     },
+    'parkissat': {
+        'command': ['parkissat', '-shr-sleep=500000', '-shr-lit=1500', '-initshuffle'],
+        'time': None,
+        'memory': None
+    },
     'mathsat': {
         'command': ['mathsat', '-stats', '-model', '-input=dimacs'],
         'time': 'CPU Time',

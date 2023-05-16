@@ -35,3 +35,7 @@ These instructions allow to generate:
 ## Source code
 
 All source code is stored in the folder ``claasp/``.
+
+## Contributing
+We want you to help us grow this library, so, please, feel free to submit your Pull Request following the 
+[CONTRIBUTING.md](./CONTRIBUTING.md) conventions.

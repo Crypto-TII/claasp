@@ -1,10 +1,17 @@
-name: Run pytest
+name: Run pytest and SonarCloud Scan
+
 on:
   push:
     branches:
-      - 'anonymous-project'
+      - '**'
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches:
+      - develop
+      - main
+
 jobs:
-  run-pytest:
+  run-pytest-and-sonarcloud-scan:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -42,4 +49,17 @@ jobs:
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
     - name: Run tests
-      run: docker run --rm -v $PWD:/home/sage/claasp claasp-lib make remote-pytest
+      run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make remote-pytest
+
+    - name: Override Coverage Source Path for Sonar
+      run: sed -i "s/<source>\/home\/sage\/tii-claasp\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
+
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      with:
+        args: >
+          -Dsonar.branch.name=${{ env.GITHUB_HEAD_REF }}
+          -Dsonar.python.coverage.reportPaths=coverage.xml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

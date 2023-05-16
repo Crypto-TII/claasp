@@ -280,6 +280,9 @@ class SatModel:
                 output_file = f'{self.cipher_id}_{file_id}_sat_output.cnf'
                 status, sat_time, sat_memory, values = utils.run_minisat(options, dimacs,
                                                                          input_file, output_file)
+            elif solver_name == 'parkissat':
+                input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
+                status, sat_time, sat_memory, values = utils.run_parkissat(options, dimacs, input_file)
             elif solver_name == 'yices-sat':
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
                 status, sat_time, sat_memory, values = utils.run_yices(options, dimacs, input_file)
