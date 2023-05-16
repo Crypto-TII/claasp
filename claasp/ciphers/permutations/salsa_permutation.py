@@ -95,9 +95,11 @@ class SalsaPermutation(Cipher):
 
         for i in range(number_of_rounds):
             if start_round == 'even':
-                i = i + 2
+                j = i + 2
+            else:
+                j = i
             self.add_round()
-            self.half_like_round_function(self.state_of_components, i)
+            self.half_like_round_function(self.state_of_components, j)
             self.add_intermediate_output_components(self.state_of_components, i, number_of_rounds)
 
     def add_intermediate_output_components(self, internal_state, round_i, number_of_rounds):
@@ -112,37 +114,39 @@ class SalsaPermutation(Cipher):
         else:
             self.add_round_output_component(lst_ids, lst_input_input_positions, self.block_bit_size)
 
-    def bottom_half_quarter_round(self, a, b, c, d, state):
+    def sub_quarter_round(self, state, p1_index, p2_index, p3_index, rot_amount):
         def get_input_bit_positions(component):
             if component.id == 'plaintext':
                 return component.input_bit_positions
             else:
                 return [list(range(32))]
+        p1 = get_2d_array_element_from_1d_array_index(p1_index, state, 4)
+        p2 = get_2d_array_element_from_1d_array_index(p2_index, state, 4)
+        p3 = get_2d_array_element_from_1d_array_index(p3_index, state, 4)
 
-        def sub_quarter_round(p1_index, p2_index, p3_index, rot_amount):
-            p1 = get_2d_array_element_from_1d_array_index(p1_index, state, 4)
-            p2 = get_2d_array_element_from_1d_array_index(p2_index, state, 4)
-            p3 = get_2d_array_element_from_1d_array_index(p3_index, state, 4)
+        p1 = self.add_MODADD_component([p1.id] + [p2.id],
+                                       get_input_bit_positions(p1) + get_input_bit_positions(p2),
+                                       self.WORD_SIZE)
+        p2 = self.add_rotate_component([p1.id], get_input_bit_positions(p1), self.WORD_SIZE, rot_amount)
+        p3 = self.add_XOR_component([p3.id] + [p2.id],
+                                    get_input_bit_positions(p3) + get_input_bit_positions(p2),
+                                    self.WORD_SIZE)
 
-            p1 = self.add_MODADD_component([p1.id] + [p2.id],
-                                           get_input_bit_positions(p1) + get_input_bit_positions(p2),
-                                           self.WORD_SIZE)
-            p2 = self.add_rotate_component([p1.id], get_input_bit_positions(p1), self.WORD_SIZE, rot_amount)
-            p3 = self.add_XOR_component([p3.id] + [p2.id],
-                                        get_input_bit_positions(p3) + get_input_bit_positions(p2),
-                                        self.WORD_SIZE)
+        set_2d_array_element_from_1d_array_index(p3_index, state, p3, 4)
 
+    def bottom_half_quarter_round(self, a, b, c, d, state):
+        self.sub_quarter_round(state, b, c, d, -13)
+        self.sub_quarter_round(state, c, d, a, -18)
 
-            set_2d_array_element_from_1d_array_index(p3_index, state, p3, 4)
-
-        sub_quarter_round(b, c, d, -13)
-        sub_quarter_round(c, d, a, -18)
+    def top_half_quarter_round(self, a, b, c, d, state):
+        self.sub_quarter_round(state, a, d, b, -7)
+        self.sub_quarter_round(state, a, b, c, -9)
 
     def half_like_round_function(self, state, i):
         if (i // 2) % 2 == 0:  # column round
             if i % 2 == 0:
                 self.top_half_quarter_round(0,  4,  8,  12, state)
-                self.top_half_quarter_round(5,  9,  13, 1,  state)
+                self.top_half_quarter_round(5,  9,  13, 1, state)
                 self.top_half_quarter_round(10, 14, 2,  6, state)
                 self.top_half_quarter_round(15, 3,  7,  11, state)
             else:
@@ -153,39 +157,12 @@ class SalsaPermutation(Cipher):
 
         else:  # row_round
             if i % 2 == 0:
-                self.top_half_quarter_round(0, 1, 2, 3,    state)
-                self.top_half_quarter_round(5, 6, 7, 4,    state)
-                self.top_half_quarter_round(10, 11, 8, 9,  state)
-                self.top_half_quarter_round(15, 12, 13, 14,state)
+                self.top_half_quarter_round(0, 1, 2, 3, state)
+                self.top_half_quarter_round(5, 6, 7, 4, state)
+                self.top_half_quarter_round(10, 11, 8, 9, state)
+                self.top_half_quarter_round(15, 12, 13, 14, state)
             else:
                 self.bottom_half_quarter_round(0, 1, 2, 3, state)
                 self.bottom_half_quarter_round(5, 6, 7, 4, state)
                 self.bottom_half_quarter_round(10, 11, 8, 9, state)
                 self.bottom_half_quarter_round(15, 12, 13, 14, state)
-
-
-    def top_half_quarter_round(self, a, b, c, d, state):
-        def get_input_bit_positions(component):
-            if component.id == 'plaintext':
-                return component.input_bit_positions
-            else:
-                return [list(range(32))]
-
-        def sub_quarter_round(p1_index, p2_index, p3_index, rot_amount):
-            p1 = get_2d_array_element_from_1d_array_index(p1_index, state, 4)
-            p2 = get_2d_array_element_from_1d_array_index(p2_index, state, 4)
-            p3 = get_2d_array_element_from_1d_array_index(p3_index, state, 4)
-
-            p1 = self.add_MODADD_component([p1.id] + [p2.id],
-                                           get_input_bit_positions(p1) + get_input_bit_positions(p2),
-                                           self.WORD_SIZE)
-            p2 = self.add_rotate_component([p1.id], get_input_bit_positions(p1), self.WORD_SIZE, rot_amount)
-            p3 = self.add_XOR_component([p3.id] + [p2.id],
-                                        get_input_bit_positions(p3) + get_input_bit_positions(p2),
-                                        self.WORD_SIZE)
-
-
-            set_2d_array_element_from_1d_array_index(p3_index, state, p3, 4)
-
-        sub_quarter_round(a, d, b, -7)
-        sub_quarter_round(a, b, c, -9)
