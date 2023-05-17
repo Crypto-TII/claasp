@@ -18,9 +18,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.ciphers.permutations.util import add_intermediate_output_component_latin_dances_permutations, \
-    half_like_round_function_latin_dances, sub_quarter_round_latin_dances, \
-    init_state_latin_dances
+from claasp.ciphers.permutations.util import sub_quarter_round_latin_dances, init_latin_dances_cipher
 from claasp.name_mappings import INPUT_PLAINTEXT
 
 COLUMNS = [
@@ -64,32 +62,11 @@ class ChachaPermutation(Cipher):
 
     def __init__(self, number_of_rounds=0, state_of_components=None,
                  cipher_family="chacha_permutation", cipher_type="permutation",
-                 inputs=None, cipher_inputs_bit_size=None):
-
-        self.block_bit_size = 512
-        self.WORD_SIZE = 32
-
-        if state_of_components is None:
-            self.state_of_components = [
-                [None, None, None, None],
-                [None, None, None, None],
-                [None, None, None, None],
-                [None, None, None, None],
-            ]
-            init_state_latin_dances(self.state_of_components, INPUT_PLAINTEXT)
-        else:
-            self.state_of_components = state_of_components
-
-        super().__init__(family_name=cipher_family,
-                         cipher_type=cipher_type,
-                         cipher_inputs=inputs if inputs else [INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=cipher_inputs_bit_size if inputs else [self.block_bit_size],
-                         cipher_output_bit_size=self.block_bit_size)
-
-        for i in range(number_of_rounds):
-            self.add_round()
-            half_like_round_function_latin_dances(self, i, COLUMNS, DIAGONALS)
-            add_intermediate_output_component_latin_dances_permutations(self, i, number_of_rounds)
+                 inputs=None, cipher_inputs_bit_size=None, start_round="odd"):
+        init_latin_dances_cipher(
+            self, super(), INPUT_PLAINTEXT, state_of_components, number_of_rounds,
+            start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, COLUMNS, DIAGONALS
+        )
 
     def bottom_half_quarter_round(self, a, b, c, d, state):
         sub_quarter_round_latin_dances(self, state, a, b, d, -8, 'chacha')

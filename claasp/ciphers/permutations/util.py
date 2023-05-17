@@ -98,3 +98,37 @@ def init_state_latin_dances(state_of_components, input_plaintext):
             component_state = ComponentState(
                 input_plaintext, [list(range(j * 32 + i * 128, j * 32 + 32 + i * 128))])
             state_of_components[i][j] = component_state
+
+
+def init_latin_dances_cipher(
+        permutation, super, input_plaintext, state_of_components, number_of_rounds,
+        start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, columns, diagonals
+):
+    permutation.block_bit_size = 512
+    permutation.WORD_SIZE = 32
+
+    if state_of_components is None:
+        permutation.state_of_components = [
+            [None, None, None, None],
+            [None, None, None, None],
+            [None, None, None, None],
+            [None, None, None, None],
+        ]
+        init_state_latin_dances(permutation.state_of_components, input_plaintext)
+    else:
+        permutation.state_of_components = state_of_components
+
+    super.__init__(family_name=cipher_family,
+                     cipher_type=cipher_type,
+                     cipher_inputs=inputs if inputs else [input_plaintext],
+                     cipher_inputs_bit_size=cipher_inputs_bit_size if inputs else [permutation.block_bit_size],
+                     cipher_output_bit_size=permutation.block_bit_size)
+
+    for i in range(number_of_rounds):
+        if start_round == 'even':
+            j = i + 2
+        else:
+            j = i
+        permutation.add_round()
+        half_like_round_function_latin_dances(permutation, j, columns, diagonals)
+        add_intermediate_output_component_latin_dances_permutations(permutation, i, number_of_rounds)
