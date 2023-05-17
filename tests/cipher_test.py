@@ -509,6 +509,11 @@ def test_print_as_python_dictionary():
 }
 """
 
+def test_inputs_size_to_dict():
+    speck = SpeckBlockCipher(number_of_rounds=1, key_bit_size=64, block_bit_size=32)
+    input_sizes = speck.inputs_size_to_dict()
+    assert input_sizes['key'] == 64
+    assert input_sizes['plaintext'] == 32
 
 def test_vector_check():
     speck = SpeckBlockCipher(number_of_rounds=22)

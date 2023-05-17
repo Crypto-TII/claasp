@@ -1035,49 +1035,7 @@ class Cipher:
         - ``solver`` -- **string**; the name of the solver to use for the search
         - ``scenario`` -- **string**; the type of impossible differentials to search, single-key or related-key
         """
-        from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-        model = self.get_model(technique, "xor_differential")
-        last_component_id = self.get_all_components()[-1]
-        impossible_differentials = []
-        for i in range(2):
-            if self.inputs[i] == "key":
-                key_bits = self.inputs_bit_size[i]
-                key_pos = i
-            else:
-                plain_bits = self.inputs_bit_size[i]
-                plain_pos = i
-        if scenario == "single-key":
-            # Fix the key difference to be zero, and the plaintext difference to be non-zero.
-            for input_bit_position in range(plain_bits):
-                for output_bit_position in range(plain_bits):
-                    fixed_values = []
-                    fixed_values.append(set_fixed_variables('key', 'equal', list(range(key_bits)),
-                                                            integer_to_bit_list(0, key_bits, 'big')))
-                    fixed_values.append(set_fixed_variables('plaintext', 'equal', list(range(plain_bits)),
-                                                            integer_to_bit_list(1 << input_bit_position, plain_bits,
-                                                                                'big')))
-                    fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
-                                                            integer_to_bit_list(1 << output_bit_position, plain_bits,
-                                                                                'big')))
-                    solution = model.find_one_xor_differential_trail(fixed_values)
-                    if solution['status'] == "UNSATISFIABLE":
-                        impossible_differentials.append((1 << input_bit_position, 1 << output_bit_position))
-        elif scenario == "related-key":
-            for input_bit_position in range(key_bits):
-                for output_bit_position in range(plain_bits):
-                    fixed_values = []
-                    fixed_values.append(set_fixed_variables('key', 'equal', list(range(key_bits)),
-                                                            integer_to_bit_list(1 << (input_bit_position), key_bits,
-                                                                                'big')))
-                    fixed_values.append(set_fixed_variables('plaintext', 'equal', list(range(plain_bits)),
-                                                            integer_to_bit_list(0, plain_bits, 'big')))
-                    fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
-                                                            integer_to_bit_list(1 << output_bit_position, plain_bits,
-                                                                                'big')))
-                    solution = model.find_one_xor_differential_trail(fixed_values)
-                    if solution['status'] == "UNSATISFIABLE":
-                        impossible_differentials.append((1 << input_bit_position, 1 << output_bit_position))
-        return impossible_differentials
+        return self.find_impossible_property(type="linear", technique=technique, solver=solver, scenario=scenario)
 
     def is_algebraically_secure(self, timeout):
         """
@@ -1657,6 +1615,67 @@ class Cipher:
         """
         return tester.test_vector_check(self, list_of_test_vectors_input, list_of_test_vectors_output)
 
+
+    def inputs_size_to_dict(self):
+        inputs_dictionary = {}
+        for i, name in enumerate(self.inputs):
+            inputs_dictionary[name] = self.inputs_bit_size[i]
+        return inputs_dictionary
+
+
+    def find_impossible_property(self, type, technique = "sat", solver = "kissat", scenario = "single-key"):
+        """
+        Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list
+        INPUT:
+
+        - ``type`` -- **string**; {"differential", "linear"}: the type of property to search for
+        - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
+        - ``solver`` -- **string**; the name of the solver to use for the search
+        """
+        from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+        model = self.get_model(technique, f'xor_{type}')
+        if type == 'differential':
+            search_function = model.find_one_xor_differential_trail
+        else:
+            search_function = model.find_one_xor_linear_trail
+        last_component_id = self.get_all_components()[-1]
+        impossible = []
+        inputs_dictionary = self.inputs_size_to_dict()
+        plain_bits = inputs_dictionary['plaintext']
+        key_bits = inputs_dictionary['key']
+        if scenario == "single-key":
+            # Fix the key difference to be zero, and the plaintext difference to be non-zero.
+            for input_bit_position in range(plain_bits):
+                for output_bit_position in range(plain_bits):
+                    fixed_values = []
+                    fixed_values.append(set_fixed_variables('key', 'equal', list(range(key_bits)),
+                                                            integer_to_bit_list(0, key_bits, 'big')))
+                    fixed_values.append(set_fixed_variables('plaintext', 'equal', list(range(plain_bits)),
+                                                            integer_to_bit_list(1 << input_bit_position, plain_bits,
+                                                                                'big')))
+                    fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
+                                                            integer_to_bit_list(1 << output_bit_position, plain_bits,
+                                                                                'big')))
+                    solution = search_function(fixed_values)
+                    if solution['status'] == "UNSATISFIABLE":
+                        impossible.append((1 << input_bit_position, 1 << output_bit_position))
+        elif scenario == "related-key":
+            for input_bit_position in range(key_bits):
+                for output_bit_position in range(plain_bits):
+                    fixed_values = []
+                    fixed_values.append(set_fixed_variables('key', 'equal', list(range(key_bits)),
+                                                            integer_to_bit_list(1 << (input_bit_position), key_bits,
+                                                                                'big')))
+                    fixed_values.append(set_fixed_variables('plaintext', 'equal', list(range(plain_bits)),
+                                                            integer_to_bit_list(0, plain_bits, 'big')))
+                    fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
+                                                            integer_to_bit_list(1 << output_bit_position, plain_bits,
+                                                                                'big')))
+                    solution = search_function(fixed_values)
+                    if solution['status'] == "UNSATISFIABLE":
+                        impossible.append((1 << input_bit_position, 1 << output_bit_position))
+        return impossible
+
     def zero_correlation_linear_search(self, technique = "sat", solver = "Kissat"):
         """
         Return a list of zero_correlation linear approximations if there are any; otherwise return an empty list
@@ -1665,33 +1684,7 @@ class Cipher:
         - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
         - ``solver`` -- **string**; the name of the solver to use for the search
         """
-        from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-        model = self.get_model(technique, "xor_linear")
-        last_component_id = self.get_all_components()[-1]
-        zero_correlation_linear_approximations = []
-        for i in range(2):
-            if self.inputs[i] == "key":
-                key_bits = self.inputs_bit_size[i]
-                key_pos = i
-            else:
-                plain_bits = self.inputs_bit_size[i]
-                plain_pos = i
-            # Fix the key difference to be zero, and the plaintext difference to be non-zero.
-        for input_bit_position in range(plain_bits):
-            for output_bit_position in range(plain_bits):
-                fixed_values = []
-                fixed_values.append(set_fixed_variables('key', 'equal', list(range(key_bits)),
-                                                        integer_to_bit_list(0, key_bits, 'big')))
-                fixed_values.append(set_fixed_variables('plaintext', 'equal', list(range(plain_bits)),
-                                                        integer_to_bit_list(1 << input_bit_position, plain_bits,
-                                                                            'big')))
-                fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
-                                                        integer_to_bit_list(1 << output_bit_position, plain_bits,
-                                                                            'big')))
-                solution = model.find_one_xor_linear_trail(fixed_values)
-                if solution['status'] == "UNSATISFIABLE":
-                    zero_correlation_linear_approximations.append((1 << input_bit_position, 1 << output_bit_position))
-        return zero_correlation_linear_approximations
+        return self.find_impossible_property(type="linear", technique=technique, solver=solver)
 
     @property
     def current_round(self):
