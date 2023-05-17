@@ -384,6 +384,9 @@ class Component:
                 f'\tmemcpy({self.id} -> '
                 f'list, (Word[]) {{{", ".join(word_list)}}}, {len(word_list)} * sizeof(Word));')
 
+    def set_id(self, id_string):
+        self._id = id_string
+
     @property
     def description(self):
         return self._description
