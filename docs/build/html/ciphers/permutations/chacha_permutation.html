@@ -15,7 +15,7 @@
     <script src="../../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Ascon permutation" href="ascon_permutation.html" />
+    <link rel="next" title="Salsa permutation" href="salsa_permutation.html" />
     <link rel="prev" title="Xoodoo sbox permutation" href="xoodoo_sbox_permutation.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
@@ -32,7 +32,7 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="ascon_permutation.html" title="Ascon permutation"
+          <a href="salsa_permutation.html" title="Salsa permutation"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="xoodoo_sbox_permutation.html" title="Xoodoo sbox permutation"
@@ -51,7 +51,7 @@
 <span id="chacha-permutation"></span><h1>Chacha permutation<a class="headerlink" href="#module-ciphers.permutations.chacha_permutation" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="ciphers.permutations.chacha_permutation.ChachaPermutation">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ChachaPermutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_of_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_family</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chacha_permutation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'permutation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_inputs_bit_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ChachaPermutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_of_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_family</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chacha_permutation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'permutation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_inputs_bit_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'odd'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher.Cipher</span></code></p>
 <p>Construct an instance of the ChachaPermutation class.</p>
 <p>This class is used to store compact representations of a permutation, used to generate the corresponding cipher.</p>
@@ -130,11 +130,6 @@ corresponding amount given the other parameters (if available) when number_of_ro
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.permutations.chacha_permutation.ChachaPermutation.add_intermediate_output_component">
 <span class="sig-name descname"><span class="pre">add_intermediate_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation.add_intermediate_output_component" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.chacha_permutation.ChachaPermutation.add_intermediate_output_components">
-<span class="sig-name descname"><span class="pre">add_intermediate_output_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">internal_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation.add_intermediate_output_components" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -923,11 +918,6 @@ input/output of each component</p></li>
 <span class="sig-name descname"><span class="pre">get_sizes_of_components_by_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation.get_sizes_of_components_by_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.chacha_permutation.ChachaPermutation.half_like_round_function">
-<span class="sig-name descname"><span class="pre">half_like_round_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation.half_like_round_function" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="ciphers.permutations.chacha_permutation.ChachaPermutation.id">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation.id" title="Permalink to this definition">¶</a></dt>
@@ -1365,11 +1355,6 @@ hidden layer of the neural network</p></li>
 </div>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.chacha_permutation.ChachaPermutation.quarter_round">
-<span class="sig-name descname"><span class="pre">quarter_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation.quarter_round" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="ciphers.permutations.chacha_permutation.ChachaPermutation.reference_code">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reference_code</span></span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation.reference_code" title="Permalink to this definition">¶</a></dt>
@@ -1388,11 +1373,6 @@ hidden layer of the neural network</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.permutations.chacha_permutation.ChachaPermutation.remove_round_component_from_id">
 <span class="sig-name descname"><span class="pre">remove_round_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation.remove_round_component_from_id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.chacha_permutation.ChachaPermutation.round_function">
-<span class="sig-name descname"><span class="pre">round_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.ChachaPermutation.round_function" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1488,11 +1468,6 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
 
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="ciphers.permutations.chacha_permutation.init_state">
-<span class="sig-name descname"><span class="pre">init_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_of_components</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.chacha_permutation.init_state" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </section>
 
 
@@ -1509,8 +1484,8 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="ascon_permutation.html"
-                          title="next chapter">Ascon permutation</a></p>
+    <p class="topless"><a href="salsa_permutation.html"
+                          title="next chapter">Salsa permutation</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -1543,7 +1518,7 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="ascon_permutation.html" title="Ascon permutation"
+          <a href="salsa_permutation.html" title="Salsa permutation"
              >next</a> |</li>
         <li class="right" >
           <a href="xoodoo_sbox_permutation.html" title="Xoodoo sbox permutation"

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Gimli permutation &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Salsa permutation &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sage.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
@@ -15,8 +15,8 @@
     <script src="../../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Util" href="util.html" />
-    <link rel="prev" title="Photon permutation" href="photon_permutation.html" />
+    <link rel="next" title="Ascon permutation" href="ascon_permutation.html" />
+    <link rel="prev" title="Chacha permutation" href="chacha_permutation.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -32,13 +32,13 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="util.html" title="Util"
+          <a href="ascon_permutation.html" title="Ascon permutation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="photon_permutation.html" title="Photon permutation"
+          <a href="chacha_permutation.html" title="Chacha permutation"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Gimli permutation</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Salsa permutation</a></li> 
       </ul>
     </div>  
 
@@ -47,169 +47,169 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="module-ciphers.permutations.gimli_permutation">
-<span id="gimli-permutation"></span><h1>Gimli permutation<a class="headerlink" href="#module-ciphers.permutations.gimli_permutation" title="Permalink to this headline">¶</a></h1>
+  <section id="module-ciphers.permutations.salsa_permutation">
+<span id="salsa-permutation"></span><h1>Salsa permutation<a class="headerlink" href="#module-ciphers.permutations.salsa_permutation" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GimliPermutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SalsaPermutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_of_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_family</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'salsa_permutation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'permutation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_inputs_bit_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'odd'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher.Cipher</span></code></p>
-<p>Construct an instance of the GimliPermutation class.</p>
-<p>This class is used to store compact representations of a cipher, used to generate the corresponding cipher.</p>
+<p>Construct an instance of the SalsaPermutation class.</p>
+<p>This class is used to store compact representations of a permutation, used to generate the corresponding cipher.</p>
 <p>INPUT:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_rounds</span></code> – <strong>integer</strong> (default: <span class="math">24</span>); number of rounds of the permutation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">word_size</span></code> – <strong>integer</strong> (default: <span class="math">32</span>); the size of the word</p></li>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_rounds</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); Number of rounds of the permutation. The cipher uses the
+corresponding amount given the other parameters (if available) when number_of_rounds is 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">state_of_components</span></code> – <strong>list of lists of integer</strong> (default: <span class="math">None</span>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cipher_family</span></code> – <strong>string</strong> (default: <span class="math">salsa_permutation</span>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cipher_type</span></code> – <strong>string</strong> (default: <span class="math">permutation</span>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inputs</span></code> – <strong>list of integer</strong> (default: <span class="math">None</span>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cipher_inputs_bit_size</span></code> – <strong>integer</strong> (default: <span class="math">None</span>)</p></li>
 </ul>
-</div></blockquote>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.gimli_permutation</span> <span class="kn">import</span> <span class="n">GimliPermutation</span>
-<span class="gp">sage: </span><span class="n">gimli</span> <span class="o">=</span> <span class="n">GimliPermutation</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">word_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">gimli</span><span class="o">.</span><span class="n">number_of_rounds</span>
-<span class="go">24</span>
-
-<span class="gp">sage: </span><span class="n">gimli</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
-<span class="go">&#39;rot_0_0&#39;</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.salsa_permutation</span> <span class="kn">import</span> <span class="n">SalsaPermutation</span>
+<span class="gp">sage: </span><span class="n">salsa</span> <span class="o">=</span> <span class="n">SalsaPermutation</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">salsa</span><span class="o">.</span><span class="n">number_of_rounds</span>
+<span class="go">2</span>
 </pre></div>
 </div>
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_AND_component">
-<span class="sig-name descname"><span class="pre">add_AND_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_AND_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_AND_component">
+<span class="sig-name descname"><span class="pre">add_AND_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_AND_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_MODADD_component">
-<span class="sig-name descname"><span class="pre">add_MODADD_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_MODADD_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_MODADD_component">
+<span class="sig-name descname"><span class="pre">add_MODADD_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_MODADD_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_MODSUB_component">
-<span class="sig-name descname"><span class="pre">add_MODSUB_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_MODSUB_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_MODSUB_component">
+<span class="sig-name descname"><span class="pre">add_MODSUB_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_MODSUB_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_NOT_component">
-<span class="sig-name descname"><span class="pre">add_NOT_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_NOT_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_NOT_component">
+<span class="sig-name descname"><span class="pre">add_NOT_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_NOT_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_OR_component">
-<span class="sig-name descname"><span class="pre">add_OR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_OR_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_OR_component">
+<span class="sig-name descname"><span class="pre">add_OR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_OR_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_SBOX_component">
-<span class="sig-name descname"><span class="pre">add_SBOX_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_SBOX_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_SBOX_component">
+<span class="sig-name descname"><span class="pre">add_SBOX_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_SBOX_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_SHIFT_component">
-<span class="sig-name descname"><span class="pre">add_SHIFT_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_SHIFT_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_SHIFT_component">
+<span class="sig-name descname"><span class="pre">add_SHIFT_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_SHIFT_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_XOR_component">
-<span class="sig-name descname"><span class="pre">add_XOR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_XOR_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_XOR_component">
+<span class="sig-name descname"><span class="pre">add_XOR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_XOR_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_cipher_output_component">
-<span class="sig-name descname"><span class="pre">add_cipher_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_cipher_output_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_cipher_output_component">
+<span class="sig-name descname"><span class="pre">add_cipher_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_cipher_output_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_concatenate_component">
-<span class="sig-name descname"><span class="pre">add_concatenate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_concatenate_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_concatenate_component">
+<span class="sig-name descname"><span class="pre">add_concatenate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_concatenate_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_constant_component">
-<span class="sig-name descname"><span class="pre">add_constant_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_constant_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_constant_component">
+<span class="sig-name descname"><span class="pre">add_constant_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_constant_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_intermediate_output_component">
-<span class="sig-name descname"><span class="pre">add_intermediate_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_intermediate_output_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_intermediate_output_component">
+<span class="sig-name descname"><span class="pre">add_intermediate_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_intermediate_output_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_linear_layer_component">
-<span class="sig-name descname"><span class="pre">add_linear_layer_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_linear_layer_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_linear_layer_component">
+<span class="sig-name descname"><span class="pre">add_linear_layer_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_linear_layer_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_mix_column_component">
-<span class="sig-name descname"><span class="pre">add_mix_column_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_column_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_mix_column_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_mix_column_component">
+<span class="sig-name descname"><span class="pre">add_mix_column_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_column_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_mix_column_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_permutation_component">
-<span class="sig-name descname"><span class="pre">add_permutation_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_permutation_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_permutation_component">
+<span class="sig-name descname"><span class="pre">add_permutation_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation_description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_permutation_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_reverse_component">
-<span class="sig-name descname"><span class="pre">add_reverse_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_reverse_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_reverse_component">
+<span class="sig-name descname"><span class="pre">add_reverse_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_reverse_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_rotate_component">
-<span class="sig-name descname"><span class="pre">add_rotate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_rotate_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_rotate_component">
+<span class="sig-name descname"><span class="pre">add_rotate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_rotate_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_round">
-<span class="sig-name descname"><span class="pre">add_round</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_round">
+<span class="sig-name descname"><span class="pre">add_round</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_round" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_round_key_output_component">
-<span class="sig-name descname"><span class="pre">add_round_key_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_round_key_output_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_round_key_output_component">
+<span class="sig-name descname"><span class="pre">add_round_key_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_round_key_output_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_round_output_component">
-<span class="sig-name descname"><span class="pre">add_round_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_round_output_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_round_output_component">
+<span class="sig-name descname"><span class="pre">add_round_output_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_round_output_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_shift_rows_component">
-<span class="sig-name descname"><span class="pre">add_shift_rows_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_shift_rows_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_shift_rows_component">
+<span class="sig-name descname"><span class="pre">add_shift_rows_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_shift_rows_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_sigma_component">
-<span class="sig-name descname"><span class="pre">add_sigma_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts_parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_sigma_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_sigma_component">
+<span class="sig-name descname"><span class="pre">add_sigma_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts_parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_sigma_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_theta_keccak_component">
-<span class="sig-name descname"><span class="pre">add_theta_keccak_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_theta_keccak_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_theta_keccak_component">
+<span class="sig-name descname"><span class="pre">add_theta_keccak_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_theta_keccak_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_theta_xoodoo_component">
-<span class="sig-name descname"><span class="pre">add_theta_xoodoo_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_theta_xoodoo_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_theta_xoodoo_component">
+<span class="sig-name descname"><span class="pre">add_theta_xoodoo_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_theta_xoodoo_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_variable_rotate_component">
-<span class="sig-name descname"><span class="pre">add_variable_rotate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_variable_rotate_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_variable_rotate_component">
+<span class="sig-name descname"><span class="pre">add_variable_rotate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_variable_rotate_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_variable_shift_component">
-<span class="sig-name descname"><span class="pre">add_variable_shift_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_variable_shift_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_variable_shift_component">
+<span class="sig-name descname"><span class="pre">add_variable_shift_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_variable_shift_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.add_word_permutation_component">
-<span class="sig-name descname"><span class="pre">add_word_permutation_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation_description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.add_word_permutation_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.add_word_permutation_component">
+<span class="sig-name descname"><span class="pre">add_word_permutation_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation_description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.add_word_permutation_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.algebraic_tests">
-<span class="sig-name descname"><span class="pre">algebraic_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.algebraic_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.algebraic_tests">
+<span class="sig-name descname"><span class="pre">algebraic_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.algebraic_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a dictionary explaining the result of the algebraic test.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -238,8 +238,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.analyze_cipher">
-<span class="sig-name descname"><span class="pre">analyze_cipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tests_configuration</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.analyze_cipher" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.analyze_cipher">
+<span class="sig-name descname"><span class="pre">analyze_cipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tests_configuration</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.analyze_cipher" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a dictionary with the analysis of the cipher.</p>
 <p>The analysis is related to the following tests:</p>
 <ul class="simple">
@@ -266,13 +266,13 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.as_python_dictionary">
-<span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.as_python_dictionary">
+<span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.avalanche_probability_vectors">
-<span class="sig-name descname"><span class="pre">avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.avalanche_probability_vectors">
+<span class="sig-name descname"><span class="pre">avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the avalanche probability vectors of each input bit difference for each round.</p>
 <p>The inputs considered are plaintext, key, etc.</p>
 <p>The i-th component of the vector is the probability that i-th bit of the output
@@ -296,8 +296,13 @@ injected in key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.component_analysis_tests">
-<span class="sig-name descname"><span class="pre">component_analysis_tests</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.component_analysis_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.bottom_half_quarter_round">
+<span class="sig-name descname"><span class="pre">bottom_half_quarter_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.bottom_half_quarter_round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.component_analysis_tests">
+<span class="sig-name descname"><span class="pre">component_analysis_tests</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.component_analysis_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of dictionaries, each one giving some properties of the cipher’s operations.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -314,13 +319,13 @@ injected in key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.component_from">
-<span class="sig-name descname"><span class="pre">component_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.component_from" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.component_from">
+<span class="sig-name descname"><span class="pre">component_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.component_from" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.compute_criterion_from_avalanche_probability_vectors">
-<span class="sig-name descname"><span class="pre">compute_criterion_from_avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_apvs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.compute_criterion_from_avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.compute_criterion_from_avalanche_probability_vectors">
+<span class="sig-name descname"><span class="pre">compute_criterion_from_avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_apvs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.compute_criterion_from_avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a python dictionary that contains the dictionaries corresponding to each criterion.</p>
 <p>ALGORITHM:</p>
 <p>The avalanche dependence is the number of output bit that flip with respect to an input bit difference,
@@ -354,7 +359,7 @@ with input diff injected in key</p>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#ciphers.permutations.gimli_permutation.GimliPermutation.avalanche_probability_vectors" title="ciphers.permutations.gimli_permutation.GimliPermutation.avalanche_probability_vectors"><code class="xref py py-meth docutils literal notranslate"><span class="pre">avalanche_probability_vectors()</span></code></a> for the returning vectors.</p>
+<p><a class="reference internal" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.avalanche_probability_vectors" title="ciphers.permutations.salsa_permutation.SalsaPermutation.avalanche_probability_vectors"><code class="xref py py-meth docutils literal notranslate"><span class="pre">avalanche_probability_vectors()</span></code></a> for the returning vectors.</p>
 </div>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
@@ -367,8 +372,8 @@ with input diff injected in key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.continuous_avalanche_factor">
-<span class="sig-name descname"><span class="pre">continuous_avalanche_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.continuous_avalanche_factor" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.continuous_avalanche_factor">
+<span class="sig-name descname"><span class="pre">continuous_avalanche_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.continuous_avalanche_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Continuous generalization of the metric Avalanche Factor. This method implements Definition 14 of <a class="reference internal" href="../../references.html#mur2020" id="id1"><span>[MUR2020]</span></a>.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -386,8 +391,8 @@ with input diff injected in key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.continuous_diffusion_factor">
-<span class="sig-name descname"><span class="pre">continuous_diffusion_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.continuous_diffusion_factor" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.continuous_diffusion_factor">
+<span class="sig-name descname"><span class="pre">continuous_diffusion_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.continuous_diffusion_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Continuous Diffusion Factor. This method implements Definition 16 of <a class="reference internal" href="../../references.html#mur2020" id="id2"><span>[MUR2020]</span></a>.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -405,8 +410,8 @@ with input diff injected in key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.continuous_diffusion_tests">
-<span class="sig-name descname"><span class="pre">continuous_diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">continuous_avalanche_factor_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_for_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_neutrality_measure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_diffusion_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.continuous_diffusion_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.continuous_diffusion_tests">
+<span class="sig-name descname"><span class="pre">continuous_diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">continuous_avalanche_factor_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_for_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_neutrality_measure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_diffusion_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.continuous_diffusion_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a python dictionary that contains the dictionaries corresponding to each metric in <a class="reference internal" href="../../references.html#mur2020" id="id3"><span>[MUR2020]</span></a>.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -447,8 +452,8 @@ continuous_avalanche_factor, diffusion_factor</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.continuous_neutrality_measure_for_bit_j">
-<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.continuous_neutrality_measure_for_bit_j" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.continuous_neutrality_measure_for_bit_j">
+<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.continuous_neutrality_measure_for_bit_j" title="Permalink to this definition">¶</a></dt>
 <dd><p>Continuous Neutrality Measure. This method implements Definition 15 of <a class="reference internal" href="../../references.html#mur2020" id="id4"><span>[MUR2020]</span></a>.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -467,28 +472,28 @@ continuous_avalanche_factor, diffusion_factor</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.continuous_neutrality_measure_for_bit_j_and_beta">
-<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j_and_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.continuous_neutrality_measure_for_bit_j_and_beta" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.continuous_neutrality_measure_for_bit_j_and_beta">
+<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j_and_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.continuous_neutrality_measure_for_bit_j_and_beta" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.current_round">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.current_round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.current_round">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.current_round" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.current_round_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round_number</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.current_round_number" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.current_round_number">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round_number</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.current_round_number" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.current_round_number_of_components">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round_number_of_components</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.current_round_number_of_components" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.current_round_number_of_components">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_round_number_of_components</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.current_round_number_of_components" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.delete_generated_evaluate_c_shared_library">
-<span class="sig-name descname"><span class="pre">delete_generated_evaluate_c_shared_library</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.delete_generated_evaluate_c_shared_library" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.delete_generated_evaluate_c_shared_library">
+<span class="sig-name descname"><span class="pre">delete_generated_evaluate_c_shared_library</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.delete_generated_evaluate_c_shared_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete the file named &lt;id_cipher&gt;_evaluate.c and the corresponding executable.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -502,8 +507,8 @@ continuous_avalanche_factor, diffusion_factor</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.diffusion_tests">
-<span class="sig-name descname"><span class="pre">diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_weight_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_entropy_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence_uniform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_entropy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.diffusion_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.diffusion_tests">
+<span class="sig-name descname"><span class="pre">diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_weight_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_entropy_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence_uniform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_entropy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.diffusion_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a python dictionary that contains the dictionaries corresponding to each criterion and their analysis.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -549,8 +554,8 @@ d[“test_results”][“plaintext”][“round_output”][“avalanche_entropy�
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.evaluate">
-<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.evaluate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the output of the cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -569,8 +574,8 @@ component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_using_c">
-<span class="sig-name descname"><span class="pre">evaluate_using_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_using_c" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.evaluate_using_c">
+<span class="sig-name descname"><span class="pre">evaluate_using_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.evaluate_using_c" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the output of the cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -591,8 +596,8 @@ each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_vectorized">
-<span class="sig-name descname"><span class="pre">evaluate_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_vectorized" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.evaluate_vectorized">
+<span class="sig-name descname"><span class="pre">evaluate_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.evaluate_vectorized" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the output of the cipher for multiple inputs.</p>
 <p>The inputs are given as a list cipher_input,such that cipher_inputs[0] contains the first input,
 and cipher_inputs[1] the second.
@@ -632,8 +637,8 @@ each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_with_intermediate_outputs_continuous_diffusion_analysis">
-<span class="sig-name descname"><span class="pre">evaluate_with_intermediate_outputs_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations_mix_columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.evaluate_with_intermediate_outputs_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.evaluate_with_intermediate_outputs_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">evaluate_with_intermediate_outputs_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations_mix_columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.evaluate_with_intermediate_outputs_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the output of the continuous generalized cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -662,18 +667,18 @@ each component</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.family_name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">family_name</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.family_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.family_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">family_name</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.family_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.file_name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file_name</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.file_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.file_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file_name</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.file_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.find_good_input_difference_for_neural_distinguisher">
-<span class="sig-name descname"><span class="pre">find_good_input_difference_for_neural_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_generations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_generation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.find_good_input_difference_for_neural_distinguisher" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.find_good_input_difference_for_neural_distinguisher">
+<span class="sig-name descname"><span class="pre">find_good_input_difference_for_neural_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_generations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_generation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.find_good_input_difference_for_neural_distinguisher" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return good neural distinguisher input differences for a cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -695,8 +700,8 @@ differences are allowed</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.generate_bit_based_c_code">
-<span class="sig-name descname"><span class="pre">generate_bit_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.generate_bit_based_c_code" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.generate_bit_based_c_code">
+<span class="sig-name descname"><span class="pre">generate_bit_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.generate_bit_based_c_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing the C code that defines the self.evaluate() method.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -715,8 +720,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.generate_csv_report">
-<span class="sig-name descname"><span class="pre">generate_csv_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_absolute_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.generate_csv_report" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.generate_csv_report">
+<span class="sig-name descname"><span class="pre">generate_csv_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_absolute_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.generate_csv_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a CSV report containing criteria to estimate the vulnerability of the cipher.</p>
 <p>This method generate a CSV report containing the criteria presented in the paper
 “The design of Xoodoo and Xoofff” [1].
@@ -744,8 +749,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.generate_evaluate_c_code_shared_library">
-<span class="sig-name descname"><span class="pre">generate_evaluate_c_code_shared_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.generate_evaluate_c_code_shared_library" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.generate_evaluate_c_code_shared_library">
+<span class="sig-name descname"><span class="pre">generate_evaluate_c_code_shared_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.generate_evaluate_c_code_shared_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store the C code in a file named &lt;id_cipher&gt;_evaluate.c, and build the corresponding executable.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -762,8 +767,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.generate_heatmap_graphs_for_avalanche_tests">
-<span class="sig-name descname"><span class="pre">generate_heatmap_graphs_for_avalanche_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">avalanche_results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.generate_heatmap_graphs_for_avalanche_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.generate_heatmap_graphs_for_avalanche_tests">
+<span class="sig-name descname"><span class="pre">generate_heatmap_graphs_for_avalanche_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">avalanche_results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.generate_heatmap_graphs_for_avalanche_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing latex instructions to generate heatmap graphs of the avalanche tests.
 The string can then be printed on a terminal or on a file.</p>
 <p>INPUT:</p>
@@ -806,8 +811,8 @@ The string can then be printed on a terminal or on a file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.generate_word_based_c_code">
-<span class="sig-name descname"><span class="pre">generate_word_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.generate_word_based_c_code" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.generate_word_based_c_code">
+<span class="sig-name descname"><span class="pre">generate_word_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.generate_word_based_c_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing the optimized C code that defines the self.evaluate() method.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -827,23 +832,23 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_all_components">
-<span class="sig-name descname"><span class="pre">get_all_components</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_all_components" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.get_all_components">
+<span class="sig-name descname"><span class="pre">get_all_components</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.get_all_components" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_all_components_ids">
-<span class="sig-name descname"><span class="pre">get_all_components_ids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_all_components_ids" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.get_all_components_ids">
+<span class="sig-name descname"><span class="pre">get_all_components_ids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.get_all_components_ids" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_all_inputs_bit_positions">
-<span class="sig-name descname"><span class="pre">get_all_inputs_bit_positions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_all_inputs_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.get_all_inputs_bit_positions">
+<span class="sig-name descname"><span class="pre">get_all_inputs_bit_positions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.get_all_inputs_bit_positions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_component_from_id">
-<span class="sig-name descname"><span class="pre">get_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_component_from_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.get_component_from_id">
+<span class="sig-name descname"><span class="pre">get_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.get_component_from_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the component according to the id given as input.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -860,13 +865,13 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_components_in_round">
-<span class="sig-name descname"><span class="pre">get_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_components_in_round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.get_components_in_round">
+<span class="sig-name descname"><span class="pre">get_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.get_components_in_round" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_current_component_id">
-<span class="sig-name descname"><span class="pre">get_current_component_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_current_component_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.get_current_component_id">
+<span class="sig-name descname"><span class="pre">get_current_component_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.get_current_component_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this function to get the current component id.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -887,13 +892,13 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_number_of_components_in_round">
-<span class="sig-name descname"><span class="pre">get_number_of_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_number_of_components_in_round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.get_number_of_components_in_round">
+<span class="sig-name descname"><span class="pre">get_number_of_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.get_number_of_components_in_round" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_round_from_component_id">
-<span class="sig-name descname"><span class="pre">get_round_from_component_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_round_from_component_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.get_round_from_component_id">
+<span class="sig-name descname"><span class="pre">get_round_from_component_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.get_round_from_component_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the round according to the round of the component id given as input.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -909,28 +914,28 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.get_sizes_of_components_by_type">
-<span class="sig-name descname"><span class="pre">get_sizes_of_components_by_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.get_sizes_of_components_by_type" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.get_sizes_of_components_by_type">
+<span class="sig-name descname"><span class="pre">get_sizes_of_components_by_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.get_sizes_of_components_by_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.inputs">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.inputs" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.inputs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.inputs_bit_size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs_bit_size</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.inputs_bit_size" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.inputs_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs_bit_size</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.inputs_bit_size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_algebraically_secure">
-<span class="sig-name descname"><span class="pre">is_algebraically_secure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_algebraically_secure" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.is_algebraically_secure">
+<span class="sig-name descname"><span class="pre">is_algebraically_secure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.is_algebraically_secure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <span class="math">True</span> if the cipher is resistant against algebraic attack.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -939,8 +944,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_andrx">
-<span class="sig-name descname"><span class="pre">is_andrx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_andrx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.is_andrx">
+<span class="sig-name descname"><span class="pre">is_andrx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.is_andrx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if the cipher is AndRX, False otherwise.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -956,8 +961,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_arx">
-<span class="sig-name descname"><span class="pre">is_arx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_arx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.is_arx">
+<span class="sig-name descname"><span class="pre">is_arx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.is_arx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if the cipher is ARX, False otherwise.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -973,8 +978,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_power_of_2_word_based">
-<span class="sig-name descname"><span class="pre">is_power_of_2_word_based</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_power_of_2_word_based" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.is_power_of_2_word_based">
+<span class="sig-name descname"><span class="pre">is_power_of_2_word_based</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.is_power_of_2_word_based" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the word size if the cipher is word based (64, 32, 16 or 8 bits), False otherwise.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -992,8 +997,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_shift_arx">
-<span class="sig-name descname"><span class="pre">is_shift_arx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_shift_arx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.is_shift_arx">
+<span class="sig-name descname"><span class="pre">is_shift_arx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.is_shift_arx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if the cipher is Shift-ARX, False otherwise.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1009,8 +1014,8 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.is_spn">
-<span class="sig-name descname"><span class="pre">is_spn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.is_spn" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.is_spn">
+<span class="sig-name descname"><span class="pre">is_spn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.is_spn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if the cipher is SPN.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1026,18 +1031,18 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.make_cipher_id">
-<span class="sig-name descname"><span class="pre">make_cipher_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.make_cipher_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.make_cipher_id">
+<span class="sig-name descname"><span class="pre">make_cipher_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.make_cipher_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.make_file_name">
-<span class="sig-name descname"><span class="pre">make_file_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.make_file_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.make_file_name">
+<span class="sig-name descname"><span class="pre">make_file_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.make_file_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.neural_network_blackbox_distinguisher_tests">
-<span class="sig-name descname"><span class="pre">neural_network_blackbox_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.neural_network_blackbox_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.neural_network_blackbox_distinguisher_tests">
+<span class="sig-name descname"><span class="pre">neural_network_blackbox_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.neural_network_blackbox_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a python dictionary that contains the accuracies corresponding to each round.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1054,8 +1059,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.neural_network_differential_distinguisher_tests">
-<span class="sig-name descname"><span class="pre">neural_network_differential_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.neural_network_differential_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.neural_network_differential_distinguisher_tests">
+<span class="sig-name descname"><span class="pre">neural_network_differential_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.neural_network_differential_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a python dictionary that contains the accuracies corresponding to each round.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1073,18 +1078,18 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.number_of_rounds">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_rounds</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.number_of_rounds" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.number_of_rounds">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_rounds</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.number_of_rounds" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.output_bit_size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_bit_size</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.output_bit_size" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.output_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_bit_size</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.output_bit_size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.polynomial_system">
-<span class="sig-name descname"><span class="pre">polynomial_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.polynomial_system" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.polynomial_system">
+<span class="sig-name descname"><span class="pre">polynomial_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.polynomial_system" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a polynomial system for the cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1099,8 +1104,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.polynomial_system_at_round">
-<span class="sig-name descname"><span class="pre">polynomial_system_at_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.polynomial_system_at_round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.polynomial_system_at_round">
+<span class="sig-name descname"><span class="pre">polynomial_system_at_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.polynomial_system_at_round" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a polynomial system for the cipher at round <span class="math">r</span>.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1115,8 +1120,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print">
-<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the structure of the cipher into the sage terminal.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1159,8 +1164,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_as_python_dictionary">
-<span class="sig-name descname"><span class="pre">print_as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.print_as_python_dictionary">
+<span class="sig-name descname"><span class="pre">print_as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.print_as_python_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this function to print the cipher as a python dictionary into the sage terminal.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1212,8 +1217,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_as_python_dictionary_to_file">
-<span class="sig-name descname"><span class="pre">print_as_python_dictionary_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_as_python_dictionary_to_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.print_as_python_dictionary_to_file">
+<span class="sig-name descname"><span class="pre">print_as_python_dictionary_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.print_as_python_dictionary_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this function to print the cipher as a python dictionary to a file.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1229,8 +1234,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_component_analysis_as_radar_charts">
-<span class="sig-name descname"><span class="pre">print_component_analysis_as_radar_charts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_analysis_results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_component_analysis_as_radar_charts" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.print_component_analysis_as_radar_charts">
+<span class="sig-name descname"><span class="pre">print_component_analysis_as_radar_charts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_analysis_results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.print_component_analysis_as_radar_charts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a matplotlib object containing the radar charts of the components analysis test</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1247,8 +1252,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_evaluation_python_code">
-<span class="sig-name descname"><span class="pre">print_evaluation_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_evaluation_python_code" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.print_evaluation_python_code">
+<span class="sig-name descname"><span class="pre">print_evaluation_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.print_evaluation_python_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the python code that implement the evaluation function of the cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1303,8 +1308,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_evaluation_python_code_to_file">
-<span class="sig-name descname"><span class="pre">print_evaluation_python_code_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_evaluation_python_code_to_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.print_evaluation_python_code_to_file">
+<span class="sig-name descname"><span class="pre">print_evaluation_python_code_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.print_evaluation_python_code_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this function to print the python code to a file.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1321,8 +1326,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.print_input_information">
-<span class="sig-name descname"><span class="pre">print_input_information</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.print_input_information" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.print_input_information">
+<span class="sig-name descname"><span class="pre">print_input_information</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.print_input_information" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print a list of the inputs with their corresponding bit size.</p>
 <dl class="simple">
 <dt>Possible cipher inputs are:</dt><dd><ul class="simple">
@@ -1351,68 +1356,53 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.reference_code">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reference_code</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.reference_code" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.reference_code">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reference_code</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.reference_code" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.remove_key_schedule">
-<span class="sig-name descname"><span class="pre">remove_key_schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.remove_key_schedule" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.remove_key_schedule">
+<span class="sig-name descname"><span class="pre">remove_key_schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.remove_key_schedule" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.remove_round_component">
-<span class="sig-name descname"><span class="pre">remove_round_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.remove_round_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.remove_round_component">
+<span class="sig-name descname"><span class="pre">remove_round_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.remove_round_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.remove_round_component_from_id">
-<span class="sig-name descname"><span class="pre">remove_round_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.remove_round_component_from_id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.round_constant">
-<span class="sig-name descname"><span class="pre">round_constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.round_constant" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.round_function">
-<span class="sig-name descname"><span class="pre">round_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.round_function" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.remove_round_component_from_id">
+<span class="sig-name descname"><span class="pre">remove_round_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.remove_round_component_from_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.rounds">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.rounds" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.rounds">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.rounds" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.rounds_as_list">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds_as_list</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.rounds_as_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.rounds_as_list">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds_as_list</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.rounds_as_list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.set_file_name">
-<span class="sig-name descname"><span class="pre">set_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.set_file_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.set_file_name">
+<span class="sig-name descname"><span class="pre">set_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.set_file_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.set_id">
-<span class="sig-name descname"><span class="pre">set_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.set_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.set_id">
+<span class="sig-name descname"><span class="pre">set_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.set_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.sort_cipher">
-<span class="sig-name descname"><span class="pre">sort_cipher</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.sort_cipher" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.sort_cipher">
+<span class="sig-name descname"><span class="pre">sort_cipher</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.sort_cipher" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.sp_box">
-<span class="sig-name descname"><span class="pre">sp_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.sp_box" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.test_against_reference_code">
-<span class="sig-name descname"><span class="pre">test_against_reference_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_tests</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.test_against_reference_code" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.test_against_reference_code">
+<span class="sig-name descname"><span class="pre">test_against_reference_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_tests</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.test_against_reference_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test the graph representation against its reference implementation (if available) with random inputs.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1427,8 +1417,8 @@ hidden layer of the neural network</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.test_vector_check">
-<span class="sig-name descname"><span class="pre">test_vector_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_test_vectors_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_test_vectors_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.test_vector_check" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.test_vector_check">
+<span class="sig-name descname"><span class="pre">test_vector_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_test_vectors_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_test_vectors_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.test_vector_check" title="Permalink to this definition">¶</a></dt>
 <dd><p>Testing the cipher with list of test vectors input and list of test vectors output.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1466,22 +1456,17 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
 </div>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.top_half_quarter_round">
+<span class="sig-name descname"><span class="pre">top_half_quarter_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.top_half_quarter_round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py property">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.GimliPermutation.type">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.GimliPermutation.type" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.permutations.salsa_permutation.SalsaPermutation.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#ciphers.permutations.salsa_permutation.SalsaPermutation.type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.big_swap">
-<span class="sig-name descname"><span class="pre">big_swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.big_swap" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ciphers.permutations.gimli_permutation.small_swap">
-<span class="sig-name descname"><span class="pre">small_swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.gimli_permutation.small_swap" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </section>
 
@@ -1494,18 +1479,18 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="photon_permutation.html"
-                          title="previous chapter">Photon permutation</a></p>
+    <p class="topless"><a href="chacha_permutation.html"
+                          title="previous chapter">Chacha permutation</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="util.html"
-                          title="next chapter">Util</a></p>
+    <p class="topless"><a href="ascon_permutation.html"
+                          title="next chapter">Ascon permutation</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../../_sources/ciphers/permutations/gimli_permutation.rst.txt"
+      <li><a href="../../_sources/ciphers/permutations/salsa_permutation.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -1533,13 +1518,13 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="util.html" title="Util"
+          <a href="ascon_permutation.html" title="Ascon permutation"
              >next</a> |</li>
         <li class="right" >
-          <a href="photon_permutation.html" title="Photon permutation"
+          <a href="chacha_permutation.html" title="Chacha permutation"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Gimli permutation</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Salsa permutation</a></li> 
       </ul>
     </div>
     
