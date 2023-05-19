@@ -567,17 +567,6 @@ def cnf_and_linear(mask_in_0, mask_in_1, mask_out, hw):
 #    - Running SAT solver -    #
 # ---------------------------- #
 
-
-def _get_data_kissat(data_keywords, lines):
-    data_line = [line for line in lines if data_keywords in line][0]
-    seconds_str_index = data_line.find("seconds") - 2
-    output_str = ""
-    while data_line[seconds_str_index] != " ":
-        output_str += data_line[seconds_str_index]
-        seconds_str_index -= 1
-    return float(output_str[::-1])
-
-
 def _get_data(data_keywords, lines):
     data_line = [line for line in lines if data_keywords in line][0]
     data = float(re.findall(r'[0-9]+\.?[0-9]*', data_line)[0])
@@ -601,7 +590,15 @@ def run_sat_solver(solver_name, options, dimacs_input, host=None):
                 values.extend(line.split()[1:])
         values = values[:-1]
     if solver_name == 'kissat':
-        time = _get_data_kissat(solver_specs['time'], solver_output)
+        data_keywords = solver_specs['time']
+        lines = solver_output
+        data_line = [line for line in lines if data_keywords in line][0]
+        seconds_str_index = data_line.find("seconds") - 2
+        output_str = ""
+        while data_line[seconds_str_index] != " ":
+            output_str += data_line[seconds_str_index]
+            seconds_str_index -= 1
+        time = float(output_str[::-1])
     else:
         time = _get_data(solver_specs['time'], solver_output)
     memory = float('inf')
