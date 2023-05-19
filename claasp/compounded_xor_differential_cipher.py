@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+from claasp.components.xor_component import XOR
+
 
 def creating_component_pairs(round_component_):
     original_component = deepcopy(round_component_)
@@ -35,39 +37,49 @@ def update_cipher_inputs(cipher):
     return old_cipher_inputs_
 
 
-def create_xor_components_inputs(old_cipher_inputs_, cipher):
+def create_xor_components_inputs(old_cipher_inputs_, cipher, round_object):
     cipher._inputs_bit_size = 2 * cipher.inputs_bit_size
     half_number_of_cipher_inputs = int(len(cipher.inputs_bit_size) / 2)
     i = 0
     for cipher_input in old_cipher_inputs_:
-        cipher.add_XOR_component(
-            [f'{cipher_input}_pair1'] + [f'{cipher_input}_pair2'],
-            [list(range(cipher.inputs_bit_size[i]))] +
-            [list(range(cipher.inputs_bit_size[i + half_number_of_cipher_inputs]))],
-            cipher.inputs_bit_size[i]
-        )
+        input_link_positions = [list(range(cipher.inputs_bit_size[i]))] + \
+                               [list(range(cipher.inputs_bit_size[i + half_number_of_cipher_inputs]))]
+        input_links = [f'{cipher_input}_pair1', f'{cipher_input}_pair2']
+        current_components_number = round_object.get_number_of_components()
+        output_bit_size = cipher.inputs_bit_size[i]
+        new_xor_component = XOR(0, current_components_number, input_links, input_link_positions,
+                                output_bit_size)
+        new_xor_component.set_id(f'input_difference_{new_xor_component.id}')
+        round_object.add_component(new_xor_component)
         i += 1
 
 
-def create_xor_components(component1_, component2_, cipher):
-    cipher.add_XOR_component(
-        [component1_.id] + [component2_.id],
-        [list(range(component1_.output_bit_size))] + [list(range(component2_.output_bit_size))],
-        component1_.output_bit_size
-    )
+def create_xor_component(component1_, component2_, round_object, round_number):
+    input_link_positions = [list(range(component1_.output_bit_size))] + [list(range(component2_.output_bit_size))]
+    input_links = [component1_.id, component2_.id]
+    current_components_number = round_object.get_number_of_components()
+    output_bit_size = component1_.output_bit_size
+    new_xor_component = XOR(round_number, current_components_number, input_links, input_link_positions, output_bit_size)
+    if component1_.type == 'intermediate_output':
+        new_xor_component.set_id(f'{component1_.id}_pair2')
+    elif component1_.type == 'cipher_output':
+        new_xor_component.set_id(f'{component1_.id}_pair2')
+    round_object.add_component(new_xor_component)
 
 
 def create_compounded_xor_cipher(cipher):
-    old_cipher_inputs = update_cipher_inputs(cipher)
-    create_xor_components_inputs(old_cipher_inputs, cipher)
-    cipher._output_bit_size = 2 * cipher.output_bit_size
     for round_number in range(cipher.number_of_rounds):
         round_object = cipher.rounds.round_at(round_number)
-        list_of_components = deepcopy(round_object.components)
+        round_object_temp = deepcopy(cipher.rounds.round_at(round_number))
+        list_of_components = deepcopy(round_object_temp.components)
         for round_component in list_of_components:
             component1, component2 = creating_component_pairs(round_component)
             round_object.remove_component_from_id(round_component.id)
             round_object.add_component(component1)
             round_object.add_component(component2)
             update_input_ids_link(component1, component2)
-            create_xor_components(component1, component2, cipher)
+            create_xor_component(component1, component2, round_object, round_number)
+    old_cipher_inputs = update_cipher_inputs(cipher)
+    round_object = cipher.rounds.round_at(0)
+    create_xor_components_inputs(old_cipher_inputs, cipher, round_object)
+    cipher._output_bit_size = 2 * cipher.output_bit_size
