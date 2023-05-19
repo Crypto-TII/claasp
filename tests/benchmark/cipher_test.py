@@ -8,13 +8,11 @@ aes = AESBlockCipher()
 
 @pytest.mark.parametrize("number_of_samples", [10, 100, 1000, 10000])
 def test_diffusion_tests_with_speck_cipher(benchmark, number_of_samples):
-
     benchmark(speck.diffusion_tests, number_of_samples=number_of_samples)
 
 
 @pytest.mark.parametrize("number_of_samples", [10, 100, 1000, 10000])
 def test_diffusion_tests_with_aes_cipher(benchmark, number_of_samples):
-
     benchmark(aes.diffusion_tests, number_of_samples=number_of_samples)
 
 
