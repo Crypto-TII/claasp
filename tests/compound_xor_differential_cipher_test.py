@@ -61,7 +61,7 @@ def create_constraints(list_key, list_data, key_differential):
 
 def test_satisfiable_differential_trail_related_key():
     speck = SpeckBlockCipher(number_of_rounds=14, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
-    speck.create_compounded_cipher()
+    speck.convert_to_compounded_xor_cipher()
     sat = SatCipherModel(speck)
     list_key = [
         0x1000,
@@ -106,7 +106,7 @@ def test_satisfiable_differential_trail_single_key():
     """ The following is an compatible trail presented in Table 5 of [SongHY16]_."""
 
     speck = SpeckBlockCipher(number_of_rounds=10, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
-    speck.create_compounded_cipher()
+    speck.convert_to_compounded_xor_cipher()
     sat = SatCipherModel(speck)
     list_data = [
         0x20400040,
@@ -130,7 +130,7 @@ def test_unsatisfiable_differential_trail_related_key():
     """ The following is an incompatible trail presented in Table 28 of [Sad2020]_."""
 
     speck = SpeckBlockCipher(number_of_rounds=14, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
-    speck.create_compounded_cipher()
+    speck.convert_to_compounded_xor_cipher()
     sat = SatCipherModel(speck)
     list_key = [
         0x0025,
