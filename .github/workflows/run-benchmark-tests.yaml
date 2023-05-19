@@ -6,7 +6,6 @@ on:
 
 jobs:
   run-benchmark-tests:
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -43,5 +42,5 @@ jobs:
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-    - name: Generate documentation
+    - name: Run benchmark tests
       run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make benchmark-tests
