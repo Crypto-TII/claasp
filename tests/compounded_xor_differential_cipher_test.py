@@ -103,7 +103,8 @@ def test_satisfiable_differential_trail_related_key():
 
 
 def test_satisfiable_differential_trail_single_key():
-    """ The following is an incompatible trail presented in Table 5 of [SongHY16]_."""
+    """ The following is an compatible trail presented in Table 5 of [SongHY16]_."""
+
     speck = SpeckBlockCipher(number_of_rounds=10, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
     speck.create_compounded_cipher()
     sat = SatCipherModel(speck)
