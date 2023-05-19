@@ -49,7 +49,7 @@ def create_xor_components_inputs(old_cipher_inputs_, cipher, round_object):
         output_bit_size = cipher.inputs_bit_size[i]
         new_xor_component = XOR(0, current_components_number, input_links, input_link_positions,
                                 output_bit_size)
-        new_xor_component.set_id(f'input_difference_{new_xor_component.id}')
+        new_xor_component.set_id(f'{cipher_input}_pair1_pair2')
         round_object.add_component(new_xor_component)
         i += 1
 
