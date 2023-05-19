@@ -1024,6 +1024,27 @@ class Cipher:
         """
         return self._rounds.get_round_from_component_id(component_id)
 
+    def get_current_component(self):
+        """
+        Use this function to get the current component.
+        INPUT:
+        - None
+        EXAMPLES::
+            sage: from claasp.cipher import Cipher
+            sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+            sage: cipher.add_round()
+            sage: constant_0_0 = cipher.add_constant_component(4, 0xF)
+            sage: constant_0_1 = cipher.add_constant_component(4, 0xF)
+            sage: cipher.add_round()
+            sage: constant_1_0 = cipher.add_constant_component(4, 0xF)
+            sage: cipher.get_current_component().id
+            'constant_1_0'
+        """
+        if self.current_round_number is None:
+            return "no component in this cipher"
+        index_of_last_component = self._rounds.current_round_number_of_components - 1
+        return self._rounds.component_from(self.current_round_number, index_of_last_component)
+
     def is_algebraically_secure(self, timeout):
         """
         Return `True` if the cipher is resistant against algebraic attack.

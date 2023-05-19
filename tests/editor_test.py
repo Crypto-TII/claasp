@@ -16,6 +16,7 @@ def test_add_shift_rows_component():
                                                              'input_id_link': ['input'],
                                                              'input_bit_positions': [[0, 1, 2, 3]],
                                                              'output_bit_size': 4,
+                                                             'tags': [],
                                                              'description': ['ROTATE', 2]}]]
 
 
@@ -29,6 +30,7 @@ def test_add_variable_rotate_component():
                                                              'input_id_link': ['input', 'input'],
                                                              'input_bit_positions': [[0, 1, 2, 3], [4, 5, 6, 7]],
                                                              'output_bit_size': 4,
+                                                             'tags': [],
                                                              'description': ['ROTATE_BY_VARIABLE_AMOUNT', -1]}]]
 
 
@@ -44,6 +46,7 @@ def test_remove_key_schedule():
                                                                                                       10, 11, 12, 13,
                                                                                                       14, 15]],
                                                                              'output_bit_size': 16,
+                                                                             'tags': ['data_schedule'],
                                                                              'description': ['ROTATE', 7]}
 
 
