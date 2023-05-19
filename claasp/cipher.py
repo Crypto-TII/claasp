@@ -1035,7 +1035,7 @@ class Cipher:
         - ``solver`` -- **string**; the name of the solver to use for the search
         - ``scenario`` -- **string**; the type of impossible differentials to search, single-key or related-key
         """
-        return self.find_impossible_property(type="linear", technique=technique, solver=solver, scenario=scenario)
+        return self.find_impossible_property(type="differential", technique=technique, solver=solver, scenario=scenario)
 
     def is_algebraically_secure(self, timeout):
         """
@@ -1638,11 +1638,12 @@ class Cipher:
             search_function = model.find_one_xor_differential_trail
         else:
             search_function = model.find_one_xor_linear_trail
-        last_component_id = self.get_all_components()[-1]
+        last_component_id = self.get_all_components()[-1].id
         impossible = []
         inputs_dictionary = self.inputs_size_to_dict()
         plain_bits = inputs_dictionary['plaintext']
         key_bits = inputs_dictionary['key']
+
         if scenario == "single-key":
             # Fix the key difference to be zero, and the plaintext difference to be non-zero.
             for input_bit_position in range(plain_bits):
@@ -1656,7 +1657,7 @@ class Cipher:
                     fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
                                                             integer_to_bit_list(1 << output_bit_position, plain_bits,
                                                                                 'big')))
-                    solution = search_function(fixed_values)
+                    solution = search_function(fixed_values, solver_name = solver)
                     if solution['status'] == "UNSATISFIABLE":
                         impossible.append((1 << input_bit_position, 1 << output_bit_position))
         elif scenario == "related-key":
@@ -1668,10 +1669,11 @@ class Cipher:
                                                                                 'big')))
                     fixed_values.append(set_fixed_variables('plaintext', 'equal', list(range(plain_bits)),
                                                             integer_to_bit_list(0, plain_bits, 'big')))
+
                     fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
                                                             integer_to_bit_list(1 << output_bit_position, plain_bits,
                                                                                 'big')))
-                    solution = search_function(fixed_values)
+                    solution = search_function(fixed_values, solver_name = solver)
                     if solution['status'] == "UNSATISFIABLE":
                         impossible.append((1 << input_bit_position, 1 << output_bit_position))
         return impossible
