@@ -7,6 +7,28 @@ block_bit_size = 32
 key_schedule_bit_size = 16
 
 
+def get_intermediate_component_id_from_key_schedule(round_number, number_of_rounds, suffix):
+    component_id = ''
+    if round_number == 0:
+        component_id = f'intermediate_output_0_5{suffix}'
+    if 0 < round_number < number_of_rounds:
+        component_id = f'intermediate_output_{round_number}_11{suffix}'
+    return component_id
+
+
+def get_intermediate_component_id_from_main_process(round_number, number_of_rounds, suffix):
+    component_id = ''
+    if round_number == 0:
+        component_id = f'plaintext{suffix}'
+    if round_number == 1:
+        component_id = f'intermediate_output_0_6{suffix}'
+    if 1 < round_number < number_of_rounds:
+        component_id = f'intermediate_output_{round_number - 1}_12{suffix}'
+    if round_number == number_of_rounds:
+        component_id = f'cipher_output_{number_of_rounds - 1}_12{suffix}'
+    return component_id
+
+
 def get_constraint(component_id_, bit_size, bit_values):
     constraint_ = (
         set_fixed_variables(
@@ -18,7 +40,7 @@ def get_constraint(component_id_, bit_size, bit_values):
     return constraint_
 
 
-def get_constraints(list_key, list_data, key_differential):
+def get_constraints(list_key, list_data, key_differential, suffix=""):
     key_pair1_pair2 = set_fixed_variables(
         component_id='key_pair1_pair2',
         constraint_type='equal',
@@ -31,28 +53,16 @@ def get_constraints(list_key, list_data, key_differential):
     fixed_variables = [key_pair1_pair2]
     for num in list_key:
         binary_list = integer_to_bit_list(num, key_schedule_bit_size, 'big')
-        component_id = ""
-        if round_number == 0:
-            component_id = 'intermediate_output_0_5_pair1_pair2'
-        if 0 < round_number < number_of_states:
-            component_id = f'intermediate_output_{round_number}_11_pair1_pair2'
+        component_id = get_intermediate_component_id_from_key_schedule(round_number, number_of_states, suffix)
         component_ids.append(component_id)
         fixed_variables.append(get_constraint(component_id, key_schedule_bit_size, binary_list))
         round_number += 1
 
     round_number = 0
-    number_of_states = len(list_data)
+    number_of_states = len(list_data) - 1
     for num in list_data:
         binary_list = integer_to_bit_list(num, block_bit_size, 'big')
-        component_id = ""
-        if round_number == 0:
-            component_id = 'plaintext_pair1_pair2'
-        if round_number == 1:
-            component_id = 'intermediate_output_0_6_pair1_pair2'
-        if 1 < round_number < number_of_states - 1:
-            component_id = f'intermediate_output_{round_number - 1}_12_pair1_pair2'
-        if round_number == number_of_states - 1:
-            component_id = f'cipher_output_{number_of_states - 2}_12_pair1_pair2'
+        component_id = get_intermediate_component_id_from_main_process(round_number, number_of_states, suffix)
         component_ids.append(component_id)
         fixed_variables.append(get_constraint(component_id, block_bit_size, binary_list))
         round_number += 1
@@ -97,8 +107,9 @@ def test_satisfiable_differential_trail_related_key():
         0x1000102,
         0x8102850a,
     ]
-    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0a80088000681000)
+    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0a80088000681000, '_pair1_pair2')
     sat.build_cipher_model(fixed_variables=fixed_variables)
+
     assert sat.solve(CIPHER, solver_name="cryptominisat")["status"] == "SATISFIABLE"
 
 
@@ -121,7 +132,7 @@ def test_satisfiable_differential_trail_single_key():
         0x08102810,
         0x0800A840
     ]
-    fixed_variables, component_ids = get_constraints([], list_data, 0x0)
+    fixed_variables, component_ids = get_constraints([], list_data, 0x0, '_pair1_pair2')
     sat.build_cipher_model(fixed_variables=fixed_variables)
     assert sat.solve(CIPHER, solver_name="cryptominisat")["status"] == "SATISFIABLE"
 
@@ -166,6 +177,6 @@ def test_unsatisfiable_differential_trail_related_key():
         0x9000C102,
         0xC575C17E
     ]
-    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0001400008800025)
+    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0001400008800025, '_pair1_pair2')
     sat.build_cipher_model(fixed_variables=fixed_variables)
     assert sat.solve(CIPHER, solver_name="cryptominisat")["status"] == "UNSATISFIABLE"
