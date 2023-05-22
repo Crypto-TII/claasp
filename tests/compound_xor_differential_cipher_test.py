@@ -1,3 +1,4 @@
+from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
@@ -5,6 +6,24 @@ from claasp.name_mappings import CIPHER
 key_bit_size = 64
 block_bit_size = 32
 key_schedule_bit_size = 16
+
+
+def get_round_key_values(dictionary, number_of_rounds, suffix=""):
+    round_key_values = []
+    for round_number in range(number_of_rounds):
+        component_id = get_intermediate_component_id_from_key_schedule(round_number, number_of_rounds, suffix)
+        if component_id != '':
+            round_key_values.append(int('0x' + dictionary[component_id]['value'], 16))
+    return round_key_values
+
+
+def get_round_data_values(dictionary, number_of_rounds, suffix=""):
+    round_data_values = []
+    for round_number in range(number_of_rounds+1):
+        component_id = get_intermediate_component_id_from_main_process(round_number, number_of_rounds, suffix)
+        if component_id != '':
+            round_data_values.append(int('0x' + dictionary[component_id]['value'], 16))
+    return round_data_values
 
 
 def get_intermediate_component_id_from_key_schedule(round_number, number_of_rounds, suffix):
@@ -180,3 +199,24 @@ def test_unsatisfiable_differential_trail_related_key():
     fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0001400008800025, '_pair1_pair2')
     sat.build_cipher_model(fixed_variables=fixed_variables)
     assert sat.solve(CIPHER, solver_name="cryptominisat")["status"] == "UNSATISFIABLE"
+
+
+def test_satisfiable_differential_trail_single_key_generated_using_claasp():
+    speck = SpeckBlockCipher(number_of_rounds=4, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
+    sat = SatCipherModel(speck)
+    sat_xor_diff_model = SatXorDifferentialModel(
+        speck,
+    )
+    fixed_variables = [set_fixed_variables('key', 'not_equal', range(64), integer_to_bit_list(0, 64, 'little')),
+                       set_fixed_variables('plaintext', 'not_equal', range(32),
+                                           integer_to_bit_list(0, 32, 'little'))]
+    sat_xor_diff_model.build_xor_differential_trail_model(5, fixed_variables=fixed_variables)
+    sat_output = sat_xor_diff_model._solve_with_external_sat_solver('xor_differential', 'cryptominisat', [])
+
+    list_key = get_round_key_values(sat_output["components_values"], speck.number_of_rounds)
+    list_data = get_round_data_values(sat_output["components_values"], speck.number_of_rounds)
+
+    speck.convert_to_compounded_xor_cipher()
+    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0)
+    sat.build_cipher_model(fixed_variables=fixed_variables)
+    assert sat.solve(CIPHER, solver_name="cryptominisat")["status"] == "SATISFIABLE"
