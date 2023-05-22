@@ -9,7 +9,7 @@ Download the source from the git repository:
 
 ```
      $ git clone https://github.com/Crypto-TII/claasp.git
-     $ cd tii-claasp/
+     $ cd claasp/
 ```
 
 CLAASP library is built on the top of SageMath, and it will try to pick the `sage` binary from `PATH`
@@ -45,41 +45,68 @@ root directory of the project:
 
 ## Setting up PyCharm
 
+
+The following instructions have been tested with 
+```angular2html
+PyCharm 2021.2 (Professional Edition)
+Build #PY-212.4746.96, built on July 27, 2021
+```
 1. Download and install [PyCharm](https://www.jetbrains.com/pycharm/download).
+
+### Python interpreter
+
+2. Determine location of the Python executable inside your sage package:
+   1. open a terminal and type: 
+   `sage -python` to open the Python shell from the sage package.
+   2. within the Python shell, type: 
+```angular2html
+>>> import sys
+>>> sys.executable
+# the output will be a path similar to this: '/your_sage_python_path/bin/python3'
+```
+3. Run PyCharm and open the `claasp/` directory
  
-2. Run PyCharm and open the `claasp/` directory
- 
-3. We will now set up PyCharm to use the Python 3 interpreter of SageMath
-   1. Click `PyCharm` menu in the top-left toolbar and select `Setting`
-   2. Click the drop-down menu of `Project: tii-claasp` and select `Python Interpreter`
+4. We will now set up PyCharm to use the Python 3 interpreter of SageMath
+   1. Click `PyCharm` menu in the top-left toolbar and select `Preferences...`
+   2. Click the drop-down menu of `Project: claasp` and select `Python Interpreter`
    3. Click the little-gear icon in the top-right corner next to the drop-down list of available interpreters and
-      select `Add Interpreter`
-   4. Select `Add Local Interpreter`
+      select `Add...`
+   4. Select `Existing Environment`
    5. Click the `...` menu next to the drop-down list of interpreters
-   6. Browse to the `python3.10` executable under `SAGE_ROOT/local/bin`
-   7. If you set up the `PATH` environment variable correctly, PyCharm should successfully execute SageMath Python 3
+   7. Browse to the path found in point 2.
+   8. If you set up the `PATH` environment variable correctly, PyCharm should successfully execute SageMath Python 3
       interpreter and populate list of packages installed.
 
-4. Set up a linter and a formatter tool in order to follow best practises as specified in further sections.
+After the steps above, you should now be able to:
+1. Click on `Add Configuration...`.
+2. Click on `Add new run configuration...`.
+3. Select "Python".
+4. Add the file to be run/debugged in the field "Script Path".
 
-5. Configure PyCharm's Makefile Plugin
+### Linter
 
-   1. Click `PyCharm` menu in the top-left toolbar and select `Preferences`
-   2. Go to `Plugins`
-   3. Install the `Makefile language` plugin
+Set up a linter and a formatter tool in order to follow best practises as specified in further sections.
 
-   To use the targets in the Makefile, or to run the test for a specific module, you need to set a build configurations by
+### Makefile configuration
+
+Configure PyCharm's Makefile Plugin
+
+1. Click `PyCharm` menu in the top-left toolbar and select `Preferences`
+2. Go to `Plugins`
+3. Install the `Makefile language` plugin
+
+To use the targets in the Makefile, or to run the test for a specific module, you need to set a build configurations by
    following the steps below:
 
-   1. Click 'Run' in the top toolbar and select `Edit configurations`
-   2. Click the symbol `+` to add a new build configuration and choose `Makefile`
-   3. In the field `Name`, type the name of the configuration
-   4. In the field `Makefile`, choose the Makefile in the root folder of `tii-claasp`
-   5. In the field `Targets`, choose the target you want to run (e.g. all, install, uninstall, etc)
-   6. In the field `Arguments`, type the argument you want to pass when `make <target>`. For examples, if you want to run
-      the tests for `claasp/cipher_modules/algebraic_tests.py`, set `test` in the field `Targets` and type 
-      `MODULE=claasp/cipher_modules/algebraic_tests.py` in the field `Arguments`.
-   7. In the field `Working Directory`, choose the root folder of `tii-claasp`
+1. Click 'Run' in the top toolbar and select `Edit configurations`
+2. Click the symbol `+` to add a new build configuration and choose `Makefile`
+3. In the field `Name`, type the name of the configuration
+4. In the field `Makefile`, choose the Makefile in the root folder of `claasp`
+5. In the field `Targets`, choose the target you want to run (e.g. all, install, uninstall, etc)
+6. In the field `Arguments`, type the argument you want to pass when `make <target>`. For examples, if you want to run
+   the tests for `claasp/cipher_modules/algebraic_tests.py`, set `test` in the field `Targets` and type 
+   `MODULE=claasp/cipher_modules/algebraic_tests.py` in the field `Arguments`.
+7. In the field `Working Directory`, choose the root folder of `claasp`
 
 ## How to Configure linter and formatter
 Developers use apps to help us improve the quality of our code. As every programming language has its own standards and good practises, we can take advantage of that and set/follow rules that can be automatically analysed and improved by our IDE (Integrated Development Environment).
@@ -404,14 +431,14 @@ Below you can find what it is considered best practises, but ***the most importa
 8. Put relevant keywords in the field `Labels`
 9. If it is necessary to link the issue with existing ones, fill both the `Linked issue` and the `Issue` field.
 
-Now suppose that you want to work on a ticket. We must associate the ticket to a specific branch in `tii-claasp`
+Now suppose that you want to work on a ticket. We must associate the ticket to a specific branch in `claasp`
 repository in the following way
 
 1. Go to the ticket that you want to work on
 2. In the right pane, select `Create branch`. You will be redirected to the Github.
-3. Select the `tii-claasp` in the `Repository` field
+3. Select the `claasp` in the `Repository` field
 4. Choose `Custom` in the `Branch type`
-5. Select the appropriate branch that you want to `Branch from`. Generally, this should be set to `master`.
+5. Select the appropriate branch that you want to `Branch from`. Generally, this should be set to `main` or `develop`.
 6. In the `Branch name`, make sure that it is filled with the same ID as the ticket, i.e. `LIBCA-26`.
 7. Click `Create branch`
 
@@ -424,7 +451,7 @@ We agreed on some specifics that do not follow the convention linked above. Thes
 
 - Both protected/private methods will have the suffix `_`.
 - Component names like AND, OR, etc. inside a method name will always be in capital letters. `add_AND_component()`
-- Create a PR to master branch only when the functionality is completed
+- Create a PR to `develp` branch only when the functionality is completed
 
 ## Executing the tests
 
