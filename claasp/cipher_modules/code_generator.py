@@ -25,7 +25,8 @@ from subprocess import call
 import claasp
 from claasp.component import free_input
 from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, CONSTANT,
-                                  CONCATENATE, PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT)
+                                  CONCATENATE, PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
+                                  FSR)
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)

@@ -958,22 +958,17 @@ def fsr(input, polynomial_index_list, output_len, verbosity=False):
     - ``polynomial_index_list`` -- **list**; a list of lists of index of input bits, which presented a list of monomials.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
     """
-    output = BitArray(output_len)
-    number_of_variables = input.len - output_len + 1
-    R = BooleanPolynomialRing(number_of_variables)
-    p = R(0)
-    for _ in range(polynomial_index_list):
-        m = 1
-        for i in range(len(_)):
-            m = m * R.i
-        p += m
-
+    output = BitArray(uint=0, length=output_len)
     for i in range(output_len):
-        output[i] = p.evaluate(input[i:i+number_of_variables])
+        for _ in polynomial_index_list:
+            m = 1
+            for __ in _:
+                m = m * input[__+i]
+            output[i] ^= m
 
     if verbosity:
         print("FSR:")
-        print("  F   = {}".format(p))
+        print("  F   = {}".format(polynomial_index_list))
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))
 

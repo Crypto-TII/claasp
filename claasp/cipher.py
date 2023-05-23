@@ -240,7 +240,7 @@ class Cipher:
         return editor.add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size)
 
     def add_FSR_component(self, input_id_links, input_bit_positions, output_bit_size, description):
-        return editor.add_SBOX_component(self, input_id_links, input_bit_positions, output_bit_size, description)
+        return editor.add_FSR_component(self, input_id_links, input_bit_positions, output_bit_size, description)
 
     def algebraic_tests(self, timeout):
         """
