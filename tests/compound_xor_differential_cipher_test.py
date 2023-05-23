@@ -90,7 +90,7 @@ def get_constraints(list_key, list_data, key_differential, suffix=""):
 
 def test_satisfiable_differential_trail_related_key():
     speck = SpeckBlockCipher(number_of_rounds=14, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
-    speck.convert_to_compounded_xor_cipher()
+    speck.convert_to_compound_xor_cipher()
     sat = SatCipherModel(speck)
     list_key = [
         0x1000,
@@ -136,7 +136,7 @@ def test_satisfiable_differential_trail_single_key():
     """ The following is an compatible trail presented in Table 5 of [SongHY16]_."""
 
     speck = SpeckBlockCipher(number_of_rounds=10, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
-    speck.convert_to_compounded_xor_cipher()
+    speck.convert_to_compound_xor_cipher()
     sat = SatCipherModel(speck)
     list_data = [
         0x20400040,
@@ -160,7 +160,7 @@ def test_unsatisfiable_differential_trail_related_key():
     """ The following is an incompatible trail presented in Table 28 of [Sad2020]_."""
 
     speck = SpeckBlockCipher(number_of_rounds=14, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
-    speck.convert_to_compounded_xor_cipher()
+    speck.convert_to_compound_xor_cipher()
     sat = SatCipherModel(speck)
     list_key = [
         0x0025,
@@ -216,7 +216,7 @@ def test_satisfiable_differential_trail_single_key_generated_using_claasp():
     list_key = get_round_key_values(sat_output["components_values"], speck.number_of_rounds)
     list_data = get_round_data_values(sat_output["components_values"], speck.number_of_rounds)
 
-    speck.convert_to_compounded_xor_cipher()
+    speck.convert_to_compound_xor_cipher()
     fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0)
     sat.build_cipher_model(fixed_variables=fixed_variables)
     assert sat.solve(CIPHER, solver_name="cryptominisat")["status"] == "SATISFIABLE"

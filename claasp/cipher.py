@@ -24,7 +24,7 @@ from copy import deepcopy
 
 import claasp
 from claasp import editor
-from claasp.compound_xor_differential_cipher import convert_to_compounded_xor_cipher
+from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
 from claasp.rounds import Rounds
 from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
@@ -1577,8 +1577,8 @@ class Cipher:
         """
         return tester.test_vector_check(self, list_of_test_vectors_input, list_of_test_vectors_output)
 
-    def convert_to_compounded_xor_cipher(self):
-        convert_to_compounded_xor_cipher(self)
+    def convert_to_compound_xor_cipher(self):
+        convert_to_compound_xor_cipher(self)
 
     @property
     def current_round(self):

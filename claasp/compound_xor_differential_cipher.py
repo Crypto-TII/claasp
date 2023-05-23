@@ -67,7 +67,7 @@ def create_xor_component(component1_, component2_, round_object, round_number):
     round_object.add_component(new_xor_component)
 
 
-def convert_to_compounded_xor_cipher(cipher):
+def convert_to_compound_xor_cipher(cipher):
     for round_number in range(cipher.number_of_rounds):
         round_object = cipher.rounds.round_at(round_number)
         round_object_temp = deepcopy(cipher.rounds.round_at(round_number))
