@@ -335,6 +335,7 @@ class CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(CpXorDifferent
               ...
              'total_weight': '6'}
         """
+        possible_sboxes = 0
         if weight != -1:
             possible_sboxes = self.find_possible_number_of_active_sboxes(weight)
             if not possible_sboxes:
@@ -342,7 +343,7 @@ class CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(CpXorDifferent
 
         cipher_name = self.cipher_id
         start = tm.time()
-        self.build_xor_differential_trail_first_step_model(weight, fixed_variables, nmax, repetition)
+        self.build_xor_differential_trail_first_step_model(weight, fixed_variables, nmax, repetition, possible_sboxes)
         end = tm.time()
         build_time = end - start
         first_step_solution, solve_time = self.solve_model('xor_differential_first_step', first_step_solver_name)
@@ -439,9 +440,10 @@ class CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(CpXorDifferent
         else:
             if model_type == 'xor_differential_first_step':
                 write_model_to_file(self._first_step, input_file_name)
+                command = ['minizinc', '-a', '--solver', solver_name, input_file_name]
             else:
                 write_model_to_file(self._model_constraints, input_file_name)
-            command = ['minizinc', '--solver', solver_name, input_file_name]
+                command = ['minizinc', '--solver', solver_name, input_file_name]
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
         os.remove(input_file_name)
         solution = []
