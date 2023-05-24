@@ -1175,8 +1175,6 @@
         <li><a href="components/shift_rows_component.html#components.shift_rows_component.ShiftRows.cms_deterministic_truncated_xor_differential_trail_constraints">(ShiftRows method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="components/and_component.html#components.and_component.AND.cms_xor_differential_propagation_constraints">cms_xor_differential_propagation_constraints() (AND method)</a>
 
       <ul>
@@ -1269,6 +1267,8 @@
         <li><a href="components/xor_component.html#components.xor_component.XOR.cms_xor_linear_mask_propagation_constraints">(XOR method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cipher_modules/models/sat/cms_models/cms_cipher_model.html#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel">CmsSatCipherModel (class in cipher_modules.models.sat.cms_models.cms_cipher_model)</a>
 </li>
       <li><a href="cipher_modules/models/sat/cms_models/cms_deterministic_truncated_xor_differential_model.html#cipher_modules.models.sat.cms_models.cms_deterministic_truncated_xor_differential_model.CmsSatDeterministicTruncatedXorDifferentialModel">CmsSatDeterministicTruncatedXorDifferentialModel (class in cipher_modules.models.sat.cms_models.cms_deterministic_truncated_xor_differential_model)</a>
@@ -1740,6 +1740,13 @@
       </ul></li>
       <li><a href="rounds.html#rounds.Rounds.components_in_round">components_in_round() (Rounds method)</a>
 </li>
+      <li>
+    compound_xor_differential_cipher
+
+      <ul>
+        <li><a href="compound_xor_differential_cipher.html#module-compound_xor_differential_cipher">module</a>
+</li>
+      </ul></li>
       <li><a href="ciphers/hash_functions/sha2_hash_function.html#ciphers.hash_functions.sha2_hash_function.SHA2HashFunction.compute_bsig0_bsig1">compute_bsig0_bsig1() (SHA2HashFunction method)</a>
 </li>
       <li><a href="ciphers/hash_functions/sha2_hash_function.html#ciphers.hash_functions.sha2_hash_function.SHA2HashFunction.compute_ch">compute_ch() (SHA2HashFunction method)</a>
@@ -2440,6 +2447,114 @@
 </li>
       <li><a href="cipher_modules/models/utils.html#cipher_modules.models.utils.convert_solver_solution_to_dictionary">convert_solver_solution_to_dictionary() (in module cipher_modules.models.utils)</a>
 </li>
+      <li><a href="ciphers/block_ciphers/aes_block_cipher.html#ciphers.block_ciphers.aes_block_cipher.AESBlockCipher.convert_to_compound_xor_cipher">convert_to_compound_xor_cipher() (AESBlockCipher method)</a>
+
+      <ul>
+        <li><a href="ciphers/permutations/ascon_permutation.html#ciphers.permutations.ascon_permutation.AsconPermutation.convert_to_compound_xor_cipher">(AsconPermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/ascon_sbox_sigma_no_matrix_permutation.html#ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation.AsconSboxSigmaNoMatrixPermutation.convert_to_compound_xor_cipher">(AsconSboxSigmaNoMatrixPermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/ascon_sbox_sigma_permutation.html#ciphers.permutations.ascon_sbox_sigma_permutation.AsconSboxSigmaPermutation.convert_to_compound_xor_cipher">(AsconSboxSigmaPermutation method)</a>
+</li>
+        <li><a href="ciphers/hash_functions/blake2_hash_function.html#ciphers.hash_functions.blake2_hash_function.Blake2HashFunction.convert_to_compound_xor_cipher">(Blake2HashFunction method)</a>
+</li>
+        <li><a href="ciphers/hash_functions/blake_hash_function.html#ciphers.hash_functions.blake_hash_function.BlakeHashFunction.convert_to_compound_xor_cipher">(BlakeHashFunction method)</a>
+</li>
+        <li><a href="ciphers/permutations/chacha_permutation.html#ciphers.permutations.chacha_permutation.ChachaPermutation.convert_to_compound_xor_cipher">(ChachaPermutation method)</a>
+</li>
+        <li><a href="ciphers/stream_ciphers/chacha_stream_cipher.html#ciphers.stream_ciphers.chacha_stream_cipher.ChachaStreamCipher.convert_to_compound_xor_cipher">(ChachaStreamCipher method)</a>
+</li>
+        <li><a href="cipher.html#cipher.Cipher.convert_to_compound_xor_cipher">(Cipher method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/constant_block_cipher.html#ciphers.block_ciphers.constant_block_cipher.ConstantBlockCipher.convert_to_compound_xor_cipher">(ConstantBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/des_block_cipher.html#ciphers.block_ciphers.des_block_cipher.DESBlockCipher.convert_to_compound_xor_cipher">(DESBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/des_exact_key_length_block_cipher.html#ciphers.block_ciphers.des_exact_key_length_block_cipher.DESExactKeyLengthBlockCipher.convert_to_compound_xor_cipher">(DESExactKeyLengthBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/fancy_block_cipher.html#ciphers.block_ciphers.fancy_block_cipher.FancyBlockCipher.convert_to_compound_xor_cipher">(FancyBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/permutations/gift_permutation.html#ciphers.permutations.gift_permutation.GiftPermutation.convert_to_compound_xor_cipher">(GiftPermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/gift_sbox_permutation.html#ciphers.permutations.gift_sbox_permutation.GiftSboxPermutation.convert_to_compound_xor_cipher">(GiftSboxPermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/gimli_permutation.html#ciphers.permutations.gimli_permutation.GimliPermutation.convert_to_compound_xor_cipher">(GimliPermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/gimli_sbox_permutation.html#ciphers.permutations.gimli_sbox_permutation.GimliSboxPermutation.convert_to_compound_xor_cipher">(GimliSboxPermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/grain_core_permutation.html#ciphers.permutations.grain_core_permutation.GrainCorePermutation.convert_to_compound_xor_cipher">(GrainCorePermutation method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/hight_block_cipher.html#ciphers.block_ciphers.hight_block_cipher.HightBlockCipher.convert_to_compound_xor_cipher">(HightBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/identity_block_cipher.html#ciphers.block_ciphers.identity_block_cipher.IdentityBlockCipher.convert_to_compound_xor_cipher">(IdentityBlockCipher method)</a>
+</li>
+        <li><a href="compound_xor_differential_cipher.html#compound_xor_differential_cipher.convert_to_compound_xor_cipher">(in module compound_xor_differential_cipher)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/kasumi_block_cipher.html#ciphers.block_ciphers.kasumi_block_cipher.KasumiBlockCipher.convert_to_compound_xor_cipher">(KasumiBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/permutations/keccak_invertible_permutation.html#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.convert_to_compound_xor_cipher">(KeccakInvertiblePermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/keccak_permutation.html#ciphers.permutations.keccak_permutation.KeccakPermutation.convert_to_compound_xor_cipher">(KeccakPermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/keccak_sbox_permutation.html#ciphers.permutations.keccak_sbox_permutation.KeccakSboxPermutation.convert_to_compound_xor_cipher">(KeccakSboxPermutation method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/lea_block_cipher.html#ciphers.block_ciphers.lea_block_cipher.LeaBlockCipher.convert_to_compound_xor_cipher">(LeaBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/lowmc_block_cipher.html#ciphers.block_ciphers.lowmc_block_cipher.LowMCBlockCipher.convert_to_compound_xor_cipher">(LowMCBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/hash_functions/md5_hash_function.html#ciphers.hash_functions.md5_hash_function.MD5HashFunction.convert_to_compound_xor_cipher">(MD5HashFunction method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/midori_block_cipher.html#ciphers.block_ciphers.midori_block_cipher.MidoriBlockCipher.convert_to_compound_xor_cipher">(MidoriBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/permutations/photon_permutation.html#ciphers.permutations.photon_permutation.PhotonPermutation.convert_to_compound_xor_cipher">(PhotonPermutation method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/present_block_cipher.html#ciphers.block_ciphers.present_block_cipher.PresentBlockCipher.convert_to_compound_xor_cipher">(PresentBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/raiden_block_cipher.html#ciphers.block_ciphers.raiden_block_cipher.RaidenBlockCipher.convert_to_compound_xor_cipher">(RaidenBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/permutations/salsa_permutation.html#ciphers.permutations.salsa_permutation.SalsaPermutation.convert_to_compound_xor_cipher">(SalsaPermutation method)</a>
+</li>
+        <li><a href="ciphers/hash_functions/sha1_hash_function.html#ciphers.hash_functions.sha1_hash_function.SHA1HashFunction.convert_to_compound_xor_cipher">(SHA1HashFunction method)</a>
+</li>
+        <li><a href="ciphers/hash_functions/sha2_hash_function.html#ciphers.hash_functions.sha2_hash_function.SHA2HashFunction.convert_to_compound_xor_cipher">(SHA2HashFunction method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/simon_block_cipher.html#ciphers.block_ciphers.simon_block_cipher.SimonBlockCipher.convert_to_compound_xor_cipher">(SimonBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/skinny_block_cipher.html#ciphers.block_ciphers.skinny_block_cipher.SkinnyBlockCipher.convert_to_compound_xor_cipher">(SkinnyBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/permutations/sparkle_permutation.html#ciphers.permutations.sparkle_permutation.SparklePermutation.convert_to_compound_xor_cipher">(SparklePermutation method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/sparx_block_cipher.html#ciphers.block_ciphers.sparx_block_cipher.SparxBlockCipher.convert_to_compound_xor_cipher">(SparxBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/speck_block_cipher.html#ciphers.block_ciphers.speck_block_cipher.SpeckBlockCipher.convert_to_compound_xor_cipher">(SpeckBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/permutations/spongent_pi_permutation.html#ciphers.permutations.spongent_pi_permutation.SpongentPiPermutation.convert_to_compound_xor_cipher">(SpongentPiPermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/spongent_pi_precomputation_permutation.html#ciphers.permutations.spongent_pi_precomputation_permutation.SpongentPiPrecomputationPermutation.convert_to_compound_xor_cipher">(SpongentPiPrecomputationPermutation method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/tea_block_cipher.html#ciphers.block_ciphers.tea_block_cipher.TeaBlockCipher.convert_to_compound_xor_cipher">(TeaBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/threefish_block_cipher.html#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.convert_to_compound_xor_cipher">(ThreefishBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/permutations/tinyjambu_permutation.html#ciphers.permutations.tinyjambu_permutation.TinyJambuPermutation.convert_to_compound_xor_cipher">(TinyJambuPermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/tinyjambu_32bits_word_permutation.html#ciphers.permutations.tinyjambu_32bits_word_permutation.TinyJambuWordBasedPermutation.convert_to_compound_xor_cipher">(TinyJambuWordBasedPermutation method)</a>
+</li>
+        <li><a href="ciphers/toys/toyspn1.html#ciphers.toys.toyspn1.ToySPN1.convert_to_compound_xor_cipher">(ToySPN1 method)</a>
+</li>
+        <li><a href="ciphers/toys/toyspn2.html#ciphers.toys.toyspn2.ToySPN2.convert_to_compound_xor_cipher">(ToySPN2 method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/twofish_block_cipher.html#ciphers.block_ciphers.twofish_block_cipher.TwofishBlockCipher.convert_to_compound_xor_cipher">(TwofishBlockCipher method)</a>
+</li>
+        <li><a href="ciphers/permutations/xoodoo_invertible_permutation.html#ciphers.permutations.xoodoo_invertible_permutation.XoodooInvertiblePermutation.convert_to_compound_xor_cipher">(XoodooInvertiblePermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/xoodoo_permutation.html#ciphers.permutations.xoodoo_permutation.XoodooPermutation.convert_to_compound_xor_cipher">(XoodooPermutation method)</a>
+</li>
+        <li><a href="ciphers/permutations/xoodoo_sbox_permutation.html#ciphers.permutations.xoodoo_sbox_permutation.XoodooSboxPermutation.convert_to_compound_xor_cipher">(XoodooSboxPermutation method)</a>
+</li>
+        <li><a href="ciphers/block_ciphers/xtea_block_cipher.html#ciphers.block_ciphers.xtea_block_cipher.XTeaBlockCipher.convert_to_compound_xor_cipher">(XTeaBlockCipher method)</a>
+</li>
+      </ul></li>
       <li><a href="cipher_modules/generic_functions.html#cipher_modules.generic_functions.convert_x_to_binary_matrix_given_polynomial_modulus">convert_x_to_binary_matrix_given_polynomial_modulus() (in module cipher_modules.generic_functions)</a>
 </li>
       <li><a href="cipher_modules/models/milp/utils/generate_inequalities_for_and_operation_2_input_bits.html#cipher_modules.models.milp.utils.generate_inequalities_for_and_operation_2_input_bits.convex_hull">convex_hull() (in module cipher_modules.models.milp.utils.generate_inequalities_for_and_operation_2_input_bits)</a>
@@ -2821,7 +2936,11 @@
       <ul>
         <li><a href="cipher_modules/models/cp/cp_models/cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model.html#cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model.CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel.create_xor_component">(CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel method)</a>
 </li>
+        <li><a href="compound_xor_differential_cipher.html#compound_xor_differential_cipher.create_xor_component">(in module compound_xor_differential_cipher)</a>
+</li>
       </ul></li>
+      <li><a href="compound_xor_differential_cipher.html#compound_xor_differential_cipher.create_xor_component_inputs">create_xor_component_inputs() (in module compound_xor_differential_cipher)</a>
+</li>
       <li><a href="ciphers/block_ciphers/aes_block_cipher.html#ciphers.block_ciphers.aes_block_cipher.AESBlockCipher.create_xor_components">create_xor_components() (AESBlockCipher method)</a>
 </li>
       <li><a href="utils/templates.html#utils.templates.CSVBuilder">CSVBuilder (class in utils.templates)</a>

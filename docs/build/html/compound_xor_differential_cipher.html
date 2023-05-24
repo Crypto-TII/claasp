@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Input &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Compound xor differential cipher &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sage.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -15,8 +15,8 @@
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Round" href="round.html" />
-    <link rel="prev" title="Editor" href="editor.html" />
+    <link rel="next" title="Editor" href="editor.html" />
+    <link rel="prev" title="Component" href="component.html" />
     <link rel="icon" href="_static/sageicon.png" type="image/x-icon" />
     <script src="_static/thebe.js" type="text/javascript"></script>
     <script src="_static/thebe-sage.js" type="text/javascript"></script>
@@ -32,13 +32,13 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="round.html" title="Round"
+          <a href="editor.html" title="Editor"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="editor.html" title="Editor"
+          <a href="component.html" title="Component"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Input</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Compound xor differential cipher</a></li> 
       </ul>
     </div>  
 
@@ -47,38 +47,37 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="module-input">
-<span id="input"></span><h1>Input<a class="headerlink" href="#module-input" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="input.Input">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#input.Input" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py property">
-<dt class="sig sig-object py" id="input.Input.bit_positions">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bit_positions</span></span><a class="headerlink" href="#input.Input.bit_positions" title="Permalink to this definition">¶</a></dt>
+  <section id="module-compound_xor_differential_cipher">
+<span id="compound-xor-differential-cipher"></span><h1>Compound xor differential cipher<a class="headerlink" href="#module-compound_xor_differential_cipher" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="compound_xor_differential_cipher.convert_to_compound_xor_cipher">
+<span class="sig-name descname"><span class="pre">convert_to_compound_xor_cipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compound_xor_differential_cipher.convert_to_compound_xor_cipher" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="input.Input.bit_size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bit_size</span></span><a class="headerlink" href="#input.Input.bit_size" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="compound_xor_differential_cipher.create_xor_component">
+<span class="sig-name descname"><span class="pre">create_xor_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component1_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component2_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compound_xor_differential_cipher.create_xor_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="input.Input.id_links">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_links</span></span><a class="headerlink" href="#input.Input.id_links" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="compound_xor_differential_cipher.create_xor_component_inputs">
+<span class="sig-name descname"><span class="pre">create_xor_component_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_cipher_inputs_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_object</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compound_xor_differential_cipher.create_xor_component_inputs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="input.Input.set_input_bit_positions">
-<span class="sig-name descname"><span class="pre">set_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#input.Input.set_input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="compound_xor_differential_cipher.get_component_pair">
+<span class="sig-name descname"><span class="pre">get_component_pair</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_component_</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compound_xor_differential_cipher.get_component_pair" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="input.Input.set_input_id_links">
-<span class="sig-name descname"><span class="pre">set_input_id_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_links</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#input.Input.set_input_id_links" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="compound_xor_differential_cipher.update_cipher_inputs">
+<span class="sig-name descname"><span class="pre">update_cipher_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compound_xor_differential_cipher.update_cipher_inputs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="compound_xor_differential_cipher.update_input_id_links">
+<span class="sig-name descname"><span class="pre">update_input_id_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component1_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component2_</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compound_xor_differential_cipher.update_input_id_links" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </section>
 
@@ -91,18 +90,18 @@
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="editor.html"
-                          title="previous chapter">Editor</a></p>
+    <p class="topless"><a href="component.html"
+                          title="previous chapter">Component</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="round.html"
-                          title="next chapter">Round</a></p>
+    <p class="topless"><a href="editor.html"
+                          title="next chapter">Editor</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/input.rst.txt"
+      <li><a href="_sources/compound_xor_differential_cipher.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -130,13 +129,13 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="round.html" title="Round"
+          <a href="editor.html" title="Editor"
              >next</a> |</li>
         <li class="right" >
-          <a href="editor.html" title="Editor"
+          <a href="component.html" title="Component"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Input</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Compound xor differential cipher</a></li> 
       </ul>
     </div>
     
