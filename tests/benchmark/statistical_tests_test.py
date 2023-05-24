@@ -13,7 +13,6 @@ def test_run_avalanche_nist_statistics_test_with_speck_cipher(benchmark):
     benchmark(tests.run_avalanche_nist_statistics_test, 0, 10, 10)
 
 
-# @pytest.mark.skip("Takes to long")
-# def test_run_avalanche_nist_statistics_test_with_aes_cipher(benchmark):
-#     tests = StatisticalTests(aes)
-#     benchmark(tests.run_avalanche_nist_statistics_test, 0, 10, 10)
+def test_run_avalanche_nist_statistics_test_with_aes_cipher(benchmark):
+    tests = StatisticalTests(aes)
+    benchmark(tests.run_avalanche_nist_statistics_test, 0, 10, 10)
