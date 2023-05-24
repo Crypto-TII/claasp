@@ -51,6 +51,10 @@ def test_find_one_xor_differential_trail():
     assert trail['solver_name'] == 'cryptominisat'
     assert trail['status'] == 'SATISFIABLE'
 
+    trail = sat.find_one_xor_differential_trail(fixed_values=[plaintext], solver_name="kissat")
+    assert trail['solver_name'] == 'kissat'
+    assert trail['status'] == 'SATISFIABLE'
+
 
 def test_find_one_xor_differential_trail_with_fixed_weight():
     speck = SpeckBlockCipher(number_of_rounds=3)
