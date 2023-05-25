@@ -428,7 +428,7 @@ followed by colon as showed below added to their corresponding section in the `C
 - **Fix: → <font color="purple">Fixed</font>**
 - **Remove: → <font color="purple">Removed</font>**
 
-The commits that not start by those keywords will be ignored and not added to the version information in the 
+The commits that do not start by those keywords will be ignored and not added to the version information in the 
 `CHANGELOG.md`. 
 
 Also, **if there is no commit that start with those keywords, the version will not be upgraded**.
