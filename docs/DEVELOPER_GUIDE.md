@@ -148,7 +148,7 @@ In order to configure this in our IDE we can follow the next steps:
         
 3. We need to define the linter (**pycodestyle**) as an *External Tool*. (**Preferences → Tools → External Tools**). Click on the + symbol. (*A new window will be opened. The config below needs to be applied)*
     
-    ![add-external-tool.png](images/Fadd-external-tool.png)
+    ![add-external-tool.png](images/add-external-tool.png)
     
     1. *Name*: your desired Name
     2. *Description*: your description
