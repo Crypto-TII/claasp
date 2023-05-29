@@ -67,7 +67,6 @@ class MilpXorLinearModel(MilpModel):
         """
         verbose_print("Building model in progress ...")
         self.build_xor_linear_trail_model(weight, fixed_variables)
-        # TODO : check if solver_name belong to list of solver names here
         mip = self._model
         p = self._integer_variable
         for index, constraint in enumerate(self._model_constraints):
@@ -242,7 +241,7 @@ class MilpXorLinearModel(MilpModel):
 
         return constraints
 
-    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=None, solver_name=SOLVER_DEFAULT):
+    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=None, solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return all the XOR linear trails with weight equal to ``fixed_weight`` as a solutions list in standard format.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
@@ -300,7 +299,7 @@ class MilpXorLinearModel(MilpModel):
         looking_for_other_solutions = 1
         while looking_for_other_solutions:
             try:
-                solution = self.solve("xor_linear", solver_name)
+                solution = self.solve("xor_linear", solver_name, external_solver_name)
                 solution['building_time'] = building_time
                 self._number_of_trails_found += 1
                 verbose_print(f"trails found : {self._number_of_trails_found}")
@@ -342,7 +341,7 @@ class MilpXorLinearModel(MilpModel):
         return list_trails
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
-                                                       solver_name=SOLVER_DEFAULT):
+                                                       solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return all XOR linear trails with weight greater than ``min_weight`` and lower than or equal to ``max_weight``.
 
@@ -397,7 +396,7 @@ class MilpXorLinearModel(MilpModel):
             number_new_constraints = len(weight_constraints)
             while looking_for_other_solutions:
                 try:
-                    solution = self.solve("xor_linear", solver_name)
+                    solution = self.solve("xor_linear", solver_name, external_solver_name)
                     solution['building_time'] = building_time
                     self._number_of_trails_found += 1
                     verbose_print(f"trails found : {self._number_of_trails_found}")
@@ -417,7 +416,7 @@ class MilpXorLinearModel(MilpModel):
 
         return list_trails
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return a XOR linear trail with the lowest weight in standard format, i.e. the solver solution.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
@@ -470,12 +469,12 @@ class MilpXorLinearModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_linear", solver_name)
+        solution = self.solve("xor_linear", solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
 
-    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return a XOR linear trail, not necessarily the one with the lowest weight.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
@@ -508,13 +507,13 @@ class MilpXorLinearModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_linear", solver_name)
+        solution = self.solve("xor_linear", solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
 
     def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                    solver_name=SOLVER_DEFAULT):
+                                                    solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return one XOR linear trail with weight equal to ``fixed_weight`` as a list in standard format.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
@@ -550,7 +549,7 @@ class MilpXorLinearModel(MilpModel):
             mip.add_constraint(constraint)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_linear", solver_name)
+        solution = self.solve("xor_linear", solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
