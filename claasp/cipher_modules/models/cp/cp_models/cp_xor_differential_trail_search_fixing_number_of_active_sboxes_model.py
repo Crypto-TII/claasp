@@ -336,7 +336,7 @@ class CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(CpXorDifferent
              'total_weight': '6'}
         """
         possible_sboxes = 0
-        if weight != -1:
+        if weight > 0:
             possible_sboxes = self.find_possible_number_of_active_sboxes(weight)
             if not possible_sboxes:
                 raise ValueError('There are no trails with the fixed weight!')
