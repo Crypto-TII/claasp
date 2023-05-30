@@ -184,7 +184,7 @@ def get_headers_from_two_latest_releases(changelog_content: str) -> Tuple[str, s
 
 
 try:
-    with open('CHANGELOG.md', 'r+') as changelog_file:
+    with open('docs/CHANGELOG.md', 'r+') as changelog_file:
         FILE_ARGUMENTS = define_file_arguments()
         current_changelog = copy.deepcopy(changelog_file.read())
         commits: List[str] = FILE_ARGUMENTS.pull_request_commits.split('\n')
