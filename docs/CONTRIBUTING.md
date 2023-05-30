@@ -44,7 +44,7 @@ To contribute to this project, please, follow the following conventions.
 Download the source from the git repository:
 
 ```
-     $ git clone https://github.com/Crypto-TII/claasp.git
+     $ git clone https://USERNAME@bitbucket.org/repository.git
      $ cd claasp/
 ```
 
