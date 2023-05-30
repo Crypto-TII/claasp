@@ -440,10 +440,9 @@ class CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(CpXorDifferent
         else:
             if model_type == 'xor_differential_first_step':
                 write_model_to_file(self._first_step, input_file_name)
-                command = ['minizinc', '-a', '--solver', solver_name, input_file_name]
             else:
                 write_model_to_file(self._model_constraints, input_file_name)
-                command = ['minizinc', '--solver', solver_name, input_file_name]
+            command = ['minizinc', '--solver', solver_name, input_file_name]
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
         os.remove(input_file_name)
         solution = []
