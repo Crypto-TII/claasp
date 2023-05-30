@@ -278,14 +278,13 @@ class MilpModel:
         options = solver_specs['options']
         tracemalloc.start()
 
-        try:
-            command += model_path + options
-            solver_process = subprocess.run(command, capture_output=True, shell=True, text=True)
-        except ImportError:
-            raise MIPSolverException("Make sure that the solver is correctly installed or the license file if applicable.")
-        finally:
-            milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
-            tracemalloc.stop()
+        command += model_path + options
+        solver_process = subprocess.run(command, capture_output=True, shell=True, text=True)
+        milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
+        tracemalloc.stop()
+
+        if(solver_process.stderr):
+            raise MIPSolverException("Make sure that the solver is correctly installed.")
 
         if 'memory' in solver_specs:
             milp_memory = _get_data(solver_specs['memory'], str(solver_process))
@@ -327,8 +326,8 @@ class MilpModel:
         INPUT:
 
         - ``model_type`` -- **string**; the model to solve
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
-        - ``external_solver_name`` -- **string** (default: None); the external solver to call
+        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call when building the internal Sagemath MILP model. If no external solver is specified, ``solver_name`` will also be used to solve the model.
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
 

@@ -33,7 +33,7 @@ def _write_model_to_lp_file(model, model_type):
 def _get_data(data_keywords, lines):
     data_line = re.search(data_keywords, lines, re.DOTALL)
     if data_line is None:
-        raise MIPSolverException("Make sure that the solver is correctly installed or the license file if applicable.")
+        raise MIPSolverException("Solver seems installed but license file might be missing.")
     data = float(re.findall(data_keywords, data_line.group(0))[0])
     return data
 
