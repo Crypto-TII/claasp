@@ -41,6 +41,7 @@ class ChachaPermutation(Cipher):
     Construct an instance of the ChachaPermutation class.
 
     This class is used to store compact representations of a permutation, used to generate the corresponding cipher.
+    Additionally, one can use this class to implement ChaCha toy ciphers, such as the one described in [DEY2023]_.
 
     INPUT:
 
@@ -51,6 +52,9 @@ class ChachaPermutation(Cipher):
     - ``cipher_type`` -- **string** (default: `permutation`)
     - ``inputs`` -- **list of integer** (default: `None`)
     - ``cipher_inputs_bit_size`` -- **integer** (default: `None`)
+    - ``rotations`` -- *list of integer* (default: `[8, 7, 16, 12]`)
+    - ``word_size`` --  **integer** (default: `32`)
+    - ``start_round`` --  **string** (default: `odd`)
 
     EXAMPLES::
 
@@ -62,16 +66,19 @@ class ChachaPermutation(Cipher):
 
     def __init__(self, number_of_rounds=0, state_of_components=None,
                  cipher_family="chacha_permutation", cipher_type="permutation",
-                 inputs=None, cipher_inputs_bit_size=None, start_round="odd"):
+                 inputs=None, cipher_inputs_bit_size=None,
+                 rotations=[8, 7, 16, 12],
+                 word_size=32, start_round="odd"):
         init_latin_dances_cipher(
             self, super(), INPUT_PLAINTEXT, state_of_components, number_of_rounds,
-            start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, COLUMNS, DIAGONALS
+            start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, [COLUMNS, DIAGONALS],
+            word_size, rotations
         )
 
-    def bottom_half_quarter_round(self, a, b, c, d, state):
-        sub_quarter_round_latin_dances(self, state, a, b, d, -8, 'chacha')
-        sub_quarter_round_latin_dances(self, state, c, d, b, -7, 'chacha')
-
     def top_half_quarter_round(self, a, b, c, d, state):
-        sub_quarter_round_latin_dances(self, state, a, b, d, -16, 'chacha')
-        sub_quarter_round_latin_dances(self, state, c, d, b, -12, 'chacha')
+        sub_quarter_round_latin_dances(self, state, a, b, d, -self.rotation_3, 'chacha')
+        sub_quarter_round_latin_dances(self, state, c, d, b, -self.rotation_4, 'chacha')
+
+    def bottom_half_quarter_round(self, a, b, c, d, state):
+        sub_quarter_round_latin_dances(self, state, a, b, d, -self.rotation_1, 'chacha')
+        sub_quarter_round_latin_dances(self, state, c, d, b, -self.rotation_2, 'chacha')

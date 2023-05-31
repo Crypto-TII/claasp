@@ -51,6 +51,9 @@ class SalsaPermutation(Cipher):
     - ``cipher_type`` -- **string** (default: `permutation`)
     - ``inputs`` -- **list of integer** (default: `None`)
     - ``cipher_inputs_bit_size`` -- **integer** (default: `None`)
+    - ``rotations`` -- *list of integer* (default: `[8, 7, 16, 12]`)
+    - ``word_size`` --  **integer** (default: `32`)
+    - ``start_round`` --  **string** (default: `odd`)
 
     EXAMPLES::
 
@@ -62,16 +65,19 @@ class SalsaPermutation(Cipher):
 
     def __init__(self, number_of_rounds=0, state_of_components=None,
                  cipher_family="salsa_permutation", cipher_type="permutation",
-                 inputs=None, cipher_inputs_bit_size=None, start_round="odd"):
+                 inputs=None, cipher_inputs_bit_size=None,
+                 rotations=[13, 18, 7, 9],
+                 word_size=32, start_round="odd"):
         init_latin_dances_cipher(
             self, super(), INPUT_PLAINTEXT, state_of_components, number_of_rounds,
-            start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, COLUMNS, DIAGONALS
+            start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, [COLUMNS, DIAGONALS],
+            word_size, rotations
         )
 
-    def bottom_half_quarter_round(self, a, b, c, d, state):
-        sub_quarter_round_latin_dances(self, state, b, c, d, -13, 'salsa')
-        sub_quarter_round_latin_dances(self, state, c, d, a, -18, 'salsa')
-
     def top_half_quarter_round(self, a, b, c, d, state):
-        sub_quarter_round_latin_dances(self, state, a, d, b, -7, 'salsa')
-        sub_quarter_round_latin_dances(self, state, a, b, c, -9, 'salsa')
+        sub_quarter_round_latin_dances(self, state, a, d, b, -self.rotation_3, 'salsa')
+        sub_quarter_round_latin_dances(self, state, a, b, c, -self.rotation_4, 'salsa')
+
+    def bottom_half_quarter_round(self, a, b, c, d, state):
+        sub_quarter_round_latin_dances(self, state, b, c, d, -self.rotation_1, 'salsa')
+        sub_quarter_round_latin_dances(self, state, c, d, a, -self.rotation_2, 'salsa')
