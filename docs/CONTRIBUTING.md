@@ -691,7 +691,7 @@ def test_aes_block_cipher():
 # Code analysis with SonarCloud
 SonarCloud is a platform to evaluate the quality of the source code of a project detecting errors, vulnerabilities and 
 bugs in software. Claasp SonarCloud project can be found 
-[here](https://sonarcloud.io/project/overview?id=Crypto-TII_claasp).
+[here](https://sonarcloud.io/project/overview).
 
 ## Project overview
 SonarCloud is responsible for the analysis of our code once a pull request has been created.
@@ -760,7 +760,7 @@ There are three types of versioning changes, as you can check in [Semantic Versi
 The information that is needed in order to update the new version will be taken from the messages of the commits of all 
 the Pull Requests that have been merged into `develop`. This means, we will check the commits between the last two 
 merges from `develop` to `main`. Those merge commits will have a message like this:
-**"Merge pull request #x from Crypto-TII/develop"**.
+**"Merge pull request #x from develop"**.
 
 ### Commits structure for version update
 The start of the commit messages must be created according to this structure, because of that depends on the type of 
