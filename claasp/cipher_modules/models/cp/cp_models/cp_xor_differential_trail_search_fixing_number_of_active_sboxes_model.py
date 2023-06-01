@@ -219,7 +219,7 @@ class CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(CpXorDifferent
         """
         return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name)
 
-    def generate_table_of_solutions(self, solution):
+    def generate_table_of_solutions(self, solution, solver_name):
         """
         Return a table with the solutions from the first step in the two steps model for xor differential trail search.
 
@@ -259,7 +259,7 @@ class CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(CpXorDifferent
                     value = value.replace(' = ', '')
                     table = table + value.replace('\n', '') + ','
         table = table[:-1] + ']);'
-        with open(f'{cipher_name}_table_of_solutions.mzn', 'w') as table_of_solutions_file:
+        with open(f'{cipher_name}_table_of_solutions_{solver_name}.mzn', 'w') as table_of_solutions_file:
             table_of_solutions_file.write(table)
 
     def get_solutions_dictionaries_with_build_time(self, build_time, components_values, memory, solver_name, time,
@@ -363,15 +363,15 @@ class CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(CpXorDifferent
                 first_step_all_solutions, solve_first_step_time = self.solve_model(
                     'xor_differential_first_step_find_all_solutions', first_step_solver_name)
                 solve_time += solve_first_step_time
-                self.generate_table_of_solutions(first_step_all_solutions)
+                self.generate_table_of_solutions(first_step_all_solutions, first_step_solver_name)
                 command = ['minizinc', '-a', '--solver-statistics', '--solver',
                            second_step_solver_name, input_file_name, solution_file_name]
             elif model_type == 'xor_differential_all_solutions':
-                self.generate_table_of_solutions(first_step_solution)
+                self.generate_table_of_solutions(first_step_solution, first_step_solver_name)
                 command = ['minizinc', '-a', '--solver-statistics', '--solver', second_step_solver_name,
                            input_file_name, solution_file_name]
             else:
-                self.generate_table_of_solutions(first_step_solution)
+                self.generate_table_of_solutions(first_step_solution, first_step_solver_name)
                 command = ['minizinc', '--solver-statistics', '--solver', second_step_solver_name,
                            input_file_name, solution_file_name]
 
