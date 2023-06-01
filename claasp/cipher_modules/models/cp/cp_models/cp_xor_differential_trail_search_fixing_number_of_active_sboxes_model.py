@@ -335,14 +335,15 @@ class CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(CpXorDifferent
               ...
              'total_weight': '6'}
         """
-        if weight != -1:
+        possible_sboxes = 0
+        if weight > 0:
             possible_sboxes = self.find_possible_number_of_active_sboxes(weight)
             if not possible_sboxes:
                 raise ValueError('There are no trails with the fixed weight!')
 
         cipher_name = self.cipher_id
         start = tm.time()
-        self.build_xor_differential_trail_first_step_model(weight, fixed_variables, nmax, repetition)
+        self.build_xor_differential_trail_first_step_model(weight, fixed_variables, nmax, repetition, possible_sboxes)
         end = tm.time()
         build_time = end - start
         first_step_solution, solve_time = self.solve_model('xor_differential_first_step', first_step_solver_name)
