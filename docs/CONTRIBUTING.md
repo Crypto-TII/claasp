@@ -33,8 +33,8 @@ To contribute to this project, please, follow the following conventions.
 - [Changelog versioning](#changelog-versioning)
   - [Versioning](#versioning)
   - [How it works](#how-it-works)
-    - [Branching](#branching)
-    - [Commits messages](#commits-messages)
+    - [Commits structure for version update](#commits-structure-for-version-update)
+    - [Commits structure for Changelog update](#commits-structure-for-changelog-update)
     - [Example](#example)
 
 # Development environment
@@ -44,7 +44,7 @@ To contribute to this project, please, follow the following conventions.
 Download the source from the git repository:
 
 ```
-     $ git clone https://USERNAME@bitbucket.org/repository.git
+     $ git clone https://github.com/repository.git
      $ cd claasp/
 ```
 
@@ -463,7 +463,10 @@ This is the current project structure.
 ## Branches
 - `main` is the main branch.
 - `develop` is the branch where the latest changes are merged into.
-- `<fix-feature-breaking>/<task-name>` is the branch where a new feature is developed.
+- `<fix|feature|breaking>/<task-name>` is the branch where a new feature is developed.
+
+> ⚠️ We encourage you to follow this convention when creating new branches even though branches with the naming 
+> convention `<task-name>` are allowed. ⚠️ 
 
 ## Pull Requests
 - Pull Requests should be made from a `feature-branch` to `develop` and it should be reviewed by at least one person.
@@ -687,7 +690,8 @@ def test_aes_block_cipher():
 
 # Code analysis with SonarCloud
 SonarCloud is a platform to evaluate the quality of the source code of a project detecting errors, vulnerabilities and 
-bugs in software.
+bugs in software. Claasp SonarCloud project can be found 
+[here](https://sonarcloud.io/project/overview?id=Crypto-TII_claasp).
 
 ## Project overview
 SonarCloud is responsible for the analysis of our code once a pull request has been created.
@@ -739,66 +743,37 @@ analysis will fail, as well as, if there are new Security Hotspots and/or bugs i
 # Changelog versioning
 To automate the project version increment, the script `update_changelog.py` has been created to be executed when a Pull 
 Request is merged from the `develop` branch to the `main` branch.
-This script analyzes the name of the branches to determine the type of version increment and the commit messages to 
-determine the information that should be added to the `CHANGELOG.md`.
+This script analyzes the messages of the commits to determine the type of version increment and the information that 
+should be added to the `CHANGELOG.md`.
 
 > ⚠️ It is important to follow the following rules only in case we want to upgrade the project version at the end of the 
 > task. Otherwise, do not follow the following rules as it will cause an unwanted change in the project version. ⚠️ 
 
-
 ## Versioning
 There are three types of versioning changes, as you can check in [Semantic Versioning](https://semver.org/):
 
-- [x.x.<font color="purple">**x**</font>] - **Patch** &rarr; When you make compatible bug fixes.
-- [x.<font color="purple">**x**</font>.x] - **Minor** &rarr; When you add functionality in a compatible manner.
-- [<font color="purple">**x**</font>.x.x] - **Major** &rarr; When you make incompatible changes.
+- [x.x.**x**] - **Patch** &rarr; When you make compatible bug fixes.
+- [x.**x**.x] - **Minor** &rarr; When you add functionality in a compatible manner.
+- [**x**.x.x] - **Major** &rarr; When you make incompatible changes.
 
 ## How it works
+The information that is needed in order to update the new version will be taken from the messages of the commits of all 
+the Pull Requests that have been merged into `develop`. This means, we will check the commits between the last two 
+merges from `develop` to `main`. Those merge commits will have a message like this:
+**"Merge pull request #x from Crypto-TII/develop"**.
 
-### Branching
-The name of the branches must be created according to this structure, because of that depends on the type of change for 
-the new version.
+### Commits structure for version update
+The start of the commit messages must be created according to this structure, because of that depends on the type of 
+change for the new version. These are the versioning keywords:
 
-- For **patch** changes: <font color="purple">**fix</font>/name-of-task**
-- For **minor** changes: <font color="purple">**feat</font>/name-of-task**
-- For **major** changes: <font color="purple">**breaking</font>/name-of-task**
+- For **patch** changes: **FIX/**
+- For **minor** changes: **FEATURE/**
+- For **major** changes: **BREAKING/**
 
 We will look in the commits merged into `develop` to obtain the highest version change to be applied.
-**By default**, if we don’t find any branch with this structure, **the change to apply will be fixed**.
 
-### Commits messages
-The information that will be included in the new version will be taken from the messages of the commits of all the Pull 
-Requests that have been merged into `develop`. Then, we will check the commits between the last merge from `develop` 
-to `main`. Those merge commits will have a message like this: **"Merge pull request #x from /develop"**.
-
-The selected commit messages to be included in the description of the new version must start with these keywords 
-followed by colon as showed below added to their corresponding section in the `CHANGELOG.md`:
-
-- **Add: / Feat: / Feature: → <font color="purple">Added</font>**
-- **Change: / Refactor: → <font color="purple">Changed</font>**
-- **Fix: → <font color="purple">Fixed</font>**
-- **Remove: → <font color="purple">Removed</font>**
-
-The commits that do not start by those keywords will be ignored and not added to the version information in the 
-`CHANGELOG.md`. 
-
-Also, **if there is no commit that start with those keywords, the version will not be upgraded**.
-
-### Example
-Let's see an example of how the versioning works:
-
-- The last version in `CHANGELOG.md` is `4.0.1`.
-- The branch name is `feat/LIBCA-36-login-creation`.
-- We have this list of valid commits messages:
-  - **Add: create new component**
-  - **Feat: create login form**
-  - **Change: update Version variables from destructuring list**
-  - **Fix: update coverage path**
-  - **Remove: remove comented code**
-  - **Refactor: code refactorings in cipher.py**
-
-We will have a new version 4.2.0 with the following information in the `CHANGELOG.md`:
-
+### Commits structure for Changelog update
+The Changelog version sections will have this structure:
 ```markdown
 ## [4.2.0] - 2023-04-27
 
@@ -818,5 +793,71 @@ We will have a new version 4.2.0 with the following information in the `CHANGELO
 
 ### Removed
 
-- Remove comented code.
+- Remove commented code.
+```
+
+The selected commit messages to be included in the description of the new version must start with the next commit 
+keywords or with the [commit structure for version update](#commits-structure-for-version-update) followed by the next 
+keywords.
+
+- **Add: → Added**
+- **Feat: → Added**
+- **Feature: → Added**
+- **Change: → Changed**
+- **Refactor: → Changed**
+- **Fix: → Fixed**
+- **Remove: → Removed**
+
+The commits that do not start as specified above will be ignored and not added to the version information in the 
+`CHANGELOG.md`. 
+
+Commits messages can be done as:
+- **"This is a commit"** → won’t be added to the `CHANGELOG.md`, won’t trigger version incrementation.
+- **"FEATURE/Add: create new speck cipher"** → will be added to the `CHANGELOG.md`, will trigger version incrementation.
+- **"Add: create new speck cipher"** → will be added to the `CHANGELOG.md` if there are other commits done with 
+versioning keywords, won’t trigger version incrementation.
+- **"FEATURE/create new speck cipher"** → won’t be added to the `CHANGELOG.md`, will trigger version incrementation if 
+there are other commits done with commit keywords.
+
+> ⚠️ Also, **if there is no commit that starts a versioning keyword, the version will not be upgraded** 
+> 
+> `FEATURE/create new speck cipher` structure should never happen. If a versioning keyword is not followed by a commit 
+> keyword, we will not increment the version. ⚠️
+
+### Example
+Let's see an example of how the versioning works:
+
+- The last version in `CHANGELOG.md` is `4.0.1`.
+- The branch name is `feat/LIBCA-36-login-creation`.
+- We have this list of valid commits messages:
+  - **FEATURE/Add: create new component**
+  - **Feat: create login form**
+  - **BREAKING/Change: update Version variables from destructuring list**
+  - **Remove unused variables**
+  - **Fix: update coverage path**
+  - **Remove: remove commented code**
+  - **Refactor: code refactorings in cipher.py**
+
+We will have a new version 5.0.0 with the following information in the `CHANGELOG.md`:
+
+```markdown
+## [5.0.0] - 2023-04-27
+
+### Added
+
+- Create new component.
+- Create login form.
+
+### Changed
+
+- Update Version variables from destructuring list.
+- Code refactorings in cipher.py.
+
+### Fixed
+
+- Update coverage path.
+
+### Removed
+
+- Remove commented code.
 ```

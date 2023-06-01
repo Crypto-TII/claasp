@@ -35,13 +35,16 @@ Available MILP solvers are:
 The default choice is GLPK.
 
 """
+import os
+import subprocess
 import time
 import tracemalloc
 from bitstring import BitArray
 
-from sage.numerical.mip import MixedIntegerLinearProgram
+from sage.numerical.mip import MixedIntegerLinearProgram, MIPSolverException
 
-from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT, EXTERNAL_MILP_SOLVERS
+from claasp.cipher_modules.models.milp.utils.utils import _get_data, _parse_external_solver_output, _write_model_to_lp_file
 from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dictionary,
                                                 set_component_value_weight_sign)
 
@@ -263,14 +266,67 @@ class MilpModel:
         self._integer_variable = self._model.new_variable(integer=True)
         self._non_linear_component_id = []
 
-    def solve(self, model_type, solver_name=SOLVER_DEFAULT):
+    def _solve_with_external_solver(self, model_path, solver_name=SOLVER_DEFAULT):
+
+        if solver_name not in EXTERNAL_MILP_SOLVERS:
+            raise ValueError(f"Invalid solver name: {solver_name}."
+                             f"Currently supported solvers are 'Gurobi', 'cplex', 'scip' and 'glpk'.")
+
+        solver_specs = EXTERNAL_MILP_SOLVERS[solver_name]
+        command = solver_specs['command']
+        options = solver_specs['options']
+        tracemalloc.start()
+
+        command += model_path + options
+        solver_process = subprocess.run(command, capture_output=True, shell=True, text=True)
+        milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
+        tracemalloc.stop()
+
+        if(solver_process.stderr):
+            raise MIPSolverException("Make sure that the solver is correctly installed.")
+
+        if 'memory' in solver_specs:
+            milp_memory = _get_data(solver_specs['memory'], str(solver_process))
+
+        return _parse_external_solver_output(self, solver_name, solver_process) + (milp_memory,)
+
+    def _solve_with_internal_solver(self):
+
+        mip = self._model
+        x = self._binary_variable
+        p = self._integer_variable
+
+        verbose_print("Solving model in progress ...")
+        time_start = time.time()
+        tracemalloc.start()
+        try:
+            mip.solve()
+            milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
+            tracemalloc.stop()
+            time_end = time.time()
+            milp_time = time_end - time_start
+            verbose_print(f"Time for solving the model = {milp_time}")
+
+            status = 'SATISFIABLE'
+            probability_variables = mip.get_values(p)
+            total_weight = probability_variables["probability"] / 10.
+            components_variables = mip.get_values(x)
+
+        except MIPSolverException as milp_exception:
+            status = 'UNSATISFIABLE'
+            print(milp_exception)
+
+        return status, total_weight, probability_variables, components_variables, milp_time, milp_memory
+
+    def solve(self, model_type, solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return the solution of the model.
 
         INPUT:
 
         - ``model_type`` -- **string**; the model to solve
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call when building the internal Sagemath MILP model. If no external solver is specified, ``solver_name`` will also be used to solve the model.
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
 
@@ -283,23 +339,15 @@ class MilpModel:
             ...
             sage: solution = milp.solve("xor_differential") # random
         """
-        mip = self._model
-        x = self._binary_variable
-        p = self._integer_variable
-
-        verbose_print("Solving model in progress ...")
-        time_start = time.time()
-        tracemalloc.start()
-        mip.solve()
-        milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
-        tracemalloc.stop()
-        time_end = time.time()
-        milp_time = time_end - time_start
-        verbose_print(f"Time for solving the model = {milp_time}")
-
-        probability_variables = mip.get_values(p)
-        total_weight = probability_variables["probability"] / 10.
-        components_variables = mip.get_values(x)
+        if external_solver_name:
+            solver_name_in_solution = external_solver_name
+            model_path = _write_model_to_lp_file(self, model_type)
+            status, total_weight, probability_variables, components_variables, milp_time, milp_memory = self._solve_with_external_solver(
+                model_path, external_solver_name)
+            os.remove(model_path)
+        else:
+            solver_name_in_solution = solver_name
+            status, total_weight, probability_variables, components_variables, milp_time, milp_memory = self._solve_with_internal_solver()
 
         components_values = {}
         list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
@@ -317,9 +365,9 @@ class MilpModel:
             else:
                 components_values[component_id] = dict_tmp
 
-        solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name, milp_time,
+        solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name_in_solution, milp_time,
                                                          milp_memory, components_values, total_weight)
-
+        solution['status'] = status
         return solution
 
     def get_component_value_weight(self, model_type, component_id, probability_variables, components_variables):
@@ -414,7 +462,7 @@ class MilpModel:
             ValueError: No model generated
         """
         if not self._model_constraints:
-            raise ValueError(f'No model generated')
+            raise ValueError('No model generated')
         return self._model_constraints
 
     @property
