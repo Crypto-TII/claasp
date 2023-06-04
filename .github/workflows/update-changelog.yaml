@@ -56,6 +56,7 @@ jobs:
           message: ${{env.release_message}}
 
       - name: Update develop branch
+        if: ${{env.should_add_last_changes_to_master == 'true'}}
         uses: morbalint/git-merge-action@v1
         with:
           target: 'develop'
