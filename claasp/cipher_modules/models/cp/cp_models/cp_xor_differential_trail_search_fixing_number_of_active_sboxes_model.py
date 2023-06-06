@@ -27,14 +27,14 @@ from sage.crypto.sbox import SBox
 from claasp.name_mappings import XOR_DIFFERENTIAL, CONSTANT, SBOX, WORD_OPERATION
 from claasp.cipher_modules.models.cp.cp_model import solve_satisfy
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
-from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
-    CpXorDifferentialTrailSearchModel, update_and_or_ddt_valid_probabilities)
+from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (
+    CpXorDifferentialModel, update_and_or_ddt_valid_probabilities)
 from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_number_of_active_sboxes_model import (
     CpXorDifferentialNumberOfActiveSboxesModel)
 
 
-class CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(CpXorDifferentialTrailSearchModel,
-                                                                  CpXorDifferentialNumberOfActiveSboxesModel):
+class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
+                                                       CpXorDifferentialNumberOfActiveSboxesModel):
 
     def __init__(self, cipher):
         self._table_items = []
