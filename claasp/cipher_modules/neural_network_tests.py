@@ -25,7 +25,7 @@ from claasp.cipher_modules import evaluator
 
 
 def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
-                                                hidden_layers=[32, 32, 32], number_of_epochs=10):
+                                                hidden_layers=[32, 32, 32], number_of_epochs=10, rounds_to_train=[]):
     """
     .. WARNING::
 
@@ -53,7 +53,7 @@ def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
         update_component_output_ids(cipher, component_output_ids)
         update_blackbox_distinguisher_vectorized_tests_ds(base_inputs, base_output, cipher, ds, index, labels, nb_samples)
         update_partial_result(cipher, component_output_ids, ds, index, hidden_layers,
-                              labels, number_of_epochs, partial_result)
+                              labels, number_of_epochs, partial_result, rounds_to_train=rounds_to_train)
 
         results["neural_network_blackbox_distinguisher_tests"]["test_results"][input_tag].update(partial_result)
 
@@ -61,31 +61,22 @@ def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
 
 
 def update_partial_result(cipher, component_output_ids, ds, index, hidden_layers, labels, number_of_epochs,
-                          partial_result, blackbox=True):
+                          partial_result, blackbox=True, rounds_to_train=[]):
     """
     .. WARNING::
 
         Tensorflow is used in this method, and currently it is not supported for Apple Silicon chip (M1).
     """
     # noinspection PyUnresolvedReferences
-    from keras.models import Sequential, Model
-    from keras.layers import Dense, BatchNormalization, LeakyReLU
-
     input_lengths = cipher.inputs_bit_size
+    if rounds_to_train:
+        assert all([r < cipher.NROUNDS for r in rounds_to_train]), "Rounds to train don't match the number of rounds of the cipher"
+
     for k in ds:
         for i in range(len(ds[k][1])):
-            m = Sequential()
-            m.add(BatchNormalization())
-            dense = Dense(input_lengths[index] + ds[k][0], input_shape=(input_lengths[index] + ds[k][0],)) if blackbox \
-                else Dense(2 * ds[k][0], input_shape=(2 * ds[k][0],))
-            m.add(dense)
-            m.add(BatchNormalization())
-            m.add(LeakyReLU())
-            for dim in hidden_layers:
-                m.add(Dense(dim))
-                m.add(BatchNormalization())
-                m.add(LeakyReLU())
-            m.add(Dense(1, activation='sigmoid'))
+            if rounds_to_train and cipher.get_round_from_component_id(component_output_ids[k][i]) not in rounds_to_train:
+                continue
+            m = make_resnet(input_lengths[index] + ds[k][0])
             m.compile(loss='binary_crossentropy', optimizer="adam", metrics=['binary_accuracy'])
             history = m.fit(np.array(ds[k][1][i]), labels, validation_split=0.1, shuffle=1, verbose=0) if blackbox \
                 else m.fit(np.array(ds[k][1][i]), labels, epochs=number_of_epochs,
@@ -175,7 +166,7 @@ def create_structure(base_output, cipher, index):
 
 
 def neural_network_differential_distinguisher_tests(cipher, nb_samples=10000, hidden_layers=[32, 32, 32],
-                                                    number_of_epochs=10, diff=[0x01]):
+                                                    number_of_epochs=10, diff=[0x01], rounds_to_train=[]):
     """
     .. WARNING::
 
@@ -203,7 +194,7 @@ def neural_network_differential_distinguisher_tests(cipher, nb_samples=10000, hi
             update_component_output_ids(cipher, component_output_ids)
             update_distinguisher_vectorized_tests_ds(base_inputs, cipher, d, ds, index, labels, nb_samples)
             update_partial_result(cipher, component_output_ids, ds, index, hidden_layers, labels,
-                                  number_of_epochs, partial_result, False)
+                                  number_of_epochs, partial_result, blackbox=False, rounds_to_train=rounds_to_train)
 
             results["neural_network_differential_distinguisher_tests"]["test_results"][it][d] = {}
             results["neural_network_differential_distinguisher_tests"]["test_results"][it][d].update(partial_result)
