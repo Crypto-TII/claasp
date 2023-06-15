@@ -567,7 +567,6 @@ def cnf_and_linear(mask_in_0, mask_in_1, mask_out, hw):
 #    - Running SAT solver -    #
 # ---------------------------- #
 
-
 def _get_data(data_keywords, lines):
     data_line = [line for line in lines if data_keywords in line][0]
     data = float(re.findall(r'[0-9]+\.?[0-9]*', data_line)[0])
@@ -575,12 +574,12 @@ def _get_data(data_keywords, lines):
     return data
 
 
-def run_sat_solver(solver_name, options, dimacs_input, host=None):
+def run_sat_solver(solver_name, options, dimacs_input, host=None, env_vars_string=""):
     """Call the SAT solver specified in `solver_specs`, using input and output pipes."""
     solver_specs = constants.SAT_SOLVERS[solver_name]
     command = solver_specs['command'][:] + options
     if host:
-        command = ['ssh', f'{host}'] + command
+        command = [env_vars_string] + ['ssh', f'{host}'] + command
     solver_process = subprocess.run(command, input=dimacs_input, capture_output=True, text=True)
     solver_output = solver_process.stdout.splitlines()
     status = [line for line in solver_output if line.startswith('s')][0].split()[1]
@@ -590,7 +589,18 @@ def run_sat_solver(solver_name, options, dimacs_input, host=None):
             if line.startswith('v'):
                 values.extend(line.split()[1:])
         values = values[:-1]
-    time = _get_data(solver_specs['time'], solver_output)
+    if solver_name == 'kissat':
+        data_keywords = solver_specs['time']
+        lines = solver_output
+        data_line = [line for line in lines if data_keywords in line][0]
+        seconds_str_index = data_line.find("seconds") - 2
+        output_str = ""
+        while data_line[seconds_str_index] != " ":
+            output_str += data_line[seconds_str_index]
+            seconds_str_index -= 1
+        time = float(output_str[::-1])
+    else:
+        time = _get_data(solver_specs['time'], solver_output)
     memory = float('inf')
     memory_keywords = solver_specs['memory']
     if memory_keywords:

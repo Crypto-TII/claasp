@@ -12,9 +12,9 @@ def test_find_all_xor_differential_trails_with_fixed_weight():
     cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
     fixed_variables = [set_fixed_variables('key', 'equal', range(128), integer_to_bit_list(0, 128, 'little')),
                        set_fixed_variables('plaintext', 'not_equal', range(128), integer_to_bit_list(0, 128, 'little'))]
-    trails = cp.find_all_xor_differential_trails_with_fixed_weight(50, fixed_variables, 'Chuffed', 'Chuffed')
+    trails = cp.find_all_xor_differential_trails_with_fixed_weight(30, fixed_variables, 'Chuffed', 'Chuffed')
 
-    assert trails == 'Unsatisfiable'
+    assert len(trails) == 255
 
 
 def test_find_lowest_weight_xor_differential_trail():

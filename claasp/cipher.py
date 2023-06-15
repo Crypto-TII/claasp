@@ -24,6 +24,7 @@ from copy import deepcopy
 
 import claasp
 from claasp import editor
+from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
 from claasp.rounds import Rounds
 from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
@@ -1686,6 +1687,9 @@ class Cipher:
         - ``solver`` -- **string**; the name of the solver to use for the search
         """
         return self.find_impossible_property(type="linear", technique=technique, solver=solver)
+
+    def convert_to_compound_xor_cipher(self):
+        convert_to_compound_xor_cipher(self)
 
     @property
     def current_round(self):
