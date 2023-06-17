@@ -70,13 +70,13 @@ def update_partial_result(cipher, component_output_ids, ds, index, hidden_layers
     # noinspection PyUnresolvedReferences
     input_lengths = cipher.inputs_bit_size
     if rounds_to_train:
-        assert all([r < cipher.NROUNDS for r in rounds_to_train]), "Rounds to train don't match the number of rounds of the cipher"
+        assert all([r < cipher.number_of_rounds for r in rounds_to_train]), "Rounds to train don't match the number of rounds of the cipher"
 
     for k in ds:
         for i in range(len(ds[k][1])):
             if rounds_to_train and cipher.get_round_from_component_id(component_output_ids[k][i]) not in rounds_to_train:
                 continue
-            m = make_resnet(input_lengths[index] + ds[k][0])
+            m = make_resnet(input_lengths[index] + ds[k][0] if blackbox else 2 * ds[k][0])
             m.compile(loss='binary_crossentropy', optimizer="adam", metrics=['binary_accuracy'])
             history = m.fit(np.array(ds[k][1][i]), labels, validation_split=0.1, shuffle=1, verbose=0) if blackbox \
                 else m.fit(np.array(ds[k][1][i]), labels, epochs=number_of_epochs,

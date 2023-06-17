@@ -1175,7 +1175,7 @@ class Cipher:
         return editor.make_file_name(self._id)
 
     def neural_network_blackbox_distinguisher_tests(
-            self, nb_samples=10000, hidden_layers=[32, 32, 32], number_of_epochs=10):
+            self, nb_samples=10000, hidden_layers=[32, 32, 32], number_of_epochs=10, rounds_to_train=[]):
         """
         Return a python dictionary that contains the accuracies corresponding to each round.
 
@@ -1192,10 +1192,10 @@ class Cipher:
             sage: #speck(number_of_rounds=22).neural_network_blackbox_distinguisher_tests(nb_samples = 10) # random
         """
         return neural_network_tests.neural_network_blackbox_distinguisher_tests(
-            self, nb_samples, hidden_layers, number_of_epochs)
+            self, nb_samples, hidden_layers, number_of_epochs, rounds_to_train)
 
     def neural_network_differential_distinguisher_tests(
-            self, nb_samples=10000, hidden_layers=[32, 32, 32], number_of_epochs=10, diff=[0x01]):
+            self, nb_samples=10000, hidden_layers=[32, 32, 32], number_of_epochs=10, diff=[0x01], rounds_to_train=[]):
         """
         Return a python dictionary that contains the accuracies corresponding to each round.
 
@@ -1213,7 +1213,7 @@ class Cipher:
             sage: #speck(number_of_rounds=22).neural_network_differential_distinguisher_tests(nb_samples = 10) # random
         """
         return neural_network_tests.neural_network_differential_distinguisher_tests(
-            self, nb_samples, hidden_layers, number_of_epochs, diff)
+            self, nb_samples, hidden_layers, number_of_epochs, diff, rounds_to_train)
 
     def print(self):
         """
