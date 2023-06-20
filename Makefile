@@ -50,7 +50,7 @@ pytest-coverage:
 	pytest -v -n=2 --dist loadfile --cov-report term-missing --cov=$(PACKAGE) tests/unit/
 
 benchmark-tests:
-	pytest -v -n=0 --dist no tests/benchmark/sat_xor_differential_model_test.py
+	pytest -v -n=0 --dist no tests/benchmark/
 
 testfast:
 	$(SAGE_BIN) setup.py testfast
