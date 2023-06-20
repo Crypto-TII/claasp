@@ -56,16 +56,8 @@ def test_find_all_xor_differential_trails_with_fixed_weight_with_aes_cipher(benc
 
 
 def test_find_lowest_weight_xor_differential_trail_with_speck_cipher(benchmark):
+    speck = SpeckBlockCipher(number_of_rounds=7)
     sat = SatXorDifferentialModel(speck)
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
-                                    bit_positions=range(32), bit_values=(0,) * 32)
-    key = set_fixed_variables(component_id='key', constraint_type='equal',
-                              bit_positions=range(64), bit_values=(0,) * 64)
-    benchmark(sat.find_lowest_weight_xor_differential_trail, fixed_values=[plaintext, key])
-
-
-def test_find_lowest_weight_xor_differential_trail_with_aes_cipher(benchmark):
-    sat = SatXorDifferentialModel(aes)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=(0,) * 32)
     key = set_fixed_variables(component_id='key', constraint_type='equal',
