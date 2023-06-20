@@ -1,0 +1,93 @@
+program
+
+DATES:
+ course starts: March 15
+ deadline slides: [temptative] March 1st (march 7 if needed)
+ FSE: 19-24 March
+ CT-RSA: 24-27 April
+
+Statistical tests
+Day 1 - 2 - 3
+
+
+Day 0 - Bitslice AES [@paul]
+
+Cryptanalysis
+Day 1 [@ema]
+- intro to permutation and block ciphers
+- 1/2/3 bit block cipher
+- description of main toy ciphers
+  + 6 bits
+    * 2 3-bit sboxes spn (different sboxes)
+    * Speck b6k6 (different rotations)
+    * 6 bit feistel
+  + 8 bit ciphers
+    * 2 4-bit sboxes spn (different sboxes)
+    * Speck b8k8 (different rotations)
+    * 8 bit feistel
+  + 16 bit ciphers
+    * 4 3-bit sboxes spn (different sboxes)
+    * Speck b16k16 (different rotations)
+    * 16 bit feistel
+    * 2x2 ChaCha b16k8
+  + 20? bit ciphers
+    * BipBip https://tches.iacr.org/index.php/TCHES/article/view/9955
+  + other ciphers? 
+    * Mini AES
+      https://doc.sagemath.org/html/en/reference/cryptography/sage/crypto/block_cipher/miniaes.html
+      https://piazza.com/class_profile/get_resource/ixlc30gojpe5fs/iyv0273azwtz4
+    * Heys Cipher
+    * Small AES
+    * Mini DES
+      https://doc.sagemath.org/html/en/reference/cryptography/sage/crypto/block_cipher/sdes.html
+      https://cs.wellesley.edu/~cs310/papers/simplified_des.pdf
+
+  + show slide attacks in the case of the same key for each round (same round key)
+  + we will use a linear key schedule 
+    * rotation at each round
+    * key plus a constant (variant of slide attack)
+  + nonlinear key schedule as in speck
+  + one random independent key for each round (higher security?)
+- Brute Force of toy ciphers
+- Introduction to CLAASP
+- Feistels needs certain number of rounds
+
+
+Day 2 [@ema]
+- Meet in the middle
+- Collision Search / vanOrschot-Wiener
+
+Day 3 - Statistial tests for block ciphers [@cs]
+- translating the paper of SECITC to slides and applied to the toy ciphers
+
+Day 4 - Avalanche Tests [@mohamed]
+- first and high order avalanche tests
+- translating the paper of Africacrypt to slides and applied to the toy ciphers
+
+Day 5 6 - 
+  Differential Cryptanalysis [@raghav]
+  wide and long trail strategy
+  number of active sboxes
+
+  Linear Cryptanalysis [@raghav]
+
+  Advanced Differential/Linear Cryptanalysis and variants [@raghav]
+
+Day 7 - Neural Network based cryptanalysis [@david]
+- black box distinguisher
+- neural aided distinguishers (2 tests in the library)
+
+Day 8 - Algebraic Cryptanalysis [@sharwan/@rusydi]
+- goal would be to 
+  + explain how to model a cipher as a system of Boolean polynomials
+  + compute cipher pre-image (find key and message, find key given message) given the output (ciphertext)
+  + division property? high order?
+
+Models 9 [@juan]
+- goal
+  + explain how to model the toy ciphers to find xor linear and differential trails with MILP and CP (minizinc)
+  + mention SAT and SMT but not go into details
+
+
+
+
