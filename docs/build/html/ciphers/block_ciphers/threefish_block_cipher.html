@@ -15,7 +15,7 @@
     <script src="../../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Constant block cipher" href="constant_block_cipher.html" />
+    <link rel="next" title="Aes block cipher" href="aes_block_cipher.html" />
     <link rel="prev" title="Des block cipher" href="des_block_cipher.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
@@ -32,7 +32,7 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="constant_block_cipher.html" title="Constant block cipher"
+          <a href="aes_block_cipher.html" title="Aes block cipher"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="des_block_cipher.html" title="Des block cipher"
@@ -706,6 +706,21 @@ differences are allowed</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.find_impossible_property">
+<span class="sig-name descname"><span class="pre">find_impossible_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kissat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scenario</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single-key'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.find_impossible_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>From [SGLYTQH2017] : Finds impossible differentials or zero-correlation linear approximations (based on type)
+by fixing the input and output iteratively to all possible Hamming weight 1 value, and asking the solver
+to find a solution; if none is found, then the propagation is impossible.
+Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list
+INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> – <strong>string</strong>; {“differential”, “linear”}: the type of property to search for</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">technique</span></code> – <strong>string</strong>; {“sat”, “smt”, “milp”, “cp”}: the technique to use for the search</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver</span></code> – <strong>string</strong>; the name of the solver to use for the search</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.generate_bit_based_c_code">
 <span class="sig-name descname"><span class="pre">generate_bit_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.generate_bit_based_c_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing the C code that defines the self.evaluate() method.</p>
@@ -898,6 +913,19 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.get_model">
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">technique</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.get_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a model for a given technique and problem.</p>
+<p>INPUT:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">technique</span></code> – <strong>string</strong> ; sat, smt, milp or cp</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">problem</span></code> – <strong>string</strong> ; xor_differential, xor_linear, cipher_model (more to be added as more model types are added to the library)</p></li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.get_number_of_components_in_round">
 <span class="sig-name descname"><span class="pre">get_number_of_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.get_number_of_components_in_round" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -929,6 +957,18 @@ input/output of each component</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.impossible_differential_search">
+<span class="sig-name descname"><span class="pre">impossible_differential_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Kissat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scenario</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single-key'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.impossible_differential_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of impossible differentials if there are any; otherwise return an empty list
+INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">technique</span></code> – <strong>string</strong>; {“sat”, “smt”, “milp”, “cp”}: the technique to use for the search</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver</span></code> – <strong>string</strong>; the name of the solver to use for the search</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scenario</span></code> – <strong>string</strong>; the type of impossible differentials to search, single-key or related-key</p></li>
+</ul>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.inputs">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.inputs" title="Permalink to this definition">¶</a></dt>
@@ -937,6 +977,11 @@ input/output of each component</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.inputs_bit_size">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs_bit_size</span></span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.inputs_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.inputs_size_to_dict">
+<span class="sig-name descname"><span class="pre">inputs_size_to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.inputs_size_to_dict" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1482,6 +1527,17 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
 <span class="sig-name descname"><span class="pre">word_permutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.word_permutation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.zero_correlation_linear_search">
+<span class="sig-name descname"><span class="pre">zero_correlation_linear_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Kissat'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.threefish_block_cipher.ThreefishBlockCipher.zero_correlation_linear_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of zero_correlation linear approximations if there are any; otherwise return an empty list
+INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">technique</span></code> – <strong>string</strong>; {“sat”, “smt”, “milp”, “cp”}: the technique to use for the search</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver</span></code> – <strong>string</strong>; the name of the solver to use for the search</p></li>
+</ul>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -1500,8 +1556,8 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="constant_block_cipher.html"
-                          title="next chapter">Constant block cipher</a></p>
+    <p class="topless"><a href="aes_block_cipher.html"
+                          title="next chapter">Aes block cipher</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -1534,7 +1590,7 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="constant_block_cipher.html" title="Constant block cipher"
+          <a href="aes_block_cipher.html" title="Aes block cipher"
              >next</a> |</li>
         <li class="right" >
           <a href="des_block_cipher.html" title="Des block cipher"

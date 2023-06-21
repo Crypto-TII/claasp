@@ -15,8 +15,8 @@
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Input" href="input.html" />
-    <link rel="prev" title="CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives" href="index.html" />
+    <link rel="next" title="Round" href="round.html" />
+    <link rel="prev" title="Compound xor differential cipher" href="compound_xor_differential_cipher.html" />
     <link rel="icon" href="_static/sageicon.png" type="image/x-icon" />
     <script src="_static/thebe.js" type="text/javascript"></script>
     <script src="_static/thebe-sage.js" type="text/javascript"></script>
@@ -32,10 +32,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="input.html" title="Input"
+          <a href="round.html" title="Round"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives"
+          <a href="compound_xor_differential_cipher.html" title="Compound xor differential cipher"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Cipher</a></li> 
@@ -681,6 +681,21 @@ differences are allowed</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="cipher.Cipher.find_impossible_property">
+<span class="sig-name descname"><span class="pre">find_impossible_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kissat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scenario</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single-key'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher.Cipher.find_impossible_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>From [SGLYTQH2017] : Finds impossible differentials or zero-correlation linear approximations (based on type)
+by fixing the input and output iteratively to all possible Hamming weight 1 value, and asking the solver
+to find a solution; if none is found, then the propagation is impossible.
+Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list
+INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> – <strong>string</strong>; {“differential”, “linear”}: the type of property to search for</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">technique</span></code> – <strong>string</strong>; {“sat”, “smt”, “milp”, “cp”}: the technique to use for the search</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver</span></code> – <strong>string</strong>; the name of the solver to use for the search</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="cipher.Cipher.generate_bit_based_c_code">
 <span class="sig-name descname"><span class="pre">generate_bit_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher.Cipher.generate_bit_based_c_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing the C code that defines the self.evaluate() method.</p>
@@ -873,6 +888,19 @@ input/output of each component</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="cipher.Cipher.get_model">
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">technique</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher.Cipher.get_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a model for a given technique and problem.</p>
+<p>INPUT:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">technique</span></code> – <strong>string</strong> ; sat, smt, milp or cp</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">problem</span></code> – <strong>string</strong> ; xor_differential, xor_linear, cipher_model (more to be added as more model types are added to the library)</p></li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="cipher.Cipher.get_number_of_components_in_round">
 <span class="sig-name descname"><span class="pre">get_number_of_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher.Cipher.get_number_of_components_in_round" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -904,6 +932,18 @@ input/output of each component</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#cipher.Cipher.id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher.Cipher.impossible_differential_search">
+<span class="sig-name descname"><span class="pre">impossible_differential_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Kissat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scenario</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single-key'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher.Cipher.impossible_differential_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of impossible differentials if there are any; otherwise return an empty list
+INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">technique</span></code> – <strong>string</strong>; {“sat”, “smt”, “milp”, “cp”}: the technique to use for the search</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver</span></code> – <strong>string</strong>; the name of the solver to use for the search</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scenario</span></code> – <strong>string</strong>; the type of impossible differentials to search, single-key or related-key</p></li>
+</ul>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="cipher.Cipher.inputs">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><a class="headerlink" href="#cipher.Cipher.inputs" title="Permalink to this definition">¶</a></dt>
@@ -912,6 +952,11 @@ input/output of each component</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="cipher.Cipher.inputs_bit_size">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs_bit_size</span></span><a class="headerlink" href="#cipher.Cipher.inputs_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher.Cipher.inputs_size_to_dict">
+<span class="sig-name descname"><span class="pre">inputs_size_to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher.Cipher.inputs_size_to_dict" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1442,6 +1487,17 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#cipher.Cipher.type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher.Cipher.zero_correlation_linear_search">
+<span class="sig-name descname"><span class="pre">zero_correlation_linear_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Kissat'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher.Cipher.zero_correlation_linear_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of zero_correlation linear approximations if there are any; otherwise return an empty list
+INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">technique</span></code> – <strong>string</strong>; {“sat”, “smt”, “milp”, “cp”}: the technique to use for the search</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver</span></code> – <strong>string</strong>; the name of the solver to use for the search</p></li>
+</ul>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -1455,13 +1511,13 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="index.html"
-                          title="previous chapter">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives</a></p>
+    <p class="topless"><a href="compound_xor_differential_cipher.html"
+                          title="previous chapter">Compound xor differential cipher</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="input.html"
-                          title="next chapter">Input</a></p>
+    <p class="topless"><a href="round.html"
+                          title="next chapter">Round</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -1494,10 +1550,10 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="input.html" title="Input"
+          <a href="round.html" title="Round"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives"
+          <a href="compound_xor_differential_cipher.html" title="Compound xor differential cipher"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Cipher</a></li> 
