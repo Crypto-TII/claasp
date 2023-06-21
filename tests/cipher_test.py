@@ -245,6 +245,12 @@ def test_get_differential_dataset():
     assert x.shape == (10, 64)
     assert y.shape == (10, )
 
+def test_get_model():
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "CpXorDifferentialModel"
+    assert speck.get_model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
+    assert speck.get_model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
+    assert speck.get_model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
 
 def test_generate_bit_based_c_code():
     bit_based_c_code = FancyBlockCipher().generate_bit_based_c_code()
@@ -313,6 +319,13 @@ def test_get_round_from_component_id():
     fancy = FancyBlockCipher(number_of_rounds=2)
     assert fancy.get_round_from_component_id('xor_1_14') == 1
 
+
+def test_impossible_differential_search():
+    speck6 = SpeckBlockCipher(number_of_rounds=6)
+    #impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
+    impossible_differentials = speck6.impossible_differential_search("cp", "chuffed")
+
+    assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and ((0x400000, 0x8000) in impossible_differentials)
 
 def test_is_algebraically_secure():
     identity = IdentityBlockCipher()
@@ -498,6 +511,11 @@ def test_print_as_python_dictionary():
 }
 """
 
+def test_inputs_size_to_dict():
+    speck = SpeckBlockCipher(number_of_rounds=1, key_bit_size=64, block_bit_size=32)
+    input_sizes = speck.inputs_size_to_dict()
+    assert input_sizes['key'] == 64
+    assert input_sizes['plaintext'] == 32
 
 def test_vector_check():
     speck = SpeckBlockCipher(number_of_rounds=22)
@@ -514,3 +532,8 @@ def test_vector_check():
     input_list.append([0x11111111, 0x1111111111111111])
     output_list.append(0xFFFFFFFF)
     assert speck.test_vector_check(input_list, output_list) is False
+
+def test_zero_correlation_linear_search():
+    speck6 = SpeckBlockCipher(number_of_rounds=6)
+    zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "yices-smt2")
+    assert len(zero_correlation_linear_approximations) > 0
