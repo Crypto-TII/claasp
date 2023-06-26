@@ -59,13 +59,11 @@ jobs:
         with:
           name: benchmark-report
 
-      - name: Create .benchmarks folder
+      - name: Create benchmarks folder
         run: |
-          mkdir -p .benchmarks
-          file_count=$(ls -p .benchmarks | grep -v / | wc -l)
-          echo $file_count
-          destination=".benchmarks/$((file_count + 1))_benchmark_results.json"
-          echo $destination
+          mkdir -p benchmarks
+          file_count=$(ls -p benchmarks | grep -v / | wc -l)
+          destination="benchmarks/$((file_count + 1))_benchmark_results.json"
           mv 0001_benchmark_results.json $destination
 
       - name: Commit & Push changes

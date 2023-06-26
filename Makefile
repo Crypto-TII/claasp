@@ -53,7 +53,7 @@ benchmark-tests:
 	pytest -v -n=0 --dist no tests/benchmark/
 
 remote-benchmark-tests:
-	pytest -v --benchmark-save=benchmark_results tests/benchmark/cipher_test.py::test_diffusion_tests_with_speck_cipher
+	pytest -v --benchmark-save=benchmark_results tests/benchmark/
 
 testfast:
 	$(SAGE_BIN) setup.py testfast
