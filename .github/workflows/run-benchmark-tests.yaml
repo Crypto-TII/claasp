@@ -3,12 +3,14 @@ on:
   push:
     branches:
       - 'performance-tests'
+
+concurrency:
+  group: run-benchmark-tests
+  cancel-in-progress: true
+
 jobs:
   run-benchmark-tests:
     runs-on: self-hosted
-    concurrency:
-      group: ${{ github.ref }}
-      cancel-in-progress: true
     timeout-minutes: 3600
     steps:
     - name: Checkout
