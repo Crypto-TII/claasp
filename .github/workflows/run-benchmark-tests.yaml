@@ -52,15 +52,16 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Create .benchmarks folder
-        run: |
-          mkdir -p .benchmarks
-          cd .benchmarks
-
       - name: Download Latest benchmarks folder from Artifacts
         uses: actions/download-artifact@v2
         with:
           name: benchmark-report
+
+      - name: Create .benchmarks folder
+        run: |
+          mkdir -p .benchmarks
+          cp -rf Linux-CPython-3.10-64bit .benchmarks/
+          rm -rf Linux-CPython-3.10-64bit
 
       - name: Commit & Push changes
         uses: actions-js/push@master
