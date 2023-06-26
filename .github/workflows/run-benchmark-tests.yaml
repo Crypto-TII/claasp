@@ -41,7 +41,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: benchmark-report
-        path: /home/runner/_work/claasp/.benchmarks
+        path: /home/runner/_work/claasp/.benchmarks/
 
   push-benchmark-results:
     runs-on: ubuntu-latest
