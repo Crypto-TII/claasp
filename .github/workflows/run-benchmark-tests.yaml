@@ -1,4 +1,4 @@
-name: Run Pytest on Self-Hosted Runner & SonarCloud Scan
+name: Run benchmark tests
 on:
   push:
     branches:
@@ -41,4 +41,5 @@ jobs:
       uses: actions-js/push@master
       with:
         github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
+        branch: 'performance-tests'
         message: "Add benchmark test results"
