@@ -50,10 +50,7 @@ pytest-coverage:
 	pytest -v -n=2 --dist loadfile --cov-report term-missing --cov=$(PACKAGE) tests/unit/
 
 benchmark-tests:
-	pytest -v -n=0 --dist no tests/benchmark/
-
-remote-benchmark-tests:
-	pytest -v --benchmark-save=benchmark_results tests/benchmark/
+	pytest -v tests/benchmark/
 
 testfast:
 	$(SAGE_BIN) setup.py testfast
