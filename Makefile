@@ -52,6 +52,9 @@ pytest-coverage:
 benchmark-tests:
 	pytest -v -n=0 --dist no tests/benchmark/
 
+remote-benchmark-tests:
+	pytest -v --benchmark-save=benchmark_results tests/benchmark/cipher_benchmark.py
+
 testfast:
 	$(SAGE_BIN) setup.py testfast
 

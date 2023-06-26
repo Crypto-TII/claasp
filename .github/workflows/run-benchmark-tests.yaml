@@ -35,4 +35,10 @@ jobs:
       run: |
             cd /home/runner/_work/claasp
             echo Running Benchmark tests
-            make benchmark-tests
+            make remote-benchmark-tests
+
+    - name: Commit & Push changes
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
+        message: "Add benchmark test results"
