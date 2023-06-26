@@ -43,7 +43,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: benchmark-report
-        path: /home/runner/_work/claasp/.benchmarks/
+        path: /home/runner/_work/claasp/.benchmarks/Linux-CPython-3.10-64bit/1_benchmark_results.json
 
   push-benchmark-results:
     runs-on: ubuntu-latest
@@ -62,8 +62,9 @@ jobs:
       - name: Create .benchmarks folder
         run: |
           mkdir -p .benchmarks
-          cp -rf Linux-CPython-3.10-64bit .benchmarks/
-          rm -rf Linux-CPython-3.10-64bit
+          file_count=$(ls -p .benchmarks | grep -v / | wc -l)
+          destination=".benchmarks/${file_count + 1}_benchmark_results.json"
+          mv 0001_benchmark_results.json $destination
 
       - name: Commit & Push changes
         uses: actions-js/push@master
