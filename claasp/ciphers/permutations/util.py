@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -26,7 +25,7 @@ def add_intermediate_output_component_latin_dances_permutations(permutation, rou
     for i in range(4):
         for j in range(4):
             lst_ids.append(internal_state[i][j].id)
-            lst_input_input_positions.append(list(range(32)))
+            lst_input_input_positions.append(list(range(permutation.WORD_SIZE)))
     if round_i == number_of_rounds - 1:
         permutation.add_cipher_output_component(lst_ids, lst_input_input_positions, permutation.block_bit_size)
     else:
@@ -65,47 +64,58 @@ def sub_quarter_round_latin_dances(permutation, state, p1_index, p2_index, p3_in
     p1 = get_2d_array_element_from_1d_array_index(p1_index, state, 4)
     p2 = get_2d_array_element_from_1d_array_index(p2_index, state, 4)
     p3 = get_2d_array_element_from_1d_array_index(p3_index, state, 4)
+    word_size = permutation.WORD_SIZE
 
-    p1 = permutation.add_MODADD_component([p1.id] + [p2.id], get_input_bit_positions_latin_dances(p1) +
-                                          get_input_bit_positions_latin_dances(p2), permutation.WORD_SIZE)
+    p1 = permutation.add_MODADD_component([p1.id] + [p2.id], get_input_bit_positions_latin_dances(p1, word_size) +
+                                          get_input_bit_positions_latin_dances(p2, word_size), word_size)
     if cipher_name == 'salsa':
-        p2 = permutation.add_rotate_component([p1.id], get_input_bit_positions_latin_dances(p1), permutation.WORD_SIZE,
+        p2 = permutation.add_rotate_component([p1.id], get_input_bit_positions_latin_dances(p1, word_size), word_size,
                                               rot_amount)
-        p3 = permutation.add_XOR_component([p3.id] + [p2.id], get_input_bit_positions_latin_dances(p3) +
-                                           get_input_bit_positions_latin_dances(p2), permutation.WORD_SIZE)
+        p3 = permutation.add_XOR_component([p3.id] + [p2.id], get_input_bit_positions_latin_dances(p3, word_size) +
+                                           get_input_bit_positions_latin_dances(p2, word_size), word_size)
 
         set_2d_array_element_from_1d_array_index(p3_index, state, p3, 4)
     else:
-        p3 = permutation.add_XOR_component([p3.id] + [p1.id], get_input_bit_positions_latin_dances(p3) +
-                                           get_input_bit_positions_latin_dances(p1), permutation.WORD_SIZE)
+        p3 = permutation.add_XOR_component([p3.id] + [p1.id], get_input_bit_positions_latin_dances(p3, word_size) +
+                                           get_input_bit_positions_latin_dances(p1, word_size), word_size)
 
-        p3 = permutation.add_rotate_component([p3.id], get_input_bit_positions_latin_dances(p3), permutation.WORD_SIZE,
+        p3 = permutation.add_rotate_component([p3.id], get_input_bit_positions_latin_dances(p3, word_size), word_size,
                                               rot_amount)
         set_2d_array_element_from_1d_array_index(p1_index, state, p1, 4)
         set_2d_array_element_from_1d_array_index(p3_index, state, p3, 4)
 
 
-def get_input_bit_positions_latin_dances(component):
+def get_input_bit_positions_latin_dances(component, word_size=32):
     if component.id == 'plaintext':
         return component.input_bit_positions
     else:
-        return [list(range(32))]
+        return [list(range(word_size))]
 
 
-def init_state_latin_dances(state_of_components, input_plaintext):
+def init_state_latin_dances(permutation, input_plaintext):
+    state_of_components = permutation.state_of_components
+    word_size = permutation.WORD_SIZE
     for i in range(0, 4):
         for j in range(0, 4):
+            i_offset = 4 * word_size
             component_state = ComponentState(
-                input_plaintext, [list(range(j * 32 + i * 128, j * 32 + 32 + i * 128))])
+                input_plaintext, [list(range(j * word_size + i * i_offset, j * word_size + word_size + i * i_offset))])
             state_of_components[i][j] = component_state
 
 
 def init_latin_dances_cipher(
-        permutation, super, input_plaintext, state_of_components, number_of_rounds,
-        start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, columns, diagonals
+        permutation, super_class, input_plaintext, state_of_components, number_of_rounds,
+        start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, quarter_round_indexes, word_size,
+        rotations
 ):
-    permutation.block_bit_size = 512
-    permutation.WORD_SIZE = 32
+    columns = quarter_round_indexes[0]
+    diagonals = quarter_round_indexes[1]
+    permutation.block_bit_size = word_size * 16
+    permutation.WORD_SIZE = word_size
+    permutation.rotation_1 = rotations[0]
+    permutation.rotation_2 = rotations[1]
+    permutation.rotation_3 = rotations[2]
+    permutation.rotation_4 = rotations[3]
 
     if state_of_components is None:
         permutation.state_of_components = [
@@ -114,15 +124,15 @@ def init_latin_dances_cipher(
             [None, None, None, None],
             [None, None, None, None],
         ]
-        init_state_latin_dances(permutation.state_of_components, input_plaintext)
+        init_state_latin_dances(permutation, input_plaintext)
     else:
         permutation.state_of_components = state_of_components
 
-    super.__init__(family_name=cipher_family,
-                     cipher_type=cipher_type,
-                     cipher_inputs=inputs if inputs else [input_plaintext],
-                     cipher_inputs_bit_size=cipher_inputs_bit_size if inputs else [permutation.block_bit_size],
-                     cipher_output_bit_size=permutation.block_bit_size)
+    super_class.__init__(family_name=cipher_family,
+                         cipher_type=cipher_type,
+                         cipher_inputs=inputs if inputs else [input_plaintext],
+                         cipher_inputs_bit_size=cipher_inputs_bit_size if inputs else [permutation.block_bit_size],
+                         cipher_output_bit_size=permutation.block_bit_size)
 
     for i in range(number_of_rounds):
         if start_round == 'even':

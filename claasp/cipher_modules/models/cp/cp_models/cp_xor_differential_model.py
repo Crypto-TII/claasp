@@ -90,7 +90,7 @@ def update_and_or_ddt_valid_probabilities(and_already_added, component, cp_decla
         and_already_added.append(numadd)
 
 
-class CpXorDifferentialTrailSearchModel(CpModel):
+class CpXorDifferentialModel(CpModel):
 
     def __init__(self, cipher):
         self._first_step = []
