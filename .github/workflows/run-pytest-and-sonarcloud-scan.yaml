@@ -11,7 +11,7 @@ on:
       - main
 
 concurrency:
-  group: run-pytest-tests
+  group: run-pytest-tests_${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

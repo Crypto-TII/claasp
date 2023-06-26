@@ -1,11 +1,13 @@
 name: Run benchmark tests
 on:
-  push:
+  pull_request:
+    types: [ opened, synchronize, reopened, edited ]
     branches:
-      - 'performance-tests'
+      - develop
+      - main
 
 concurrency:
-  group: run-benchmark-tests
+  group: run-benchmark-tests_${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -38,38 +40,3 @@ jobs:
             cd /home/runner/_work/claasp
             echo Running Benchmark tests
             make remote-benchmark-tests
-
-    - name: Upload benchmarks folder to artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: benchmark-report
-        path: /home/runner/_work/claasp/.benchmarks/Linux-CPython-3.10-64bit/0001_benchmark_results.json
-
-  push-benchmark-results:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
-      - name: Download Latest benchmarks folder from Artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: benchmark-report
-
-      - name: Create benchmarks folder
-        run: |
-          mkdir -p benchmarks
-          file_count=$(ls -p benchmarks | grep -v / | wc -l)
-          destination="benchmarks/$((file_count + 1))_benchmark_results.json"
-          mv 0001_benchmark_results.json $destination
-
-      - name: Commit & Push changes
-        uses: actions-js/push@master
-        with:
-          github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
-          branch: 'performance-tests'
-          message: "Add benchmark test results"
-    needs: run-benchmark-tests
