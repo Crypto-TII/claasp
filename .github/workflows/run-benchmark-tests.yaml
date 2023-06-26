@@ -37,9 +37,30 @@ jobs:
             echo Running Benchmark tests
             make remote-benchmark-tests
 
-    - name: Commit & Push changes
-      uses: actions-js/push@master
+    - name: Upload benchmarks folder to artifacts
+      uses: actions/upload-artifact@v2
       with:
-        github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
-        branch: 'performance-tests'
-        message: "Add benchmark test results"
+        name: benchmark-report
+        path: /home/runner/_work/claasp/.benchmarks
+
+  push-benchmark-results:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Download Latest benchmarks folder from Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: benchmark-report
+
+      - name: Commit & Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
+          branch: 'performance-tests'
+          message: "Add benchmark test results"
+    needs: run-benchmark-tests
