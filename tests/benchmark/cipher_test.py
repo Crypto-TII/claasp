@@ -50,11 +50,18 @@ def test_evaluate_vectorized_with_aes_cipher(benchmark, cipher_input):
     benchmark(aes.evaluate_vectorized, cipher_input)
 
 
-def test_neural_network_blackbox_distinguisher_tests_with_speck_cipher(benchmark):
-    benchmark(speck.neural_network_blackbox_distinguisher_tests, nb_samples=10, hidden_layers=[32, 32, 32],
-              number_of_epochs=[1, 10, 100])
+@pytest.mark.parametrize("nb_samples", [10, 100])
+@pytest.mark.parametrize("hidden_layers", [[32, 32, 32], [64, 64, 64]])
+@pytest.mark.parametrize("number_of_epochs", [1, 10, 100])
+def test_neural_network_blackbox_distinguisher_tests_with_speck_cipher(benchmark, nb_samples,
+                                                                       hidden_layers, number_of_epochs):
+    benchmark(speck.neural_network_blackbox_distinguisher_tests, nb_samples, hidden_layers,
+              number_of_epochs)
 
 
-def test_neural_network_blackbox_distinguisher_tests_with_aes_cipher(benchmark):
-    benchmark(aes.neural_network_blackbox_distinguisher_tests, nb_samples=10, hidden_layers=[32, 32, 32],
-              number_of_epochs=[1, 10, 100])
+@pytest.mark.parametrize("nb_samples", [10, 100])
+@pytest.mark.parametrize("hidden_layers", [[32, 32, 32], [64, 64, 64]])
+@pytest.mark.parametrize("number_of_epochs", [1, 10, 100])
+def test_neural_network_blackbox_distinguisher_tests_with_aes_cipher(benchmark, nb_samples,
+                                                                     hidden_layers, number_of_epochs):
+    benchmark(aes.neural_network_blackbox_distinguisher_tests, nb_samples, hidden_layers, number_of_epochs)
