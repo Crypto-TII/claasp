@@ -83,7 +83,8 @@ RUN sage -pip install bitstring==4.0.1 \
   tensorflow==2.11.0 \
   pytest==7.2.1 \
   pytest-cov==4.0.0 \
-  pytest-xdist==3.2.0
+  pytest-xdist==3.2.0 \
+  pytest-benchmark==4.0.0
 
 # Installing nist sts
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \

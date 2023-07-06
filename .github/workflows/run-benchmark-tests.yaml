@@ -1,0 +1,42 @@
+name: Run benchmark tests
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened, edited ]
+    branches:
+      - develop
+      - main
+
+concurrency:
+  group: run-benchmark-tests_${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-benchmark-tests:
+    runs-on: self-hosted
+    timeout-minutes: 3600
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+    - name: Print GITHUB_WORKSPACE
+      run: |
+          echo ${GITHUB_WORKSPACE}
+          pwd
+          ls -lah
+    - name: Fix Directory Structure
+      run: |
+          mkdir /home/runner/_work/claasp_backup
+          mv -f /home/runner/_work/claasp/claasp/* /home/runner/_work/claasp_backup
+          rm -rf /home/runner/_work/claasp/
+          mkdir /home/runner/_work/claasp
+          mv -f /home/runner/_work/claasp_backup/* /home/runner/_work/claasp
+          chmod g+w /home/runner/_work/claasp/ -R
+          rm -rf /home/runner/_work/claasp_backup
+
+    - name: Run pytest-benchmark
+      run: |
+            cd /home/runner/_work/claasp
+            echo Running Benchmark tests
+            make benchmark-tests

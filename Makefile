@@ -41,13 +41,16 @@ develop:
 	$(SAGE_BIN) -pip install --upgrade -e .
 
 remote-pytest:
-	pytest -v -n=auto --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/
+	pytest -v -n=auto --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/
 
 pytest:
-	pytest -v -n=auto --dist loadfile tests/
+	pytest -v -n=auto --dist loadfile tests/unit/
 
 pytest-coverage:
-	pytest -v -n=2 --dist loadfile --cov-report term-missing --cov=$(PACKAGE) tests/
+	pytest -v -n=2 --dist loadfile --cov-report term-missing --cov=$(PACKAGE) tests/unit/
+
+benchmark-tests:
+	pytest -v tests/benchmark/
 
 testfast:
 	$(SAGE_BIN) setup.py testfast
