@@ -27,8 +27,6 @@ from claasp.cipher_modules import code_generator
 def evaluate(cipher, cipher_input, intermediate_output=False, verbosity=False):
     python_code_string = code_generator.generate_python_code_string(cipher, verbosity)
 
-    print(python_code_string)
-
     f_module = ModuleType("evaluate")
     exec(python_code_string, f_module.__dict__)
 

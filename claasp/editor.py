@@ -1287,7 +1287,14 @@ def add_FSR_component(cipher, input_id_links, input_bit_positions, output_bit_si
     - ``input_id_links`` -- **list**; the list of input_id links
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
     - ``output_bit_size`` -- **integer**; the output bits of the component
-    - ``description`` -- **list of integer list**; the description of the polynomial of fsr. For example, [[0],[1],[3],[2,5]] represents x0+x1+x3+x2*x5.
+    - ``description`` -- **[registers_info, integer, integer]**; registers_info are the information of the list of fsr
+      registers, which is represented as [register_1_info, register_2_info, ..., register_n_info]. In each of the
+      register information it contains [register_word_length, register_polynomial, clock_polynomial] where
+      register_word_length is an integer that specifies the word length of the register. register_polynomial is the
+      polynomial of the register in fsr. For example, [[0],[1],[3],[2,5]] represents x0+x1+x3+x2*x5, and [] represents 1.
+      clock_polynomial is the polynomial of register clock. If it is set to [], means it will be performed always. The
+      second integer element determines how many bits inside a word. The third integer element determines how many
+      clocks would be performed within this component.
 
     EXAMPLES::
 

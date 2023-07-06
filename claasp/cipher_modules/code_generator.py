@@ -249,7 +249,7 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
     for component in cipher.get_all_components():
         params = prepare_input_bit_based_vectorized_python_code_string(component)
         component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
-                                   'sbox', 'cipher_output', 'intermediate_output']
+                                   'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODSUB', 'OR', 'AND']
         if component.type in component_types_allowed or (component.type == 'word_operation' and
@@ -316,7 +316,7 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         params = prepare_input_byte_based_vectorized_python_code_string(bit_sizes, component)
         bit_sizes[component.id] = component.output_bit_size
         component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
-                                   'sbox', 'cipher_output', 'intermediate_output']
+                                   'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODSUB', 'OR', 'AND']
         if component.type in component_types_allowed or (component.type == 'word_operation' and
@@ -633,7 +633,9 @@ def build_function_call(component):
     elif component.type == PADDING:
         return "padding(component_input)"
     elif component.type == FSR:
-        return f"fsr(component_input, {component.description}, output_bit_size)"
+        polynomial_index_list = component.description[0]
+        loop = component.description[1]
+        return f"fsr(component_input, {polynomial_index_list}, {loop})"
     elif component.type == INTERMEDIATE_OUTPUT:
         return "component_input"
     elif component.type == CIPHER_OUTPUT:

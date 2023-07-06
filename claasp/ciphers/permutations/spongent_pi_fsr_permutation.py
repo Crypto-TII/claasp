@@ -23,6 +23,9 @@ from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
 
 SBOX_CELL_SIZE = 8
+ICOUNTER_SIZE = 7
+ICOUNTER_IV_160 = 0x75
+ICOUNTER_IV_176 = 0x45
 PARAMETERS_CONFIGURATION_LIST = [{'state_bit_size': 160, 'number_of_rounds': 80},
                                  {'state_bit_size': 176, 'number_of_rounds': 90}]
 S_BOX = [0xee, 0xed, 0xeb, 0xe0, 0xe2, 0xe1, 0xe4, 0xef, 0xe7, 0xea, 0xe8, 0xe5, 0xe9, 0xec, 0xe3, 0xe6,
@@ -41,16 +44,6 @@ S_BOX = [0xee, 0xed, 0xeb, 0xe0, 0xe2, 0xe1, 0xe4, 0xef, 0xe7, 0xea, 0xe8, 0xe5,
          0xce, 0xcd, 0xcb, 0xc0, 0xc2, 0xc1, 0xc4, 0xcf, 0xc7, 0xca, 0xc8, 0xc5, 0xc9, 0xcc, 0xc3, 0xc6,
          0x3e, 0x3d, 0x3b, 0x30, 0x32, 0x31, 0x34, 0x3f, 0x37, 0x3a, 0x38, 0x35, 0x39, 0x3c, 0x33, 0x36,
          0x6e, 0x6d, 0x6b, 0x60, 0x62, 0x61, 0x64, 0x6f, 0x67, 0x6a, 0x68, 0x65, 0x69, 0x6c, 0x63, 0x66]
-ICOUNTER_IV_160 = [0x75, 0x6A, 0x54, 0x29, 0x53, 0x27, 0x4F, 0x1F, 0x3E, 0x7D, 0x7A, 0x74, 0x68, 0x50, 0x21, 0x43,
-                   0x07, 0x0E, 0x1C, 0x38, 0x71, 0x62, 0x44, 0x09, 0x12, 0x24, 0x49, 0x13, 0x26, 0x4D, 0x1B, 0x36,
-                   0x6D, 0x5A, 0x35, 0x6B, 0x56, 0x2D, 0x5B, 0x37, 0x6F, 0x5E, 0x3D, 0x7B, 0x76, 0x6C, 0x58, 0x31,
-                   0x63, 0x46, 0x0D, 0x1A, 0x34, 0x69, 0x52, 0x25, 0x4B, 0x17, 0x2E, 0x5D, 0x3B, 0x77, 0x6E, 0x5C,
-                   0x39, 0x73, 0x66, 0x4C, 0x19, 0x32, 0x65, 0x4A, 0x15, 0x2A, 0x55, 0x2B, 0x57, 0x2F, 0x5F, 0x3F]
-ICOUNTER_IV_160_REV = [0xAE, 0x56, 0x2A, 0x94, 0xCA, 0xE4, 0xF2, 0xF8, 0x7C, 0xBE, 0x5E, 0x2E, 0x16, 0x0A, 0x84, 0xC2,
-                       0xE0, 0x70, 0x38, 0x1C, 0x8E, 0x46, 0x22, 0x90, 0x48, 0x24, 0x92, 0xC8, 0x64, 0xB2, 0xD8, 0x6C,
-                       0xB6, 0x5A, 0xAC, 0xD6, 0x6A, 0xB4, 0xDA, 0xEC, 0xF6, 0x7A, 0xBC, 0xDE, 0x6E, 0x36, 0x1A, 0x8C,
-                       0xC6, 0x62, 0xB0, 0x58, 0x2C, 0x96, 0x4A, 0xA4, 0xD2, 0xE8, 0x74, 0xBA, 0xDC, 0xEE, 0x76, 0x3A,
-                       0x9C, 0xCE, 0x66, 0x32, 0x98, 0x4C, 0xA6, 0x52, 0xA8, 0x54, 0xAA, 0xD4, 0xEA, 0xF4, 0xFA, 0xFC]
 PERMUTE_160 = [
     0, 40, 80, 120, 1, 41, 81, 121, 2, 42, 82, 122, 3, 43, 83, 123, 4, 44, 84, 124, 5, 45, 85, 125,
     6, 46, 86, 126, 7, 47, 87, 127, 8, 48, 88, 128, 9, 49, 89, 129, 10, 50, 90, 130, 11, 51, 91, 131,
@@ -59,18 +52,6 @@ PERMUTE_160 = [
     24, 64, 104, 144, 25, 65, 105, 145, 26, 66, 106, 146, 27, 67, 107, 147, 28, 68, 108, 148, 29, 69, 109, 149,
     30, 70, 110, 150, 31, 71, 111, 151, 32, 72, 112, 152, 33, 73, 113, 153, 34, 74, 114, 154, 35, 75, 115, 155,
     36, 76, 116, 156, 37, 77, 117, 157, 38, 78, 118, 158, 39, 79, 119, 159]
-ICOUNTER_IV_176 = [0x45, 0x0B, 0x16, 0x2C, 0x59, 0x33, 0x67, 0x4E, 0x1D, 0x3A, 0x75, 0x6A, 0x54, 0x29, 0x53, 0x27,
-                   0x4F, 0x1F, 0x3E, 0x7D, 0x7A, 0x74, 0x68, 0x50, 0x21, 0x43, 0x07, 0x0E, 0x1C, 0x38, 0x71, 0x62,
-                   0x44, 0x09, 0x12, 0x24, 0x49, 0x13, 0x26, 0x4D, 0x1B, 0x36, 0x6D, 0x5A, 0x35, 0x6B, 0x56, 0x2D,
-                   0x5B, 0x37, 0x6F, 0x5E, 0x3D, 0x7B, 0x76, 0x6C, 0x58, 0x31, 0x63, 0x46, 0x0D, 0x1A, 0x34, 0x69,
-                   0x52, 0x25, 0x4B, 0x17, 0x2E, 0x5D, 0x3B, 0x77, 0x6E, 0x5C, 0x39, 0x73, 0x66, 0x4C, 0x19, 0x32,
-                   0x65, 0x4A, 0x15, 0x2A, 0x55, 0x2B, 0x57, 0x2F, 0x5F, 0x3F]
-ICOUNTER_IV_176_REV = [0xA2, 0xD0, 0x68, 0x34, 0x9A, 0xCC, 0xE6, 0x72, 0xB8, 0x5C, 0xAE, 0x56, 0x2A, 0x94, 0xCA, 0xE4,
-                       0xF2, 0xF8, 0x7C, 0xBE, 0x5E, 0x2E, 0x16, 0x0A, 0x84, 0xC2, 0xE0, 0x70, 0x38, 0x1C, 0x8E, 0x46,
-                       0x22, 0x90, 0x48, 0x24, 0x92, 0xC8, 0x64, 0xB2, 0xD8, 0x6C, 0xB6, 0x5A, 0xAC, 0xD6, 0x6A, 0xB4,
-                       0xDA, 0xEC, 0xF6, 0x7A, 0xBC, 0xDE, 0x6E, 0x36, 0x1A, 0x8C, 0xC6, 0x62, 0xB0, 0x58, 0x2C, 0x96,
-                       0x4A, 0xA4, 0xD2, 0xE8, 0x74, 0xBA, 0xDC, 0xEE, 0x76, 0x3A, 0x9C, 0xCE, 0x66, 0x32, 0x98, 0x4C,
-                       0xA6, 0x52, 0xA8, 0x54, 0xAA, 0xD4, 0xEA, 0xF4, 0xFA, 0xFC]
 PERMUTE_176 = [
     0, 44, 88, 132, 1, 45, 89, 133, 2, 46, 90, 134, 3, 47, 91, 135, 4, 48, 92, 136, 5, 49, 93, 137,
     6, 50, 94, 138, 7, 51, 95, 139, 8, 52, 96, 140, 9, 53, 97, 141, 10, 54, 98, 142, 11, 55, 99, 143,
@@ -82,9 +63,9 @@ PERMUTE_176 = [
     42, 86, 130, 174, 43, 87, 131, 175]
 
 
-class SpongentPiPrecomputationPermutation(Cipher):
+class SpongentPiFSRPermutation(Cipher):
     """
-    Construct an instance of the SpongentPiPrecomputationPermutation class.
+    Construct an instance of the SpongentPiPermutation class.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
 
@@ -95,8 +76,8 @@ class SpongentPiPrecomputationPermutation(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.spongent_pi_precomputation_permutation import SpongentPiPrecomputationPermutation
-        sage: spongentpi = SpongentPiPrecomputationPermutation(state_bit_size=160, number_of_rounds=80)
+        sage: from claasp.ciphers.permutations.spongent_pi_permutation import SpongentPiPermutation
+        sage: spongentpi = SpongentPiPermutation(state_bit_size=160, number_of_rounds=80)
         sage: spongentpi.number_of_rounds
         80
 
@@ -109,34 +90,36 @@ class SpongentPiPrecomputationPermutation(Cipher):
         self.state_len = int(self.state_bit_size / SBOX_CELL_SIZE)
         if self.state_bit_size == 160:
             self.icounter_iv = ICOUNTER_IV_160
-            self.icounter_iv_rev = ICOUNTER_IV_160_REV
             self.permute = PERMUTE_160
         elif self.state_bit_size == 176:
             self.icounter_iv = ICOUNTER_IV_176
-            self.icounter_iv_rev = ICOUNTER_IV_176_REV
             self.permute = PERMUTE_176
         else:
             print("The parameter state_bit_size = ", str(self.state_bit_size), " is not implemented.")
             return
 
-        super().__init__(family_name="spongent_pi_precomputation",
+        super().__init__(family_name="spongent_pi_fsr",
                          cipher_type="permutation",
                          cipher_inputs=[INPUT_PLAINTEXT],
                          cipher_inputs_bit_size=[self.state_bit_size],
                          cipher_output_bit_size=self.state_bit_size)
 
-        # state initialization
         state = []
         for i in range(self.state_len):
             state.append(ComponentState([INPUT_PLAINTEXT], [[k + i * SBOX_CELL_SIZE for k in range(SBOX_CELL_SIZE)]]))
 
+        # initial current round element
+        self.add_round()
+        # constant 0
+        self.add_constant_component(1, 0)
+        const_0 = ComponentState([self.get_current_component_id()], [[0]])
+        # icounter initialization
+        self.add_constant_component(ICOUNTER_SIZE, self.icounter_iv)
+        icounter = ComponentState([self.get_current_component_id()], [list(range(ICOUNTER_SIZE))])
+
         for round_number in range(number_of_rounds):
             # round function
-            # initial current round element
-            self.add_round()
-
-            # round function
-            state = self.round_function(state, round_number)
+            state = self.round_function(state, icounter, const_0)
 
             # round output
             inputs = []
@@ -147,19 +130,29 @@ class SpongentPiPrecomputationPermutation(Cipher):
                 self.add_cipher_output_component(inputs_id, inputs_pos, self.state_bit_size)
             else:
                 self.add_round_output_component(inputs_id, inputs_pos, self.state_bit_size)
+                # next round initialization
+                self.add_round()
+                # update icounter
+                icounter = self.icounter_update(icounter)
 
-    def round_function(self, state, r):
+    def icounter_update(self, icounter):
+        # x0||x1||x2||x3||x4||x5||x6 -> x1||x2||x3||x4||x5||x6||x0 xor x1
+        # fsr_polynomial = x0+x1+1 = x^7+x^6+1
+        self.add_FSR_component(icounter.id, icounter.input_bit_positions, ICOUNTER_SIZE, [[[0], [1]], 1])
+        icounter = ComponentState([self.get_current_component_id()], [list(range(ICOUNTER_SIZE))])
+
+        return icounter
+
+    def round_function(self, state, icounter, const_0):
         # state[len-1] = state[len-1] xor 0|icounter
-        self.add_constant_component(SBOX_CELL_SIZE, self.icounter_iv[r])
-        icounter = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
-        inputs_id, inputs_pos = get_inputs_parameter([state[self.state_len - 1], icounter])
+        inputs_id, inputs_pos = get_inputs_parameter([state[self.state_len - 1], const_0, icounter])
         self.add_XOR_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
         state[self.state_len - 1] = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
 
         # state[0] = state[0] xor reverse(0|icounter)
-        self.add_constant_component(SBOX_CELL_SIZE, self.icounter_iv_rev[r])
+        self.add_reverse_component(icounter.id, icounter.input_bit_positions, ICOUNTER_SIZE)
         reverse_icounter = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
-        inputs_id, inputs_pos = get_inputs_parameter([state[0], reverse_icounter])
+        inputs_id, inputs_pos = get_inputs_parameter([state[0], reverse_icounter, const_0])
         self.add_XOR_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
         state[0] = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
 

@@ -33,6 +33,7 @@ class FSR(Component):
             input_len = input_len + len(bits)
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
+        self.input_len = input_len
 
     def algebraic_polynomials(self, model):
         """
@@ -56,28 +57,44 @@ class FSR(Component):
         noutputs = self.output_bit_size
         ninputs = self.input_bit_size
         ring_R = model.ring()
-        x = vector(ring_R, (map(ring_R, [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)])))
+        x = list(ring_R, (map(ring_R, [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)])))
         y = vector(ring_R,
                    list(map(ring_R, [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)])))
-        polynomials = y
-        for _ in self.description:
-            m = [1 for _ in range(noutputs)]
-            for __ in _ :
-                m = [m[i] * x[__ + i] for i in range(noutputs)]
-            polynomials = [polynomials[i] + m[i] for i in range(noutputs)]
+        polynomial_index_list = self.description[0]
+        loop = self.description[1]
 
-        return polynomials
+        fsr_polynomial = 0
+        for _ in polynomial_index_list:
+            m = 1
+            for __ in _ :
+                m *= x[__]
+            fsr_polynomial += m
+
+        for i in range(loop):
+            output_bit = fsr_polynomial(*x)
+            x = x[:-1]
+            x.append(output_bit)
+
+        output_polynomials = y+vector(x)
+        return output_polynomials
 
     def get_bit_based_c_code(self, verbosity):
         fsr_code = []
         self.select_bits(fsr_code)
+        loop = self.description[1]
 
-        fsr_code.append('\tlinear_transformation = (uint8_t*[]) {')
-        for row in self.description:
+        polynomial_index_list = self.description[0]
+        polynomial_index_matrix = [[0 for i in range(self.input_len)] for j in range(len(polynomial_index_list))]
+        for row in range(len(polynomial_index_list)):
+            for i in row:
+                polynomial_index_matrix[row][i] = 1
+
+        fsr_code.append(f'\tpolynomial_matrix = (uint8_t*[][{self.input_len}]) {{')
+        for row in range(len(polynomial_index_matrix)):
             fsr_code.append(f'\t\t(uint8_t[]) {{{", ".join([str(x) for x in row])}}},')
         fsr_code.append('\t};')
 
-        fsr_code.append(f'\tBitString* {self.id} = LINEAR_LAYER(input, linear_transformation);\n')
+        fsr_code.append(f'\tBitString* {self.id} = FSR(input, polynomial_matrix, {loop});\n')
 
         if verbosity:
             self.print_values(fsr_code)
@@ -87,10 +104,14 @@ class FSR(Component):
         return fsr_code
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
-        return [f'  {self.id} = bit_vector_fsr(bit_vector_CONCAT([{",".join(params)} ]), {self.description})']
+        polynomial_index_list = self.description[0]
+        loop = self.description[1]
+        return [f'  {self.id} = bit_vector_fsr(bit_vector_CONCAT([{",".join(params)} ]), {polynomial_index_list}, {loop})']
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} = byte_vector_fsr({params}, {self.description})']
+        polynomial_index_list = self.description[0]
+        loop = self.description[1]
+        return [f'  {self.id} = byte_vector_fsr({params}, {polynomial_index_list}, {loop})']
 
 
 

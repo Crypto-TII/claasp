@@ -950,25 +950,34 @@ def select_bits(input, bit_positions, verbosity=False):
 def merge_bits():
     return 0
 
-def fsr(input, polynomial_index_list, output_len, verbosity=False):
+def fsr(input, polynomial_index_list, loop, verbosity=False):
     """
     INPUT:
 
     - ``input`` -- **BitArray object**; a BitArray
     - ``polynomial_index_list`` -- **list**; a list of lists of index of input bits, which presented a list of monomials.
+    - ``loop`` -- **integer**; indicates how many loops this fsr component would operate.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
     """
-    output = BitArray(uint=0, length=output_len)
-    for i in range(output_len):
-        for _ in polynomial_index_list:
-            m = 1
-            for __ in _:
-                m = m * input[__+i]
-            output[i] ^= m
+    output = BitArray(input)
+
+    R = BooleanPolynomialRing(len(input), 'x')
+    fsr_polynomial = 0
+    x = R.gens()
+    for _ in polynomial_index_list:
+        m = 1
+        for i in _:
+            m = m * x[i]
+        fsr_polynomial += m
+
+    for i in range(loop):
+        output_bit = int(fsr_polynomial(*output))
+        output = output.__lshift__(1)
+        output[-1] = output_bit
 
     if verbosity:
         print("FSR:")
-        print("  F   = {}".format(polynomial_index_list))
+        print("  F   = {}".format(fsr_polynomial+1))
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))
 
