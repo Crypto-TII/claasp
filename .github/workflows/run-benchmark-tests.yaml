@@ -5,9 +5,6 @@ on:
     branches:
       - develop
       - main
-  push:
-    branches:
-      - performance-neural-network-tests
 
 concurrency:
   group: run-benchmark-tests_${{ github.ref }}
