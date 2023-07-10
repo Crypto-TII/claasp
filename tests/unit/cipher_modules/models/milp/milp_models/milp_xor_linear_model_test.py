@@ -84,7 +84,7 @@ def test_find_lowest_weight_xor_linear_trail():
     # milp = MilpXorLinearModel(present.remove_key_schedule())
     # plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(64),
     #                                 bit_values=integer_to_bit_list(0x0d00000000000000, 64, 'big'))
-    # trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext, ciphertext])
+    # trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])
     # assert trail["total_weight"] == 4.0
 
 
