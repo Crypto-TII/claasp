@@ -20,11 +20,12 @@
 """
 The target of this module is to generate MILP inequalities for a XOR operation between n input bits.
 """
-import pickle
+import pickle, os, pathlib
 import subprocess
 
-xor_inequalities_between_n_input_bits_file_path = \
-    "./claasp/cipher_modules/models/milp/dictionary_containing_xor_inequalities_between_n_input_bits.obj"
+file_name = "dictionary_containing_xor_inequalities_between_n_input_bits.obj"
+
+xor_inequalities_between_n_input_bits_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), file_name)
 
 
 def generate_all_possible_points_with_n_bits(number_of_bits):
