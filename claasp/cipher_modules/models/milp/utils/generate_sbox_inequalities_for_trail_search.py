@@ -26,16 +26,18 @@ Generate inequalities for 8-bit sboxes is infeasible with this module.
 The module generate_inequalities_for_large_sboxes.py take care of both cases, small and large sboxes.
 Hence, this module can be removed, but we decide to keep it for comparison purpose.
 """
-import pickle
+import pickle, os, pathlib
 
 from sage.rings.integer_ring import ZZ
 
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 
-inequalities_for_small_sboxes_path = \
-    "claasp/cipher_modules/models/milp/dictionary_that_contains_inequalities_for_small_sboxes.obj"
-inequalities_for_small_sboxes_xor_linear_path = \
-    "claasp/cipher_modules/models/milp/dictionary_that_contains_inequalities_for_small_sboxes_xor_linear.obj"
+small_sbox_file_name = "dictionary_that_contains_inequalities_for_small_sboxes.obj"
+small_sbox_xor_linear_file_name = "dictionary_that_contains_inequalities_for_small_sboxes_xor_linear.obj"
+
+inequalities_for_small_sboxes_path = os.path.join(pathlib.Path(__file__).parent.resolve(), small_sbox_file_name)
+inequalities_for_small_sboxes_xor_linear_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
+                                                             small_sbox_xor_linear_file_name)
 
 
 def sbox_inequalities(sbox, analysis="differential", algorithm="milp", big_endian=False):
