@@ -1,6 +1,8 @@
 # How to contribute
 To contribute to this project, please, follow the following conventions.
-- [Devalopment environment](#development-environment)
+- [GitHub collaboration](#github-collaboration)
+  - [Pull requests](#pull-requests)
+- [Development environment](#development-environment)
   - [Installation](#installation)
   - [Setting up PyCharm](#setting-up-pycharm)
   - [How to Configure linter and formatter](#how-to-configure-linter-and-formatter)
@@ -36,6 +38,16 @@ To contribute to this project, please, follow the following conventions.
     - [Commits structure for version update](#commits-structure-for-version-update)
     - [Commits structure for Changelog update](#commits-structure-for-changelog-update)
     - [Example](#example)
+
+# GitHub collaboration
+
+In order to collaborate with the project, you need to fill this [Google form](https://forms.gle/rYMKW76fCF15Lnxm6) to 
+be added as a collaboratior in [CLAASP GitHub repository](https://github.com/Crypto-TII/claasp).
+
+## Pull requests
+
+Pull requests are the way to contribute to the project. Only collaborators can create pull requests, so pull requests 
+coming from forks will be rejected.
 
 # Development environment
 
