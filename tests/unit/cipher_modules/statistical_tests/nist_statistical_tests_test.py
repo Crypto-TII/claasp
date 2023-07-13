@@ -9,8 +9,9 @@ REPORT_EXAMPLE_TXT = 'claasp/cipher_modules/statistical_tests/finalAnalysisRepor
 
 
 def test_run_nist_statistical_tests_tool_interactively():
-    if not os.path.exists('test_reports/statistical_tests/experiments'):
-        os.makedirs('test_reports/statistical_tests/experiments')
+    if os.path.exists('test_reports/statistical_tests/experiments'):
+        os.removedirs('test_reports/statistical_tests/experiments')
+    os.makedirs('test_reports/statistical_tests/experiments')
     result = StatisticalTests.run_nist_statistical_tests_tool_interactively(
         'claasp/cipher_modules/statistical_tests/input_data_example', 10000, 10, 1)
 

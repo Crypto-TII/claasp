@@ -107,6 +107,7 @@ class StatisticalTests:
             path_prefix = os.path.join(nist_local_experiment_folder, directory)
             for experiment_name in folder_experiments:
                 mkdir_folder_experiment(path_prefix, experiment_name)
+        os.system(f'chmod -R 777 {nist_local_experiment_folder}')
 
         input_file = os.path.abspath(input_file)
         output_code = os.system(f'niststs {input_file} {bit_stream_length} {number_of_bit_streams} {input_file_format} '
@@ -114,6 +115,7 @@ class StatisticalTests:
         if output_code != 256:
             return output_code
         else:
+            os.system(f'chmod -R 777 {nist_local_experiment_folder}')
             return True
 
     @staticmethod
