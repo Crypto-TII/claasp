@@ -94,8 +94,7 @@ from claasp.name_mappings import (SBOX, CIPHER, XOR_LINEAR)
 
 
 class SatModel:
-    def __init__(self, cipher, window_size=-1,
-                 window_size_weight_pr_vars=-1,
+    def __init__(self, cipher, window_size_weight_pr_vars=-1,
                  counter='sequential',
                  compact=False):
         """
@@ -104,7 +103,6 @@ class SatModel:
         INPUT:
 
         - ``cipher`` -- **Cipher object**; an instance of the cipher.
-        - ``window_size`` -- **integer** (default: `-1`)
         - ``window_size_weight_pr_vars`` -- **integer** (default: `-1`)
         - ``counter`` -- **string** (default: `sequential`)
         - ``compact`` -- **boolean** (default: False); set to True for using a simplified cipher (it will remove
@@ -128,7 +126,6 @@ class SatModel:
         self._model_constraints = []
         self._sboxes_ddt_templates = {}
         self._sboxes_lat_templates = {}
-        self._window_size = window_size
         self.window_size_weight_pr_vars = window_size_weight_pr_vars
 
     def _add_clauses_to_solver(self, numerical_cnf, solver):
@@ -549,7 +546,3 @@ class SatModel:
     @property
     def sboxes_lat_templates(self):
         return self._sboxes_lat_templates
-
-    @property
-    def window_size(self):
-        return self._window_size

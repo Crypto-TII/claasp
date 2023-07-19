@@ -27,7 +27,9 @@ from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, 
 class SatXorDifferentialModel(SatModel):
     def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False,
                  window_size_by_round=None):
-        super().__init__(cipher, window_size_weight_pr_vars, counter, compact, window_size_by_round)
+        self._window_size_by_round = window_size_by_round
+        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
+
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
         """
@@ -339,3 +341,7 @@ class SatXorDifferentialModel(SatModel):
         solution['building_time_seconds'] = end_building_time - start_building_time
 
         return solution
+
+    @property
+    def window_size_by_round(self):
+        return self._window_size_by_round
