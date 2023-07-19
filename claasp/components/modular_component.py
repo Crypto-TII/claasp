@@ -676,14 +676,16 @@ class Modular(Component):
             for i in range(output_bit_len - model.window_size_weight_pr_vars):
                 constraints.extend(sat_utils.cnf_n_window_heuristic_on_w_vars(
                     hw_bit_ids[i: i + (model.window_size_weight_pr_vars + 1)]))
-        if model.window_size != -1:
-            for i in range(output_bit_len - model.window_size):
-                n_window_vars = [0] * ((model.window_size + 1) * 3)
-                for j in range(model.window_size + 1):
+        component_round_number = model._cipher.get_round_from_component_id(self.id)
+        window_size = model.window_size_by_round[component_round_number]
+        if window_size != -1:
+            for i in range(output_bit_len - window_size):
+                n_window_vars = [0] * ((window_size + 1) * 3)
+                for j in range(window_size + 1):
                     n_window_vars[3 * j + 0] = input_bit_ids[i + j]
                     n_window_vars[3 * j + 1] = input_bit_ids[output_bit_len + i + j]
                     n_window_vars[3 * j + 2] = output_bit_ids[i + j]
-                constraints.extend(sat_n_window_heuristc_bit_level(model.window_size, n_window_vars))
+                constraints.extend(sat_n_window_heuristc_bit_level(window_size, n_window_vars))
         result = output_bit_ids + dummy_bit_ids + hw_bit_ids, constraints
         return result
 

@@ -57,8 +57,8 @@ def test_find_one_xor_differential_trail():
 
 
 def test_find_one_xor_differential_trail_with_fixed_weight():
-    speck = SpeckBlockCipher(number_of_rounds=3)
-    sat = SatXorDifferentialModel(speck, window_size=0)
+    speck = SpeckBlockCipher(number_of_rounds=3, window_size_by_round=[0,0,0])
+    sat = SatXorDifferentialModel(speck)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=(0,) * 32)
     key = set_fixed_variables(component_id='key', constraint_type='equal',
