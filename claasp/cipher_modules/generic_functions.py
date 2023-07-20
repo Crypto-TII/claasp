@@ -950,7 +950,7 @@ def select_bits(input, bit_positions, verbosity=False):
 def merge_bits():
     return 0
 
-def fsr(input, polynomial_index_list, loop, verbosity=False):
+def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     """
     INPUT:
 
@@ -959,25 +959,83 @@ def fsr(input, polynomial_index_list, loop, verbosity=False):
     - ``loop`` -- **integer**; indicates how many loops this fsr component would operate.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
     """
+
+    def get_polynomail(polynomial_index_list, x):
+        p = 0
+        for _ in polynomial_index_list:
+            m = 1
+            for i in _:
+                m = m * x[i]
+            p += m
+        return p
+
     output = BitArray(input)
-
     R = BooleanPolynomialRing(len(input), 'x')
-    fsr_polynomial = 0
     x = R.gens()
-    for _ in polynomial_index_list:
-        m = 1
-        for i in _:
-            m = m * x[i]
-        fsr_polynomial += m
 
-    for i in range(loop):
+    number_of_registers = len(registers_info)
+    registers_word_length = []
+    registers_polynomial = []
+    clock_polynomials = []
+    for i in registers_info:
+        registers_word_length.append(registers_info[i][0])
+        registers_polynomial.append(get_polynomail(registers_info[i][1]), x)
+        clock_polynomials.append(get_polynomail(registers_info[i][2]), x)
+
+    for r in range(number_of_clocks):
+        for j in number_of_registers:
+            output_bit = int(fsr_polynomial(*output))
+            output = output.__lshift__(1)
+            output[-1] = output_bit
+
+    if verbosity:
+        print("FSR:")
+        print("  F   = {}".format(fsr_polynomial+1))
+        print(input_expression.format(input.bin))
+        print(output_expression.format(output.bin))
+
+    return output
+
+
+def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosity=False):
+    """
+    INPUT:
+
+    - ``input`` -- **BitArray object**; a BitArray
+    - ``polynomial_index_list`` -- **list**; a list of lists of index of input bits, which presented a list of monomials.
+    - ``loop`` -- **integer**; indicates how many loops this fsr component would operate.
+    - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+    """
+
+    def get_polynomail(polynomial_index_list, x):
+        p = 0
+        for _ in polynomial_index_list:
+            m = 1
+            for i in _:
+                m = m * x[i]
+            p += m
+        return p
+
+    output = BitArray(input)
+    R = BooleanPolynomialRing(len(input), 'x')
+    x = R.gens()
+
+    registers_word_length = []
+    registers_polynomial = []
+    clock_polynomials = []
+    for i in registers_info:
+        registers_word_length.append(registers_info[i][0])
+        registers_polynomial.append(get_polynomail(registers_info[i][1]), x)
+        clock_polynomials.append(get_polynomail(registers_info[i][2]), x)
+
+    for i in range(number_of_clocks):
         output_bit = int(fsr_polynomial(*output))
         output = output.__lshift__(1)
         output[-1] = output_bit
 
     if verbosity:
         print("FSR:")
-        print("  F   = {}".format(fsr_polynomial+1))
+        print("  F   = {}".format(fsr_polynomial + 1))
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))
 

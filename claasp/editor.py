@@ -243,6 +243,60 @@ def add_constant_component(cipher, output_bit_size, value):
     return new_component
 
 
+def add_FSR_component(cipher, input_id_links, input_bit_positions, output_bit_size, description):
+    """
+    Use this function to create and add an lfsr/nlfsr component to editor.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; an instance of the object cipher
+    - ``input_id_links`` -- **list**; the list of input_id links
+    - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
+    - ``output_bit_size`` -- **integer**; the output bits of the component
+    - ``description`` -- **[registers_info, integer, integer]**; registers_info are the information of the list of fsr
+      registers, which is represented as [register_1_info, register_2_info, ..., register_n_info]. In each of the
+      register information it contains [register_word_length, register_polynomial, clock_polynomial] where
+      register_word_length is an integer that specifies the word length of the register. register_polynomial is the
+      polynomial of the register in fsr. For example, [[0],[1],[3],[2,5]] represents x0+x1+x3+x2*x5, and [] represents 1.
+      clock_polynomial is the polynomial of register clock. If it is set to [], means it will be performed always. The
+      second integer element determines how many bits inside a word. The third integer element determines how many
+      clocks would be performed within this component.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher import Cipher
+        sage: cipher = Cipher("cipher_name", "nlfsr", ["input"], [8], 4)
+        sage: cipher.add_round()
+        sage: fsr_0_0 = cipher.add_FSR_component(["input"], [[0,1,2,3,4,5,6,7,8]], 4,
+        ....: [[0],[1],[3],[2,5]])
+        sage: cipher.print()
+        cipher_id = cipher_name_i4_o4_r1
+        cipher_type = permutation
+        cipher_inputs = ['input']
+        cipher_inputs_bit_size = [4]
+        cipher_output_bit_size = 4
+        cipher_number_of_rounds = 1
+        <BLANKLINE>
+            # round = 0 - round component = 0
+            id = sbox_0_0
+            type = sbox
+            input_bit_size = 4
+            input_id_link = ['input']
+            input_bit_positions = [[0, 1, 2, 3]]
+            output_bit_size = 4
+            description = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        cipher_reference_code = None
+    """
+    if cipher.current_round_number is None:
+        print(cipher_round_not_found_error)
+        return None
+
+    new_component = FSR(cipher.current_round_number, cipher.current_round_number_of_components,
+                         input_id_links, input_bit_positions, output_bit_size, description)
+    add_component(cipher, new_component)
+    return new_component
+
+
 def add_intermediate_output_component(cipher, input_id_links, input_bit_positions, output_bit_size, output_tag):
     """
     Use this function to create and add an intermediate output component to editor.
@@ -1274,59 +1328,6 @@ def add_XOR_component(cipher, input_id_links, input_bit_positions, output_bit_si
 
     new_component = XOR(cipher.current_round_number, cipher.current_round_number_of_components,
                         input_id_links, input_bit_positions, output_bit_size)
-    add_component(cipher, new_component)
-    return new_component
-
-def add_FSR_component(cipher, input_id_links, input_bit_positions, output_bit_size, description):
-    """
-    Use this function to create and add an lfsr/nlfsr component to editor.
-
-    INPUT:
-
-    - ``cipher`` -- **Cipher object**; an instance of the object cipher
-    - ``input_id_links`` -- **list**; the list of input_id links
-    - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
-    - ``output_bit_size`` -- **integer**; the output bits of the component
-    - ``description`` -- **[registers_info, integer, integer]**; registers_info are the information of the list of fsr
-      registers, which is represented as [register_1_info, register_2_info, ..., register_n_info]. In each of the
-      register information it contains [register_word_length, register_polynomial, clock_polynomial] where
-      register_word_length is an integer that specifies the word length of the register. register_polynomial is the
-      polynomial of the register in fsr. For example, [[0],[1],[3],[2,5]] represents x0+x1+x3+x2*x5, and [] represents 1.
-      clock_polynomial is the polynomial of register clock. If it is set to [], means it will be performed always. The
-      second integer element determines how many bits inside a word. The third integer element determines how many
-      clocks would be performed within this component.
-
-    EXAMPLES::
-
-        sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "nlfsr", ["input"], [8], 4)
-        sage: cipher.add_round()
-        sage: fsr_0_0 = cipher.add_FSR_component(["input"], [[0,1,2,3,4,5,6,7,8]], 4,
-        ....: [[0],[1],[3],[2,5]])
-        sage: cipher.print()
-        cipher_id = cipher_name_i4_o4_r1
-        cipher_type = permutation
-        cipher_inputs = ['input']
-        cipher_inputs_bit_size = [4]
-        cipher_output_bit_size = 4
-        cipher_number_of_rounds = 1
-        <BLANKLINE>
-            # round = 0 - round component = 0
-            id = sbox_0_0
-            type = sbox
-            input_bit_size = 4
-            input_id_link = ['input']
-            input_bit_positions = [[0, 1, 2, 3]]
-            output_bit_size = 4
-            description = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-        cipher_reference_code = None
-    """
-    if cipher.current_round_number is None:
-        print(cipher_round_not_found_error)
-        return None
-
-    new_component = FSR(cipher.current_round_number, cipher.current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, description)
     add_component(cipher, new_component)
     return new_component
 

@@ -633,9 +633,13 @@ def build_function_call(component):
     elif component.type == PADDING:
         return "padding(component_input)"
     elif component.type == FSR:
-        polynomial_index_list = component.description[0]
-        loop = component.description[1]
-        return f"fsr(component_input, {polynomial_index_list}, {loop})"
+        registers_info = component.description[0]
+        bits_inside_word = component.description[1]
+        number_of_clocks = component.description[2]
+        if bits_inside_word == 1:
+            return f"fsr_binary(component_input, {registers_info}, {number_of_clocks})"
+        else:
+            return f"fsr_word(component_input, {registers_info}, {bits_inside_word}, {number_of_clocks})"
     elif component.type == INTERMEDIATE_OUTPUT:
         return "component_input"
     elif component.type == CIPHER_OUTPUT:
