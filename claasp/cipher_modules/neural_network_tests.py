@@ -21,6 +21,7 @@ import secrets
 import random
 import numpy as np
 
+from math import sqrt
 from claasp.cipher_modules import evaluator
 from keras.callbacks import ModelCheckpoint
 
@@ -213,7 +214,7 @@ def integer_to_np(val, number_of_bits):
     return np.frombuffer(int(val).to_bytes(length=number_of_bits // 8, byteorder='big'), dtype=np.uint8).reshape(-1, 1)
 
 
-def get_differential_dataset(cipher, input_differences, nr, samples=10 ** 7):
+def get_differential_dataset(cipher, input_differences, number_of_rounds, samples=10 ** 7):
     from os import urandom
     inputs_0 = []
     inputs_1 = []
@@ -226,15 +227,15 @@ def get_differential_dataset(cipher, input_differences, nr, samples=10 ** 7):
         inputs_1[-1][:, y == 0] ^= np.frombuffer(urandom(num_rand_samples * cipher.inputs_bit_size[i] // 8),
                                                  dtype=np.uint8).reshape(-1, num_rand_samples)
 
-    C0 = np.unpackbits(cipher.evaluate_vectorized(inputs_0, intermediate_outputs=True)['round_output'][nr - 1], axis=1)
-    C1 = np.unpackbits(cipher.evaluate_vectorized(inputs_1, intermediate_outputs=True)['round_output'][nr - 1], axis=1)
+    C0 = np.unpackbits(cipher.evaluate_vectorized(inputs_0, intermediate_outputs=True)['round_output'][number_of_rounds - 1], axis=1)
+    C1 = np.unpackbits(cipher.evaluate_vectorized(inputs_1, intermediate_outputs=True)['round_output'][number_of_rounds - 1], axis=1)
     x = np.hstack([C0, C1])
     return x, y
 
 
 def get_neural_network(network_name, input_size, word_size = None):
+    from tensorflow.keras.optimizers import Adam
     if network_name == 'gohr_resnet':
-        from keras.optimizers import Adam
         neural_network = make_resnet(word_size = int(word_size), input_size = input_size)
     elif network_name == 'dbitnet':
         neural_network = make_dbitnet(input_size = input_size)
@@ -250,15 +251,12 @@ def make_checkpoint(datei):
 def train_neural_distinguisher(cipher, data_generator, starting_round, neural_network, training_samples=10 ** 7,
                            testing_samples=10 ** 6, num_epochs=1):
     acc = 1
-    nr = starting_round
     bs = 5000
-    check = make_checkpoint(f'{cipher.id}_{nr}.h5')
-    x, y = data_generator(cipher, samples = training_samples, number_of_rounds = nr)
-    x_eval, y_eval = data_generator(cipher, samples = training_samples, number_of_rounds = nr)
-    h = neural_network.fit(x, y, epochs=num_epochs, batch_size=bs, validation_data=(x_eval, y_eval),
-                               callbacks=[check])
+    x, y = data_generator(samples = training_samples, nr = starting_round)
+    x_eval, y_eval = data_generator(samples = training_samples, nr = starting_round)
+    h = neural_network.fit(x, y, epochs=num_epochs, batch_size=bs, validation_data=(x_eval, y_eval))
     acc = np.max(h.history["val_acc"])
-    print(f'Validation accuracy at {nr} rounds :{acc}')
+    print(f'Validation accuracy at {starting_round} rounds :{acc}')
     return acc
 
 
@@ -270,7 +268,7 @@ def neural_staged_training(cipher, data_generator, starting_round, neural_networ
     threshold = 0.5 + 10 * sqrt(testing_samples//4)/testing_samples
     accuracies = {}
     while acc >= threshold and nr < cipher.number_of_rounds:
-        acc = train_neural_distinguisher(cipher, data_generator, starting_round, neural_network, training_samples, testing_samples, num_epochs)
+        acc = train_neural_distinguisher(cipher, data_generator, nr, neural_network, training_samples, testing_samples, num_epochs)
         accuracies[nr] = acc
         nr += 1
     return accuracies
@@ -327,11 +325,11 @@ def make_dbitnet(input_size=64, n_filters=32, n_add_filters=16):
 
         return drs
 
-        import tensorflow as tf
-        from tensorflow.keras.models import Model
-        from tensorflow.keras.layers import Input, Conv1D, Dense, Dropout, Lambda, concatenate, BatchNormalization, \
+    import tensorflow as tf
+    from tensorflow.keras.models import Model
+    from tensorflow.keras.layers import Input, Conv1D, Dense, Dropout, Lambda, concatenate, BatchNormalization, \
             Activation, Add
-        from tensorflow.keras.regularizers import l2
+    from tensorflow.keras.regularizers import l2
 
     # determine the dilation rates from the given input size
     dilation_rates = get_dilation_rates(input_size)
