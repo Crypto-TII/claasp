@@ -391,6 +391,10 @@
         International Colloquium on Coding Theory and Applications. pp.
         106–113.  Springer (1988)
 
+.. [SGLYTQH2017]
+        Sun S., Gerault D., Lafourcade P., Yang Q., Todo Y., Qiao K., Hu L. : *Analysis of AES, SKINNY,
+        and others with constraint programming* : In IACR transactions on symmetric cryptology 2017 (1), 281--306
+
 .. _claasp-ref-T:
 
 .. only:: html

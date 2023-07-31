@@ -23,32 +23,31 @@ from claasp.name_mappings import INPUT_PLAINTEXT
 
 COLUMNS = [
     [0, 4, 8, 12],
-    [1, 5, 9, 13],
-    [2, 6, 10, 14],
-    [3, 7, 11, 15]
+    [5, 9, 13, 1],
+    [10, 14, 2, 6],
+    [15, 3, 7, 11]
 ]
 DIAGONALS = [
-    [0, 5, 10, 15],
-    [1, 6, 11, 12],
-    [2, 7, 8, 13],
-    [3, 4, 9, 14]
+    [0, 1, 2, 3],
+    [5, 6, 7, 4],
+    [10, 11, 8, 9],
+    [15, 12, 13, 14]
 ]
 PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 20}]
 
 
-class ChachaPermutation(Cipher):
+class SalsaPermutation(Cipher):
     """
-    Construct an instance of the ChachaPermutation class.
+    Construct an instance of the SalsaPermutation class.
 
     This class is used to store compact representations of a permutation, used to generate the corresponding cipher.
-    Additionally, one can use this class to implement ChaCha toy ciphers, such as the one described in [DEY2023]_.
 
     INPUT:
 
     - ``number_of_rounds`` -- **integer** (default: `0`); Number of rounds of the permutation. The cipher uses the
       corresponding amount given the other parameters (if available) when number_of_rounds is 0
     - ``state_of_components`` -- **list of lists of integer** (default: `None`)
-    - ``cipher_family`` -- **string** (default: `chacha_permutation`)
+    - ``cipher_family`` -- **string** (default: `salsa_permutation`)
     - ``cipher_type`` -- **string** (default: `permutation`)
     - ``inputs`` -- **list of integer** (default: `None`)
     - ``cipher_inputs_bit_size`` -- **integer** (default: `None`)
@@ -58,16 +57,16 @@ class ChachaPermutation(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-        sage: chacha = ChachaPermutation(number_of_rounds=2)
-        sage: chacha.number_of_rounds
+        sage: from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
+        sage: salsa = SalsaPermutation(number_of_rounds=2)
+        sage: salsa.number_of_rounds
         2
     """
 
     def __init__(self, number_of_rounds=0, state_of_components=None,
-                 cipher_family="chacha_permutation", cipher_type="permutation",
+                 cipher_family="salsa_permutation", cipher_type="permutation",
                  inputs=None, cipher_inputs_bit_size=None,
-                 rotations=[8, 7, 16, 12],
+                 rotations=[13, 18, 7, 9],
                  word_size=32, start_round="odd"):
         init_latin_dances_cipher(
             self, super(), INPUT_PLAINTEXT, state_of_components, number_of_rounds,
@@ -76,9 +75,9 @@ class ChachaPermutation(Cipher):
         )
 
     def top_half_quarter_round(self, a, b, c, d, state):
-        sub_quarter_round_latin_dances(self, state, a, b, d, -self.rotation_3, 'chacha')
-        sub_quarter_round_latin_dances(self, state, c, d, b, -self.rotation_4, 'chacha')
+        sub_quarter_round_latin_dances(self, state, a, d, b, -self.rotation_3, 'salsa')
+        sub_quarter_round_latin_dances(self, state, a, b, c, -self.rotation_4, 'salsa')
 
     def bottom_half_quarter_round(self, a, b, c, d, state):
-        sub_quarter_round_latin_dances(self, state, a, b, d, -self.rotation_1, 'chacha')
-        sub_quarter_round_latin_dances(self, state, c, d, b, -self.rotation_2, 'chacha')
+        sub_quarter_round_latin_dances(self, state, b, c, d, -self.rotation_1, 'salsa')
+        sub_quarter_round_latin_dances(self, state, c, d, a, -self.rotation_2, 'salsa')

@@ -24,6 +24,7 @@ from copy import deepcopy
 
 import claasp
 from claasp import editor
+from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
 from claasp.rounds import Rounds
 from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
@@ -31,6 +32,7 @@ from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicMode
 from claasp.cipher_modules import continuous_tests, neural_network_tests, code_generator, \
     component_analysis_tests, avalanche_tests, algebraic_tests
 from claasp.name_mappings import CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, MIX_COLUMN, SBOX, WORD_OPERATION
+import importlib
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -1024,6 +1026,18 @@ class Cipher:
         """
         return self._rounds.get_round_from_component_id(component_id)
 
+
+    def impossible_differential_search(self, technique = "sat", solver = "Kissat", scenario = "single-key"):
+        """
+        Return a list of impossible differentials if there are any; otherwise return an empty list
+        INPUT:
+
+        - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
+        - ``solver`` -- **string**; the name of the solver to use for the search
+        - ``scenario`` -- **string**; the type of impossible differentials to search, single-key or related-key
+        """
+        return self.find_impossible_property(type="differential", technique=technique, solver=solver, scenario=scenario)
+
     def is_algebraically_secure(self, timeout):
         """
         Return `True` if the cipher is resistant against algebraic attack.
@@ -1148,6 +1162,28 @@ class Cipher:
             if value % check_size != 0:
                 return False
         return set_of_components <= spn_components
+
+    def get_model(self, technique, problem):
+        """
+        Returns a model for a given technique and problem.
+
+        INPUT:
+
+          - ``technique`` -- **string** ; sat, smt, milp or cp
+          - ``problem`` -- **string** ; xor_differential, xor_linear, cipher_model (more to be added as more model types are added to the library)
+          """
+        if problem == 'xor_differential':
+            constructor_name = f'{technique[0].capitalize()}{technique[1:]}XorDifferentialModel'
+        elif problem == "xor_linear":
+            constructor_name = f'{technique[0].capitalize()}{technique[1:]}XorLinearModel'
+        elif problem == 'cipher_model':
+            constructor_name = f'{technique[0].capitalize()}{technique[1:]}CipherModel'
+
+        module_name = f'claasp.cipher_modules.models.{technique}.{technique}_models.{technique}_{problem}_model'
+
+        module = importlib.import_module(module_name)
+        constructor = getattr(module, constructor_name)
+        return constructor(self)
 
     def get_sizes_of_components_by_type(self):
         set_of_sbox_sizes = set()
@@ -1575,6 +1611,85 @@ class Cipher:
             False
         """
         return tester.test_vector_check(self, list_of_test_vectors_input, list_of_test_vectors_output)
+
+
+    def inputs_size_to_dict(self):
+        inputs_dictionary = {}
+        for i, name in enumerate(self.inputs):
+            inputs_dictionary[name] = self.inputs_bit_size[i]
+        return inputs_dictionary
+
+
+    def find_impossible_property(self, type, technique = "sat", solver = "kissat", scenario = "single-key"):
+        """
+        From [SGLYTQH2017] : Finds impossible differentials or zero-correlation linear approximations (based on type)
+        by fixing the input and output iteratively to all possible Hamming weight 1 value, and asking the solver
+        to find a solution; if none is found, then the propagation is impossible.
+        Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list
+        INPUT:
+
+        - ``type`` -- **string**; {"differential", "linear"}: the type of property to search for
+        - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
+        - ``solver`` -- **string**; the name of the solver to use for the search
+        """
+        from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+        model = self.get_model(technique, f'xor_{type}')
+        if type == 'differential':
+            search_function = model.find_one_xor_differential_trail
+        else:
+            search_function = model.find_one_xor_linear_trail
+        last_component_id = self.get_all_components()[-1].id
+        impossible = []
+        inputs_dictionary = self.inputs_size_to_dict()
+        plain_bits = inputs_dictionary['plaintext']
+        key_bits = inputs_dictionary['key']
+
+        if scenario == "single-key":
+            # Fix the key difference to be zero, and the plaintext difference to be non-zero.
+            for input_bit_position in range(plain_bits):
+                for output_bit_position in range(plain_bits):
+                    fixed_values = []
+                    fixed_values.append(set_fixed_variables('key', 'equal', list(range(key_bits)),
+                                                            integer_to_bit_list(0, key_bits, 'big')))
+                    fixed_values.append(set_fixed_variables('plaintext', 'equal', list(range(plain_bits)),
+                                                            integer_to_bit_list(1 << input_bit_position, plain_bits,
+                                                                                'big')))
+                    fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
+                                                            integer_to_bit_list(1 << output_bit_position, plain_bits,
+                                                                                'big')))
+                    solution = search_function(fixed_values, solver_name = solver)
+                    if solution['status'] == "UNSATISFIABLE":
+                        impossible.append((1 << input_bit_position, 1 << output_bit_position))
+        elif scenario == "related-key":
+            for input_bit_position in range(key_bits):
+                for output_bit_position in range(plain_bits):
+                    fixed_values = []
+                    fixed_values.append(set_fixed_variables('key', 'equal', list(range(key_bits)),
+                                                            integer_to_bit_list(1 << (input_bit_position), key_bits,
+                                                                                'big')))
+                    fixed_values.append(set_fixed_variables('plaintext', 'equal', list(range(plain_bits)),
+                                                            integer_to_bit_list(0, plain_bits, 'big')))
+
+                    fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
+                                                            integer_to_bit_list(1 << output_bit_position, plain_bits,
+                                                                                'big')))
+                    solution = search_function(fixed_values, solver_name = solver)
+                    if solution['status'] == "UNSATISFIABLE":
+                        impossible.append((1 << input_bit_position, 1 << output_bit_position))
+        return impossible
+
+    def zero_correlation_linear_search(self, technique = "sat", solver = "Kissat"):
+        """
+        Return a list of zero_correlation linear approximations if there are any; otherwise return an empty list
+        INPUT:
+
+        - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
+        - ``solver`` -- **string**; the name of the solver to use for the search
+        """
+        return self.find_impossible_property(type="linear", technique=technique, solver=solver)
+
+    def convert_to_compound_xor_cipher(self):
+        convert_to_compound_xor_cipher(self)
 
     @property
     def current_round(self):

@@ -29,13 +29,42 @@ COPY required_dependencies/utilities.h /opt/
 
 WORKDIR /opt
 
-RUN wget https://packages.gurobi.com/9.5/gurobi9.5.2_linux64.tar.gz \
-    && tar -xf gurobi9.5.2_linux64.tar.gz \
-    && rm gurobi9.5.2_linux64.tar.gz
+RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz \
+    && tar -xf gurobi10.0.0_linux64.tar.gz \
+    && rm gurobi10.0.0_linux64.tar.gz
 
-ENV GUROBI_HOME="/opt/gurobi952/linux64"
+ENV GUROBI_HOME="/opt/gurobi1000/linux64"
 ENV PATH="${PATH}:${GUROBI_HOME}/bin"
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
+
+WORKDIR /opt
+
+## Installing Soplex (for SCIP)
+
+RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-603.tar.gz \
+    && tar -xf release-603.tar.gz \
+    && rm release-603.tar.gz \
+    && cd soplex-release-603 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make
+
+ENV SOPLEX_HOME="/opt/soplex-release-603/build"
+
+WORKDIR /opt
+
+## Installing SCIP
+RUN wget https://github.com/scipopt/scip/archive/refs/tags/v803.tar.gz \
+    && tar -xf v803.tar.gz \
+    && rm v803.tar.gz \
+    && cd scip-803 \
+    && mkdir build \
+    && cd build \
+    && cmake .. -DAUTOBUILD=on -DSOPLEX_DIR=${SOPLEX_HOME} \
+    && make
+
+ENV PATH="${PATH}:/opt/scip-803/build/bin"
 
 # Installing SageMath tools
 RUN sage -pip install bitstring==4.0.1 \
@@ -54,7 +83,8 @@ RUN sage -pip install bitstring==4.0.1 \
   tensorflow==2.11.0 \
   pytest==7.2.1 \
   pytest-cov==4.0.0 \
-  pytest-xdist==3.2.0
+  pytest-xdist==3.2.0 \
+  pytest-benchmark==4.0.0
 
 # Installing nist sts
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \
@@ -105,6 +135,19 @@ RUN cd kissat-rel-3.0.0/ \
 WORKDIR /opt
 
 ENV PATH="/opt/kissat-rel-3.0.0/build/:${PATH}"
+
+# Installing Parkissat
+RUN wget -O parkissat.tar.gz https://github.com/songfu1983/ParKissat-RS/archive/refs/heads/master.tar.gz \
+    && ls / \
+    && tar -xf parkissat.tar.gz \
+    && rm parkissat.tar.gz
+
+RUN cd ./ParKissat-RS-master/ \
+    && make
+
+WORKDIR /opt
+
+ENV PATH="/opt/ParKissat-RS-master/:${PATH}"
 
 # Installing Glucose
 RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1.tgz  \

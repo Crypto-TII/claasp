@@ -1,7 +1,7 @@
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
-    CpXorDifferentialTrailSearchModel, and_xor_differential_probability_ddt)
+from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (
+    CpXorDifferentialModel, and_xor_differential_probability_ddt)
 
 
 def test_and_xor_differential_probability_ddt():
@@ -10,7 +10,7 @@ def test_and_xor_differential_probability_ddt():
 
 def test_find_all_xor_differential_trails_with_fixed_weight():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
-    cp = CpXorDifferentialTrailSearchModel(speck)
+    cp = CpXorDifferentialModel(speck)
     fixed_values = [set_fixed_variables('key', 'equal', list(range(16)), integer_to_bit_list(0, 16, 'big')),
                     set_fixed_variables('plaintext', 'not_equal', list(range(8)), integer_to_bit_list(0, 8, 'big'))]
     trails = cp.find_all_xor_differential_trails_with_fixed_weight(1, fixed_values, 'Chuffed')
@@ -19,7 +19,7 @@ def test_find_all_xor_differential_trails_with_fixed_weight():
     
 def test_solving_unsatisfiability():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
-    cp = CpXorDifferentialTrailSearchModel(speck)
+    cp = CpXorDifferentialModel(speck)
     fixed_values = [set_fixed_variables('key', 'equal', list(range(16)), integer_to_bit_list(0, 16, 'big')),
                     set_fixed_variables('plaintext', 'not_equal', list(range(8)), integer_to_bit_list(0, 8, 'big'))]
     trails = cp.find_one_xor_differential_trail_with_fixed_weight(1, fixed_values, 'Chuffed')
@@ -29,7 +29,7 @@ def test_solving_unsatisfiability():
 
 def test_find_all_xor_differential_trails_with_weight_at_most():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
-    cp = CpXorDifferentialTrailSearchModel(speck)
+    cp = CpXorDifferentialModel(speck)
     fixed_values = [set_fixed_variables('key', 'equal', list(range(16)), integer_to_bit_list(0, 16, 'big')),
                     set_fixed_variables('plaintext', 'not_equal', list(range(8)), integer_to_bit_list(0, 8, 'big'))]
     trails = cp.find_all_xor_differential_trails_with_weight_at_most(0, 1, fixed_values, 'Chuffed')
@@ -39,7 +39,7 @@ def test_find_all_xor_differential_trails_with_weight_at_most():
 
 def test_find_lowest_weight_xor_differential_trail():
     speck = SpeckBlockCipher(number_of_rounds=5)
-    cp = CpXorDifferentialTrailSearchModel(speck)
+    cp = CpXorDifferentialModel(speck)
     fixed_values = [set_fixed_variables('key', 'equal', list(range(64)), integer_to_bit_list(0, 64, 'big')),
                     set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'big'))]
     trail = cp.find_lowest_weight_xor_differential_trail(fixed_values, 'Chuffed')
@@ -52,7 +52,7 @@ def test_find_lowest_weight_xor_differential_trail():
 
 def test_find_one_xor_differential_trail():
     speck = SpeckBlockCipher(number_of_rounds=2)
-    cp = CpXorDifferentialTrailSearchModel(speck)
+    cp = CpXorDifferentialModel(speck)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=[0] * 32)
     trail = cp.find_one_xor_differential_trail([plaintext], 'Chuffed')
@@ -66,7 +66,7 @@ def test_find_one_xor_differential_trail():
 
 def test_find_one_xor_differential_trail_with_fixed_weight():
     speck = SpeckBlockCipher(number_of_rounds=5)
-    cp = CpXorDifferentialTrailSearchModel(speck)
+    cp = CpXorDifferentialModel(speck)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=[0] * 32)
     trail = cp.find_one_xor_differential_trail_with_fixed_weight(9, [plaintext], 'Chuffed')

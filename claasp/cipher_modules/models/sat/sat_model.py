@@ -259,7 +259,7 @@ class SatModel:
         self._variables_list.extend(variables)
         self._model_constraints.extend(constraints)
 
-    def _solve_with_external_sat_solver(self, model_type, solver_name, options, host=None):
+    def _solve_with_external_sat_solver(self, model_type, solver_name, options, host=None, env_vars_string=""):
         if host and (solver_name not in constants.SAT_SOLVERS_DIMACS_COMPLIANT):
             raise ValueError('{solver_name} not supported.')
 
@@ -271,7 +271,7 @@ class SatModel:
         file_id = f'{uuid.uuid4()}'
         if host is not None:
             status, sat_time, sat_memory, values = utils.run_sat_solver(solver_name, options,
-                                                                        dimacs, host)
+                                                                        dimacs, host, env_vars_string)
         else:
             if solver_name in constants.SAT_SOLVERS_DIMACS_COMPLIANT:
                 status, sat_time, sat_memory, values = utils.run_sat_solver(solver_name, options,
@@ -281,6 +281,9 @@ class SatModel:
                 output_file = f'{self.cipher_id}_{file_id}_sat_output.cnf'
                 status, sat_time, sat_memory, values = utils.run_minisat(options, dimacs,
                                                                          input_file, output_file)
+            elif solver_name == 'parkissat':
+                input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
+                status, sat_time, sat_memory, values = utils.run_parkissat(options, dimacs, input_file)
             elif solver_name == 'yices-sat':
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
                 status, sat_time, sat_memory, values = utils.run_yices(options, dimacs, input_file)

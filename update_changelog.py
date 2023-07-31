@@ -15,18 +15,17 @@
 # [X.Y.Q]: github.com/owner/repository/compare/vX.Y.Z..vX.Y.Q
 
 import re
-import sys
-import copy
 import datetime
 import argparse
-from enum import Enum
+import copy
 from typing import Tuple, List, Dict
+from enum import Enum
 
 
 class ChangeTypes(Enum):
-    feat = 'feat'
-    fix = 'fix'
-    breaking = 'breaking'
+    breaking = 'BREAKING/'
+    feat = 'FEATURE/'
+    fix = 'FIX/'
 
 
 class ReleaseCategories(Enum):
@@ -38,9 +37,10 @@ class ReleaseCategories(Enum):
 
 Version = Tuple[int, int, int]
 VersionToChangeTypeMap = Dict[ChangeTypes, Version]
+version_change_types_regex = rf'^({ChangeTypes.breaking.value}|{ChangeTypes.feat.value}|{ChangeTypes.fix.value})'
 
 
-def define_file_arguments():
+def define_file_arguments() -> argparse.Namespace:
     arguments_dictionary = {
         'repository_url': {'help': 'remote repository url'},
         'pull_request_commits': {'help': 'pull request commits'}
@@ -68,15 +68,21 @@ def create_release_dictionary_from(commits: List[str]) -> dict[ReleaseCategories
         'FIX:': ReleaseCategories.fixed.value,
         'REMOVE:': ReleaseCategories.removed.value,
     }
-
     for commit_prefix, category in commit_prefix_to_category_map.items():
         for commit in commits:
-            if commit.upper().startswith(commit_prefix):
+            category_keywords = re.compile(rf'{version_change_types_regex}?{commit_prefix}.*$', re.IGNORECASE)
+            if re.search(category_keywords, commit):
                 commit_message = commit.split(':', maxsplit=1)[1]
                 if commit_message.strip().capitalize() not in release_categories[category]:
                     release_categories[category].append(commit_message.strip().capitalize())
 
     return release_categories
+
+
+def is_there_version_change(commits: List[str]) -> bool:
+    version_change_keywords = re.compile(rf'{version_change_types_regex}.*$', re.IGNORECASE)
+    version_change_commits = [commit for commit in commits if re.match(version_change_keywords, commit)]
+    return len(version_change_commits) != 0
 
 
 def find_versions_from(changelog: str, commits: List[str]) -> Tuple[str, str]:
@@ -91,7 +97,7 @@ def update_changelog(changelog: str, new_version: str, previous_version: str) ->
     return changelog
 
 
-def transform_release_dict_to_formatted_string(release_section: dict[ReleaseCategories, List[str]]):
+def transform_release_dict_to_formatted_string(release_section: dict[ReleaseCategories, List[str]]) -> str:
     content = ''
     for category, commits in sorted(release_section.items()):
         if commits:
@@ -118,12 +124,12 @@ def find_previous_version_from(changelog: str) -> str:
 def find_new_version_from(previous_version: str, commits: List[str]) -> str:
     version: List[int] = [int(number) for number in previous_version.split('.')]
     version_to_change_based_on_change_type: VersionToChangeTypeMap = {
-        ChangeTypes.breaking.value: (1, 0, 0),
-        ChangeTypes.feat.value: (0, 1, 0),
-        ChangeTypes.fix.value: (0, 0, 1)
+        ChangeTypes.breaking: (1, 0, 0),
+        ChangeTypes.feat: (0, 1, 0),
+        ChangeTypes.fix: (0, 0, 1)
     }
     change_type = get_change_type_from(commits)
-    default_change_type = version_to_change_based_on_change_type[ChangeTypes.fix.value]
+    default_change_type = version_to_change_based_on_change_type[ChangeTypes.fix]
     major, minor, patch = version_to_change_based_on_change_type.get(change_type, default_change_type)
 
     version[0] += major
@@ -134,19 +140,16 @@ def find_new_version_from(previous_version: str, commits: List[str]) -> str:
 
 
 def get_change_type_from(commits: List[str]) -> ChangeTypes:
-    commits_starting_with_breaking = r'/breaking/.*$'
-    commits_starting_with_feat = r'/feat/.*$'
+    commits_starting_with_breaking = re.compile(r'^BREAKING/.*$', re.IGNORECASE)
     commits_containing_breaking_changes = [commit for commit in commits
                                            if re.search(commits_starting_with_breaking, commit)]
-    commits_containing_feat_changes = [commit for commit in commits if re.search(commits_starting_with_feat, commit)]
-
     if commits_containing_breaking_changes:
-        return ChangeTypes.breaking.value
-
+        return ChangeTypes.breaking
+    commits_starting_with_feat = re.compile(r'^FEATURE/.*$', re.IGNORECASE)
+    commits_containing_feat_changes = [commit for commit in commits if re.search(commits_starting_with_feat, commit)]
     if commits_containing_feat_changes:
-        return ChangeTypes.feat.value
-
-    return ChangeTypes.fix.value
+        return ChangeTypes.feat
+    return ChangeTypes.fix
 
 
 # Appends to the changelog the Release Header with the following format: ## [X.Y.Z] - YYYY-MM-DD
@@ -160,9 +163,8 @@ def prepend_release_header_to(changelog: str, new_version: str) -> str:
     return changelog
 
 
-# Appends to the changelog the Footer section with the following format:
-# [X.Y.Z]: github.com/owner/repository/compare/vX.Y.Z..vX.Y.Z
-def append_footer_section_to(changelog: str, new_version: str, previous_version: str):
+# Appends to the changelog the Footer section with the following format: [X.Y.Z]: github.com/owner/repository/compare/vX.Y.Z..vX.Y.Z
+def append_footer_section_to(changelog: str, new_version: str, previous_version: str) -> str:
     # "[X.Y.Z]:"
     footer_pattern = re.compile(r'\[(\d+\.\d+\.\d+)\]:\s*')
     index = re.search(footer_pattern, changelog).start()
@@ -183,32 +185,32 @@ def get_headers_from_two_latest_releases(changelog_content: str) -> Tuple[str, s
     return latest_release_header, second_latest_release_header
 
 
-try:
-    with open('CHANGELOG.md', 'r+') as changelog_file:
-        FILE_ARGUMENTS = define_file_arguments()
+def update_changelog_version() -> None:
+    with open('./CHANGELOG.md', 'r+') as changelog_file:
         current_changelog = copy.deepcopy(changelog_file.read())
-        commits: List[str] = FILE_ARGUMENTS.pull_request_commits.split('\n')
-        release_section = create_release_dictionary_from(commits)
-        are_there_commits_to_include = any(release_section.values())
+        new_version, previous_version = find_versions_from(current_changelog, commits)
+        current_changelog = update_changelog(current_changelog, new_version, previous_version)
+        release_section_as_string = transform_release_dict_to_formatted_string(release_section)
+        starting_index, ending_index = get_release_content_index(current_changelog)
 
-        if are_there_commits_to_include:
-            new_version, previous_version = find_versions_from(current_changelog, commits)
-            current_changelog = update_changelog(current_changelog, new_version, previous_version)
-            release_section_as_string = transform_release_dict_to_formatted_string(release_section)
-            starting_index, ending_index = get_release_content_index(current_changelog)
+        changelog_file.seek(starting_index)
+        changelog_file.seek(ending_index)
 
-            changelog_file.seek(starting_index)
-            changelog_file.seek(ending_index)
+        updated_changelog = current_changelog[:starting_index] + release_section_as_string + \
+            current_changelog[ending_index:]
 
-            updated_changelog = current_changelog[:starting_index] +\
-                release_section_as_string + current_changelog[ending_index:]
+        changelog_file.seek(0)
+        changelog_file.write(updated_changelog)
+        changelog_file.close()
 
-            changelog_file.seek(0)
-            changelog_file.write(updated_changelog)
-            changelog_file.close()
+        with open('VERSION', 'w') as version_file:
+            version_file.write(f'v{new_version}')
 
-            with open('VERSION', 'w') as version_file:
-                version_file.write(f'v{new_version}')
-except Exception as e:
-    print(e)
-    sys.exit(1)
+
+FILE_ARGUMENTS = define_file_arguments()
+commits: List[str] = FILE_ARGUMENTS.pull_request_commits.split('\n')
+release_section = create_release_dictionary_from(commits) if is_there_version_change(commits) else {}
+are_there_commits_to_include = any(release_section.values())
+
+if are_there_commits_to_include:
+    update_changelog_version()

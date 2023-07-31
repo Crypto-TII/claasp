@@ -96,7 +96,7 @@ class CpXorDifferentialNumberOfActiveSboxesModel(CpModel):
             if self.list_of_xor_components == temp_list_of_xor_components:
                 break
 
-    def build_xor_differential_trail_first_step_model(self, weight=-1, fixed_variables=[], nmax=2, repetition=1):
+    def build_xor_differential_trail_first_step_model(self, weight=-1, fixed_variables=[], nmax=2, repetition=1, possible_sboxes=0):
         """
         Build the CP Model for the second step of the search of XOR differential trail of an SPN cipher.
 
@@ -134,7 +134,7 @@ class CpXorDifferentialNumberOfActiveSboxesModel(CpModel):
         self.table_of_solutions_length = 0
         constraints = self.fix_variables_value_constraints(fixed_variables, 'first_step')
         self._first_step = constraints
-        self._variables_list.extend(self.input_xor_differential_first_step_constraints())
+        self._variables_list.extend(self.input_xor_differential_first_step_constraints(possible_sboxes))
 
         for component in self._cipher.get_all_components():
             component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, MIX_COLUMN, WORD_OPERATION]
@@ -287,7 +287,7 @@ class CpXorDifferentialNumberOfActiveSboxesModel(CpModel):
 
         return all_inputs
 
-    def input_xor_differential_first_step_constraints(self):
+    def input_xor_differential_first_step_constraints(self, possible_sboxes):
         """
         Return a list of CP constraints for the inputs of the cipher for the first step model.
 
@@ -307,12 +307,20 @@ class CpXorDifferentialNumberOfActiveSboxesModel(CpModel):
              'array[0..15] of var 0..1: key;',
              'array[0..15] of var 0..1: plaintext;']
         """
-        active_sboxes_count = 0
-        for component in self._cipher.get_all_components():
-            if SBOX in component.type:
-                input_bit_positions = component.input_bit_positions
-                active_sboxes_count += len(input_bit_positions)
-        cp_declarations = [f'var 1..{active_sboxes_count}: number_of_active_sBoxes;']
+        if possible_sboxes != 0:
+            number_of_active_sBoxes_declaration = 'var {'
+            for sboxes_n in possible_sboxes:
+                number_of_active_sBoxes_declaration += str(sboxes_n)
+                number_of_active_sBoxes_declaration += ', '
+            number_of_active_sBoxes_declaration = number_of_active_sBoxes_declaration[:-2] + '}: number_of_active_sBoxes;'
+            cp_declarations = [number_of_active_sBoxes_declaration]
+        else:
+            active_sboxes_count = 0
+            for component in self._cipher.get_all_components():
+                if SBOX in component.type:
+                    input_bit_positions = component.input_bit_positions
+                    active_sboxes_count += len(input_bit_positions)
+            cp_declarations = [f'var 1..{active_sboxes_count}: number_of_active_sBoxes;']
         cp_declarations.extend([f'array[0..{bit_size // self.word_size - 1}] of var 0..1: {input_};'
                                 for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)])
 

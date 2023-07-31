@@ -18,3 +18,34 @@
 
 
 SOLVER_DEFAULT = "GLPK"
+MODEL_DEFAULT_PATH = "./claasp/cipher_modules/models/milp/tmp"
+SOLUTION_FILE_DEFAULT_NAME = "milp_model.sol"
+
+EXTERNAL_MILP_SOLVERS = {
+    'Gurobi': {
+        'command': f'gurobi_cl ResultFile={MODEL_DEFAULT_PATH}/{SOLUTION_FILE_DEFAULT_NAME} ',
+        'options': "",
+        'time': r"Explored \d+ nodes \(\d+ simplex iterations\) in ([0-9]*[.]?[0-9]+) seconds",
+        'unsat_condition': "Model is infeasible"
+    },
+    'scip': {
+        'file_path': [],
+        'command': 'scip -c \"read ',
+        'options': f' opt write solution {MODEL_DEFAULT_PATH}/{SOLUTION_FILE_DEFAULT_NAME} quit\"',
+        'time': r"Solving Time \(sec\)[\s]+:[\s]+([0-9]*[.]?[0-9]+)",
+        'unsat_condition': "problem is solved [infeasible]"
+    },
+    'glpk': {
+        'command': 'glpsol --lp ',
+        'options': f' --output {MODEL_DEFAULT_PATH}/{SOLUTION_FILE_DEFAULT_NAME}',
+        'time': r"Time used:[\s]+([0-9]*[.]?[0-9]+) secs",
+        'memory': r"Memory used:[\s]+([0-9]*[.]?[0-9]+) Mb",
+        'unsat_condition': 'PROBLEM HAS NO PRIMAL FEASIBLE SOLUTION'
+    },
+    'cplex': {
+        'command': 'cplex -c \"read ',
+        'options': f'\" \"optimize\" \"display solution variables *\" | tee {MODEL_DEFAULT_PATH}/{SOLUTION_FILE_DEFAULT_NAME}',
+        'time': r"Solution time =[\s]+([0-9]*[.]?[0-9]+) sec.",
+        'unsat_condition': "MIP - Integer infeasible."
+    }
+}
