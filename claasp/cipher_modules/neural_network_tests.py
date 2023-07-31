@@ -22,6 +22,7 @@ import random
 import numpy as np
 
 from claasp.cipher_modules import evaluator
+from keras.callbacks import ModelCheckpoint
 
 
 def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
@@ -231,36 +232,48 @@ def get_differential_dataset(cipher, input_differences, nr, samples=10 ** 7):
     return x, y
 
 
-def neural_staged_training(cipher, input_difference, starting_round, neural_network=None, training_samples=10 ** 7,
-                           testing_samples=10 ** 6, num_epochs=1, word_size = 16):
+def get_neural_network(network_name, input_size, word_size = None):
+    if network_name == 'gohr_resnet':
+        from keras.optimizers import Adam
+        neural_network = make_resnet(word_size = int(word_size), input_size = input_size)
+    elif network_name == 'dbitnet':
+        neural_network = make_dbitnet(input_size = input_size)
+    neural_network.compile(optimizer=Adam(amsgrad=True), loss='mse', metrics=['acc'])
+    return neural_network
+
+
+def make_checkpoint(datei):
+    res = ModelCheckpoint(datei, monitor='val_loss', save_best_only=True)
+    return res
+
+
+def train_neural_distinguisher(cipher, data_generator, starting_round, neural_network, training_samples=10 ** 7,
+                           testing_samples=10 ** 6, num_epochs=1):
     acc = 1
     nr = starting_round
-    from keras.callbacks import ModelCheckpoint
-    if neural_network is None:
-        from keras.optimizers import Adam
-        total_input_size = cipher.output_bit_size*2 # 2 ciphertexts are expected
-        neural_network = make_resnet(word_size = int(word_size), input_size = total_input_size)
-        neural_network.compile(optimizer=Adam(amsgrad=True), loss='mse', metrics=['acc'])
     bs = 5000
-
-    def make_checkpoint(datei):
-        res = ModelCheckpoint(datei, monitor='val_loss', save_best_only=True)
-        return res
-
-    diff_as_string = '_'.join([hex(x) for x in input_difference])
-    accuracies = {}
-    while acc >= 0.505 and nr<cipher.number_of_rounds:
-        check = make_checkpoint(f'{cipher.id}_{nr}_{diff_as_string}.h5')
-        x, y = get_differential_dataset(cipher, input_difference, nr, training_samples)
-        x_eval, y_eval = get_differential_dataset(cipher, input_difference, nr, testing_samples)
-        h = neural_network.fit(x, y, epochs=num_epochs, batch_size=bs, validation_data=(x_eval, y_eval),
+    check = make_checkpoint(f'{cipher.id}_{nr}.h5')
+    x, y = data_generator(cipher, samples = training_samples, number_of_rounds = nr)
+    x_eval, y_eval = data_generator(cipher, samples = training_samples, number_of_rounds = nr)
+    h = neural_network.fit(x, y, epochs=num_epochs, batch_size=bs, validation_data=(x_eval, y_eval),
                                callbacks=[check])
-        acc = np.max(h.history["val_acc"])
+    acc = np.max(h.history["val_acc"])
+    print(f'Validation accuracy at {nr} rounds :{acc}')
+    return acc
+
+
+def neural_staged_training(cipher, data_generator, starting_round, neural_network=None, training_samples=10 ** 7,
+                           testing_samples=10 ** 6, num_epochs=1, word_size = 16, number_of_ciphertexts = 2):
+    acc = 1
+    nr = starting_round
+    # threshold at 10 sigma
+    threshold = 0.5 + 10 * sqrt(testing_samples//4)/testing_samples
+    accuracies = {}
+    while acc >= threshold and nr < cipher.number_of_rounds:
+        acc = train_neural_distinguisher(cipher, data_generator, starting_round, neural_network, training_samples, testing_samples, num_epochs)
         accuracies[nr] = acc
-        print(f'Validation accuracy at {nr} rounds :{acc}')
         nr += 1
     return accuracies
-
 
 def make_resnet(input_size, num_filters=32, num_outputs=1, d1=64, d2=64, word_size=16, ks=3, reg_param=10 ** -5,
                 final_activation='sigmoid', depth=1):
@@ -298,6 +311,78 @@ def make_resnet(input_size, num_filters=32, num_outputs=1, d1=64, d2=64, word_si
     out = Dense(num_outputs, activation=final_activation, kernel_regularizer=l2(reg_param))(dense2)
     model = Model(inputs=inp, outputs=out)
     return (model)
+
+def make_dbitnet(input_size=64, n_filters=32, n_add_filters=16):
+    """Create a DBITNet model.
+
+    :param input_size: e.g. for SPECK32/64 and 2 ciphertexts, the input_size is 64 bit.
+    :return: DBitNet model.
+    """
+    def get_dilation_rates(input_size):
+        """Helper function to determine the dilation rates of DBitNet given an input_size. """
+        drs = []
+        while input_size >= 8:
+            drs.append(int(input_size / 2 - 1))
+            input_size = input_size // 2
+
+        return drs
+
+        import tensorflow as tf
+        from tensorflow.keras.models import Model
+        from tensorflow.keras.layers import Input, Conv1D, Dense, Dropout, Lambda, concatenate, BatchNormalization, \
+            Activation, Add
+        from tensorflow.keras.regularizers import l2
+
+    # determine the dilation rates from the given input size
+    dilation_rates = get_dilation_rates(input_size)
+
+    # prediction head parameters (similar to Gohr)
+    d1 = 256
+    d2 = 64
+    reg_param = 1e-5
+
+    # define the input shape
+    inputs = Input(shape=(input_size, 1))
+    x = inputs
+
+    # normalize the input data to a range of [-1, 1]:
+    x = tf.subtract(x, 0.5)
+    x = tf.divide(x, 0.5)
+
+    for dilation_rate in dilation_rates:
+        ### wide-narrow blocks
+        x = Conv1D(filters=n_filters,
+                   kernel_size=2,
+                   padding='valid',
+                   dilation_rate=dilation_rate,
+                   strides=1,
+                   activation='relu')(x)
+        x = BatchNormalization()(x)
+        x_skip = x
+        x = Conv1D(filters=n_filters,
+                   kernel_size=2,
+                   padding='causal',
+                   dilation_rate=1,
+                   activation='relu')(x)
+        x = Add()([x, x_skip])
+        x = BatchNormalization()(x)
+
+        n_filters += n_add_filters
+
+    ### prediction head
+    out = tf.keras.layers.Flatten()(x)
+    dense0 = Dense(d1, kernel_regularizer=l2(reg_param))(out);
+    dense0 = BatchNormalization()(dense0);
+    dense0 = Activation('relu')(dense0);
+    dense1 = Dense(d1, kernel_regularizer=l2(reg_param))(dense0);
+    dense1 = BatchNormalization()(dense1);
+    dense1 = Activation('relu')(dense1);
+    dense2 = Dense(d2, kernel_regularizer=l2(reg_param))(dense1);
+    dense2 = BatchNormalization()(dense2);
+    dense2 = Activation('relu')(dense2);
+    out = Dense(1, activation='sigmoid', kernel_regularizer=l2(reg_param))(dense2)
+    model = Model(inputs, out)
+    return model
 
 
 def find_good_input_difference_for_neural_distinguisher(cipher, difference_positions,
