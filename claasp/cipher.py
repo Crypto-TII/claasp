@@ -857,7 +857,7 @@ class Cipher:
 	    sage: cipher = SpeckBlockCipher()
 	    sage: input_differences = [0x400000, 0]
 	    sage: data_generator = lambda nr, samples: get_differential_dataset(cipher, input_differences, number_of_rounds = nr, samples = samples)
-	    sage: neural_network = get_neural_network('gohr-resnet', input_size = 64)
+	    sage: neural_network = get_neural_network('gohr_resnet', input_size = 64)
 	    sage: cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network)
         """
         if pipeline:
