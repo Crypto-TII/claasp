@@ -25,7 +25,7 @@ from claasp.cipher_modules import evaluator
 
 
 def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
-                                                hidden_layers=[32, 32, 32], number_of_epochs=10):
+                                                hidden_layers=[32, 32, 32], number_of_epochs=10, rounds_to_train=[]):
     """
     .. WARNING::
 
@@ -51,9 +51,9 @@ def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
 
         partial_result, ds, component_output_ids = create_structure(base_output, cipher, index)
         update_component_output_ids(cipher, component_output_ids)
-        update_blackbox_distinguisher_tests_ds(base_inputs, base_output, cipher, ds, index, labels, nb_samples)
+        update_blackbox_distinguisher_vectorized_tests_ds(base_inputs, base_output, cipher, ds, index, labels, nb_samples)
         update_partial_result(cipher, component_output_ids, ds, index, hidden_layers,
-                              labels, number_of_epochs, partial_result)
+                              labels, number_of_epochs, partial_result, rounds_to_train=rounds_to_train)
 
         results["neural_network_blackbox_distinguisher_tests"]["test_results"][input_tag].update(partial_result)
 
@@ -61,31 +61,22 @@ def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
 
 
 def update_partial_result(cipher, component_output_ids, ds, index, hidden_layers, labels, number_of_epochs,
-                          partial_result, blackbox=True):
+                          partial_result, blackbox=True, rounds_to_train=[]):
     """
     .. WARNING::
 
         Tensorflow is used in this method, and currently it is not supported for Apple Silicon chip (M1).
     """
     # noinspection PyUnresolvedReferences
-    from keras.models import Sequential, Model
-    from keras.layers import Dense, BatchNormalization, LeakyReLU
-
     input_lengths = cipher.inputs_bit_size
+    if rounds_to_train:
+        assert all([r < cipher.number_of_rounds for r in rounds_to_train]), "Rounds to train don't match the number of rounds of the cipher"
+
     for k in ds:
         for i in range(len(ds[k][1])):
-            m = Sequential()
-            m.add(BatchNormalization())
-            dense = Dense(input_lengths[index] + ds[k][0], input_shape=(input_lengths[index] + ds[k][0],)) if blackbox \
-                else Dense(2 * ds[k][0], input_shape=(2 * ds[k][0],))
-            m.add(dense)
-            m.add(BatchNormalization())
-            m.add(LeakyReLU())
-            for dim in hidden_layers:
-                m.add(Dense(dim))
-                m.add(BatchNormalization())
-                m.add(LeakyReLU())
-            m.add(Dense(1, activation='sigmoid'))
+            if rounds_to_train and cipher.get_round_from_component_id(component_output_ids[k][i]) not in rounds_to_train:
+                continue
+            m = make_resnet(input_lengths[index] + ds[k][0] if blackbox else 2 * ds[k][0])
             m.compile(loss='binary_crossentropy', optimizer="adam", metrics=['binary_accuracy'])
             history = m.fit(np.array(ds[k][1][i]), labels, validation_split=0.1, shuffle=1, verbose=0) if blackbox \
                 else m.fit(np.array(ds[k][1][i]), labels, epochs=number_of_epochs,
@@ -119,6 +110,31 @@ def update_blackbox_distinguisher_tests_ds(base_inputs, base_output, cipher, ds,
                         dtype=np.float32))
 
 
+def update_blackbox_distinguisher_vectorized_tests_ds(base_inputs, base_output, cipher, ds, index, labels, nb_samples):
+    input_lengths = cipher.inputs_bit_size
+    random_labels_size = nb_samples - np.count_nonzero(np.array(labels))
+    #cipher_output = base_output
+
+    base_inputs_np = [np.broadcast_to(
+        np.array([b for b in x.to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
+        (nb_samples, input_lengths[i] // 8)
+    ).transpose().copy() for i,x in enumerate(base_inputs)]
+    random_inputs_for_index = np.frombuffer(os.urandom(nb_samples * input_lengths[index] // 8), dtype=np.uint8).reshape(nb_samples, input_lengths[index] // 8).transpose()
+    base_inputs_np[index] = random_inputs_for_index
+    base_input_index_unpacked = np.unpackbits(base_inputs_np[index].transpose(), axis=1)
+
+    cipher_output = evaluator.evaluate_vectorized(cipher, base_inputs_np, intermediate_outputs=True)
+
+    for k in cipher_output:
+        for j in range(len(cipher_output[k])):
+            output_size = len(cipher_output[k][j][0])
+            cipher_output[k][j][labels==0] = np.frombuffer(os.urandom(random_labels_size * output_size), dtype=np.uint8).reshape(random_labels_size, output_size)
+            cipher_output_unpacked = np.unpackbits(cipher_output[k][j], axis=1)
+
+            full_output = np.append(base_input_index_unpacked, cipher_output_unpacked, axis=1)
+            ds[k][1][j].extend(list(full_output))
+
+
 def update_component_output_ids(cipher, component_output_ids):
     for k in component_output_ids:
         for component in cipher.get_all_components():
@@ -150,7 +166,7 @@ def create_structure(base_output, cipher, index):
 
 
 def neural_network_differential_distinguisher_tests(cipher, nb_samples=10000, hidden_layers=[32, 32, 32],
-                                                    number_of_epochs=10, diff=[0x01]):
+                                                    number_of_epochs=10, diff=[0x01], rounds_to_train=[]):
     """
     .. WARNING::
 
@@ -176,9 +192,9 @@ def neural_network_differential_distinguisher_tests(cipher, nb_samples=10000, hi
         for d in diff:
             partial_result, ds, component_output_ids = create_structure(base_output, cipher, index)
             update_component_output_ids(cipher, component_output_ids)
-            update_distinguisher_tests_ds(base_inputs, cipher, d, ds, index, labels, nb_samples)
+            update_distinguisher_vectorized_tests_ds(base_inputs, cipher, d, ds, index, labels, nb_samples)
             update_partial_result(cipher, component_output_ids, ds, index, hidden_layers, labels,
-                                  number_of_epochs, partial_result, False)
+                                  number_of_epochs, partial_result, blackbox=False, rounds_to_train=rounds_to_train)
 
             results["neural_network_differential_distinguisher_tests"]["test_results"][it][d] = {}
             results["neural_network_differential_distinguisher_tests"]["test_results"][it][d].update(partial_result)
@@ -206,6 +222,35 @@ def update_distinguisher_tests_ds(base_inputs, cipher, d, ds, index, labels, nb_
                         .append(np.array(list(map(int, list(bin(cipher_output[k][j])[2:].rjust(ds[k][0], '0')))) +
                                          list(map(int, list(bin(secrets.randbits(ds[k][0]))[2:].rjust(ds[k][0], '0')))),
                                          dtype=np.float32))
+                    
+
+def update_distinguisher_vectorized_tests_ds(base_inputs, cipher, d, ds, index, labels, nb_samples):
+    input_lengths = cipher.inputs_bit_size
+    random_labels_size = nb_samples - np.count_nonzero(np.array(labels))
+
+    base_inputs_np = [np.broadcast_to(
+        np.array([b for b in x.to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
+        (nb_samples, input_lengths[i] // 8)
+    ).transpose().copy() for i,x in enumerate(base_inputs)]
+    random_inputs_for_index = np.frombuffer(os.urandom(nb_samples * input_lengths[index] // 8), dtype=np.uint8).reshape(nb_samples, input_lengths[index] // 8).transpose()
+    base_inputs_np[index] = random_inputs_for_index
+
+    other_inputs_np = list(base_inputs_np)
+    d_array = np.array([b for b in d.to_bytes(input_lengths[index] // 8, byteorder='big')])
+    other_inputs_np[index] = other_inputs_np[index] ^ np.broadcast_to(d_array, (nb_samples, input_lengths[index] // 8)).transpose()
+
+    cipher_output = evaluator.evaluate_vectorized(cipher, base_inputs_np, intermediate_outputs=True)
+    other_output = evaluator.evaluate_vectorized(cipher, other_inputs_np, intermediate_outputs=True)
+
+    for k in cipher_output:
+        for j in range(len(cipher_output[k])):
+            output_size = len(cipher_output[k][j][0])
+            other_output[k][j][labels==0] = np.frombuffer(os.urandom(random_labels_size * output_size), dtype=np.uint8).reshape(random_labels_size, output_size)
+            cipher_output_unpacked = np.unpackbits(cipher_output[k][j], axis=1)
+            other_output_unpacked = np.unpackbits(other_output[k][j], axis=1)
+
+            full_output = np.append(cipher_output_unpacked, other_output_unpacked, axis=1)
+            ds[k][1][j].extend(list(full_output))
 
 
 def integer_to_np(val, number_of_bits):
