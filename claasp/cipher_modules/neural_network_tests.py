@@ -236,7 +236,7 @@ def get_differential_dataset(cipher, input_differences, number_of_rounds, sample
 def get_neural_network(network_name, input_size, word_size = None):
     from tensorflow.keras.optimizers import Adam
     if network_name == 'gohr_resnet':
-        neural_network = make_resnet(word_size = int(word_size), input_size = input_size)
+        neural_network = make_resnet(word_size = word_size, input_size = input_size)
     elif network_name == 'dbitnet':
         neural_network = make_dbitnet(input_size = input_size)
     neural_network.compile(optimizer=Adam(amsgrad=True), loss='mse', metrics=['acc'])
