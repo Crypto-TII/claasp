@@ -138,7 +138,7 @@ class SpongentPiFSRPermutation(Cipher):
     def icounter_update(self, icounter):
         # x0||x1||x2||x3||x4||x5||x6 -> x1||x2||x3||x4||x5||x6||x0 xor x1
         # fsr_polynomial = x0+x1+1 = x^7+x^6+1
-        self.add_FSR_component(icounter.id, icounter.input_bit_positions, ICOUNTER_SIZE, [[[0], [1]], 1])
+        self.add_FSR_component(icounter.id, icounter.input_bit_positions, ICOUNTER_SIZE, [[[ICOUNTER_SIZE, [[0], [1]], []]], 1, 1])
         icounter = ComponentState([self.get_current_component_id()], [list(range(ICOUNTER_SIZE))])
 
         return icounter

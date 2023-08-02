@@ -98,7 +98,7 @@ class TinyJambuFSRWordBasedPermutation(Cipher):
         # = (s0 xor x47 xor s70*s85 xor s91) xor kr xor 1
         # = fsr xor kr xor 1
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[1], state[2], state[3]])
-        self.add_FSR_component(inputs_id, inputs_pos, STATE_SIZE, [FSR_POLYNOMIAL, FSR_LOOPS])
+        self.add_FSR_component(inputs_id, inputs_pos, STATE_SIZE, [[[STATE_SIZE, FSR_POLYNOMIAL, []]], 1, FSR_LOOPS])
         fsr_output = ComponentState([self.get_current_component_id()], [list(range(3*WORD_SIZE, 4*WORD_SIZE))])
 
         inputs_id, inputs_pos = get_inputs_parameter([fsr_output, key[r % len(key)], not_constant])
