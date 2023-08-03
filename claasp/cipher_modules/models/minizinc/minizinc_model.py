@@ -55,6 +55,7 @@ class MinizincModel:
             self.false_value = "0"
 
         self.probability_vars = []
+        self.carries_vars = []
         self.mzn_comments = []
         self.intermediate_constraints_array = []
         self.mzn_output_directives = []
