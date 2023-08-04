@@ -979,24 +979,26 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     R = BooleanPolynomialRing(len(input), 'x')
 
     number_of_registers = len(registers_info)
-    registers_polynomial = []
-    registers_start = []
-    registers_update_bit = []
-    clock_polynomials = []
+    registers_polynomial = [0 for _ in range(number_of_registers)]
+    registers_start = [0 for _ in range(number_of_registers)]
+    registers_update_bit = [0 for _ in range(number_of_registers)]
+    clock_polynomials = [0 for _ in range(number_of_registers)]
     end = 0
-    for info in registers_info:
-        registers_start.append(end)
-        end += info[0]
-        registers_update_bit.append(end-1)
-        registers_polynomial.append(get_polynomail(info[1], R))
-        clock_polynomials.append(get_polynomail(info[2], R))
+    for i in range(number_of_registers):
+        registers_start[i] = end
+        end += registers_info[i][0]
+        registers_update_bit[i] = end-1
+        registers_polynomial[i] = get_polynomail(registers_info[i][1], R)
+        clock_polynomials[i] = get_polynomail(registers_info[i][2], R)
 
     for r in range(number_of_clocks):
-        do_clocks = []
-        output_bits = []
+        do_clocks = [0 for _ in range(number_of_registers)]
+        output_bits = [0 for _ in range(number_of_registers)]
         for j in range(number_of_registers):
-            do_clocks.append(int(clock_polynomials[j](*output)))
-            output_bits.append(int(registers_polynomial[j](*output)))
+            do_clock = int(clock_polynomials[j](*output))
+            if do_clock > 0:
+                output_bits[j] = int(registers_polynomial[j](*output))
+                do_clocks[j] = do_clock
 
         for j in range(number_of_registers):
             if do_clocks[j] > 0:
@@ -1034,13 +1036,15 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
     def bits_to_word(input, bits_inside_word, word_gf):
         y = word_gf.gen()
         monomials = [pow(y, i) for i in range(bits_inside_word-1, -1, -1)]
-        word_array = []
+        word_array = [0 for _ in range(len(input)/bits_inside_word)]
 
         for i in input:
             c = 0
-            for j in range(monomials):
-                c += input * monomials[j]
-            word_array.append(c)
+            k = 0
+            for j in range(len(monomials)):
+                c += i * monomials[j]
+            word_array[k] = c
+            k += 1
         return word_array
 
     def word_to_bits(word_array, bits_inside_word):
@@ -1066,35 +1070,36 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
     R = PolynomialRing(word_gf, len(word_array), 'x')
 
     number_of_registers = len(registers_info)
-    registers_polynomial = []
-    registers_start = []
-    registers_update_bit = []
-    clock_polynomials = []
+    registers_polynomial = [0 for _ in range(number_of_registers)]
+    registers_start = [0 for _ in range(number_of_registers)]
+    registers_update_bit = [0 for _ in range(number_of_registers)]
+    clock_polynomials = [0 for _ in range(number_of_registers)]
     end = 0
-    for info in registers_info:
-        registers_start.append(end)
-        end += info[0]
-        registers_update_bit.append(end-1)
-        registers_polynomial.append(get_polynomail(info[1], R))
-        clock_polynomials.append(get_polynomail(info[2], R))
-
+    for i in range(number_of_registers):
+        registers_start[i] = end
+        end += registers_info[i][0]
+        registers_update_bit[i] = end-1
+        registers_polynomial[i] = get_polynomail(registers_info[i][1], R)
+        clock_polynomials[i] = get_polynomail(registers_info[i][2], R)
 
     for r in range(number_of_clocks):
-        do_clocks = []
-        output_bits = []
+        do_clocks = [0 for _ in range(number_of_registers)]
+        output_words = [0 for _ in range(number_of_registers)]
         for j in range(number_of_registers):
-            do_clocks.append(int(clock_polynomials[j](*word_array)))
-            output_bits.append(int(registers_polynomial[j](*word_array)))
+            do_clock = int(clock_polynomials[j](*word_array))
+            if do_clock > 0:
+                output_words[j] = int(registers_polynomial[j](*word_array))
+                do_clocks[j] = do_clock
 
         registers = []
         for j in range(number_of_registers):
             reg = word_array[registers_start[j]:registers_update_bit[j]+1]
             if do_clocks[j] > 0:
-                reg = reg[1:] + output_bits[j]
+                reg = reg[1:] + output_words[j]
             registers.append(reg)
         word_array = registers
 
-    output = word_to_bits(word_array, bits_inside_word, word_gf)
+    output = word_to_bits(word_array, bits_inside_word)
 
     if verbosity:
         print("FSR:")
