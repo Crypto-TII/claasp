@@ -235,10 +235,10 @@ def test_neural_staged_training():
     input_differences = [0x400000, 0]
     data_generator = lambda nr, samples: get_differential_dataset(cipher, input_differences, number_of_rounds = nr, samples = samples)
     neural_network = get_neural_network('gohr_resnet', input_size = 64, word_size = 16)
-    results_gohr = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5)
+    results_gohr = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
     assert results_gohr[5] >= 0
     neural_network = get_neural_network('dbitnet', input_size = 64)
-    results_dbitnet = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5)
+    results_dbitnet = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
     assert results_dbitnet[5] >= 0
 
 
