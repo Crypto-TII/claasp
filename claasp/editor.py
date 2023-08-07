@@ -419,9 +419,25 @@ def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit
     if cipher.current_round_number is None:
         print(cipher_round_not_found_error)
         return None
+    
+    constant_value = 0
+    if 'constant' in input_id_links[0]:
+        for component in cipher.get_all_components():
+            if component.id == input_id_links[0]:
+                constant_value = [*bin(int(component.description[0][2:],16))[2:]]
+                curr_l = len(constant_value)
+                if curr_l < output_bit_size:
+                    constant_value = ['0' for i in range(output_bit_size-curr_l)] + constant_value
+    elif 'constant' in input_id_links[1]:
+        for component in cipher.get_all_components():
+            if component.id == input_id_links[1]:
+                constant_value = [*bin(int(component.description[0][2:],16))[2:]]
+                curr_l = len(constant_value)
+                if curr_l < output_bit_size:
+                    constant_value = ['0' for i in range(output_bit_size-curr_l)] + constant_value
 
     new_component = MODADD(cipher.current_round_number, cipher.current_round_number_of_components,
-                           input_id_links, input_bit_positions, output_bit_size)
+                           input_id_links, input_bit_positions, output_bit_size, constant_value)
     add_component(cipher, new_component)
     return new_component
 
@@ -465,8 +481,18 @@ def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit
         print(cipher_round_not_found_error)
         return None
 
+    constant_value = 0
+    if 'constant' in input_id_links[0]:
+        for component in cipher.get_all_components():
+            if component.id == input_id_links[0]:
+                constant_value = component.description
+    elif 'constant' in input_id_links[1]:
+        for component in cipher.get_all_components():
+            if component.id == input_id_links[1]:
+                constant_value = component.description
+
     new_component = MODSUB(cipher.current_round_number, cipher.current_round_number_of_components,
-                           input_id_links, input_bit_positions, output_bit_size)
+                           input_id_links, input_bit_positions, output_bit_size, constant_value)
     add_component(cipher, new_component)
     return new_component
 
