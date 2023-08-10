@@ -16,7 +16,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from copy import deepcopy
 
 from claasp.cipher import Cipher
@@ -24,18 +23,32 @@ from claasp.DTOs.component_state import ComponentState
 from claasp.utils.utils import get_inputs_parameter
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
-REGISTER_1_SIZE = 19
-FSR_POLYNOMIAL_1 = [[0], [1], [2], [5]]
-CLOCK_BIT = 10
+BIT_LENGTH = "BIT_LENGTH"
+TAPPED_BITS = "TAPPED_BITS"
+CLOCK_BIT = "CLOCK_BIT"
+REGISTERS = [
+    {BIT_LENGTH: 19,
+     TAPPED_BITS: [[0], [1], [2], [5]],
+     CLOCK_BIT: 10 },
+    {BIT_LENGTH: 22,
+     TAPPED_BITS: [[0], [1]],
+     CLOCK_BIT: 11},
+    {BIT_LENGTH: 23,
+     TAPPED_BITS: [[0], [1], [2], [15]],
+     CLOCK_BIT: 12},
+]
 
-REGISTER_1_SIZE = 22
-FSR_POLYNOMIAL_1 = [[0], [1]]
-CLOCK_BIT = 11
-
-REGISTER_1_SIZE = 23
-FSR_POLYNOMIAL_1 = [[0], [1], [2], [15]]
-CLOCK_BIT = 12
-
+REGISTERS = [
+{BIT_LENGTH: 19,
+TAPPED_BITS: [[0], [1], [2], [5]],
+CLOCK_BIT: 10 },
+{BIT_LENGTH: 22,
+TAPPED_BITS: [[0], [1]],
+CLOCK_BIT: 11},
+{BIT_LENGTH: 23,
+TAPPED_BITS: [[0], [1], [2], [15]],
+CLOCK_BIT: 12},
+]
 
 #PARAMETERS_CONFIGURATION_LIST = [{'key_bit_size': 128, 'number_of_rounds': 640}]
 
@@ -62,18 +75,39 @@ class A51StreamCipher(Cipher):
         'constant_0_0'
     """
 
-    def __init__(self, key_bit_size=64, number_of_rounds=640):
-        number_of_words_in_round = int(number_of_rounds / WORD_SIZE)
-        super().__init__(family_name="tinyjambu_fsr_word_based",
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[STATE_SIZE, key_bit_size],
-                         cipher_output_bit_size=STATE_SIZE)
+    def __init__(self, input_bit_size=128, key_bit_size=64):
 
-        # state initialization
-        state = []
-        for i in range(int(STATE_SIZE / WORD_SIZE)):
-            state.append(ComponentState([INPUT_PLAINTEXT], [[i * 32 + j for j in range(WORD_SIZE)]]))
+        super().__init__(family_name="a51",
+                         cipher_type="stream_cipher",
+                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+                         cipher_inputs_bit_size=[input_bit_size, key_bit_size],
+                         cipher_output_bit_size=input_bit_size)
+
+        # registers initialization
+        self.add_round()
+        constant_0 = []
+        regs_size = 0
+        for i in range(len(REGISTERS)):
+            self.add_constant_component(REGISTERS[i][BIT_LENGTH]-1, 0)
+            constant_0[i] = ComponentState([self.get_current_component_id()], [[i for i in range(REGISTERS[i][BIT_LENGTH]-1)]])
+            regs_size += REGISTERS[i][BIT_LENGTH]
+
+        self.add_constant_component(regs_size, 0)
+        regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+
+        fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS], []] for i in range(len(REGISTERS))], 1, 1]
+        for i in range(key_bit_size):
+            inputs = [regs]
+            for j in range(len(REGISTERS)):
+                inputs.append(constant_0[j])
+                inputs.append(ComponentState([INPUT_KEY], [[j]]))
+            inputs_id, inputs_pos = get_inputs_parameter(inputs)
+            self.add_XOR_component(inputs_id, inputs_pos, regs_size)
+            regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+
+            self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+            regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+
 
         # key initialization
         key = []
