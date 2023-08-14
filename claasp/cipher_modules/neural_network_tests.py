@@ -253,7 +253,7 @@ def train_neural_distinguisher(cipher, data_generator, starting_round, neural_ne
     acc = 1
     bs = 5000
     x, y = data_generator(samples = training_samples, nr = starting_round)
-    x_eval, y_eval = data_generator(samples = training_samples, nr = starting_round)
+    x_eval, y_eval = data_generator(samples = testing_samples, nr = starting_round)
     h = neural_network.fit(x, y, epochs=num_epochs, batch_size=bs, validation_data=(x_eval, y_eval))
     acc = np.max(h.history["val_acc"])
     print(f'Validation accuracy at {starting_round} rounds :{acc}')
@@ -261,7 +261,7 @@ def train_neural_distinguisher(cipher, data_generator, starting_round, neural_ne
 
 
 def neural_staged_training(cipher, data_generator, starting_round, neural_network=None, training_samples=10 ** 7,
-                           testing_samples=10 ** 6, num_epochs=1, word_size = 16, number_of_ciphertexts = 2):
+                           testing_samples=10 ** 6, num_epochs=1):
     acc = 1
     nr = starting_round
     # threshold at 10 sigma
