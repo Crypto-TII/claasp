@@ -88,6 +88,7 @@ import uuid
 
 from sage.sat.solvers.satsolver import SAT
 
+from claasp.editor import remove_permutations, remove_rotations
 from claasp.cipher_modules.models.sat.utils import constants, utils
 from claasp.cipher_modules.models.utils import set_component_value_weight_sign, convert_solver_solution_to_dictionary
 from claasp.name_mappings import (SBOX, CIPHER, XOR_LINEAR)
@@ -111,11 +112,10 @@ class SatModel:
           rotations and permutations)
         """
         # remove rotations and permutations (if any)
-        internal_graph = copy.deepcopy(cipher)
+        internal_cipher = copy.deepcopy(cipher)
         if compact:
-            new_rounds = utils.remove_rotations(internal_graph.rounds_as_list)
-            new_rounds = utils.remove_permutations(new_rounds)
-            internal_graph['cipher_rounds'] = new_rounds
+            internal_cipher = remove_permutations(internal_cipher)
+            internal_cipher = remove_rotations(internal_cipher)
 
         # set the counter to fix the weight
         if counter == 'sequential':
@@ -123,7 +123,7 @@ class SatModel:
         else:
             self._counter = self._parallel_counter
 
-        self._cipher = internal_graph
+        self._cipher = internal_cipher
         self._variables_list = []
         self._model_constraints = []
         self._sboxes_ddt_templates = {}
