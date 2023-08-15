@@ -1028,7 +1028,7 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
        register_bit_length is an interger to indicates the length of register. register_polynomial and clock_polynomial
        are lists of monomials, which is presented in the integer list. For example [[0], [1], [2, 3]] represents
        x0+x1+x2*x3. [] represents 1.
-    - ``number_of_clocks`` -- **integer**; indicates how many bits in a word this fsr component would operate.
+    - ``bits_inside_word`` -- **integer**; indicates how many bits in a word this fsr component would operate.
     - ``number_of_clocks`` -- **integer**; indicates how many loops this fsr component would operate.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
     """

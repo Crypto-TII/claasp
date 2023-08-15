@@ -21,14 +21,17 @@ from copy import deepcopy
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
 from claasp.utils.utils import get_inputs_parameter
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import INPUT_MESSAGE, INPUT_KEY, INPUT_FRAME
 
 BIT_LENGTH = "BIT_LENGTH"
 TAPPED_BITS = "TAPPED_BITS"
 CLOCK_BIT = "CLOCK_BIT"
+CLOCK_POLYNOMIAL = "CLOCK_POLYNOMIAL"
+
 REGISTERS = [
     {BIT_LENGTH: 19,
      TAPPED_BITS: [[0], [1], [2], [5]],
+     CLOCK_POLYNOMIAL: [],
      CLOCK_BIT: 10 },
     {BIT_LENGTH: 22,
      TAPPED_BITS: [[0], [1]],
@@ -38,17 +41,6 @@ REGISTERS = [
      CLOCK_BIT: 12},
 ]
 
-REGISTERS = [
-{BIT_LENGTH: 19,
-TAPPED_BITS: [[0], [1], [2], [5]],
-CLOCK_BIT: 10 },
-{BIT_LENGTH: 22,
-TAPPED_BITS: [[0], [1]],
-CLOCK_BIT: 11},
-{BIT_LENGTH: 23,
-TAPPED_BITS: [[0], [1], [2], [15]],
-CLOCK_BIT: 12},
-]
 
 #PARAMETERS_CONFIGURATION_LIST = [{'key_bit_size': 128, 'number_of_rounds': 640}]
 
@@ -75,27 +67,59 @@ class A51StreamCipher(Cipher):
         'constant_0_0'
     """
 
-    def __init__(self, input_bit_size=128, key_bit_size=64):
+    def __init__(self, input_bit_size=128, key_bit_size=64, frame_bit_size=22):
 
         super().__init__(family_name="a51",
                          cipher_type="stream_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[input_bit_size, key_bit_size],
+                         cipher_inputs=[INPUT_MESSAGE, INPUT_KEY, INPUT_FRAME],
+                         cipher_inputs_bit_size=[input_bit_size, key_bit_size, frame_bit_size],
                          cipher_output_bit_size=input_bit_size)
 
         # registers initialization
+        regs_size = 0
+        regs_output_bit = []
+        for i in REGISTERS:
+            regs_size += REGISTERS[i][BIT_LENGTH]
+            regs_output_bit.append(regs_size-1)
+
+        regs = self.regs_initialization(key_bit_size=key_bit_size, frame_bit_size=frame_bit_size,
+                                        regs_size=regs_size)
+
+        # message encryption
+        regs_xor_output = [[] for _ in REGISTERS]
+        fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS],
+                             REGISTERS[i][CLOCK_POLYNOMIAL]] for i in range(len(REGISTERS))], 1, 1]
+        for r in range(input_bit_size):
+            regs = self.round_function(regs=regs, regs_size=regs_size, fsr_description=fsr_description)
+            for i in range(len(REGISTERS)):
+                regs_xor_output[i].append(ComponentState([regs.id], [[regs_output_bit[i]]]))
+
+
+
+            # round output
+            # inputs = []
+            # for i in range(len(state)):
+            #     inputs.append(state[i])
+            # inputs_id, inputs_pos = get_inputs_parameter(inputs)
+            # if round_number == number_of_words_in_round - 1:
+            #     self.add_cipher_output_component(inputs_id, inputs_pos, STATE_SIZE)
+            # else:
+            #     self.add_round_output_component(inputs_id, inputs_pos, STATE_SIZE)
+
+    def regs_initialization(self, key_bit_size, frame_bit_size, regs_size):
+        # registers initialization
         self.add_round()
         constant_0 = []
-        regs_size = 0
         for i in range(len(REGISTERS)):
-            self.add_constant_component(REGISTERS[i][BIT_LENGTH]-1, 0)
-            constant_0[i] = ComponentState([self.get_current_component_id()], [[i for i in range(REGISTERS[i][BIT_LENGTH]-1)]])
-            regs_size += REGISTERS[i][BIT_LENGTH]
+            self.add_constant_component(REGISTERS[i][BIT_LENGTH] - 1, 0)
+            constant_0[i] = ComponentState([self.get_current_component_id()],
+                                           [[i for i in range(REGISTERS[i][BIT_LENGTH] - 1)]])
 
         self.add_constant_component(regs_size, 0)
         regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
 
-        fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS], []] for i in range(len(REGISTERS))], 1, 1]
+        fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS], []] for i in range(len(REGISTERS))],
+                           1, 1]
         for i in range(key_bit_size):
             inputs = [regs]
             for j in range(len(REGISTERS)):
@@ -108,48 +132,27 @@ class A51StreamCipher(Cipher):
             self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
             regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
 
-
-        # key initialization
-        key = []
-        for i in range(int(key_bit_size / WORD_SIZE)):
-            key.append(ComponentState([INPUT_KEY], [[i * 32 + j for j in range(WORD_SIZE)]]))
-
-        for round_number in range(number_of_words_in_round):
-            # round function
-            # initial current round element
-            self.add_round()
-
-            self.add_constant_component(WORD_SIZE, 0xFFFFFFFF)
-            not_constant = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-
-            # round function
-            state = self.round_function(state, key, not_constant, round_number)
-
-            # round output
-            inputs = []
-            for i in range(len(state)):
-                inputs.append(state[i])
+        for i in range(frame_bit_size):
+            inputs = [regs]
+            for j in range(len(REGISTERS)):
+                inputs.append(constant_0[j])
+                inputs.append(ComponentState([INPUT_FRAME], [[j]]))
             inputs_id, inputs_pos = get_inputs_parameter(inputs)
-            if round_number == number_of_words_in_round - 1:
-                self.add_cipher_output_component(inputs_id, inputs_pos, STATE_SIZE)
-            else:
-                self.add_round_output_component(inputs_id, inputs_pos, STATE_SIZE)
+            self.add_XOR_component(inputs_id, inputs_pos, regs_size)
+            regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
 
-    def round_function(self, state, key, not_constant, r):
-        # feedback = s0 xor s47 xor (∼ (s70 and s85)) xor s91 xor kr
-        # polynomial = s0 xor x47 xor (s70*s85 xor 1) xor s91 xor kr
-        # = (s0 xor x47 xor s70*s85 xor s91) xor kr xor 1
-        # = fsr xor kr xor 1
-        inputs_id, inputs_pos = get_inputs_parameter([state[0], state[1], state[2], state[3]])
-        self.add_FSR_component(inputs_id, inputs_pos, STATE_SIZE, [FSR_POLYNOMIAL, FSR_LOOPS])
-        fsr_output = ComponentState([self.get_current_component_id()], [list(range(3*WORD_SIZE, 4*WORD_SIZE))])
+            self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+            regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
 
-        inputs_id, inputs_pos = get_inputs_parameter([fsr_output, key[r % len(key)], not_constant])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
-        round_output = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+        fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS],
+                             REGISTERS[i][CLOCK_POLYNOMIAL]] for i in range(len(REGISTERS))], 1, 100]
+        self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+        regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
 
-        for i in range(len(state) - 1):
-            state[i] = deepcopy(state[i + 1])
-        state[-1] = deepcopy(round_output)
+        return regs
 
-        return state
+    def round_function(self, regs, regs_size, fsr_description):
+        self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+        regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+
+        return regs
