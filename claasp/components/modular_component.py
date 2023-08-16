@@ -465,9 +465,9 @@ class Modular(Component):
             mzn_output_array = self._create_minizinc_1d_array_from_list(output_varstrs_temp)
             dummy_declaration = f'var {model.data_type}: dummy_{component_id}_{i};\n'
             mzn_probability_var = f'p_{component_id}_{i}'
+            model.probability_vars.append(mzn_probability_var)
             pr_declaration = (f'array [0..{noutput_bits}-2] of var {model.data_type}:'
                               f'{mzn_probability_var};\n')
-            model.probability_vars.append(mzn_probability_var)
             model.probability_modadd_vars_per_round[round_number - 1].append(mzn_probability_var)
             mzn_block_variables = ""
             dummy_id = ""
@@ -493,9 +493,21 @@ class Modular(Component):
                                          f' -1'
                                          f')={model.true_value};\n')
 
+            mzn_carry_var = f'carry_{component_id}_{i}'
+            modadd_carries_definition = (f'array [0..{noutput_bits}-1] of var {model.data_type}:'
+                                         f'{mzn_carry_var};\n')
+            mzn_block_variables += modadd_carries_definition
+            model.carries_vars.append(mzn_carry_var)
+            mzn_block_constraints_carries = (f'constraint {mzn_carry_var} = '
+                                             f'XOR3('
+                                             f'{mzn_input_array_1},{mzn_input_array_2},'
+                                             f'{mzn_output_array});\n')
+            mzn_block_constraints += mzn_block_constraints_carries
+
             model.mzn_carries_output_directives.append(f'output ["carries {component_id}:"++show(XOR3('
                                                        f'{mzn_input_array_1},{mzn_input_array_2},'
                                                        f'{mzn_output_array}))++"\\n"];')
+
 
             return mzn_block_variables, mzn_block_constraints
 
