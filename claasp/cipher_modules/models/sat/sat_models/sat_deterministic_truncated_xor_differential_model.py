@@ -22,9 +22,9 @@ from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, 
 
 
 class SatDeterministicTruncatedXorDifferentialModel(SatModel):
-    def __init__(self, cipher, window_size=-1, window_size_weight_pr_vars=-1,
+    def __init__(self, cipher, window_size_weight_pr_vars=-1,
                  counter='sequential', compact=False):
-        super().__init__(cipher, window_size, window_size_weight_pr_vars, counter, compact)
+        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
     def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[]):
         """
