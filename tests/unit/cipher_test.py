@@ -21,8 +21,8 @@ from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
 from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
-from claasp.cipher_modules.neural_network_tests import neural_staged_training
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset
+from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
 
 
 EVALUATION_PY = 'evaluation.py'
@@ -231,11 +231,15 @@ def test_find_good_input_difference_for_neural_distinguisher():
 
 
 def test_neural_staged_training():
-    diff_value_plain_key = [0x400000, 0]
     cipher = SpeckBlockCipher()
-    results = neural_staged_training(cipher, diff_value_plain_key, word_size = 16, starting_round=5,
-                                     training_samples=10**4, testing_samples=10**4)
-    assert results[5] >= 0
+    input_differences = [0x400000, 0]
+    data_generator = lambda nr, samples: get_differential_dataset(cipher, input_differences, number_of_rounds = nr, samples = samples)
+    neural_network = get_neural_network('gohr_resnet', input_size = 64, word_size = 16)
+    results_gohr = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
+    assert results_gohr[5] >= 0
+    neural_network = get_neural_network('dbitnet', input_size = 64)
+    results_dbitnet = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
+    assert results_dbitnet[5] >= 0
 
 
 def test_get_differential_dataset():
