@@ -150,7 +150,8 @@ class CpXorDifferentialModel(CpModel):
                     WORD_OPERATION == component.type and operation not in operation_types):
                 print(f'{component.id} not yet implemented')
             else:
-                variables, constraints = component.cp_xor_differential_propagation_constraints(self)
+                result = component.cp_xor_differential_propagation_constraints(self)
+                variables, constraints = result
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
@@ -499,8 +500,9 @@ class CpXorDifferentialModel(CpModel):
                                                               valid_probabilities)
                     elif 'MODADD' in component.description[0]:
                         prob_count += component.description[1] - 1
-                        output_size = component.output_bit_size
-                        valid_probabilities |= set(range(100 * output_size)[::100])
+                        #output_size = component.output_bit_size
+                        #valid_probabilities |= set(range(100 * output_size)[::100])
+                        valid_probabilities = 'int'
         cp_declarations_weight = 'int: weight = 0;'
         if prob_count > 0:
             self._probability = True

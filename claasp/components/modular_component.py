@@ -79,14 +79,14 @@ def generic_sign_linear_constraints(inputs, outputs):
 
 class Modular(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, operation):
+                 input_id_links, input_bit_positions, output_bit_size, operation, constant_value):
 
         component_id = f'{operation}_{current_round_number}_{current_round_number_of_components}'
         component_type = 'word_operation'
         input_len = 0
         for bits in input_bit_positions:
             input_len = input_len + len(bits)
-        description = [operation.upper(), int(input_len / output_bit_size)]
+        description = [operation.upper(), int(input_len / output_bit_size), constant_value]
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
@@ -243,6 +243,52 @@ class Modular(Component):
               'constraint pre_modadd_0_1_1[15] = plaintext[31];',
               'constraint forall(j in 0..15)(if eq_modadd_0_1[j] = 1 then (sum([pre_modadd_0_1_1[j], pre_modadd_0_1_0[j], modadd_0_1[j]]) mod 2) = Shi_pre_modadd_0_1_0[j] else true endif) /\\ p[0] = 1600-100 * sum(eq_modadd_0_1);'])
         """
+        if len(self.input_id_links)==2 and 'constant' in self.input_id_links[0]+self.input_id_links[1]:
+            return self.cp_xor_differential_propagation_constraints_constant_input(model)
+        else:
+            return self.cp_xor_differential_propagation_constraints_variable_inputs(model)
+        
+    def cp_xor_differential_propagation_constraints_constant_input(self, model):
+        const_ind=0
+        if 'constant' in self.input_id_links[1]:
+            const_ind=1
+        output_size = int(self.output_bit_size)
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        num_add = self.description[1]
+        constant_value = self.description[2]
+        all_inputs = []
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        input_len = len(all_inputs) // num_add
+        cp_declarations = []
+        cp_constraints = []
+        cp_declarations.append(f'array[0..{input_len - 1}] of var float: delta_{output_id_link};')
+        cp_declarations.append(f'array[0..{input_len - 1}] of var float: phi_{output_id_link};')
+        cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: {output_id_link};')
+        cp_declarations.append(f'array[0..{input_len - 1}] of var int: pre_{output_id_link};')
+        cp_declarations.append(f'array[0..{input_len - 1}] of var int: p_{output_id_link};')
+        cp_declarations.append(f'array[0..{input_len - 1}] of var int: a_{output_id_link};')
+        cp_declarations.append(f'array[0..{input_len - 1}] of var int: w_{output_id_link};')
+        for j in range(input_len):
+            cp_constraints.append(f'constraint pre_{output_id_link}[{j}] = ({all_inputs[(1 - const_ind) * input_len + j]} + {output_id_link}[{j}]) mod 2;')
+            cp_constraints.append(f'constraint a_{output_id_link}[{j}] = {constant_value[j]};')
+        probability = []
+        cp_constraints.append(f'constraint phi_{output_id_link}[0] = 1;')
+        cp_constraints.append(f'constraint delta_{output_id_link}[0] = 0;')
+        cp_constraints.append(f'constraint w_{output_id_link}[0]=0;')
+        for i in range(1, input_len):
+            cp_constraints.append(f'constraint table([{all_inputs[(1 - const_ind) * input_len + i]}, {output_id_link}[{i}], pre_{output_id_link}[{i-1}], delta_{output_id_link}[{i}], phi_{output_id_link}[{i}]], [0,0,0,(a_{output_id_link}[{i-1}]+delta_{output_id_link}[{i-1}])/2,1,0,1,0,a_{output_id_link}[{i-1}],1/2,1,0,0,a_{output_id_link}[{i-1}],1/2,1,1,0,a_{output_id_link}[{i-1}],1-(a_{output_id_link}[{i-1}]+delta_{output_id_link}[{i-1}]-2*a_{output_id_link}[{i-1}]*delta_{output_id_link}[{i-1}]),0,1,1,delta_{output_id_link}[{i-1}],1/2,1,0,1,delta_{output_id_link}[{i-1}],1/2,1,1,1,1/2,a_{output_id_link}[{i-1}]+delta_{output_id_link}[{i-1}]-2*a_{output_id_link}[{i-1}]*delta_{output_id_link}[{i-1}]]);')
+            cp_constraints.append(f'constraint w_{output_id_link}[{i}]=int(100*log2(phi_{output_id_link}[{i}]));')
+        cp_constraints.append(f'constraint p[{model.c}] = sum(w_{output_id_link});')
+        probability.append(model.c)
+        model.c+=1
+        model.component_and_probability[output_id_link] = probability
+        result = cp_declarations, cp_constraints
+        return result
+       
+    def cp_xor_differential_propagation_constraints_variable_inputs(self, model):
         output_size = int(self.output_bit_size)
         input_id_links = self.input_id_links
         output_id_link = self.id
