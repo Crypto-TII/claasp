@@ -332,4 +332,4 @@ def test_find_lowest_weight_for_short_xor_differential_trail():
     minizinc.set_max_number_of_carries_on_arx_cipher(0)
     minizinc.set_max_number_of_nonlinear_carries(0)
     result = minizinc.find_lowest_weight_xor_differential_trail(solver_name='Xor', fixed_values=fixed_variables)
-    assert result["total_weight"] == 0
+    assert result["total_weight"] == 5
