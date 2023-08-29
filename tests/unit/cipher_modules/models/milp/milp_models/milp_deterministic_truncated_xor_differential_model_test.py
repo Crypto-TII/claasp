@@ -1,5 +1,6 @@
 from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values, set_fixed_variables
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher, AESBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 
 from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import \
     MilpDeterministicTruncatedXorDifferentialModel
