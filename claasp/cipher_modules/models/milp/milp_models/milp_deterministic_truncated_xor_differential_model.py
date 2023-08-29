@@ -582,6 +582,7 @@ class MilpDeterministicTruncatedXorDifferentialModel(MilpModel):
             sage: M = MilpDeterministicTruncatedXorDifferentialModel(aes)
             sage: M.init_model_in_sage_milp_class()
             sage: trail = M.find_one_wordwise_deterministic_truncated_xor_differential_trail(get_single_key_scenario_format_for_fixed_values(aes))
+            ...
             sage: trail['status']
             'SATISFIABLE'
 
@@ -617,6 +618,7 @@ class MilpDeterministicTruncatedXorDifferentialModel(MilpModel):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
             sage: M = MilpDeterministicTruncatedXorDifferentialModel(speck)
             sage: trail = M.find_lowest_varied_patterns_deterministic_truncated_xor_differential_trail(get_single_key_scenario_format_for_fixed_values(speck))
+            ...
             sage: trail['total_weight']
             14.0
 
@@ -657,6 +659,9 @@ class MilpDeterministicTruncatedXorDifferentialModel(MilpModel):
             sage: M = MilpDeterministicTruncatedXorDifferentialModel(aes)
             sage: M.init_model_in_sage_milp_class()
             sage: trail = M.find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
+            ...
+            sage: trail['total_weight']
+            4.0
 
 
         """

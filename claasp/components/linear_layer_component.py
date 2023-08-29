@@ -590,7 +590,8 @@ class LinearLayer(Component):
             if number_of_1s == 1:
                 for index, value in enumerate(col):
                     if value:
-                        constraints.append(x[output_vars[i]] == x[input_vars[index]])
+                        for _ in range(len(output_vars[0])):
+                            constraints.append(x[output_vars[i][_]] == x[input_vars[index][_]])
                         break
 
         return variables, constraints

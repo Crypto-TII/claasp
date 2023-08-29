@@ -1,6 +1,7 @@
 from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values, set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 
 from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import \
     MilpDeterministicTruncatedXorDifferentialModel
@@ -74,5 +75,12 @@ def test_find_lowest_weight_deterministic_truncated_xor_differential_trail_model
     milp = MilpDeterministicTruncatedXorDifferentialModel(aes)
     trail = milp.find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(
         get_single_key_scenario_format_for_fixed_values(aes))
+    assert trail['status'] == 'SATISFIABLE'
+    assert trail['total_weight'] == 4.0
+
+    midori = MidoriBlockCipher(number_of_rounds=2)
+    milp = MilpDeterministicTruncatedXorDifferentialModel(midori)
+    trail = milp.find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(
+        get_single_key_scenario_format_for_fixed_values(midori))
     assert trail['status'] == 'SATISFIABLE'
     assert trail['total_weight'] == 4.0
