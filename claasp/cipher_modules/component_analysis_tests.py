@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from sage.crypto.sbox import SBox
 from sage.matrix.special import identity_matrix
 from sage.rings.quotient_ring import QuotientRing
@@ -282,6 +281,105 @@ def branch_number(component, type, format):
         return min(calculate_weights_for_mix_column(component, format, type))
 
 
+def is_mds(component):
+    """
+    A matrix is MDS if and only if all the minors (determinants of square submatrices) are non-zero
+
+    INPUT:
+
+    - ``component`` -- **Component object**; a component from the cipher
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import is_mds
+        sage: twofish = TwofishBlockCipher(number_of_rounds=2)
+        sage: mix_column_component = twofish.get_component_from_id('mix_column_0_19')
+        sage: is_mds(mix_column_component)
+        True
+
+        sage: from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import is_mds
+        sage: skinny = SkinnyBlockCipher(block_bit_size=128, key_bit_size=384, number_of_rounds=40)
+        sage: mix_column_component = skinny.get_component_from_id('mix_column_0_31')
+        sage: is_mds(mix_column_component)
+        False
+
+        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import is_mds
+        sage: aes = AESBlockCipher(number_of_rounds=3)
+        sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
+        sage: is_mds(mix_column_component)
+        True
+    """
+
+
+    description = component.description
+    int_mtr = description[0]
+
+
+    irr_int = int(description[1])
+    word_size = int(description[2])
+
+    G = PolynomialRing(GF(2 ** word_size), 'x')
+    x = G.gen()
+    irr_poly = int_to_poly(irr_int, word_size, x)
+    F = QuotientRing(G, G.ideal(irr_poly), 'a')
+    a = F.gen()
+    input_bit_size = component.input_bit_size
+    input_word_size = input_bit_size // word_size
+
+    output_bit_size = component.output_bit_size
+    output_word_size = output_bit_size // word_size
+    mtr = [[0 for _ in range(input_word_size)] for _ in range(output_word_size)]
+
+    for i in range(output_word_size):
+        for j in range(input_word_size):
+            mtr[i][j] = int_to_poly(int_mtr[i][j], word_size, a)
+    final_mtr = Matrix(F, mtr)
+
+    num_rows, num_cols = final_mtr.dimensions()
+    for size in range(1, min(num_rows, num_cols) + 1):
+        for i in range(num_rows - size + 1):
+            for j in range(num_cols - size + 1):
+                submatrix = final_mtr[i:i + size, j:j + size]
+                if submatrix.det() == 0:
+                    return False
+    return True
+
+def has_maximal_branch_number(component):
+    """
+    INPUT:
+
+    - ``component`` -- **Component object**; a component from the cipher
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
+        sage: twofish = TwofishBlockCipher(number_of_rounds=2)
+        sage: mix_column_component = twofish.get_component_from_id('mix_column_0_19')
+        sage: has_maximal_branch_number(mix_column_component)
+
+        sage: from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
+        sage: skinny = SkinnyBlockCipher(block_bit_size=128, key_bit_size=384, number_of_rounds=40)
+        sage: mix_column_component = skinny.get_component_from_id('mix_column_0_31')
+        sage: has_maximal_branch_number(mix_column_component)
+
+        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
+        sage: aes = AESBlockCipher(number_of_rounds=3)
+        sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
+        sage: has_maximal_branch_number(mix_column_component)
+    """
+    description = component.description
+    word_size = int(description[2])
+    output_word_size = component.output_bit_size // word_size
+
+    if component.type == "mix_column":
+        return branch_number(component, 'linear', 'word') == (output_word_size + 1)
+
 def calculate_weights_for_mix_column(component, format, type):
     if format == 'word':
         description = component.description
@@ -295,8 +393,10 @@ def calculate_weights_for_mix_column(component, format, type):
         a = F.gen()
         input_bit_size = component.input_bit_size
         input_word_size = input_bit_size // word_size
-        mtr = [[0 for _ in range(input_word_size)] for _ in range(input_word_size)]
-        for i in range(input_word_size):
+        output_bit_size = component.output_bit_size
+        output_word_size = output_bit_size // word_size
+        mtr = [[0 for _ in range(input_word_size)] for _ in range(output_word_size)]
+        for i in range(output_word_size):
             for j in range(input_word_size):
                 mtr[i][j] = int_to_poly(int_mtr[i][j], word_size, a)
         final_mtr = Matrix(F, mtr)
@@ -340,7 +440,7 @@ def calculate_weights_for_linear_layer(component, format, type):
 
 def int_to_poly(integer_value, word_size, variable):
     z = 0
-    for i in range(word_size):
+    for i in range(word_size + 1):
         if (integer_value >> i) & 1:
             z = z + pow(variable, i)
 

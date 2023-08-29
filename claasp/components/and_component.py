@@ -18,6 +18,7 @@
 
 
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
 
 
@@ -278,6 +279,67 @@ class AND(MultiInputNonlinearLogicalOperator):
         model.component_and_probability[output_id_link] = probability
         result = cp_declarations, cp_constraints
         return result
+
+    def milp_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for AND component
+        in the bitwise deterministic truncated XOR differential model.
+
+        INPUTS:
+
+        - ``component`` -- *dict*, the AND component in Graph Representation
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
+            sage: cipher = FancyBlockCipher(number_of_rounds=20)
+            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: and_component = cipher.component_from(0,8)
+            sage: variables, constraints = and_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[xor_0_7_0]', x_0),
+            ('x_class[xor_0_7_1]', x_1),
+            ...
+            ('x_class[and_0_8_10]', x_34),
+            ('x_class[and_0_8_11]', x_35)]
+            sage: constraints
+            [x_0 + x_12 <= 4 - 4*x_36,
+            1 - 4*x_36 <= x_0 + x_12,
+            ...
+            x_35 <= 2 + 2*x_47,
+            2 <= x_35 + 2*x_47]
+
+        """
+        x_class = model.trunc_binvar
+
+        input_vars, output_vars = self._get_input_output_variables()
+        output_bit_size = self.output_bit_size
+        component_id = self.id
+        model.non_linear_component_id.append(component_id)
+
+        number_of_inputs = self.description[1]
+        input_bit_size = int(self.input_bit_size / number_of_inputs)
+
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+        constraints = []
+
+        a = [[x_class[input_vars[i + chunk * input_bit_size]] for chunk in range(number_of_inputs)] for i in
+             range(input_bit_size)]
+        b = [x_class[output_vars[i]] for i in range(output_bit_size)]
+
+        upper_bound = model._model.get_max(x_class)
+
+        for i in range(output_bit_size):
+            input_sum = sum([a[i][chunk] for chunk in range(number_of_inputs)])
+            # if d_leq == 1 if sum(a_i) <= 0
+            d_leq, c_leq = milp_utils.milp_leq(model, input_sum, 0, number_of_inputs * upper_bound)
+            constraints += c_leq
+            # if all ai == 0, then b[i] = 0, else b[i] = 2
+            constraints += milp_utils.milp_if_then_else(d_leq, [b[i] == 0], [b[i] == 2], upper_bound)
+
+        return variables, constraints
 
     def generic_sign_linear_constraints(self, inputs, outputs):
         """
