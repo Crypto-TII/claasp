@@ -513,3 +513,7 @@ class MinizincXorDifferentialModel(MinizincModel):
                                           f'{modular_addition_concatenation}))++"\\n"];')
 
         return objective_string
+
+    def set_max_number_of_carries_on_arx_cipher(self, max_number_of_carries):
+        carries_vars = "++".join(self.carries_vars)
+        self._model_constraints.append(f'constraint sum({carries_vars}) = {max_number_of_carries};\n')
