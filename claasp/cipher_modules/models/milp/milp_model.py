@@ -324,8 +324,8 @@ class MilpModel:
             else:
                 x = self._binary_variable
                 p = self._integer_variable
-                probability_variables = mip.get_values(p)
-                objective_value = probability_variables["probability"] / 10.
+                objective_variables = mip.get_values(p)
+                objective_value = objective_variables["probability"] / 10.
                 components_variables = mip.get_values(x)
 
         except MIPSolverException as milp_exception:
@@ -389,13 +389,17 @@ class MilpModel:
 
     def get_component_value_weight(self, model_type, component_id, probability_variables, components_variables):
 
+        if "deterministic_truncated_xor_differential" in model_type:
+            wordsize = self._word_size
+        else:
+            wordsize=1
         if component_id in self._cipher.inputs:
-            output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)] // self._word_size
-            input_size = output_size // self._word_size
+            output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)] // wordsize
+            input_size = output_size // wordsize
         else:
             component = self._cipher.get_component_from_id(component_id)
-            input_size = component.input_bit_size // self._word_size
-            output_size = component.output_bit_size // self._word_size
+            input_size = component.input_bit_size // wordsize
+            output_size = component.output_bit_size // wordsize
         diff_str = {}
         if model_type != "xor_linear":
             suffix_dict = {"": output_size}
