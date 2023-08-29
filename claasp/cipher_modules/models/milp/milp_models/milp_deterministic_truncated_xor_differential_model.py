@@ -114,7 +114,7 @@ class MilpDeterministicTruncatedXorDifferentialModel(MilpModel):
                                                                                 input_ids + output_ids)
             for constraint in linking_constraints:
                 mip.add_constraint(constraint)
-            mip.add_constraint(p["varied_output_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in output_id_tuples]))
+            mip.add_constraint(p["probability"] == sum(x[output_msb] for output_msb in [id[0] for id in output_id_tuples]))
 
         else:
             self.build_wordwise_deterministic_truncated_xor_differential_trail_model(fixed_variables)
@@ -123,7 +123,7 @@ class MilpDeterministicTruncatedXorDifferentialModel(MilpModel):
 
             # objective is the number of unknown patterns i.e. tuples of the form (1, x)
             input_ids, output_ids = last_component._get_wordwise_input_output_linked_class_tuples(self)
-            mip.add_constraint(p["varied_output_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in output_ids]))
+            mip.add_constraint(p["probability"] == sum(x[output_msb] for output_msb in [id[0] for id in output_ids]))
 
     def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[]):
         """
