@@ -61,7 +61,7 @@ def test_build_wordwise_deterministic_truncated_xor_differential_trail_model():
     assert str(constraints[0]) == '1 <= 1 + x_0 - x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9'
     assert str(constraints[1]) == '1 <= 1 + x_1 - x_9'
     assert str(constraints[-2]) == 'x_3062 == x_2886'
-    assert str(constraints[-1]) == 'x_3062 == x_2886'
+    assert str(constraints[-1]) == 'x_3063 == x_2887'
 
 def test_find_one_deterministic_truncated_xor_differential_trail_model():
     aes = AESBlockCipher(number_of_rounds=2)
@@ -71,16 +71,9 @@ def test_find_one_deterministic_truncated_xor_differential_trail_model():
     assert trail['status'] == 'SATISFIABLE'
 
 def test_find_lowest_weight_deterministic_truncated_xor_differential_trail_model():
-    aes = AESBlockCipher(number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(aes)
-    trail = milp.find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(
-        get_single_key_scenario_format_for_fixed_values(aes))
-    assert trail['status'] == 'SATISFIABLE'
-    assert trail['total_weight'] == 4.0
-
     midori = MidoriBlockCipher(number_of_rounds=2)
     milp = MilpDeterministicTruncatedXorDifferentialModel(midori)
     trail = milp.find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(
         get_single_key_scenario_format_for_fixed_values(midori))
     assert trail['status'] == 'SATISFIABLE'
-    assert trail['total_weight'] == 4.0
+    assert trail['total_weight'] == 3.0

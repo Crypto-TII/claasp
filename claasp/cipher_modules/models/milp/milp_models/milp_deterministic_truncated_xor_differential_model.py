@@ -18,13 +18,11 @@
 import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
     update_dictionary_that_contains_wordwise_truncated_input_inequalities,
-    output_dictionary_that_contains_wordwise_truncated_input_inequalities,
-    delete_dictionary_that_contains_wordwise_truncated_input_inequalities
+    output_dictionary_that_contains_wordwise_truncated_input_inequalities
 )
 
 
