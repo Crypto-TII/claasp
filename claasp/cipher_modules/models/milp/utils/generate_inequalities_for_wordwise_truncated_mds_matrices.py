@@ -24,15 +24,11 @@ using model 5 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
 """
 from itertools import product
 from math import ceil, log
-import pickle
-import time
-from functools import reduce
-from subprocess import Popen, PIPE, run
+import pickle, os, pathlib
+from subprocess import run
 
-wordwise_truncated_mds_file_path = \
-    "claasp/cipher_modules/models/milp/dictionary_containing_truncated_mds_inequalities.obj"
-
-
+wordwise_truncated_mds_file_name = "dictionary_containing_truncated_xor_inequalities_between_n_input_bits.obj"
+wordwise_truncated_mds_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), wordwise_truncated_mds_file_name)
 
 
 

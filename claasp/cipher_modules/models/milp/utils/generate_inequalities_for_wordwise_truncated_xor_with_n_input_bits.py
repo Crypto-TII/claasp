@@ -23,15 +23,15 @@ The target of this module is to generate MILP inequalities for a wordwise trunca
 """
 import itertools
 from math import ceil, log
-import pickle
+import pickle, os, pathlib
 from functools import reduce
 from subprocess import run
 
-wordwise_truncated_xor_inequalities_between_2_input_bits_file_path = \
-    "claasp/cipher_modules/models/milp/dictionary_containing_truncated_xor_inequalities_between_2_input_bits.obj"
-wordwise_truncated_xor_inequalities_between_n_input_bits_file_path = \
-    "claasp/cipher_modules/models/milp/dictionary_containing_truncated_xor_inequalities_between_n_input_bits.obj"
 
+input_patterns_file_name = "dictionary_containing_truncated_xor_inequalities_between_2_input_bits.obj"
+xor_n_inputs_file_name = "dictionary_containing_truncated_xor_inequalities_between_n_input_bits.obj"
+wordwise_truncated_input_pattern_inequalities_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), input_patterns_file_name)
+wordwise_truncated_xor_inequalities_between_n_input_bits_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), xor_n_inputs_file_name)
 
 
 
@@ -70,7 +70,7 @@ def generate_valid_points_input_words(wordsize=4, max_pattern_value=3):
 
 def update_dictionary_that_contains_wordwise_truncated_input_inequalities(wordsize):
     try:
-        read_file = open(wordwise_truncated_xor_inequalities_between_2_input_bits_file_path, 'rb')
+        read_file = open(wordwise_truncated_input_pattern_inequalities_file_path, 'rb')
         dictio = pickle.load(read_file)
         read_file.close()
     except:
@@ -81,20 +81,20 @@ def update_dictionary_that_contains_wordwise_truncated_input_inequalities(wordsi
         valid_points = generate_valid_points_input_words(wordsize)
         inequalities = generate_product_of_sum_from_espresso(valid_points)
         dictio[wordsize] = inequalities
-        write_file = open(wordwise_truncated_xor_inequalities_between_2_input_bits_file_path, 'wb')
+        write_file = open(wordwise_truncated_input_pattern_inequalities_file_path, 'wb')
         pickle.dump(dictio, write_file)
         write_file.close()
 
 
 def output_dictionary_that_contains_wordwise_truncated_input_inequalities():
-    read_file = open(wordwise_truncated_xor_inequalities_between_2_input_bits_file_path, 'rb')
+    read_file = open(wordwise_truncated_input_pattern_inequalities_file_path, 'rb')
     dictio = pickle.load(read_file)
     read_file.close()
     return dictio
 
 
 def delete_dictionary_that_contains_wordwise_truncated_input_inequalities():
-    write_file = open(wordwise_truncated_xor_inequalities_between_2_input_bits_file_path, 'wb')
+    write_file = open(wordwise_truncated_input_pattern_inequalities_file_path, 'wb')
     pickle.dump({}, write_file)
     write_file.close()
 
