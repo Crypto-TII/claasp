@@ -85,10 +85,10 @@ def test_milp_deterministic_truncated_xor_differential_constraints(self, model):
     and_component = cipher.component_from(0,8)
     variables, constraints = and_component.milp_deterministic_truncated_xor_differential_constraints(milp)
 
-    assert variables[0] == "('x_class[xor_0_7_0]', x_0)"
-    assert variables[1] == "('x_class[xor_0_7_1]', x_1)"
-    assert variables[-2] == "('x_class[and_0_8_10]', x_34)"
-    assert variables[-1] == "('x_class[and_0_8_11]', x_35)"
+    assert str(variables[0]) == "('x_class[xor_0_7_0]', x_0)"
+    assert str(variables[1]) == "('x_class[xor_0_7_1]', x_1)"
+    assert str(variables[-2]) == "('x_class[and_0_8_10]', x_34)"
+    assert str(variables[-1]) == "('x_class[and_0_8_11]', x_35)"
 
     assert constraints[0] == 'x_0 + x_12 <= 4 - 4*x_36'
     assert constraints[1] == '1 - 4*x_36 <= x_0 + x_12'

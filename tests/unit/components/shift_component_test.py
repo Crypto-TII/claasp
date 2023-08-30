@@ -261,10 +261,10 @@ def test_milp_deterministic_truncated_xor_differential_constraints():
     shift_component = cipher.get_component_from_id("shift_0_0")
     variables, constraints = shift_component.milp_deterministic_truncated_xor_differential_constraints(milp)
 
-    assert variables[0] == "('x_class[plaintext_8]', x_0)"
-    assert variables[1] == "('x_class[plaintext_9]', x_1)"
-    assert variables[-2] == "('x_class[shift_0_0_6]', x_14)"
-    assert variables[-1] == "('x_class[shift_0_0_7]', x_15)"
+    assert str(variables[0]) == "('x_class[plaintext_8]', x_0)"
+    assert str(variables[1]) == "('x_class[plaintext_9]', x_1)"
+    assert str(variables[-2]) == "('x_class[shift_0_0_6]', x_14)"
+    assert str(variables[-1]) == "('x_class[shift_0_0_7]', x_15)"
 
     assert constraints[0] == "x_8 == x_4"
     assert constraints[1] == "x_9 == x_5"
@@ -281,10 +281,10 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     variables, constraints = shift_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(
         milp)
 
-    assert variables[0] == "('x_class[sbox_0_2_word_0_class]', x_0)"
-    assert variables[1] == "('x_class[sbox_0_6_word_0_class]', x_1)"
-    assert variables[-2] == "('x[shift_0_18_30]', x_70)"
-    assert variables[-1] == "('x[shift_0_18_31]', x_71)"
+    assert str(variables[0]) == "('x_class[sbox_0_2_word_0_class]', x_0)"
+    assert str(variables[1]) == "('x_class[sbox_0_6_word_0_class]', x_1)"
+    assert str(variables[-2]) == "('x[shift_0_18_30]', x_70)"
+    assert str(variables[-1]) == "('x[shift_0_18_31]', x_71)"
 
     assert constraints[0] == "x_4 == x_1"
     assert constraints[1] == "x_5 == x_2"

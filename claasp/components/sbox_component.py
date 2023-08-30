@@ -1224,26 +1224,25 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: present = PresentBlockCipher(number_of_rounds=6)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(aes)
+            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
-            sage: sbox_component = aes.component_from(0,1)
+            sage: sbox_component = present.component_from(0,1)
             sage: variables, constraints = sbox_component.milp_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[xor_0_0_0]', x_0),
              ('x_class[xor_0_0_1]', x_1),
              ...
-             ('x_class[sbox_0_1_6]', x_14),
-             ('x_class[sbox_0_1_7]', x_15)]
+             ('x_class[sbox_0_1_2]', x_6),
+             ('x_class[sbox_0_1_3]', x_7)]
             sage: constraints
-            [x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 <= 8 - 8*x_16,
-            1 - 8*x_16 <= x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7,
-
+            [x_0 + x_1 + x_2 + x_3 <= 8 - 8*x_8,
+             1 - 8*x_8 <= x_0 + x_1 + x_2 + x_3,
              ...
-            x_15 <= 2 + 2*x_16,
-            2 <= x_15 + 2*x_16]
+             x_7 <= 2 + 2*x_8,
+             2 <= x_7 + 2*x_8]
 
         """
         x_class = model.trunc_binvar
