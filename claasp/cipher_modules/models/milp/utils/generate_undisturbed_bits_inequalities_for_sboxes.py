@@ -51,14 +51,15 @@ def generate_espresso_input(valid_points):
 
     return ''.join(espresso_input)
 
-def get_transitions_for_single_output_bit(sbox, valid_points):
+def get_transitions_for_single_output_bit(sbox, valid_points, verbose=False):
 
     def to_bits(x, input_size):
         return ZZ(x).digits(base=2, padto=input_size)[::-1]
-    def encode_transition(delta_in, delta_out):
+    def encode_transition(delta_in, delta_out, verbose):
         encoded_in = [_ for j in delta_in for _ in to_bits(j, 2)]
         encoded_out = [_ for j in delta_out for _ in to_bits(j, 2)]
-        # print_transition(delta_in, delta_out, True)
+        if verbose:
+            print_transition(delta_in, delta_out, True)
         return "".join(str(_) for _ in encoded_in + encoded_out)
 
     def print_transition(delta_in, delta_out, print_undisturbed_only=False):
@@ -70,7 +71,7 @@ def get_transitions_for_single_output_bit(sbox, valid_points):
         else:
             print(f"     {input_str} -> {output_str}")
 
-    ddt_with_undisturbed_bits_transitions = [encode_transition(input, output) for input, output in valid_points]
+    ddt_with_undisturbed_bits_transitions = [encode_transition(input, output, verbose) for input, output in valid_points]
     n = sbox.input_size()
 
     valid_points = {}

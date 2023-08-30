@@ -406,11 +406,6 @@ def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraint
 
         for i in range(num_cond):
             decision_constraints = 0
-            # for j in range(num_cond):
-            #     if j == i:
-            #         decision_constraints += var_if_list[j]
-            #     else:
-            #         decision_constraints += 1 - var_if_list[j]
             for j in range(i + 1):
                 if j == i:
                     decision_constraints += var_if_list[j]

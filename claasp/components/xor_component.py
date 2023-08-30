@@ -686,8 +686,8 @@ class XOR(Component):
             result_ids = [(f'temp_xor_{j}_{self.id}_{i}_0', f'temp_xor_{j}_{self.id}_{i}_1')
                           for j in range(number_of_inputs - 2)] + [output_id]
             constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][0], input_id_tuples[i::output_bit_size][1], result_ids[0]))
-            for i in range(1, number_of_inputs - 1):
-                constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][i + 1], result_ids[i - 1], result_ids[i]))
+            for chunk in range(1, number_of_inputs - 1):
+                constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][chunk + 1], result_ids[chunk - 1], result_ids[chunk]))
 
 
         return variables, constraints
@@ -894,9 +894,9 @@ class XOR(Component):
                                                                       result_ids[0]))
             for chunk in range(1, number_of_inputs - 1):
                 constraints.extend(milp_utils.milp_xor_truncated_wordwise(model,
-                                                                          input_vars[i::output_word_size][i + 1],
-                                                                          result_ids[i - 1],
-                                                                          result_ids[i]))
+                                                                          input_vars[i::output_word_size][chunk + 1],
+                                                                          result_ids[chunk - 1],
+                                                                          result_ids[chunk]))
 
         return variables, constraints
 
@@ -940,11 +940,14 @@ class XOR(Component):
         constraints = []
 
         input_vars = [x_class[var] for var in input_class_vars]
-        output_c = [x_class[var] for var in output_class_vars]
+        output_vars = [x_class[var] for var in output_class_vars]
 
-        for input_word in input_vars[::len(output_class_vars)]:
-            input_a = input_word[0]
-            input_b = input_word[1]
+
+        for i in range(len(output_class_vars)):
+            input_words = input_vars[i::len(output_class_vars)]
+            input_a = input_words[0]
+            input_b = input_words[1]
+            output_c = output_vars[i]
             var_if_list = []
             then_constraints_list = []
 
@@ -960,7 +963,7 @@ class XOR(Component):
             b_less_2, b_less_2_constraints = milp_utils.milp_less(model, input_a, 2, model._model.get_max(x_class) + 1)
             a_less_2_and_b_less_2, and_constraints = milp_utils.milp_and(model, a_less_2, b_less_2)
 
-            constraints.append(a_less_2_constraints, b_less_2_constraints, and_constraints)
+            constraints.append(a_less_2_constraints + b_less_2_constraints + and_constraints)
 
             var_if_list.append(a_less_2_and_b_less_2)
             xor_constraints = []
