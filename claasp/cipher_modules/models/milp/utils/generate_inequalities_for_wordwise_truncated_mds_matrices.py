@@ -27,7 +27,7 @@ from math import ceil, log
 import pickle, os, pathlib
 from subprocess import run
 
-wordwise_truncated_mds_file_name = "dictionary_containing_truncated_xor_inequalities_between_n_input_bits.obj"
+wordwise_truncated_mds_file_name = "dictionary_containing_truncated_mds_inequalitie.obj"
 wordwise_truncated_mds_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), wordwise_truncated_mds_file_name)
 
 
