@@ -257,7 +257,7 @@ def test_milp_deterministic_truncated_xor_differential_constraints():
     assert str(variables[-2]) == "('x_class[not_0_8_30]', x_62)"
     assert str(variables[-1]) == "('x_class[not_0_8_31]', x_63)"
 
-    assert constraints[0] == 'x_32 == x_0'
-    assert constraints[1] == 'x_33 == x_1'
-    assert constraints[-2] == 'x_62 == x_30'
-    assert constraints[-1] == 'x_63 == x_31'
+    assert str(constraints[0]) == 'x_32 == x_0'
+    assert str(constraints[1]) == 'x_33 == x_1'
+    assert str(constraints[-2]) == 'x_62 == x_30'
+    assert str(constraints[-1]) == 'x_63 == x_31'

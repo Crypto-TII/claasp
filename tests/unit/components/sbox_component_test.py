@@ -355,10 +355,10 @@ def test_milp_deterministic_truncated_xor_differential_constraints():
     assert str(variables[-1]) == "('x_class[sbox_0_1_3]', x_7)"
 
 
-    assert constraints[0] == 'x_0 + x_1 + x_2 + x_3 <= 8 - 8*x_8'
-    assert constraints[1] == '1 - 8*x_8 <= x_0 + x_1 + x_2 + x_3'
-    assert constraints[-2] == 'x_7 <= 2 + 2*x_8'
-    assert constraints[-1] == '2 <= x_7 + 2*x_8'
+    assert str(constraints[0]) == 'x_0 + x_1 + x_2 + x_3 <= 8 - 8*x_8'
+    assert str(constraints[1]) == '1 - 8*x_8 <= x_0 + x_1 + x_2 + x_3'
+    assert str(constraints[-2]) == 'x_7 <= 2 + 2*x_8'
+    assert str(constraints[-1]) == '2 <= x_7 + 2*x_8'
 
 def test_milp_undisturbed_bits_deterministic_truncated_xor_differential_constraints():
     present = PresentBlockCipher(number_of_rounds=6)
@@ -372,10 +372,10 @@ def test_milp_undisturbed_bits_deterministic_truncated_xor_differential_constrai
     assert str(variables[-2]) == "('x[sbox_0_1_3_class_bit_0]', x_14)"
     assert str(variables[-1]) == "('x[sbox_0_1_3_class_bit_1]', x_15)"
 
-    assert constraints[0] == 'x_16 == 2*x_0 + x_1'
-    assert constraints[1] == 'x_17 == 2*x_2 + x_3'
-    assert constraints[-2] == '1 <= 2 - x_2 - x_15'
-    assert constraints[-1] == '1 <= 2 - x_0 - x_15'
+    assert str(constraints[0]) == 'x_16 == 2*x_0 + x_1'
+    assert str(constraints[1]) == 'x_17 == 2*x_2 + x_3'
+    assert str(constraints[-2]) == '1 <= 2 - x_2 - x_15'
+    assert str(constraints[-1]) == '1 <= 2 - x_0 - x_15'
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     aes = AESBlockCipher(number_of_rounds=2)
@@ -389,10 +389,10 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     assert str(variables[-2]) == "('x[sbox_0_1_word_0_class_bit_0]', x_2)"
     assert str(variables[-1]) == "('x[sbox_0_1_word_0_class_bit_1]', x_3)"
 
-    assert constraints[0] == 'x_0 + x_1 <= 1 + x_3'
-    assert constraints[1] == 'x_2 <= x_0 + x_1'
-    assert constraints[-2] == 'x_1 <= x_2'
-    assert constraints[-1] == 'x_0 <= x_2'
+    assert str(constraints[0]) == 'x_0 + x_1 <= 1 + x_3'
+    assert str(constraints[1]) == 'x_2 <= x_0 + x_1'
+    assert str(constraints[-2]) == 'x_1 <= x_2'
+    assert str(constraints[-1]) == 'x_0 <= x_2'
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints():
     aes = AESBlockCipher(number_of_rounds=2)
@@ -404,7 +404,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_simple_constrain
     assert str(variables[0]) == "('x_class[xor_0_0_word_0_class]', x_0)"
     assert str(variables[1]) == "('x_class[sbox_0_1_word_0_class]', x_2)"
 
-    assert constraints[0] == 'x_0 <= 5 - 4*x_2'
-    assert constraints[1] == '2 - 4*x_2 <= x_0'
-    assert constraints[-2] == 'x_0 <= x_1 + 4*x_4'
-    assert constraints[-1] == 'x_1 <= x_0 + 4*x_4'
+    assert str(constraints[0]) == 'x_0 <= 5 - 4*x_2'
+    assert str(constraints[1]) == '2 - 4*x_2 <= x_0'
+    assert str(constraints[-2]) == 'x_0 <= x_1 + 4*x_4'
+    assert str(constraints[-1]) == 'x_1 <= x_0 + 4*x_4'
