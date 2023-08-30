@@ -70,10 +70,10 @@ def test_find_one_deterministic_truncated_xor_differential_trail_model():
         get_single_key_scenario_format_for_fixed_values(aes))
     assert trail['status'] == 'SATISFIABLE'
 
-# def test_find_lowest_weight_deterministic_truncated_xor_differential_trail_model():
-#     midori = MidoriBlockCipher(number_of_rounds=2)
-#     milp = MilpDeterministicTruncatedXorDifferentialModel(midori)
-#     trail = milp.find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(
-#         get_single_key_scenario_format_for_fixed_values(midori))
-#     assert trail['status'] == 'SATISFIABLE'
-#     assert trail['total_weight'] == 3.0
+def test_find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail_model():
+    midori = MidoriBlockCipher(number_of_rounds=2)
+    milp = MilpDeterministicTruncatedXorDifferentialModel(midori)
+    trail = milp.find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(
+        get_single_key_scenario_format_for_fixed_values(midori))
+    assert trail['status'] == 'SATISFIABLE'
+    assert trail['total_weight'] == 3.0
