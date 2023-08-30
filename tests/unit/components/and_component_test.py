@@ -4,7 +4,7 @@ from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.components.and_component import cp_xor_differential_probability_ddt, cp_xor_linear_probability_lat
-
+from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
 
 def test_cp_xor_differential_probability_ddt():
     assert cp_xor_differential_probability_ddt(2) == [4, 0, 2, 2, 2, 2, 2, 2]
@@ -77,3 +77,20 @@ def test_smt_constraints():
     assert constraints[1] == '(assert (= and_0_8_1 (and xor_0_7_1 key_13)))'
     assert constraints[-2] == '(assert (= and_0_8_10 (and xor_0_7_10 key_22)))'
     assert constraints[-1] == '(assert (= and_0_8_11 (and xor_0_7_11 key_23)))'
+
+def test_milp_deterministic_truncated_xor_differential_constraints(self, model):
+    cipher = FancyBlockCipher(number_of_rounds=20)
+    milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+    milp.init_model_in_sage_milp_class()
+    and_component = cipher.component_from(0,8)
+    variables, constraints = and_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+
+    assert variables[0] == "('x_class[xor_0_7_0]', x_0)"
+    assert variables[1] == "('x_class[xor_0_7_1]', x_1)"
+    assert variables[-2] == "('x_class[and_0_8_10]', x_34)"
+    assert variables[-1] == "('x_class[and_0_8_11]', x_35)"
+
+    assert constraints[0] == 'x_0 + x_12 <= 4 - 4*x_36'
+    assert constraints[1] == '1 - 4*x_36 <= x_0 + x_12'
+    assert constraints[-2] == 'x_35 <= 2 + 2*x_47'
+    assert constraints[-1] == '2 <= x_35 + 2*x_47'

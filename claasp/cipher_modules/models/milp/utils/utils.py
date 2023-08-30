@@ -80,7 +80,7 @@ def _parse_external_solver_output(model, model_type, solver_name, solver_process
     return status, total_weight, probability_variables, components_variables, solve_time
 
 
-def milp_less(model, a, b, bigM):
+def milp_less(model, a, b, big_m):
     """
     Returns constraints to determine whether a < b, where 'a' is an integer variables and 'b' is an integer variable or a constant.
     The binary variable a_less_b = 1 iff a < b
@@ -95,45 +95,45 @@ def milp_less(model, a, b, bigM):
         sage: mip = M._model
         sage: x = M._integer_variable; d = M._binary_variable
         sage: mip.set_max(x,2); mip.set_min(x,0)
-        sage: a = x[0]; b = x[1]; bigM = 4
-        sage: dummy, constraints = M.milp_less(M, a, b, bigM)
+        sage: a = x[0]; b = x[1]; big_m = 4
+        sage: dummy, constraints = M.milp_less(M, a, b, big_m)
         sage: for i in constraints:
         ....:     mip.add_constraint(i)
         ...
     """
     d = model.binary_variable
     a_less_b = d[str(a) + "_less_" + str(b) + "_dummy"]
-    constraints = [a <= b - 1 + bigM * (1 - a_less_b),
-                   a >= b - bigM * a_less_b]
+    constraints = [a <= b - 1 + big_m * (1 - a_less_b),
+                   a >= b - big_m * a_less_b]
 
     return a_less_b, constraints
 
 
-def milp_leq(model, a, b, bigM):
+def milp_leq(model, a, b, big_m):
     """
     Returns constraints to determine whether a <= b, where a and b are integer variables or constants.
     The binary variable a_leq_b = 1 iff a <= b
     """
 
-    return milp_less(model, a, b + 1, bigM)
+    return milp_less(model, a, b + 1, big_m)
 
 
-def milp_greater(model, a, b, bigM):
+def milp_greater(model, a, b, big_m):
     """
     Returns constraints to determine whether a > b, where a and b are integer variables or constants.
     The binary variable a_greater_b = 1 iff a > b
     """
 
-    return milp_less(model, b, a, bigM)
+    return milp_less(model, b, a, big_m)
 
 
-def milp_geq(model, a, b, bigM):
+def milp_geq(model, a, b, big_m):
     """
     Returns constraints to determine whether a >= b, where a and b are integer variables or constants.
     The binary variable a_geq_b = 1 iff a >= b
     """
 
-    return milp_less(model, b, a + 1, bigM)
+    return milp_less(model, b, a + 1, big_m)
 
 
 def milp_and(model, a, b):
@@ -203,7 +203,7 @@ def milp_generalized_and(model, var_list):
     return generalized_and, constraint
 
 
-def milp_eq(model, a, b, bigM):
+def milp_eq(model, a, b, big_m):
     """
     Returns constraints to determine whether a == b, where b is a constant.
     The binary variable a_eq_b = 1 iff a == b
@@ -217,16 +217,16 @@ def milp_eq(model, a, b, bigM):
         sage: M.init_model_in_sage_milp_class()
         sage: mip = M._model
         sage: x = M._integer_variable; d = M._binary_variable
-        sage: a = x[0]; b = 2; bigM = 4
-        sage: dummy, constraints = M.milp_eq(M, a, b, bigM)
+        sage: a = x[0]; b = 2; big_m = 4
+        sage: dummy, constraints = M.milp_eq(M, a, b, big_m)
         sage: for i in constraints:
         ....:     mip.add_constraint(i)
         ...
     """
     constraints = []
 
-    d_leq, c_leq = milp_leq(model, a, b, bigM)
-    d_geq, c_geq = milp_geq(model, a, b, bigM)
+    d_leq, c_leq = milp_leq(model, a, b, big_m)
+    d_geq, c_geq = milp_geq(model, a, b, big_m)
     constraints += c_leq + c_geq
 
     a_eq_b, constraint = milp_and(model, d_leq, d_geq)
@@ -235,7 +235,7 @@ def milp_eq(model, a, b, bigM):
     return a_eq_b, constraints
 
 
-def milp_neq(model, a, b, bigM):
+def milp_neq(model, a, b, big_m):
     """
     Returns constraints to determine whether a != b, where b is a constant.
     The binary variable a_neq_b = 1 iff a != b
@@ -249,15 +249,15 @@ def milp_neq(model, a, b, bigM):
         sage: M.init_model_in_sage_milp_class()
         sage: mip = M._model
         sage: x = M._integer_variable; d = M._binary_variable
-        sage: a = x[0]; b = 2; bigM = 4
-        sage: dummy, constraints = M.milp_neq(M, a, b, bigM)
+        sage: a = x[0]; b = 2; big_m = 4
+        sage: dummy, constraints = M.milp_neq(M, a, b, big_m)
         sage: for i in constraints:
         ....:     mip.add_constraint(i)
     """
     constraints = []
 
-    d_less, c_less = milp_less(model, a, b, bigM)
-    d_greater, c_greater = milp_greater(model, a, b, bigM)
+    d_less, c_less = milp_less(model, a, b, big_m)
+    d_greater, c_greater = milp_greater(model, a, b, big_m)
     constraints += c_less + c_greater
 
     a_neq_b, constraint = milp_or(model, d_less, d_greater)
@@ -340,7 +340,7 @@ def milp_generalized_xor(input_var_list, output_bit):
     return constraints
 
 
-def milp_if_then(var_if, then_constraints, bigM):
+def milp_if_then(var_if, then_constraints, big_m):
     """
     Returns a list of variables and a list of constraints to model an if-then statement.
     When the binary variable var_if == 1, the set 'then_constraints' is applied.
@@ -350,37 +350,37 @@ def milp_if_then(var_if, then_constraints, bigM):
     for constr in then_constraints:
         if constr.is_less_or_equal():
             for lhs, rhs in constr.inequalities():
-                constraints.append(lhs <= rhs + bigM * (1 - var_if))
+                constraints.append(lhs <= rhs + big_m * (1 - var_if))
         else:
             for lhs, rhs in constr.equations():
-                constraints.append(lhs <= rhs + bigM * (1 - var_if))
-                constraints.append(rhs <= lhs + bigM * (1 - var_if))
+                constraints.append(lhs <= rhs + big_m * (1 - var_if))
+                constraints.append(rhs <= lhs + big_m * (1 - var_if))
 
     return constraints
 
 
-def milp_if_then_else(var_if, then_constraints, else_constraints, bigM):
+def milp_if_then_else(var_if, then_constraints, else_constraints, big_m):
     """
     Returns a list of variables and a list of constraints to model an if-then-else statement.
     When the binary variable var_if == 1, the set 'then_constraints' is applied,
     when var_if == 0, the set 'else_constraints' is applied
     """
 
-    constraints = milp_if_then(var_if, then_constraints, bigM)
+    constraints = milp_if_then(var_if, then_constraints, big_m)
 
     for constr in else_constraints:
         if constr.is_less_or_equal():
             for lhs, rhs in constr.inequalities():
-                constraints.append(lhs <= rhs + bigM * var_if)
+                constraints.append(lhs <= rhs + big_m * var_if)
         else:
             for lhs, rhs in constr.equations():
-                constraints.append(lhs <= rhs + bigM * var_if)
-                constraints.append(rhs <= lhs + bigM * var_if)
+                constraints.append(lhs <= rhs + big_m * var_if)
+                constraints.append(rhs <= lhs + big_m * var_if)
 
     return constraints
 
 
-def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraints, bigM):
+def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraints, big_m):
     """
     Returns a list of variables and a list of constraints to model an if-elif...-elif-else statement.
     When the binary variable var_if[i] == 1, the set 'then_constraints[i]' is applied,
@@ -394,7 +394,7 @@ def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraint
     num_cond = len(var_if_list)
 
     if num_cond == 1:
-        return milp_if_then_else(var_if_list[0], then_constraints_list[0], else_constraints, bigM)
+        return milp_if_then_else(var_if_list[0], then_constraints_list[0], else_constraints, big_m)
 
     else:
         d = model.binary_variable
@@ -417,20 +417,20 @@ def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraint
             for constr in then_constraints_list[i]:
                 if constr.is_less_or_equal():
                     for lhs, rhs in constr.inequalities():
-                        constraints.append(lhs <= rhs + bigM * (1 - decision_var[i]))
+                        constraints.append(lhs <= rhs + big_m * (1 - decision_var[i]))
                 else:
                     for lhs, rhs in constr.equations():
-                        constraints.append(lhs <= rhs + bigM * (1 - decision_var[i]))
-                        constraints.append(rhs <= lhs + bigM * (1 - decision_var[i]))
+                        constraints.append(lhs <= rhs + big_m * (1 - decision_var[i]))
+                        constraints.append(rhs <= lhs + big_m * (1 - decision_var[i]))
 
         for constr in else_constraints:
             if constr.is_less_or_equal():
                 for lhs, rhs in constr.inequalities():
-                    constraints.append(lhs <= rhs + bigM * sum(decision_var))
+                    constraints.append(lhs <= rhs + big_m * sum(decision_var))
             else:
                 for lhs, rhs in constr.equations():
-                    constraints.append(lhs <= rhs + bigM * sum(decision_var))
-                    constraints.append(rhs <= lhs + bigM * sum(decision_var))
+                    constraints.append(lhs <= rhs + big_m * sum(decision_var))
+                    constraints.append(rhs <= lhs + big_m * sum(decision_var))
 
         return constraints
 

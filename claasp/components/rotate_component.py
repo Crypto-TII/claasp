@@ -463,7 +463,6 @@ class Rotate(Component):
 
         """
         x_class = model.trunc_wordvar
-        x = model.binary_variable
 
         rotation_step = self.description[1]
         abs_rotation_word_step = abs(rotation_step) // model.word_size
@@ -482,7 +481,6 @@ class Rotate(Component):
             input_class_vars = tmp + input_class_vars[:-abs_rotation_word_step]
         for i in range(output_word_size):
             constraints.append(x_class[output_class_vars[i]] == x_class[input_class_vars[i]])
-
 
         bit_variables, bit_constraints = self.milp_constraints(model)
 
