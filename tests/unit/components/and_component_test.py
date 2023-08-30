@@ -78,7 +78,7 @@ def test_smt_constraints():
     assert constraints[-2] == '(assert (= and_0_8_10 (and xor_0_7_10 key_22)))'
     assert constraints[-1] == '(assert (= and_0_8_11 (and xor_0_7_11 key_23)))'
 
-def test_milp_deterministic_truncated_xor_differential_constraints(self, model):
+def test_milp_deterministic_truncated_xor_differential_constraints():
     cipher = FancyBlockCipher(number_of_rounds=20)
     milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()

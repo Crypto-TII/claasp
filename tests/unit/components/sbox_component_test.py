@@ -385,7 +385,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     variables, constraints = sbox_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
 
     assert str(variables[0]) == "('x[xor_0_0_word_0_class_bit_0]', x_0)"
-    assert str(variables[1]) == "'(x[xor_0_0_word_0_class_bit_1]', x_1)"
+    assert str(variables[1]) == "('x[xor_0_0_word_0_class_bit_1]', x_1)"
     assert str(variables[-2]) == "('x[sbox_0_1_word_0_class_bit_0]', x_2)"
     assert str(variables[-1]) == "('x[sbox_0_1_word_0_class_bit_1]', x_3)"
 
@@ -399,10 +399,10 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_simple_constrain
     milp = MilpDeterministicTruncatedXorDifferentialModel(aes)
     milp.init_model_in_sage_milp_class()
     sbox_component = aes.component_from(0, 1)
-    variables, constraints = sbox_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+    variables, constraints = sbox_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(milp)
 
     assert str(variables[0]) == "('x_class[xor_0_0_word_0_class]', x_0)"
-    assert str(variables[1]) == "('x_class[sbox_0_1_word_0_class]', x_2)"
+    assert str(variables[1]) == "('x_class[sbox_0_1_word_0_class]', x_1)"
 
     assert str(constraints[0]) == 'x_0 <= 5 - 4*x_2'
     assert str(constraints[1]) == '2 - 4*x_2 <= x_0'

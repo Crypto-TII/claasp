@@ -254,12 +254,12 @@ def test_milp_deterministic_truncated_xor_differential_constraints():
     assert str(variables[-1]) == "('x_class[linear_layer_0_17_63]', x_127)"
 
     assert str(constraints[0]) == 'x_64 == x_0'
-    assert str(constraints[0]) == 'x_65 == x_4'
+    assert str(constraints[1]) == 'x_65 == x_4'
     assert str(constraints[-2]) == 'x_126 == x_59'
     assert str(constraints[-1]) == 'x_127 == x_63'
 
 
-def test_milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     cipher = MidoriBlockCipher(number_of_rounds=2)
     milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
@@ -272,7 +272,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints(self
     assert str(variables[-2]) == "('x[mix_column_0_21_14]', x_46)"
     assert str(variables[-1]) == "('x[mix_column_0_21_15]', x_47)"
 
-    assert constraints[0] == '1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_13 + x_18 + x_19 - x_25'
-    assert constraints[0] == '1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_12 + x_13 + x_19 - x_2'
-    assert constraints[-2] == '1 <= 2 - x_6 - x_8'
-    assert constraints[-1] == '1 <= 1 + x_7 - x_8'
+    assert str(constraints[0]) == '1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_13 + x_18 + x_19 - x_25'
+    assert str(constraints[1]) == '1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_12 + x_13 + x_19 - x_25'
+    assert str(constraints[-2]) == '1 <= 2 - x_6 - x_8'
+    assert str(constraints[-1]) == '1 <= 1 + x_7 - x_8'

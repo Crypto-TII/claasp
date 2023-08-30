@@ -16,7 +16,7 @@ def test_algebraic_polynomials():
                                              "modadd_1_9_x16*modadd_1_9_o0_4 + modadd_1_9_c1_5"
     assert str(algebraic_polynomials[-1]) == "modadd_1_9_c1_5 + modadd_1_9_o0_5 + modadd_1_9_y5 + modadd_1_9_x17"
 
-def test_milp_deterministic_truncated_xor_differential_binary_constraints(self, model):
+def test_milp_deterministic_truncated_xor_differential_binary_constraints():
     cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
@@ -38,7 +38,7 @@ def test_milp_deterministic_truncated_xor_differential_constraints():
     milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     modadd_component = cipher.get_component_from_id("modadd_0_1")
-    variables, constraints = modadd_component.milp_deterministic_truncated_xor_differential_binary_constraints(milp)
+    variables, constraints = modadd_component.milp_deterministic_truncated_xor_differential_constraints(milp)
 
     assert str(variables[0]) == "('x_class[rot_0_0_0]', x_0)"
     assert str(variables[1]) == "('x_class[rot_0_0_1]', x_1)"
