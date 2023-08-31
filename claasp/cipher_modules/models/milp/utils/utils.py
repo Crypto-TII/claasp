@@ -476,6 +476,18 @@ def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraint
 
         return constraints
 
+def espresso_pos_to_constraints(espresso_inequalities, variables):
+    constraints = []
+    for ineq in espresso_inequalities:
+        constraint = 0
+        for pos, char in enumerate(ineq):
+            if char == "1":
+                constraint += 1 - variables[pos]
+            elif char == "0":
+                constraint += variables[pos]
+        constraints.append(constraint >= 1)
+    return constraints
+
 def milp_xor_truncated(model, input_1, input_2, output):
     """
     Returns a list of variables and a list of constraints for the XOR for two input bits
@@ -505,19 +517,9 @@ def milp_xor_truncated(model, input_1, input_2, output):
     espresso_inequalities = ['-1-000', '-0-100', '----11', '0-0-1-', '-0-0-1',
                              '-1-1-1', '11----', '--1-0-', '1---0-', '--11--']
 
-    constraints = []
     all_vars = [x[i] for i in input_1 + input_2 + output]
 
-    for ineq in espresso_inequalities:
-        constraint = 0
-        for pos, char in enumerate(ineq):
-            if char == "1":
-                constraint += 1 - all_vars[pos]
-            elif char == "0":
-                constraint += all_vars[pos]
-        constraints.append(constraint >= 1)
-
-    return constraints
+    return espresso_pos_to_constraints(espresso_inequalities, all_vars)
 
 def milp_xor_truncated_wordwise(model, input_1, input_2, output):
     """
@@ -603,16 +605,5 @@ def milp_xor_truncated_wordwise(model, input_1, input_2, output):
                              '1--------1--------------------']
 
 
-    constraints = []
     all_vars = [x[i] for i in input_1 + input_2 + output]
-
-    for ineq in espresso_inequalities:
-        constraint = 0
-        for pos, char in enumerate(ineq):
-            if char == "1":
-                constraint += 1 - all_vars[pos]
-            elif char == "0":
-                constraint += all_vars[pos]
-        constraints.append(constraint >= 1)
-
-    return constraints
+    return espresso_pos_to_constraints(espresso_inequalities, all_vars)

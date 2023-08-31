@@ -30,6 +30,7 @@ from claasp.cipher_modules.models.milp.utils.generate_undisturbed_bits_inequalit
     update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits, \
     get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits, \
     delete_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.input import Input
 from claasp.component import Component, free_input
 from claasp.cipher_modules.models.sat.utils import constants
@@ -1322,7 +1323,6 @@ class SBOX(Component):
         output_vars = [tuple(x[i] for i in _) for _ in output_id_tuples]
 
         valid_points = self.get_ddt_with_undisturbed_transitions()
-        delete_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits()
         update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits(sbox, valid_points)
         dict_product_of_sum = get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits()
 
@@ -1330,14 +1330,8 @@ class SBOX(Component):
             for bit in range(2):
                 espresso_inequalities = dict_product_of_sum[str(sbox)][position][bit]
                 all_vars = [_ for sublist in input_vars for _ in sublist] + [output_vars[position][bit]]
-                for ineq in espresso_inequalities:
-                    constraint = 0
-                    for pos, char in enumerate(ineq):
-                        if char == "1":
-                            constraint += 1 - all_vars[pos]
-                        elif char == "0":
-                            constraint += all_vars[pos]
-                    constraints.append(constraint >= 1)
+                minimized_constraints = espresso_pos_to_constraints(espresso_inequalities, all_vars)
+                constraints.extend(minimized_constraints)
 
         return variables, constraints
 

@@ -329,7 +329,7 @@ def is_mds(component):
     """
 
     description = component.description
-    final_mtr, F = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+    final_mtr, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
                                                          component.input_bit_size, component.output_bit_size)
 
     num_rows, num_cols = final_mtr.dimensions()
@@ -380,7 +380,7 @@ def has_maximal_branch_number(component):
 def calculate_weights_for_mix_column(component, format, type):
     if format == 'word':
         description = component.description
-        final_mtr, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+        final_mtr, F = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
                                                              component.input_bit_size, component.output_bit_size)
         if type == 'linear':
             final_mtr = final_mtr.transpose()
