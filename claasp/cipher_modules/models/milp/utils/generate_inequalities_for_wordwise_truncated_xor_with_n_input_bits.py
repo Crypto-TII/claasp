@@ -25,7 +25,8 @@ import itertools
 from math import ceil, log
 import pickle, os, pathlib
 from functools import reduce
-from subprocess import run
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+
 
 
 input_patterns_file_name = "dictionary_containing_truncated_xor_inequalities_between_2_input_bits.obj"
@@ -73,7 +74,7 @@ def update_dictionary_that_contains_wordwise_truncated_input_inequalities(wordsi
         read_file = open(wordwise_truncated_input_pattern_inequalities_file_path, 'rb')
         dictio = pickle.load(read_file)
         read_file.close()
-    except:
+    except OSError:
         dictio = {}
 
     if wordsize not in dictio.keys():
@@ -87,16 +88,11 @@ def update_dictionary_that_contains_wordwise_truncated_input_inequalities(wordsi
 
 
 def output_dictionary_that_contains_wordwise_truncated_input_inequalities():
-    read_file = open(wordwise_truncated_input_pattern_inequalities_file_path, 'rb')
-    dictio = pickle.load(read_file)
-    read_file.close()
-    return dictio
+    return milp_utils.output_espresso_dictionary(wordwise_truncated_input_pattern_inequalities_file_path)
 
 
 def delete_dictionary_that_contains_wordwise_truncated_input_inequalities():
-    write_file = open(wordwise_truncated_input_pattern_inequalities_file_path, 'wb')
-    pickle.dump({}, write_file)
-    write_file.close()
+    return milp_utils.delete_espresso_dictionary(wordwise_truncated_input_pattern_inequalities_file_path)
 
 
 def get_valid_points_for_wordwise_xor(delta_in_1, zeta_in_1, delta_in_2, zeta_in_2):
@@ -122,6 +118,32 @@ def get_valid_points_for_wordwise_xor(delta_in_1, zeta_in_1, delta_in_2, zeta_in
 def generate_valid_points_for_xor_between_n_input_words(wordsize=4, number_of_words=2):
     """
         Model 2 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
+
+        For the wordwise truncated xor between two inputs, the file is:
+
+        # there are 6 input variables
+        .i 6# there is only 1 output result
+        .o 1
+        # the following is the truth table
+        000000 1
+        000101 1
+        001010 1
+        001111 1
+        010001 1
+        010100 1
+        010101 1
+        011011 1
+        011111 1
+        100010 1
+        100111 1
+        101011 1
+        101111 1
+        110011 1
+        110111 1
+        111011 1
+        111111 1
+        # end of the PLA data
+        .e
     """
 
     bit_len = 2
@@ -182,7 +204,7 @@ def update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_
         read_file = open(wordwise_truncated_xor_inequalities_between_n_input_bits_file_path, 'rb')
         dictio = pickle.load(read_file)
         read_file.close()
-    except:
+    except OSError:
         dictio = {}
 
     if wordsize not in dictio.keys():
@@ -192,7 +214,7 @@ def update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_
         print(
             f"Adding wordwise xor inequalities between {number_of_inputs} inputs of size {wordsize} in pre-saved dictionary")
         valid_points = generate_valid_points_for_xor_between_n_input_words(wordsize, number_of_inputs)
-        inequalities = generate_product_of_sum_from_espresso(valid_points)
+        inequalities = milp_utils.generate_product_of_sum_from_espresso(valid_points)
         dictio[wordsize][number_of_inputs] = inequalities
         write_file = open(wordwise_truncated_xor_inequalities_between_n_input_bits_file_path, 'wb')
         pickle.dump(dictio, write_file)
@@ -214,70 +236,7 @@ def update_dictionary_that_contains_xor_inequalities_for_specific_wordwise_matri
         update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs(wordsize, number_of_input_bits)
 
 def output_dictionary_that_contains_wordwise_truncated_xor_inequalities():
-    read_file = open(wordwise_truncated_xor_inequalities_between_n_input_bits_file_path, 'rb')
-    dictio = pickle.load(read_file)
-    read_file.close()
-    return dictio
-
+    return milp_utils.output_espresso_dictionary(wordwise_truncated_xor_inequalities_between_n_input_bits_file_path)
 
 def delete_dictionary_that_contains_wordwise_truncated_xor_inequalities():
-    write_file = open(wordwise_truncated_xor_inequalities_between_n_input_bits_file_path, 'wb')
-    pickle.dump({}, write_file)
-    write_file.close()
-
-
-def generate_espresso_input(valid_points):
-    """
-    For the wordwise truncated xor, the file is:
-
-    # there are 6 input variables
-    .i 6# there is only 1 output result
-    .o 1
-    # the following is the truth table
-    000000 1
-    000101 1
-    001010 1
-    001111 1
-    010001 1
-    010100 1
-    010101 1
-    011011 1
-    011111 1
-    100010 1
-    100111 1
-    101011 1
-    101111 1
-    110011 1
-    110111 1
-    111011 1
-    111111 1
-    # end of the PLA data
-    .e
-
-    """
-
-    input_size = len(valid_points[0])
-
-    espresso_input = [f"# there are {input_size} input variables\n"]
-    espresso_input.append(f".i {input_size}")
-    espresso_input.append("# there is only 1 output result\n")
-    espresso_input.append(".o 1\n")
-    espresso_input.append("# the following is the truth table\n")
-
-    for point in valid_points:
-        espresso_input.append(f"{point} 1\n")
-
-    espresso_input.append("# end of the PLA data\n")
-    espresso_input.append(".e")
-
-    return ''.join(espresso_input)
-
-
-def generate_product_of_sum_from_espresso(valid_points):
-
-    espresso_input = generate_espresso_input(valid_points)
-    espresso_process = run(['espresso', '-epos', '-okiss'], input=espresso_input,
-                                          capture_output=True, text=True)
-    espresso_output = espresso_process.stdout.splitlines()
-
-    return [line[:-2] for line in espresso_output[4:]]
+    return milp_utils.delete_espresso_dictionary(wordwise_truncated_xor_inequalities_between_n_input_bits_file_path)

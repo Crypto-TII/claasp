@@ -1202,14 +1202,14 @@ class SBOX(Component):
         input_class, output_class = self._get_wordwise_input_output_linked_class(model)
         variables = [(f"x_class[{var}]", x_class[var]) for var in input_class + output_class]
 
-        bigM = model._model.get_max(x_class) + 1
+        big_m = model._model.get_max(x_class) + 1
 
         for input, output in zip(input_class, output_class):
-            var_if, if_constraints = milp_utils.milp_eq(model, x_class[input], 1, bigM)
+            var_if, if_constraints = milp_utils.milp_eq(model, x_class[input], 1, big_m)
             then_constraints = [x_class[output] == 2]
             else_constraints = [x_class[input] == x_class[output]]
             constraints.extend(if_constraints + milp_utils.milp_if_then_else(var_if, then_constraints, else_constraints,
-                                                                             bigM))
+                                                                             big_m))
 
         return variables, constraints
 

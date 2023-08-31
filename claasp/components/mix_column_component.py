@@ -28,7 +28,8 @@ from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_mds_matrices import \
     update_dictionary_that_contains_wordwise_truncated_mds_inequalities, \
-    output_dictionary_that_contains_wordwise_truncated_mds_inequalities
+    output_dictionary_that_contains_wordwise_truncated_mds_inequalities, \
+    delete_dictionary_that_contains_wordwise_truncated_mds_inequalities
 from claasp.input import Input
 from claasp.component import Component, free_input
 from claasp.utils.utils import int_to_poly

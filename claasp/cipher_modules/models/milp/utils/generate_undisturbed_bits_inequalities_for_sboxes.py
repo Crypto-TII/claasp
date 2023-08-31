@@ -27,29 +27,13 @@ The logic minimizer espresso is required for this module. It is already installe
 """
 import pickle, os, pathlib
 import subprocess
+from claasp.cipher_modules.models.milp.utils.utils import generate_espresso_input
 
 from sage.rings.integer_ring import ZZ
 
 undisturbed_bit_sboxes_inequalities_file_name = "dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits.obj"
 undisturbed_bit_sboxes_inequalities_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), undisturbed_bit_sboxes_inequalities_file_name)
 
-
-def generate_espresso_input(valid_points):
-    input_size = len(valid_points[0])
-
-    espresso_input = [f"# there are {input_size} input variables\n"]
-    espresso_input.append(f".i {input_size}")
-    espresso_input.append("# there is only 1 output result\n")
-    espresso_input.append(".o 1\n")
-    espresso_input.append("# the following is the truth table\n")
-
-    for point in valid_points:
-        espresso_input.append(f"{point} 1\n")
-
-    espresso_input.append("# end of the PLA data\n")
-    espresso_input.append(".e")
-
-    return ''.join(espresso_input)
 
 def get_transitions_for_single_output_bit(sbox, valid_points, verbose=False):
 

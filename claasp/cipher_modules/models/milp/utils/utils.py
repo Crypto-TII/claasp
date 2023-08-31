@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
+import pickle
 import re, os
+from subprocess import run
 
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
     output_dictionary_that_contains_xor_inequalities,
@@ -79,6 +80,47 @@ def _parse_external_solver_output(model, model_type, solver_name, solver_process
 
     return status, total_weight, probability_variables, components_variables, solve_time
 
+
+def generate_espresso_input(valid_points):
+
+    input_size = len(valid_points[0])
+
+    espresso_input = [f"# there are {input_size} input variables\n"]
+    espresso_input.append(f".i {input_size}")
+    espresso_input.append("# there is only 1 output result\n")
+    espresso_input.append(".o 1\n")
+    espresso_input.append("# the following is the truth table\n")
+
+    for point in valid_points:
+        espresso_input.append(f"{point} 1\n")
+
+    espresso_input.append("# end of the PLA data\n")
+    espresso_input.append(".e")
+
+    return ''.join(espresso_input)
+
+
+def generate_product_of_sum_from_espresso(valid_points):
+
+    espresso_input = generate_espresso_input(valid_points)
+    espresso_process = run(['espresso', '-epos', '-okiss'], input=espresso_input,
+                                          capture_output=True, text=True)
+    espresso_output = espresso_process.stdout.splitlines()
+
+    return [line[:-2] for line in espresso_output[4:]]
+
+
+def output_espresso_dictionary(file_path):
+    read_file = open(file_path, 'rb')
+    dictio = pickle.load(read_file)
+    read_file.close()
+    return dictio
+
+
+def delete_espresso_dictionary(file_path):
+    write_file = open(file_path, 'wb')
+    pickle.dump({}, write_file)
+    write_file.close()
 
 def milp_less(model, a, b, big_m):
     """
