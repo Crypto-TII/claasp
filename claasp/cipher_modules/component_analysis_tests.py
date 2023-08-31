@@ -280,7 +280,22 @@ def branch_number(component, type, format):
     elif component.type == "mix_column":
         return min(calculate_weights_for_mix_column(component, format, type))
 
+def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, input_bit_size, output_bit_size):
+    G = PolynomialRing(GF(2 ** word_size), 'x')
+    x = G.gen()
+    irr_poly = int_to_poly(polynomial_as_int, word_size, x)
+    F = QuotientRing(G, G.ideal(irr_poly), 'a')
+    a = F.gen()
+    input_word_size = input_bit_size // word_size
+    output_word_size = output_bit_size // word_size
+    mtr = [[0 for _ in range(input_word_size)] for _ in range(output_word_size)]
 
+    for i in range(output_word_size):
+        for j in range(input_word_size):
+            mtr[i][j] = int_to_poly(matrix[i][j], word_size, a)
+    final_mtr = Matrix(F, mtr)
+
+    return final_mtr, F
 def is_mds(component):
     """
     A matrix is MDS if and only if all the minors (determinants of square submatrices) are non-zero
@@ -313,30 +328,9 @@ def is_mds(component):
         True
     """
 
-
     description = component.description
-    int_mtr = description[0]
-
-
-    irr_int = int(description[1])
-    word_size = int(description[2])
-
-    G = PolynomialRing(GF(2 ** word_size), 'x')
-    x = G.gen()
-    irr_poly = int_to_poly(irr_int, word_size, x)
-    F = QuotientRing(G, G.ideal(irr_poly), 'a')
-    a = F.gen()
-    input_bit_size = component.input_bit_size
-    input_word_size = input_bit_size // word_size
-
-    output_bit_size = component.output_bit_size
-    output_word_size = output_bit_size // word_size
-    mtr = [[0 for _ in range(input_word_size)] for _ in range(output_word_size)]
-
-    for i in range(output_word_size):
-        for j in range(input_word_size):
-            mtr[i][j] = int_to_poly(int_mtr[i][j], word_size, a)
-    final_mtr = Matrix(F, mtr)
+    final_mtr, F = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+                                                         component.input_bit_size, component.output_bit_size)
 
     num_rows, num_cols = final_mtr.dimensions()
     for size in range(1, min(num_rows, num_cols) + 1):
@@ -360,18 +354,21 @@ def has_maximal_branch_number(component):
         sage: twofish = TwofishBlockCipher(number_of_rounds=2)
         sage: mix_column_component = twofish.get_component_from_id('mix_column_0_19')
         sage: has_maximal_branch_number(mix_column_component)
+        True
 
         sage: from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
         sage: skinny = SkinnyBlockCipher(block_bit_size=128, key_bit_size=384, number_of_rounds=40)
         sage: mix_column_component = skinny.get_component_from_id('mix_column_0_31')
         sage: has_maximal_branch_number(mix_column_component)
+        False
 
         sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
         sage: aes = AESBlockCipher(number_of_rounds=3)
         sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
         sage: has_maximal_branch_number(mix_column_component)
+        True
     """
     description = component.description
     word_size = int(description[2])
@@ -383,23 +380,8 @@ def has_maximal_branch_number(component):
 def calculate_weights_for_mix_column(component, format, type):
     if format == 'word':
         description = component.description
-        int_mtr = description[0]
-        irr_int = int(description[1])
-        word_size = int(description[2])
-        G = PolynomialRing(GF(2 ** word_size), 'x')
-        x = G.gen()
-        irr_poly = int_to_poly(irr_int, word_size, x)
-        F = QuotientRing(G, G.ideal(irr_poly), 'a')
-        a = F.gen()
-        input_bit_size = component.input_bit_size
-        input_word_size = input_bit_size // word_size
-        output_bit_size = component.output_bit_size
-        output_word_size = output_bit_size // word_size
-        mtr = [[0 for _ in range(input_word_size)] for _ in range(output_word_size)]
-        for i in range(output_word_size):
-            for j in range(input_word_size):
-                mtr[i][j] = int_to_poly(int_mtr[i][j], word_size, a)
-        final_mtr = Matrix(F, mtr)
+        final_mtr, F = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+                                                             component.input_bit_size, component.output_bit_size)
         if type == 'linear':
             final_mtr = final_mtr.transpose()
     if format == 'bit':

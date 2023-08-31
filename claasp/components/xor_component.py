@@ -801,11 +801,11 @@ class XOR(Component):
              ('x[xor_0_32_30]', x_118),
              ('x[xor_0_32_31]', x_119)]
             sage: constraints
-            [1 <= 2 - x_0 - x_40 + x_81,
-             1 <= 1 + x_3 - x_43 + x_80 + x_83]
+            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_81,
+             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_81,
              ...
-             1 <= 3 - x_34 - x_74 - x_114,
-             1 <= 1 - x_38 + x_78 + x_110 + x_118]
+             1 <= 1 + x_31 - x_39,
+             1 <= 2 - x_30 - x_39]
 
         """
         x = model.binary_variable
@@ -954,7 +954,7 @@ class XOR(Component):
             # if dX0 + dX1 > 2 then dY = 3
             a_b_greater_2, geq_2_constraints = milp_utils.milp_geq(model, input_a + input_b, 2, 2 * model._model.get_max(x_class) + 1)
             var_if_list.append(a_b_greater_2)
-            constraints.append(geq_2_constraints)
+            constraints.extend(geq_2_constraints)
             then_constraints_list.append([output_c == 3])
 
 
@@ -963,7 +963,7 @@ class XOR(Component):
             b_less_2, b_less_2_constraints = milp_utils.milp_less(model, input_a, 2, model._model.get_max(x_class) + 1)
             a_less_2_and_b_less_2, and_constraints = milp_utils.milp_and(model, a_less_2, b_less_2)
 
-            constraints.append(a_less_2_constraints + b_less_2_constraints + and_constraints)
+            constraints.extend(a_less_2_constraints + b_less_2_constraints + and_constraints)
 
             var_if_list.append(a_less_2_and_b_less_2)
             xor_constraints = []
