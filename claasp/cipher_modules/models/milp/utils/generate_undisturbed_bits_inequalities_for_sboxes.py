@@ -35,27 +35,29 @@ undisturbed_bit_sboxes_inequalities_file_name = "dictionary_that_contains_inequa
 undisturbed_bit_sboxes_inequalities_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), undisturbed_bit_sboxes_inequalities_file_name)
 
 
+def _to_bits(x, input_size):
+    return ZZ(x).digits(base=2, padto=input_size)[::-1]
+
+
+def _encode_transition(delta_in, delta_out, verbose):
+    encoded_in = [_ for j in delta_in for _ in _to_bits(j, 2)]
+    encoded_out = [_ for j in delta_out for _ in _to_bits(j, 2)]
+    if verbose:
+        _print_transition(delta_in, delta_out, True)
+    return "".join(str(_) for _ in encoded_in + encoded_out)
+
+
+def _print_transition(delta_in, delta_out, print_undisturbed_only=False):
+    input_str = ''.join(['1' if _ == 1 else '0' if _ == 0 else '?' for _ in delta_in])
+    output_str = ''.join(['1' if _ == 1 else '0' if _ == 0 else '?' for _ in delta_out])
+    if print_undisturbed_only:
+        if output_str != ''.join(['?' for _ in delta_out]):
+            print(f"     {input_str} -> {output_str}")
+    else:
+        print(f"     {input_str} -> {output_str}")
 def get_transitions_for_single_output_bit(sbox, valid_points, verbose=False):
 
-    def to_bits(x, input_size):
-        return ZZ(x).digits(base=2, padto=input_size)[::-1]
-    def encode_transition(delta_in, delta_out, verbose):
-        encoded_in = [_ for j in delta_in for _ in to_bits(j, 2)]
-        encoded_out = [_ for j in delta_out for _ in to_bits(j, 2)]
-        if verbose:
-            print_transition(delta_in, delta_out, True)
-        return "".join(str(_) for _ in encoded_in + encoded_out)
-
-    def print_transition(delta_in, delta_out, print_undisturbed_only=False):
-        input_str = ''.join(['1' if _ == 1 else '0' if _ == 0 else '?' for _ in delta_in])
-        output_str = ''.join(['1' if _ == 1 else '0' if _ == 0 else '?' for _ in delta_out])
-        if print_undisturbed_only:
-            if output_str != ''.join(['?' for _ in delta_out]):
-                print(f"     {input_str} -> {output_str}")
-        else:
-            print(f"     {input_str} -> {output_str}")
-
-    ddt_with_undisturbed_bits_transitions = [encode_transition(input, output, verbose) for input, output in valid_points]
+    ddt_with_undisturbed_bits_transitions = [_encode_transition(input, output, verbose) for input, output in valid_points]
     n = sbox.input_size()
 
     valid_points = {}

@@ -24,6 +24,7 @@ from sage.rings.finite_rings.finite_field_constructor import FiniteField
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import \
     update_dictionary_that_contains_xor_inequalities_for_specific_wordwise_matrix, \
     output_dictionary_that_contains_wordwise_truncated_xor_inequalities
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.input import Input
 from claasp.component import Component, free_input
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
@@ -490,11 +491,8 @@ class LinearLayer(Component):
         update_dictionary_that_contains_xor_inequalities_for_specific_matrix(matrix)
 
         for i in range(len(matrix)):
-            number_of_1s = 0
             col = [row[i] for row in matrix]
-            for bit in col:
-                if bit:
-                    number_of_1s += 1
+            number_of_1s = sum(col)
             if number_of_1s >= 2:
 
                 # performing generalized_xor_deterministic_truncated_xor_differential
@@ -566,33 +564,21 @@ class LinearLayer(Component):
         dict_inequalities = output_dictionary_that_contains_wordwise_truncated_xor_inequalities()
 
         for i in range(len(matrix)):
-            number_of_1s = 0
             col = [row[i] for row in matrix]
-            for bit in col:
-                if bit:
-                    number_of_1s += 1
+            number_of_1s = sum(col)
             if number_of_1s >= 2:
                 # performing wordwise_deterministic_truncated_xor
                 inequalities = dict_inequalities[model.word_size][number_of_1s]
                 active_input_vars = [input_vars[_] for _ in range(len(col)) if col[_]]
                 all_active_vars = [x[_] for sublist in active_input_vars + [output_vars[i]] for _ in sublist]
-                for ineq in inequalities:
-                    constraint = 0
-                    for j, char in enumerate(ineq):
-                        if char == "1":
-                            constraint += 1 - all_active_vars[j]
-                        elif char == "0":
-                            constraint += all_active_vars[j]
-                        else:
-                            continue
-                    constraints.append(constraint >= 1)
+
+                minimized_constraints = espresso_pos_to_constraints(inequalities, all_active_vars)
+                constraints.extend(minimized_constraints)
 
             if number_of_1s == 1:
-                for index, value in enumerate(col):
-                    if value:
-                        for _ in range(len(output_vars[0])):
-                            constraints.append(x[output_vars[i][_]] == x[input_vars[index][_]])
-                        break
+                index = col.index(1)
+                for _ in range(len(output_vars[0])):
+                    constraints.append(x[output_vars[i][_]] == x[input_vars[index][_]])
 
         return variables, constraints
 

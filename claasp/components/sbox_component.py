@@ -173,6 +173,23 @@ def smt_get_sbox_probability_constraints(bit_ids, template):
 
     return constraints
 
+def _to_int(bits):
+    return int("".join(str(x) for x in bits), 2)
+
+def _combine_truncated(input_1, input_2):
+    return [val if val == input_2[_] else 2 for _, val in enumerate(input_1)]
+
+def _get_truncated_output_difference(ddt_row, n):
+    output_bits = [2] * n
+    has_undisturbed_bits = False
+    list_of_delta_out = [delta_out for delta_out, proba in enumerate(ddt_row) if proba]
+    for bit in range(n):
+        delta = [j & (1 << bit) for j in list_of_delta_out]
+        if delta.count(delta[0]) == len(delta):
+            has_undisturbed_bits = True
+            output_bits[n - 1 - bit] = 1 if delta[0] else 0
+    return has_undisturbed_bits, output_bits
+
 
 class SBOX(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
@@ -217,7 +234,6 @@ class SBOX(Component):
         output_vars = list(map(ring_R, output_vars))
 
         return S.polynomials(input_vars, output_vars)
-
     def get_ddt_with_undisturbed_transitions(self):
         """
         Returns a list of all truncated input/outputs tuples that have undisturbed differential bits
@@ -245,21 +261,6 @@ class SBOX(Component):
         """
 
         sbox = SBox(self.description, big_endian=False)
-        def to_int(bits):
-            return int("".join(str(x) for x in bits), 2)
-        def combine_truncated(input_1, input_2):
-            return [val if val == input_2[_] else 2 for _, val in enumerate(input_1)]
-        def get_truncated_output_difference(ddt_row, n):
-            output_bits = [2] * n
-            has_undisturbed_bits = False
-            list_of_delta_out = [delta_out for delta_out, proba in enumerate(ddt_row) if proba]
-            for bit in range(n):
-                delta = [j & (1 << bit) for j in list_of_delta_out]
-                if delta.count(delta[0]) == len(delta):
-                    has_undisturbed_bits = True
-                    output_bits[n - 1 - bit] = 1 if delta[0] else 0
-            return has_undisturbed_bits, output_bits
-
         n = sbox.input_size()
         ddt = sbox.difference_distribution_table()
 
@@ -270,8 +271,8 @@ class SBOX(Component):
         all_combinations_of_inputs_with_undisturbed_bits = {}
 
         for input_bits in all_fixed_inputs:
-            delta_in = to_int(input_bits)
-            has_undisturbed_bits, output_bits = get_truncated_output_difference(ddt[delta_in], n)
+            delta_in = _to_int(input_bits)
+            has_undisturbed_bits, output_bits = _get_truncated_output_difference(ddt[delta_in], n)
             if has_undisturbed_bits:
                 fixed_inputs_with_undisturbed_bits.append(input_bits)
                 all_combinations_of_inputs_with_undisturbed_bits[str(input_bits)] = output_bits
@@ -284,10 +285,10 @@ class SBOX(Component):
             newly_combined_inputs = []
             for input_1, input_2 in combinations(inputs_to_combine, 2):
                 truncated_positions = list(map(xor, input_1, input_2))
-                combined_input = tuple(combine_truncated(input_1, input_2))
+                combined_input = tuple(_combine_truncated(input_1, input_2))
                 output_1 = all_combinations_of_inputs_with_undisturbed_bits[str(input_1)]
                 output_2 = all_combinations_of_inputs_with_undisturbed_bits[str(input_2)]
-                combined_output = combine_truncated(output_1, output_2)
+                combined_output = _combine_truncated(output_1, output_2)
                 if sum(truncated_positions) == 1 and combined_output != [2] * n:
                     all_combinations_of_inputs_with_undisturbed_bits[str(combined_input)] = combined_output
                     newly_combined_inputs.append(combined_input)

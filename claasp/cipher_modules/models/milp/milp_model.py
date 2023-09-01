@@ -414,39 +414,72 @@ class MilpModel:
 
     def get_final_output(self, model_type, component_id, components_variables, diff_str, probability_variables,
                          suffix_dict):
+        if model_type == "wordwise_deterministic_truncated_xor_differential":
+            return self._get_final_output_wordwise_deterministic_truncated_xor_differential(component_id,
+                                                                                            components_variables,
+                                                                                            diff_str, suffix_dict)
+        elif model_type == "deterministic_truncated_xor_differential":
+            return self._get_final_output_deterministic_truncated_xor_differential(component_id, components_variables,
+                                                                                   diff_str, suffix_dict)
+        else:
+            return self._get_final_output_for_default_case(component_id, components_variables, diff_str, probability_variables,
+                         suffix_dict)
+
+    def _get_final_output_for_default_case(self, component_id, components_variables, diff_str, probability_variables,
+                         suffix_dict):
         final_output = []
         for suffix in suffix_dict.keys():
             diff_str[suffix] = ""
-            if model_type == "wordwise_deterministic_truncated_xor_differential":
-                for i in range(suffix_dict[suffix]):
-                    if component_id + "_word_" + str(i) + suffix + "_class" in components_variables:
-                        bit = components_variables[component_id + "_word_" + str(i) + suffix + "_class"]
-                        diff_str[suffix] += f"{bit}".split(".")[0]
-                    else:
-                        diff_str[suffix] += "*"
-            else:
-                for i in range(suffix_dict[suffix]):
-                    if component_id + "_" + str(i) + suffix in components_variables:
-                        bit = components_variables[component_id + "_" + str(i) + suffix]
-                        diff_str[suffix] += f"{bit}".split(".")[0]
-                    else:
-                        diff_str[suffix] += "*"
-            weight = 0
-            if "deterministic_truncated_xor_differential" in model_type:
-                difference = diff_str[suffix]
-            else:
-                diff_str[suffix] = "0b" + diff_str[suffix]
+            for i in range(suffix_dict[suffix]):
+                if component_id + "_" + str(i) + suffix in components_variables:
+                    bit = components_variables[component_id + "_" + str(i) + suffix]
+                    diff_str[suffix] += f"{bit}".split(".")[0]
+                else:
+                    diff_str[suffix] += "*"
+            diff_str[suffix] = "0b" + diff_str[suffix]
+            try:
+                difference = BitArray(diff_str[suffix])
                 try:
-                    difference = BitArray(diff_str[suffix])
-                    try:
-                        difference = "0x" + difference.hex
-                    except Exception:
-                        difference = "0b" + difference.bin
+                    difference = "0x" + difference.hex
                 except Exception:
-                    difference = diff_str[suffix]
-                weight = 0
-                if component_id + "_probability" in probability_variables:
-                    weight = probability_variables[component_id + "_probability"] / 10.
+                    difference = "0b" + difference.bin
+            except Exception:
+                difference = diff_str[suffix]
+            weight = 0
+            if component_id + "_probability" in probability_variables:
+                weight = probability_variables[component_id + "_probability"] / 10.
+            final_output.append(set_component_value_weight_sign(difference, weight))
+        return final_output
+    def _get_final_output_deterministic_truncated_xor_differential(self, component_id, components_variables, diff_str,
+                         suffix_dict):
+        final_output = []
+        for suffix in suffix_dict.keys():
+            diff_str[suffix] = ""
+            for i in range(suffix_dict[suffix]):
+                if component_id + "_" + str(i) + suffix in components_variables:
+                    bit = components_variables[component_id + "_" + str(i) + suffix]
+                    diff_str[suffix] += f"{bit}".split(".")[0]
+                else:
+                    diff_str[suffix] += "*"
+            weight = 0
+            difference = diff_str[suffix]
+            final_output.append(set_component_value_weight_sign(difference, weight))
+
+        return final_output
+
+    def _get_final_output_wordwise_deterministic_truncated_xor_differential(self, component_id, components_variables, diff_str,
+                         suffix_dict):
+        final_output = []
+        for suffix in suffix_dict.keys():
+            diff_str[suffix] = ""
+            for i in range(suffix_dict[suffix]):
+                if component_id + "_word_" + str(i) + suffix + "_class" in components_variables:
+                    bit = components_variables[component_id + "_word_" + str(i) + suffix + "_class"]
+                    diff_str[suffix] += f"{bit}".split(".")[0]
+                else:
+                    diff_str[suffix] += "*"
+            weight = 0
+            difference = diff_str[suffix]
             final_output.append(set_component_value_weight_sign(difference, weight))
 
         return final_output

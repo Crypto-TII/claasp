@@ -30,6 +30,7 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_
     update_dictionary_that_contains_wordwise_truncated_mds_inequalities, \
     output_dictionary_that_contains_wordwise_truncated_mds_inequalities, \
     delete_dictionary_that_contains_wordwise_truncated_mds_inequalities
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.input import Input
 from claasp.component import Component, free_input
 from claasp.utils.utils import int_to_poly
@@ -654,11 +655,11 @@ class MixColumn(LinearLayer):
              ('x[mix_column_0_21_word_3_class_bit_0]', x_14),
              ('x[mix_column_0_21_word_3_class_bit_1]', x_15)]
             sage: constraints
-            [1 <= 1 + x_16 + x_17 + x_18 + x_19 + x_20 + x_21 - x_22,
-             1 <= 1 + x_16 + x_17 + x_18 + x_19 - x_22 + x_23 + x_24,
+            [1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 - x_15,
+             1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_6 + x_7 - x_15,
              ...
-             1 <= 2 - x_18 - x_19,
-             1 <= 2 - x_16 - x_17]
+             1 <= 2 - x_2 - x_3,
+             1 <= 2 - x_0 - x_1]
 
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: cipher = MidoriBlockCipher(number_of_rounds=2)
@@ -686,16 +687,8 @@ class MixColumn(LinearLayer):
             dict_inequalities = output_dictionary_that_contains_wordwise_truncated_mds_inequalities()
             inequalities = dict_inequalities[model._word_size][matrix.dimensions()]
 
-            for ineq in inequalities:
-                constraint = 0
-                for j, char in enumerate(ineq):
-                    if char == "-":
-                        continue
-                    elif char == "1":
-                        constraint += 1 - all_vars[j]
-                    elif char == "0":
-                        constraint += all_vars[j]
-                constraints.append(constraint >= 1)
+            minimized_constraints = espresso_pos_to_constraints(inequalities, all_vars)
+            constraints.extend(minimized_constraints)
         else:
             M = self.description[0]
             bin_matrix = Matrix([[1 if M[i][j] else 0 for i in range(len(M))]

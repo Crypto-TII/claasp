@@ -1,4 +1,4 @@
-
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -29,7 +29,7 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
     update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs,
     output_dictionary_that_contains_wordwise_truncated_xor_inequalities,
-    delete_dictionary_that_contains_wordwise_truncated_xor_inequalities
+    generate_valid_points_for_xor_between_n_input_words
 )
 
 
@@ -826,16 +826,8 @@ class XOR(Component):
 
         for i in range(output_word_size):
             all_vars = [x[_] for sublist in input_vars[i::output_word_size] + [output_vars[i]] for _ in sublist]
-            for ineq in inequalities:
-                constraint = 0
-                for j, char in enumerate(ineq):
-                    if char == "1":
-                        constraint += 1 - all_vars[j]
-                    elif char == "0":
-                        constraint += all_vars[j]
-                    else:
-                        continue
-                constraints.append(constraint >= 1)
+            minimized_constraints = espresso_pos_to_constraints(inequalities, all_vars)
+            constraints.extend(minimized_constraints)
 
         return variables, constraints
 

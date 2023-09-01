@@ -26,8 +26,7 @@ from math import ceil, log
 import pickle, os, pathlib
 from functools import reduce
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
-
-
+from claasp.cipher_modules.models.milp.utils.utils import generate_product_of_sum_from_espresso
 
 input_patterns_file_name = "dictionary_containing_truncated_xor_inequalities_between_2_input_bits.obj"
 xor_n_inputs_file_name = "dictionary_containing_truncated_xor_inequalities_between_n_input_bits.obj"
@@ -149,52 +148,39 @@ def generate_valid_points_for_xor_between_n_input_words(wordsize=4, number_of_wo
     bit_len = 2
     valid_points = []
 
-    if wordsize == 1:
-        for in1 in range(3):
-            for in2 in range(3):
-                if in1 < 2 and in2 < 2:
-                    res = (in1 + in2) % 2
-                else:
-                    res = 2
-                full_array = ZZ(res).digits(base=2, padto=bit_len) + ZZ(in2).digits(base=2, padto=bit_len) + ZZ(in1).digits(base=2, padto=bit_len)
-                valid_points.append("".join(str(_) for _ in full_array[::-1]))
+    list_of_possible_inputs = [(0, 0)] + \
+                              [(1, i) for i in range(1, 1 << wordsize)] + \
+                              [(2, -1)] + [(3, -2)]
 
-    else:
+    for input in itertools.product(list_of_possible_inputs, repeat=number_of_words):
+        delta = [input[_][0] for _ in range(number_of_words)]
+        zeta = [input[_][1] for _ in range(number_of_words)]
 
-        list_of_possible_inputs = [(0, 0)] + \
-                                  [(1, i) for i in range(1, 1 << wordsize)] + \
-                                  [(2, -1)] + [(3, -2)]
+        tmp_delta = [0 for _ in range(number_of_words - 1)]
+        tmp_zeta = [0 for _ in range(number_of_words - 1)]
+        tmp_delta[0] = delta[0]
+        tmp_zeta[0] = zeta[0]
 
+        for summand in range(number_of_words - 2):
+            tmp_delta[summand + 1], tmp_zeta[summand + 1] = get_valid_points_for_wordwise_xor(tmp_delta[summand],
+                                                                                              tmp_zeta[summand],
+                                                                                              delta[summand + 1],
+                                                                                              zeta[summand + 1])
 
-        for input in itertools.product(list_of_possible_inputs, repeat=number_of_words):
-            delta = [input[_][0] for _ in range(number_of_words)]
-            zeta = [input[_][1] for _ in range(number_of_words)]
+        delta_output, zeta_output = get_valid_points_for_wordwise_xor(tmp_delta[-1], tmp_zeta[-1], delta[-1], zeta[-1])
+        if delta.count(3) == 0 and delta.count(2) == 1 and delta.count(1) > 1:
+            only_fixed_patterns = [i[1] for i in enumerate(zeta) if delta[i[0]] == 1]
+            if len(only_fixed_patterns) > 1:
+                if reduce(lambda a, b: a ^ b, only_fixed_patterns) == 0:
+                    delta_output = 2
 
-            tmp_delta = [0 for _ in range(number_of_words - 1)]
-            tmp_zeta = [0 for _ in range(number_of_words - 1)]
-            tmp_delta[0] = delta[0]
-            tmp_zeta[0] = zeta[0]
+        tmp = ''.join(format(delta[i], '0' + str(bit_len) + 'b') +
+                      format(zeta[i] if (delta[i] == 1) else 0, '0' + str(wordsize) + 'b') for i in
+                      range(number_of_words)) + \
+              format(delta_output, '0' + str(bit_len) + 'b') + \
+              format(zeta_output, '0' + str(wordsize) + 'b')
 
-
-            for summand in range(number_of_words - 2):
-                tmp_delta[summand + 1], tmp_zeta[summand + 1] = get_valid_points_for_wordwise_xor(tmp_delta[summand], tmp_zeta[summand], delta[summand + 1], zeta[summand + 1])
-
-            delta_output, zeta_output = get_valid_points_for_wordwise_xor(tmp_delta[-1], tmp_zeta[-1], delta[-1], zeta[-1])
-
-            if delta.count(3) == 0 and delta.count(2) == 1 and delta.count(1) > 1:
-                only_fixed_patterns = [i[1] for i in enumerate(zeta) if delta[i[0]] == 1]
-                if len(only_fixed_patterns) > 1:
-                    if reduce(lambda a, b: a ^ b, only_fixed_patterns) == 0:
-                        delta_output = 2
-                    else:
-                        delta_output = 3
-
-            tmp = ''.join(format(delta[i], '0' + str(bit_len) + 'b') +
-                          format(zeta[i] if (delta[i] == 1) else 0, '0' + str(wordsize) + 'b') for i in range(number_of_words)) + \
-                  format(delta_output, '0' + str(bit_len) + 'b') + \
-                  format(zeta_output, '0' + str(wordsize) + 'b')
-
-            valid_points.append(tmp)
+        valid_points.append(tmp)
 
     return valid_points
 

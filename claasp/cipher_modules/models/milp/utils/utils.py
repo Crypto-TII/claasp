@@ -360,6 +360,7 @@ def milp_generalized_xor(input_var_list, output_bit):
     dict_inequalities = output_dictionary_that_contains_xor_inequalities()
     inequalities = dict_inequalities[number_of_inputs]
 
+
     for ineq in inequalities:
         constraint = 0
         for var in range(number_of_inputs):
@@ -401,14 +402,12 @@ def milp_if_then(var_if, then_constraints, big_m):
     return constraints
 
 
-def milp_if_then_else(var_if, then_constraints, else_constraints, big_m):
+def milp_else(var_if, else_constraints, big_m):
     """
-    Returns a list of variables and a list of constraints to model an if-then-else statement.
-    When the binary variable var_if == 1, the set 'then_constraints' is applied,
-    when var_if == 0, the set 'else_constraints' is applied
+    Returns a list of variables and a list of constraints to model an else statement.
     """
 
-    constraints = milp_if_then(var_if, then_constraints, big_m)
+    constraints = []
 
     for constr in else_constraints:
         if constr.is_less_or_equal():
@@ -420,6 +419,16 @@ def milp_if_then_else(var_if, then_constraints, else_constraints, big_m):
                 constraints.append(rhs <= lhs + big_m * var_if)
 
     return constraints
+def milp_if_then_else(var_if, then_constraints, else_constraints, big_m):
+    """
+    Returns a list of variables and a list of constraints to model an if-then-else statement.
+    When the binary variable var_if == 1, the set 'then_constraints' is applied,
+    when var_if == 0, the set 'else_constraints' is applied
+    """
+
+    constraints = milp_if_then(var_if, then_constraints, big_m)
+
+    return constraints + milp_else(var_if, else_constraints, big_m)
 
 
 def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraints, big_m):
@@ -448,31 +457,15 @@ def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraint
 
         for i in range(num_cond):
             decision_constraints = 0
-            for j in range(i + 1):
-                if j == i:
-                    decision_constraints += var_if_list[j]
-                else:
-                    decision_constraints += 1 - var_if_list[j]
+            for j in range(i):
+                decision_constraints += 1 - var_if_list[j]
+            decision_constraints += var_if_list[i]
             constraints.append(decision_constraints <= decision_var[i] + num_cond - 1)
             constraints.append(1. / num_cond * decision_constraints >= decision_var[i])
 
-            for constr in then_constraints_list[i]:
-                if constr.is_less_or_equal():
-                    for lhs, rhs in constr.inequalities():
-                        constraints.append(lhs <= rhs + big_m * (1 - decision_var[i]))
-                else:
-                    for lhs, rhs in constr.equations():
-                        constraints.append(lhs <= rhs + big_m * (1 - decision_var[i]))
-                        constraints.append(rhs <= lhs + big_m * (1 - decision_var[i]))
+            constraints.extend(milp_if_then(decision_var[i], then_constraints_list[i], big_m))
 
-        for constr in else_constraints:
-            if constr.is_less_or_equal():
-                for lhs, rhs in constr.inequalities():
-                    constraints.append(lhs <= rhs + big_m * sum(decision_var))
-            else:
-                for lhs, rhs in constr.equations():
-                    constraints.append(lhs <= rhs + big_m * sum(decision_var))
-                    constraints.append(rhs <= lhs + big_m * sum(decision_var))
+        constraints.extend(milp_else(sum(decision_var), else_constraints, big_m))
 
         return constraints
 
@@ -510,7 +503,17 @@ def milp_xor_truncated(model, input_1, input_2, output):
      2  |  2  |  2
     _______________
 
-    Espresso was used to reduce the number of constraints to 10 inequalities.
+    The table can be obtained with the following lines:
+
+    sage: from itertools import product
+    sage: transitions = [(i1, i2, (i1 + i2) % 2) if (i1 < 2 and i2 < 2) else (i1, i2, 2) for i1, i2 in product(range(3),repeat=2)]
+
+    Espresso was used to reduce the number of constraints to 10 inequalities:
+
+    sage: bit_transitions = [ZZ(val[2]).digits(base=2, padto=2) + ZZ(val[1]).digits(base=2, padto=2) + ZZ(val[0]).digits(base=2, padto=2) for val in transitions]
+    sage: valid_points = ["".join(str(_) for _ in bit_transition[::-1]) for bit_transition in bit_transitions]
+    sage: espresso_inequalities = generate_product_of_sum_from_espresso(valid_points)
+
     """
 
     x = model.binary_variable

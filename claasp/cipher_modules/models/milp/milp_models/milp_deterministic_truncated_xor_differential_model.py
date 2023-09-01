@@ -18,6 +18,7 @@
 import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
@@ -388,7 +389,7 @@ class MilpDeterministicTruncatedXorDifferentialModel(MilpModel):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: variables, constraints = milp.input_wordwise_deterministic_truncated_xor_differential_constraints_alt()
+            sage: variables, constraints = milp.input_wordwise_deterministic_truncated_xor_differential_constraints()
             sage: variables
              ('x[xor_0_36_11]', x_1571),
              ('x[xor_0_36_12]', x_1572),
@@ -401,8 +402,6 @@ class MilpDeterministicTruncatedXorDifferentialModel(MilpModel):
              ...
              x_2918 == 2*x_3060 + x_3061,
              x_2919 == 2*x_3070 + x_3071]
-            sage: len(constraints)
-            1783
 
 
         """
@@ -426,16 +425,9 @@ class MilpDeterministicTruncatedXorDifferentialModel(MilpModel):
 
             for word_tuple in input_full_tuples + output_full_tuples:
                 # link class tuple (c0, c1) to the possible bit values of each component word
-                for ineq in inequalities:
-                    constraint = 0
-                    for j, char in enumerate(ineq):
-                        if char == "-":
-                            continue
-                        elif char == "1":
-                            constraint += 1 - x[word_tuple[j]]
-                        elif char == "0":
-                            constraint += x[word_tuple[j]]
-                    constraints.append(constraint >= 1)
+                word_vars = [x[_] for _ in word_tuple]
+                minimized_constraints = espresso_pos_to_constraints(inequalities, word_vars)
+                constraints.extend(minimized_constraints)
 
             variables.extend([(f"x_class[{var}]", x_class[var]) for var in all_int_vars] + \
                             [(f"x[{var}]", x[var]) for var in all_vars])
