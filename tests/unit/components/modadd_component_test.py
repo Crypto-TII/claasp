@@ -22,7 +22,7 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraint
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     modadd_component = cipher.get_component_from_id("modadd_0_1")
-    variables, constraints = modadd_component.milp_deterministic_truncated_xor_differential_binary_constraints(milp)
+    variables, constraints = modadd_component.milp_deterministic_bitwise_truncated_xor_differential_binary_constraints(milp)
 
     assert str(variables[0]) == "('x[rot_0_0_0_class_bit_0]', x_0)"
     assert str(variables[1]) == "('x[rot_0_0_0_class_bit_1]', x_1)"
