@@ -925,7 +925,7 @@ def plot_first_line_of_data_frame(categories, plot_number, results):
     # We need to repeat the first value to close the circular graph:
     values = []
     for category in categories:
-        if type(results[plot_number]["properties"][category]["value"]) == str:
+        if isinstance(results[plot_number]["properties"][category]["value"], str):
             continue
         elif results[plot_number]["properties"][category]["value"] not in [False, True]:
             if category in ["boomerang_uniformity", "differential_uniformity"]:
@@ -945,7 +945,7 @@ def remove_components_with_strings_as_values(results_without_xor):
     str_in_list = []
     for i in range(len(results_without_xor)):
         for result_property in list(results_without_xor[i]["properties"].keys()):
-            str_in_list.append(type(results_without_xor[i]["properties"][result_property]["value"]) == str)
+            str_in_list.append(isinstance(results_without_xor[i]["properties"][result_property]["value"], str))
         if True not in str_in_list:
             results.append(results_without_xor[i])
     return results
