@@ -1784,3 +1784,195 @@ class Cipher:
     @property
     def type(self):
         return self._type
+
+    def create_networx_graph_from_input_ids(self):
+        import networkx as nx
+        data = self.as_python_dictionary()['cipher_rounds']
+        # Create a directed graph
+        G = nx.DiGraph()
+
+        # Flatten the list of lists
+        flat_data = [item for sublist in data for item in sublist]
+
+        # Add nodes
+        for item in flat_data:
+            G.add_node(item["id"])
+
+        # Add edges based on input_id_link
+        for item in flat_data:
+            for input_id in item.get("input_id_link", []):
+                # Adding an edge from input_id to the current item's id
+                G.add_edge(input_id, item["id"])
+
+        return G
+
+    def create_top_and_bottom_subgraphs_from_components_graph(self, e0_bottom_ids, e1_top_ids):
+        import networkx as nx
+
+        def get_predecessors_subgraph(G, start_nodes):
+            H = nx.DiGraph()
+
+            for node in start_nodes:
+                if node in G:
+                    H.add_node(node)
+                    predecessors_dict = nx.dfs_tree(G, source=node)
+                    for successor, source in predecessors_dict.items():
+                        H.add_edge(source, successor)
+                        H.add_node(source)
+
+            return H
+
+        def induced_subgraph_of_predecessors(DG, nodes):
+            visited = set()
+
+            def dfs(v):
+                if v not in visited:
+                    visited.add(v)
+                    for predecessor in DG.predecessors(v):
+                        dfs(predecessor)
+
+            for node in nodes:
+                dfs(node)
+
+            return DG.subgraph(visited)
+
+        def get_descendants_subgraph(G, start_nodes):
+            """
+            Extract a subgraph containing only the descendants (successors) of a given list of nodes from a graph.
+
+            Parameters:
+            - G (nx.DiGraph): The original directed graph.
+            - start_nodes (list): The list of nodes to start the search from.
+
+            Returns:
+            - H (nx.DiGraph): The subgraph containing start_nodes and their descendants.
+            """
+            # Create an empty directed subgraph
+            H = nx.DiGraph()
+
+            # Add nodes from start_nodes to the subgraph and their descendants
+            for node in start_nodes:
+                if node in G:
+                    H.add_node(node)
+                    for successor in nx.dfs_successors(G, source=node):
+                        H.add_edge(node, successor)
+                        H.add_node(successor)
+
+            return H
+
+        graph_cipher = self.create_networx_graph_from_input_ids()
+        ancestors_ids = induced_subgraph_of_predecessors(graph_cipher, e0_bottom_ids)
+        descendants_ids = get_descendants_subgraph(graph_cipher, e1_top_ids)
+        return ancestors_ids, descendants_ids
+
+    def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
+        round_number = self.get_round_from_component_id(component_id)
+        self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
+
+    def update_input_bit_positions_from_component_id(self, component_id, new_input_bit_positions):
+        round_number = self.get_round_from_component_id(component_id)
+        self._rounds.rounds[round_number].update_input_bit_positions_from_component_id(
+            component_id, new_input_bit_positions
+        )
+
+    def create_top_and_bottom_ciphers_from_subgraphs(self, top_graph, bottom_graph, middle_ids, e0_end_nodes):
+        def reorder_and_renumber(data, e1_start):
+            ordered_data = {}
+            counter = 0
+
+            for key in e1_start:
+                original_lists = data[key]
+                new_lists = []
+
+                for inner_list in original_lists:
+                    new_inner_list = []
+                    for _ in inner_list:
+                        new_inner_list.append(counter)
+                        counter += 1
+                    new_lists.append(new_inner_list)
+
+                ordered_data[key] = new_lists
+
+            return ordered_data, counter
+
+        initial_nodes_from_bottom_graph = [node for node in bottom_graph if bottom_graph.has_edge(node, node)]
+        print(initial_nodes_from_bottom_graph)
+        bottom_cipher = deepcopy(self)
+        new_input_bit_positions = {}
+        new_bit_size = 0
+        bottom_cipher._inputs_bit_size = []
+        bottom_cipher._inputs = []
+        for node_id in initial_nodes_from_bottom_graph:
+            old_component = self.get_component_from_id(node_id)
+            new_input_id_links = deepcopy(old_component.input_id_links)
+            for input_id_link_e0 in e0_end_nodes:
+                if input_id_link_e0 in old_component.input_id_links:
+                    index_e0_end = old_component.input_id_links.index(input_id_link_e0)
+                    new_input_id_links[index_e0_end] = "new_"+input_id_link_e0
+                    bottom_cipher._inputs.append("new_"+input_id_link_e0)
+                    bottom_cipher._inputs_bit_size.append(32)
+
+            bottom_cipher.update_input_id_links_from_component_id(old_component.id, new_input_id_links)
+            new_input_bit_positions[old_component.id] = old_component.input_bit_positions
+
+        #reorder_and_renumber_bit_positions, new_bit_size = reorder_and_renumber(
+        #    new_input_bit_positions, initial_nodes_from_bottom_graph
+        #)
+
+
+
+        # check orphans
+        for middle_id in middle_ids:
+            bottom_cipher._inputs.append(middle_id)
+            bottom_cipher._inputs_bit_size.append(self.get_component_from_id(middle_id).output_bit_size)
+
+        #for node_id in initial_nodes_from_bottom_graph:
+        #    old_component = self.get_component_from_id(node_id)
+        #    new_input_bit_positions_temp = reorder_and_renumber_bit_positions[old_component.id]
+        #    bottom_cipher.update_input_bit_positions_from_component_id(old_component.id, new_input_bit_positions_temp)
+
+        for round_number in range(bottom_cipher.number_of_rounds):
+            round_object = self.rounds.round_at(round_number)
+            list_of_components = round_object.components
+            for round_component in list_of_components:
+
+                if round_component.id not in bottom_graph.nodes:
+                    #print("first", round_number, round_component.id, bottom_cipher.rounds.round_at(0).components[0].id)
+                    component_to_be_removed = bottom_cipher.get_component_from_id(round_component.id)
+                    component_to_be_removed_round = bottom_cipher.get_round_from_component_id(round_component.id)
+                    #print("component_to_be_removed", component_to_be_removed.id)
+                    bottom_cipher.remove_round_component(component_to_be_removed_round, component_to_be_removed)
+                    #print("first", round_number, round_component.id, bottom_cipher.rounds.round_at(0).components[0].id)
+        # check empty rounds
+        for round_number in range(bottom_cipher.number_of_rounds-1, -1, -1):
+            round_object = bottom_cipher.rounds.round_at(round_number)
+            list_of_components = round_object.components
+            if not list_of_components:
+                del bottom_cipher._rounds._rounds[round_number]
+
+        # check empty rounds
+        for round_number in range(bottom_cipher.number_of_rounds):
+            bottom_cipher.rounds.round_at(round_number)._id = round_number
+
+        top_cipher = deepcopy(self)
+        for round_number in range(top_cipher.number_of_rounds):
+            round_object = self.rounds.round_at(round_number)
+            list_of_components = round_object.components
+            for round_component in list_of_components:
+                if round_component.id not in top_graph.nodes:
+                    #print("first", round_number, round_component.id, bottom_cipher.rounds.round_at(0).components[0].id)
+                    component_to_be_removed = top_cipher.get_component_from_id(round_component.id)
+                    component_to_be_removed_round = top_cipher.get_round_from_component_id(round_component.id)
+                    #print("component_to_be_removed", component_to_be_removed.id)
+                    top_cipher.remove_round_component(component_to_be_removed_round, component_to_be_removed)
+
+        # check empty rounds
+        for round_number in range(top_cipher.number_of_rounds-1, -1, -1):
+            round_object = top_cipher.rounds.round_at(round_number)
+            list_of_components = round_object.components
+            if not list_of_components:
+                del top_cipher._rounds._rounds[round_number]
+
+        print(self.as_python_dictionary())
+        return top_cipher, bottom_cipher
+

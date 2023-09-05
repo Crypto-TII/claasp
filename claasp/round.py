@@ -115,3 +115,19 @@ class Round:
     @property
     def number_of_components(self):
         return len(self._components)
+
+    def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
+        i = 0
+        for component in self._components:
+            if component.id == component_id:
+                break
+            i += 1
+        self._components[i].set_input_id_links(new_input_id_links)
+
+    def update_input_bit_positions_from_component_id(self, component_id, new_input_bit_positions):
+        i = 0
+        for component in self._components:
+            if component.id == component_id:
+                break
+            i += 1
+        self._components[i].set_input_bit_positions(new_input_bit_positions)
