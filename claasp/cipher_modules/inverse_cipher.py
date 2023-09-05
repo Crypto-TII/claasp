@@ -211,40 +211,40 @@ def equivalent_bits_in_common(bits_of_an_output_component, component_bits, all_e
     return bits_in_common
 
 
-def old_compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(component,
-                                                                                                          available_output_components,
-                                                                                                          all_equivalent_bits,
-                                                                                                          cipher):
-    input_id_links = []
-    input_bit_positions = []
-    for c in available_output_components:
-        if is_possibly_invertible_component(c):
-            component_bit_names = []
-            for i in range(c["output_bit_size"]):
-                bit_name = c["id"] + "_" + str(i) + "_output_updated"
-                component_bit_names.append(bit_name)
-            dictio_starting_bit_position = {}
-            position = 0
-            for index, input_id_link in enumerate(c["input_id_link"]):
-                if input_id_link not in dictio_starting_bit_position.keys():
-                    dictio_starting_bit_position[input_id_link] = []
-                dictio_starting_bit_position[input_id_link].append(position % c["output_bit_size"])
-                position += len(c["input_bit_positions"][index])
-            i = 0
-            starting_bit_position = 0
-            accumulator_bit_position = 0
-            while i < len(c["input_id_link"]):
-                if c["input_id_link"][i] == component["id"]:
-                    bit_name_input = c["id"] + "_" + str(accumulator_bit_position) + "_input"  # Can we test only the first bit??
-                    if is_bit_adjacent_to_list_of_bits(bit_name_input, component_bit_names, all_equivalent_bits) or (c["type"] == CIPHER_OUTPUT):
-                        input_id_links.append(c["id"])
-                        input_bit_positions.append([j for j in range(dictio_starting_bit_position[c["input_id_link"][i]][0],
-                                              dictio_starting_bit_position[c["input_id_link"][i]][0] + len(c["input_bit_positions"][i]))])
-                        dictio_starting_bit_position[c["input_id_link"][i]].pop(0)
-                        starting_bit_position += len(c["input_bit_positions"][i])
-                accumulator_bit_position += len(c["input_bit_positions"][i])
-                i += 1
-    return input_id_links, input_bit_positions
+# def old_compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(component,
+#                                                                                                           available_output_components,
+#                                                                                                           all_equivalent_bits,
+#                                                                                                           cipher):
+#     input_id_links = []
+#     input_bit_positions = []
+#     for c in available_output_components:
+#         if is_possibly_invertible_component(c):
+#             component_bit_names = []
+#             for i in range(c["output_bit_size"]):
+#                 bit_name = c["id"] + "_" + str(i) + "_output_updated"
+#                 component_bit_names.append(bit_name)
+#             dictio_starting_bit_position = {}
+#             position = 0
+#             for index, input_id_link in enumerate(c["input_id_link"]):
+#                 if input_id_link not in dictio_starting_bit_position.keys():
+#                     dictio_starting_bit_position[input_id_link] = []
+#                 dictio_starting_bit_position[input_id_link].append(position % c["output_bit_size"])
+#                 position += len(c["input_bit_positions"][index])
+#             i = 0
+#             starting_bit_position = 0
+#             accumulator_bit_position = 0
+#             while i < len(c["input_id_link"]):
+#                 if c["input_id_link"][i] == component["id"]:
+#                     bit_name_input = c["id"] + "_" + str(accumulator_bit_position) + "_input"  # Can we test only the first bit??
+#                     if is_bit_adjacent_to_list_of_bits(bit_name_input, component_bit_names, all_equivalent_bits) or (c["type"] == CIPHER_OUTPUT):
+#                         input_id_links.append(c["id"])
+#                         input_bit_positions.append([j for j in range(dictio_starting_bit_position[c["input_id_link"][i]][0],
+#                                               dictio_starting_bit_position[c["input_id_link"][i]][0] + len(c["input_bit_positions"][i]))])
+#                         dictio_starting_bit_position[c["input_id_link"][i]].pop(0)
+#                         starting_bit_position += len(c["input_bit_positions"][i])
+#                 accumulator_bit_position += len(c["input_bit_positions"][i])
+#                 i += 1
+#     return input_id_links, input_bit_positions
 
 def compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(component,
                                                                                                           available_output_components,
