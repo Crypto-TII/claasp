@@ -107,7 +107,7 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraint
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     xor_component = cipher.get_component_from_id("xor_0_5")
-    variables, constraints = xor_component.milp_deterministic_truncated_xor_differential_binary_constraints(milp)
+    variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
 
     assert str(variables[0]) == "('x[and_0_4_0_class_bit_0]', x_0)"
     assert str(variables[1]) == "('x[and_0_4_0_class_bit_1]', x_1)"

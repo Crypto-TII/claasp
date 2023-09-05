@@ -17,9 +17,9 @@ def test_algebraic_polynomials():
                                              "modadd_1_9_x16*modadd_1_9_o0_4 + modadd_1_9_c1_5"
     assert str(algebraic_polynomials[-1]) == "modadd_1_9_c1_5 + modadd_1_9_o0_5 + modadd_1_9_y5 + modadd_1_9_x17"
 
-def test_milp_deterministic_truncated_xor_differential_binary_constraints():
+def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints():
     cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     modadd_component = cipher.get_component_from_id("modadd_0_1")
     variables, constraints = modadd_component.milp_deterministic_truncated_xor_differential_binary_constraints(milp)
@@ -34,7 +34,7 @@ def test_milp_deterministic_truncated_xor_differential_binary_constraints():
     assert str(constraints[-2]) == '1 <= 18 - x_30 + x_94 - 17*x_159'
     assert str(constraints[-1]) == '1 <= 19 - x_62 - x_63 - 17*x_159'
 
-def test_milp_deterministic_truncated_xor_differential_constraints():
+def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
