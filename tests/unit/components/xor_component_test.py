@@ -5,8 +5,10 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.components.xor_component import cp_build_truncated_table, generic_with_constant_sign_linear_constraints
-from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import \
-    MilpDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import \
+    MilpWordwiseDeterministicTruncatedXorDifferentialModel
 
 def test_cp_build_truncated_table():
     assert cp_build_truncated_table(3) == 'array[0..4, 1..3] of int: xor_truncated_table_3 = ' \
@@ -100,9 +102,9 @@ def test_smt_constraints():
     assert constraints[-2] == '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))'
     assert constraints[-1] == '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'
 
-def test_milp_deterministic_truncated_xor_differential_binary_constraints():
+def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints():
     cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     xor_component = cipher.get_component_from_id("xor_0_5")
     variables, constraints = xor_component.milp_deterministic_truncated_xor_differential_binary_constraints(milp)
@@ -118,12 +120,12 @@ def test_milp_deterministic_truncated_xor_differential_binary_constraints():
     assert str(constraints[-1]) == '1 <= 2 - x_62 - x_63'
 
 
-def test_milp_deterministic_truncated_xor_differential_constraints():
+def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     xor_component = cipher.get_component_from_id("xor_0_5")
-    variables, constraints = xor_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+    variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
 
     assert str(variables[0]) == "('x_class[and_0_4_0]', x_0)"
@@ -139,7 +141,7 @@ def test_milp_deterministic_truncated_xor_differential_constraints():
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     cipher = AESBlockCipher(number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+    milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     xor_component = cipher.get_component_from_id("xor_0_32")
     variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
@@ -157,7 +159,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints():
     cipher = AESBlockCipher(number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+    milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     xor_component = cipher.get_component_from_id("xor_0_32")
     variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(
@@ -176,7 +178,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_sequential_const
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints():
     cipher = AESBlockCipher(number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+    milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     xor_component = cipher.get_component_from_id("xor_0_32")
     variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(

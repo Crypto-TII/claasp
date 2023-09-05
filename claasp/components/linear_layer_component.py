@@ -449,7 +449,7 @@ class LinearLayer(Component):
 
         return variables, constraints
 
-    def milp_deterministic_truncated_xor_differential_constraints(self, model):
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints for linear layer
         component in deterministic truncated XOR differential model.
@@ -461,12 +461,12 @@ class LinearLayer(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: present = PresentBlockCipher(number_of_rounds=6)
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(present)
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: linear_layer_component = present.component_from(0, 17)
-            sage: variables, constraints = linear_layer_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated__differential_constraints(milp)
             sage: variables
             [('x_class[sbox_0_1_0]', x_0),
              ('x_class[sbox_0_1_1]', x_1),
@@ -534,8 +534,8 @@ class LinearLayer(Component):
 
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: cipher = MidoriBlockCipher(number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: linear_layer_component = cipher.component_from(0, 21)
             sage: variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)

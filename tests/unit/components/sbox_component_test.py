@@ -2,13 +2,16 @@ from claasp.cipher_modules.models.cp.cp_model import CpModel
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
+from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-
-from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import \
+    MilpWordwiseDeterministicTruncatedXorDifferentialModel
 
 X_0_X_8 = "x_0 <= x_8"
 X_O = "('x[xor_0_0_0]', x_0)"
@@ -342,12 +345,12 @@ def test_smt_xor_linear_mask_propagation_constraints():
     assert constraints[-2] == '(assert (or (not hw_sbox_0_2_1_o)))'
     assert constraints[-1] == '(assert (or (not hw_sbox_0_2_0_o)))'
 
-def test_milp_deterministic_truncated_xor_differential_constraints():
+def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     present = PresentBlockCipher(number_of_rounds=6)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(present)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
     milp.init_model_in_sage_milp_class()
     sbox_component = present.component_from(0,1)
-    variables, constraints = sbox_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+    variables, constraints = sbox_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
     assert str(variables[0]) == "('x_class[xor_0_0_0]', x_0)"
     assert str(variables[1]) == "('x_class[xor_0_0_1]', x_1)"
@@ -360,12 +363,12 @@ def test_milp_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[-2]) == 'x_7 <= 2 + 2*x_8'
     assert str(constraints[-1]) == '2 <= x_7 + 2*x_8'
 
-def test_milp_undisturbed_bits_deterministic_truncated_xor_differential_constraints():
+def test_milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints():
     present = PresentBlockCipher(number_of_rounds=6)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(present)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
     milp.init_model_in_sage_milp_class()
     sbox_component = present.component_from(0, 1)
-    variables, constraints = sbox_component.milp_undisturbed_bits_deterministic_truncated_xor_differential_constraints(milp)
+    variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
     assert str(variables[0]) == "('x[xor_0_0_0_class_bit_0]', x_0)"
     assert str(variables[1]) == "('x[xor_0_0_0_class_bit_1]', x_1)"
@@ -377,9 +380,21 @@ def test_milp_undisturbed_bits_deterministic_truncated_xor_differential_constrai
     assert str(constraints[-2]) == '1 <= 2 - x_2 - x_15'
     assert str(constraints[-1]) == '1 <= 2 - x_0 - x_15'
 
+    present = PresentBlockCipher(number_of_rounds=1)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
+    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(64),
+                                    bit_values=[2, 0, 0, 0] + [1, 0, 0, 1] + [0, 0, 0, 1] + [1, 0, 0, 0] + [0] * 48)
+    key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
+    trail = milp.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
+
+    assert trail['components_values']['sbox_0_1']['value'] == '2222'
+    assert trail['components_values']['sbox_0_2']['value'] == '2220'
+    assert trail['components_values']['sbox_0_3']['value'] == '2221'
+    assert trail['components_values']['sbox_0_4']['value'] == '2221'
+
 def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     aes = AESBlockCipher(number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(aes)
+    milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
     milp.init_model_in_sage_milp_class()
     sbox_component = aes.component_from(0,1)
     variables, constraints = sbox_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
@@ -396,7 +411,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints():
     aes = AESBlockCipher(number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(aes)
+    milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
     milp.init_model_in_sage_milp_class()
     sbox_component = aes.component_from(0, 1)
     variables, constraints = sbox_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(milp)

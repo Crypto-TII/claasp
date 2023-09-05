@@ -329,8 +329,8 @@ class Constant(Component):
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.components.constant_component import Constant
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(aes)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
             sage: constant_component = aes.get_component_from_id("constant_0_30")
             sage: variables, constraints = constant_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
@@ -352,7 +352,7 @@ class Constant(Component):
             constraints.append(x_class[output_vars[i]] == 0)
         return variables, constraints
 
-    def milp_deterministic_truncated_xor_differential_constraints(self, model):
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints modeling a component of type Constant.
 
@@ -360,11 +360,11 @@ class Constant(Component):
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(speck)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(speck)
             sage: milp.init_model_in_sage_milp_class()
             sage: constant_component = speck.get_component_from_id("constant_1_0")
-            sage: variables, constraints = constant_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = constant_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[constant_1_0_0]', x_0),
             ('x_class[constant_1_0_1]', x_1),

@@ -441,8 +441,8 @@ class Rotate(Component):
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: cipher = AESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: rotate_component = cipher.get_component_from_id("rot_0_18")
             sage: variables, constraints = rotate_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
@@ -486,7 +486,7 @@ class Rotate(Component):
 
         return class_variables + bit_variables, constraints + bit_constraints
 
-    def milp_deterministic_truncated_xor_differential_constraints(self, model):
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constrains modeling a component of type Rotate for the deterministic
         truncated xor differential model.
@@ -500,11 +500,11 @@ class Rotate(Component):
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: rotate_component = cipher.get_component_from_id("rot_1_1")
-            sage: variables, constraints = rotate_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = rotate_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[key_32]', x_0),
              ('x_class[key_33]', x_1),

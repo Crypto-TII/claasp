@@ -447,7 +447,7 @@ class NOT(Component):
         result = variables, constraints
         return result
 
-    def milp_deterministic_truncated_xor_differential_constraints(self, model):
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints for NOT component
         in deterministic truncated XOR differential model.
@@ -460,11 +460,11 @@ class NOT(Component):
 
             sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
             sage: cipher = GiftPermutation()
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: not_component = cipher.component_from(0,8)
-            sage: variables, constraints = not_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = not_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[xor_0_6_0]', x_0),
              ('x_class[xor_0_6_1]', x_1),

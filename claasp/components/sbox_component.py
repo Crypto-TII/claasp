@@ -1126,8 +1126,8 @@ class SBOX(Component):
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(aes)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = aes.component_from(0,1)
             sage: variables, constraints = sbox_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
@@ -1182,8 +1182,8 @@ class SBOX(Component):
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(aes)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = aes.component_from(0,1)
             sage: variables, constraints = sbox_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(milp)
@@ -1215,7 +1215,7 @@ class SBOX(Component):
 
         return variables, constraints
 
-    def milp_deterministic_truncated_xor_differential_constraints(self, model):
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
          Models the wordwise Sbox component.
 
@@ -1228,11 +1228,11 @@ class SBOX(Component):
 
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
             sage: present = PresentBlockCipher(number_of_rounds=6)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(present)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0,1)
-            sage: variables, constraints = sbox_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = sbox_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[xor_0_0_0]', x_0),
              ('x_class[xor_0_0_1]', x_1),
@@ -1264,7 +1264,7 @@ class SBOX(Component):
         return variables, constraints
 
 
-    def milp_undisturbed_bits_deterministic_truncated_xor_differential_constraints(self, model):
+    def milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
          Models the wordwise Sbox component, with added undisturbed bits information, as mentioned in
          https://link.springer.com/chapter/10.1007/978-3-031-26553-2_3
@@ -1278,11 +1278,11 @@ class SBOX(Component):
 
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
             sage: present = PresentBlockCipher(number_of_rounds=6)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(present)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0,1)
-            sage: variables, constraints = sbox_component.milp_undisturbed_bits_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x[xor_0_0_0_class_bit_0]', x_0),
              ('x[xor_0_0_0_class_bit_1]', x_1),
@@ -1298,11 +1298,11 @@ class SBOX(Component):
 
             sage: from claasp.ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation import AsconSboxSigmaNoMatrixPermutation
             sage: ascon = AsconSboxSigmaNoMatrixPermutation(number_of_rounds=1)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(ascon)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(ascon)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = ascon.component_from(0, 3)
-            sage: variables, constraints = sbox_component.milp_undisturbed_bits_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
 
         """

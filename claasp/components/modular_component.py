@@ -440,7 +440,7 @@ class Modular(Component):
         result = variables, constraints
         return result
 
-    def milp_deterministic_truncated_xor_differential_constraints(self, model):
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints for modular
         addition component in deterministic truncated XOR differential model.
@@ -454,11 +454,11 @@ class Modular(Component):
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: modadd_component = cipher.get_component_from_id("modadd_0_1")
-            sage: variables, constraints = modadd_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: constraints
             [x_48 <= 16,
              0 <= x_48,
@@ -545,7 +545,7 @@ class Modular(Component):
 
         return variables, constraints
 
-    def milp_deterministic_truncated_xor_differential_binary_constraints(self, model):
+    def milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(self, model):
         """
         Returns a list of variables and a list of constraints for modular
         addition component in deterministic truncated XOR differential model.
@@ -559,11 +559,11 @@ class Modular(Component):
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: modadd_component = cipher.get_component_from_id("modadd_0_1")
-            sage: variables, constraints = modadd_component.milp_deterministic_truncated_xor_differential_binary_constraints(milp)
+            sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
             sage: variables
             [('x[rot_0_0_0_class_bit_0]', x_0),
              ('x[rot_0_0_0_class_bit_1]', x_1),

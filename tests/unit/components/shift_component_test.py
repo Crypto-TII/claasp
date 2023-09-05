@@ -6,9 +6,10 @@ from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-
-from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import \
-        MilpDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import \
+    MilpWordwiseDeterministicTruncatedXorDifferentialModel
 def test_algebraic_polynomials():
     fancy = FancyBlockCipher(number_of_rounds=2)
     shift_component = fancy.get_component_from_id("shift_1_12")
@@ -254,12 +255,12 @@ def test_smt_xor_linear_mask_propagation_constraints():
     assert constraints[-1] == '(assert (not shift_0_4_31_i))'
 
 
-def test_milp_deterministic_truncated_xor_differential_constraints():
+def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     cipher = TeaBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     shift_component = cipher.get_component_from_id("shift_0_0")
-    variables, constraints = shift_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+    variables, constraints = shift_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
     assert str(variables[0]) == "('x_class[plaintext_8]', x_0)"
     assert str(variables[1]) == "('x_class[plaintext_9]', x_1)"
@@ -273,7 +274,7 @@ def test_milp_deterministic_truncated_xor_differential_constraints():
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     cipher = AESBlockCipher(number_of_rounds=3)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+    milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                                   [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],

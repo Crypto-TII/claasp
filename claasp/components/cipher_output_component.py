@@ -291,7 +291,7 @@ class CipherOutput(Component):
 
         return variables, constraints
 
-    def milp_deterministic_truncated_xor_differential_constraints(self, model):
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints modeling a component of type
         Intermediate_output or Cipher_output for the bitwise deterministic truncated xor differential model.
@@ -300,11 +300,11 @@ class CipherOutput(Component):
 
             sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
             sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(simon)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(simon)
             sage: milp.init_model_in_sage_milp_class()
             sage: output_component = simon.component_from(1,8)
-            sage: variables, constraints = output_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = output_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[xor_1_6_0]', x_0),
             ('x_class[xor_1_6_1]', x_1),
@@ -339,8 +339,8 @@ class CipherOutput(Component):
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(aes)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
             sage: output_component = aes.component_from(1, 32)
             sage: variables, constraints = output_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)

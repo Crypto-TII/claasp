@@ -308,14 +308,14 @@ class MilpModel:
 
             status = 'SATISFIABLE'
 
-            if model_type == "deterministic_truncated_xor_differential":
+            if model_type == "bitwise_deterministic_truncated_xor_differential":
                 x_class = self._trunc_binvar
                 intvars = self._integer_variable
                 components_variables = mip.get_values(x_class)
                 objective_variables = mip.get_values(intvars)
                 objective_value = objective_variables["probability"]
 
-            elif model_type  == "wordwise_deterministic_truncated_xor_differential":
+            elif model_type == "wordwise_deterministic_truncated_xor_differential":
                 x_class = self._trunc_wordvar
                 intvars = self._integer_variable
                 components_variables = mip.get_values(x_class)
@@ -418,9 +418,10 @@ class MilpModel:
             return self._get_final_output_wordwise_deterministic_truncated_xor_differential(component_id,
                                                                                             components_variables,
                                                                                             diff_str, suffix_dict)
-        elif model_type == "deterministic_truncated_xor_differential":
-            return self._get_final_output_deterministic_truncated_xor_differential(component_id, components_variables,
-                                                                                   diff_str, suffix_dict)
+        elif model_type == "bitwise_deterministic_truncated_xor_differential":
+            return self._get_final_output_bitwise_deterministic_truncated_xor_differential(component_id,
+                                                                                           components_variables,
+                                                                                           diff_str, suffix_dict)
         else:
             return self._get_final_output_for_default_case(component_id, components_variables, diff_str, probability_variables,
                          suffix_dict)
@@ -450,7 +451,7 @@ class MilpModel:
                 weight = probability_variables[component_id + "_probability"] / 10.
             final_output.append(set_component_value_weight_sign(difference, weight))
         return final_output
-    def _get_final_output_deterministic_truncated_xor_differential(self, component_id, components_variables, diff_str,
+    def _get_final_output_bitwise_deterministic_truncated_xor_differential(self, component_id, components_variables, diff_str,
                          suffix_dict):
         final_output = []
         for suffix in suffix_dict.keys():

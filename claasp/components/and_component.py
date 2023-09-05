@@ -280,7 +280,7 @@ class AND(MultiInputNonlinearLogicalOperator):
         result = cp_declarations, cp_constraints
         return result
 
-    def milp_deterministic_truncated_xor_differential_constraints(self, model):
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints for AND component
         in the bitwise deterministic truncated XOR differential model.
@@ -292,12 +292,12 @@ class AND(MultiInputNonlinearLogicalOperator):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: cipher = FancyBlockCipher(number_of_rounds=20)
-            sage: milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: and_component = cipher.component_from(0,8)
-            sage: variables, constraints = and_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = and_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[xor_0_7_0]', x_0),
             ('x_class[xor_0_7_1]', x_1),

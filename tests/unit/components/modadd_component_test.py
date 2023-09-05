@@ -1,7 +1,8 @@
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-from claasp.cipher_modules.models.milp.milp_models.milp_deterministic_truncated_xor_differential_model import MilpDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel
 
 
 def test_algebraic_polynomials():
@@ -35,10 +36,10 @@ def test_milp_deterministic_truncated_xor_differential_binary_constraints():
 
 def test_milp_deterministic_truncated_xor_differential_constraints():
     cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpDeterministicTruncatedXorDifferentialModel(cipher)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     modadd_component = cipher.get_component_from_id("modadd_0_1")
-    variables, constraints = modadd_component.milp_deterministic_truncated_xor_differential_constraints(milp)
+    variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
     assert str(variables[0]) == "('x_class[rot_0_0_0]', x_0)"
     assert str(variables[1]) == "('x_class[rot_0_0_1]', x_1)"
