@@ -420,13 +420,13 @@ class BEA1BlockCipher(Cipher):
                     [[k for k in range(self.SBOX_BIT_SIZE)]] * 2,
                     self.SBOX_BIT_SIZE)
 
-        cipher_state_id = INPUT_PLAINTEXT
+        cipher_state = INPUT_PLAINTEXT
         for round_number in range(self.NROUNDS):
             if round_number > 0:
                 self.add_round()
 
             # add key[round_number]
-            cipher_state = self.xor_round_key(round_number, key_state, cipher_state_id)
+            cipher_state = self.xor_round_key(round_number, key_state, cipher_state)
 
             # sbox
             cipher_state = [
@@ -453,15 +453,32 @@ class BEA1BlockCipher(Cipher):
                     self.SBOX_BIT_SIZE * 4,
                     self.mix_columns_matrix
                 )
-                cipher_state = self.add_concatenate_component(
-                    [mx1.id, mx2.id],
-                    [[j for j in range(self.SBOX_BIT_SIZE * 4)]]*2,
-                    self.SBOX_BIT_SIZE * 8
-                )
-                cipher_state_id = cipher_state.id
+                cipher_state = [
+                    self.add_XOR_component(
+                        [mx1.id, _zero.id],
+                        [
+                            [j for j in range(i * self.SBOX_BIT_SIZE, (i + 1) * self.SBOX_BIT_SIZE)],
+                            [j for j in range(self.SBOX_BIT_SIZE)]
+                        ],
+                        self.SBOX_BIT_SIZE
+                    )
+                    for i in range(4)
+                ]
+                cipher_state += [
+                    self.add_XOR_component(
+                        [mx2.id, _zero.id],
+                        [
+                            [j for j in range(i * self.SBOX_BIT_SIZE, (i + 1) * self.SBOX_BIT_SIZE)],
+                            [j for j in range(self.SBOX_BIT_SIZE)]
+                        ],
+                        self.SBOX_BIT_SIZE
+                    )
+                    for i in range(4)
+                ]
+
                 self.add_intermediate_output_component(
-                    [cipher_state_id],
-                    [[j for j in range(self.SBOX_BIT_SIZE * 8)]],
+                    [mx1.id, mx2.id],
+                    [[j for j in range(self.SBOX_BIT_SIZE * 4)]] * 2,
                     self.SBOX_BIT_SIZE * 8,
                     'round_output'
                 )
@@ -490,6 +507,7 @@ class BEA1BlockCipher(Cipher):
         )
 
         if type(cipher_state) is str:
+            # cipher_state == INPUT_PLAINTEXT
             return [
                 self.add_XOR_component(
                     [cipher_state, key[i].id],
