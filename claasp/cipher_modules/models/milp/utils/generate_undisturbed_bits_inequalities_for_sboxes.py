@@ -26,8 +26,8 @@ It uses the notion of undisturbed differential bits discussed in https://link.sp
 The logic minimizer espresso is required for this module. It is already installed in the docker.
 """
 import pickle, os, pathlib
-import subprocess
-from claasp.cipher_modules.models.milp.utils.utils import generate_espresso_input
+from claasp.cipher_modules.models.milp.utils.utils import generate_espresso_input, delete_espresso_dictionary, \
+    output_espresso_dictionary, generate_product_of_sum_from_espresso
 
 from sage.rings.integer_ring import ZZ
 
@@ -69,7 +69,7 @@ def get_transitions_for_single_output_bit(sbox, valid_points, verbose=False):
     return valid_points
 
 
-def generate_product_of_sum_from_espresso(sbox, valid_points):
+def generate_dict_product_of_sum_from_espresso(sbox, valid_points):
 
     dict_espresso_outputs = {}
     valid_transitions = get_transitions_for_single_output_bit(sbox, valid_points)
@@ -78,26 +78,13 @@ def generate_product_of_sum_from_espresso(sbox, valid_points):
         dict_espresso_outputs[position] = {}
         for encoding_bit in valid_transitions[position]:
             valid_bit_transitions = valid_transitions[position][encoding_bit]
-            espresso_input = generate_espresso_input(valid_bit_transitions)
-            espresso_process = subprocess.run(['espresso', '-epos', '-okiss'], input=espresso_input,
-                                              capture_output=True, text=True)
-            espresso_output = espresso_process.stdout.splitlines()
-            dict_espresso_outputs[position][encoding_bit] = [line[:-2] for line in espresso_output[4:]]
+            dict_espresso_outputs[position][encoding_bit] = generate_product_of_sum_from_espresso(valid_bit_transitions)
 
     return dict_espresso_outputs
 
 
 def get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits():
-    """
-    Require Espresso to be installed.
-
-    """
-    file_path = undisturbed_bit_sboxes_inequalities_file_path
-
-    read_file = open(file_path, 'rb')
-    inequalities = pickle.load(read_file)
-    read_file.close()
-    return inequalities
+    return output_espresso_dictionary(undisturbed_bit_sboxes_inequalities_file_path)
 
 def update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits(sbox, valid_points):
 
@@ -112,7 +99,7 @@ def update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bit
 
     if str(sbox) not in dictio.keys():
         print("Adding sbox inequalities in pre-saved dictionary")
-        dict_product_of_sum = generate_product_of_sum_from_espresso(sbox, valid_points)
+        dict_product_of_sum = generate_dict_product_of_sum_from_espresso(sbox, valid_points)
         dictio[str(sbox)] = dict_product_of_sum
 
         write_file = open(file_path, 'wb')
@@ -121,7 +108,4 @@ def update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bit
 
 
 def delete_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits():
-    file_path = undisturbed_bit_sboxes_inequalities_file_path
-    write_file = open(file_path, 'wb')
-    pickle.dump({}, write_file)
-    write_file.close()
+    return delete_espresso_dictionary(undisturbed_bit_sboxes_inequalities_file_path)
