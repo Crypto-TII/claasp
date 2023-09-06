@@ -870,27 +870,6 @@ class Cipher:
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
-            sage: from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
-            sage: key = 0x000000066770000000a0000000000001
-            sage: plaintext = 0x0011223344556677
-            sage: cipher = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False
-
-            sage: from tii.graph_representations.creators.raiden import RaidenCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = RaidenCreator(number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
-            sage: plaintext = 0xbd7d764dff0ada1e
-            sage: key = 0x1de1c3c2c65880074c32dce537b22ab3
-            sage: ciphertext = S.evaluate([plaintext, key])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([key, ciphertext]) == plaintext
-            True
-
             sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
             sage: key = 0x1de1c3c2c65880074c32dce537b22ab3
             sage: plaintext = 0xbd7d764dff0ada1e
@@ -899,6 +878,15 @@ class Cipher:
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
+
+            sage: from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
+            sage: key = 0x000000066770000000a0000000000001
+            sage: plaintext = 0x0011223344556677
+            sage: cipher = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
+            sage: ciphertext = cipher.evaluate([plaintext, key])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            False
 
             sage: from tii.graph_representations.creators.gimli_permutation import GimliCreator
             sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
