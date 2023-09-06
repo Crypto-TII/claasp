@@ -389,7 +389,7 @@ class MilpModel:
 
     def get_component_value_weight(self, model_type, component_id, probability_variables, components_variables):
 
-        if "deterministic_truncated_xor_differential" in model_type:
+        if model_type == "wordwise_deterministic_truncated_xor_differential":
             wordsize = self._word_size
         else:
             wordsize=1

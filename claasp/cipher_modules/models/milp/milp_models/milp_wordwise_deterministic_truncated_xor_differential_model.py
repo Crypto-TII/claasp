@@ -18,7 +18,7 @@
 import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints, fix_variables_value_deterministic_truncated_xor_differential_constraints
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
@@ -185,7 +185,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             ....:    'bit_positions': [0, 1, 2, 3],
             ....:    'bit_values': [1, 1, 1, 0]
             ....: }]
-            sage: constraints = milp.fix_variables_value_deterministic_truncated_xor_differential_constraints(fixed_variables)
+            sage: constraints = milp.fix_variables_value_wordwise_deterministic_truncated_xor_differential_constraints(fixed_variables)
             sage: constraints
             [x_0 == 1,
              x_1 == 0,
@@ -195,40 +195,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
 
         """
-        model_variables = self.trunc_wordvar
-
-        constraints = []
-        for fixed_variable in fixed_variables:
-            component_id = fixed_variable["component_id"]
-            if fixed_variable["constraint_type"] == "equal":
-                for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                    constraints.append(
-                        model_variables[component_id + '_' + str(bit_position)] == fixed_variable["bit_values"][index])
-            else:
-                if sum(fixed_variable["bit_values"]) == 0:
-                    constraints.append(sum(model_variables[component_id + '_' + str(i)]
-                                           for i in fixed_variable["bit_positions"]) >= 1)
-                else:
-                    M = self._model.get_max(model_variables) + 1
-                    d = self._binary_variable
-                    one_among_n = 0
-
-                    for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                        # eq = 1 iff bit_position == diff_index
-                        eq = d[component_id + "_" + str(bit_position) + "_is_diff_index"]
-                        one_among_n += eq
-
-                        # enforce that at list the component value is different at position diff_index
-                        # x[diff_index] < fixed_variable[diff_index] or fixed_variable[diff_index] < x[diff_index]
-                        dummy= d[component_id + "_" + str(bit_position) + "_diff_fixed_values"]
-                        a = model_variables[component_id + '_' + str(bit_position)]
-                        b = fixed_variable["bit_values"][index]
-                        constraints.extend([a <= b - 1 + M * (2 - dummy - eq),
-                                       a >= b + 1 - M * (dummy + 1 - eq)])
-
-                    constraints.append(one_among_n == 1)
-
-        return constraints
+        return fix_variables_value_deterministic_truncated_xor_differential_constraints(self, self.trunc_wordvar, fixed_variables)
 
     def input_wordwise_deterministic_truncated_xor_differential_constraints(self):
         """

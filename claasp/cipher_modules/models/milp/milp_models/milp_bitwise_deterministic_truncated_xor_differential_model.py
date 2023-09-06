@@ -17,8 +17,8 @@
 
 import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.utils.utils import fix_variables_value_deterministic_truncated_xor_differential_constraints
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
 
@@ -28,12 +28,6 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
     def __init__(self, cipher, n_window_heuristic=None):
         super().__init__(cipher, n_window_heuristic)
         self._trunc_binvar = None
-        self._word_size = 1
-        if self._cipher.is_spn():
-            for component in self._cipher.get_all_components():
-                if SBOX in component.type:
-                    self._word_size = int(component.output_bit_size)
-                    break
 
     def init_model_in_sage_milp_class(self, solver_name=SOLVER_DEFAULT):
         """
@@ -132,7 +126,8 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         """
         self._variables_list = []
         variables = []
-        constraints = self.fix_variables_value_deterministic_truncated_xor_differential_constraints(fixed_variables)
+        constraints = self.fix_variables_value_bitwise_deterministic_truncated_xor_differential_constraints(
+            fixed_variables)
         self._model_constraints = constraints
 
         for component in self._cipher.get_all_components():
@@ -155,7 +150,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def fix_variables_value_deterministic_truncated_xor_differential_constraints(self, fixed_variables=[]):
+    def fix_variables_value_bitwise_deterministic_truncated_xor_differential_constraints(self, fixed_variables=[]):
         """
         Returns a list of constraints that fix the input variables to a
         specific value.
@@ -188,7 +183,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             ....:    'bit_positions': [0, 1, 2, 3],
             ....:    'bit_values': [1, 1, 1, 0]
             ....: }]
-            sage: constraints = milp.fix_variables_value_deterministic_truncated_xor_differential_constraints(fixed_variables)
+            sage: constraints = milp.fix_variables_value_bitwise_deterministic_truncated_xor_differential_constraints(fixed_variables)
             sage: constraints
             [x_0 == 1,
              x_1 == 0,
@@ -201,40 +196,8 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
 
         """
-        model_variables = self.trunc_binvar
 
-        constraints = []
-        for fixed_variable in fixed_variables:
-            component_id = fixed_variable["component_id"]
-            if fixed_variable["constraint_type"] == "equal":
-                for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                    constraints.append(
-                        model_variables[component_id + '_' + str(bit_position)] == fixed_variable["bit_values"][index])
-            else:
-                if sum(fixed_variable["bit_values"]) == 0:
-                    constraints.append(sum(model_variables[component_id + '_' + str(i)]
-                                           for i in fixed_variable["bit_positions"]) >= 1)
-                else:
-                    M = self._model.get_max(model_variables) + 1
-                    d = self._binary_variable
-                    one_among_n = 0
-
-                    for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                        # eq = 1 iff bit_position == diff_index
-                        eq = d[component_id + "_" + str(bit_position) + "_is_diff_index"]
-                        one_among_n += eq
-
-                        # enforce that at list the component value is different at position diff_index
-                        # x[diff_index] < fixed_variable[diff_index] or fixed_variable[diff_index] < x[diff_index]
-                        dummy= d[component_id + "_" + str(bit_position) + "_diff_fixed_values"]
-                        a = model_variables[component_id + '_' + str(bit_position)]
-                        b = fixed_variable["bit_values"][index]
-                        constraints.extend([a <= b - 1 + M * (2 - dummy - eq),
-                                       a >= b + 1 - M * (dummy + 1 - eq)])
-
-                    constraints.append(one_among_n == 1)
-
-        return constraints
+        return fix_variables_value_deterministic_truncated_xor_differential_constraints(self, self.trunc_binvar, fixed_variables)
 
     def link_binary_tuples_to_integer_variables(self, id_tuples, ids):
         """
@@ -389,7 +352,3 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
     @property
     def trunc_binvar(self):
         return self._trunc_binvar
-
-    @property
-    def word_size(self):
-        return self._word_size
