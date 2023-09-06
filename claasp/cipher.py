@@ -1809,19 +1809,6 @@ class Cipher:
     def create_top_and_bottom_subgraphs_from_components_graph(self, e0_bottom_ids, e1_top_ids):
         import networkx as nx
 
-        def get_predecessors_subgraph(G, start_nodes):
-            H = nx.DiGraph()
-
-            for node in start_nodes:
-                if node in G:
-                    H.add_node(node)
-                    predecessors_dict = nx.dfs_tree(G, source=node)
-                    for successor, source in predecessors_dict.items():
-                        H.add_edge(source, successor)
-                        H.add_node(source)
-
-            return H
-
         def induced_subgraph_of_predecessors(DG, nodes):
             visited = set()
 
@@ -1889,7 +1876,7 @@ class Cipher:
                 round_object = original_cipher.rounds.round_at(round_number)
                 list_of_components = round_object.components
                 for round_component in list_of_components:
-                    if round_component.id not in graph.nodes:
+                    if round_component.id not in graph.nodes and not round_component.id.startswith('cipher_output'):
                         component_to_be_removed = new_cipher.get_component_from_id(round_component.id)
                         component_to_be_removed_round = new_cipher.get_round_from_component_id(round_component.id)
                         new_cipher.remove_round_component(component_to_be_removed_round, component_to_be_removed)
@@ -1898,7 +1885,6 @@ class Cipher:
             initial_nodes_from_bottom_graph = [node for node in bottom_graph if bottom_graph.has_edge(node, node)]
             bottom_cipher = deepcopy(original_cipher)
             new_input_bit_positions = {}
-            new_bit_size = 0
             bottom_cipher._inputs_bit_size = []
             bottom_cipher._inputs = []
             for node_id in initial_nodes_from_bottom_graph:
@@ -1934,8 +1920,8 @@ class Cipher:
             removing_empty_rounds(top_cipher)
             return top_cipher
 
-        top_cipher = create_top_cipher(self)
-        bottom_cipher = create_bottom_cipher(self)
+        new_top_cipher = create_top_cipher(self)
+        new_bottom_cipher = create_bottom_cipher(self)
 
-        return top_cipher, bottom_cipher
+        return new_top_cipher, new_bottom_cipher
 
