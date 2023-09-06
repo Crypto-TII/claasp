@@ -30,6 +30,7 @@ def test_build_lowest_weight_xor_differential_trail_model():
     speck = SpeckBlockCipher(number_of_rounds=5, block_bit_size=32, key_bit_size=64)
     minizinc = MinizincXorDifferentialModel(speck)
     bit_positions = [i for i in range(speck.output_bit_size)]
+
     bit_positions_key = list(range(64))
     fixed_variables = [{'component_id': 'plaintext',
                         'constraint_type': 'sum',
