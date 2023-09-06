@@ -819,17 +819,6 @@ class Cipher:
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
-            sage: from tii.graph_representations.creators.photon_permutation import PhotonCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = PhotonCreator(number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
-            sage: plaintext = 0
-            sage: ciphertext = S.evaluate([plaintext])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([ciphertext]) == plaintext
-            True
-
             sage: from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
             sage: plaintext = 0x1234
             sage: cipher = PhotonPermutation(number_of_rounds=2)
@@ -838,61 +827,46 @@ class Cipher:
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
             True
 
-            sage: from tii.graph_representations.creators.lea import LeaCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = LeaCreator(block_bit_size=128, key_bit_size=128, number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
-            sage: plaintext = 0x101112131415161718191a1b1c1d1e1f
+            sage: from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
             sage: key = 0x0f1e2d3c4b5a69788796a5b4c3d2e1f0
-            sage: ciphertext = S.evaluate([plaintext, key])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([key, ciphertext]) == plaintext
+            sage: plaintext = 0x101112131415161718191a1b1c1d1e1f
+            sage: cipher = LeaBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=2)
+            sage: ciphertext = cipher.evaluate([plaintext, key])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
-            sage: from tii.graph_representations.creators.sparkle_permutation import SparkleCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = SparkleCreator(number_of_steps=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
+            sage: from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
             sage: plaintext = 0x1234
-            sage: ciphertext = S.evaluate([plaintext])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([ciphertext]) == plaintext
+            sage: cipher = SparklePermutation(number_of_steps=2)
+            sage: ciphertext = cipher.evaluate([plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext]) == plaintext
             True
 
-            sage: from tii.graph_representations.creators.xoodoo_invertible_permutation import XoodooCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = XoodooCreator(number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
-            sage: plaintext = 0
-            sage: ciphertext = S.evaluate([plaintext])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([ciphertext]) == plaintext
+            sage: from claasp.ciphers.permutations.xoodoo_invertible_permutation import XoodooInvertiblePermutation
+            sage: plaintext = 0x1234
+            sage: cipher = XoodooInvertiblePermutation(number_of_rounds=2)
+            sage: ciphertext = cipher.evaluate([plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext]) == plaintext
             True
 
-            sage: from tii.graph_representations.creators.keccak_invertible_permutation import KeccakCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = KeccakCreator(number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
-            sage: plaintext = 0
-            sage: ciphertext = S.evaluate([plaintext])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([ciphertext]) == plaintext
+            sage: from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
+            sage: plaintext = 0x1234
+            sage: cipher = KeccakInvertiblePermutation(number_of_rounds=2)
+            sage: ciphertext = cipher.evaluate([plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext]) == plaintext
             True
 
-            sage: from tii.graph_representations.creators.gift_permutation_sbox import GiftCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = GiftCreator(number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
+            sage: from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
             sage: key = 0x000102030405060708090A0B0C0D0E0F
             sage: plaintext = 0x000102030405060708090A0B0C0D0E0F
-            sage: ciphertext = S.evaluate([plaintext, key])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([key, ciphertext]) == plaintext
+            sage: cipher = GiftSboxPermutation(number_of_rounds=2)
+            sage: ciphertext = cipher.evaluate([plaintext, key])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
             sage: from tii.graph_representations.creators.hight import HightCreator
@@ -907,6 +881,15 @@ class Cipher:
             sage: inv_S.evaluate([key, ciphertext]) == plaintext
             True
 
+            sage: from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
+            sage: key = 0x000000066770000000a0000000000001
+            sage: plaintext = 0x0011223344556677
+            sage: cipher = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
+            sage: ciphertext = cipher.evaluate([plaintext, key])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            True
+
             sage: from tii.graph_representations.creators.raiden import RaidenCreator
             sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
             sage: cipher = RaidenCreator(number_of_rounds=2).get_cipher_dictionary()
@@ -917,6 +900,15 @@ class Cipher:
             sage: cipher_inv = S.cipher_inverse()
             sage: inv_S = IterativeCipher(cipher_inv)
             sage: inv_S.evaluate([key, ciphertext]) == plaintext
+            True
+
+            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
+            sage: key = 0x1de1c3c2c65880074c32dce537b22ab3
+            sage: plaintext = 0xbd7d764dff0ada1e
+            sage: cipher = RaidenBlockCipher(number_of_rounds=2)
+            sage: ciphertext = cipher.evaluate([plaintext, key])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
             sage: from tii.graph_representations.creators.gimli_permutation import GimliCreator
