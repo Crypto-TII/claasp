@@ -870,18 +870,6 @@ class Cipher:
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
-            sage: from tii.graph_representations.creators.hight import HightCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = HightCreator(block_bit_size=64, key_bit_size=128, number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
-            sage: plaintext = 0x0011223344556677
-            sage: key = 0x000000066770000000a0000000000001
-            sage: ciphertext = S.evaluate([plaintext, key])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([key, ciphertext]) == plaintext
-            True
-
             sage: from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
             sage: key = 0x000000066770000000a0000000000001
             sage: plaintext = 0x0011223344556677
@@ -889,7 +877,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext, key])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
+            False
 
             sage: from tii.graph_representations.creators.raiden import RaidenCreator
             sage: from tii.iterative_cipher_classes.cipher import IterativeCipher

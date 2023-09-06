@@ -97,62 +97,46 @@ def get_available_output_components(component, available_bits, self):
     return available_output_components
 
 def sort_input_id_links_and_input_bit_positions(input_id_links, input_bit_positions, component, self, all_equivalent_bits):
-
-    if component.type == "dlsjh":
-        tmp_input_bit_positions = []
-        for index, input_id_link in enumerate(input_id_links):
-            component = get_component_from_id(input_id_link, self)
-            if len(component.input_bit_positions) == 1:
-                tmp_input_bit_positions.append(component.input_bit_positions[0])
-            else:
-                tmp_input_bit_positions.append(input_bit_positions[index])
-
-        tmp_list = [sum(tmp_input_bit_positions[i]) for i in range(len(tmp_input_bit_positions))]
-        input_id_links = [x for _, x in sorted(zip(tmp_list, input_id_links))]
-        input_bit_positions = [x for _, x in sorted(zip(tmp_list, input_bit_positions))]
-        return input_id_links, input_bit_positions
-
-    else:
-        updated_input_bit_positions = []
-        updated_input_id_links = []
-        ordered_list = []
-        index = 0
-        input_id_link_already_visited = []
-        for input_id_link in input_id_links:
-            component_input_id_link = get_component_from_id(input_id_link, self)
-            if input_id_link not in input_id_link_already_visited:
-                input_id_link_already_visited.append(input_id_link)
-                for position, link_of_component_id_link in enumerate(component_input_id_link.input_id_links):
-                    if link_of_component_id_link == component.id:
-                        if len(ordered_list) == 0:
-                            l = component_input_id_link.input_bit_positions[position]
-                            if l != sorted(l):
-                                l_ordered = find_correct_order_for_inversion(l, input_bit_positions[index],
-                                                                             component_input_id_link)
-                            else:
-                                l_ordered = input_bit_positions[index]
-                            ordered_list.append(l)
-                            updated_input_bit_positions.append(l_ordered)
-                            updated_input_id_links.append(input_id_links[index])
+    updated_input_bit_positions = []
+    updated_input_id_links = []
+    ordered_list = []
+    index = 0
+    input_id_link_already_visited = []
+    for input_id_link in input_id_links:
+        component_input_id_link = get_component_from_id(input_id_link, self)
+        if input_id_link not in input_id_link_already_visited:
+            input_id_link_already_visited.append(input_id_link)
+            for position, link_of_component_id_link in enumerate(component_input_id_link.input_id_links):
+                if link_of_component_id_link == component.id:
+                    if len(ordered_list) == 0:
+                        l = component_input_id_link.input_bit_positions[position]
+                        if l != sorted(l):
+                            l_ordered = find_correct_order_for_inversion(l, input_bit_positions[index],
+                                                                         component_input_id_link)
                         else:
-                            position_to_insert = 0
-                            first_index = component_input_id_link.input_bit_positions[position][0]
-                            for list in ordered_list:
-                                if first_index > list[0]:
-                                    position_to_insert += 1
-                                else:
-                                    break
-                            ordered_list.insert(position_to_insert, component_input_id_link.input_bit_positions[position])
-                            l = component_input_id_link.input_bit_positions[position]
-                            if l != sorted(l):
-                                l_ordered = find_correct_order_for_inversion(l, input_bit_positions[index],
-                                                                             component_input_id_link)
+                            l_ordered = input_bit_positions[index]
+                        ordered_list.append(l)
+                        updated_input_bit_positions.append(l_ordered)
+                        updated_input_id_links.append(input_id_links[index])
+                    else:
+                        position_to_insert = 0
+                        first_index = component_input_id_link.input_bit_positions[position][0]
+                        for list in ordered_list:
+                            if first_index > list[0]:
+                                position_to_insert += 1
                             else:
-                                l_ordered = input_bit_positions[index]
-                            updated_input_bit_positions.insert(position_to_insert, l_ordered)
-                            updated_input_id_links.insert(position_to_insert, input_id_links[index])
-                        index += 1
-        return updated_input_id_links, updated_input_bit_positions
+                                break
+                        ordered_list.insert(position_to_insert, component_input_id_link.input_bit_positions[position])
+                        l = component_input_id_link.input_bit_positions[position]
+                        if l != sorted(l):
+                            l_ordered = find_correct_order_for_inversion(l, input_bit_positions[index],
+                                                                         component_input_id_link)
+                        else:
+                            l_ordered = input_bit_positions[index]
+                        updated_input_bit_positions.insert(position_to_insert, l_ordered)
+                        updated_input_id_links.insert(position_to_insert, input_id_links[index])
+                    index += 1
+    return updated_input_id_links, updated_input_bit_positions
 
 def is_bit_adjacent_to_list_of_bits(bit_name, list_of_bit_names, all_equivalent_bits):
     if bit_name not in all_equivalent_bits.keys():
