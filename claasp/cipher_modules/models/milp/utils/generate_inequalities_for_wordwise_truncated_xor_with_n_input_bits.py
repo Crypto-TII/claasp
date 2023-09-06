@@ -28,7 +28,7 @@ from functools import reduce
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.utils import generate_product_of_sum_from_espresso
 
-input_patterns_file_name = "dictionary_containing_truncated_xor_inequalities_between_2_input_bits.obj"
+input_patterns_file_name = "dictionary_containing_truncated_input_pattern_inequalities.obj"
 xor_n_inputs_file_name = "dictionary_containing_truncated_xor_inequalities_between_n_input_bits.obj"
 wordwise_truncated_input_pattern_inequalities_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), input_patterns_file_name)
 wordwise_truncated_xor_inequalities_between_n_input_bits_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), xor_n_inputs_file_name)
