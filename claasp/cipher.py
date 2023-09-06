@@ -736,6 +736,7 @@ class Cipher:
             sage: cipher = SpeckBlockCipher(number_of_rounds=2)
             sage: ciphertext = cipher.evaluate([plaintext, key])
             sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
         TEST::
