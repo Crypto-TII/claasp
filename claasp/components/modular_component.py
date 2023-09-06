@@ -497,7 +497,7 @@ class Modular(Component):
             modadd_carries_definition = (f'array [0..{noutput_bits}-1] of var {model.data_type}:'
                                          f'{mzn_carry_var};\n')
             mzn_block_variables += modadd_carries_definition
-            model.carries_vars.append(mzn_carry_var)
+            model.carries_vars.append({'mzn_carry_array_name': mzn_carry_var, 'mzn_carry_array_size': noutput_bits})
             mzn_block_constraints_carries = (f'constraint {mzn_carry_var} = '
                                              f'XOR3('
                                              f'{mzn_input_array_1},{mzn_input_array_2},'
