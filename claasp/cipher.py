@@ -958,7 +958,7 @@ class Cipher:
         while len(cipher_components_tmp) > 0:
             print(len(cipher_components_tmp))
             for c in cipher_components_tmp:
-                # print(c.id, "---------", len(cipher_components_tmp))
+                print(c.id, "---------", len(cipher_components_tmp))
                 # OPTION 1 - Add components that are not invertible
                 if are_there_enough_available_inputs_to_evaluate_component(c, available_bits, all_equivalent_bits,
                                                        key_schedule_component_ids, self):
