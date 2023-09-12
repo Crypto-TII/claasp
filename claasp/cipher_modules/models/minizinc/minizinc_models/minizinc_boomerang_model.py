@@ -50,17 +50,20 @@ class MinizincBoomerangModel(MinizincModel):
                 round_object = original_cipher.rounds.round_at(round_number)
                 list_of_components = round_object.components
                 for round_component in list_of_components:
-                    if round_component.id not in graph.nodes and not round_component.id.startswith('cipher_output') and not round_component.id.startswith('intermediate_output'):
+                    if round_component.id not in graph.nodes:
                         component_to_be_removed = new_cipher.get_component_from_id(round_component.id)
                         component_to_be_removed_round = new_cipher.get_round_from_component_id(round_component.id)
                         new_cipher.remove_round_component(component_to_be_removed_round, component_to_be_removed)
-                    if round_component.id.startswith('cipher_output') or round_component.id.startswith('intermediate_output'):
+                    """
+                    if round_component.id.startswith('cipher_output'):
                         if round_component.id in self.intermediate_cipher_outputs:
                             component_to_be_removed = new_cipher.get_component_from_id(round_component.id)
                             component_to_be_removed_round = new_cipher.get_round_from_component_id(round_component.id)
                             new_cipher.remove_round_component(component_to_be_removed_round, component_to_be_removed)
                         else:
                             self.intermediate_cipher_outputs.append(round_component.id)
+                    """
+
 
         def create_bottom_cipher(original_cipher):
             initial_nodes_from_bottom_graph = [node for node in self.bottom_graph if self.bottom_graph.has_edge(node, node)]
@@ -76,7 +79,8 @@ class MinizincBoomerangModel(MinizincModel):
                         index_e0_end = old_component.input_id_links.index(input_id_link_e0)
                         new_input_id_links[index_e0_end] = "new_" + input_id_link_e0
                         bottom_cipher._inputs.append("new_" + input_id_link_e0)
-                        bottom_cipher._inputs_bit_size.append(32)
+                        output_bit_size_input_id_link_e0 = original_cipher.get_component_from_id(input_id_link_e0).output_bit_size
+                        bottom_cipher._inputs_bit_size.append(output_bit_size_input_id_link_e0)
 
                 bottom_cipher.update_input_id_links_from_component_id(old_component.id, new_input_id_links)
                 new_input_bit_positions[old_component.id] = old_component.input_bit_positions
@@ -86,8 +90,9 @@ class MinizincBoomerangModel(MinizincModel):
                 bottom_cipher._inputs.append(middle_id)
                 bottom_cipher._inputs_bit_size.append(original_cipher.get_component_from_id(middle_id).output_bit_size)
 
-            removing_empty_rounds(bottom_cipher)
+
             removing_nodes_that_are_not_in_list(bottom_cipher, original_cipher, self.bottom_graph)
+            removing_empty_rounds(bottom_cipher)
 
             # resetting rounds
             for round_number in range(bottom_cipher.number_of_rounds):
@@ -115,7 +120,7 @@ class MinizincBoomerangModel(MinizincModel):
 
         return objective_string
 
-    def create_boomerang_model(self, fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher):
+    def create_boomerang_model(self, fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher, bcts):
         def create_bct_mzn_constraint_from_component_ids(dLL_id, dRR_id, nLL_id, nRR_id, branch_size):
             dLL_vars = []
             dRR_vars = []
@@ -147,19 +152,22 @@ class MinizincBoomerangModel(MinizincModel):
         differential_model_bottom_cipher.build_xor_differential_trail_model(
             -1, fixed_variables_for_bottom_cipher
         )
-        branch_size = 32
-        bct_constraints1 = create_bct_mzn_constraint_from_component_ids('modadd_3_0', 'rot_3_11', 'modadd_4_0',
-                                                                        'new_rot_3_11', branch_size)
-        bct_constraints2 = create_bct_mzn_constraint_from_component_ids('modadd_3_6', 'rot_3_17', 'modadd_4_6',
-                                                                        'new_rot_3_17', branch_size)
-        bct_constraints3 = create_bct_mzn_constraint_from_component_ids('modadd_3_12', 'rot_3_5', 'modadd_4_12',
-                                                                        'new_rot_3_5', branch_size)
-        bct_constraints4 = create_bct_mzn_constraint_from_component_ids('modadd_3_18', 'rot_3_23', 'modadd_4_18',
-                                                                        'new_rot_3_23', branch_size)
-        differential_model_bottom_cipher.add_constraint_from_str(bct_constraints1)
-        differential_model_bottom_cipher.add_constraint_from_str(bct_constraints2)
-        differential_model_bottom_cipher.add_constraint_from_str(bct_constraints3)
-        differential_model_bottom_cipher.add_constraint_from_str(bct_constraints4)
+        #branch_size = 32
+        #bct_constraints1 = create_bct_mzn_constraint_from_component_ids('modadd_3_0', 'rot_3_11', 'modadd_4_0',
+        #                                                                'new_rot_3_11', branch_size)
+        #bct_constraints2 = create_bct_mzn_constraint_from_component_ids('modadd_3_6', 'rot_3_17', 'modadd_4_6',
+        #                                                                'new_rot_3_17', branch_size)
+        #bct_constraints3 = create_bct_mzn_constraint_from_component_ids('modadd_3_12', 'rot_3_5', 'modadd_4_12',
+        #                                                                'new_rot_3_5', branch_size)
+        #bct_constraints4 = create_bct_mzn_constraint_from_component_ids('modadd_3_18', 'rot_3_23', 'modadd_4_18',
+        #                                                                'new_rot_3_23', branch_size)
+        for bct in bcts:
+            bct_mzn_model = create_bct_mzn_constraint_from_component_ids(*bct)
+            differential_model_bottom_cipher.add_constraint_from_str(bct_mzn_model)
+        #differential_model_bottom_cipher.add_constraint_from_str(bct_constraints1)
+        #differential_model_bottom_cipher.add_constraint_from_str(bct_constraints2)
+        #differential_model_bottom_cipher.add_constraint_from_str(bct_constraints3)
+        #differential_model_bottom_cipher.add_constraint_from_str(bct_constraints4)
         differential_model_bottom_cipher.add_constraint_from_str("include \"bct_model.mzn\";\n")
 
         differential_model_bottom_cipher._model_constraints.extend(self.objective_generator(differential_model_top_cipher, differential_model_bottom_cipher))
