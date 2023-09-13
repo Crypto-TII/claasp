@@ -26,11 +26,16 @@ from sage.modules.free_module_element import vector
 from sage.rings.finite_rings.finite_field_constructor import FiniteField
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_mds_matrices import \
+    update_dictionary_that_contains_wordwise_truncated_mds_inequalities, \
+    output_dictionary_that_contains_wordwise_truncated_mds_inequalities, \
+    delete_dictionary_that_contains_wordwise_truncated_mds_inequalities
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.input import Input
 from claasp.component import Component, free_input
 from claasp.utils.utils import int_to_poly
 from claasp.components.linear_layer_component import LinearLayer
-from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component, branch_number
+from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component, branch_number, has_maximal_branch_number
 
 
 def add_xor_components(word_size, output_id_link_1, output_id_link_2, output_size, list_of_xor_components):
@@ -623,6 +628,75 @@ class MixColumn(LinearLayer):
         self.set_description(original_description)
         result = variables, constraints
         return result
+
+    def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for mix column
+        component in deterministic truncated XOR differential model.
+
+        For MDS matrices, this method implements Model 5 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
+        INPUTS:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: mix_column_component = aes.component_from(0, 21)
+            sage: variables, constraints = mix_column_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp) # long
+            sage: variables
+            [('x[rot_0_17_word_0_class_bit_0]', x_0),
+             ('x[rot_0_17_word_0_class_bit_1]', x_1),
+             ...
+             ('x[mix_column_0_21_word_3_class_bit_0]', x_14),
+             ('x[mix_column_0_21_word_3_class_bit_1]', x_15)]
+            sage: constraints
+            [1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 - x_15,
+             1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_6 + x_7 - x_15,
+             ...
+             1 <= 2 - x_2 - x_3,
+             1 <= 2 - x_0 - x_1]
+
+            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+            sage: cipher = MidoriBlockCipher(number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: mix_column_component = cipher.component_from(0, 21)
+            sage: variables, constraints = mix_column_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            ...
+
+        """
+
+        constraints = []
+
+        if has_maximal_branch_number(self):
+            x = model.binary_variable
+            input_class_tuple, output_class_tuple = self._get_wordwise_input_output_linked_class_tuples(model)
+            variables = [(f"x[{var_elt}]", x[var_elt]) for var_tuple in input_class_tuple + output_class_tuple for
+                         var_elt in var_tuple]
+
+            matrix = Matrix(self.description[0])
+            all_vars = [x[i] for _ in input_class_tuple + output_class_tuple for i in _]
+
+            update_dictionary_that_contains_wordwise_truncated_mds_inequalities(model._word_size, matrix.dimensions())
+            dict_inequalities = output_dictionary_that_contains_wordwise_truncated_mds_inequalities()
+            inequalities = dict_inequalities[model._word_size][matrix.dimensions()]
+
+            minimized_constraints = espresso_pos_to_constraints(inequalities, all_vars)
+            constraints.extend(minimized_constraints)
+        else:
+            M = self.description[0]
+            bin_matrix = Matrix([[1 if M[i][j] else 0 for i in range(len(M))]
+                                 for j in range(len(M[0]))])
+            bin_matrix_transposed = [list(_) for _ in list(zip(*bin_matrix))]
+            self.set_description(bin_matrix_transposed)
+            variables, constraints = super().milp_wordwise_deterministic_truncated_xor_differential_constraints(model)
+        return variables, constraints
 
     def sat_constraints(self):
         """

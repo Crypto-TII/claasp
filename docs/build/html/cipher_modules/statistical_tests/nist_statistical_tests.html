@@ -16,6 +16,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Dieharder statistical tests" href="dieharder_statistical_tests.html" />
     <link rel="prev" title="Dataset generator" href="dataset_generator.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
@@ -31,6 +32,9 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="dieharder_statistical_tests.html" title="Dieharder statistical tests"
+             accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="dataset_generator.html" title="Dataset generator"
              accesskey="P">previous</a> |</li>
@@ -59,7 +63,7 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_all">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_chart_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_all" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_chart_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the corresponding chart based on the list of parsed report dictionary for all rounds.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -82,7 +86,7 @@
 <span class="gp">sage: </span><span class="n">dict_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
 <span class="gp">sage: </span><span class="n">StatisticalTests</span><span class="o">.</span><span class="n">generate_chart_all</span><span class="p">(</span><span class="n">dict_list</span><span class="p">)</span>
 <span class="go">Drawing chart for all rounds is in progress.</span>
-<span class="go">Drawing chart for all rounds is in finished. Please find the chart in file nist_random_toy_cipher.png.</span>
+<span class="go">Drawing chart for all rounds is in finished.</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -94,7 +98,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_round">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_chart_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_round" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_chart_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_round" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the corresponding chart based on the parsed report dictionary.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -117,7 +121,7 @@ f’nist_{report_dict[“data_type”]}_{report_dict[“cipher_name”]}_round_{
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;rounds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="gp">sage: </span><span class="n">StatisticalTests</span><span class="o">.</span><span class="n">generate_chart_round</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 <span class="go">Drawing round 1 is in progress.</span>
-<span class="go">Drawing round 1 is finished. Please find the chart in file nist_random_toy_cipher_round_1.png.</span>
+<span class="go">Drawing round 1 is finished.</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -164,7 +168,7 @@ from 0), if set to 0, means run to the last round</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">nist_sts_report_folder_prefix</span></code> – <strong>string</strong>
 (default: <span class="math">test_reports/statistical_tests/nist_statistics_report</span>); the folder to save the generated
 statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flag_chart</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
 </ul>
 <p>OUTPUT:</p>
 <ul class="simple">
@@ -178,8 +182,7 @@ see the corresponding report generated under the folder nist_statistics_report f
 <span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_CBC_nist_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># long time</span>
 <span class="go">     Statistical Testing In Progress.........</span>
 <span class="go">...</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_cbc_index0_2lines_524288bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is in progress.</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_cbc_index0_2lines_524288bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is finished.</span>
+<span class="go">Finished.</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -203,7 +206,7 @@ from 0), if set to 0, means run to the last round</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">nist_sts_report_folder_prefix</span></code> – <strong>string</strong>
 (default: <span class="math">test_reports/statistical_tests/nist_statistics_report</span>); the folder to save the generated
 statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flag_chart</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
 </ul>
 <p>OUTPUT:</p>
 <ul class="simple">
@@ -217,8 +220,7 @@ see the corresponding report generated under the folder nist_statistics_report f
 <span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_avalanche_nist_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="go">     Statistical Testing In Progress.........</span>
 <span class="go">...</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_avalanche_index0_10lines_10240bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is in progress.</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_avalanche_index0_10lines_10240bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is finished.</span>
+<span class="go">Finished.</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -244,7 +246,7 @@ run to the last round.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">nist_sts_report_folder_prefix</span></code> – <strong>string</strong>
 (default: <span class="math">test_reports/statistical_tests/nist_statistics_report</span>); the folder to save the generated
 statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flag_chart</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
 </ul>
 <p>OUTPUT:</p>
 <ul class="simple">
@@ -258,8 +260,7 @@ see the corresponding report generated under the folder nist_statistics_report f
 <span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_correlation_nist_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="go">     Statistical Testing In Progress.........</span>
 <span class="go">...</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_correlation_index0_10lines_2600960bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is in progress.</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_correlation_index0_10lines_2600960bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is finished.</span>
+<span class="go">Finished.</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -286,7 +287,7 @@ from 0), if set to 0, means run to the last round</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">nist_sts_report_folder_prefix</span></code> – <strong>string</strong>
 (default: <span class="math">test_reports/statistical_tests/nist_statistics_report</span>); the folder to save the
 generated statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flag_chart</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
 </ul>
 <p>OUTPUT:</p>
 <ul class="simple">
@@ -300,8 +301,7 @@ see the corresponding report generated under the folder nist_statistics_report f
 <span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_high_density_nist_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="go">     Statistical Testing In Progress.........</span>
 <span class="go">...</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_high_density_index0_10lines_169280bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is in progress.</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_high_density_index0_10lines_169280bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is finished.</span>
+<span class="go">Finished.</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -328,7 +328,7 @@ from 0), if set to 0, means run to the last round</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">nist_sts_report_folder_prefix</span></code> – <strong>string</strong>
 (default: <span class="math">test_reports/statistical_tests/nist_statistics_report</span>); the folder to save the generated
 statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flag_chart</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
 </ul>
 <p>OUTPUT:</p>
 <ul class="simple">
@@ -342,21 +342,21 @@ see the corresponding report generated under the folder nist_statistics_report f
 <span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_low_density_nist_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="go">     Statistical Testing In Progress.........</span>
 <span class="go">...</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_low_density_index0_10lines_169280bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is in progress.</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_low_density_index0_10lines_169280bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is finished.</span>
+<span class="go">Finished.</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.run_nist_statistical_tests_tool_interactively">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run_nist_statistical_tests_tool_interactively</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_stream_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_bit_streams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistical_test_option_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'111111111111111'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.run_nist_statistical_tests_tool_interactively" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run statistical tests using the NIST test suite [1]. The result will be in experiments folder.</p>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run_nist_statistical_tests_tool_interactively</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_stream_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_bit_streams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistical_test_option_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'111111111111111'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.run_nist_statistical_tests_tool_interactively" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run statistical tests using the NIST test suite [1]. The result will be in experiments folder.
+Be aware that the NIST STS suits needed to be installed in /usr/local/bin in the docker image.</p>
 <p>[1] <a class="reference external" href="https://csrc.nist.gov/Projects/Random-Bit-Generation/Documentation-and-Software">https://csrc.nist.gov/Projects/Random-Bit-Generation/Documentation-and-Software</a></p>
 <p>INPUT:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">bit_stream_length</span></code> – <strong>integer</strong>; bit stream length (See [1])</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">input_file</span></code> – <strong>str</strong>; file containing the bit streams</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bit_stream_length</span></code> – <strong>integer</strong>; bit stream length (See [1])</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">number_of_bit_streams</span></code> – <strong>integer</strong>; number of bit streams in <span class="math">input_file</span></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">input_file_format</span></code> – <strong>integer</strong>; <span class="math">input_file</span> format. Set to 0 to indicate a file containing a binary
 string in ASCII, or 1 to indicate a binary file</p></li>
@@ -374,9 +374,8 @@ used to specify a set of statistical tests we want to run (See [1])</p></li>
 <span class="gp">sage: </span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;test_reports/statistical_tests/experiments&#39;</span><span class="p">):</span>
 <span class="gp">....: </span>    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;test_reports/statistical_tests/experiments&#39;</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">StatisticalTests</span><span class="o">.</span><span class="n">run_nist_statistical_tests_tool_interactively</span><span class="p">(</span>
-<span class="gp">....: </span>    <span class="mi">100000</span><span class="p">,</span>
 <span class="gp">....: </span>    <span class="sa">f</span><span class="s1">&#39;claasp/cipher_modules/statistical_tests/input_data_example&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<span class="gp">....: </span>    <span class="mi">10000</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="go">     Statistical Testing In Progress.........</span>
 <span class="go">     Statistical Testing Complete!!!!!!!!!!!!</span>
 
@@ -407,7 +406,7 @@ from 0), if set to 0, means run to the last round</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">nist_sts_report_folder_prefix</span></code> – <strong>string</strong>
 (default: <span class="math">test_reports/statistical_tests/nist_statistics_report</span>); The folder to save the generated
 statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flag_chart</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from nist statistical test if set to True</p></li>
 </ul>
 <p>OUTPUT:</p>
 <ul class="simple">
@@ -421,8 +420,7 @@ see the corresponding report generated under the folder nist_statistics_report f
 <span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_random_nist_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="go">     Statistical Testing In Progress.........</span>
 <span class="go">...</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_random_index0_10lines_2600960bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is in progress.</span>
-<span class="go">Parsing test_reports/statistical_tests/nist_statistics_report/speck_p32_k64_o32_r3_32_64_random_index0_10lines_2600960bits/round_1/AlgorithmTesting/finalAnalysisReport.txt is finished.</span>
+<span class="go">Finished.</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -442,6 +440,11 @@ see the corresponding report generated under the folder nist_statistics_report f
     <h4>Previous topic</h4>
     <p class="topless"><a href="dataset_generator.html"
                           title="previous chapter">Dataset generator</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="dieharder_statistical_tests.html"
+                          title="next chapter">Dieharder statistical tests</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -473,6 +476,9 @@ see the corresponding report generated under the folder nist_statistics_report f
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="dieharder_statistical_tests.html" title="Dieharder statistical tests"
+             >next</a> |</li>
         <li class="right" >
           <a href="dataset_generator.html" title="Dataset generator"
              >previous</a> |</li>

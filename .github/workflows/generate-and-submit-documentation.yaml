@@ -7,10 +7,11 @@ on:
 
 jobs:
   generate-documentation:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         persist-credentials: false
         fetch-depth: 0
@@ -51,3 +52,11 @@ jobs:
       with:
         github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
         message: "Update documentation"
+
+    - name: Update develop branch
+      uses: morbalint/git-merge-action@v1
+      with:
+        target: 'develop'
+        source: 'main'
+        token: ${{ secrets.AUTHORIZATION_TOKEN }}
+        strategy_options: 'ours'

@@ -446,7 +446,7 @@ class CpModel:
               'total_weight': '5'}]
         """
         cipher_name = self.cipher_id
-        input_file_path = f'{cipher_name}_Cp_{model_type}.mzn'
+        input_file_path = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name)
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
         os.remove(input_file_path)
@@ -459,7 +459,6 @@ class CpModel:
                 solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, True)
             else:
                 solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output)
-            print(components_values)
             if components_values == {}:
                 solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name,
                                                                  solve_time, memory,

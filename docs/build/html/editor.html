@@ -16,8 +16,8 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Component" href="component.html" />
-    <link rel="prev" title="Input" href="input.html" />
+    <link rel="next" title="Templates" href="utils/templates.html" />
+    <link rel="prev" title="Round" href="round.html" />
     <link rel="icon" href="_static/sageicon.png" type="image/x-icon" />
     <script src="_static/thebe.js" type="text/javascript"></script>
     <script src="_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +33,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="component.html" title="Component"
+          <a href="utils/templates.html" title="Templates"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="input.html" title="Input"
+          <a href="round.html" title="Round"
              accesskey="P">previous</a> |</li>
   
     
@@ -1070,6 +1070,26 @@ rotation</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="editor.generate_expanded_links">
+<span class="sig-name descname"><span class="pre">generate_expanded_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.generate_expanded_links" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="editor.get_final_input_positions">
+<span class="sig-name descname"><span class="pre">get_final_input_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_input_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_lengths</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.get_final_input_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="editor.get_unique_links_information">
+<span class="sig-name descname"><span class="pre">get_unique_links_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_links</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.get_unique_links_information" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="editor.is_linear_layer_permutation">
+<span class="sig-name descname"><span class="pre">is_linear_layer_permutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M_T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.is_linear_layer_permutation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="editor.make_cipher_id">
 <span class="sig-name descname"><span class="pre">make_cipher_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">family_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.make_cipher_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1082,6 +1102,21 @@ rotation</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="editor.next_component_index_from">
 <span class="sig-name descname"><span class="pre">next_component_index_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.next_component_index_from" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="editor.propagate_equivalences">
+<span class="sig-name descname"><span class="pre">propagate_equivalences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_expanded_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.propagate_equivalences" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="editor.propagate_permutations">
+<span class="sig-name descname"><span class="pre">propagate_permutations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.propagate_permutations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="editor.propagate_rotations">
+<span class="sig-name descname"><span class="pre">propagate_rotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.propagate_rotations" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1142,6 +1177,118 @@ rotation</p></li>
 <dt class="sig sig-object py" id="editor.remove_orphan_components">
 <span class="sig-name descname"><span class="pre">remove_orphan_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_without_key_schedule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.remove_orphan_components" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="editor.remove_permutations">
+<span class="sig-name descname"><span class="pre">remove_permutations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.remove_permutations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove rotation components from the cipher instance keeping its effect.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cipher</span></code> – <strong>Cipher object</strong>; an instance of the object cipher</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.editor</span> <span class="kn">import</span> <span class="n">remove_permutations</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">removed_permutations_present</span> <span class="o">=</span> <span class="n">remove_permutations</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">removed_permutations_present</span><span class="o">.</span><span class="n">print_as_python_dictionary</span><span class="p">()</span>
+<span class="go">cipher = {</span>
+<span class="go">...</span>
+<span class="go">&#39;cipher_rounds&#39; : [</span>
+<span class="go">  ...</span>
+<span class="go">  {</span>
+<span class="go">    # round = 0 - round component = 16</span>
+<span class="go">    &#39;id&#39;: &#39;sbox_0_16&#39;,</span>
+<span class="go">    &#39;type&#39;: &#39;sbox&#39;,</span>
+<span class="go">    &#39;input_bit_size&#39;: 4,</span>
+<span class="go">    &#39;input_id_link&#39;: [&#39;xor_0_0&#39;],</span>
+<span class="go">    &#39;input_bit_positions&#39;: [[60, 61, 62, 63]],</span>
+<span class="go">    &#39;output_bit_size&#39;: 4,</span>
+<span class="go">    &#39;description&#39;: [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2],</span>
+<span class="go">  },</span>
+<span class="go">  {</span>
+<span class="go">    # round = 0 - round component = 17</span>
+<span class="go">    &#39;id&#39;: &#39;rot_0_18&#39;,</span>
+<span class="go">    &#39;type&#39;: &#39;word_operation&#39;,</span>
+<span class="go">    &#39;input_bit_size&#39;: 80,</span>
+<span class="go">    &#39;input_id_link&#39;: [&#39;key&#39;],</span>
+<span class="go">    &#39;input_bit_positions&#39;: [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79]],</span>
+<span class="go">    &#39;output_bit_size&#39;: 80,</span>
+<span class="go">    &#39;description&#39;: [&#39;ROTATE&#39;, -61],</span>
+<span class="go">  },</span>
+<span class="go">  {</span>
+<span class="go">    # round = 0 - round component = 18</span>
+<span class="go">    &#39;id&#39;: &#39;sbox_0_19&#39;,</span>
+<span class="go">    &#39;type&#39;: &#39;sbox&#39;,</span>
+<span class="go">    &#39;input_bit_size&#39;: 4,</span>
+<span class="go">    &#39;input_id_link&#39;: [&#39;rot_0_18&#39;],</span>
+<span class="go">    &#39;input_bit_positions&#39;: [[0, 1, 2, 3]],</span>
+<span class="go">    &#39;output_bit_size&#39;: 4,</span>
+<span class="go">    &#39;description&#39;: [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2],</span>
+<span class="go">  },</span>
+<span class="go">  ...</span>
+<span class="go">    return int_to_bytearray(state, 64)</span>
+<span class="go">&#39;&#39;&#39;,</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="editor.remove_rotations">
+<span class="sig-name descname"><span class="pre">remove_rotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.remove_rotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove rotation components from the cipher instance keeping its effect.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cipher</span></code> – <strong>Cipher object</strong>; an instance of the object cipher</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.editor</span> <span class="kn">import</span> <span class="n">remove_rotations</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">removed_rotations_speck</span> <span class="o">=</span> <span class="n">remove_rotations</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">removed_rotations_speck</span><span class="o">.</span><span class="n">print_as_python_dictionary</span><span class="p">()</span>
+<span class="go">cipher = {</span>
+<span class="go">...</span>
+<span class="go">&#39;cipher_rounds&#39; : [</span>
+<span class="go">  # round 0</span>
+<span class="go">  [</span>
+<span class="go">  {</span>
+<span class="go">    # round = 0 - round component = 0</span>
+<span class="go">    &#39;id&#39;: &#39;modadd_0_1&#39;,</span>
+<span class="go">    &#39;type&#39;: &#39;word_operation&#39;,</span>
+<span class="go">    &#39;input_bit_size&#39;: 32,</span>
+<span class="go">    &#39;input_id_link&#39;: [&#39;plaintext&#39;, &#39;plaintext&#39;],</span>
+<span class="go">    &#39;input_bit_positions&#39;: [[9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8], [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]],</span>
+<span class="go">    &#39;output_bit_size&#39;: 16,</span>
+<span class="go">    &#39;description&#39;: [&#39;MODADD&#39;, 2],</span>
+<span class="go">  },</span>
+<span class="go">  {</span>
+<span class="go">    # round = 0 - round component = 1</span>
+<span class="go">    &#39;id&#39;: &#39;xor_0_2&#39;,</span>
+<span class="go">    &#39;type&#39;: &#39;word_operation&#39;,</span>
+<span class="go">    &#39;input_bit_size&#39;: 32,</span>
+<span class="go">    &#39;input_id_link&#39;: [&#39;modadd_0_1&#39;, &#39;key&#39;],</span>
+<span class="go">    &#39;input_bit_positions&#39;: [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]],</span>
+<span class="go">    &#39;output_bit_size&#39;: 16,</span>
+<span class="go">    &#39;description&#39;: [&#39;XOR&#39;, 2],</span>
+<span class="go">  },</span>
+<span class="go">  {</span>
+<span class="go">    # round = 0 - round component = 2</span>
+<span class="go">    &#39;id&#39;: &#39;xor_0_4&#39;,</span>
+<span class="go">    &#39;type&#39;: &#39;word_operation&#39;,</span>
+<span class="go">    &#39;input_bit_size&#39;: 32,</span>
+<span class="go">    &#39;input_id_link&#39;: [&#39;xor_0_2&#39;, &#39;plaintext&#39;],</span>
+<span class="go">    &#39;input_bit_positions&#39;: [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 16, 17]],</span>
+<span class="go">    &#39;output_bit_size&#39;: 16,</span>
+<span class="go">    &#39;description&#39;: [&#39;XOR&#39;, 2],</span>
+<span class="go">  },</span>
+<span class="go">  ...</span>
+<span class="go">&#39;cipher_reference_code&#39;: None,</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="editor.remove_round_component">
@@ -1271,13 +1418,13 @@ rotation</p></li>
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="input.html"
-                          title="previous chapter">Input</a></p>
+    <p class="topless"><a href="round.html"
+                          title="previous chapter">Round</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="component.html"
-                          title="next chapter">Component</a></p>
+    <p class="topless"><a href="utils/templates.html"
+                          title="next chapter">Templates</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -1310,10 +1457,10 @@ rotation</p></li>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="component.html" title="Component"
+          <a href="utils/templates.html" title="Templates"
              >next</a> |</li>
         <li class="right" >
-          <a href="input.html" title="Input"
+          <a href="round.html" title="Round"
              >previous</a> |</li>
   
     
