@@ -23,6 +23,8 @@ RUN apt-get install -y build-essential \
   wget \
   z3
 
+COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
+
 COPY required_dependencies/assess.c /opt/
 COPY required_dependencies/utilities.c /opt/
 COPY required_dependencies/utilities.h /opt/

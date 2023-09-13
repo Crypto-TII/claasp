@@ -437,7 +437,7 @@ class MilpXorDifferentialModel(MilpModel):
 
     def find_one_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
-        Return a XOR differential trail, not necessary the one with the lowest weight.
+        Return a XOR differential trail, not necessarily the one with the lowest weight.
 
         INPUT:
 

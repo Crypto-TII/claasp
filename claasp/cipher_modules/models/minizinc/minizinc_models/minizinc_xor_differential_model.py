@@ -513,3 +513,25 @@ class MinizincXorDifferentialModel(MinizincModel):
                                           f'{modular_addition_concatenation}))++"\\n"];')
 
         return objective_string
+
+    def set_max_number_of_nonlinear_carries(self, max_number_of_nonlinear_carries):
+        carries_vars = self.carries_vars
+        concatenated_str = "array[1.."
+        sizes_sum = sum(var['mzn_carry_array_size'] for var in carries_vars)
+        concatenated_str += str(sizes_sum) + "] of var bool: concatenated_carries = "
+        concatenated_str += " ++ ".join(var['mzn_carry_array_name'] for var in carries_vars) + ";\n"
+        aux_x_definition_str = f'array[1..{sizes_sum}] of var bool: x_carries;\n'
+        cluster_constraint = (f'constraint forall(i in 1..{sizes_sum}) ('
+                              f'x_carries[i]<->(concatenated_carries[i] /\\ (i == 1 \\/ not concatenated_carries[i-1]))'
+                              f');\n')
+
+        self._variables_list.append(concatenated_str)
+        self._variables_list.append(aux_x_definition_str)
+        self._model_constraints.append(cluster_constraint)
+        self._model_constraints.append(f'constraint sum(i in 1..{sizes_sum})' 
+                                       f'(bool2int(x_carries[i])) <= {max_number_of_nonlinear_carries};\n')
+
+    def set_max_number_of_carries_on_arx_cipher(self, max_number_of_carries):
+        concatenated_str = " ++ ".join(var['mzn_carry_array_name'] for var in self.carries_vars)
+        self._model_constraints.append(f'constraint sum({concatenated_str}) <= {max_number_of_carries};\n')
+
