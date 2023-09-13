@@ -42,7 +42,9 @@ REGISTERS = [
 ]
 
 
-#PARAMETERS_CONFIGURATION_LIST = [{'key_bit_size': 128, 'number_of_rounds': 640}]
+PARAMETERS_CONFIGURATION_LIST = [{'key_bit_size': 64, 'frame_bit_size': 22,
+                                  'number_of_normal_clocks_at_initialization': 100,
+                                  'number_of_rounds': 228}]
 
 
 class A51StreamCipher(Cipher):
@@ -67,13 +69,14 @@ class A51StreamCipher(Cipher):
         'constant_0_0'
     """
 
-    def __init__(self, input_bit_size=128, key_bit_size=64, frame_bit_size=22):
+    def __init__(self, key_bit_size=64, frame_bit_size=22, number_of_normal_clocks_at_initialization=100,
+                 number_of_rounds=228):
 
         super().__init__(family_name="a51",
                          cipher_type="stream_cipher",
-                         cipher_inputs=[INPUT_MESSAGE, INPUT_KEY, INPUT_FRAME],
-                         cipher_inputs_bit_size=[input_bit_size, key_bit_size, frame_bit_size],
-                         cipher_output_bit_size=input_bit_size)
+                         cipher_inputs=[INPUT_KEY, INPUT_FRAME],
+                         cipher_inputs_bit_size=[key_bit_size, frame_bit_size],
+                         cipher_output_bit_size=number_of_rounds)
 
         # registers initialization
         regs_size = 0
@@ -83,30 +86,25 @@ class A51StreamCipher(Cipher):
             regs_output_bit.append(regs_size-1)
 
         regs = self.regs_initialization(key_bit_size=key_bit_size, frame_bit_size=frame_bit_size,
+                                        number_of_normal_clocks_at_initialization=number_of_normal_clocks_at_initialization,
                                         regs_size=regs_size)
 
-        # message encryption
-        regs_xor_output = [[] for _ in REGISTERS]
         fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS],
                              REGISTERS[i][CLOCK_POLYNOMIAL]] for i in range(len(REGISTERS))], 1, 1]
-        for r in range(input_bit_size):
+        cipher_output=[]
+        for r in range(number_of_rounds):
             regs = self.round_function(regs=regs, regs_size=regs_size, fsr_description=fsr_description)
+            regs_xor_output = []
             for i in range(len(REGISTERS)):
-                regs_xor_output[i].append(ComponentState([regs.id], [[regs_output_bit[i]]]))
+                regs_xor_output.append(ComponentState([regs.id], [[regs_output_bit[i]]]))
+            inputs_id, inputs_pos = get_inputs_parameter(regs_xor_output)
+            self.add_XOR_component(inputs_id, inputs_pos, 1)
+            cipher_output.append(ComponentState([self.get_current_component_id()], [[0]]))
 
+        inputs_id, inputs_pos = get_inputs_parameter(cipher_output)
+        self.add_cipher_output_component(inputs_id, inputs_pos, number_of_rounds)
 
-
-            # round output
-            # inputs = []
-            # for i in range(len(state)):
-            #     inputs.append(state[i])
-            # inputs_id, inputs_pos = get_inputs_parameter(inputs)
-            # if round_number == number_of_words_in_round - 1:
-            #     self.add_cipher_output_component(inputs_id, inputs_pos, STATE_SIZE)
-            # else:
-            #     self.add_round_output_component(inputs_id, inputs_pos, STATE_SIZE)
-
-    def regs_initialization(self, key_bit_size, frame_bit_size, regs_size):
+    def regs_initialization(self, key_bit_size, frame_bit_size, number_of_normal_clocks_at_initialization, regs_size):
         # registers initialization
         self.add_round()
         constant_0 = []
@@ -145,7 +143,8 @@ class A51StreamCipher(Cipher):
             regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
 
         fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS],
-                             REGISTERS[i][CLOCK_POLYNOMIAL]] for i in range(len(REGISTERS))], 1, 100]
+                             REGISTERS[i][CLOCK_POLYNOMIAL]] for i in range(len(REGISTERS))], 1,
+                           number_of_normal_clocks_at_initialization]
         self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
         regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
 
