@@ -408,11 +408,50 @@ def are_these_bits_available(bits_list, available_bits):
             return False
     return True
 
-def are_there_enough_available_inputs_to_evaluate_component(component, available_bits, all_equivalent_bits, key_schedule_components,
-                self):
+# def are_there_enough_available_inputs_to_evaluate_component(component, available_bits, all_equivalent_bits, key_schedule_components,
+#                 self):
+#     #  check input links
+#     component_input_bits_list = component_input_bits(component)
+#     can_be_evaluated = [True] * len(component_input_bits_list)
+#     if component.type == "constant":
+#         return False
+#     if component.type == "cipher_input":
+#         return False
+#     for index, bits_list in enumerate(component_input_bits_list):
+#         if not are_these_bits_available(bits_list, available_bits):
+#             can_be_evaluated[index] = False
+#
+#     if sum(can_be_evaluated) == len(can_be_evaluated):
+#         return True
+#     else:
+#         for index, link in enumerate(component.input_id_links):
+#             if not can_be_evaluated[index]:
+#                 component_of_link = get_component_from_id(link, self)
+#                 output_components = get_output_components(component_of_link, self)
+#                 link_bit_names = []
+#                 for bit in component_input_bits_list[index]:
+#                     link_bit_name = bit["component_id"] + "_" + str(bit["position"]) + "_output"
+#                     link_bit_names.append(link_bit_name)
+#                 for output_component in output_components:
+#                     if (output_component.id not in component.input_id_links) and (
+#                             output_component.id != component.id):
+#                         index_id = output_component.input_id_links.index(link)
+#                         starting_bit = 0
+#                         for index_list, list_bit_positions in enumerate(output_component.input_bit_positions):
+#                             if index_list == index_id:
+#                                 break
+#                             starting_bit += len(list_bit_positions)
+#                         output_component_bit_name = output_component.id + "_" + str(starting_bit) + "_output_updated"
+#                         if is_bit_adjacent_to_list_of_bits(output_component_bit_name, link_bit_names,
+#                                                            all_equivalent_bits):
+#                             can_be_evaluated[index] = True
+#         return sum(can_be_evaluated) == len(can_be_evaluated)
+
+def are_there_enough_available_inputs_to_evaluate_component(component, available_bits, all_equivalent_bits, key_schedule_components, self):
     #  check input links
     component_input_bits_list = component_input_bits(component)
     can_be_evaluated = [True] * len(component_input_bits_list)
+    available_output_components = []
     if component.type == "constant":
         return False
     if component.type == "cipher_input":
@@ -420,6 +459,7 @@ def are_there_enough_available_inputs_to_evaluate_component(component, available
     for index, bits_list in enumerate(component_input_bits_list):
         if not are_these_bits_available(bits_list, available_bits):
             can_be_evaluated[index] = False
+    available_input_components = [get_component_from_id(c_id, self) for i,c_id in enumerate(component.input_id_links) if can_be_evaluated[i] == True]
 
     if sum(can_be_evaluated) == len(can_be_evaluated):
         return True
@@ -428,11 +468,12 @@ def are_there_enough_available_inputs_to_evaluate_component(component, available
             if not can_be_evaluated[index]:
                 component_of_link = get_component_from_id(link, self)
                 output_components = get_output_components(component_of_link, self)
+                # can_be_evaluated_from_outputs = [False] * len(output_components)
                 link_bit_names = []
                 for bit in component_input_bits_list[index]:
                     link_bit_name = bit["component_id"] + "_" + str(bit["position"]) + "_output"
                     link_bit_names.append(link_bit_name)
-                for output_component in output_components:
+                for index_output_comp, output_component in enumerate(output_components):
                     if (output_component.id not in component.input_id_links) and (
                             output_component.id != component.id):
                         index_id = output_component.input_id_links.index(link)
@@ -444,8 +485,21 @@ def are_there_enough_available_inputs_to_evaluate_component(component, available
                         output_component_bit_name = output_component.id + "_" + str(starting_bit) + "_output_updated"
                         if is_bit_adjacent_to_list_of_bits(output_component_bit_name, link_bit_names,
                                                            all_equivalent_bits):
-                            can_be_evaluated[index] = True
-        return sum(can_be_evaluated) == len(can_be_evaluated)
+                            # can_be_evaluated[index] = True
+                            available_output_components.append(output_component)
+
+        list_of_bit_names = []
+        for c in available_output_components:
+            for i in range(c.output_bit_size):
+                list_of_bit_names.append(c.id + "_" + str(i) + "_output_updated")
+        for c in available_input_components:
+            for i in range(c.output_bit_size):
+                list_of_bit_names.append(c.id + "_" + str(i) + "_output")
+        for i in range(component.input_bit_size):
+            bit_name = component.id + "_" + str(i) + "_input"
+            if not is_bit_adjacent_to_list_of_bits(bit_name, list_of_bit_names, all_equivalent_bits):
+                return False
+        return True
 
 
 def are_there_enough_available_inputs_to_perform_inversion(component, available_bits, all_equivalent_bits, self):
@@ -920,21 +974,27 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
     input_id_links = []
     input_bit_positions = []
     if (component.type == "intermediate_output") and (component.id not in key_schedule_component_ids):
-        for link in component.input_id_links:
+        for index_link, link in enumerate(component.input_id_links):
             component_of_link = get_component_from_id(link, self)
             available_output_components = get_available_output_components(component_of_link, available_bits, self)
             link_bit_names = []
             for i in range(component_of_link.output_bit_size):
                 link_bit_name = link + "_" + str(i) + "_output"
                 link_bit_names.append(link_bit_name)
-            for available_output_component in available_output_components:
+            for index_available_output_component, available_output_component in enumerate(available_output_components):
                 if (available_output_component.id not in component.input_id_links) and (
                         available_output_component.id != component.id):
-                    available_output_component_bit_name = available_output_component.id + "_0_output_updated"
+                    index_id = available_output_component.input_id_links.index(link)
+                    starting_bit = 0
+                    for index_list, list_bit_positions in enumerate(available_output_component.input_bit_positions):
+                        if index_list == index_id:
+                            break
+                        starting_bit += len(list_bit_positions)
+                    available_output_component_bit_name = available_output_component.id + "_" + str(starting_bit) + "_output_updated"
                     if is_bit_adjacent_to_list_of_bits(available_output_component_bit_name, link_bit_names,
                                                        all_equivalent_bits):
                         input_id_links.append(available_output_component.id)
-                        input_bit_positions.append(list(range(available_output_component.output_bit_size)))
+                        input_bit_positions.append(list(range(starting_bit, starting_bit + len(available_output_component.input_bit_positions[index_list]))))
 
         evaluated_component = Component(component.id, component.type, Input(component.input_bit_size, input_id_links, input_bit_positions),
                                         component.output_bit_size, component.description)
