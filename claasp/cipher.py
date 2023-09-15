@@ -175,8 +175,8 @@ class Cipher:
         return editor.add_mix_column_component(self, input_id_links, input_bit_positions,
                                                output_bit_size, mix_column_description)
 
-    def add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size):
-        return editor.add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size)
+    def add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus = None):
+        return editor.add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
     def add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size)
