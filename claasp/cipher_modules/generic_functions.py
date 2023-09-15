@@ -548,7 +548,7 @@ def MODADD(input, number_of_inputs, modulus, verbosity=False):
     return output
 
 
-def MODSUB(input, number_of_inputs, verbosity=False):
+def MODSUB(input, number_of_inputs, modulus, verbosity=False):
     """
     The modulus is 2^w, where w=Floor(input_length/number_of_inputs).
 
@@ -560,7 +560,8 @@ def MODSUB(input, number_of_inputs, verbosity=False):
     """
     block_len = input.len // number_of_inputs
     output = input[0:block_len].uint
-    modulus = 2 ** block_len
+    if modulus is None:
+        modulus = 2 ** block_len
     for i in range(1, number_of_inputs):
         output = (output - input[i * block_len:(i + 1) * block_len].uint) % modulus
 

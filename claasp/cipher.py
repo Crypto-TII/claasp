@@ -178,8 +178,8 @@ class Cipher:
     def add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus = None):
         return editor.add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
-    def add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size):
-        return editor.add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size)
+    def add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus = None):
+        return editor.add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
     def add_NOT_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_NOT_component(self, input_id_links, input_bit_positions, output_bit_size)
