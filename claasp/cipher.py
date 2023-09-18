@@ -870,27 +870,6 @@ class Cipher:
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
-            sage: from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
-            sage: key = 0x000000066770000000a0000000000001
-            sage: plaintext = 0x0011223344556677
-            sage: cipher = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False
-
-            sage: from tii.graph_representations.creators.raiden import RaidenCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = RaidenCreator(number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
-            sage: plaintext = 0xbd7d764dff0ada1e
-            sage: key = 0x1de1c3c2c65880074c32dce537b22ab3
-            sage: ciphertext = S.evaluate([plaintext, key])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([key, ciphertext]) == plaintext
-            True
-
             sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
             sage: key = 0x1de1c3c2c65880074c32dce537b22ab3
             sage: plaintext = 0xbd7d764dff0ada1e
@@ -900,63 +879,57 @@ class Cipher:
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
-            sage: from tii.graph_representations.creators.gimli_permutation import GimliCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = GimliCreator(number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
+            sage: from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
+            sage: key = 0x000000066770000000a0000000000001
+            sage: plaintext = 0x0011223344556677
+            sage: cipher = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
+            sage: ciphertext = cipher.evaluate([plaintext, key])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            True
+
+            sage: from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
+            sage: cipher = DESBlockCipher(number_of_rounds=4)
+            sage: key = 0x133457799BBCDFF1
+            sage: plaintext = 0x0123456789ABCDEF
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            True
+
+            sage: from claasp.ciphers.permutations.gimli_sbox_permutation import GimliSboxPermutation
+            sage: cipher = GimliSboxPermutation(number_of_rounds=2, word_size=32)
             sage: plaintext = 0x111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
-            sage: ciphertext = S.evaluate([plaintext])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([ciphertext]) == plaintext
+            sage: ciphertext = cipher.evaluate([plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext]) == plaintext
             False
 
-            sage: from tii.graph_representations.creators.sparx import SparxCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = SparxCreator(number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
+            sage: from claasp.ciphers.block_ciphers.sparx_block_cipher import SparxBlockCipher
             sage: plaintext = 0x0123456789abcdef
             sage: key = 0x00112233445566778899aabbccddeeff
-            sage: ciphertext = S.evaluate([plaintext, key])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([key, ciphertext]) == plaintext
+            sage: cipher = SparxBlockCipher(number_of_rounds=2)
+            sage: ciphertext = cipher.evaluate([plaintext, key])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             False
 
-            sage: from tii.graph_representations.creators.threefish import ThreefishCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = ThreefishCreator(number_of_rounds=2).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
+            sage: from claasp.ciphers.block_ciphers.threefish_block_cipher import ThreefishBlockCipher
+            sage: cipher = ThreefishBlockCipher(number_of_rounds=2)
             sage: plaintext = 0xF8F9FAFBFCFDFEFFF0F1F2F3F4F5F6F7E8E9EAEBECEDEEEFE0E1E2E3E4E5E6E7
             sage: key = 0x17161514131211101F1E1D1C1B1A191827262524232221202F2E2D2C2B2A2928
             sage: tweak = 0x07060504030201000F0E0D0C0B0A0908
-            sage: ciphertext = S.evaluate([plaintext, key, tweak])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([ciphertext]) == plaintext
+            sage: ciphertext = cipher.evaluate([plaintext, key, tweak])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key, tweak]) == plaintext
             False
 
-            sage: from tii.graph_representations.creators.chacha_permutation import ChachaPermutationCreator
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: cipher = ChachaPermutationCreator(number_of_rounds=10).get_cipher_dictionary()
-            sage: S = IterativeCipher(cipher)
-            sage: plaintext = 0
-            sage: ciphertext = S.evaluate([plaintext])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([ciphertext]) == plaintext
-            False
-
-            sage: from tii.graph_representations.creators.des_block_cipher import DESBlockCipherCreator
-            sage: cipher = DESBlockCipherCreator(number_of_rounds=4).get_cipher_dictionary()
-            sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
-            sage: S = IterativeCipher(cipher)
-            sage: key = 0x133457799BBCDFF1
-            sage: plaintext = 0x0123456789ABCDEF
-            sage: ciphertext = S.evaluate([plaintext, key])
-            sage: cipher_inv = S.cipher_inverse()
-            sage: inv_S = IterativeCipher(cipher_inv)
-            sage: inv_S.evaluate([key, ciphertext]) == plaintext
+            sage: from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+            sage: cipher = ChachaPermutation(number_of_rounds=10)
+            sage: plaintext = 0xffff
+            sage: ciphertext = cipher.evaluate([plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext]) == plaintext
             False
 
         """
@@ -970,7 +943,7 @@ class Cipher:
         while len(cipher_components_tmp) > 0:
             print(len(cipher_components_tmp))
             for c in cipher_components_tmp:
-                # print(c.id, "---------", len(cipher_components_tmp))
+                print(c.id, "---------", len(cipher_components_tmp))
                 # OPTION 1 - Add components that are not invertible
                 if are_there_enough_available_inputs_to_evaluate_component(c, available_bits, all_equivalent_bits,
                                                        key_schedule_component_ids, self):

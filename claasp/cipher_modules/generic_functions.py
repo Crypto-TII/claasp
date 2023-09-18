@@ -191,18 +191,18 @@ def add_padding(a, number_of_rows, res_vector, word_size):
     for row in range(number_of_rows):
         tmp = poly_to_int(res_vector[row], word_size, a)
         if word_size == 8 and tmp < 16:
-            output_vector.append(4)
+            output_vector.append(BitArray(4))
         if word_size in [4, 8]:
             output_vector.append(hex(tmp))
         if word_size == 3 and tmp < 2:
-            output_vector.append(2)
+            output_vector.append(BitArray(2))
             output_vector.append(bin(tmp))
         elif word_size == 3 and tmp < 4:
-            output_vector.append(1)
+            output_vector.append(BitArray(1))
             output_vector.append(bin(tmp))
         elif word_size not in [4, 8]:
             if tmp < 2:
-                output_vector.append(1)
+                output_vector.append(BitArray(1))
             output_vector.append(bin(tmp))
 
     return output_vector
