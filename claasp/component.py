@@ -229,6 +229,195 @@ class Component:
 
         return input_vars, output_vars
 
+    def _get_input_output_variables_tuples(self):
+        """
+        Returns a tuple that encodes the truncated pattern of each bit, for the milp bitwise truncated model:
+            - (0, 0) means that the pattern is 0, i.e. the bit value equals 0
+            - (0, 1) means that the pattern is 1, i.e. the bit value equals 1
+            - (1, 0) means that the pattern is 2, i.e. the bit value is unknown
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(fancy)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: component = fancy.component_from(0, 6)
+            sage: input_class_id, output_class_id = component._get_input_output_variables_tuples()
+            sage: input_class_id
+            [('sbox_0_0_0_class_bit_0', 'sbox_0_0_0_class_bit_1'),
+             ('sbox_0_0_1_class_bit_0', 'sbox_0_0_1_class_bit_1'),
+             ...
+             ('sbox_0_5_2_class_bit_0', 'sbox_0_5_2_class_bit_1'),
+             ('sbox_0_5_3_class_bit_0', 'sbox_0_5_3_class_bit_1')]
+            sage: output_class_id
+            [('linear_layer_0_6_0_class_bit_0', 'linear_layer_0_6_0_class_bit_1'),
+             ('linear_layer_0_6_1_class_bit_0', 'linear_layer_0_6_1_class_bit_1'),
+            ...
+             ('linear_layer_0_6_22_class_bit_0', 'linear_layer_0_6_22_class_bit_1'),
+             ('linear_layer_0_6_23_class_bit_0', 'linear_layer_0_6_23_class_bit_1')]
+
+
+
+        """
+
+        tuple_size = 2
+        output_ids_tuple = [tuple(f"{self.id}_{i}_class_bit_{j}" for j in range(tuple_size)) for i in range(self.output_bit_size)]
+        input_ids_tuple = []
+        for index, link in enumerate(self.input_id_links):
+            input_ids_tuple.extend([tuple(f"{link}_{pos}_class_bit_{j}" for j in range(tuple_size)) for pos in self.input_bit_positions[index]])
+
+
+        return input_ids_tuple, output_ids_tuple
+
+    def _get_wordwise_input_output_linked_class(self, model):
+        """
+        Returns the integer variable associated to the truncated pattern of a word, for the milp wordwise truncated model:
+            - 0 means that the word equals 0
+            - 1 means that the word value is fixed
+            - 2 means that the word can be any value except zero
+            - 3 means that the word is unkown
+
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: cipher = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwisewiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: input_class_id, output_class_id = component._get_wordwise_input_output_linked_class(milp)
+            sage: input_class_id
+            ['sbox_0_2_word_0_class',
+             'sbox_0_6_word_0_class',
+             'sbox_0_10_word_0_class',
+             'sbox_0_14_word_0_class']
+            sage: output_class_id
+            ['rot_0_18_word_0_class',
+             'rot_0_18_word_1_class',
+             'rot_0_18_word_2_class',
+             'rot_0_18_word_3_class']
+        """
+
+        output_class_ids = [self.id + '_word_' + str(i) + '_class' for i in
+                        range(self.output_bit_size // model.word_size)]
+        input_class_ids = []
+
+        for index, link in enumerate(self.input_id_links):
+            for pos in range(len(self.input_bit_positions[index]) // model.word_size):
+                input_class_ids.append(link + '_word_' + str(
+                        (pos * model.word_size + self.input_bit_positions[index][
+                            0]) // model.word_size) + '_class')
+
+        return input_class_ids, output_class_ids
+
+    def _get_wordwise_input_output_linked_class_tuples(self, model):
+        """
+
+        Returns a tuple that encodes the truncated pattern of each word in the milp wordwise truncated model
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: cipher = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: input_id_tuples, output_id_tuples = component._get_wordwise_input_output_linked_class_tuples(milp)
+            sage: input_id_tuples
+            [('sbox_0_2_word_0_class_bit_0', 'sbox_0_2_word_0_class_bit_1'),
+             ('sbox_0_6_word_0_class_bit_0', 'sbox_0_6_word_0_class_bit_1'),
+             ('sbox_0_10_word_0_class_bit_0', 'sbox_0_10_word_0_class_bit_1'),
+             ('sbox_0_14_word_0_class_bit_0', 'sbox_0_14_word_0_class_bit_1')]
+            sage: output_id_tuples
+            [('rot_0_18_word_0_class_bit_0', 'rot_0_18_word_0_class_bit_1'),
+             ('rot_0_18_word_1_class_bit_0', 'rot_0_18_word_1_class_bit_1'),
+             ('rot_0_18_word_2_class_bit_0', 'rot_0_18_word_2_class_bit_1'),
+             ('rot_0_18_word_3_class_bit_0', 'rot_0_18_word_3_class_bit_1')]
+
+        """
+        tuple_size = 2
+        input_class, output_class = self._get_wordwise_input_output_linked_class(model)
+
+        output_class_tuples = [tuple(f"{id}_bit_{i}" for i in range(tuple_size)) for id in
+                              output_class]
+        input_class_tuples = [tuple(f"{id}_bit_{i}" for i in range(tuple_size)) for id in
+                             input_class]
+
+        return input_class_tuples, output_class_tuples
+
+
+    def _get_wordwise_input_output_full_tuples(self, model):
+        """
+
+        Returns a tuple that contains all binary variables linked to a word in the milp wordwise truncated model:
+            - the tuple of binary variables that encodes the truncated pattern of each word
+            - the list of n binary variables that represent the value each n-bit word
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: cipher = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: input_id_tuples, output_id_tuples = component._get_wordwise_input_output_full_tuples(milp)
+            sage: input_id_tuples[0]
+            ('sbox_0_2_word_0_class_bit_0',
+             'sbox_0_2_word_0_class_bit_1',
+             ...
+             'sbox_0_2_6',
+             'sbox_0_2_7')
+            sage: output_id_tuples[0]
+            ('rot_0_18_word_0_class_bit_0',
+             'rot_0_18_word_0_class_bit_1',
+             ...
+             'rot_0_18_6',
+             'rot_0_18_7')
+
+
+        """
+        word_size = model.word_size
+
+        input_ids, output_ids = self._get_input_output_variables()
+        input_class_id_tuples, output_class_id_tuples = self._get_wordwise_input_output_linked_class_tuples(model)
+
+        input_full_tuple = [tuple(list(input_class_id_tuples[i]) + input_ids[i * word_size: (i + 1) * word_size]) for i in
+                            range(len(input_ids) // word_size)]
+        output_full_tuple = [tuple(list(output_class_id_tuples[i]) + output_ids[i * word_size: (i + 1) * word_size]) for i in
+                             range(len(output_ids) // word_size)]
+
+        return input_full_tuple, output_full_tuple
+
+
     def as_python_dictionary(self):
         return {
             'id': self._id,

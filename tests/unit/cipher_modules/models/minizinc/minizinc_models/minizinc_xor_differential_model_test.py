@@ -30,6 +30,7 @@ def test_build_lowest_weight_xor_differential_trail_model():
     speck = SpeckBlockCipher(number_of_rounds=5, block_bit_size=32, key_bit_size=64)
     minizinc = MinizincXorDifferentialModel(speck)
     bit_positions = [i for i in range(speck.output_bit_size)]
+
     bit_positions_key = list(range(64))
     fixed_variables = [{'component_id': 'plaintext',
                         'constraint_type': 'sum',
@@ -312,3 +313,24 @@ def test_find_lowest_weight_xor_differential_trail():
     assert 2 <= round3_weight <= 4
     assert 2 <= round4_weight <= 4
     assert 2 <= round5_weight <= 4
+
+
+def test_find_lowest_weight_for_short_xor_differential_trail():
+    speck = SpeckBlockCipher(number_of_rounds=4, block_bit_size=32, key_bit_size=64)
+    minizinc = MinizincXorDifferentialModel(speck)
+    bit_positions = list(range(32))
+    bit_positions_key = list(range(64))
+    fixed_variables = [{'component_id': 'plaintext',
+                        'constraint_type': 'sum',
+                        'bit_positions': bit_positions,
+                        'operator': '>',
+                        'value': '0'},
+                       {'component_id': 'key',
+                        'constraint_type': 'sum',
+                        'bit_positions': bit_positions_key,
+                        'operator': '=',
+                        'value': '0'}]
+    minizinc.set_max_number_of_carries_on_arx_cipher(0)
+    minizinc.set_max_number_of_nonlinear_carries(0)
+    result = minizinc.find_lowest_weight_xor_differential_trail(solver_name='Xor', fixed_values=fixed_variables)
+    assert result["total_weight"] == 5
