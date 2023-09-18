@@ -886,7 +886,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext, key])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False
+            True
 
             sage: from tii.graph_representations.creators.gimli_permutation import GimliCreator
             sage: from tii.iterative_cipher_classes.cipher import IterativeCipher
