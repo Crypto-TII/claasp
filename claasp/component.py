@@ -90,7 +90,7 @@ class Component:
             length += len(i)
         if component_input.bit_size != length:
             print("the length of [input_bit_positions] is not equal to input_bit_size")
-            # return
+            return
 
         self._id = component_id
         self._type = component_type
