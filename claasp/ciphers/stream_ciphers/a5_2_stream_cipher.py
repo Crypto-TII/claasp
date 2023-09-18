@@ -33,11 +33,17 @@ REGISTERS = [
      TAPPED_BITS: [[0], [1], [2], [5]],
      CLOCK_POLYNOMIAL: [],
      CLOCK_BIT: 10 },
+
     {BIT_LENGTH: 22,
      TAPPED_BITS: [[0], [1]],
      CLOCK_BIT: 11},
+
     {BIT_LENGTH: 23,
      TAPPED_BITS: [[0], [1], [2], [15]],
+     CLOCK_BIT: 12},
+
+    {BIT_LENGTH: 17,
+     TAPPED_BITS: [[0], [5]],
      CLOCK_BIT: 12},
 ]
 

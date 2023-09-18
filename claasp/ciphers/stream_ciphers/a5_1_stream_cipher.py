@@ -16,12 +16,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from copy import deepcopy
-
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
 from claasp.utils.utils import get_inputs_parameter
-from claasp.name_mappings import INPUT_MESSAGE, INPUT_KEY, INPUT_FRAME
+from claasp.name_mappings import INPUT_KEY, INPUT_FRAME
 
 BIT_LENGTH = "BIT_LENGTH"
 TAPPED_BITS = "TAPPED_BITS"
@@ -32,7 +30,7 @@ REGISTERS = [
     {BIT_LENGTH: 19,
      TAPPED_BITS: [[0], [1], [2], [5]],
      CLOCK_POLYNOMIAL: [],
-     CLOCK_BIT: 10 },
+     CLOCK_BIT: 10},
     {BIT_LENGTH: 22,
      TAPPED_BITS: [[0], [1]],
      CLOCK_BIT: 11},
