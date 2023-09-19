@@ -631,7 +631,7 @@ def find_input_id_link_bits_equivalent(inverse_component, component, all_equival
                 input_bit_positions_of_inverse[position]) + "_input"
             if input_bit_name not in all_equivalent_bits[potential_equivalent_bit_name]:
                 input_bit_positions = list(
-                    range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[i])))
+                    range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[index])))
                 return input_bit_positions
         starting_bit_position += len(component.input_bit_positions[index])
     raise ValueError("Equivalent bits not found")
@@ -716,6 +716,7 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
             for name in all_equivalent_bits[input_bit_name]:
                 if name != output_bit_name_updated:
                     all_equivalent_bits[output_bit_name_updated].append(name)
+                    all_equivalent_bits[name].append(output_bit_name_updated)  # changed, line added
 
 def order_input_id_links_for_modadd(component, input_id_links, input_bit_positions, available_bits, self):
     available_output_components = get_available_output_components(component, available_bits, self)

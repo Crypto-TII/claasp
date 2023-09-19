@@ -912,7 +912,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            False
+            False # intermediate_output_0_348 --------- 124 -- [input_id_link] and [input_bit_positions] should have the same length
 
             sage: from claasp.ciphers.permutations.gimli_sbox_permutation import GimliSboxPermutation
             sage: cipher = GimliSboxPermutation(number_of_rounds=2, word_size=32)
@@ -947,7 +947,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            False # xor_0_7 --------- 25
+            False
 
             sage: from claasp.ciphers.permutations.tinyjambu_permutation import TinyJambuPermutation
             sage: cipher = TinyJambuPermutation(number_of_rounds=2)
