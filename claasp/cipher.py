@@ -853,14 +853,6 @@ class Cipher:
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
             True
 
-            sage: from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
-            sage: plaintext = 0x1234
-            sage: cipher = KeccakInvertiblePermutation(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
-
             sage: from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
             sage: key = 0x000102030405060708090A0B0C0D0E0F
             sage: plaintext = 0x000102030405060708090A0B0C0D0E0F
@@ -897,6 +889,31 @@ class Cipher:
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
+            sage: from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
+            sage: cipher = SalsaPermutation(number_of_rounds=5)
+            sage: plaintext = 0xffff
+            sage: ciphertext = cipher.evaluate([plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext]) == plaintext
+            True
+
+            sage: from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
+            sage: cipher = BEA1BlockCipher(number_of_rounds=2)
+            sage: key = 0x8cdd0f3459fb721e798655298d5c1
+            sage: plaintext = 0x47a57eff5d6475a68916
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            True
+
+            sage: from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
+            sage: plaintext = 0x1234
+            sage: cipher = KeccakInvertiblePermutation(number_of_rounds=2, word_size=8)
+            sage: ciphertext = cipher.evaluate([plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext]) == plaintext
+            False
+
             sage: from claasp.ciphers.permutations.gimli_sbox_permutation import GimliSboxPermutation
             sage: cipher = GimliSboxPermutation(number_of_rounds=2, word_size=32)
             sage: plaintext = 0x111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
@@ -925,11 +942,47 @@ class Cipher:
             False
 
             sage: from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-            sage: cipher = ChachaPermutation(number_of_rounds=10)
+            sage: cipher = ChachaPermutation(number_of_rounds=5)
             sage: plaintext = 0xffff
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
+            False
+
+            sage: from claasp.ciphers.permutations.tinyjambu_permutation import TinyJambuPermutation
+            sage: cipher = TinyJambuPermutation(number_of_rounds=2)
+            sage: plaintext = 0xffff
+            sage: key = 0x1234
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            False
+
+            sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+            sage: cipher = LowMCBlockCipher(number_of_rounds=2)
+            sage: key = 0xabcd
+            sage: plaintext = 0x1234
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            False
+
+            sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
+            sage: cipher = TwofishBlockCipher(key_length=256, number_of_rounds=2)
+            sage: key = 0xD43BB7556EA32E46F2A282B7D45B4E0D57FF739D4DC92C1BD7FC01700CC8216F
+            sage: plaintext = 0x90AFE91BB288544F2C32DC239B2635E6
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            False
+
+            sage: from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
+            sage: cipher = KasumiBlockCipher(number_of_rounds=2)
+            sage: key = 0x9900aabbccddeeff1122334455667788
+            sage: plaintext = 0xfedcba0987654321
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             False
 
         """
