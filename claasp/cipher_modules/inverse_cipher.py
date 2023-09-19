@@ -18,6 +18,43 @@ def get_cipher_components(self):
         component_list.append(input_component)
     return component_list
 
+def get_cipher_components2(self):
+    component_list = []
+    # build input components
+    for index, input_id in enumerate(self.inputs):
+        if input_id != INPUT_KEY:
+            input_component = Component(input_id, "cipher_input", Input(0, [[]], [[]]), self.inputs_bit_size[index],
+                                        [input_id])
+            setattr(input_component, 'round', -1)
+            component_list.append(input_component)
+    number_of_inputs = len(component_list)
+    component_list += self.get_all_components()
+    for c in component_list[number_of_inputs:]:
+        setattr(c, 'round', int(c.id.split("_")[-2]))
+    if INPUT_KEY in self.inputs:
+        index = self.inputs.index(INPUT_KEY)
+        input_id = self.inputs[index]
+        input_component = Component(input_id, "cipher_input", Input(0, [[]], [[]]), self.inputs_bit_size[index],
+                                    [input_id])
+        setattr(input_component, 'round', -1)
+        component_list.append(input_component)
+    return component_list[::-1]
+
+def get_key_schedule_components(self, cipher):
+    # TODO
+    key_schedule_component_ids = [INPUT_KEY]
+    component_list = self.get_all_components()
+    for c in component_list:
+        flag_belong_to_key_schedule = True
+        for link in c.input_id_links:
+            if link not in key_schedule_component_ids:
+                flag_belong_to_key_schedule = False
+                break
+        if flag_belong_to_key_schedule or (c.type == CONSTANT):
+            key_schedule_component_ids.append(c.id)
+
+    return [cipher.get_component_from_id(id) for id in key_schedule_component_ids[1:]]
+
 
 def get_all_components_with_the_same_input_id_link_and_input_bit_positions(input_id_link, input_bit_positions, self):
     cipher_components = get_cipher_components(self)
@@ -35,7 +72,7 @@ def get_all_components_with_the_same_input_id_link_and_input_bit_positions(input
     return output_list
 
 
-def are_equal_compoenents(component1, component2):
+def are_equal_components(component1, component2):
     attributes = ["id", "type", "input_id_links", "input_bit_size", "input_bit_positions", "output_bit_position", "description", "round"]
     for attr in attributes:
         if getattr(component1, attr) != getattr(component2, attr):
@@ -46,7 +83,7 @@ def are_equal_compoenents(component1, component2):
 def add_new_component_to_list(component, component_list):
     is_in_list = False
     for c in component_list:
-        if are_equal_compoenents(component, c):
+        if are_equal_components(component, c):
             is_in_list = True
     if not is_in_list:
         component_list.append(component)
@@ -272,21 +309,19 @@ def get_all_equivalent_bits(self):
     dictio = {}
     component_list = self.get_all_components()
     for c in component_list:
-        starting_bit_position = 0
+        current_bit_position = 0
         for index, input_id_link in enumerate(c.input_id_links):
-            j = 0
             if c.type == "constant":
                 input_bit_positions = list(range(c.output_bit_size))
             else:
                 input_bit_positions = c.input_bit_positions[index]
             for i in input_bit_positions:
                 output_bit_name = input_id_link + "_" + str(i) + "_output"
-                input_bit_name = c.id + "_" + str(starting_bit_position + j) + "_input"
-                j += 1
+                input_bit_name = c.id + "_" + str(current_bit_position) + "_input"
+                current_bit_position += 1
                 if output_bit_name not in dictio.keys():
                     dictio[output_bit_name] = []
                 dictio[output_bit_name].append(input_bit_name)
-            starting_bit_position += len(c.input_bit_positions[index])
 
     updated_dictio = {}
     for key, values in dictio.items():
@@ -454,9 +489,7 @@ def are_there_enough_available_inputs_to_evaluate_component(component, available
     component_input_bits_list = component_input_bits(component)
     can_be_evaluated = [True] * len(component_input_bits_list)
     available_output_components = []
-    if component.type == "constant":
-        return False
-    if component.type == "cipher_input":
+    if component.type in [CONSTANT, CIPHER_INPUT]:
         return False
     for index, bits_list in enumerate(component_input_bits_list):
         if not are_these_bits_available(bits_list, available_bits):
@@ -556,7 +589,7 @@ def are_there_enough_available_inputs_to_perform_inversion(component, available_
         if can_be_used_for_inversion[index]:
             bit_lists_link_to_component_from_input_and_output += bits_list
 
-    if component.id == "plaintext":
+    if component.id == INPUT_PLAINTEXT or INTERMEDIATE_OUTPUT in component.id:
         return len(bit_lists_link_to_component_from_input_and_output) >= component.output_bit_size
     else:
         return len(bit_lists_link_to_component_from_input_and_output) >= component.input_bit_size
@@ -830,7 +863,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
                                       component.output_bit_size, [CIPHER_INPUT])
         setattr(inverse_component, "round", -1)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
-    elif component.type == CIPHER_INPUT and (component.id == INPUT_PLAINTEXT or component.id == INPUT_STATE):
+    elif component.type == CIPHER_INPUT and (component.id in [INPUT_PLAINTEXT, INPUT_STATE] or INTERMEDIATE_OUTPUT in component.id):
         input_id_links, input_bit_positions = compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(
             component, available_output_components, all_equivalent_bits, self)
         inverse_component = Component(component.id, CIPHER_OUTPUT,
@@ -946,7 +979,7 @@ def get_component_from_id(component_id, self):
     return None
 
 def get_key_schedule_component_ids(self):
-    key_schedule_component_ids = ["key"]
+    key_schedule_component_ids = [INPUT_KEY]
     component_list = self.get_all_components()
     for c in component_list:
         flag_belong_to_key_schedule = True
@@ -954,7 +987,7 @@ def get_key_schedule_component_ids(self):
             if link not in key_schedule_component_ids:
                 flag_belong_to_key_schedule = False
                 break
-        if flag_belong_to_key_schedule or (c.type == "constant"):
+        if flag_belong_to_key_schedule or (c.type == CONSTANT):
             key_schedule_component_ids.append(c.id)
 
     return key_schedule_component_ids
@@ -1244,3 +1277,43 @@ def sort_cipher_graph(cipher):
         k = k + 1
 
     return cipher
+
+def remove_components_from_rounds(cipher, start_round, end_round):
+    list_of_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1:]
+    key_schedule_component_ids = get_key_schedule_component_ids(cipher)
+    key_schedule_components = [cipher.get_component_from_id(id) for id in key_schedule_component_ids[1:]]
+
+    removed_component_ids = []
+    intermediate_outputs = {}
+    for current_round in list_of_rounds:
+        for component in set(current_round.components) - set(key_schedule_components):
+            if component.type == INTERMEDIATE_OUTPUT and component.description == ['round_output']:
+                intermediate_outputs[current_round.id] = component
+            cipher.rounds.remove_round_component(current_round.id, component)
+            removed_component_ids.append(component.id)
+
+    return removed_component_ids, intermediate_outputs
+
+def get_relative_position(target_link, target_bit_position, descendant):
+    offset = 0
+    for i, link in enumerate(descendant.input_id_links):
+        child_input_bit_position = descendant.input_bit_positions[i]
+        if link == target_link:
+            if target_bit_position in child_input_bit_position:
+                return child_input_bit_position.index(target_bit_position) + offset
+        offset += len(child_input_bit_position)
+    return -1
+
+def get_most_recent_intermediate_output(target_link, intermediate_outputs):
+    for index in sorted(intermediate_outputs, reverse=True):
+        if target_link in intermediate_outputs[index].input_id_links:
+            return intermediate_outputs[index]
+
+def update_input_links_from_rounds(cipher_rounds, removed_components, intermediate_outputs):
+    for round in cipher_rounds:
+        for component in round.components:
+            for i, link in enumerate(component.input_id_links):
+                if link in removed_components:
+                    intermediate_output = get_most_recent_intermediate_output(link, intermediate_outputs)
+                    component.input_id_links[i] = intermediate_output.id
+                    component.input_bit_positions[i] = [get_relative_position(link, j, intermediate_output) for j in component.input_bit_positions[i]]

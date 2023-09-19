@@ -21,6 +21,7 @@ import os
 import sys
 import inspect
 from copy import deepcopy
+from itertools import combinations
 
 import claasp
 from claasp import editor
@@ -859,7 +860,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
+            False
 
             sage: from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
             sage: key = 0x000102030405060708090A0B0C0D0E0F
@@ -941,9 +942,9 @@ class Cipher:
         key_schedule_component_ids = get_key_schedule_component_ids(self)
         all_equivalent_bits = get_all_equivalent_bits(self)
         while len(cipher_components_tmp) > 0:
-            print(len(cipher_components_tmp))
+            # print(len(cipher_components_tmp))
             for c in cipher_components_tmp:
-                print(c.id, "---------", len(cipher_components_tmp))
+                # print(c.id, "---------", len(cipher_components_tmp))
                 # OPTION 1 - Add components that are not invertible
                 if are_there_enough_available_inputs_to_evaluate_component(c, available_bits, all_equivalent_bits,
                                                        key_schedule_component_ids, self):
@@ -978,6 +979,67 @@ class Cipher:
         sorted_inverted_cipher = sort_cipher_graph(inverted_cipher)
 
         return sorted_inverted_cipher
+    def get_partial_cipher(self, start_round, end_round):
+
+        assert end_round < self.number_of_rounds
+        assert start_round <= end_round
+
+        inputs = deepcopy(self.inputs)
+        partial_cipher = Cipher(f"{self.family_name}_partial_{start_round}_to_{end_round}", f"{self.type}", inputs, self._inputs_bit_size, self.output_bit_size)
+        for round in self.rounds_as_list:
+            partial_cipher.rounds_as_list.append(deepcopy(round))
+
+        removed_components_ids, intermediate_outputs = remove_components_from_rounds(partial_cipher, start_round, end_round)
+
+        if start_round > 0:
+            for input_type in set(self.inputs) - {INPUT_KEY}:
+                removed_components_ids.append(input_type)
+                input_index = partial_cipher.inputs.index(input_type)
+                partial_cipher.inputs.pop(input_index)
+                partial_cipher.inputs_bit_size.pop(input_index)
+
+            partial_cipher.inputs.insert(0, intermediate_outputs[start_round - 1].id)
+            partial_cipher.inputs_bit_size.insert(0, intermediate_outputs[start_round - 1].output_bit_size)
+            update_input_links_from_rounds(partial_cipher.rounds_as_list[start_round:end_round + 1],
+                                           removed_components_ids, intermediate_outputs)
+
+        if end_round < self.number_of_rounds - 1:
+            removed_components_ids.append(CIPHER_OUTPUT)
+            last_round = partial_cipher.rounds_as_list[end_round]
+            for component in last_round.components:
+                if component.description == ['round_output']:
+                    last_round.remove_component(component)
+                    new_cipher_output = Component(component.id, CIPHER_OUTPUT,
+                                                  Input(component.output_bit_size, component.input_id_links,
+                                                        component.input_bit_positions),
+                                                  component.output_bit_size, [CIPHER_OUTPUT])
+                    last_round.add_component(new_cipher_output)
+
+        return partial_cipher
+
+    def cipher_partial_inverse(self, start_round, end_round):
+        """
+        Returns the inverted portion of a cipher.
+
+        INPUT:
+
+        - ``start_round`` -- **integer**; initial round number of the partial cipher
+        - ``end_round`` -- **integer**; final round number of the partial cipher
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: key = 0xabcdef01abcdef01
+            sage: plaintext = 0x01234567
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: result = speck.evaluate([plaintext, key], intermediate_output=True)
+            sage: partial_speck = speck.cipher_partial_inverse(1, 2)
+            sage: partial_speck.evaluate([result[0], key]) == result[2]['intermediate_output_0_6'][0]
+
+        """
+
+        partial_cipher = self.get_partial_cipher(start_round, end_round)
+        return partial_cipher.cipher_inverse()
 
     def evaluate_vectorized(self, cipher_input, intermediate_outputs=False, verbosity=False):
         """

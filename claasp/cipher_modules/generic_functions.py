@@ -701,10 +701,10 @@ def THETA_KECCAK(input):
         parity_rows.append(lanes_xored[(4 + i) % 5] ^ rotated_xored_lanes[(1 + i) % 5])
 
     # Xor rows parity to the corresponding lane
-    output = 0
+    output = BitArray(0)
     for i in range(5):
         for j in range(5):
-            output += input[i * plane_len + j * lane_len: i * plane_len + (j + 1) * lane_len] ^ parity_rows[i]
+            output += input[i * plane_len + j * lane_len: i * plane_len + (j + 1) * lane_len] ^ BitArray(parity_rows[i])
 
     return output
 
