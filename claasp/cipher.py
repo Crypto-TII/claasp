@@ -920,7 +920,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            False
+            False # loop 356
 
             sage: from claasp.ciphers.block_ciphers.sparx_block_cipher import SparxBlockCipher
             sage: plaintext = 0x0123456789abcdef
@@ -929,7 +929,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext, key])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False
+            False # loop 66
 
             sage: from claasp.ciphers.block_ciphers.threefish_block_cipher import ThreefishBlockCipher
             sage: cipher = ThreefishBlockCipher(number_of_rounds=2)
@@ -939,7 +939,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext, key, tweak])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key, tweak]) == plaintext
-            False
+            False # loop 29
 
             sage: from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
             sage: cipher = ChachaPermutation(number_of_rounds=5)
@@ -947,7 +947,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            False
+            False # xor_0_7 --------- 25
 
             sage: from claasp.ciphers.permutations.tinyjambu_permutation import TinyJambuPermutation
             sage: cipher = TinyJambuPermutation(number_of_rounds=2)
@@ -956,16 +956,16 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([key, plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False
+            False # loop 8
 
             sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
-            sage: cipher = LowMCBlockCipher(number_of_rounds=2)
-            sage: key = 0xabcd
-            sage: plaintext = 0x1234
+            sage: cipher = LowMCBlockCipher(block_bit_size=192, key_bit_size=192, number_of_rounds=4)
+            sage: key = 0x800000000000000000000000000000000000000000000000
+            sage: plaintext = 0xABFF00000000000000000000000000000000000000000000
             sage: ciphertext = cipher.evaluate([key, plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False
+            False # loop 274
 
             sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
             sage: cipher = TwofishBlockCipher(key_length=256, number_of_rounds=2)
@@ -974,7 +974,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([key, plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False
+            False #  sbox_1_56 --------- 124 -- the length of [input_bit_positions] is not equal to input_bit_size
 
             sage: from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
             sage: cipher = KasumiBlockCipher(number_of_rounds=2)
@@ -983,7 +983,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([key, plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False
+            False # loop 96
 
         """
         inverted_cipher = Cipher(f"{self.id}" + "_inverse", f"{self.type}", [], [], self.output_bit_size)
