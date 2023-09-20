@@ -411,19 +411,19 @@ class SatXorLinearModel(SatModel):
     def weight_xor_linear_constraints(self, weight):
         return self.weight_constraints(weight)
 
-    def _parse_solver_output(self, output_values_dict):
+    def _parse_solver_output(self, variable2value):
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         in_suffix = constants.INPUT_BIT_ID_SUFFIX
-        components_values = self._get_cipher_inputs_components_values(out_suffix, output_values_dict)
+        components_values = self._get_cipher_inputs_components_values(out_suffix, variable2value)
         total_weight = 0
         for component in self._cipher.get_all_components():
-            hex_value = self._get_component_hex_value(component, out_suffix, output_values_dict)
-            weight = self.calculate_component_weight(component, out_suffix, output_values_dict)
+            hex_value = self._get_component_hex_value(component, out_suffix, variable2value)
+            weight = self.calculate_component_weight(component, out_suffix, variable2value)
             component_value = set_component_fields(hex_value, weight)
             components_values[f'{component.id}{out_suffix}'] = component_value
             total_weight += weight
 
-            input_hex_value = self._get_component_hex_value(component, in_suffix, output_values_dict)
+            input_hex_value = self._get_component_hex_value(component, in_suffix, variable2value)
             component_value = set_component_fields(input_hex_value, 0)
             components_values[f'{component.id}{in_suffix}'] = component_value
 
