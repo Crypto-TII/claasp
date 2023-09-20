@@ -267,7 +267,7 @@ class MilpModel:
         self._integer_variable = self._model.new_variable(integer=True)
         self._non_linear_component_id = []
 
-    def _solve_with_external_solver(self, model_path, solver_name=SOLVER_DEFAULT):
+    def _solve_with_external_solver(self, model_type, model_path, solver_name=SOLVER_DEFAULT):
 
         if solver_name not in EXTERNAL_MILP_SOLVERS:
             raise ValueError(f"Invalid solver name: {solver_name}."
@@ -289,13 +289,11 @@ class MilpModel:
         if 'memory' in solver_specs:
             milp_memory = _get_data(solver_specs['memory'], str(solver_process))
 
-        return _parse_external_solver_output(self, solver_name, solver_process) + (milp_memory,)
+        return _parse_external_solver_output(self, model_type, solver_name, solver_process) + (milp_memory,)
 
-    def _solve_with_internal_solver(self):
+    def _solve_with_internal_solver(self, model_type):
 
         mip = self._model
-        x = self._binary_variable
-        p = self._integer_variable
 
         verbose_print("Solving model in progress ...")
         time_start = time.time()
@@ -309,15 +307,32 @@ class MilpModel:
             verbose_print(f"Time for solving the model = {milp_time}")
 
             status = 'SATISFIABLE'
-            probability_variables = mip.get_values(p)
-            total_weight = probability_variables["probability"] / 10.
-            components_variables = mip.get_values(x)
+
+            if model_type == "bitwise_deterministic_truncated_xor_differential":
+                x_class = self._trunc_binvar
+                intvars = self._integer_variable
+                components_variables = mip.get_values(x_class)
+                objective_variables = mip.get_values(intvars)
+                objective_value = objective_variables["probability"]
+
+            elif model_type == "wordwise_deterministic_truncated_xor_differential":
+                x_class = self._trunc_wordvar
+                intvars = self._integer_variable
+                components_variables = mip.get_values(x_class)
+                objective_variables = mip.get_values(intvars)
+                objective_value = objective_variables["probability"]
+            else:
+                x = self._binary_variable
+                p = self._integer_variable
+                objective_variables = mip.get_values(p)
+                objective_value = objective_variables["probability"] / 10.
+                components_variables = mip.get_values(x)
 
         except MIPSolverException as milp_exception:
             status = 'UNSATISFIABLE'
             print(milp_exception)
 
-        return status, total_weight, probability_variables, components_variables, milp_time, milp_memory
+        return status, objective_value, objective_variables, components_variables, milp_time, milp_memory
 
     def solve(self, model_type, solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
@@ -343,18 +358,19 @@ class MilpModel:
         if external_solver_name:
             solver_name_in_solution = external_solver_name
             model_path = _write_model_to_lp_file(self, model_type)
-            status, total_weight, probability_variables, components_variables, milp_time, milp_memory = self._solve_with_external_solver(
-                model_path, external_solver_name)
+            status, objective_value, objective_variables, components_variables, milp_time, milp_memory = self._solve_with_external_solver(
+                model_type, model_path, external_solver_name)
             os.remove(model_path)
         else:
             solver_name_in_solution = solver_name
-            status, total_weight, probability_variables, components_variables, milp_time, milp_memory = self._solve_with_internal_solver()
+            status, objective_value, objective_variables, components_variables, milp_time, milp_memory = self._solve_with_internal_solver(
+                model_type)
 
         components_values = {}
         list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
         for component_id in list_component_ids:
             dict_tmp = self.get_component_value_weight(model_type, component_id,
-                                                       probability_variables, components_variables)
+                                                       objective_variables, components_variables)
             if model_type == "xor_linear":
                 if component_id in self._cipher.inputs:
                     components_values[component_id] = dict_tmp[1]
@@ -367,32 +383,51 @@ class MilpModel:
                 components_values[component_id] = dict_tmp
 
         solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name_in_solution, milp_time,
-                                                         milp_memory, components_values, total_weight)
+                                                         milp_memory, components_values, objective_value)
         solution['status'] = status
         return solution
 
     def get_component_value_weight(self, model_type, component_id, probability_variables, components_variables):
 
+        if model_type == "wordwise_deterministic_truncated_xor_differential":
+            wordsize = self._word_size
+        else:
+            wordsize=1
         if component_id in self._cipher.inputs:
-            output_bit_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
-            input_bit_size = output_bit_size
+            output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)] // wordsize
+            input_size = output_size // wordsize
         else:
             component = self._cipher.get_component_from_id(component_id)
-            input_bit_size = component.input_bit_size
-            output_bit_size = component.output_bit_size
+            input_size = component.input_bit_size // wordsize
+            output_size = component.output_bit_size // wordsize
         diff_str = {}
-        if model_type == "xor_differential":
-            suffix_dict = {"": output_bit_size}
-        elif model_type == "xor_linear":
-            suffix_dict = {"_i": input_bit_size, "_o": output_bit_size}
-        final_output = self.get_final_output(component_id, components_variables, diff_str,
+        if model_type != "xor_linear":
+            suffix_dict = {"": output_size}
+        else:
+            suffix_dict = {"_i": input_size, "_o": output_size}
+        final_output = self.get_final_output(model_type, component_id, components_variables, diff_str,
                                              probability_variables, suffix_dict)
         if len(final_output) == 1:
             final_output = final_output[0]
 
         return final_output
 
-    def get_final_output(self, component_id, components_variables, diff_str, probability_variables, suffix_dict):
+    def get_final_output(self, model_type, component_id, components_variables, diff_str, probability_variables,
+                         suffix_dict):
+        if model_type == "wordwise_deterministic_truncated_xor_differential":
+            return self._get_final_output_wordwise_deterministic_truncated_xor_differential(component_id,
+                                                                                            components_variables,
+                                                                                            diff_str, suffix_dict)
+        elif model_type == "bitwise_deterministic_truncated_xor_differential":
+            return self._get_final_output_bitwise_deterministic_truncated_xor_differential(component_id,
+                                                                                           components_variables,
+                                                                                           diff_str, suffix_dict)
+        else:
+            return self._get_final_output_for_default_case(component_id, components_variables, diff_str, probability_variables,
+                         suffix_dict)
+
+    def _get_final_output_for_default_case(self, component_id, components_variables, diff_str, probability_variables,
+                         suffix_dict):
         final_output = []
         for suffix in suffix_dict.keys():
             diff_str[suffix] = ""
@@ -414,6 +449,38 @@ class MilpModel:
             weight = 0
             if component_id + "_probability" in probability_variables:
                 weight = probability_variables[component_id + "_probability"] / 10.
+            final_output.append(set_component_value_weight_sign(difference, weight))
+        return final_output
+    def _get_final_output_bitwise_deterministic_truncated_xor_differential(self, component_id, components_variables, diff_str,
+                         suffix_dict):
+        final_output = []
+        for suffix in suffix_dict.keys():
+            diff_str[suffix] = ""
+            for i in range(suffix_dict[suffix]):
+                if component_id + "_" + str(i) + suffix in components_variables:
+                    bit = components_variables[component_id + "_" + str(i) + suffix]
+                    diff_str[suffix] += f"{bit}".split(".")[0]
+                else:
+                    diff_str[suffix] += "*"
+            weight = 0
+            difference = diff_str[suffix]
+            final_output.append(set_component_value_weight_sign(difference, weight))
+
+        return final_output
+
+    def _get_final_output_wordwise_deterministic_truncated_xor_differential(self, component_id, components_variables, diff_str,
+                         suffix_dict):
+        final_output = []
+        for suffix in suffix_dict.keys():
+            diff_str[suffix] = ""
+            for i in range(suffix_dict[suffix]):
+                if component_id + "_word_" + str(i) + suffix + "_class" in components_variables:
+                    bit = components_variables[component_id + "_word_" + str(i) + suffix + "_class"]
+                    diff_str[suffix] += f"{bit}".split(".")[0]
+                else:
+                    diff_str[suffix] += "*"
+            weight = 0
+            difference = diff_str[suffix]
             final_output.append(set_component_value_weight_sign(difference, weight))
 
         return final_output

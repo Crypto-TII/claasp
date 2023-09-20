@@ -2,9 +2,13 @@ from claasp.cipher_modules.models.cp.cp_model import CpModel
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.components.xor_component import cp_build_truncated_table, generic_with_constant_sign_linear_constraints
-
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import \
+    MilpWordwiseDeterministicTruncatedXorDifferentialModel
 
 def test_cp_build_truncated_table():
     assert cp_build_truncated_table(3) == 'array[0..4, 1..3] of int: xor_truncated_table_3 = ' \
@@ -97,3 +101,95 @@ def test_smt_constraints():
     assert constraints[1] == '(assert (= xor_0_2_1 (xor modadd_0_1_1 key_49)))'
     assert constraints[-2] == '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))'
     assert constraints[-1] == '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'
+
+def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints():
+    cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+    milp.init_model_in_sage_milp_class()
+    xor_component = cipher.get_component_from_id("xor_0_5")
+    variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
+
+    assert str(variables[0]) == "('x[and_0_4_0_class_bit_0]', x_0)"
+    assert str(variables[1]) == "('x[and_0_4_0_class_bit_1]', x_1)"
+    assert str(variables[-2]) == "('x[xor_0_5_15_class_bit_0]', x_94)"
+    assert str(variables[-1]) == "('x[xor_0_5_15_class_bit_1]', x_95)"
+
+    assert str(constraints[0]) == 'x_96 == 2*x_0 + x_1'
+    assert str(constraints[1]) == 'x_97 == 2*x_2 + x_3'
+    assert str(constraints[-2]) == '1 <= 1 - x_30 + x_94'
+    assert str(constraints[-1]) == '1 <= 2 - x_62 - x_63'
+
+
+def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
+    cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+    milp.init_model_in_sage_milp_class()
+    xor_component = cipher.get_component_from_id("xor_0_5")
+    variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+
+
+    assert str(variables[0]) == "('x_class[and_0_4_0]', x_0)"
+    assert str(variables[1]) == "('x_class[and_0_4_1]', x_1)"
+    assert str(variables[-2]) == "('x_class[xor_0_5_14]', x_46)"
+    assert str(variables[-1]) == "('x_class[xor_0_5_15]', x_47)"
+
+    assert str(constraints[0]) == 'x_0 <= 3 - 2*x_48'
+    assert str(constraints[1]) == '2 - 2*x_48 <= x_0'
+    assert str(constraints[-2]) == 'x_47 <= 2 + 4*x_95'
+    assert str(constraints[-1]) == '2 <= x_47 + 4*x_95'
+
+
+def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
+    cipher = AESBlockCipher(number_of_rounds=2)
+    milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+    milp.init_model_in_sage_milp_class()
+    xor_component = cipher.get_component_from_id("xor_0_32")
+    variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+
+    assert str(variables[0]) == "('x[xor_0_31_word_0_class_bit_0]', x_0)"
+    assert str(variables[1]) == "('x[xor_0_31_word_0_class_bit_1]', x_1)"
+    assert str(variables[-2]) == "('x[xor_0_32_30]', x_118)"
+    assert str(variables[-1]) == "('x[xor_0_32_31]', x_119)"
+
+    assert str(constraints[0]) == '1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_81'
+    assert str(constraints[1]) == '1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_81'
+    assert str(constraints[-2]) == '1 <= 1 + x_31 - x_39'
+    assert str(constraints[-1]) == '1 <= 2 - x_30 - x_39'
+
+
+def test_milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints():
+    cipher = AESBlockCipher(number_of_rounds=2)
+    milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+    milp.init_model_in_sage_milp_class()
+    xor_component = cipher.get_component_from_id("xor_0_32")
+    variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(
+        milp)
+
+    assert str(variables[0]) == "('x[xor_0_31_word_0_class_bit_0]', x_0)"
+    assert str(variables[1]) == "('x[xor_0_31_word_0_class_bit_1]', x_1)"
+    assert str(variables[-2]) == "('x[xor_0_32_30]', x_118)"
+    assert str(variables[-1]) == "('x[xor_0_32_31]', x_119)"
+
+    assert str(constraints[0]) == '1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_81'
+    assert str(constraints[1]) == '1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_81'
+    assert str(constraints[-2]) == '1 <= 1 + x_31 - x_39'
+    assert str(constraints[-1]) == '1 <= 2 - x_30 - x_39'
+
+
+def test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints():
+    cipher = AESBlockCipher(number_of_rounds=2)
+    milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+    milp.init_model_in_sage_milp_class()
+    xor_component = cipher.get_component_from_id("xor_0_32")
+    variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(
+        milp)
+
+    assert str(variables[0]) == "('x_class[xor_0_31_word_0_class]', x_0)"
+    assert str(variables[1]) == "('x_class[xor_0_31_word_1_class]', x_1)"
+    assert str(variables[-2]) == "('x_class[xor_0_32_word_2_class]', x_10)"
+    assert str(variables[-1]) == "('x_class[xor_0_32_word_3_class]', x_11)"
+
+    assert str(constraints[0]) == '2 <= 7 + x_0 + x_4 - 7*x_12'
+    assert str(constraints[1]) == '1 + x_0 + x_4 - 7*x_12 <= 2'
+    assert str(constraints[-2]) == 'x_8 <= 2 + 6*x_15 + 6*x_16'
+    assert str(constraints[-1]) == '2 <= x_8 + 6*x_15 + 6*x_16'
