@@ -215,6 +215,31 @@ def set_component_value_weight_sign(value, weight=0, sign=1):
     }
 
 
+def set_component_fields(value, weight=None, sign=None):
+    """
+    Return a dictionary that represents the solution for one component of the cipher.
+
+    INPUT:
+
+    - ``value`` -- **string**; hexadecimal representation (e.g. ``'abcd1234'``) that represents the output of the
+      component
+    - ``weight`` -- **integer** (default: `None`); the weight of the component
+    - ``sign`` -- **integer** (default: `None`); the sign of the weight of the component (either 1 or -1)
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.utils import set_component_fields
+        sage: set_component_fields('abcd1234', 0, 1)
+        {'sign': 1, 'value': 'abcd1234', 'weight': 0}
+    """
+    component_fields = {'value': value}
+    if weight is not None:
+        component_fields['weight'] = weight
+    if sign is not None:
+        component_fields['sign'] = sign
+    return component_fields
+
+
 def set_fixed_variables(component_id, constraint_type, bit_positions, bit_values):
     """
     Return a dictionary.
