@@ -28,11 +28,6 @@ from keras.callbacks import ModelCheckpoint
 
 def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
                                                 hidden_layers=[32, 32, 32], number_of_epochs=10, rounds_to_train=[]):
-    """
-    .. WARNING::
-
-        Tensorflow is used in this method, and currently it is not supported for Apple Silicon chip (M1).
-    """
     results = {
         "neural_network_blackbox_distinguisher_tests": {
             "input_parameters": {
@@ -64,11 +59,6 @@ def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
 
 def update_partial_result(cipher, component_output_ids, ds, index, hidden_layers, labels, number_of_epochs,
                           partial_result, blackbox=True, rounds_to_train=[]):
-    """
-    .. WARNING::
-
-        Tensorflow is used in this method, and currently it is not supported for Apple Silicon chip (M1).
-    """
     # noinspection PyUnresolvedReferences
     input_lengths = cipher.inputs_bit_size
     if rounds_to_train:
@@ -169,11 +159,6 @@ def create_structure(base_output, cipher, index):
 
 def neural_network_differential_distinguisher_tests(cipher, nb_samples=10000, hidden_layers=[32, 32, 32],
                                                     number_of_epochs=10, diff=[0x01], rounds_to_train=[]):
-    """
-    .. WARNING::
-
-        Tensorflow is used in this method, and currently it is not supported for Apple Silicon chip (M1).
-    """
     results = {
         "neural_network_differential_distinguisher_tests": {
             "input_parameters": {
