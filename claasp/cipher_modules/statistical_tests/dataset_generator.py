@@ -522,3 +522,4 @@ class DatasetGenerator:
             np.savez_compressed(filename, dataset=dataset)
 
         return dataset
+
