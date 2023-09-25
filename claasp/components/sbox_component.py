@@ -234,6 +234,7 @@ class SBOX(Component):
         output_vars = list(map(ring_R, output_vars))
 
         return S.polynomials(input_vars, output_vars)
+        
     def get_ddt_with_undisturbed_transitions(self):
         """
         Returns a list of all truncated input/outputs tuples that have undisturbed differential bits
@@ -303,6 +304,45 @@ class SBOX(Component):
             valid_points.append((input_bits, tuple([2] * n)))
 
         return valid_points
+
+    def get_full_sbox_ddt_with_undisturbed_transitions(self):
+        """
+        Returns a list of all truncated input/outputs of an sbox with the relative output taking into account eventual undisturbed bits
+        (see https://link.springer.com/chapter/10.1007/978-3-031-26553-2_3)
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: present = PresentBlockCipher(number_of_rounds=3)
+            sage: sbox_component = present.component_from(0, 2)
+            sage: valid_transitions = sbox_component.get_full_sbox_ddt_with_undisturbed_transitions()
+            sage: valid_transitions
+            [((0, 0, 0, 0), (0, 0, 0, 0)),
+            ((0, 0, 0, 1), (2, 2, 2, 1)),
+            ...
+            ((1, 1, 1, 0), (2, 2, 2, 2)),
+            ((1, 1, 1, 1), (2, 2, 2, 2))]
+
+        """
+
+        sbox = SBox(self.description, big_endian=False)
+        n = sbox.input_size()
+        ddt = sbox.difference_distribution_table()
+
+        all_points = []
+
+        all_fixed_inputs = list(product([0, 1], repeat=n))
+
+        for input_bits in all_fixed_inputs:
+            delta_in = _to_int(input_bits)
+            has_undisturbed_bits, output_bits = _get_truncated_output_difference(ddt[delta_in], n)
+            all_points.append((input_bits, tuple(output_bits)))
+            
+        return all_points
 
     def cms_constraints(self):
         """
@@ -421,20 +461,35 @@ class SBOX(Component):
                     f' then forall(i in 0..{output_size - 1})({output_id_link}_inverse[i] = 0)'
                     f' else forall(i in 0..{output_size - 1})({output_id_link}_inverse[i] = 2) endif;')
         else:
+            eventual_undisturbed_bits = get_full_sbox_ddt_with_undisturbed_transitions()
             for id_link, bit_positions in zip(input_id_links, input_bit_positions):
                 all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-                elements = all_inputs[:]
-                operation = ' == 0 /\\ '.join(elements)
-                cp_constraints.append(
-                    f'constraint if {operation}'
-                    f' then forall(i in 0..{output_size - 1})({output_id_link}[i] = 0)'
-                    f' else forall(i in 0..{output_size - 1})({output_id_link}[i] = 2) endif;')
+                table_input = '++'.join(all_inputs)
+                table_output = '++'.join([f'[{output_id_link}[{i}]]' for i in range(output_size)])
+                undisturbed_bits_ddt = []
+                for pair in eventual_undisturbed_bits:
+                    undisturbed_bits_ddt += list(pair[0]) + list(pair[1])
+                for i in range(len(undisturbed_bits_ddt)):
+                    undisturbed_bits_ddt[i] = str(undisturbed_bits_ddt[i])
+                undisturbed_table_bits = ','.join(undisturbed_bits_ddt)
+                new_constraint = f'constraint table({table_input}++{table_output}, {undisturbed_table_bits});'
+                cp_constraints.append(new_constraint)
+                    
+
+            #for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            #    all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+            #    elements = all_inputs[:]
+            #    operation = ' == 0 /\\ '.join(elements)
+            #    cp_constraints.append(
+            #        f'constraint if {operation}'
+            #        f' then forall(i in 0..{output_size - 1})({output_id_link}[i] = 0)'
+            #        f' else forall(i in 0..{output_size - 1})({output_id_link}[i] = 2) endif;')
 
         return cp_declarations, cp_constraints
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
-
+        
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists of declarations and constraints for SBOX component for CP wordwise deterministic truncated xor differential.
