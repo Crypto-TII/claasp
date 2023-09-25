@@ -41,8 +41,8 @@ To contribute to this project, please, follow the following conventions.
 
 # GitHub collaboration
 
-In order to collaborate with the project, you need to fill this [Google form](https://forms.gle/rYMKW76fCF15Lnxm6) to 
-be added as a collaboratior in [CLAASP GitHub repository](https://github.com/Crypto-TII/claasp).
+In order to collaborate with the project, you need to fill this Google form to 
+be added as a collaboratior in CLAASP GitHub repository.
 
 ## Pull requests
 

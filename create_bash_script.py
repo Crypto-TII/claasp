@@ -41,7 +41,7 @@ for line in dockerfile_lines:
             bash_instruction += command
     elif docker_command.startswith('WORKDIR'):
         directory = docker_command.split('WORKDIR')[1].strip()
-        if directory != '/home/sage/tii-claasp':
+        if directory != '/home/sage/claasp':
             bash_instruction = f'cd {directory}'
     elif docker_command.startswith('COPY'):
         command = docker_command.split('COPY')[1].strip()
