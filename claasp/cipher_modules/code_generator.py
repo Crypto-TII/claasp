@@ -624,6 +624,8 @@ def build_function_call(component):
                    f"(component_input, {component.output_bit_size}, {component.description[1]})"
         elif component.description[0] == 'NOT':
             return f"{component.description[0]}(component_input)"
+        elif component.description[0] in ['MODADD', 'MODSUB']:
+            return f"{component.description[0]}(component_input, {component.description[1]}, {component.description[2]})"
         else:
             return f"{component.description[0]}(component_input, {component.description[1]})"
     elif component.type == CONSTANT:
@@ -635,7 +637,10 @@ def build_function_call(component):
     elif component.type == FSR:
         registers_info = component.description[0]
         bits_inside_word = component.description[1]
-        number_of_clocks = component.description[2]
+        if len(component.description) is 2:
+            number_of_clocks = 1
+        else:
+            number_of_clocks = component.description[2]
         if bits_inside_word == 1:
             return f"fsr_binary(component_input, {registers_info}, {number_of_clocks})"
         else:
