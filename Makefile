@@ -25,7 +25,7 @@ rundocker: builddocker
 	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
 
 builddocker-m1:
-	docker build -f docker/Dockerfile --platform linux/x86_64 -t $(DOCKER_IMG_NAME) .
+	docker build --build-arg="GUROBI_ARCH=armlinux64" -f docker/Dockerfile --platform linux/aarch64 -t $(DOCKER_IMG_NAME) .
 
 rundocker-m1: builddocker-m1
 	docker run -i -p 8888:8888 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
@@ -89,3 +89,9 @@ distclean: clean
 
 copyright: install
 	python3 create_copyright.py
+
+local-installation:
+	./configure.sh
+
+local-installation-m1:
+	./configure.sh armlinux64

@@ -438,7 +438,7 @@ def add_mix_column_component(cipher, input_id_links, input_bit_positions, output
     return new_component
 
 
-def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit_size):
+def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
     """
     Use this function to create and add a modadd component to editor.
 
@@ -478,12 +478,12 @@ def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit
         return None
 
     new_component = MODADD(cipher.current_round_number, cipher.current_round_number_of_components,
-                           input_id_links, input_bit_positions, output_bit_size)
+                           input_id_links, input_bit_positions, output_bit_size, modulus)
     add_component(cipher, new_component)
     return new_component
 
 
-def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit_size):
+def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
     """
     Use this function to create a modsub component in the editor.
 
@@ -523,7 +523,7 @@ def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit
         return None
 
     new_component = MODSUB(cipher.current_round_number, cipher.current_round_number_of_components,
-                           input_id_links, input_bit_positions, output_bit_size)
+                           input_id_links, input_bit_positions, output_bit_size, modulus)
     add_component(cipher, new_component)
     return new_component
 

@@ -80,14 +80,14 @@ def generic_sign_linear_constraints(inputs, outputs):
 
 class Modular(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, operation):
+                 input_id_links, input_bit_positions, output_bit_size, operation, modulus):
 
         component_id = f'{operation}_{current_round_number}_{current_round_number_of_components}'
         component_type = 'word_operation'
         input_len = 0
         for bits in input_bit_positions:
             input_len = input_len + len(bits)
-        description = [operation.upper(), int(input_len / output_bit_size)]
+        description = [operation.upper(), int(input_len / output_bit_size), modulus]
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 

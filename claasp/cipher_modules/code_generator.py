@@ -624,6 +624,8 @@ def build_function_call(component):
                    f"(component_input, {component.output_bit_size}, {component.description[1]})"
         elif component.description[0] == 'NOT':
             return f"{component.description[0]}(component_input)"
+        elif component.description[0] in ['MODADD', 'MODSUB']:
+            return f"{component.description[0]}(component_input, {component.description[1]}, {component.description[2]})"
         else:
             return f"{component.description[0]}(component_input, {component.description[1]})"
     elif component.type == CONSTANT:
