@@ -32,10 +32,12 @@ REGISTERS = [
      CLOCK_POLYNOMIAL: [],
      CLOCK_BIT: 10},
     {BIT_LENGTH: 22,
-     TAPPED_BITS: [[0], [1]],
+     # TAPPED_BITS: [[0], [1]],
+     TAPPED_BITS: [[22], [23]],
      CLOCK_BIT: 11},
     {BIT_LENGTH: 23,
-     TAPPED_BITS: [[0], [1], [2], [15]],
+     #TAPPED_BITS: [[0], [1], [2], [15]],
+     TAPPED_BITS: [[45], [46], [47], [60]],
      CLOCK_BIT: 12},
 ]
 
