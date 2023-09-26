@@ -20,7 +20,7 @@ from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_KEY, INPUT_INITIALIZATION_VECTOR
 
 PARAMETERS_CONFIGURATION_LIST = [{'iv_bit_size': 80, 'key_bit_size': 80, 'state_bit_size': 177,
-                                  'number_of_initialization_clocks': 4*177, 'keystream_bit_len': 256}]
+                                  'number_of_initialization_clocks': 4*177, 'keystream_bit_len': 2**8}]
 
 FSR_DESCR = [
     [
@@ -42,15 +42,14 @@ class BiviumStreamCipher(Cipher):
         EXAMPLES::
 
         sage: from claasp.ciphers.stream_ciphers.bivium_stream_cipher import BiviumStreamCipher
-        sage: biv = BiviumStreamCipher(keystream_bit_len = 2**6)
+        sage: biv = BiviumStreamCipher(keystream_bit_len = 2**8)
         sage: key = 0xffffffffffffffffffff
         sage: iv = 0xffffffffffffffffffff
-        sage: ks = 0x30d0e5ede563dee6
+        sage: ks = 0x30d0e5ede563dee67884718977510a4c22661cf128d8f75af4a2708276014d83
         sage: biv.evaluate([key, iv]) == ks
-
     """
 
-    def __init__(self, iv_bit_size=80, key_bit_size=80, state_bit_size=177, number_of_initialization_clocks=708,
+    def __init__(self, iv_bit_size=80, key_bit_size=80, state_bit_size=177, number_of_initialization_clocks=4*177,
                  keystream_bit_len=2**8):
         self.state_bit_size = state_bit_size
         self.key_bit_size = key_bit_size
@@ -104,12 +103,10 @@ class BiviumStreamCipher(Cipher):
 
         return biv_state
 
-    def bivium_key_stream(self, state, clock_number, key_stream):
-
-        key_bit = self.add_XOR_component([state, state, state, state], [[0], [27], [93], [108]], 1).id
+    def bivium_key_stream(self, state, clock_number, ks):
+        z = self.add_XOR_component([state, state, state, state], [[0], [27], [93], [108]], 1).id
         if clock_number is 0:
-            key_stream = self.add_round_output_component([key_bit], [list(range(1))], 1).id
+            ks = self.add_round_output_component([z], [list(range(1))], 1).id
         else:
-            key_stream = self.add_round_output_component([key_stream, key_bit], [list(range(clock_number)), [0]],
-                                                         clock_number + 1).id
-        return key_stream
+            ks = self.add_round_output_component([ks, z], [list(range(clock_number)), [0]], clock_number + 1).id
+        return ks

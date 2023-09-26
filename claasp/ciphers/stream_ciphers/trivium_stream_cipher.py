@@ -108,13 +108,13 @@ class TriviumStreamCipher(Cipher):
                                                 FSR_DESCR).id
         return triv_state
 
-    def trivium_key_stream(self, state, clock_number, key_st):
+    def trivium_key_stream(self, state, clock_number, key_stream):
 
         key_bit = self.add_XOR_component([state, state, state, state, state, state],
                                          [[0], [27], [93], [108], [177], [222]], 1).id
         if clock_number is 0:
             key_stream = self.add_round_output_component([key_bit], [list(range(1))], 1).id
         else:
-            key_stream = self.add_round_output_component([key_st, key_bit], [list(range(clock_number)), [0]],
+            key_stream = self.add_round_output_component([key_stream, key_bit], [list(range(clock_number)), [0]],
                                                          clock_number + 1).id
         return key_stream
