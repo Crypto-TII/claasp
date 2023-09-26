@@ -20,7 +20,7 @@
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 
-PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 10, 'number_of_layers': 1, 'key_bit_size': 128, 'tweak_bit_size': 0}]
+PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 10, 'number_of_layers': 1, 'key_bit_size': 128, 'tweak_bit_size': 128}]
 
 
 class QARMAV2BlockCipher(Cipher):
@@ -37,15 +37,16 @@ class QARMAV2BlockCipher(Cipher):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.qarmav2_block_cipher import QARMAV2BlockCipher
-        sage: qarmav2 = QARMAV2BlockCipher()
-        sage: key = 0x2b7e151628aed2a6abf7158809cf4f3c
-        sage: plaintext = 0x6bc1bee22e409f96e93d7e117393172a
-        sage: ciphertext = 0x3ad77bb40d7a3660a89ecaf32466ef97
-        sage: qarmav2.evaluate([key, plaintext]) == ciphertext
+        sage: qarmav2 = QARMAV2BlockCipher(number_of_rounds = 4)
+        sage: key = 0x0123456789abcdeffedcba9876543210
+        sage: tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
+        sage: plaintext = 0x0000000000000000
+        sage: ciphertext = 0x2cc660354929f2ca
+        sage: qarmav2.evaluate([key, plaintext, tweak]) == ciphertext
         True
     """
 
-    def __init__(self, number_of_rounds=10, number_of_layers=1, key_bit_size=128, tweak_bit_size=0):
+    def __init__(self, number_of_rounds=10, number_of_layers=1, key_bit_size=128, tweak_bit_size=128):
 
         if number_of_layers not in [1, 2]:
             raise ValueError("number_of_layers incorrect (should be in [1,2])")
@@ -124,16 +125,16 @@ class QARMAV2BlockCipher(Cipher):
         lfsr_matrix[44][0] = 1
         lfsr_matrix[63][0] = 1
                             
-        state_permutation = []
+        inverse_state_permutation = []
         for i in self.state_shuffle:
-            state_permutation += list(range(4*i, 4*i + 4))
-        inverse_state_permutation = [state_permutation.index(i) for i in range(self.LAYER_BLOCK_SIZE)]
+            inverse_state_permutation += list(range(4*i, 4*i + 4))
+        state_permutation = [inverse_state_permutation.index(i) for i in range(self.LAYER_BLOCK_SIZE)]
             
         tweak_permutation = []
-        direct_permutation=[]
+        inverse_permutation=[]
         for i in self.tweak_permutations[number_of_layers]:
-            direct_permutation += list(range(4*i, 4*i + 4))
-        inverse_permutation = [direct_permutation.index(i) for i in range(number_of_layers*self.TWEAK_BLOCK_SIZE)]
+            inverse_permutation += list(range(4*i, 4*i + 4))
+        direct_permutation = [inverse_permutation.index(i) for i in range(number_of_layers*self.TWEAK_BLOCK_SIZE)]
         tweak_permutation = [inverse_permutation, direct_permutation]
         
         exchange_rows_permutation = list(range(64,96)) + list(range(32, 64)) + list(range(32)) + list(range(96, 128))
