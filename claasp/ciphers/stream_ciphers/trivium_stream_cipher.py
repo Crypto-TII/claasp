@@ -102,10 +102,8 @@ class TriviumStreamCipher(Cipher):
         state0_pos = [list(range(13)), list(range(self.key_bit_size)), list(range(4)), list(range(self.iv_bit_size)),
                       list(range(111))]
         triv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size, FSR_DESCR).id
-
-        for _ in range(1, self.number_of_initialization_clocks):
-            triv_state = self.add_FSR_component([triv_state], [list(range(self.state_bit_size))], self.state_bit_size,
-                                                FSR_DESCR).id
+        triv_state = self.add_FSR_component([triv_state], [list(range(self.state_bit_size))], self.state_bit_size,
+                                                FSR_DESCR + [1151]).id
         return triv_state
 
     def trivium_key_stream(self, state, clock_number, key_stream):
