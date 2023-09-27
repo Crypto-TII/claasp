@@ -44,10 +44,10 @@ class TriviumStreamCipher(Cipher):
     EXAMPLES::
 
         sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-        sage: triv = TriviumStreamCipher(keystream_bit_len=512)
+        sage: triv = TriviumStreamCipher(keystream_bit_len=2**8)
         sage: key = 0x00000000000000000000
         sage: iv = 0x00000000000000000000
-        sage: ks=0xdf07fd641a9aa0d88a5e7472c4f993fe6a4cc06898e0f3b4e7159ef0854d97b3ef4a49c04016ed1cd43258ae59459a5914aa9219762e019ac0015832ada52b4f
+        sage: ks=0xdf07fd641a9aa0d88a5e7472c4f993fe6a4cc06898e0f3b4e7159ef0854d97b3
         sage: triv.evaluate([key, iv]) == ks
         True
     """
@@ -108,13 +108,13 @@ class TriviumStreamCipher(Cipher):
                                                 FSR_DESCR).id
         return triv_state
 
-    def trivium_key_stream(self, state, clock_number, key_st):
+    def trivium_key_stream(self, state, clock_number, key_stream):
 
         key_bit = self.add_XOR_component([state, state, state, state, state, state],
                                          [[0], [27], [93], [108], [177], [222]], 1).id
         if clock_number is 0:
             key_stream = self.add_round_output_component([key_bit], [list(range(1))], 1).id
         else:
-            key_stream = self.add_round_output_component([key_st, key_bit], [list(range(clock_number)), [0]],
+            key_stream = self.add_round_output_component([key_stream, key_bit], [list(range(clock_number)), [0]],
                                                          clock_number + 1).id
         return key_stream
