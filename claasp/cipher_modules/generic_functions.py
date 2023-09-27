@@ -958,11 +958,12 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     INPUT:
 
     - ``input`` -- **BitArray object**; a BitArray
-    - ``registers_info`` -- **list**; a list of [register_bit_length, register_polynomial, clock_polynomial],
+    - ``registers_info`` -- **list**; a list of [register_bit_length, register_polynomial, clock_polynomial (optional)],
        register_bit_length is an integer to indicates the length of register. register_polynomial and clock_polynomial
        are lists of monomials, which is presented in the integer list. For example [[0], [1], [2, 3]] represents
        x0+x1+x2*x3. [] represents 1.
-    - ``number_of_clocks`` -- **integer**; indicates how many loops this fsr component would operate.
+    - ``number_of_clocks`` -- **integer**; indicates how many loops this fsr component would operate, this is optional
+        by default it is 1.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
     """
 
@@ -1000,9 +1001,7 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
         output_bits = [0 for _ in range(number_of_registers)]
         for j in range(number_of_registers):
             if clock_polynomials[j] is not None:
-                do_clock = int(clock_polynomials[j](*output))
-                do_clocks[j] = do_clock
-
+                do_clocks[j] = int(clock_polynomials[j](*output))
             if do_clocks[j] > 0:
                 output_bits[j] = int(registers_polynomial[j](*output))
 
@@ -1030,11 +1029,12 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
     INPUT:
 
     - ``input`` -- **BitArray object**; a BitArray
-    - ``registers_info`` -- **list**; a list of [register_bit_length, register_polynomial, clock_polynomial],
+    - ``registers_info`` -- **list**; a list of [register_bit_length, register_polynomial, clock_polynomial (optional)],
        register_bit_length is an integer to indicates the length of register. register_polynomial and clock_polynomial
        are lists of monomials, which is presented in the integer list. For example [[0], [1], [2, 3]] represents
        x0+x1+x2*x3. [] represents 1.
-    - ``number_of_clocks`` -- **integer**; indicates how many bits in a word this fsr component would operate.
+    - ``number_of_clocks`` -- **integer**; indicates how many bits in a word this fsr component would operate. By
+        default, it is 1.
     - ``number_of_clocks`` -- **integer**; indicates how many loops this fsr component would operate.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
     """

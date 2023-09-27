@@ -37,7 +37,7 @@ class FSR(Component):
 
     def algebraic_polynomials(self, model):
         """
-        Return a list of polynomials for LFSR.
+        Return a list of polynomials for the feedback shift registers.
 
         INPUT:
 
