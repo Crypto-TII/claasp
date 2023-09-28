@@ -123,7 +123,6 @@ def key_expansion(self, word_size):
 
     return S, L
 
-
 def first_round(self, S, word_size):
     # Round 1
 

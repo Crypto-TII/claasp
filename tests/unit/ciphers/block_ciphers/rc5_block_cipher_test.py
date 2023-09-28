@@ -55,3 +55,5 @@ def test_rc5_block_cipher():
     plaintext = 0x000102030405060708090A0B0C0D0E0F10111213
     ciphertext = 0x9CB59ECBA4EA84568A4278B0E132D5FC9D5819D6
     assert rc5.evaluate([key, plaintext]) == ciphertext
+
+
