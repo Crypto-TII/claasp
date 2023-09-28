@@ -1,20 +1,6 @@
 from sage.numerical.mip import MixedIntegerLinearProgram
 
-def test():
-    p = MixedIntegerLinearProgram(maximization=False, solver="GLPK")
-    w = p.new_variable(integer=True, nonnegative=True)
-    p.add_constraint(w[0] + w[1] + w[2] - 14*w[3] == 0)
-    p.add_constraint(w[1] + 2*w[2] - 8*w[3] == 0)
-    p.add_constraint(2*w[2] - 3*w[3] == 0)
-    p.add_constraint(w[0] - w[1] - w[2] >= 0)
-    p.add_constraint(w[3] >= 1)
-    p.set_objective(w[3])
-    p.show()
-
-
-def anf_ascon_sbox():
-    model = MixedIntegerLinearProgram(maximization=False, solver="GLPK")
-    bin_var = model.new_variable(binary=True)
+def anf_ascon_sbox(model, bin_var):
 
     ########## Copying (create var for each occurence of xi)
     for i in range(7):
@@ -67,5 +53,28 @@ def anf_ascon_sbox():
     model.add_constraint(
         bin_var["y4"] == bin_var["a9"] + bin_var["a10"] + bin_var["x4_7"] + bin_var["x3_7"] + bin_var["x1_11"])
 
-    return model
 
+def term_enumuration_sbox(target):
+    model = MixedIntegerLinearProgram(maximization=False, solver="GLPK")
+    bin_var = model.new_variable(binary=True)
+    anf_ascon_sbox(model, bin_var)
+
+    model.add_constraint(bin_var["ll"] == sum(bin_var["y" + str(i)] for i in range(5)))
+    model.add_constraint(bin_var["ll"] == 1)
+    model.add_constraint(bin_var["y" + str(target)] == 1)
+    # model.add_constraint(bin_var["x4"] >= 1)
+    # model.add_constraint(bin_var["x3"] <= 0)
+    # model.add_constraint(bin_var["x2"] >= 1)
+    # model.add_constraint(bin_var["x1"] <= 0)
+    # model.add_constraint(bin_var["x0"] <= 0)
+    # model.set_objective(None)
+
+    looking_for_other_solutions = 1
+    while looking_for_other_solutions:
+        try:
+            model.solve()
+            var = model.get_values(bin_var)
+        except Exception:
+            looking_for_other_solutions = 0
+
+    return var
