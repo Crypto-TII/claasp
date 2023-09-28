@@ -185,10 +185,7 @@ class QARMAV2BlockCipher(Cipher):
             if number_of_layers == 2:
                 round_constant_1 = self.update_constants(round_constant_0)
                 round_constant.append(round_constant_1)
-                       
-        input_bits=[]
-        #for i in list(range(self.CIPHER_BLOCK_SIZE/self.WORD_SIZE))[::-1]:
-        #    input_bits+=list(range(4*i, 4*i+4))
+        
         first_round_add_round_key = self.add_XOR_component([key_state[0].id, INPUT_PLAINTEXT],
                                                            [[i for i in range(self.KEY_BLOCK_SIZE)],
                                                            list(range(self.CIPHER_BLOCK_SIZE))[::-1]],
@@ -437,53 +434,82 @@ class QARMAV2BlockCipher(Cipher):
                                                          [[i for i in range(self.CIPHER_BLOCK_SIZE)][::-1]],
                                                          self.CIPHER_BLOCK_SIZE)
                                                          
+    def LFSR(self,register):
+        new_register = self.add_SHIFT_component([register.id],
+                                                [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                                self.LAYER_BLOCK_SIZE,
+                                                1)
+        output_bit = self.add_SHIFT_component([register.id],
+                                                [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                                self.LAYER_BLOCK_SIZE,
+                                                1 - self.LAYER_BLOCK_SIZE)
+        poly_1 = self.add_SHIFT_component([output_bit.id],
+                                          [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                          self.LAYER_BLOCK_SIZE,
+                                          45)
+        poly_2 = self.add_SHIFT_component([output_bit.id],
+                                          [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                          self.LAYER_BLOCK_SIZE,
+                                          31)
+        poly_3 = self.add_SHIFT_component([output_bit.id],
+                                          [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                          self.LAYER_BLOCK_SIZE,
+                                          14)
+        output_trigger = self.add_XOR_component([new_register.id, output_bit.id, poly_1.id, poly_2.id, poly_3.id],
+                                                [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(5)],
+                                                self.LAYER_BLOCK_SIZE)
+        return output_trigger
+                                                         
     def update_constants(self, constant):
-        spill = self.add_SHIFT_component([constant.id],
-                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                         self.LAYER_BLOCK_SIZE,
-                                         -51)
-        tmp_0 = self.add_SHIFT_component([constant.id],
-                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                         self.LAYER_BLOCK_SIZE,
-                                         13)
-        tmp_1 = self.add_SHIFT_component([spill.id],
-                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                         self.LAYER_BLOCK_SIZE,
-                                         50)
-        tmp_2 = self.add_SHIFT_component([spill.id],
-                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                         self.LAYER_BLOCK_SIZE,
-                                         33)
-        tmp_3 = self.add_SHIFT_component([spill.id],
-                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                         self.LAYER_BLOCK_SIZE,
-                                         19)
-        tmp = self.add_XOR_component([tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
-                                     [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(5)],
-                                     self.LAYER_BLOCK_SIZE)
-        spill = self.add_SHIFT_component([tmp.id],
-                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                         self.LAYER_BLOCK_SIZE,
-                                         -54)
-        tmp_0 = self.add_SHIFT_component([tmp.id],
-                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                         self.LAYER_BLOCK_SIZE,
-                                         10)
-        tmp_1 = self.add_SHIFT_component([spill.id],
-                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                         self.LAYER_BLOCK_SIZE,
-                                         50)
-        tmp_2 = self.add_SHIFT_component([spill.id],
-                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                         self.LAYER_BLOCK_SIZE,
-                                         33)
-        tmp_3 = self.add_SHIFT_component([spill.id],
-                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                         self.LAYER_BLOCK_SIZE,
-                                         19)
-        tmp = self.add_XOR_component([tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
-                                     [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(5)],
-                                     self.LAYER_BLOCK_SIZE)
+        for i in range(23):
+            tmp = self.LFSR(constant)
+            constant = tmp
+        #spill = self.add_SHIFT_component([constant.id],
+        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+        #                                 self.LAYER_BLOCK_SIZE,
+        #                                 -51)
+        #tmp_0 = self.add_SHIFT_component([constant.id],
+        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+        #                                 self.LAYER_BLOCK_SIZE,
+        #                                 13)
+        #tmp_1 = self.add_SHIFT_component([spill.id],
+        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+        #                                 self.LAYER_BLOCK_SIZE,
+        #                                 50)
+        #tmp_2 = self.add_SHIFT_component([spill.id],
+        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+        #                                 self.LAYER_BLOCK_SIZE,
+        #                                 33)
+        #tmp_3 = self.add_SHIFT_component([spill.id],
+        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+        #                                 self.LAYER_BLOCK_SIZE,
+        #                                 19)
+        #tmp = self.add_XOR_component([tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
+        #                             [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(5)],
+        #                             self.LAYER_BLOCK_SIZE)
+        #spill = self.add_SHIFT_component([tmp.id],
+        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+        #                                 self.LAYER_BLOCK_SIZE,
+        #                                 -54)
+        #tmp_0 = self.add_SHIFT_component([tmp.id],
+        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+        #                                 self.LAYER_BLOCK_SIZE,
+        #                                 10)
+        #tmp_1 = self.add_SHIFT_component([spill.id],
+        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+        #                                 self.LAYER_BLOCK_SIZE,
+        #                                 50)
+        #tmp_2 = self.add_SHIFT_component([spill.id],
+        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+        #                                 self.LAYER_BLOCK_SIZE,
+        #                                 33)
+        #tmp_3 = self.add_SHIFT_component([spill.id],
+        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+        #                                 self.LAYER_BLOCK_SIZE,
+        #                                 19)
+        #tmp = self.add_XOR_component([tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
+        #                             [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(5)],
+        #                             self.LAYER_BLOCK_SIZE)
         return tmp
         
     def o_function(self, key):
