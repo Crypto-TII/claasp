@@ -17,7 +17,7 @@ def test_build_deterministic_truncated_xor_differential_trail_model():
     assert str(constraints[-2]) == 'x_13273 == x_13225'
     assert str(constraints[-1]) == 'x_13274 == x_13226'
 
-def test_find_one_bitwise_deterministic_truncated_xor_differential_trail_model():
+def test_find_one_bitwise_deterministic_truncated_xor_differential_trail():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(speck)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
@@ -25,7 +25,7 @@ def test_find_one_bitwise_deterministic_truncated_xor_differential_trail_model()
                                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
     trail = milp.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
-    assert trail['components_values']['intermediate_output_0_6']['value'] == '22221000000000002222100000000011'
+    assert trail['components_values']['intermediate_output_0_6']['value'] == '????100000000000????100000000011'
 
 
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
@@ -35,7 +35,7 @@ def test_find_one_bitwise_deterministic_truncated_xor_differential_trail_model()
                                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
     trail = milp.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
-    assert trail['components_values']['cipher_output_2_12']['value'] == '22222222222222202222222222222222'
+    assert trail['components_values']['cipher_output_2_12']['value'] == '???????????????0????????????????'
 
 
 def test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail():

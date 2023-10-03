@@ -25,6 +25,7 @@ from itertools import combinations
 
 import claasp
 from claasp import editor
+from claasp.components.cipher_output_component import CipherOutput
 from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
 from claasp.rounds import Rounds
 from claasp.cipher_modules import tester, evaluator
@@ -860,7 +861,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            False
+            True
 
             sage: from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
             sage: key = 0x000102030405060708090A0B0C0D0E0F
@@ -898,13 +899,38 @@ class Cipher:
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
 
+            sage: from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
+            sage: cipher = SalsaPermutation(number_of_rounds=5)
+            sage: plaintext = 0xffff
+            sage: ciphertext = cipher.evaluate([plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext]) == plaintext
+            True
+
+            sage: from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
+            sage: cipher = BEA1BlockCipher(number_of_rounds=2)
+            sage: key = 0x8cdd0f3459fb721e798655298d5c1
+            sage: plaintext = 0x47a57eff5d6475a68916
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            True
+
+            sage: from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
+            sage: plaintext = 0x1234
+            sage: cipher = KeccakInvertiblePermutation(number_of_rounds=2, word_size=8)
+            sage: ciphertext = cipher.evaluate([plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext]) == plaintext
+            False # intermediate_output_0_348 --------- 124 -- [input_id_link] and [input_bit_positions] should have the same length
+
             sage: from claasp.ciphers.permutations.gimli_sbox_permutation import GimliSboxPermutation
             sage: cipher = GimliSboxPermutation(number_of_rounds=2, word_size=32)
             sage: plaintext = 0x111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            False
+            False # loop 356
 
             sage: from claasp.ciphers.block_ciphers.sparx_block_cipher import SparxBlockCipher
             sage: plaintext = 0x0123456789abcdef
@@ -913,7 +939,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext, key])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False
+            False # loop 66
 
             sage: from claasp.ciphers.block_ciphers.threefish_block_cipher import ThreefishBlockCipher
             sage: cipher = ThreefishBlockCipher(number_of_rounds=2)
@@ -923,15 +949,51 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([plaintext, key, tweak])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key, tweak]) == plaintext
-            False
+            False # loop 29
 
             sage: from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-            sage: cipher = ChachaPermutation(number_of_rounds=10)
+            sage: cipher = ChachaPermutation(number_of_rounds=5)
             sage: plaintext = 0xffff
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
             False
+
+            sage: from claasp.ciphers.permutations.tinyjambu_permutation import TinyJambuPermutation
+            sage: cipher = TinyJambuPermutation(number_of_rounds=2)
+            sage: plaintext = 0xffff
+            sage: key = 0x1234
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            False # loop 8
+
+            sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+            sage: cipher = LowMCBlockCipher(block_bit_size=192, key_bit_size=192, number_of_rounds=4)
+            sage: key = 0x800000000000000000000000000000000000000000000000
+            sage: plaintext = 0xABFF00000000000000000000000000000000000000000000
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            False # loop 274
+
+            sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
+            sage: cipher = TwofishBlockCipher(key_length=256, number_of_rounds=2)
+            sage: key = 0xD43BB7556EA32E46F2A282B7D45B4E0D57FF739D4DC92C1BD7FC01700CC8216F
+            sage: plaintext = 0x90AFE91BB288544F2C32DC239B2635E6
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            False #  sbox_1_56 --------- 124 -- the length of [input_bit_positions] is not equal to input_bit_size
+
+            sage: from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
+            sage: cipher = KasumiBlockCipher(number_of_rounds=2)
+            sage: key = 0x9900aabbccddeeff1122334455667788
+            sage: plaintext = 0xfedcba0987654321
+            sage: ciphertext = cipher.evaluate([key, plaintext])
+            sage: cipher_inv = cipher.cipher_inverse()
+            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
+            False # loop 96
 
         """
         inverted_cipher = Cipher(f"{self.id}" + "_inverse", f"{self.type}", [], [], self.output_bit_size)
@@ -943,6 +1005,7 @@ class Cipher:
         all_equivalent_bits = get_all_equivalent_bits(self)
         while len(cipher_components_tmp) > 0:
             # print(len(cipher_components_tmp))
+            number_of_unprocessed_components = 0
             for c in cipher_components_tmp:
                 # print(c.id, "---------", len(cipher_components_tmp))
                 # OPTION 1 - Add components that are not invertible
@@ -961,8 +1024,12 @@ class Cipher:
                     update_available_bits_with_component_output_bits(c, available_bits, self)
                     inverted_cipher_components.append(inverted_component)
                     cipher_components_tmp.remove(c)
+                else:
+                    number_of_unprocessed_components += 1
+                    if number_of_unprocessed_components == len(cipher_components_tmp):
+                        raise Error("Unable to invert cipher for now.")
 
-        # STEP 3 - rebuild cipher
+                        # STEP 3 - rebuild cipher
         for _ in range(self.number_of_rounds):
             inverted_cipher.add_round()
         for component in inverted_cipher_components:
@@ -979,7 +1046,7 @@ class Cipher:
         sorted_inverted_cipher = sort_cipher_graph(inverted_cipher)
 
         return sorted_inverted_cipher
-    def get_partial_cipher(self, start_round, end_round):
+    def get_partial_cipher(self, start_round, end_round, suffix="", keep_key_schedule=True):
 
         assert end_round < self.number_of_rounds
         assert start_round <= end_round
@@ -989,7 +1056,7 @@ class Cipher:
         for round in self.rounds_as_list:
             partial_cipher.rounds_as_list.append(deepcopy(round))
 
-        removed_components_ids, intermediate_outputs = remove_components_from_rounds(partial_cipher, start_round, end_round)
+        removed_components_ids, intermediate_outputs = remove_components_from_rounds(partial_cipher, start_round, end_round, keep_key_schedule)
 
         if start_round > 0:
             for input_type in set(self.inputs) - {INPUT_KEY}:
@@ -998,10 +1065,10 @@ class Cipher:
                 partial_cipher.inputs.pop(input_index)
                 partial_cipher.inputs_bit_size.pop(input_index)
 
-            partial_cipher.inputs.insert(0, intermediate_outputs[start_round - 1].id)
+            partial_cipher.inputs.insert(0, intermediate_outputs[start_round - 1].id + suffix)
             partial_cipher.inputs_bit_size.insert(0, intermediate_outputs[start_round - 1].output_bit_size)
             update_input_links_from_rounds(partial_cipher.rounds_as_list[start_round:end_round + 1],
-                                           removed_components_ids, intermediate_outputs)
+                                           removed_components_ids, intermediate_outputs, suffix)
 
         if end_round < self.number_of_rounds - 1:
             removed_components_ids.append(CIPHER_OUTPUT)
@@ -1013,11 +1080,12 @@ class Cipher:
                                                   Input(component.output_bit_size, component.input_id_links,
                                                         component.input_bit_positions),
                                                   component.output_bit_size, [CIPHER_OUTPUT])
+                    new_cipher_output.__class__ = CipherOutput
                     last_round.add_component(new_cipher_output)
 
         return partial_cipher
 
-    def cipher_partial_inverse(self, start_round, end_round):
+    def cipher_partial_inverse(self, start_round, end_round, suffix="_backward", keep_key_schedule=False):
         """
         Returns the inverted portion of a cipher.
 
@@ -1038,8 +1106,16 @@ class Cipher:
 
         """
 
-        partial_cipher = self.get_partial_cipher(start_round, end_round)
-        return partial_cipher.cipher_inverse()
+        partial_cipher = self.get_partial_cipher(start_round, end_round, suffix, True)
+        partial_cipher_inverse = partial_cipher.cipher_inverse()
+
+        key_schedule_components = get_key_schedule_component_ids(partial_cipher_inverse)
+        if not keep_key_schedule:
+            for current_round in partial_cipher_inverse.rounds_as_list:
+                for key_component in set(key_schedule_components).intersection(current_round.components):
+                    partial_cipher_inverse.rounds.remove_round_component(current_round.id, key_component)
+
+        return partial_cipher_inverse
 
     def evaluate_vectorized(self, cipher_input, intermediate_outputs=False, verbosity=False):
         """

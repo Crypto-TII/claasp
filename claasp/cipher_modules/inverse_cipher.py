@@ -4,6 +4,7 @@ from sage.crypto.sbox import SBox
 from claasp.cipher_modules.component_analysis_tests import *
 # from tii.utils.utils import pprint_dictionary_compact
 from claasp.component import Component
+from claasp.components import modsub_component, cipher_output_component
 from claasp.input import Input
 
 
@@ -664,7 +665,7 @@ def find_input_id_link_bits_equivalent(inverse_component, component, all_equival
                 input_bit_positions_of_inverse[position]) + "_input"
             if input_bit_name not in all_equivalent_bits[potential_equivalent_bit_name]:
                 input_bit_positions = list(
-                    range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[i])))
+                    range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[index])))
                 return input_bit_positions
         starting_bit_position += len(component.input_bit_positions[index])
     raise ValueError("Equivalent bits not found")
@@ -749,6 +750,7 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
             for name in all_equivalent_bits[input_bit_name]:
                 if name != output_bit_name_updated:
                     all_equivalent_bits[output_bit_name_updated].append(name)
+                    all_equivalent_bits[name].append(output_bit_name_updated)  # changed, line added
 
 def order_input_id_links_for_modadd(component, input_id_links, input_bit_positions, available_bits, self):
     available_output_components = get_available_output_components(component, available_bits, self)
@@ -777,6 +779,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         S = SBox(component.description)
         Sinv = list(S.inverse())
         inverse_component = Component(component.id, component.type, Input(component.input_bit_size, input_id_links, input_bit_positions), component.output_bit_size, Sinv)
+        inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == LINEAR_LAYER:
@@ -786,6 +789,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         inverse_component = Component(component.id, component.type,
                                       Input(component.input_bit_size, input_id_links, input_bit_positions),
                                       component.output_bit_size, list(inv_binary_matrix))
+        inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == MIX_COLUMN:
@@ -805,6 +809,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         inverse_component = Component(component.id, LINEAR_LAYER,
                                       Input(component.input_bit_size, input_id_links, input_bit_positions),
                                       component.output_bit_size, list(inv_binary_matrix.transpose()))
+        inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == WORD_OPERATION and component.description[0] == "XOR":
@@ -818,6 +823,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         inverse_component = Component(component.id, component.type,
                                       Input(component.input_bit_size, input_id_links, input_bit_positions),
                                       component.output_bit_size, component.description)
+        inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == WORD_OPERATION and component.description[0] == "ROTATE":
@@ -825,6 +831,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         inverse_component = Component(component.id, component.type,
                                       Input(component.input_bit_size, input_id_links, input_bit_positions),
                                       component.output_bit_size, [component.description[0], -component.description[1]])
+        inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == WORD_OPERATION and component.description[0] == "NOT":
@@ -833,6 +840,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         inverse_component = Component(component.id, component.type,
                                       Input(component.input_bit_size, input_id_links, input_bit_positions),
                                       component.output_bit_size, [component.description[0], component.description[1]])
+        inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == WORD_OPERATION and component.description[0] == "MODADD":
@@ -849,12 +857,14 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         inverse_component = Component(component.id, component.type,
                                       Input(component.input_bit_size, input_id_links, input_bit_positions),
                                       component.output_bit_size, ["MODSUB", component.description[1]])
+        inverse_component.__class__ = modsub_component.MODSUB
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == CONSTANT:
         inverse_component = Component(component.id, component.type,
                                       Input(0, [[]], [[]]),
                                       component.output_bit_size, component.description)
+        inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == CIPHER_OUTPUT:
@@ -869,11 +879,13 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         inverse_component = Component(component.id, CIPHER_OUTPUT,
                                       Input(component.output_bit_size, input_id_links, input_bit_positions),
                                       component.output_bit_size, [component.id])
+        inverse_component.__class__ = cipher_output_component.CipherOutput
         setattr(inverse_component, "round", component.round)
     elif component.type == CIPHER_INPUT and (component.id == INPUT_KEY or component.id == INPUT_TWEAK):
         inverse_component = Component(component.id, CIPHER_INPUT,
                                       Input(0, [[]], [[]]),
                                       component.output_bit_size, [component.id])
+        inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", -1)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     else:
@@ -1182,6 +1194,10 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
         input_bit_positions = [[]]
     evaluated_component = Component(component.id, component.type, Input(component.input_bit_size, input_id_links, input_bit_positions),
                                     component.output_bit_size, component.description)
+    if component.description[0] == "MODADD":
+        evaluated_component.__class__ = modsub_component.MODSUB
+    else:
+        evaluated_component.__class__ = component.__class__
     setattr(evaluated_component, "round", getattr(component, "round"))
 
     id = component.id
@@ -1278,10 +1294,15 @@ def sort_cipher_graph(cipher):
 
     return cipher
 
-def remove_components_from_rounds(cipher, start_round, end_round):
+def remove_components_from_rounds(cipher, start_round, end_round, keep_key_schedule):
     list_of_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1:]
     key_schedule_component_ids = get_key_schedule_component_ids(cipher)
     key_schedule_components = [cipher.get_component_from_id(id) for id in key_schedule_component_ids[1:]]
+
+    if not keep_key_schedule:
+        for current_round in cipher.rounds_as_list:
+            for key_component in set(key_schedule_components).intersection(current_round.components):
+                cipher.rounds.remove_round_component(current_round.id, key_component)
 
     removed_component_ids = []
     intermediate_outputs = {}
@@ -1309,11 +1330,11 @@ def get_most_recent_intermediate_output(target_link, intermediate_outputs):
         if target_link in intermediate_outputs[index].input_id_links:
             return intermediate_outputs[index]
 
-def update_input_links_from_rounds(cipher_rounds, removed_components, intermediate_outputs):
+def update_input_links_from_rounds(cipher_rounds, removed_components, intermediate_outputs, suffix):
     for round in cipher_rounds:
         for component in round.components:
             for i, link in enumerate(component.input_id_links):
                 if link in removed_components:
                     intermediate_output = get_most_recent_intermediate_output(link, intermediate_outputs)
-                    component.input_id_links[i] = intermediate_output.id
+                    component.input_id_links[i] = f'{intermediate_output.id}{suffix}'
                     component.input_bit_positions[i] = [get_relative_position(link, j, intermediate_output) for j in component.input_bit_positions[i]]

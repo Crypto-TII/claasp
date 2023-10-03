@@ -98,7 +98,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
                                                                            input_ids + output_ids)
         for constraint in linking_constraints:
             mip.add_constraint(constraint)
-        mip.add_constraint(p["probability"] == sum(x[output_msb] for output_msb in [id[0] for id in output_id_tuples]))
+        mip.add_constraint(p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in output_id_tuples]))
 
 
     def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[]):
@@ -137,7 +137,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
-                if operation in ['XOR','MODADD']:
+                if operation in ['XOR','MODADD'] or component.type == LINEAR_LAYER:
                     variables, constraints = component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(self)
                 elif component.type == SBOX:
                     variables, constraints = component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(self)
@@ -339,7 +339,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         p = self._integer_variable
-        mip.set_objective(p["probability"])
+        mip.set_objective(p["number_of_unknown_patterns"])
 
         self.add_constraints_to_build_in_sage_milp_class(fixed_values)
         end = time.time()

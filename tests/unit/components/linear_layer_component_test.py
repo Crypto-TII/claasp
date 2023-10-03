@@ -263,6 +263,25 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[-1]) == 'x_127 == x_63'
 
 
+def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints():
+    present = PresentBlockCipher(number_of_rounds=2)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
+    milp.init_model_in_sage_milp_class()
+    linear_layer_component = present.component_from(0, 17)
+    variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(
+        milp)
+
+    assert str(variables[0]) == "('x_class[sbox_0_1_0]', x_0)"
+    assert str(variables[1]) == "('x_class[sbox_0_1_1]', x_1)"
+    assert str(variables[-2]) == "('x_class[linear_layer_0_17_62]', x_126)"
+    assert str(variables[-1]) == "('x_class[linear_layer_0_17_63]', x_127)"
+
+    assert str(constraints[0]) == 'x_0 == 2*x_128 + x_129'
+    assert str(constraints[1]) == 'x_1 == 2*x_130 + x_131'
+    assert str(constraints[-2]) == 'x_126 == x_59'
+    assert str(constraints[-1]) == 'x_127 == x_63'
+
+
 def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     cipher = MidoriBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
