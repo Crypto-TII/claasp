@@ -46,10 +46,17 @@ After the installation, we need to enter to the sage terminal with the command:
 After that we are ready to go and can use the library as specified in the [usage](#usage) section.
 
 ### Manual installation
-To install the dependencies manually, you only need to execute the following script from the 
-root directory of the project:
+To install the dependencies manually, you can do it through make command or executing a script from the 
+root directory of the project.
 
-    $ ./configure.sh
+#### Make command
+You need to have `make` installed for this execution.
+- For m1 macs, run ```make local-installation-m1```
+- For other machines, run ```make local-installation```
+
+#### Script execution
+- For m1 macs, run ```./configure.sh armlinux64```
+- For other machines, run ```./configure.sh```
 
 ## Documentation
 
