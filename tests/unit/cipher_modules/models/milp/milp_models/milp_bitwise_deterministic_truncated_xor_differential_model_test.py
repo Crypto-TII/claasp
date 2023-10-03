@@ -4,11 +4,11 @@ from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_tr
     MilpBitwiseDeterministicTruncatedXorDifferentialModel
 
 
-def test_build_deterministic_truncated_xor_differential_trail_model():
+def test_build_bitwise_deterministic_truncated_xor_differential_trail_model():
     speck = SpeckBlockCipher(number_of_rounds=22)
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(speck)
     milp.init_model_in_sage_milp_class()
-    milp.build_deterministic_truncated_xor_differential_trail_model()
+    milp.build_bitwise_deterministic_truncated_xor_differential_trail_model()
     constraints = milp.model_constraints
 
     assert len(constraints) == 62624
@@ -44,4 +44,4 @@ def test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differe
     trail = milp.find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(
         get_single_key_scenario_format_for_fixed_values(speck))
     assert trail['status'] == 'SATISFIABLE'
-    assert trail['total_weight'] == 14.0
+    assert str(trail['total_weight']) == '14.0'

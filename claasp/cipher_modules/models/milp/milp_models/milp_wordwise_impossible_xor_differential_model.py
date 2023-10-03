@@ -127,29 +127,10 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: milp.build_wordwise_impossible_xor_differential_trail_model()
             ...
         """
-        self._variables_list = []
-        variables, constraints = self.input_wordwise_deterministic_truncated_xor_differential_constraints()
+        component_list = self._forward_cipher.get_all_components() + self._backward_cipher.get_all_components()
+        return self.build_wordwise_deterministic_truncated_xor_differential_trail_model(fixed_bits, fixed_words, component_list)
 
-        constraints += self.fix_variables_value_wordwise_deterministic_truncated_xor_differential_constraints(fixed_bits,
-            fixed_words)
-        self._model_constraints = constraints
-
-        for component in self._forward_cipher.get_all_components() + self._backward_cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
-                               WORD_OPERATION]
-            operation = component.description[0]
-            operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
-
-            if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
-                variables, constraints = component.milp_wordwise_deterministic_truncated_xor_differential_constraints(
-                    self)
-            else:
-                print(f'{component.id} not yet implemented')
-
-            self._variables_list.extend(variables)
-            self._model_constraints.extend(constraints)
-
-    def add_constraints_to_build_in_sage_milp_class(self, middle_round, fixed_bits=[], fixed_words=[]):
+    def add_constraints_to_build_in_sage_milp_class(self, middle_round=None, fixed_bits=[], fixed_words=[]):
         """
         Take the constraints contained in self._model_constraints and add them to the build-in sage class.
 
@@ -181,10 +162,14 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         x_class = self._trunc_wordvar
         p = self._integer_variable
 
+        if middle_round is None:
+            middle_round = self._cipher.number_of_rounds // 2
+
         assert middle_round < self._cipher.number_of_rounds
 
         self._forward_cipher = self._cipher.get_partial_cipher(0, middle_round-1, keep_key_schedule=True)
-        self._backward_cipher = self._cipher.cipher_partial_inverse(middle_round, self._cipher.number_of_rounds - 1, suffix="_backward", keep_key_schedule=False)
+        self._backward_cipher = self._cipher.cipher_partial_inverse(middle_round, self._cipher.number_of_rounds - 1,
+                                                                    output_suffix="_backward", keep_key_schedule=False)
 
         self.build_wordwise_impossible_xor_differential_trail_model(fixed_bits, fixed_words)
         for index, constraint in enumerate(self._model_constraints):
@@ -219,7 +204,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         mip.add_constraint(
         p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuple]))
 
-    def find_one_wordwise_impossible_xor_differential_trail(self,  middle_round, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT):
+    def find_one_wordwise_impossible_xor_differential_trail(self, middle_round=None, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT):
         """
         Returns one wordwise impossible XOR differential trail.
 

@@ -1045,7 +1045,12 @@ class Cipher:
         sorted_inverted_cipher = sort_cipher_graph(inverted_cipher)
 
         return sorted_inverted_cipher
-    def get_partial_cipher(self, start_round, end_round, suffix="", keep_key_schedule=True):
+    def get_partial_cipher(self, start_round=None, end_round=None, output_suffix="", keep_key_schedule=True):
+
+        if start_round is None:
+            start_round = 0
+        if end_round is None:
+            end_round = self.number_of_rounds - 1
 
         assert end_round < self.number_of_rounds
         assert start_round <= end_round
@@ -1064,10 +1069,10 @@ class Cipher:
                 partial_cipher.inputs.pop(input_index)
                 partial_cipher.inputs_bit_size.pop(input_index)
 
-            partial_cipher.inputs.insert(0, intermediate_outputs[start_round - 1].id + suffix)
+            partial_cipher.inputs.insert(0, intermediate_outputs[start_round - 1].id + output_suffix)
             partial_cipher.inputs_bit_size.insert(0, intermediate_outputs[start_round - 1].output_bit_size)
             update_input_links_from_rounds(partial_cipher.rounds_as_list[start_round:end_round + 1],
-                                           removed_components_ids, intermediate_outputs, suffix)
+                                           removed_components_ids, intermediate_outputs, output_suffix)
 
         if end_round < self.number_of_rounds - 1:
             removed_components_ids.append(CIPHER_OUTPUT)
@@ -1084,7 +1089,7 @@ class Cipher:
 
         return partial_cipher
 
-    def cipher_partial_inverse(self, start_round, end_round, suffix="_backward", keep_key_schedule=False):
+    def cipher_partial_inverse(self, start_round=None, end_round=None, output_suffix="_backward", keep_key_schedule=False):
         """
         Returns the inverted portion of a cipher.
 
@@ -1105,10 +1110,12 @@ class Cipher:
 
         """
 
-        partial_cipher = self.get_partial_cipher(start_round, end_round, suffix, True)
+        partial_cipher = self.get_partial_cipher(start_round, end_round, output_suffix, True)
         partial_cipher_inverse = partial_cipher.cipher_inverse()
 
-        key_schedule_components = get_key_schedule_component_ids(partial_cipher_inverse)
+        key_schedule_component_ids = get_key_schedule_component_ids(partial_cipher_inverse)
+        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in key_schedule_component_ids[1:]]
+
         if not keep_key_schedule:
             for current_round in partial_cipher_inverse.rounds_as_list:
                 for key_component in set(key_schedule_components).intersection(current_round.components):

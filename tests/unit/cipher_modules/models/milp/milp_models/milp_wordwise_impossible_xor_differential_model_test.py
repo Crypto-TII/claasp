@@ -9,12 +9,12 @@ def test_build_wordwise_impossible_xor_differential_trail_model():
     milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
     milp.init_model_in_sage_milp_class()
     milp._forward_cipher = aes.get_partial_cipher(0, 1, keep_key_schedule=True)
-    milp._backward_cipher = aes.cipher_partial_inverse(1, 1, suffix="_backward", keep_key_schedule=False)
+    milp._backward_cipher = aes.cipher_partial_inverse(1, 1, output_suffix="_backward", keep_key_schedule=False)
     milp.build_wordwise_impossible_xor_differential_trail_model()
 
     constraints = milp.model_constraints
 
-    assert len(constraints) == 80384
+    assert len(constraints) == 48392
     assert str(constraints[0]) == '1 <= 1 + x_0 - x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9'
     assert str(constraints[1]) == '1 <= 1 + x_1 - x_9'
     assert str(constraints[-2]) == 'x_3238 == x_2065'
