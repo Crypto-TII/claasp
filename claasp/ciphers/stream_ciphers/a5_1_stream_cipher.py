@@ -30,15 +30,18 @@ REGISTERS = [
     {BIT_LENGTH: 19,
      TAPPED_BITS: [[0], [1], [2], [5]],
      CLOCK_POLYNOMIAL: [],
-     CLOCK_BIT: 10},
+     #CLOCK_BIT: 10,
+     CLOCK_POLYNOMIAL: [[0], [1], [2], [5]]},
     {BIT_LENGTH: 22,
      # TAPPED_BITS: [[0], [1]],
      TAPPED_BITS: [[22], [23]],
-     CLOCK_BIT: 11},
+     #CLOCK_BIT: 11,
+     CLOCK_POLYNOMIAL: [[0], [1], [2], [5]]},
     {BIT_LENGTH: 23,
      #TAPPED_BITS: [[0], [1], [2], [15]],
      TAPPED_BITS: [[45], [46], [47], [60]],
-     CLOCK_BIT: 12},
+     #CLOCK_BIT: 12,
+     CLOCK_POLYNOMIAL: [[0], [1], [2], [5]]},
 ]
 
 
@@ -81,8 +84,8 @@ class A51StreamCipher(Cipher):
         # registers initialization
         regs_size = 0
         regs_output_bit = []
-        for i in REGISTERS:
-            regs_size += REGISTERS[i][BIT_LENGTH]
+        for item in REGISTERS:
+            regs_size += item[BIT_LENGTH]
             regs_output_bit.append(regs_size-1)
 
         regs = self.regs_initialization(key_bit_size=key_bit_size, frame_bit_size=frame_bit_size,
@@ -110,8 +113,8 @@ class A51StreamCipher(Cipher):
         constant_0 = []
         for i in range(len(REGISTERS)):
             self.add_constant_component(REGISTERS[i][BIT_LENGTH] - 1, 0)
-            constant_0[i] = ComponentState([self.get_current_component_id()],
-                                           [[i for i in range(REGISTERS[i][BIT_LENGTH] - 1)]])
+            constant_0.append(ComponentState([self.get_current_component_id()],
+                                           [[i for i in range(REGISTERS[i][BIT_LENGTH] - 1)]]))
 
         self.add_constant_component(regs_size, 0)
         regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
