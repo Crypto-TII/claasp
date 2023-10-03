@@ -1,6 +1,7 @@
-FROM ubuntu:22.10
+FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
+ARG GUROBI_ARCH=linux64
 
 # Install dependencies with apt-get
 RUN apt-get -qq update
@@ -15,27 +16,23 @@ RUN apt-get install --no-install-recommends -y gfortran \
   zlib1g-dev
 RUN apt-get install -y build-essential \
   cmake \
-  dieharder=3.31.1.3-1 \
+  dieharder=3.31.1.2-1build1 \
   git \
-  latexmk=1:4.77-1 \
+  latexmk=1:4.76-1 \
   python3-cryptominisat=5.8.0+dfsg1-2 \
-  sagemath=9.5-4build3 \
+  sagemath=9.5-4 \
   wget \
   z3
 
 COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
-COPY required_dependencies/assess.c /opt/
-COPY required_dependencies/utilities.c /opt/
-COPY required_dependencies/utilities.h /opt/
-
 WORKDIR /opt
 
-RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz \
-    && tar -xf gurobi10.0.0_linux64.tar.gz \
-    && rm gurobi10.0.0_linux64.tar.gz
+RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_${GUROBI_ARCH}.tar.gz \
+    && tar -xf gurobi10.0.0_${GUROBI_ARCH}.tar.gz \
+    && rm gurobi10.0.0_${GUROBI_ARCH}.tar.gz
 
-ENV GUROBI_HOME="/opt/gurobi1000/linux64"
+ENV GUROBI_HOME="/opt/gurobi1000/${GUROBI_ARCH}"
 ENV PATH="${PATH}:${GUROBI_HOME}/bin"
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
 
@@ -70,7 +67,7 @@ ENV PATH="${PATH}:/opt/scip-803/build/bin"
 
 # Installing SageMath tools
 RUN sage -pip install bitstring==4.0.1 \
-  keras==2.11.0 \
+  keras==2.13.1 \
   minizinc==0.5.0 \
   pandas==1.5.2 \
   prettytable==3.6.0 \
@@ -82,13 +79,17 @@ RUN sage -pip install bitstring==4.0.1 \
   setuptools==59.6.0 \
   sphinx==4.5.0 \
   sphinxcontrib-bibtex==2.5.0 \
-  tensorflow==2.11.0 \
+  tensorflow==2.13.0 \
   pytest==7.2.1 \
   pytest-cov==4.0.0 \
   pytest-xdist==3.2.0 \
   pytest-benchmark==4.0.0
 
 # Installing nist sts
+COPY required_dependencies/assess.c /opt/
+COPY required_dependencies/utilities.c /opt/
+COPY required_dependencies/utilities.h /opt/
+
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \
     && unzip sts-2_1_2.zip
 RUN mv /opt/assess.c /opt/sts-2.1.2/sts-2.1.2/src/
@@ -156,10 +157,9 @@ RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1
     && tar -xf glucose-syrup-4.1.tgz \
     && rm glucose-syrup-4.1.tgz
 
-RUN cd glucose-syrup-4.1/simp/ \
-    && make \
-    && cd ../parallel/ \
-    && make
+RUN make glucose-syrup-4.1/simp
+
+RUN make glucose-syrup-4.1/parallel
 
 WORKDIR /opt
 
@@ -296,4 +296,4 @@ RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libselinux.so.1
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libsystemd.so.0
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libcrypt.so.1
 
-WORKDIR "/home/sage/tii-claasp"
+WORKDIR /home/sage/tii-claasp

@@ -82,9 +82,9 @@ def sat_modadd_seq(outputs_ids, inputs_ids, carries_ids):
 
 class MODADD(Modular):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
+                 input_id_links, input_bit_positions, output_bit_size, modulus):
         super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, 'modadd')
+                         input_id_links, input_bit_positions, output_bit_size, 'modadd', modulus)
 
     def algebraic_polynomials(self, model):
         """
