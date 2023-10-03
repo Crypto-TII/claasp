@@ -317,21 +317,22 @@ class SatModel:
         self._add_clauses_to_solver(numerical_cnf, solver)
         start_time = time.time()
         tracemalloc.start()
-        output_values = solver()
+        values = solver()
         sat_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
         tracemalloc.stop()
         sat_time = time.time() - start_time
-        if output_values:
-            output_values = [f'{v-1}' for v in output_values[1:]]
-            component2value, total_weight = self._parse_solver_output(model_type, output_values,
-                                                                      variable2number)
-            total_weight = float(total_weight)
+        if values:
+            values = [f'{v-1}' for v in values[1:]]
+            variable2value = self._get_solver_solution_parsed(variable2number, values)
+            component2fields, total_weight = self._parse_solver_output(variable2value)
             status = 'SATISFIABLE'
         else:
-            component2value, total_weight = {}, None
+            component2fields, total_weight = {}, None
             status = 'UNSATISFIABLE'
+        if total_weight is not None:
+            total_weight = float(total_weight)
         solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name, sat_time,
-                                                         sat_memory, component2value, total_weight)
+                                                         sat_memory, component2fields, total_weight)
         solution['status'] = status
 
         return solution
