@@ -5,8 +5,8 @@ def test_rc5_block_cipher():
     rc5 = RC5BlockCipher()
     assert rc5.type == 'block_cipher'
     assert rc5.family_name == 'rc5_block_cipher'
-    assert rc5.number_of_rounds == 12
-    assert rc5.id == 'rc5_block_cipher_k128_p64_o64_r12'
+    assert rc5.number_of_rounds == 16
+    assert rc5.id == 'rc5_block_cipher_k128_p64_o64_r16'
     assert rc5.component_from(0, 0).id == 'constant_0_0'
 
     rc5 = RC5BlockCipher(number_of_rounds=4)
