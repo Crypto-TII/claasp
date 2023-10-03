@@ -1,11 +1,11 @@
 from copy import *
-from claasp.name_mappings import *
+
 from sage.crypto.sbox import SBox
-from claasp.cipher_modules.component_analysis_tests import *
-# from tii.utils.utils import pprint_dictionary_compact
+from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
 from claasp.component import Component
 from claasp.components import modsub_component, cipher_output_component
 from claasp.input import Input
+from claasp.name_mappings import *
 
 
 def get_cipher_components(self):
@@ -40,22 +40,6 @@ def get_cipher_components2(self):
         setattr(input_component, 'round', -1)
         component_list.append(input_component)
     return component_list[::-1]
-
-def get_key_schedule_components(self, cipher):
-    # TODO
-    key_schedule_component_ids = [INPUT_KEY]
-    component_list = self.get_all_components()
-    for c in component_list:
-        flag_belong_to_key_schedule = True
-        for link in c.input_id_links:
-            if link not in key_schedule_component_ids:
-                flag_belong_to_key_schedule = False
-                break
-        if flag_belong_to_key_schedule or (c.type == CONSTANT):
-            key_schedule_component_ids.append(c.id)
-
-    return [cipher.get_component_from_id(id) for id in key_schedule_component_ids[1:]]
-
 
 def get_all_components_with_the_same_input_id_link_and_input_bit_positions(input_id_link, input_bit_positions, self):
     cipher_components = get_cipher_components(self)

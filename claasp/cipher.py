@@ -21,7 +21,6 @@ import os
 import sys
 import inspect
 from copy import deepcopy
-from itertools import combinations
 
 import claasp
 from claasp import editor
