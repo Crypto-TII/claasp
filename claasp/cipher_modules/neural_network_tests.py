@@ -29,17 +29,16 @@ from keras.callbacks import ModelCheckpoint
 
 def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
                                                 hidden_layers=[32, 32, 32], number_of_epochs=10, rounds_to_train=[]):
-    results = {
-        "neural_network_blackbox_distinguisher_tests": {
-            "input_parameters": {
-                "number_of_samples": nb_samples,
-                "hidden_layers": hidden_layers,
-                "number_of_epochs": number_of_epochs}}}
-    results["neural_network_blackbox_distinguisher_tests"]["test_results"] = {}
-    input_tags = cipher.inputs
+    results = {"input_parameters": {
+        "number_of_samples": nb_samples,
+        "hidden_layers": hidden_layers,
+        "number_of_epochs": number_of_epochs}, "test_results": {}}
 
+    input_tags = cipher.inputs
+    test_name = "neural_network_blackbox_distinguisher"
+    partial_result = {}
     for index, input_tag in enumerate(input_tags):
-        results["neural_network_blackbox_distinguisher_tests"]["test_results"][input_tag] = {}
+        results["test_results"][input_tag] = {}
 
         labels = np.frombuffer(os.urandom(nb_samples), dtype=np.uint8)
         labels = labels & 1
@@ -47,21 +46,29 @@ def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
         base_inputs = [secrets.randbits(i) for i in cipher.inputs_bit_size]
         base_output = evaluator.evaluate(cipher, base_inputs, intermediate_output=True)[1]
 
-        partial_result, ds, component_output_ids = create_structure(base_output, cipher, index)
+        partial_result, ds, component_output_ids = create_structure(base_output, cipher, test_name, partial_result)
+        print(ds)
         update_component_output_ids(cipher, component_output_ids)
         update_blackbox_distinguisher_vectorized_tests_ds(base_inputs, base_output, cipher, ds, index, labels, nb_samples)
-        update_partial_result(cipher, component_output_ids, ds, index, hidden_layers,
-                              labels, number_of_epochs, partial_result, rounds_to_train=rounds_to_train)
+        update_partial_result(cipher, component_output_ids, ds, index, test_name,
+                              labels, number_of_epochs, partial_result,0, blackbox=True, rounds_to_train=rounds_to_train)
 
-        results["neural_network_blackbox_distinguisher_tests"]["test_results"][input_tag].update(partial_result)
+        results["test_results"][input_tag].update(partial_result)
 
     return results
 
 
-def update_partial_result(cipher, component_output_ids, ds, index, hidden_layers, labels, number_of_epochs,
-                          partial_result, blackbox=True, rounds_to_train=[]):
+def update_partial_result(cipher, component_output_ids, ds, index, test_name, labels, number_of_epochs,
+                          partial_result,diff, blackbox=True, rounds_to_train=[]):
     # noinspection PyUnresolvedReferences
     input_lengths = cipher.inputs_bit_size
+    tmp_dict ={
+        "accuracies": [],
+        "component_ids": []
+    }
+
+    if blackbox == False:
+        tmp_dict["input_difference"] = hex(diff)
     if rounds_to_train:
         assert all([r < cipher.number_of_rounds for r in rounds_to_train]), "Rounds to train don't match the number of rounds of the cipher"
 
@@ -74,10 +81,11 @@ def update_partial_result(cipher, component_output_ids, ds, index, hidden_layers
             history = m.fit(np.array(ds[k][1][i]), labels, validation_split=0.1, shuffle=1, verbose=0) if blackbox \
                 else m.fit(np.array(ds[k][1][i]), labels, epochs=number_of_epochs,
                            validation_split=0.1, shuffle=1, verbose=0)
-            partial_result[k]["accuracies"].append({
-                "value_accuracy": history.history['val_binary_accuracy'][-1],
-                "round": cipher.get_round_from_component_id(component_output_ids[k][i]),
-                "component_output_id": component_output_ids[k][i]})
+
+            tmp_dict["accuracies"].append(history.history['val_binary_accuracy'][-1])
+            tmp_dict["component_ids"].append(component_output_ids[k][i])
+        partial_result[k][test_name].append(tmp_dict)
+
         # print(partial_result)
 
 
@@ -135,23 +143,27 @@ def update_component_output_ids(cipher, component_output_ids):
                 component_output_ids[k].append(component.id)
 
 
-def create_structure(base_output, cipher, index):
-    partial_result = {}
+def create_structure(base_output, cipher, test_name, partial_result):
+    #partial_result = {}
     ds = {}
     component_output_ids = {}
+
 
     for k in base_output:
         tmp_len = cipher.output_bit_size
         for component in cipher.get_all_components():
+
+            try:
+                partial_result[k][test_name]
+            except:
+                partial_result[k] = {test_name : []}
+
             if k in component.description:
                 tmp_len = component.output_bit_size
                 break
-        partial_result[k] = {
-            "input_bit_size": cipher.inputs_bit_size[index],
-            "output_bit_size": cipher.output_bit_size,
-            "max_accuracy_value": 1,
-            "min_accuracy_value": 0,
-            "accuracies": []}
+
+
+
         ds[k] = (tmp_len, [[] for _ in range(len(base_output[k]))])
         component_output_ids[k] = []
 
@@ -159,33 +171,37 @@ def create_structure(base_output, cipher, index):
 
 
 def neural_network_differential_distinguisher_tests(cipher, nb_samples=10000, hidden_layers=[32, 32, 32],
-                                                    number_of_epochs=10, diff=[0x01], rounds_to_train=[]):
-    results = {
-        "neural_network_differential_distinguisher_tests": {
-            "input_parameters": {
-                "number_of_samples": nb_samples,
-                "input_differences": diff,
-                "hidden_layers": hidden_layers,
-                "number_of_epochs": number_of_epochs}}}
-    results["neural_network_differential_distinguisher_tests"]["test_results"] = {}
+                                                    number_of_epochs=10, diff=[0x01, 0x0a], rounds_to_train=[]):
+    results = {"input_parameters": {
+        "number_of_samples": nb_samples,
+        "input_differences": diff,
+        "hidden_layers": hidden_layers,
+        "min_accuracy_value": 0,
+        "max_accuracy_value": 1,
+        "output_bit_size": cipher.output_bit_size,
+        "number_of_epochs": number_of_epochs},
 
+        "test_results": {}}
+
+    test_name = "neural_network_differential_distinguisher"
     for index, it in enumerate(cipher.inputs):
-        results["neural_network_differential_distinguisher_tests"]["test_results"][it] = {}
+        results["input_parameters"][f'{it}_input_bit_size'] = cipher.inputs_bit_size[index]
+        results["test_results"][it] = {}
 
         labels = np.frombuffer(os.urandom(nb_samples), dtype=np.uint8)
         labels = labels & 1
 
         base_inputs = [secrets.randbits(i) for i in cipher.inputs_bit_size]
         base_output = evaluator.evaluate(cipher, base_inputs, intermediate_output=True)[1]
+        partial_result={}
         for d in diff:
-            partial_result, ds, component_output_ids = create_structure(base_output, cipher, index)
+            partial_result, ds, component_output_ids = create_structure(base_output, cipher, test_name, partial_result)
             update_component_output_ids(cipher, component_output_ids)
             update_distinguisher_vectorized_tests_ds(base_inputs, cipher, d, ds, index, labels, nb_samples)
-            update_partial_result(cipher, component_output_ids, ds, index, hidden_layers, labels,
-                                  number_of_epochs, partial_result, blackbox=False, rounds_to_train=rounds_to_train)
-
-            results["neural_network_differential_distinguisher_tests"]["test_results"][it][d] = {}
-            results["neural_network_differential_distinguisher_tests"]["test_results"][it][d].update(partial_result)
+            update_partial_result(cipher, component_output_ids, ds, index, test_name, labels,
+                                  number_of_epochs, partial_result,d, blackbox=False, rounds_to_train=rounds_to_train)
+            #print(result_list)
+        results["test_results"][it] = partial_result
 
     return results
 

@@ -36,16 +36,14 @@ def avalanche_tests(cipher, number_of_samples=5, avalanche_dependence_uniform_bi
     criterion = compute_criterion_from_avalanche_probability_vectors(cipher, all_avalanche_probability_vectors,
                                                                      avalanche_dependence_uniform_bias)
     intermediate_output_names = add_intermediate_output_components_id_to_dictionary(cipher.get_all_components())
-    diffusion_tests = {
-        "input_parameters": {
-            "number_of_samples": number_of_samples,
-            "avalanche_dependence_uniform_bias": avalanche_dependence_uniform_bias,
-            "avalanche_dependence_criterion_threshold": avalanche_dependence_criterion_threshold,
-            "avalanche_dependence_uniform_criterion_threshold": avalanche_dependence_uniform_criterion_threshold,
-            "avalanche_weight_criterion_threshold": avalanche_weight_criterion_threshold,
-            "avalanche_entropy_criterion_threshold": avalanche_entropy_criterion_threshold}}
-
-    test_results = init_dictionary_test_results(cipher, intermediate_output_names)
+    diffusion_tests = {"input_parameters": {
+        "number_of_samples": number_of_samples,
+        "avalanche_dependence_uniform_bias": avalanche_dependence_uniform_bias,
+        "avalanche_dependence_criterion_threshold": avalanche_dependence_criterion_threshold,
+        "avalanche_dependence_uniform_criterion_threshold": avalanche_dependence_uniform_criterion_threshold,
+        "avalanche_weight_criterion_threshold": avalanche_weight_criterion_threshold,
+        "avalanche_entropy_criterion_threshold": avalanche_entropy_criterion_threshold},
+        "test_results": init_dictionary_test_results(cipher, intermediate_output_names)}
 
     parameters = {
         "avalanche_dependence_vectors": [run_avalanche_dependence, 1,
@@ -60,16 +58,16 @@ def avalanche_tests(cipher, number_of_samples=5, avalanche_dependence_uniform_bi
             for intermediate_output_name in list(intermediate_output_names.keys()):
                 if parameters[criterion_name][0]:
                     add_intermediate_output_values_to_dictionary(cipher, criterion_name, intermediate_output_names,
-                                                                 parameters, test_results, index, input_name,
+                                                                 parameters,diffusion_tests, index, input_name,
                                                                  intermediate_output_name)
                     all_output_vectors, largest_round_criterion_not_satisfied = \
                         calculate_regular_difference(criterion_name, criterion, intermediate_output_names, parameters,
-                                                     test_results, input_name, intermediate_output_name)
-                    calculate_average_difference(all_output_vectors, criterion_name, parameters, test_results,
+                                                     diffusion_tests, input_name, intermediate_output_name)
+                    calculate_average_difference(all_output_vectors, criterion_name, parameters, diffusion_tests,
                                                  input_name, intermediate_output_name)
                     calculate_worst_input_differences(cipher, criterion_name, largest_round_criterion_not_satisfied,
-                                                      test_results, input_name, intermediate_output_name)
-    diffusion_tests["test_results"] = test_results
+                                                      diffusion_tests, input_name, intermediate_output_name)
+    #diffusion_tests["test_results"] = test_results
 
     return diffusion_tests
 
@@ -109,21 +107,21 @@ def add_intermediate_output_components_id_to_dictionary(components):
 def add_intermediate_output_values_to_dictionary(cipher, criterion_name, dict_intermediate_output_names,
                                                  dict_parameters, dict_test_results, index,
                                                  input_name, intermediate_output_name):
-    dict_test_results[input_name][intermediate_output_name][criterion_name] = {}
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["input_bit_size"] = \
+    dict_test_results["test_results"][input_name][intermediate_output_name][criterion_name] = {}
+    dict_test_results["input_parameters"][f'{intermediate_output_name}_{criterion_name}_input_bit_size'] = \
         cipher.inputs_bit_size[index]
     output_bit_size = dict_intermediate_output_names[intermediate_output_name][0]
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["output_bit_size"] = output_bit_size
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["max_possible_value_per_bit"] = 1
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["min_possible_value_per_bit"] = 0
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["expected_value_per_bit"] = \
+    dict_test_results["input_parameters"][f'{intermediate_output_name}_{criterion_name}_output_bit_size'] = output_bit_size
+    #dict_test_results[input_name][intermediate_output_name][criterion_name]["max_possible_value_per_bit"] = 1
+    #dict_test_results[input_name][intermediate_output_name][criterion_name]["min_possible_value_per_bit"] = 0
+    dict_test_results["input_parameters"][f'{intermediate_output_name}_{criterion_name}_expected_value_per_bit'] = \
         dict_parameters[criterion_name][1]
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["max_possible_value_per_output_block"] = \
+    dict_test_results["input_parameters"][f'{intermediate_output_name}_{criterion_name}_max_possible_value_per_output_block'] = \
         output_bit_size
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["min_possible_value_per_output_block"] = 0
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["expected_value_per_output_block"] = \
+    dict_test_results["input_parameters"][f'{intermediate_output_name}_{criterion_name}_min_possible_value_per_output_block'] = 0
+    dict_test_results["input_parameters"][f'{intermediate_output_name}_{criterion_name}_expected_value_per_output_block'] = \
         output_bit_size * dict_parameters[criterion_name][1]
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["differences"] = []
+    dict_test_results["test_results"][input_name][intermediate_output_name][criterion_name] = []
 
 
 def calculate_regular_difference(criterion_name, dict_criterion, dict_intermediate_output_names, dict_parameters,
@@ -138,8 +136,8 @@ def calculate_regular_difference(criterion_name, dict_criterion, dict_intermedia
                     criterion_name],
                 "round": dict_criterion[input_name][intermediate_output_name][index_input_diff][nb_occurence]["round"]}
             tmp_dict["total"] = sum(tmp_dict["vector"])
-            expected_value_per_output_block = dict_test_results[input_name][intermediate_output_name][criterion_name][
-                "expected_value_per_output_block"]
+            expected_value_per_output_block = dict_test_results["input_parameters"][(f'{intermediate_output_name}_'
+                                                f'{criterion_name}_expected_value_per_output_block')]
             threshold = dict_parameters[criterion_name][2]
             if expected_value_per_output_block - threshold <= tmp_dict[
                     "total"] <= expected_value_per_output_block + threshold:
@@ -152,31 +150,33 @@ def calculate_regular_difference(criterion_name, dict_criterion, dict_intermedia
                 all_output_vectors[tmp_dict["round"]] = []
             all_output_vectors[tmp_dict["round"]].append(tmp_dict["vector"])
             output_vectors.append(tmp_dict)
-        dict_for_each_input_diff = {"input_difference_type": "regular",
-                                    "input_difference_value": hex(1 << index_input_diff),
-                                    "output_vectors": output_vectors}
-        dict_test_results[input_name][intermediate_output_name][criterion_name]["differences"].append(
-            dict_for_each_input_diff)
+
+        output_dict = {
+            "input_difference_value": hex(1 << index_input_diff),
+            "vectors": [vector["vector"] for vector in output_vectors],
+            "total": [vector["total"] for vector in output_vectors],
+            "satisfied_criterion": [vector["criterion_satisfied"] for vector in output_vectors],
+            "component_ids": [vector["output_component_id"] for vector in output_vectors]
+        }
+
+        dict_test_results["test_results"][input_name][intermediate_output_name][criterion_name].append(output_dict)
 
     return all_output_vectors, dict_largest_round_criterion_not_satisfied
 
 
 def calculate_average_difference(all_output_vectors, criterion_name, dict_parameters, dict_test_results, input_name,
                                  intermediate_output_name):
-    dict_for_average_diff = {"input_difference_type": "average", "input_difference_value": 0}
+    #dict_for_average_diff = {"input_difference_type": "average", "input_difference_value": 'average'}
     output_vectors = []
     for current_round in all_output_vectors.keys():
         tmp_dict = {}
         average_vector = [
-            sum(vec) /
-            dict_test_results[input_name][intermediate_output_name][criterion_name][
-                "input_bit_size"] for vec in zip(
-                *
-                all_output_vectors[current_round])]
+             sum(vec) /
+            dict_test_results["input_parameters"][(f'{intermediate_output_name}'
+                        f'_{criterion_name}_input_bit_size')] for vec in zip(* all_output_vectors[current_round])]
         tmp_dict["vector"] = average_vector
         tmp_dict["total"] = sum(tmp_dict["vector"])
-        expected_value_per_output_block = dict_test_results[input_name][
-            intermediate_output_name][criterion_name]["expected_value_per_output_block"]
+        expected_value_per_output_block = dict_test_results["input_parameters"][f'{intermediate_output_name}_{criterion_name}_expected_value_per_output_block']
         threshold = dict_parameters[criterion_name][2]
         if expected_value_per_output_block - \
                 threshold <= tmp_dict["total"] <= expected_value_per_output_block + threshold:
@@ -185,10 +185,9 @@ def calculate_average_difference(all_output_vectors, criterion_name, dict_parame
             tmp_dict["criterion_satisfied"] = False
         tmp_dict["round"] = current_round
         tmp_dict["output_component_id"] = "None"
-        output_vectors.append(tmp_dict)
-    dict_for_average_diff["output_vectors"] = output_vectors
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["differences"].append(
-        dict_for_average_diff)
+        output_vectors.append(tmp_dict["vector"])
+    #dict_for_average_diff["output_vectors"] = output_vectors
+    dict_test_results["test_results"][input_name][intermediate_output_name][criterion_name].append(output_vectors)
 
 
 def calculate_worst_input_differences(cipher, criterion_name, largest_round_criterion_not_satisfied,
@@ -198,7 +197,7 @@ def calculate_worst_input_differences(cipher, criterion_name, largest_round_crit
     worst_input_diffs = [input_diff for input_diff, specific_round in
                          largest_round_criterion_not_satisfied.items()
                          if specific_round == max_round_criterion_not_satisfied]
-    dict_test_results[input_name][intermediate_output_name][criterion_name]["worst_differences"] = worst_input_diffs
+    dict_test_results["test_results"][input_name][intermediate_output_name][criterion_name].append(worst_input_diffs)
 
 
 def avalanche_probability_vectors(cipher, nb_samples):
