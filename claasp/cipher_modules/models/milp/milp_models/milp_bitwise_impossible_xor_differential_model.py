@@ -19,8 +19,7 @@ import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import verbose_print
 from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
-                                  WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
+from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 
 
@@ -122,76 +121,73 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         _, forward_output_id_tuples = forward_output._get_input_output_variables_tuples()
         mip.add_constraint(p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuples]))
 
-    # def add_constraints_to_build_fully_automatic_model_in_sage_milp_class(self, fixed_variables=[]):
-    #
-    #     #TODO: move to cipher.py
-    #     def rename_components(self):
-    #
-    #         for round in self.rounds_as_list:
-    #             for component_number in range(round.number_of_components):
-    #                 component = round.component_from(component_number)
-    #
-    #
-    #     """
-    #     Take the constraints contained in self._model_constraints and add them to the build-in sage class.
-    #
-    #     INPUT:
-    #
-    #     - ``model_type`` -- **string**; the model to solve
-    #     - ``middle_round`` -- **integer**; the round number for which the incompatibility occurs
-    #     - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in
-    #       standard format
-    #
-    #     .. SEEALSO::
-    #
-    #         :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
-    #
-    #     EXAMPLES::
-    #
-    #         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-    #         sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_impossible_xor_differential_model import MilpBitwiseImpossibleXorDifferentialModel
-    #         sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    #         sage: milp = MilpBitwiseImpossibleXorDifferentialModel(speck)
-    #         sage: milp.init_model_in_sage_milp_class()
-    #         sage: milp.add_constraints_to_build_in_sage_milp_class(1)
-    #
-    #     """
-    #     verbose_print("Building model in progress ...")
-    #
-    #     mip = self._model
-    #     x = self._binary_variable
-    #     x_class = self._trunc_binvar
-    #     p = self._integer_variable
-    #
-    #     self._forward_cipher = self._cipher
-    #     self._backward_cipher = self._cipher.cipher_partial_inverse(output_suffix="", keep_key_schedule=False)
-    #
-    #     self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables)
-    #     for index, constraint in enumerate(self._model_constraints):
-    #         mip.add_constraint(constraint)
-    #
-    #     # finding incompatibility
-    #     constraints = []
-    #     all_inconsistent_vars = []
-    #     for forward_component in self._forward_cipher.get_all_components():
-    #         output_bit_size = forward_component.output_bit_size
-    #         _, output_ids = forward_component._get_input_output_variables()
-    #
-    #         forward_vars = [x_class[id] for id in output_ids]
-    #         backward_vars = [x_class["_".join(id.split("_")[:-1] + ["backward"] + [id.split("_")[-1]])] for id in output_ids]
-    #         inconsistent_vars = [x[f"{forward_component.id}_inconsistent_{_}"] for _ in range(output_bit_size)]
-    #         all_inconsistent_vars += inconsistent_vars
-    #
-    #         for inconsistent_index in range(output_bit_size):
-    #             incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] == 1]
-    #             constraints.extend(milp_utils.milp_if_then(inconsistent_vars[inconsistent_index], incompatibility_constraint, self._model.get_max(x_class) * 2))
-    #         for constraint in constraints:
-    #             mip.add_constraint(constraint)
-    #
-    #     constraints.extend([sum(all_inconsistent_vars) == 1])
-    #
-    #     _, forward_component_id_tuples = forward_component._get_input_output_variables_tuples()
-    #     mip.add_constraint(p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in forward_component_id_tuples]))
+    def add_constraints_to_build_fully_automatic_model_in_sage_milp_class(self, fixed_variables=[]):
+
+        """
+        Take the constraints contained in self._model_constraints and add them to the build-in sage class.
+
+        INPUT:
+
+        - ``model_type`` -- **string**; the model to solve
+        - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in
+          standard format
+
+        .. SEEALSO::
+
+            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_impossible_xor_differential_model import MilpBitwiseImpossibleXorDifferentialModel
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: milp = MilpBitwiseImpossibleXorDifferentialModel(speck)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: milp.aadd_constraints_to_build_fully_automatic_model_in_sage_milp_class()
+
+        """
+        verbose_print("Building model in progress ...")
+
+        mip = self._model
+        x = self._binary_variable
+        x_class = self._trunc_binvar
+        p = self._integer_variable
+
+        self._forward_cipher = self._cipher
+        self._backward_cipher = self._cipher.cipher_partial_inverse(output_suffix="", keep_key_schedule=True).add_suffix_to_components("_backward")
+
+        self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables)
+        for index, constraint in enumerate(self._model_constraints):
+            mip.add_constraint(constraint)
+
+        # finding incompatibility
+        constraints = []
+        forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
+        all_inconsistent_vars = []
+        backward_round_outputs = [c for c in self._backward_cipher.get_all_components() if c.description == ['round_output'] and set(c.input_id_links) != {forward_output.id + "_backward"}]
+
+        for backward_round_output in backward_round_outputs:
+            output_bit_size = backward_round_output.output_bit_size
+            _, output_ids = backward_round_output._get_input_output_variables()
+
+            backward_vars = [x_class[id] for id in output_ids]
+            forward_vars = [x_class["_".join(id.split("_")[:-2] + [id.split("_")[-1]])] for id in output_ids]
+            inconsistent_vars = [x[f"{backward_round_output.id}_inconsistent_{_}"] for _ in range(output_bit_size)]
+            all_inconsistent_vars += inconsistent_vars
+            round_number = int(backward_round_output.id.split("_")[-3])
+
+            for inconsistent_index in range(output_bit_size):
+                incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] == 1]
+                constraints.extend(milp_utils.milp_if_then(inconsistent_vars[inconsistent_index], incompatibility_constraint, self._model.get_max(x_class) * 2))
+
+        constraints.extend([sum(all_inconsistent_vars) == 1])
+
+        for constraint in constraints:
+            mip.add_constraint(constraint)
+
+        _, forward_output_id_tuples = forward_output._get_input_output_variables_tuples()
+        mip.add_constraint(p["number_of_unknown_patterns"] == sum(
+            x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuples]))
 
     def find_one_bitwise_impossible_xor_differential_trail(self,  middle_round, fixed_values=[], solver_name=SOLVER_DEFAULT):
         """
@@ -319,6 +315,46 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         end = time.time()
         building_time = end - start
         solution = self.solve("bitwise_impossible_xor_differential", solver_name)
+        solution['building_time'] = building_time
+
+        return solution
+
+    def find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model(self, fixed_values=[], solver_name=SOLVER_DEFAULT):
+        """
+        Returns one bitwise impossible XOR differential trail.
+
+        INPUTS:
+
+        - ``solver_name`` -- *str*, the solver to call
+        - ``middle_round`` -- **integer**; the round number for which the incompatibility occurs
+        - ``fixed_values`` -- *list of dict*, the variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+
+        EXAMPLE::
+
+            # table 9 from https://eprint.iacr.org/2014/761.pdf
+            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: simon = SimonBlockCipher(block_bit_size=32, number_of_rounds=11)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_impossible_xor_differential_model import MilpBitwiseImpossibleXorDifferentialModel
+            sage: milp = MilpBitwiseImpossibleXorDifferentialModel(simon)
+            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0]*31 + [1])
+            sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
+            sage: key_backward = set_fixed_variables(component_id='key_backward', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
+            sage: ciphertext_backward = set_fixed_variables(component_id='cipher_output_10_13_backward', constraint_type='equal', bit_positions=range(32), bit_values=[0]*6 + [2,0,2] + [0]*23)
+            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model(fixed_values=[plaintext, key, key_backward, ciphertext_backward])
+
+
+        """
+        start = time.time()
+        self.init_model_in_sage_milp_class(solver_name)
+        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        mip = self._model
+        mip.set_objective(None)
+        self.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(fixed_values)
+        end = time.time()
+        building_time = end - start
+        solution = self.solve("bitwise_impossible_xor_differential_fully_automated", solver_name)
         solution['building_time'] = building_time
 
         return solution

@@ -315,6 +315,15 @@ class MilpModel:
                 objective_variables = mip.get_values(intvars)
                 objective_value = objective_variables["number_of_unknown_patterns"]
 
+            elif model_type == "bitwise_impossible_xor_differential_fully_automated":
+                x_class = self._trunc_binvar
+                x = self._binary_variable
+                components_variables = mip.get_values(x_class)
+                objective_variables = mip.get_values(x)
+                inconsistent_component_var = [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
+                inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
+                objective_value = inconsistent_component_id
+
             elif model_type in ["wordwise_deterministic_truncated_xor_differential", "wordwise_impossible_xor_differential"]:
                 x_class = self._trunc_wordvar
                 intvars = self._integer_variable
@@ -377,6 +386,12 @@ class MilpModel:
             index = full_cipher_components.index(incompatible_component_id)
             full_cipher_components.insert(index + 1, incompatible_value)
             list_component_ids = self._forward_cipher.inputs + full_cipher_components
+        elif model_type == "bitwise_impossible_xor_differential_fully_automated":
+            full_cipher_components = self._cipher.get_all_components_ids()
+            backward_components = self._backward_cipher.get_all_components_ids() + self._backward_cipher.inputs
+            index = full_cipher_components.index(objective_value)
+            updated_cipher_components = full_cipher_components[:index + 1] + [c + "_backward" if c + "_backward" in backward_components else c for c in full_cipher_components[index:] ]
+            list_component_ids = self._forward_cipher.inputs + updated_cipher_components
         else:
             list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
 
@@ -413,6 +428,14 @@ class MilpModel:
             component = self._backward_cipher.get_component_from_id(component_id)
             input_size = component.input_bit_size // wordsize
             output_size = component.output_bit_size // wordsize
+        elif model_type == "bitwise_impossible_xor_differential_fully_automated" and component_id.endswith("_backward"):
+            if component_id in self._backward_cipher.inputs:
+                output_size = self._backward_cipher.inputs_bit_size[self._backward_cipher.inputs.index(component_id)] // wordsize
+                input_size = output_size // wordsize
+            else:
+                component = self._backward_cipher.get_component_from_id(component_id)
+                input_size = component.input_bit_size // wordsize
+                output_size = component.output_bit_size // wordsize
         else:
             component = self._cipher.get_component_from_id(component_id)
             input_size = component.input_bit_size // wordsize
@@ -435,7 +458,8 @@ class MilpModel:
             return self._get_final_output_wordwise_deterministic_truncated_xor_differential(component_id,
                                                                                             components_variables,
                                                                                             diff_str, suffix_dict)
-        elif model_type in ["bitwise_deterministic_truncated_xor_differential", "bitwise_impossible_xor_differential"]:
+        elif model_type in ["bitwise_deterministic_truncated_xor_differential", "bitwise_impossible_xor_differential",
+                            "bitwise_impossible_xor_differential_fully_automated"]:
             return self._get_final_output_bitwise_deterministic_truncated_xor_differential(component_id,
                                                                                            components_variables,
                                                                                            diff_str, suffix_dict)

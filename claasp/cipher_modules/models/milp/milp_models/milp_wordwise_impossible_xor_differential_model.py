@@ -23,8 +23,7 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_
     update_dictionary_that_contains_wordwise_truncated_input_inequalities, \
     output_dictionary_that_contains_wordwise_truncated_input_inequalities
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
-from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
-                                  WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
+from claasp.name_mappings import CIPHER_OUTPUT
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 
 

@@ -1089,6 +1089,31 @@ class Cipher:
 
         return partial_cipher
 
+    def add_suffix_to_components(self, suffix, component_id_list=None):
+        if component_id_list is None:
+            component_id_list = self.get_all_components_ids() + self.inputs
+        renamed_inputs = [f"{input}{suffix}" if input in component_id_list else input for input in self.inputs]
+        renamed_cipher = Cipher(f"{self.family_name}{suffix}", f"{self.type}", renamed_inputs,
+                                self.inputs_bit_size, self.output_bit_size)
+        for round in self.rounds_as_list:
+            renamed_cipher.add_round()
+            for component_number in range(round.number_of_components):
+                component = round.component_from(component_number)
+                renamed_input_id_links = [f"{id}{suffix}" if id in component_id_list else id for id in
+                                          component.input_id_links]
+                if component.id in component_id_list:
+                    renamed_component_id = f'{component.id}{suffix}'
+                else:
+                    renamed_component_id = component.id
+                renamed_component = Component(renamed_component_id, component.type,
+                                              Input(component.input_bit_size, renamed_input_id_links,
+                                                    component.input_bit_positions),
+                                              component.output_bit_size, component.description)
+                renamed_component.__class__ = component.__class__
+                renamed_cipher.rounds.current_round.add_component(renamed_component)
+
+        return renamed_cipher
+
     def cipher_partial_inverse(self, start_round=None, end_round=None, output_suffix="_backward", keep_key_schedule=False):
         """
         Returns the inverted portion of a cipher.
@@ -1990,6 +2015,10 @@ class Cipher:
 
     def set_id(self, cipher_id):
         self._id = cipher_id
+
+    def set_inputs(self, inputs_ids_list, inputs_bit_size_list):
+        self._inputs = inputs_ids_list
+        self._inputs_bit_size = inputs_bit_size_list
 
     def sort_cipher(self):
         return editor.sort_cipher(self)
