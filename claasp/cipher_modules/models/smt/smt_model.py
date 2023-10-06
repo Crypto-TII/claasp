@@ -58,7 +58,6 @@ from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictio
 
 def mathsat_parser(output_to_parse):
     tmp_dict = {}
-    time, memory = time_memory_extractor('time-seconds', 'memory-mb', output_to_parse)
     for line in output_to_parse[1:]:
         if line.strip().startswith('(define-fun'):
             solution = line.strip()[1:-1].split(' ')
@@ -66,12 +65,11 @@ def mathsat_parser(output_to_parse):
             var_value = 1 if solution[-1] == 'true' else 0
             tmp_dict[var_name] = var_value
 
-    return time, memory, tmp_dict
+    return tmp_dict
 
 
 def yices_parser(output_to_parse):
     tmp_dict = {}
-    time, memory = time_memory_extractor('total-run-time', 'mem-usage', output_to_parse)
     for line in output_to_parse[1:]:
         if line.startswith('(='):
             solution = line[1:-1].split(' ')
@@ -79,12 +77,11 @@ def yices_parser(output_to_parse):
             var_value = 1 if solution[-1] == 'true' else 0
             tmp_dict[var_name] = var_value
 
-    return time, memory, tmp_dict
+    return tmp_dict
 
 
 def z3_parser(output_to_parse):
     tmp_dict = {}
-    time, memory = time_memory_extractor('time', 'memory', output_to_parse)
     for index in range(2, len(output_to_parse), 2):
         if output_to_parse[index] == ')':
             break
@@ -92,17 +89,7 @@ def z3_parser(output_to_parse):
         var_value = 1 if output_to_parse[index + 1].strip()[:-1] == 'true' else 0
         tmp_dict[var_name] = var_value
 
-    return time, memory, tmp_dict
-
-
-def time_memory_extractor(time_keyword, memory_keyword, output_to_parse):
-    time_lines = list(filter(lambda x: time_keyword in x, output_to_parse))
-    memory_lines = list(filter(lambda x: memory_keyword in x, output_to_parse))
-    time = float(time_lines[0].split()[1]) if ')' not in time_lines[0].split()[1] else \
-        float(time_lines[0].split()[1][:-1])
-    memory = float(memory_lines[0].split()[1])
-
-    return time, memory
+    return tmp_dict
 
 
 class SmtModel:
@@ -283,6 +270,14 @@ class SmtModel:
         formulae.extend(constraints)
         self._model_constraints = constants.MODEL_PREFIX + self._declarations + formulae + constants.MODEL_SUFFIX
 
+    def calculate_component_weight(self, component, out_suffix, output_values_dict):
+        weight = 0
+        if ('MODADD' in component.description or 'AND' in component.description
+                or 'OR' in component.description or SBOX in component.type):
+            weight = sum([output_values_dict[f'hw_{component.id}_{i}{out_suffix}']
+                          for i in range(component.output_bit_size)])
+        return weight
+
     def cipher_input_variables(self):
         """
         Return the list of input variables.
@@ -421,18 +416,16 @@ class SmtModel:
         command = solver_specs['command'][:]
         smt_input = '\n'.join(self._model_constraints) + '\n'
         solver_process = subprocess.run(command, input=smt_input, capture_output=True, text=True)
-        with open('ciccio_output.txt', 'w') as fp:
-            fp.write(solver_process.stdout)
         solver_output = solver_process.stdout.splitlines()
-        # parsing the output
-        if solver_name == 'z3':
-            solve_time, memory, variable2value = z3_parser(solver_output)
-        elif solver_name == 'yices-smt2':
-            solve_time, memory, variable2value = yices_parser(solver_output)
-        elif solver_name == 'mathsat':
-            solve_time, memory, variable2value = mathsat_parser(solver_output)
-        # branching satisfiability
+        solve_time = _get_data(solver_specs['time'], solver_output)
+        memory = _get_data(solver_specs['memory'], solver_output)
         if solver_output[0] == 'sat':
+            if solver_name == 'z3':
+                variable2value = z3_parser(solver_output)
+            elif solver_name == 'yices-smt2':
+                variable2value = yices_parser(solver_output)
+            elif solver_name == 'mathsat':
+                variable2value = mathsat_parser(solver_output)
             component2attributes, total_weight = self._parse_solver_output(variable2value)
             status = 'SATISFIABLE'
         else:
