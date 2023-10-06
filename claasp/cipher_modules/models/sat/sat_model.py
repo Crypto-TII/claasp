@@ -90,7 +90,7 @@ from sage.sat.solvers.satsolver import SAT
 
 from claasp.editor import remove_permutations, remove_rotations
 from claasp.cipher_modules.models.sat.utils import constants, utils
-from claasp.cipher_modules.models.utils import set_component_fields, convert_solver_solution_to_dictionary
+from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
 from claasp.name_mappings import (SBOX, CIPHER, XOR_LINEAR)
 
 
@@ -138,8 +138,8 @@ class SatModel:
         for clause in numerical_cnf:
             solver.add_clause([int(literal) for literal in clause.split()])
 
-    def _get_cipher_inputs_components_values(self, out_suffix, variable2value):
-        components_values = {}
+    def _get_cipher_inputs_components_solutions(self, out_suffix, variable2value):
+        components_solutions = {}
         for cipher_input, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
             value = 0
             for i in range(bit_size):
@@ -148,10 +148,10 @@ class SatModel:
                     value ^= variable2value[f'{cipher_input}_{i}{out_suffix}']
             hex_digits = bit_size // 4 + (bit_size % 4 != 0)
             hex_value = f'{value:0{hex_digits}x}'
-            component = set_component_fields(hex_value)
-            components_values[cipher_input] = component
+            component_solution = set_component_solution(hex_value)
+            components_solutions[cipher_input] = component_solution
 
-        return components_values
+        return components_solutions
 
     def _get_component_hex_value(self, component, out_suffix, variable2value):
         output_bit_size = component.output_bit_size
