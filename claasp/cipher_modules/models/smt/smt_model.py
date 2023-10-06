@@ -53,7 +53,7 @@ import subprocess
 
 from claasp.name_mappings import (SBOX, CIPHER, XOR_LINEAR)
 from claasp.cipher_modules.models.smt.utils import constants, utils
-from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_component_fields
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_component_solution
 
 
 def mathsat_parser(output_to_parse):
@@ -149,8 +149,8 @@ class SmtModel:
 
         return output_bit_size, output_bit_ids
 
-    def _get_cipher_inputs_components_attributes(self, out_suffix, variable2value):
-        components_attributes = {}
+    def _get_cipher_inputs_components_solutions(self, out_suffix, variable2value):
+        components_solutions = {}
         for cipher_input, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
             value = 0
             for i in range(bit_size):
@@ -159,10 +159,10 @@ class SmtModel:
                     value ^= variable2value[f'{cipher_input}_{i}{out_suffix}']
             hex_digits = bit_size // 4 + (bit_size % 4 != 0)
             hex_value = f'{value:0{hex_digits}x}'
-            component_attributes = set_component_fields(hex_value)
-            components_attributes[cipher_input] = component_attributes
+            component_solution = set_component_solution(hex_value)
+            components_solutions[cipher_input] = component_solution
 
-        return components_attributes
+        return components_solutions
 
     def _parallel_counter(self, hw_list, weight):
         """
