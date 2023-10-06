@@ -53,16 +53,7 @@ import subprocess
 
 from claasp.name_mappings import (SBOX, CIPHER, XOR_LINEAR)
 from claasp.cipher_modules.models.smt.utils import constants, utils
-from claasp.cipher_modules.models.utils import set_component_value_weight_sign, convert_solver_solution_to_dictionary
-
-
-def get_component_value(component, suffix, output_bit_size, var_dict):
-    value = 0
-    for i in range(output_bit_size):
-        value <<= 1
-        if f'{component.id}_{i}{suffix}' in var_dict:
-            value ^= var_dict[f'{component.id}_{i}{suffix}']
-    return value
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_component_fields
 
 
 def mathsat_parser(output_to_parse):
@@ -72,7 +63,7 @@ def mathsat_parser(output_to_parse):
         if line.strip().startswith('(define-fun'):
             solution = line.strip()[1:-1].split(' ')
             var_name = solution[1]
-            var_value = '1' if solution[-1] == 'true' else '0'
+            var_value = 1 if solution[-1] == 'true' else 0
             tmp_dict[var_name] = var_value
 
     return time, memory, tmp_dict
@@ -85,7 +76,7 @@ def yices_parser(output_to_parse):
         if line.startswith('(='):
             solution = line[1:-1].split(' ')
             var_name = solution[1]
-            var_value = '1' if solution[-1] == 'true' else '0'
+            var_value = 1 if solution[-1] == 'true' else 0
             tmp_dict[var_name] = var_value
 
     return time, memory, tmp_dict
@@ -94,11 +85,11 @@ def yices_parser(output_to_parse):
 def z3_parser(output_to_parse):
     tmp_dict = {}
     time, memory = time_memory_extractor('time', 'memory', output_to_parse)
-    for index in range(0, len(output_to_parse), 2):
+    for index in range(2, len(output_to_parse), 2):
         if output_to_parse[index] == ')':
             break
         var_name = output_to_parse[index].split()[1]
-        var_value = '1' if output_to_parse[index + 1].strip()[:-1] == 'true' else '0'
+        var_value = 1 if output_to_parse[index + 1].strip()[:-1] == 'true' else 0
         tmp_dict[var_name] = var_value
 
     return time, memory, tmp_dict
@@ -157,6 +148,21 @@ class SmtModel:
         output_bit_ids = [f'{output_id_link}_{j}{suffix}' for j in range(output_bit_size)]
 
         return output_bit_size, output_bit_ids
+
+    def _get_cipher_inputs_components_attributes(self, out_suffix, variable2value):
+        components_attributes = {}
+        for cipher_input, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+            value = 0
+            for i in range(bit_size):
+                value <<= 1
+                if f'{cipher_input}_{i}{out_suffix}' in variable2value:
+                    value ^= variable2value[f'{cipher_input}_{i}{out_suffix}']
+            hex_digits = bit_size // 4 + (bit_size % 4 != 0)
+            hex_value = f'{value:0{hex_digits}x}'
+            component_attributes = set_component_fields(hex_value)
+            components_attributes[cipher_input] = component_attributes
+
+        return components_attributes
 
     def _parallel_counter(self, hw_list, weight):
         """
@@ -343,45 +349,6 @@ class SmtModel:
 
         return constraints
 
-    def get_cipher_components_for_components_values(self, model_type, out_suffix, var_dict):
-        total_weight = 0
-        components_values = {}
-        in_suffix = constants.INPUT_BIT_ID_SUFFIX
-        for component in self._cipher.get_all_components():
-            output_bit_size = component.output_bit_size
-            output_value = get_component_value(component, out_suffix, output_bit_size, var_dict)
-            width = output_bit_size // 4 + (output_bit_size % 4 != 0)
-            hex_value = f'{output_value:0{width}x}'
-            weight = 0
-            if model_type != CIPHER and (('MODADD' in component.description) or ('AND' in component.description) or
-                                         ('OR' in component.description) or (SBOX in component.type)):
-                weight = sum([var_dict[f'hw_{component.id}_{i}{out_suffix}'] for i in range(output_bit_size)])
-            component_value = set_component_value_weight_sign(hex_value, weight)
-            components_values[f'{component.id}{out_suffix}'] = component_value
-            total_weight += weight
-            if model_type == XOR_LINEAR:
-                input_value = get_component_value(component, in_suffix, output_bit_size, var_dict)
-                hex_digits = output_bit_size // 4 + (output_bit_size % 4 != 0)
-                hex_value = f'{input_value:0{hex_digits}x}'
-                component_value = set_component_value_weight_sign(hex_value, 0)
-                components_values[f'{component.id}{in_suffix}'] = component_value
-
-        return components_values, total_weight
-
-    def get_cipher_input_for_components_values(self, out_suffix, var_dict):
-        components_values = {}
-        for cipher_input, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-            value = 0
-            for i in range(bit_size):
-                value <<= 1
-                if f'{cipher_input}_{i}{out_suffix}' in var_dict:
-                    value ^= var_dict[f'{cipher_input}_{i}{out_suffix}']
-            width = bit_size // 4 + (bit_size % 4 != 0)
-            hex_value = f'{value:0{width}x}'
-            components_values[cipher_input] = set_component_value_weight_sign(hex_value)
-
-        return components_values
-
     def get_xor_probability_constraints(self, bit_ids, template):
         constraints = []
         for clause in template:
@@ -394,28 +361,6 @@ class SmtModel:
             constraints.append(utils.smt_assert(utils.smt_or(literals)))
 
         return constraints
-
-    def _parse_solver_output(self, model_type, solver_output, solver_name):
-        # parsing the solver output
-        var_dict = {}
-        if solver_name == 'z3':
-            var_dict = utils.z3_parser(solver_output)
-        elif solver_name == 'yices-smt2':
-            var_dict = utils.yices_parser(solver_output)
-        elif solver_name == 'mathsat':
-            var_dict = utils.mathsat_parser(solver_output)
-
-        # if sat, compute components' value and weight
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX if model_type == XOR_LINEAR else ''
-
-        components_values = self.get_cipher_input_for_components_values(out_suffix, var_dict)
-
-        cipher_components_components_values, total_weight = self.get_cipher_components_for_components_values(model_type,
-                                                                                                             out_suffix,
-                                                                                                             var_dict)
-        components_values.update(cipher_components_components_values)
-
-        return components_values, total_weight
 
     def update_constraints_for_equal_type(self, bit_positions, bit_values, component_id, constraints, out_suffix=""):
         for i, position in enumerate(bit_positions):
@@ -476,20 +421,28 @@ class SmtModel:
         command = solver_specs['command'][:]
         smt_input = '\n'.join(self._model_constraints) + '\n'
         solver_process = subprocess.run(command, input=smt_input, capture_output=True, text=True)
+        with open('ciccio_output.txt', 'w') as fp:
+            fp.write(solver_process.stdout)
         solver_output = solver_process.stdout.splitlines()
-        solve_time = _get_data(solver_specs['time'], solver_output)
-        memory = _get_data(solver_specs['memory'], solver_output)
+        # parsing the output
+        if solver_name == 'z3':
+            solve_time, memory, variable2value = z3_parser(solver_output)
+        elif solver_name == 'yices-smt2':
+            solve_time, memory, variable2value = yices_parser(solver_output)
+        elif solver_name == 'mathsat':
+            solve_time, memory, variable2value = mathsat_parser(solver_output)
+        # branching satisfiability
         if solver_output[0] == 'sat':
-            component2value, total_weight = self._parse_solver_output(model_type, solver_output,
-                                                                      solver_name)
-            total_weight = float(total_weight)
+            component2attributes, total_weight = self._parse_solver_output(variable2value)
             status = 'SATISFIABLE'
         else:
-            component2value, total_weight = {}, None
+            component2attributes, total_weight = {}, None
             status = 'UNSATISFIABLE'
+        if total_weight is not None:
+            total_weight = float(total_weight)
 
         solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name, solve_time,
-                                                         memory, component2value, total_weight)
+                                                         memory, component2attributes, total_weight)
         solution['status'] = status
 
         return solution

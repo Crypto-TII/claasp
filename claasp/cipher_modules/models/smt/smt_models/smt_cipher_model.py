@@ -19,8 +19,10 @@
 
 import time
 
-from claasp.cipher_modules.models.smt.utils import constants
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
+from claasp.cipher_modules.models.smt.utils import constants
+from claasp.cipher_modules.models.smt.utils.utils import get_component_hex_value
+from claasp.cipher_modules.models.utils import set_component_fields
 from claasp.name_mappings import (SBOX, WORD_OPERATION, CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, CIPHER)
 
@@ -90,18 +92,17 @@ class SmtCipherModel(SmtModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.smt.smt_models.smt_cipher_model import SmtCipherModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: speck = SpeckBlockCipher(number_of_rounds=22)
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_cipher_model import SmtCipherModel
             sage: smt = SmtCipherModel(speck)
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: ciphertext = set_fixed_variables(
-            ....:         component_id='cipher_output_21_12',
+            ....:         component_id=speck.get_all_components_ids()[-1],
             ....:         constraint_type='equal',
             ....:         bit_positions=range(32),
-            ....:         bit_values=(1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1,
-            ....:                     0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1))
-            sage: smt.find_missing_bits(fixed_values=[ciphertext], solver_name='yices-smt2') # random
+            ....:         bit_values=integer_to_bit_list(endianness='big', list_length=32, int_value=0xaffec7ed))
+            sage: smt.find_missing_bits(fixed_values=[ciphertext]) # random
             {'cipher_id': 'speck_k64_p32_o32_r22',
              'model_type': 'speck_k64_p32_o32_r22',
              'solver_name': 'cryptominisat',
@@ -117,3 +118,13 @@ class SmtCipherModel(SmtModel):
         solution['building_time_seconds'] = end_building_time - start_building_time
 
         return solution
+
+    def _parse_solver_output(self, variable2value):
+        out_suffix = ''
+        components_attributes = self._get_cipher_inputs_components_attributes(out_suffix, variable2value)
+        for component in self._cipher.get_all_components():
+            hex_value = get_component_hex_value(component, out_suffix, variable2value)
+            component_attributes = set_component_fields(hex_value)
+            components_attributes[component.id] = component_attributes
+
+        return components_attributes, None
