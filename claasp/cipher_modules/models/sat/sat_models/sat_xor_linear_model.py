@@ -21,7 +21,7 @@ import time
 
 from claasp.cipher_modules.models.sat.utils import constants, utils
 from claasp.cipher_modules.models.sat.sat_model import SatModel
-from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_fields
+from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR)
 
@@ -414,17 +414,17 @@ class SatXorLinearModel(SatModel):
     def _parse_solver_output(self, variable2value):
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         in_suffix = constants.INPUT_BIT_ID_SUFFIX
-        components_values = self._get_cipher_inputs_components_values(out_suffix, variable2value)
+        components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
         for component in self._cipher.get_all_components():
-            hex_value = self._get_component_hex_value(component, out_suffix, variable2value)
+            hex_solution = self._get_component_hex_value(component, out_suffix, variable2value)
             weight = self.calculate_component_weight(component, out_suffix, variable2value)
-            component_value = set_component_fields(hex_value, weight)
-            components_values[f'{component.id}{out_suffix}'] = component_value
+            component_solution = set_component_solution(hex_solution, weight)
+            components_solutions[f'{component.id}{out_suffix}'] = component_solution
             total_weight += weight
 
             input_hex_value = self._get_component_hex_value(component, in_suffix, variable2value)
-            component_value = set_component_fields(input_hex_value, 0)
-            components_values[f'{component.id}{in_suffix}'] = component_value
+            component_solution = set_component_solution(input_hex_value, 0)
+            components_solutions[f'{component.id}{in_suffix}'] = component_solution
 
-        return components_values, total_weight
+        return components_solutions, total_weight
