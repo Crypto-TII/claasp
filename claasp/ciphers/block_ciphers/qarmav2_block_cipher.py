@@ -23,7 +23,7 @@ from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 10, 'number_of_layers': 1, 'key_bit_size': 128, 'tweak_bit_size': 128}]
 
 
-class QARMAV2BlockCipher(Cipher):
+class QARMAv2BlockCipher(Cipher):
     """
     Return a cipher object of Qarma v2 Block Cipher.
 
@@ -31,13 +31,13 @@ class QARMAV2BlockCipher(Cipher):
 
     - ``number_of_rounds`` -- **integer** (default: `10`); number of rounds of the cipher. Must be greater or equal than 1.
     - ``number_of_layers`` -- **integer** (default: `1`); number of layers of the state represented as matrices. Must be equal to 1 or 2.
-    - ``key_bit_size``     -- **integer** (default: `128`); length of the key in bits. If number_of_layers=1 it must be equal to 128, otherwise it must be equal to 128, 192 or 256.
-    - ``tweak_bit_size``   -- **integer** (default: `0`); length of the tweak in bits.
+    - ``key_bit_size``     -- **integer** (default: `128`); length of the key in bits. If number_of_layers is equal to 1 it must be equal to 128, otherwise it must be equal to 128, 192 or 256.
+    - ``tweak_bit_size``   -- **integer** (default: `128`); length of the tweak in bits. Must be equal to either 64*number_of_layers or 128*number_of_layers.
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.qarmav2_block_cipher import QARMAV2BlockCipher
-        sage: qarmav2 = QARMAV2BlockCipher(number_of_rounds = 4)
+        sage: from claasp.ciphers.block_ciphers.qarmav2_block_cipher import QARMAv2BlockCipher
+        sage: qarmav2 = QARMAv2BlockCipher(number_of_rounds = 4)
         sage: key = 0x0123456789abcdeffedcba9876543210
         sage: tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
         sage: plaintext = 0x0000000000000000
@@ -54,8 +54,8 @@ class QARMAV2BlockCipher(Cipher):
             raise ValueError("number_of_rounds incorrect (should be at least 1)")
         if key_bit_size != 128 and number_of_layers==1 or key_bit_size not in [128, 192, 256] and number_of_layers==2:
             raise ValueError("key_bit_size incorrect (should be 128 with 1 layer and 128, 192 or 256 with 2 layers)")
-        if tweak_bit_size < 0:
-            raise ValueError("tweak_bit_size incorrect (should be at least 0)")
+        if tweak_bit_size != 64*number_of_layers and tweak_bit_size != 128*number_of_layers:
+            raise ValueError("tweak_bit_size incorrect (should be either 64*number_of_layers or 128*number_of_layers)")
 
         # cipher dictionary initialize
         self.CIPHER_BLOCK_SIZE = 64 * number_of_layers
@@ -65,7 +65,8 @@ class QARMAV2BlockCipher(Cipher):
         self.NROUNDS = number_of_rounds
         self.WORD_SIZE = 4
         self.SBOX_BIT_SIZE = self.WORD_SIZE
-        self.NUM_SBOXES = 16 * number_of_layers
+        self.LAYER_SBOXES = 16
+        self.NUM_SBOXES = self.LAYER_SBOXES * number_of_layers
         self.NUM_ROWS = 4
         self.ROW_SIZE = 4
 
@@ -92,11 +93,11 @@ class QARMAV2BlockCipher(Cipher):
         self.inverse_sbox = [self.sbox.index(i) for i in range(16)]
                     
         self.rotations_matrix = [
-                            0, 1, 2, 3,
-                            3, 0, 1, 2,
-                            2, 3, 0, 1,
-                            1, 2, 3, 0,
-                           ]
+                                 0, 1, 2, 3,
+                                 3, 0, 1, 2,
+                                 2, 3, 0, 1,
+                                 1, 2, 3, 0,
+                                ]
                            
         self.tweak_permutations = {
                              1: [
@@ -117,6 +118,13 @@ class QARMAV2BlockCipher(Cipher):
                                 ]
                             }
                             
+        self.mix_column_matrix = [
+                                  [0x0, 0x2, 0x4, 0x8,],
+                                  [0x8, 0x0, 0x2, 0x4,],
+                                  [0x4, 0x8, 0x0, 0x2,],
+                                  [0x2, 0x4, 0x8, 0x0,],
+                                 ]
+                            
         lfsr_matrix = [[0 for i in range(64)] for j in range(64)]
         for i in range(63):
             lfsr_matrix[i][i+1] = 1
@@ -134,7 +142,7 @@ class QARMAV2BlockCipher(Cipher):
         inverse_permutation=[]
         for i in self.tweak_permutations[number_of_layers]:
             inverse_permutation += list(range(4*i, 4*i + 4))
-        direct_permutation = [inverse_permutation.index(i) for i in range(number_of_layers*self.TWEAK_BLOCK_SIZE)]
+        direct_permutation = [inverse_permutation.index(i) for i in range(self.TWEAK_BLOCK_SIZE)]
         tweak_permutation = [inverse_permutation, direct_permutation]
         
         exchange_rows_permutation = list(range(64,96)) + list(range(32, 64)) + list(range(32)) + list(range(96, 128))
@@ -147,16 +155,22 @@ class QARMAV2BlockCipher(Cipher):
                                                  [[i for i in range(self.TWEAK_BLOCK_SIZE)]],
                                                  self.TWEAK_BLOCK_SIZE,
                                                  tweak_permutation[1])
-        for i in range(1, number_of_rounds-1):
+        for j in range(1, number_of_rounds-1):
             perm_tweak = self.add_permutation_component([tweak_0.id],
                                                      [[i for i in range(self.TWEAK_BLOCK_SIZE)]],
                                                      self.TWEAK_BLOCK_SIZE,
                                                      tweak_permutation[1])
             tweak_0 = perm_tweak
-        tweak_1 = self.add_permutation_component([INPUT_TWEAK],
-                                                 [[i for i in range(self.TWEAK_BLOCK_SIZE, 2*self.TWEAK_BLOCK_SIZE)]],
-                                                 self.TWEAK_BLOCK_SIZE,
-                                                 [i for i in range(self.TWEAK_BLOCK_SIZE)])
+        if tweak_bit_size == self.TWEAK_BLOCK_SIZE:
+            tweak_1 = self.add_permutation_component([INPUT_TWEAK],
+                                                     [[i for i in range(self.TWEAK_BLOCK_SIZE)]],
+                                                     self.TWEAK_BLOCK_SIZE,
+                                                     tweak_permutation[1])
+        else:
+            tweak_1 = self.add_permutation_component([INPUT_TWEAK],
+                                                     [[i for i in range(self.TWEAK_BLOCK_SIZE, 2*self.TWEAK_BLOCK_SIZE)]],
+                                                     self.TWEAK_BLOCK_SIZE,
+                                                     [i for i in range(self.TWEAK_BLOCK_SIZE)])
         tweak_state = [tweak_0, tweak_1]
         
         #Key initialization
@@ -164,10 +178,18 @@ class QARMAV2BlockCipher(Cipher):
                                                [[i for i in range(self.KEY_BLOCK_SIZE)]],
                                                self.KEY_BLOCK_SIZE,
                                                [i for i in range(self.KEY_BLOCK_SIZE)])
-        key_1 = self.add_permutation_component([INPUT_KEY],
-                                               [[i for i in range(self.KEY_BLOCK_SIZE, 2*self.KEY_BLOCK_SIZE)]],
-                                               self.KEY_BLOCK_SIZE,
-                                               [i for i in range(self.KEY_BLOCK_SIZE)])
+        if key_bit_size == 2*self.KEY_BLOCK_SIZE:
+            key_1 = self.add_permutation_component([INPUT_KEY],
+                                                   [[i for i in range(self.KEY_BLOCK_SIZE, 2*self.KEY_BLOCK_SIZE)]],
+                                                   self.KEY_BLOCK_SIZE,
+                                                   [i for i in range(self.KEY_BLOCK_SIZE)])
+        elif key_bit_size == self.KEY_BLOCK_SIZE:
+            key_1 = key_0
+        else:
+            key_1 = self.add_permutation_component([INPUT_KEY, majority_function(INPUT_KEY).id],
+                                                   [[i for i in range(self.KEY_BLOCK_SIZE, 3*self.KEY_BLOCK_SIZE/2)], [i for i in range(self.KEY_BLOCK_SIZE/2)]],
+                                                   self.KEY_BLOCK_SIZE,
+                                                   [i for i in range(self.KEY_BLOCK_SIZE)])
         key_state = [key_0, key_1]
         
         #Round constants initialization
@@ -199,13 +221,13 @@ class QARMAV2BlockCipher(Cipher):
                                            self.sbox)
             first_round_sboxes.append(sbox)
             
-        round_output = self.add_round_output_component([first_round_sboxes[i].id for i in range(self.NUM_SBOXES)],
+        round_output = self.add_permutation_component([first_round_sboxes[i].id for i in range(self.NUM_SBOXES)],
                                                        [[i for i in range(self.SBOX_BIT_SIZE)] for j in range(self.NUM_SBOXES)],
-                                                       self.CIPHER_BLOCK_SIZE)
+                                                       self.CIPHER_BLOCK_SIZE,
+                                                       [i for i in range(self.CIPHER_BLOCK_SIZE)])
                
         #Direct encryption 
         for round_number in range(1, number_of_rounds+1):
-            self.add_round()
             
             round_key_shuffle = []
             for l in range(number_of_layers):
@@ -216,7 +238,7 @@ class QARMAV2BlockCipher(Cipher):
                                              [[i for i in range(64*l, 64*l + 64)], 
                                               [i for i in range(64*l, 64*l + 64)], 
                                               [i for i in range(64*l, 64*l + 64)], 
-                                              [i for i in range(64*l, 64*l + 64)]],
+                                              [i for i in range(64)]],
                                              self.LAYER_BLOCK_SIZE)
                 round_key_shuffle.append(xor)
                 
@@ -235,27 +257,25 @@ class QARMAV2BlockCipher(Cipher):
                 
             round_state_rotate = []
             for l in range(number_of_layers):
-                for w in range(16):
-                    if self.rotations_matrix[w] == 0:
-                        rotate = self.add_constant_component(4, 0)
-                    else:
-                        rotate = self.add_rotate_component([round_state_shuffle[l].id],
-                                                           [[i for i in range(4*w, 4*w + 4)]],
-                                                           self.WORD_SIZE,
-                                                           -self.rotations_matrix[w])
+                for c in range(4):
+                    rotate = self.add_mix_column_component([round_state_shuffle[l].id],
+                                                           [[i for i in range(4*c, 4*c+4)]+[i for i in range(4*c+16, 4*c+20)]+[i for i in range(4*c+32, 4*c+36)]+[i for i in range(4*c+48, 4*c+52)]],
+                                                           self.LAYER_BLOCK_SIZE/4,
+                                                           [self.mix_column_matrix, 0x11, self.SBOX_BIT_SIZE])
                     round_state_rotate.append(rotate)
             
             round_sboxes = []
-            for sb in range(self.NUM_SBOXES):
-                sbox = self.add_SBOX_component([round_state_rotate[sb].id],
-                                               [[i for i in range(4)]],
-                                               self.SBOX_BIT_SIZE, 
-                                               self.sbox)
-                round_sboxes.append(sbox)
+            for l in range(number_of_layers):
+                for sb in range(self.LAYER_SBOXES):
+                    sbox = self.add_SBOX_component([round_state_rotate[sb%4+4*l].id],
+                                                   [[i for i in range(4*int(sb/4), 4*int(sb/4)+4)]],
+                                                   self.SBOX_BIT_SIZE, 
+                                                   self.sbox)
+                    round_sboxes.append(sbox)
                                                             
-            if number_of_layers == 2 and (number_of_rounds - round_numbers)%2 == 0:
-                exchanging_rows = self.add_permutation_component([round_sboxes[i].id for i in range(self.NUM_SBOXES * number_of_layers)],
-                                                                 [[i for i in range(self.SBOX_BIT_SIZE)] for j in range(self.NUM_SBOXES * number_of_layers)],
+            if number_of_layers == 2 and (number_of_rounds - round_number)%2 == 0:
+                exchanging_rows = self.add_permutation_component([round_sboxes[i].id for i in range(self.NUM_SBOXES)],
+                                                                 [[i for i in range(self.SBOX_BIT_SIZE)] for j in range(self.NUM_SBOXES)],
                                                                  self.CIPHER_BLOCK_SIZE,
                                                                  exchange_rows_permutation)
                                                  
@@ -263,13 +283,13 @@ class QARMAV2BlockCipher(Cipher):
                                                                [[i for i in range(self.CIPHER_BLOCK_SIZE)]],
                                                                self.CIPHER_BLOCK_SIZE)
             else:
-                round_output = self.add_round_output_component([round_sboxes[i].id for i in range(self.NUM_SBOXES * number_of_layers)],
-                                                               [[i for i in range(self.SBOX_BIT_SIZE)] for j in range(self.NUM_SBOXES * number_of_layers)],
-                                                               self.CIPHER_BLOCK_SIZE)                              
+                round_output = self.add_round_output_component([round_sboxes[i].id for i in range(self.NUM_SBOXES)],
+                                                               [[i for i in range(self.SBOX_BIT_SIZE)] for j in range(self.NUM_SBOXES)],
+                                                               self.CIPHER_BLOCK_SIZE)   
+                                                               
+            self.add_round()                           
             
-        #Reflector 
-        self.add_round()
-        
+        #Reflector         
         new_keys = self.o_function(key_state)
         key_state = new_keys
         W = self.o_function(new_keys)
@@ -288,7 +308,7 @@ class QARMAV2BlockCipher(Cipher):
             key_state[0] = self.add_XOR_component([key_state[0].id, alpha[0].id, alpha[1].id],
                                                   [[i for i in range(self.KEY_BLOCK_SIZE)], [i for i in range(self.LAYER_BLOCK_SIZE)], [i for i in range(self.LAYER_BLOCK_SIZE)]],
                                                   self.KEY_BLOCK_SIZE)
-            key_state[1] = self.add_XOR_component([key_state[1].id, beta[0].id, beta[1]],
+            key_state[1] = self.add_XOR_component([key_state[1].id, beta[0].id, beta[1].id],
                                                   [[i for i in range(self.KEY_BLOCK_SIZE)], [i for i in range(self.LAYER_BLOCK_SIZE)], [i for i in range(self.LAYER_BLOCK_SIZE)]],
                                                   self.KEY_BLOCK_SIZE)
         else:
@@ -313,21 +333,18 @@ class QARMAV2BlockCipher(Cipher):
                 
         round_state_rotate = []
         for l in range(number_of_layers):
-            for w in range(16):
-                if self.rotations_matrix[w]==0:
-                    rotate = self.add_constant_component(4, 0)
-                else:
-                    rotate = self.add_rotate_component([round_state_shuffle[l].id],
-                                                       [[i for i in range(4*w, 4*w + 4)]],
-                                                       self.WORD_SIZE,
-                                                       -self.rotations_matrix[w])
+            for c in range(4):
+                rotate = self.add_mix_column_component([round_state_shuffle[l].id],
+                                                       [[i for i in range(4*c, 4*c+4)]+[i for i in range(4*c+16, 4*c+20)]+[i for i in range(4*c+32, 4*c+36)]+[i for i in range(4*c+48, 4*c+52)]],
+                                                       self.LAYER_BLOCK_SIZE/4,
+                                                       [self.mix_column_matrix, 0x11, self.SBOX_BIT_SIZE])
                 round_state_rotate.append(rotate)
             
         central_keyed_state = []
         for l in range(number_of_layers):
             for w in range(16):
-                central_xor = self.add_XOR_component([round_state_rotate[16*l + w].id, W[(number_of_rounds)%2].id],
-                                                     [[i for i in range(self.WORD_SIZE)], [i for i in range(64*l + 4*w, 64*l + 4*w + 4)]],
+                central_xor = self.add_XOR_component([round_state_rotate[w%4+4*l].id, W[(number_of_rounds)%2].id],
+                                                     [[i for i in range(self.WORD_SIZE*int(w/4), self.WORD_SIZE*int(w/4)+4)], [i for i in range(64*l + 4*w, 64*l + 4*w + 4)]],
                                                      self.WORD_SIZE)
                 central_keyed_state.append(central_xor)
         
@@ -345,12 +362,10 @@ class QARMAV2BlockCipher(Cipher):
                                                        
         #Inverse encryption
         for round_number in list(range(1, number_of_rounds+1))[::-1]:
-        
-            self.add_round()
-                                         
-            if number_of_layers == 2 and (number_of_rounds - round_numbers)%2 == 0:
+                               
+            if number_of_layers == 2 and (number_of_rounds - round_number)%2 == 0:
                 exchanging_rows = self.add_permutation_component([round_output.id],
-                                                                 [[i for i in range(CIPHER_BLOCK_SIZE)]],
+                                                                 [[i for i in range(self.CIPHER_BLOCK_SIZE)]],
                                                                  self.CIPHER_BLOCK_SIZE,
                                                                  exchange_rows_permutation)
             else:
@@ -366,49 +381,64 @@ class QARMAV2BlockCipher(Cipher):
                 
             round_state_rotate = []
             for l in range(number_of_layers):
-                for w in range(16):
-                    if self.rotations_matrix[w]==0:
-                        rotate = self.add_constant_component(4, 0)
-                    else:
-                        rotate = self.add_rotate_component([round_sboxes[16*l + w].id],
-                                                           [[i for i in range(4)]],
-                                                           self.WORD_SIZE,
-                                                           self.rotations_matrix[w])
+                for c in range(4):
+                    rotate = self.add_mix_column_component([round_sboxes[c+4*i+16*l].id for i in range(4)],
+                                                           [[i for i in range(4)] for j in range(4)],
+                                                           self.LAYER_BLOCK_SIZE/4,
+                                                           [self.mix_column_matrix, 0x11, self.SBOX_BIT_SIZE])
                     round_state_rotate.append(rotate)
-                
+            
             round_state_shuffle = []
             for l in range(number_of_layers):
-                shuffled_state = self.add_permutation_component([round_state_rotate[16*l + i].id for i in range(16)],
-                                                 [[i for i in range(4)] for j in range(16)],
+                shuffled_state = self.add_permutation_component([round_state_rotate[i%4+4*l].id for i in range(16)],
+                                                 [[i for i in range(4*int(j/4), 4*int(j/4)+4)] for j in range(16)],
                                                  self.LAYER_BLOCK_SIZE,
                                                  inverse_state_permutation)
                 round_state_shuffle.append(shuffled_state)
                                 
             round_key_shuffle = []
-            for l in range(number_of_layers):
-                xor = self.add_XOR_component([round_state_shuffle[l].id, 
-                                              key_state[(round_number + 1)%2].id, 
-                                              tweak_state[(round_number + 1)%2].id, 
-                                              round_constant[(round_number - 1)*number_of_layers + l].id],
-                                             [[i for i in range(self.LAYER_BLOCK_SIZE)], 
-                                              [i for i in range(64*l, 64*l + 64)], 
-                                              [i for i in range(64*l, 64*l + 64)], 
-                                              [i for i in range(64*l, 64*l + 64)]],
-                                             self.LAYER_BLOCK_SIZE)
-                round_key_shuffle.append(xor)
+            if round_number == 1:
+                for l in range(number_of_layers):
+                    xor = self.add_XOR_component([round_state_shuffle[l].id, 
+                                                  key_state[(round_number + 1)%2].id, 
+                                                  INPUT_TWEAK, 
+                                                  round_constant[(round_number - 1)*number_of_layers + l].id],
+                                                 [[i for i in range(self.LAYER_BLOCK_SIZE)], 
+                                                  [i for i in range(64*l, 64*l + 64)], 
+                                                  [i for i in range((self.LAYER_BLOCK_SIZE)*l, (self.LAYER_BLOCK_SIZE)*(l+1))], 
+                                                  [i for i in range(64)]],
+                                                 self.LAYER_BLOCK_SIZE)
+                    round_key_shuffle.append(xor)
+            else:
+                for l in range(number_of_layers):
+                    xor = self.add_XOR_component([round_state_shuffle[l].id, 
+                                                  key_state[(round_number + 1)%2].id, 
+                                                  tweak_state[(round_number + 1)%2].id, 
+                                                  round_constant[(round_number - 1)*number_of_layers + l].id],
+                                                 [[i for i in range(self.LAYER_BLOCK_SIZE)], 
+                                                  [i for i in range(64*l, 64*l + 64)], 
+                                                  [i for i in range(64*l, 64*l + 64)], 
+                                                  [i for i in range(64)]],
+                                                 self.LAYER_BLOCK_SIZE)
+                    round_key_shuffle.append(xor)
                     
-            tweak_state[round_number%2] = self.add_permutation_component([tweak_state[(round_number + 1)%2].id],
-                                                                         [[i for i in range(self.TWEAK_BLOCK_SIZE)]],
-                                                                         self.TWEAK_BLOCK_SIZE,
-                                                                         tweak_permutation[(round_number + 1)%2])
-                                              
-            round_output = self.add_round_output_component([round_key_shuffle[i].id for i in range(number_of_layers)],
-                                                       [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(number_of_layers)],
-                                                       self.CIPHER_BLOCK_SIZE)                 
-                                                       
-        #Last round different from others    
-        self.add_round()
-                                   
+                tweak_state[(round_number + 1)%2] = self.add_permutation_component([tweak_state[(round_number + 1)%2].id],
+                                                                             [[i for i in range(self.TWEAK_BLOCK_SIZE)]],
+                                                                             self.TWEAK_BLOCK_SIZE,
+                                                                             tweak_permutation[(round_number + 1)%2])
+            if round_number != 1:                                  
+                round_output = self.add_round_output_component([round_key_shuffle[i].id for i in range(number_of_layers)],
+                                                               [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(number_of_layers)],
+                                                               self.CIPHER_BLOCK_SIZE)                 
+                   
+                self.add_round()
+            else:
+                round_output = self.add_permutation_component([round_key_shuffle[i].id for i in range(number_of_layers)],
+                                                              [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(number_of_layers)],
+                                                              self.CIPHER_BLOCK_SIZE,
+                                                              [i for i in range(self.CIPHER_BLOCK_SIZE)])
+                                                      
+        #Last round different from others          
         last_round_sboxes = []
         for sb in range(self.NUM_SBOXES):
             sbox = self.add_SBOX_component(
@@ -431,88 +461,60 @@ class QARMAV2BlockCipher(Cipher):
                                                        self.CIPHER_BLOCK_SIZE)
                                                        
         cipher_output = self.add_cipher_output_component([round_output.id],
-                                                         [[i for i in range(self.CIPHER_BLOCK_SIZE)][::-1]],
+                                                         [[i for i in range(self.CIPHER_BLOCK_SIZE)]],
                                                          self.CIPHER_BLOCK_SIZE)
-                                                         
-    def LFSR(self,register):
-        new_register = self.add_SHIFT_component([register.id],
-                                                [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                                self.LAYER_BLOCK_SIZE,
-                                                1)
-        output_bit = self.add_SHIFT_component([register.id],
-                                                [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                                self.LAYER_BLOCK_SIZE,
-                                                1 - self.LAYER_BLOCK_SIZE)
-        poly_1 = self.add_SHIFT_component([output_bit.id],
-                                          [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                          self.LAYER_BLOCK_SIZE,
-                                          45)
-        poly_2 = self.add_SHIFT_component([output_bit.id],
-                                          [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                          self.LAYER_BLOCK_SIZE,
-                                          31)
-        poly_3 = self.add_SHIFT_component([output_bit.id],
-                                          [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-                                          self.LAYER_BLOCK_SIZE,
-                                          14)
-        output_trigger = self.add_XOR_component([new_register.id, output_bit.id, poly_1.id, poly_2.id, poly_3.id],
-                                                [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(5)],
-                                                self.LAYER_BLOCK_SIZE)
-        return output_trigger
-                                                         
+                                                     
     def update_constants(self, constant):
-        for i in range(23):
-            tmp = self.LFSR(constant)
-            constant = tmp
-        #spill = self.add_SHIFT_component([constant.id],
-        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-        #                                 self.LAYER_BLOCK_SIZE,
-        #                                 -51)
-        #tmp_0 = self.add_SHIFT_component([constant.id],
-        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-        #                                 self.LAYER_BLOCK_SIZE,
-        #                                 13)
-        #tmp_1 = self.add_SHIFT_component([spill.id],
-        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-        #                                 self.LAYER_BLOCK_SIZE,
-        #                                 50)
-        #tmp_2 = self.add_SHIFT_component([spill.id],
-        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-        #                                 self.LAYER_BLOCK_SIZE,
-        #                                 33)
-        #tmp_3 = self.add_SHIFT_component([spill.id],
-        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-        #                                 self.LAYER_BLOCK_SIZE,
-        #                                 19)
-        #tmp = self.add_XOR_component([tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
-        #                             [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(5)],
-        #                             self.LAYER_BLOCK_SIZE)
-        #spill = self.add_SHIFT_component([tmp.id],
-        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-        #                                 self.LAYER_BLOCK_SIZE,
-        #                                 -54)
-        #tmp_0 = self.add_SHIFT_component([tmp.id],
-        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-        #                                 self.LAYER_BLOCK_SIZE,
-        #                                 10)
-        #tmp_1 = self.add_SHIFT_component([spill.id],
-        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-        #                                 self.LAYER_BLOCK_SIZE,
-        #                                 50)
-        #tmp_2 = self.add_SHIFT_component([spill.id],
-        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-        #                                 self.LAYER_BLOCK_SIZE,
-        #                                 33)
-        #tmp_3 = self.add_SHIFT_component([spill.id],
-        #                                 [[i for i in range(self.LAYER_BLOCK_SIZE)]],
-        #                                 self.LAYER_BLOCK_SIZE,
-        #                                 19)
-        #tmp = self.add_XOR_component([tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
-        #                             [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(5)],
-        #                             self.LAYER_BLOCK_SIZE)
+        spill = self.add_SHIFT_component([constant.id],
+                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                         self.LAYER_BLOCK_SIZE,
+                                         51)
+        tmp_0 = self.add_SHIFT_component([constant.id],
+                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                         self.LAYER_BLOCK_SIZE,
+                                         -13)
+        tmp_1 = self.add_SHIFT_component([spill.id],
+                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                         self.LAYER_BLOCK_SIZE,
+                                         -50)
+        tmp_2 = self.add_SHIFT_component([spill.id],
+                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                         self.LAYER_BLOCK_SIZE,
+                                         -33)
+        tmp_3 = self.add_SHIFT_component([spill.id],
+                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                         self.LAYER_BLOCK_SIZE,
+                                         -19)
+        tmp = self.add_XOR_component([tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
+                                     [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(5)],
+                                     self.LAYER_BLOCK_SIZE)
+        spill = self.add_SHIFT_component([tmp.id],
+                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                         self.LAYER_BLOCK_SIZE,
+                                         54)
+        tmp_0 = self.add_SHIFT_component([tmp.id],
+                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                         self.LAYER_BLOCK_SIZE,
+                                         -10)
+        tmp_1 = self.add_SHIFT_component([spill.id],
+                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                         self.LAYER_BLOCK_SIZE,
+                                         -50)
+        tmp_2 = self.add_SHIFT_component([spill.id],
+                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                         self.LAYER_BLOCK_SIZE,
+                                         -33)
+        tmp_3 = self.add_SHIFT_component([spill.id],
+                                         [[i for i in range(self.LAYER_BLOCK_SIZE)]],
+                                         self.LAYER_BLOCK_SIZE,
+                                         -19)
+        tmp = self.add_XOR_component([tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
+                                     [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in range(5)],
+                                     self.LAYER_BLOCK_SIZE)
         return tmp
         
     def o_function(self, key):
+        key_new = []
         key_rot_0 = self.add_rotate_component([key[0].id],
                                               [[i for i in range(self.KEY_BLOCK_SIZE)]],
                                               self.KEY_BLOCK_SIZE,
@@ -521,23 +523,43 @@ class QARMAV2BlockCipher(Cipher):
                                                [[i for i in range(self.KEY_BLOCK_SIZE)]],
                                                self.KEY_BLOCK_SIZE,
                                                self.KEY_BLOCK_SIZE-1)
-        key[0] = self.add_XOR_component([key_rot_0.id, key_shift_0.id],
-                                        [[i for i in range(self.KEY_BLOCK_SIZE)], [i for i in range(self.KEY_BLOCK_SIZE)]],
-                                        self.KEY_BLOCK_SIZE)
+        key_new.append(self.add_XOR_component([key_rot_0.id, key_shift_0.id],
+                                              [[i for i in range(self.KEY_BLOCK_SIZE)], [i for i in range(self.KEY_BLOCK_SIZE)]],
+                                              self.KEY_BLOCK_SIZE))
         
         key_lshift_1 = self.add_SHIFT_component([key[1].id],
                                                 [[i for i in range(self.KEY_BLOCK_SIZE)]],
                                                 self.KEY_BLOCK_SIZE,
                                                 -1)
-        key_rshift_1 = self.add_SHIFT_component([key[1].id],
+        key_rshift_1 = self.add_SHIFT_component([key_lshift_1.id],
                                                 [[i for i in range(self.KEY_BLOCK_SIZE)]],
                                                 self.KEY_BLOCK_SIZE,
                                                 self.KEY_BLOCK_SIZE-1)
         key_rotated_1 = self.add_XOR_component([key[1].id, key_rshift_1.id],
                                                [[i for i in range(self.KEY_BLOCK_SIZE)], [i for i in range(self.KEY_BLOCK_SIZE)]],
                                                self.KEY_BLOCK_SIZE)
-        key[1] = self.add_rotate_component([key_rotated_1.id],
-                                           [[i for i in range(self.KEY_BLOCK_SIZE)]],
-                                           self.KEY_BLOCK_SIZE,
-                                           -1)  
-        return(key)
+        key_new.append(self.add_rotate_component([key_rotated_1.id],
+                                                 [[i for i in range(self.KEY_BLOCK_SIZE)]],
+                                                 self.KEY_BLOCK_SIZE,
+                                                 -1))  
+        return(key_new)
+        
+    def majority_function(self, key):
+        maj_key_size = self.KEY_BLOCK_SIZE/2
+        and_0_1 = self.add_AND_component([key, key],
+                                         [[i for i in range(maj_key_size)], [i for i in range(maj_key_size, 2*maj_key_size)]],
+                                         maj_key_size)
+        and_0_2 = self.add_AND_component([key, key],
+                                         [[i for i in range(maj_key_size)], [i for i in range(2*maj_key_size, 3*maj_key_size)]],
+                                         maj_key_size)
+        and_1_2 = self.add_AND_component([key, key],
+                                         [[i for i in range(maj_key_size, 2*maj_key_size)], [i for i in range(2*maj_key_size, 3*maj_key_size)]],
+                                         maj_key_size)
+        maj_key_rotated = self.add_OR_component([and_0_1, and_0_2, and_1_2],
+                                        [[i for i in range(maj_key_size)] for j in range(3)],
+                                        maj_key_size)
+        maj_key = self.add_rotate_component([maj_key_rotated],
+                                            [[i for i in range(maj_key_size)]],
+                                            maj_key_size,
+                                            17)
+        return maj_key
