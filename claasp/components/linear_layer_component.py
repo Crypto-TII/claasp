@@ -1,4 +1,4 @@
-
+import numpy as np
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -611,21 +611,42 @@ class LinearLayer(Component):
 
         variables = [(f"x[{var}]", x[var]) for sublist in input_vars + output_vars for var in sublist]
         constraints = []
-        matrix = self.description
-        update_dictionary_that_contains_xor_inequalities_for_specific_wordwise_matrix(model.word_size, matrix)
-        dict_inequalities = output_dictionary_that_contains_wordwise_truncated_xor_inequalities()
+
+        M = Matrix(self.description)
+        if M.ncols() > model.word_size and [len(input) for input in self.input_bit_positions] != [model.word_size] * len(self.input_bit_positions):
+            self.print()
+            # truncated matrix
+            matrix = [[not M[i:i + model.word_size, j:j + model.word_size].is_zero() for j in
+                                 range(0, M.ncols(), model.word_size)] for i in range(0, M.nrows(), model.word_size)]
+        else:
+            matrix = self.description
+
+        if model.word_size <= 4:
+            update_dictionary_that_contains_xor_inequalities_for_specific_wordwise_matrix(model.word_size, matrix)
+            dict_inequalities = output_dictionary_that_contains_wordwise_truncated_xor_inequalities()
 
         for i in range(len(matrix)):
             col = [row[i] for row in matrix]
             number_of_1s = len([bit for bit in col if bit])
             if number_of_1s >= 2:
-                # performing wordwise_deterministic_truncated_xor
-                inequalities = dict_inequalities[model.word_size][number_of_1s]
-                active_input_vars = [input_vars[_] for _ in range(len(col)) if col[_]]
-                all_active_vars = [x[_] for sublist in active_input_vars + [output_vars[i]] for _ in sublist]
+                if model.word_size <= 4:
+                    # performing n-inputs wordwise_deterministic_truncated_xor
+                    inequalities = dict_inequalities[model.word_size][number_of_1s]
+                    active_input_vars = [input_vars[_] for _ in range(len(col)) if col[_]]
+                    all_active_vars = [x[_] for sublist in active_input_vars + [output_vars[i]] for _ in sublist]
 
-                minimized_constraints = espresso_pos_to_constraints(inequalities, all_active_vars)
-                constraints.extend(minimized_constraints)
+                    minimized_constraints = espresso_pos_to_constraints(inequalities, all_active_vars)
+                    constraints.extend(minimized_constraints)
+                else:
+                    # performing sequential wordwise_deterministic_truncated_xor
+                    xor_inputs = [input_vars[j] for j in range(len(col)) if col[j]]
+                    result_ids = [tuple([f'temp_xor_{j}_{self.id}_word_{i}_0', f'temp_xor_{j}_{self.id}_word_{i}_1'] + [f'temp_xor_{j}_{self.id}_word_{i}_bit_{k}' for k in range(model.word_size)]) for j in
+                                  range(number_of_1s - 2)] + [output_vars[i]]
+                    constraints.extend(
+                        milp_utils.milp_xor_truncated_wordwise(model, xor_inputs[0], xor_inputs[1], result_ids[0]))
+                    for chunk in range(1, number_of_1s - 1):
+                        constraints.extend(milp_utils.milp_xor_truncated_wordwise(model, xor_inputs[chunk + 1],
+                                                                         result_ids[chunk - 1], result_ids[chunk]))
 
             if number_of_1s == 1:
                 index = col.index(1)

@@ -1749,14 +1749,14 @@ def update_inputs(cipher_without_key_schedule):
             modified, offset = update_component_inputs(component, component_id, parent_links)
             update_cipher_inputs(cipher_without_key_schedule, component_id, modified, offset)
 
-def get_output_bit_size_from_id(cipher, component_id):
+def get_output_bit_size_from_id(cipher_list, component_id):
     try:
-        if component_id in cipher.inputs:
-            return cipher.inputs_bit_size[cipher.inputs.index(component_id)]
-        elif component_id in cipher.get_all_components_ids():
-            return cipher.get_component_from_id(component_id).output_bit_size
-        else:
-            raise ValueError(f'{component_id} not found.')
+        for cipher in cipher_list:
+            if component_id in cipher.inputs:
+                return cipher.inputs_bit_size[cipher.inputs.index(component_id)]
+            elif component_id in cipher.get_all_components_ids():
+                return cipher.get_component_from_id(component_id).output_bit_size
+        raise ValueError(f'{component_id} not found.')
     except ValueError as e:
         sys.exit(str(e))
 

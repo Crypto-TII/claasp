@@ -17,6 +17,7 @@
 
 import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED
 from claasp.cipher_modules.models.milp.utils.utils import fix_variables_value_deterministic_truncated_xor_differential_constraints
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
@@ -306,7 +307,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("bitwise_deterministic_truncated_xor_differential", solver_name)
+        solution = self.solve(MILP_BITWISE_DETERMINISTIC_TRUNCATED, solver_name)
         solution['building_time'] = building_time
 
         return solution
@@ -346,7 +347,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("bitwise_deterministic_truncated_xor_differential", solver_name)
+        solution = self.solve(MILP_BITWISE_DETERMINISTIC_TRUNCATED, solver_name)
         solution['building_time'] = building_time
 
         return solution

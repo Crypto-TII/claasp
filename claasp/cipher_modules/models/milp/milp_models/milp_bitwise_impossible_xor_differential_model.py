@@ -19,7 +19,9 @@ import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import verbose_print
 from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_IMPOSSIBLE, \
+    MILP_BITWISE_IMPOSSIBLE_AUTO, MILP_BACKWARD_SUFFIX
+from claasp.name_mappings import CIPHER_OUTPUT
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 
 
@@ -50,7 +52,8 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             sage: milp = MilpBitwiseImpossibleXorDifferentialModel(speck)
             sage: milp.init_model_in_sage_milp_class()
             sage: milp._forward_cipher = speck.get_partial_cipher(0, 1, keep_key_schedule=True)
-            sage: milp._backward_cipher = speck.cipher_partial_inverse(1, 1, output_suffix="_backward", keep_key_schedule=False)
+            sage: backward_cipher = milp._cipher.cipher_partial_inverse(1, 1, keep_key_schedule=False)
+            sage: milp._backward_cipher = backward_cipher.add_suffix_to_components("_backward", [backward_cipher.get_all_components_ids()[-1]])
             sage: milp.build_bitwise_impossible_xor_differential_trail_model()
             ...
         """
@@ -93,8 +96,11 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             middle_round = self._cipher.number_of_rounds // 2
         assert middle_round < self._cipher.number_of_rounds
 
-        self._forward_cipher = self._cipher.get_partial_cipher(0, middle_round-1, keep_key_schedule=True)
-        self._backward_cipher = self._cipher.cipher_partial_inverse(middle_round, self._cipher.number_of_rounds - 1, output_suffix="_backward", keep_key_schedule=False)
+        self._forward_cipher = self._cipher.get_partial_cipher(0, middle_round - 1, keep_key_schedule=True)
+        backward_cipher = self._cipher.cipher_partial_inverse(middle_round, self._cipher.number_of_rounds - 1,
+                                                              keep_key_schedule=False)
+        self._backward_cipher = backward_cipher.add_suffix_to_components(MILP_BACKWARD_SUFFIX,
+                                                                         [backward_cipher.get_all_components_ids()[-1]])
 
         self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables)
         for index, constraint in enumerate(self._model_constraints):
@@ -154,7 +160,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         p = self._integer_variable
 
         self._forward_cipher = self._cipher
-        self._backward_cipher = self._cipher.cipher_partial_inverse(output_suffix="", keep_key_schedule=True).add_suffix_to_components("_backward")
+        self._backward_cipher = self._cipher.cipher_inverse().add_suffix_to_components(MILP_BACKWARD_SUFFIX)
 
         self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables)
         for index, constraint in enumerate(self._model_constraints):
@@ -164,7 +170,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         constraints = []
         forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
         all_inconsistent_vars = []
-        backward_round_outputs = [c for c in self._backward_cipher.get_all_components() if c.description == ['round_output'] and set(c.input_id_links) != {forward_output.id + "_backward"}]
+        backward_round_outputs = [c for c in self._backward_cipher.get_all_components() if c.description == ['round_output'] and set(c.input_id_links) != {forward_output.id + MILP_BACKWARD_SUFFIX}]
 
         for backward_round_output in backward_round_outputs:
             output_bit_size = backward_round_output.output_bit_size
@@ -174,7 +180,6 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             forward_vars = [x_class["_".join(id.split("_")[:-2] + [id.split("_")[-1]])] for id in output_ids]
             inconsistent_vars = [x[f"{backward_round_output.id}_inconsistent_{_}"] for _ in range(output_bit_size)]
             all_inconsistent_vars += inconsistent_vars
-            round_number = int(backward_round_output.id.split("_")[-3])
 
             for inconsistent_index in range(output_bit_size):
                 incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] == 1]
@@ -314,7 +319,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         self.add_constraints_to_build_in_sage_milp_class(middle_round, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("bitwise_impossible_xor_differential", solver_name)
+        solution = self.solve(MILP_BITWISE_IMPOSSIBLE, solver_name)
         solution['building_time'] = building_time
 
         return solution
@@ -354,7 +359,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         self.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("bitwise_impossible_xor_differential_fully_automated", solver_name)
+        solution = self.solve(MILP_BITWISE_IMPOSSIBLE_AUTO, solver_name)
         solution['building_time'] = building_time
 
         return solution

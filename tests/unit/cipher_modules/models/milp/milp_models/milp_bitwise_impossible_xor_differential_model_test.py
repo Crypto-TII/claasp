@@ -9,7 +9,9 @@ def test_build_bitwise_impossible_xor_differential_trail_model():
     milp = MilpBitwiseImpossibleXorDifferentialModel(simon)
     milp.init_model_in_sage_milp_class()
     milp._forward_cipher = simon.get_partial_cipher(0, 1, keep_key_schedule=True)
-    milp._backward_cipher = simon.cipher_partial_inverse(1, 1, output_suffix="_backward", keep_key_schedule=False)
+    backward_cipher = milp._cipher.cipher_partial_inverse(1, 1, keep_key_schedule=False)
+    milp._backward_cipher = backward_cipher.add_suffix_to_components("_backward", [
+        backward_cipher.get_all_components_ids()[-1]])
     milp.build_bitwise_impossible_xor_differential_trail_model()
 
     constraints = milp.model_constraints

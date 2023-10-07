@@ -3,7 +3,7 @@ from copy import *
 from sage.crypto.sbox import SBox
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
 from claasp.component import Component
-from claasp.components import modsub_component, cipher_output_component
+from claasp.components import modsub_component, cipher_output_component, linear_layer_component
 from claasp.input import Input
 from claasp.name_mappings import *
 
@@ -783,6 +783,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         inverse_component = Component(component.id, LINEAR_LAYER,
                                       Input(component.input_bit_size, input_id_links, input_bit_positions),
                                       component.output_bit_size, list(inv_binary_matrix.transpose()))
+        inverse_component.__class__ = linear_layer_component.LinearLayer
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == WORD_OPERATION and component.description[0] == "SIGMA":
@@ -1314,11 +1315,11 @@ def get_most_recent_intermediate_output(target_link, intermediate_outputs):
         if target_link in intermediate_outputs[index].input_id_links:
             return intermediate_outputs[index]
 
-def update_input_links_from_rounds(cipher_rounds, removed_components, intermediate_outputs, suffix):
+def update_input_links_from_rounds(cipher_rounds, removed_components, intermediate_outputs):
     for round in cipher_rounds:
         for component in round.components:
             for i, link in enumerate(component.input_id_links):
                 if link in removed_components:
                     intermediate_output = get_most_recent_intermediate_output(link, intermediate_outputs)
-                    component.input_id_links[i] = f'{intermediate_output.id}{suffix}'
+                    component.input_id_links[i] = f'{intermediate_output.id}'
                     component.input_bit_positions[i] = [get_relative_position(link, j, intermediate_output) for j in component.input_bit_positions[i]]

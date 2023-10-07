@@ -1045,7 +1045,7 @@ class Cipher:
         sorted_inverted_cipher = sort_cipher_graph(inverted_cipher)
 
         return sorted_inverted_cipher
-    def get_partial_cipher(self, start_round=None, end_round=None, output_suffix="", keep_key_schedule=True):
+    def get_partial_cipher(self, start_round=None, end_round=None, keep_key_schedule=True):
 
         if start_round is None:
             start_round = 0
@@ -1069,10 +1069,10 @@ class Cipher:
                 partial_cipher.inputs.pop(input_index)
                 partial_cipher.inputs_bit_size.pop(input_index)
 
-            partial_cipher.inputs.insert(0, intermediate_outputs[start_round - 1].id + output_suffix)
+            partial_cipher.inputs.insert(0, intermediate_outputs[start_round - 1].id)
             partial_cipher.inputs_bit_size.insert(0, intermediate_outputs[start_round - 1].output_bit_size)
             update_input_links_from_rounds(partial_cipher.rounds_as_list[start_round:end_round + 1],
-                                           removed_components_ids, intermediate_outputs, output_suffix)
+                                           removed_components_ids, intermediate_outputs)
 
         if end_round < self.number_of_rounds - 1:
             removed_components_ids.append(CIPHER_OUTPUT)
@@ -1090,10 +1090,11 @@ class Cipher:
         return partial_cipher
 
     def add_suffix_to_components(self, suffix, component_id_list=None):
+        renamed_inputs = self.inputs
         if component_id_list is None:
             component_id_list = self.get_all_components_ids() + self.inputs
-        renamed_inputs = [f"{input}{suffix}" if input in component_id_list else input for input in self.inputs]
-        renamed_cipher = Cipher(f"{self.family_name}{suffix}", f"{self.type}", renamed_inputs,
+            renamed_inputs = [f"{input}{suffix}" if input in component_id_list else input for input in self.inputs]
+        renamed_cipher = Cipher(f"{self.family_name}", f"{self.type}", renamed_inputs,
                                 self.inputs_bit_size, self.output_bit_size)
         for round in self.rounds_as_list:
             renamed_cipher.add_round()
@@ -1114,7 +1115,7 @@ class Cipher:
 
         return renamed_cipher
 
-    def cipher_partial_inverse(self, start_round=None, end_round=None, output_suffix="_backward", keep_key_schedule=False):
+    def cipher_partial_inverse(self, start_round=None, end_round=None, keep_key_schedule=False):
         """
         Returns the inverted portion of a cipher.
 
@@ -1135,7 +1136,7 @@ class Cipher:
 
         """
 
-        partial_cipher = self.get_partial_cipher(start_round, end_round, output_suffix, True)
+        partial_cipher = self.get_partial_cipher(start_round, end_round, True)
         partial_cipher_inverse = partial_cipher.cipher_inverse()
 
         key_schedule_component_ids = get_key_schedule_component_ids(partial_cipher_inverse)
