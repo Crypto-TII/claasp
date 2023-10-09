@@ -25,6 +25,7 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORDWISE_IMPOSSIBLE_AUTO, \
     MILP_WORDWISE_IMPOSSIBLE, MILP_BACKWARD_SUFFIX
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
+from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import CIPHER_OUTPUT
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 
@@ -284,3 +285,77 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         solution['building_time'] = building_time
 
         return solution
+
+    def _get_component_values(self, objective_variables, components_variables):
+        components_values = {}
+        if self._forward_cipher == self._cipher:
+            inconsistent_component_var = \
+                [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
+            inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
+
+            full_cipher_components = self._cipher.get_all_components_ids()
+            backward_components = self._backward_cipher.get_all_components_ids() + self._backward_cipher.inputs
+            index = full_cipher_components.index(inconsistent_component_id)
+            updated_cipher_components = full_cipher_components[:index + 1] + [
+                c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c for c in
+                full_cipher_components[index:]]
+            list_component_ids = self._forward_cipher.inputs + updated_cipher_components
+        else:
+            full_cipher_components = self._cipher.get_all_components_ids()
+            backward_components = self._backward_cipher.get_all_components_ids()
+            incompatible_value = backward_components[-1]
+
+            incompatible_component_id = "_".join(incompatible_value.split("_")[:-1])
+            index = full_cipher_components.index(incompatible_component_id)
+            full_cipher_components.insert(index + 1, incompatible_value)
+            list_component_ids = self._forward_cipher.inputs + full_cipher_components
+        for component_id in list_component_ids:
+            dict_tmp = self._get_component_value_weight(component_id,
+                                                        objective_variables, components_variables)
+            components_values[component_id] = dict_tmp
+        return components_values
+
+    def _parse_solver_output(self):
+        mip = self._model
+        if self._forward_cipher == self._cipher:
+            components_variables = mip.get_values(self._trunc_wordvar)
+            objective_variables = mip.get_values(self._binary_variable)
+            inconsistent_component_var = \
+                [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
+            objective_value = "_".join(inconsistent_component_var.split("_")[:-3])
+        else:
+            components_variables = mip.get_values(self._trunc_wordvar)
+            objective_variables = mip.get_values(self._integer_variable)
+            objective_value = objective_variables["number_of_unknown_patterns"]
+        components_values = self._get_component_values(objective_variables, components_variables)
+
+        return objective_value, objective_variables, components_values, components_variables
+
+    def _get_component_value_weight(self, component_id, probability_variables, components_variables):
+
+        wordsize = self._word_size
+        if component_id in self._cipher.inputs:
+            output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)] // wordsize
+        elif self._forward_cipher != self._cipher and component_id.endswith(
+                MILP_BACKWARD_SUFFIX):
+            component = self._backward_cipher.get_component_from_id(component_id)
+            output_size = component.output_bit_size // wordsize
+        elif self._forward_cipher == self._cipher and component_id.endswith(
+                MILP_BACKWARD_SUFFIX):
+            if component_id in self._backward_cipher.inputs:
+                output_size = self._backward_cipher.inputs_bit_size[
+                                  self._backward_cipher.inputs.index(component_id)] // wordsize
+            else:
+                component = self._backward_cipher.get_component_from_id(component_id)
+                output_size = component.output_bit_size // wordsize
+        else:
+            component = self._cipher.get_component_from_id(component_id)
+            output_size = component.output_bit_size // wordsize
+        diff_str = {}
+        suffix_dict = {"": output_size}
+        final_output = self._get_final_output(component_id, components_variables, diff_str,
+                                              probability_variables, suffix_dict)
+        if len(final_output) == 1:
+            final_output = final_output[0]
+
+        return final_output
