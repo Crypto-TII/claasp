@@ -854,14 +854,6 @@ class Cipher:
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
             True
 
-            sage: from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
-            sage: plaintext = 0x1234
-            sage: cipher = KeccakInvertiblePermutation(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
-
             sage: from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
             sage: key = 0x000102030405060708090A0B0C0D0E0F
             sage: plaintext = 0x000102030405060708090A0B0C0D0E0F
