@@ -26,8 +26,9 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits, \
     output_dictionary_that_contains_xor_inequalities
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR
-from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX
+from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list, \
+    set_component_solution
 from claasp.name_mappings import (INTERMEDIATE_OUTPUT, CONSTANT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION)
 
@@ -692,3 +693,71 @@ class MilpXorLinearModel(MilpModel):
             [x_0 == 100]
         """
         return self.weight_constraints(weight)
+
+    def _get_component_values(self, objective_variables, components_variables):
+        components_values = {}
+        list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        for component_id in list_component_ids:
+            dict_tmp = self._get_component_value_weight(component_id,
+                                                        objective_variables, components_variables)
+            if component_id in self._cipher.inputs:
+                components_values[component_id] = dict_tmp[1]
+            elif 'cipher_output' not in component_id:
+                components_values[component_id + '_i'] = dict_tmp[0]
+                components_values[component_id + '_o'] = dict_tmp[1]
+            else:
+                components_values[component_id + '_o'] = dict_tmp[1]
+        return components_values
+
+    def _parse_solver_output(self):
+        mip = self._model
+        objective_variables = mip.get_values(self._integer_variable)
+        objective_value = objective_variables["probability"] / 10.
+        components_variables = mip.get_values(self._binary_variable)
+        components_values = self._get_component_values(objective_variables, components_variables)
+
+        return objective_value, objective_variables, components_values, components_variables
+
+    def _get_component_value_weight(self, component_id, probability_variables, components_variables):
+
+        if component_id in self._cipher.inputs:
+            output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
+            input_size = output_size
+        else:
+            component = self._cipher.get_component_from_id(component_id)
+            input_size = component.input_bit_size
+            output_size = component.output_bit_size
+        diff_str = {}
+        suffix_dict = {"_i": input_size, "_o": output_size}
+        final_output = self._get_final_output(component_id, components_variables, diff_str,
+                                             probability_variables, suffix_dict)
+        if len(final_output) == 1:
+            final_output = final_output[0]
+
+        return final_output
+
+    def _get_final_output(self, component_id, components_variables, diff_str, probability_variables,
+                         suffix_dict):
+        final_output = []
+        for suffix in suffix_dict.keys():
+            diff_str[suffix] = ""
+            for i in range(suffix_dict[suffix]):
+                if component_id + "_" + str(i) + suffix in components_variables:
+                    bit = components_variables[component_id + "_" + str(i) + suffix]
+                    diff_str[suffix] += f"{bit}".split(".")[0]
+                else:
+                    diff_str[suffix] += "*"
+            diff_str[suffix] = "0b" + diff_str[suffix]
+            try:
+                mask = BitArray(diff_str[suffix])
+                try:
+                    mask = "0x" + mask.hex
+                except Exception:
+                    mask = "0b" + mask.bin
+            except Exception:
+                mask = diff_str[suffix]
+            bias = 0
+            if component_id + MILP_PROBABILITY_SUFFIX in probability_variables:
+                bias = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / 10.
+            final_output.append(set_component_solution(mask, bias, sign=1))
+        return final_output

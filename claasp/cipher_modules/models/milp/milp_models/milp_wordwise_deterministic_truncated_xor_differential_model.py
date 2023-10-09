@@ -20,6 +20,7 @@ from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORDWISE_DETERMINISTIC_TRUNCATED
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints, fix_variables_value_deterministic_truncated_xor_differential_constraints
+from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
@@ -377,3 +378,56 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
     @property
     def word_size(self):
         return self._word_size
+
+
+    def _get_component_values(self, objective_variables, components_variables):
+        components_values = {}
+        list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        for component_id in list_component_ids:
+            dict_tmp = self._get_component_value_weight(component_id,
+                                                        objective_variables, components_variables)
+            components_values[component_id] = dict_tmp
+        return components_values
+    def _parse_solver_output(self):
+        mip = self._model
+        components_variables = mip.get_values(self._trunc_wordvar)
+        objective_variables = mip.get_values(self._integer_variable)
+        objective_value = objective_variables["number_of_unknown_patterns"]
+        components_values = self._get_component_values(objective_variables, components_variables)
+
+        return objective_value, objective_variables, components_values, components_variables
+
+    def _get_component_value_weight(self, component_id, probability_variables, components_variables):
+
+        wordsize = self._word_size
+        if component_id in self._cipher.inputs:
+            output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)] // wordsize
+        else:
+            component = self._cipher.get_component_from_id(component_id)
+            output_size = component.output_bit_size // wordsize
+        diff_str = {}
+        suffix_dict = {"": output_size}
+
+        final_output = self._get_final_output(component_id, components_variables, diff_str,
+                                             probability_variables, suffix_dict)
+        if len(final_output) == 1:
+            final_output = final_output[0]
+
+        return final_output
+
+        return final_output
+    def _get_final_output(self, component_id, components_variables, diff_str,
+                                              probability_variables, suffix_dict):
+        final_output = []
+        for suffix in suffix_dict.keys():
+            diff_str[suffix] = ""
+            for i in range(suffix_dict[suffix]):
+                if component_id + "_word_" + str(i) + suffix + "_class" in components_variables:
+                    bit = components_variables[component_id + "_word_" + str(i) + suffix + "_class"]
+                    diff_str[suffix] += f"{bit}".split(".")[0]
+                else:
+                    diff_str[suffix] += "*"
+            difference = diff_str[suffix]
+            final_output.append(set_component_solution(difference))
+
+        return final_output
