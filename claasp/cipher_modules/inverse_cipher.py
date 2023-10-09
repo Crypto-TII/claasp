@@ -19,28 +19,6 @@ def get_cipher_components(self):
         component_list.append(input_component)
     return component_list
 
-def get_cipher_components2(self):
-    component_list = []
-    # build input components
-    for index, input_id in enumerate(self.inputs):
-        if input_id != INPUT_KEY:
-            input_component = Component(input_id, "cipher_input", Input(0, [[]], [[]]), self.inputs_bit_size[index],
-                                        [input_id])
-            setattr(input_component, 'round', -1)
-            component_list.append(input_component)
-    number_of_inputs = len(component_list)
-    component_list += self.get_all_components()
-    for c in component_list[number_of_inputs:]:
-        setattr(c, 'round', int(c.id.split("_")[-2]))
-    if INPUT_KEY in self.inputs:
-        index = self.inputs.index(INPUT_KEY)
-        input_id = self.inputs[index]
-        input_component = Component(input_id, "cipher_input", Input(0, [[]], [[]]), self.inputs_bit_size[index],
-                                    [input_id])
-        setattr(input_component, 'round', -1)
-        component_list.append(input_component)
-    return component_list[::-1]
-
 def get_all_components_with_the_same_input_id_link_and_input_bit_positions(input_id_link, input_bit_positions, self):
     cipher_components = get_cipher_components(self)
     output_list = []
@@ -655,6 +633,26 @@ def find_input_id_link_bits_equivalent(inverse_component, component, all_equival
     raise ValueError("Equivalent bits not found")
 
 def update_output_bits(inverse_component, self, all_equivalent_bits, available_bits):
+
+    def _add_output_bit_equivalences(id, bit_positions, component, all_equivalent_bits, available_bits):
+        for i in range(component.output_bit_size):
+            output_bit_name_updated = id + "_" + str(i) + "_output_updated"
+            bit = {
+                "component_id": id,
+                "position": i,
+                "type": "output_updated"
+            }
+            available_bits.append(bit)
+            input_bit_name = id + "_" + str(bit_positions[i]) + "_input"
+            all_equivalent_bits[input_bit_name].append(output_bit_name_updated)
+            if output_bit_name_updated not in all_equivalent_bits.keys():
+                all_equivalent_bits[output_bit_name_updated] = []
+            all_equivalent_bits[output_bit_name_updated].append(input_bit_name)
+            for name in all_equivalent_bits[input_bit_name]:
+                if name != output_bit_name_updated:
+                    all_equivalent_bits[output_bit_name_updated].append(name)
+                    all_equivalent_bits[name].append(output_bit_name_updated)
+
     id = inverse_component.id
     component = get_component_from_id(id, self)
     flag_is_intersection_of_input_id_links_null, input_bit_positions = is_intersection_of_input_id_links_null(
@@ -680,61 +678,11 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
                 if name != output_bit_name_updated:
                     all_equivalent_bits[output_bit_name_updated].append(name)
     elif component.input_bit_size == component.output_bit_size:
-        for i in range(component.input_bit_size):
-            output_bit_name_updated = id + "_" + str(i) + "_output_updated"
-            bit = {
-                "component_id": id,
-                "position": i,
-                "type": "output_updated"
-            }
-            available_bits.append(bit)
-            input_bit_name = id + "_" + str(i) + "_input"
-            all_equivalent_bits[input_bit_name].append(output_bit_name_updated)
-            if output_bit_name_updated not in all_equivalent_bits.keys():
-                all_equivalent_bits[output_bit_name_updated] = []
-            all_equivalent_bits[output_bit_name_updated].append(input_bit_name)
-            for name in all_equivalent_bits[input_bit_name]:
-                if name != output_bit_name_updated:
-                    all_equivalent_bits[output_bit_name_updated].append(name)
-                    all_equivalent_bits[name].append(output_bit_name_updated)
-    elif not flag_is_intersection_of_input_id_links_null:
-        for i in range(component.output_bit_size):
-            output_bit_name_updated = id + "_" + str(i) + "_output_updated"
-            bit = {
-                "component_id": id,
-                "position": i,
-                "type": "output_updated"
-            }
-            available_bits.append(bit)
-            # input_bit_name = id + "_" + str(input_bit_positions[i]) + "_input"
-            input_bit_name = id + "_" + str(input_bit_positions[i]) + "_input"
-            all_equivalent_bits[input_bit_name].append(output_bit_name_updated)
-            if output_bit_name_updated not in all_equivalent_bits.keys():
-                all_equivalent_bits[output_bit_name_updated] = []
-            all_equivalent_bits[output_bit_name_updated].append(input_bit_name)
-            for name in all_equivalent_bits[input_bit_name]:
-                if name != output_bit_name_updated:
-                    all_equivalent_bits[output_bit_name_updated].append(name)
-                    all_equivalent_bits[name].append(output_bit_name_updated) # changed, line added
+        _add_output_bit_equivalences(id, range(component.output_bit_size), component, all_equivalent_bits, available_bits)
     else:
-        input_bit_positions = find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits)
-        for i in range(component.output_bit_size):
-            output_bit_name_updated = id + "_" + str(i) + "_output_updated"
-            bit = {
-                "component_id": id,
-                "position": i,
-                "type": "output_updated"
-            }
-            available_bits.append(bit)
-            input_bit_name = id + "_" + str(input_bit_positions[i]) + "_input"
-            all_equivalent_bits[input_bit_name].append(output_bit_name_updated)
-            if output_bit_name_updated not in all_equivalent_bits.keys():
-                all_equivalent_bits[output_bit_name_updated] = []
-            all_equivalent_bits[output_bit_name_updated].append(input_bit_name)
-            for name in all_equivalent_bits[input_bit_name]:
-                if name != output_bit_name_updated:
-                    all_equivalent_bits[output_bit_name_updated].append(name)
-                    all_equivalent_bits[name].append(output_bit_name_updated)  # changed, line added
+        if flag_is_intersection_of_input_id_links_null:
+            input_bit_positions = find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits)
+        _add_output_bit_equivalences(id, input_bit_positions, component, all_equivalent_bits, available_bits)
 
 def order_input_id_links_for_modadd(component, input_id_links, input_bit_positions, available_bits, self):
     available_output_components = get_available_output_components(component, available_bits, self)
@@ -841,7 +789,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         input_id_links, input_bit_positions = order_input_id_links_for_modadd(component, input_id_links, input_bit_positions, available_bits, self)
         inverse_component = Component(component.id, component.type,
                                       Input(component.input_bit_size, input_id_links, input_bit_positions),
-                                      component.output_bit_size, ["MODSUB", component.description[1]])
+                                      component.output_bit_size, ["MODSUB", component.description[1], component.description[2]])
         inverse_component.__class__ = modsub_component.MODSUB
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
