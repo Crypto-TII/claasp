@@ -415,7 +415,6 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         return final_output
 
-        return final_output
     def _get_final_output(self, component_id, components_variables, diff_str,
                                               probability_variables, suffix_dict):
         final_output = []
