@@ -26,6 +26,7 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits, \
     output_dictionary_that_contains_xor_inequalities
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR
 from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list
 from claasp.name_mappings import (INTERMEDIATE_OUTPUT, CONSTANT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION)
@@ -299,7 +300,7 @@ class MilpXorLinearModel(MilpModel):
         looking_for_other_solutions = 1
         while looking_for_other_solutions:
             try:
-                solution = self.solve("xor_linear", solver_name, external_solver_name)
+                solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
                 solution['building_time'] = building_time
                 self._number_of_trails_found += 1
                 verbose_print(f"trails found : {self._number_of_trails_found}")
@@ -396,7 +397,7 @@ class MilpXorLinearModel(MilpModel):
             number_new_constraints = len(weight_constraints)
             while looking_for_other_solutions:
                 try:
-                    solution = self.solve("xor_linear", solver_name, external_solver_name)
+                    solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
                     solution['building_time'] = building_time
                     self._number_of_trails_found += 1
                     verbose_print(f"trails found : {self._number_of_trails_found}")
@@ -469,7 +470,7 @@ class MilpXorLinearModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_linear", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
@@ -507,7 +508,7 @@ class MilpXorLinearModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_linear", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
@@ -549,7 +550,7 @@ class MilpXorLinearModel(MilpModel):
             mip.add_constraint(constraint)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_linear", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution

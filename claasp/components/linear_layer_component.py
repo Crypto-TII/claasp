@@ -1,4 +1,4 @@
-
+import numpy as np
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -466,7 +466,7 @@ class LinearLayer(Component):
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: linear_layer_component = present.component_from(0, 17)
-            sage: variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated__differential_constraints(milp)
+            sage: variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[sbox_0_1_0]', x_0),
              ('x_class[sbox_0_1_1]', x_1),
@@ -492,7 +492,7 @@ class LinearLayer(Component):
 
         for i in range(len(matrix)):
             col = [row[i] for row in matrix]
-            number_of_1s = sum(col)
+            number_of_1s = len([bit for bit in col if bit])
             if number_of_1s >= 2:
 
                 # performing generalized_xor_deterministic_truncated_xor_differential
@@ -516,6 +516,58 @@ class LinearLayer(Component):
                 for index, value in enumerate(col):
                     if value:
                         constraints.append(x_class[output_vars[i]] == x_class[input_vars[index]])
+                        break
+
+        return variables, constraints
+
+
+    def milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for linear layer
+        component in deterministic truncated XOR differential model.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: ascon = AsconSboxSigmaPermutation(number_of_rounds=1)
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(ascon)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: linear_layer_component = ascon.component_from(0, 68)
+            sage: variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
+
+
+        """
+        x_class = model.trunc_binvar
+
+        input_ids, output_ids = self._get_input_output_variables()
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_ids + output_ids]
+        matrix = self.description
+
+        input_id_tuples, output_id_tuples = self._get_input_output_variables_tuples()
+        linking_constraints = model.link_binary_tuples_to_integer_variables(input_id_tuples + output_id_tuples,
+                                                                             input_ids + output_ids)
+        constraints = [] + linking_constraints
+
+        for i in range(len(matrix)):
+            col = [row[i] for row in matrix]
+            number_of_inputs = len([bit for bit in col if bit])
+            if number_of_inputs >= 2:
+                # performing generalized_xor_deterministic_truncated_xor_differential
+                xor_inputs = [input_id_tuples[j] for j in range(len(col)) if col[j]]
+                result_ids = [(f'temp_xor_{j}_{self.id}_{i}_0', f'temp_xor_{j}_{self.id}_{i}_1') for j in range(number_of_inputs - 2)] + [output_id_tuples[i]]
+                constraints.extend(milp_utils.milp_xor_truncated(model, xor_inputs[0], xor_inputs[1], result_ids[0]))
+                for chunk in range(1, number_of_inputs - 1):
+                    constraints.extend(milp_utils.milp_xor_truncated(model, xor_inputs[chunk + 1],
+                                                                     result_ids[chunk - 1], result_ids[chunk]))
+            if number_of_inputs == 1:
+                for index, value in enumerate(col):
+                    if value:
+                        constraints.append(x_class[output_ids[i]] == x_class[input_ids[index]])
                         break
 
         return variables, constraints
@@ -559,21 +611,42 @@ class LinearLayer(Component):
 
         variables = [(f"x[{var}]", x[var]) for sublist in input_vars + output_vars for var in sublist]
         constraints = []
-        matrix = self.description
-        update_dictionary_that_contains_xor_inequalities_for_specific_wordwise_matrix(model.word_size, matrix)
-        dict_inequalities = output_dictionary_that_contains_wordwise_truncated_xor_inequalities()
+
+        M = Matrix(self.description)
+        if M.ncols() > model.word_size and [len(input) for input in self.input_bit_positions] != [model.word_size] * len(self.input_bit_positions):
+            self.print()
+            # truncated matrix
+            matrix = [[not M[i:i + model.word_size, j:j + model.word_size].is_zero() for j in
+                                 range(0, M.ncols(), model.word_size)] for i in range(0, M.nrows(), model.word_size)]
+        else:
+            matrix = self.description
+
+        if model.word_size <= 4:
+            update_dictionary_that_contains_xor_inequalities_for_specific_wordwise_matrix(model.word_size, matrix)
+            dict_inequalities = output_dictionary_that_contains_wordwise_truncated_xor_inequalities()
 
         for i in range(len(matrix)):
             col = [row[i] for row in matrix]
-            number_of_1s = sum(col)
+            number_of_1s = len([bit for bit in col if bit])
             if number_of_1s >= 2:
-                # performing wordwise_deterministic_truncated_xor
-                inequalities = dict_inequalities[model.word_size][number_of_1s]
-                active_input_vars = [input_vars[_] for _ in range(len(col)) if col[_]]
-                all_active_vars = [x[_] for sublist in active_input_vars + [output_vars[i]] for _ in sublist]
+                if model.word_size <= 4:
+                    # performing n-inputs wordwise_deterministic_truncated_xor
+                    inequalities = dict_inequalities[model.word_size][number_of_1s]
+                    active_input_vars = [input_vars[_] for _ in range(len(col)) if col[_]]
+                    all_active_vars = [x[_] for sublist in active_input_vars + [output_vars[i]] for _ in sublist]
 
-                minimized_constraints = espresso_pos_to_constraints(inequalities, all_active_vars)
-                constraints.extend(minimized_constraints)
+                    minimized_constraints = espresso_pos_to_constraints(inequalities, all_active_vars)
+                    constraints.extend(minimized_constraints)
+                else:
+                    # performing sequential wordwise_deterministic_truncated_xor
+                    xor_inputs = [input_vars[j] for j in range(len(col)) if col[j]]
+                    result_ids = [tuple([f'temp_xor_{j}_{self.id}_word_{i}_0', f'temp_xor_{j}_{self.id}_word_{i}_1'] + [f'temp_xor_{j}_{self.id}_word_{i}_bit_{k}' for k in range(model.word_size)]) for j in
+                                  range(number_of_1s - 2)] + [output_vars[i]]
+                    constraints.extend(
+                        milp_utils.milp_xor_truncated_wordwise(model, xor_inputs[0], xor_inputs[1], result_ids[0]))
+                    for chunk in range(1, number_of_1s - 1):
+                        constraints.extend(milp_utils.milp_xor_truncated_wordwise(model, xor_inputs[chunk + 1],
+                                                                         result_ids[chunk - 1], result_ids[chunk]))
 
             if number_of_1s == 1:
                 index = col.index(1)
