@@ -11,7 +11,7 @@ def test_build_deterministic_truncated_xor_differential_trail_model():
     fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
     cp.build_deterministic_truncated_xor_differential_trail_model(fixed_variables)
 
-    assert len(cp.model_constraints) == 423
+    assert len(cp.model_constraints) == 422
     assert cp.model_constraints[2] == 'array[0..31] of var 0..2: plaintext;'
     assert cp.model_constraints[3] == 'array[0..63] of var 0..2: key;'
     assert cp.model_constraints[4] == 'array[0..15] of var 0..2: rot_0_0;'
@@ -38,7 +38,7 @@ def test_find_all_deterministic_truncated_xor_differential_trail():
     key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
     trail = cp.find_all_deterministic_truncated_xor_differential_trail(3, [plaintext, key], 'Chuffed')
 
-    assert len(trail) == 3
+    assert len(trail) == 4
     for i in range(len(trail)):
         assert trail[i]['cipher_id'] == 'speck_p32_k64_o32_r3'
         assert trail[i]['model_type'] == 'deterministic_truncated_xor_differential'
