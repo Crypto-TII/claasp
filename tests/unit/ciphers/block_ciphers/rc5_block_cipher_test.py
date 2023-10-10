@@ -11,7 +11,7 @@ def test_rc5_block_cipher():
 
     rc5 = RC5BlockCipher(number_of_rounds=4)
     assert rc5.number_of_rounds == 4
-    assert rc5.id == 'rc5_block_cipher_k64_p64_o64_r4'
+    assert rc5.id == 'rc5_block_cipher_k64_p32_o32_r4'
     assert rc5.component_from(3, 1).id == 'xor_3_1'
 
     rc5 = RC5BlockCipher(word_size=8, number_of_rounds=12, key_size=32)
