@@ -28,7 +28,7 @@ def test_rc5_block_cipher():
 
     rc5 = RC5BlockCipher(word_size=32, number_of_rounds=20, key_size=128)
     key = 0x000102030405060708090A0B0C0D0E0F
-    plaintext = 0x0123456789ABCDEF
+    plaintext = 0x0001020304050607
     ciphertext = 0x2A0EDC0E9431FF73
     assert rc5.evaluate([key, plaintext]) == ciphertext
 
