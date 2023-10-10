@@ -427,8 +427,118 @@ class Rotate(Component):
 
         return variables, constraints
 
-    def milp_deterministic_truncated_xor_differential_trail_constraints(self, model):
-        return self.milp_constraints(model)
+    def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constrains modeling a component of type Rotate for the deterministic
+        truncated xor differential model.
+
+        INPUTS:
+
+        - ``component`` -- *dict*, the rotate component in Graph Representation
+          of a cipher
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: cipher = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: rotate_component = cipher.get_component_from_id("rot_0_18")
+            sage: variables, constraints = rotate_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[sbox_0_2_word_0_class]', x_0),
+             ('x_class[sbox_0_6_word_0_class]', x_1),
+             ...
+             ('x[rot_0_18_30]', x_70),
+             ('x[rot_0_18_31]', x_71)]
+            sage: constraints
+            [x_4 == x_1,
+             x_5 == x_2,
+             ...
+             x_70 == x_14,
+             x_71 == x_15]
+
+
+
+        """
+        x_class = model.trunc_wordvar
+
+        rotation_step = self.description[1]
+        abs_rotation_word_step = abs(rotation_step) // model.word_size
+        constraints = []
+
+        input_class_vars, output_class_vars = self._get_wordwise_input_output_linked_class(model)
+        class_variables = [(f"x_class[{var}]", x_class[var]) for var in input_class_vars + output_class_vars]
+
+        output_word_size = self.output_bit_size // model.word_size
+
+        if rotation_step < 0:
+            tmp = input_class_vars[:abs_rotation_word_step]
+            input_class_vars = input_class_vars[abs_rotation_word_step:] + tmp
+        elif rotation_step > 0:
+            tmp = input_class_vars[-abs_rotation_word_step:]
+            input_class_vars = tmp + input_class_vars[:-abs_rotation_word_step]
+        for i in range(output_word_size):
+            constraints.append(x_class[output_class_vars[i]] == x_class[input_class_vars[i]])
+
+        bit_variables, bit_constraints = self.milp_constraints(model)
+
+        return class_variables + bit_variables, constraints + bit_constraints
+
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constrains modeling a component of type Rotate for the deterministic
+        truncated xor differential model.
+
+        INPUTS:
+
+        - ``component`` -- *dict*, the rotate component in Graph Representation
+          of a cipher
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: rotate_component = cipher.get_component_from_id("rot_1_1")
+            sage: variables, constraints = rotate_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[key_32]', x_0),
+             ('x_class[key_33]', x_1),
+            ...
+             ('x_class[rot_1_1_14]', x_30),
+             ('x_class[rot_1_1_15]', x_31)]
+            sage: constraints
+            [x_16 == x_9,
+             x_17 == x_10,
+            ...
+             x_30 == x_7,
+             x_31 == x_8]
+
+        """
+
+        x_class = model.trunc_binvar
+
+        output_size = self.output_bit_size
+        rotation_step = self.description[1]
+        abs_rotation_step = abs(rotation_step)
+        input_class_vars, output_class_vars = self._get_input_output_variables()
+        class_variables = [(f"x_class[{var}]", x_class[var]) for var in input_class_vars + output_class_vars]
+        constraints = []
+
+        if rotation_step < 0:
+            tmp = input_class_vars[:abs_rotation_step]
+            input_class_vars = input_class_vars[abs_rotation_step:] + tmp
+        elif rotation_step > 0:
+            tmp = input_class_vars[-abs_rotation_step:]
+            input_class_vars = tmp + input_class_vars[:-abs_rotation_step]
+        for i in range(output_size):
+            constraints.append(x_class[output_class_vars[i]] == x_class[input_class_vars[i]])
+
+        return class_variables, constraints
 
     def milp_xor_differential_propagation_constraints(self, model):
         return self.milp_constraints(model)
