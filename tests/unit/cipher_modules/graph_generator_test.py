@@ -16,7 +16,8 @@ e1_graph_nodes = [
     'xor_3_10', 'rot_3_11', 'xor_2_1', 'rot_2_2', 'modadd_2_3', 'xor_2_4', 'rot_2_5', 'modadd_3_0', 'xor_3_1',
     'rot_3_2', 'modadd_3_3', 'xor_3_4', 'rot_3_5', 'xor_2_19', 'rot_2_20', 'modadd_2_21', 'xor_2_22', 'rot_2_23',
     'modadd_3_18', 'xor_3_19', 'rot_3_20', 'modadd_3_21', 'xor_3_22', 'rot_3_23', 'xor_2_13', 'rot_2_14', 'modadd_2_15',
-    'xor_2_16', 'rot_2_17', 'modadd_3_12', 'xor_3_13', 'rot_3_14', 'modadd_3_15', 'xor_3_16', 'rot_3_17'
+    'xor_2_16', 'rot_2_17', 'modadd_3_12', 'xor_3_13', 'rot_3_14', 'modadd_3_15', 'xor_3_16', 'rot_3_17',
+    'cipher_output_3_24', 'intermediate_output_2_24'
 ]
 
 e0_graph_edges = [
@@ -71,7 +72,18 @@ e1_graph_edges = [
     ('modadd_2_15', 'modadd_3_12'), ('modadd_2_15', 'xor_3_13'), ('modadd_2_15', 'rot_3_14'),
     ('modadd_2_15', 'modadd_3_15'), ('modadd_2_15', 'xor_3_16'), ('modadd_2_15', 'rot_3_17'), ('xor_2_16', 'xor_2_16'),
     ('xor_2_16', 'rot_2_17'), ('xor_2_16', 'modadd_3_12'), ('xor_2_16', 'xor_3_13'), ('xor_2_16', 'rot_3_14'),
-    ('xor_2_16', 'modadd_3_15'), ('xor_2_16', 'xor_3_16'), ('xor_2_16', 'rot_3_17')
+    ('xor_2_16', 'modadd_3_15'), ('xor_2_16', 'xor_3_16'), ('xor_2_16', 'rot_3_17'), ('xor_2_19', 'cipher_output_3_24'),
+    ('modadd_2_3', 'cipher_output_3_24'), ('xor_2_7', 'intermediate_output_2_24'),
+    ('xor_2_16', 'intermediate_output_2_24'), ('xor_2_4', 'intermediate_output_2_24'),
+    ('xor_2_10', 'intermediate_output_2_24'), ('xor_2_1', 'cipher_output_3_24'),
+    ('xor_2_13', 'intermediate_output_2_24'), ('modadd_2_9', 'cipher_output_3_24'),
+    ('xor_2_19', 'intermediate_output_2_24'), ('xor_2_22', 'cipher_output_3_24'), ('xor_2_13', 'cipher_output_3_24'),
+    ('modadd_2_21', 'cipher_output_3_24'), ('modadd_2_3', 'intermediate_output_2_24'),
+    ('modadd_2_15', 'cipher_output_3_24'), ('xor_2_1', 'intermediate_output_2_24'),
+    ('modadd_2_9', 'intermediate_output_2_24'), ('xor_2_22', 'intermediate_output_2_24'),
+    ('xor_2_7', 'cipher_output_3_24'), ('xor_2_16', 'cipher_output_3_24'), ('xor_2_4', 'cipher_output_3_24'),
+    ('modadd_2_21', 'intermediate_output_2_24'), ('xor_2_10', 'cipher_output_3_24'),
+    ('modadd_2_15', 'intermediate_output_2_24')
 ]
 
 

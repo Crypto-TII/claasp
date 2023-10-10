@@ -42,7 +42,7 @@ def _get_descendants_subgraph(original_graph, start_nodes):
     for node in start_nodes:
         if node in original_graph:
             bottom_graph.add_node(node)
-            for successor in nx.dfs_successors(original_graph, source=node):
+            for successor in nx.dfs_tree(original_graph, source=node):
                 bottom_graph.add_edge(node, successor)
                 bottom_graph.add_node(successor)
 
