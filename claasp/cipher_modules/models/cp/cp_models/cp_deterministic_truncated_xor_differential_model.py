@@ -74,7 +74,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
             self.final_deterministic_truncated_xor_differential_constraints())
         self._model_constraints = self._model_prefix + self._variables_list + deterministic_truncated_xor_differential
 
-    def build_inverse_deterministic_truncated_xor_differential_trail_model(self, number_of_rounds, fixed_variables=[]):
+    def build_inverse_deterministic_truncated_xor_differential_trail_model(self, number_of_rounds=None, fixed_variables=[]):
         """
         Build CP model for search of deterministic truncated XOR differential trails for the inverted cipher.
 
@@ -99,6 +99,9 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         constraints = self.fix_variables_value_constraints(fixed_variables)
         self._model_constraints = constraints
         cipher = self._cipher
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
 
         for cipher_round in range(number_of_rounds + 1):
             for component in cipher.get_all_components():
@@ -156,7 +159,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
 
         return cp_constraints
 
-    def final_impossible_constraints(self, number_of_rounds):
+    def final_impossible_constraints(self, number_of_rounds=None):
         """
         Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
 
@@ -175,6 +178,9 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         """
         cipher_inputs = self._cipher.inputs
         cipher = self._cipher
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
         cp_constraints = [solve_satisfy]
         new_constraint = 'output['
         incompatibility_constraint = 'constraint'
@@ -201,8 +207,8 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
 
         return cp_constraints
 
-    def find_all_deterministic_truncated_xor_differential_trail(self, number_of_rounds,
-                                                                fixed_values=[], solver_name=None):
+    def find_all_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
+                                                                fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -244,12 +250,15 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
               'solving_time_seconds': 0.002,
               'total_weight': '0.0'}]
         """
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds)
 
         return self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name)
 
     def find_one_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
-                                                                fixed_values=[], solver_name=None):
+                                                                fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -299,11 +308,14 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
               'solving_time_seconds': 0.0,
               'total_weight': '0.0'}]
         """
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds)
 
         return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name)
 
-    def input_deterministic_truncated_xor_differential_constraints(self, number_of_rounds, inverse=False):
+    def input_deterministic_truncated_xor_differential_constraints(self, number_of_rounds=None, inverse=False):
         """
         Return a list of CP constraints for the inputs of the cipher for the first step model.
 
@@ -324,6 +336,9 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
                ...
               'constraint count(plaintext,2) = 0;'])
         """
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
         cp_constraints = []
         cp_declarations = [f'array[0..{bit_size - 1}] of var 0..2: {input_};'
                            for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)]
@@ -344,10 +359,8 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
             for i, input in enumerate(self._cipher.inputs):
                 if CIPHER_OUTPUT in input:
                     cp_constraints.append(f'constraint count({input},1) > 0;')
-                    cp_constraints.append(f'constraint count({input},2) = 0;')
         else:
             cp_constraints.append('constraint count(plaintext,1) > 0;')
-            cp_constraints.append('constraint count(plaintext,2) = 0;')
 
         return cp_declarations, cp_constraints
 

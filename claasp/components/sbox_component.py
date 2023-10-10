@@ -427,8 +427,11 @@ class SBOX(Component):
                     f' else forall(i in 0..{output_size - 1})({output_id_link}_inverse[i] = 2) endif;')
         else:
             eventual_undisturbed_bits = self.get_ddt_with_undisturbed_transitions()
+            num_pairs = len(eventual_undisturbed_bits)
+            len_input = len(eventual_undisturbed_bits[0][0])
+            len_output = len(eventual_undisturbed_bits[0][1])
             for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+                all_inputs.extend([f'[{id_link}[{position}]]' for position in bit_positions])
                 table_input = '++'.join(all_inputs)
                 table_output = '++'.join([f'[{output_id_link}[{i}]]' for i in range(output_size)])
                 undisturbed_bits_ddt = []
@@ -437,8 +440,11 @@ class SBOX(Component):
                 for i in range(len(undisturbed_bits_ddt)):
                     undisturbed_bits_ddt[i] = str(undisturbed_bits_ddt[i])
                 undisturbed_table_bits = ','.join(undisturbed_bits_ddt)
-                new_constraint = f'constraint table({table_input}++{table_output}, {undisturbed_table_bits});'
-                print(len(new_constraint))
+                undisturbed_declaration = f'array [1..{num_pairs}, 1..{len_input + len_output}] of int: ' \
+                                          f'table_{output_id_link} = array2d(1..{num_pairs}, 1..{len_input + len_output}, ' \
+                                          f'[{undisturbed_table_bits}]);'
+                cp_declarations.append(undisturbed_declaration)
+                new_constraint = f'constraint table({table_input}++{table_output}, table_{output_id_link});'
                 cp_constraints.append(new_constraint)
                     
 
