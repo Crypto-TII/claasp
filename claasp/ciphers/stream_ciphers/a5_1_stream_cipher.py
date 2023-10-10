@@ -29,19 +29,18 @@ CLOCK_POLYNOMIAL = "CLOCK_POLYNOMIAL"
 REGISTERS = [
     {BIT_LENGTH: 19,
      TAPPED_BITS: [[0], [1], [2], [5]],
-     CLOCK_POLYNOMIAL: [],
      #CLOCK_BIT: 10,
-     CLOCK_POLYNOMIAL: [[0], [1], [2], [5]]},
+     CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [10], []]},
     {BIT_LENGTH: 22,
      # TAPPED_BITS: [[0], [1]],
-     TAPPED_BITS: [[22], [23]],
-     #CLOCK_BIT: 11,
-     CLOCK_POLYNOMIAL: [[0], [1], [2], [5]]},
+     TAPPED_BITS: [[19], [20]],
+     #CLOCK_BIT: 11, 30
+     CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [30], []]},
     {BIT_LENGTH: 23,
      #TAPPED_BITS: [[0], [1], [2], [15]],
-     TAPPED_BITS: [[45], [46], [47], [60]],
-     #CLOCK_BIT: 12,
-     CLOCK_POLYNOMIAL: [[0], [1], [2], [5]]},
+     TAPPED_BITS: [[41], [42], [43], [56]],
+     #CLOCK_BIT: 12, 53
+     CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [53], []]},
 ]
 
 
@@ -99,7 +98,7 @@ class A51StreamCipher(Cipher):
             regs = self.round_function(regs=regs, regs_size=regs_size, fsr_description=fsr_description)
             regs_xor_output = []
             for i in range(len(REGISTERS)):
-                regs_xor_output.append(ComponentState([regs.id], [[regs_output_bit[i]]]))
+                regs_xor_output.append(ComponentState(regs.id, [[regs_output_bit[i]]]))
             inputs_id, inputs_pos = get_inputs_parameter(regs_xor_output)
             self.add_XOR_component(inputs_id, inputs_pos, 1)
             cipher_output.append(ComponentState([self.get_current_component_id()], [[0]]))
@@ -154,6 +153,7 @@ class A51StreamCipher(Cipher):
         return regs
 
     def round_function(self, regs, regs_size, fsr_description):
+        self.add_round()
         self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
         regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
 
