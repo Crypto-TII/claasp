@@ -65,7 +65,7 @@ PERMUTE_176 = [
 
 class SpongentPiFSRPermutation(Cipher):
     """
-    Construct an instance of the SpongentPiPermutation class.
+    Construct an instance of the SpongentPiFSRPermutation class with FSR component.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
 
