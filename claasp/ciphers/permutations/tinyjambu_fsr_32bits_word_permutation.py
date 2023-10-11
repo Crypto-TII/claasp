@@ -33,7 +33,7 @@ PARAMETERS_CONFIGURATION_LIST = [{'key_bit_size': 128, 'number_of_rounds': 640}]
 
 class TinyJambuFSRWordBasedPermutation(Cipher):
     """
-    Construct an instance of the TinyJambuWordBasedPermutation class with fsr component.
+    Construct an instance of the TinyJambuFSRWordBasedPermutation class with fsr component.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
 
@@ -44,7 +44,7 @@ class TinyJambuFSRWordBasedPermutation(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.tinyjambu_32bits_word_permutation import TinyJambuFSRWordBasedPermutation
+        sage: from claasp.ciphers.permutations.tinyjambu_fsr_32bits_word_permutation import TinyJambuFSRWordBasedPermutation
         sage: tinyjambu = TinyJambuFSRWordBasedPermutation()
         sage: tinyjambu.number_of_rounds
         20
