@@ -22,6 +22,7 @@ from bitstring import BitArray
 
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_DIFFERENTIAL
 from claasp.cipher_modules.models.utils import integer_to_bit_list
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
@@ -173,7 +174,7 @@ class MilpXorDifferentialModel(MilpModel):
         looking_for_other_solutions = 1
         while looking_for_other_solutions:
             try:
-                solution = self.solve("xor_differential", solver_name, external_solver_name)
+                solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
                 solution['building_time'] = building_time
                 self._number_of_trails_found += 1
                 verbose_print(f"trails found : {self._number_of_trails_found}")
@@ -373,7 +374,7 @@ class MilpXorDifferentialModel(MilpModel):
             number_new_constraints = len(weight_constraints)
             while looking_for_other_solutions:
                 try:
-                    solution = self.solve("xor_differential", solver_name, external_solver_name)
+                    solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
                     solution['building_time'] = building_time
                     self._number_of_trails_found += 1
                     verbose_print(f"trails found : {self._number_of_trails_found}")
@@ -430,7 +431,7 @@ class MilpXorDifferentialModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_differential", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
@@ -466,7 +467,7 @@ class MilpXorDifferentialModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_differential", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
@@ -508,7 +509,7 @@ class MilpXorDifferentialModel(MilpModel):
             mip.add_constraint(constraint)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_differential", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution

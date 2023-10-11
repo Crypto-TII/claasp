@@ -42,7 +42,7 @@ def generate_valid_points_for_truncated_mds_matrix(dimensions=(4,4), max_pattern
     valid_points = []
 
     if max_pattern_value == 3:
-        list_of_possible_deltas = range(max_pattern_value)
+        list_of_possible_deltas = range(max_pattern_value + 1)
 
         for delta in product(list_of_possible_deltas, repeat=ncols):
             if sum(delta) == 0:
