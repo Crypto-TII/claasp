@@ -22,7 +22,7 @@ from claasp.name_mappings import INPUT_KEY, INPUT_INITIALIZATION_VECTOR
 PARAMETERS_CONFIGURATION_LIST = [{'iv_bit_size': 80, 'key_bit_size': 80, 'state_bit_size': 288,
                                   'number_of_initialization_clocks': 1152, 'keystream_bit_len': 2 ** 9}]
 
-FSR_DESCR = [
+NLFSR_DESCR = [
     [
         [93, [[177], [24], [222], [178, 179]]],  # Register_1: len=93, feedback poly = s_177+ s_24 + s_222 + s_178*s_179
         [84, [[0], [99], [27], [1, 2]]],  # Register_2: len=84, feedback poly = s_0+ s_99 + s_27 + s_1*s_2
@@ -75,7 +75,7 @@ class TriviumStreamCipher(Cipher):
             self.add_round()
             key_stream = self.trivium_key_stream(triv_state, clock_number, key_stream)
             triv_state = self.add_FSR_component([triv_state], [list(range(self.state_bit_size))], state_bit_size,
-                                                FSR_DESCR).id
+                                                NLFSR_DESCR).id
 
         self.add_cipher_output_component([key_stream], [list(range(self._get_len_of_keystream(keystream_bit_len)))],
                                          self._get_len_of_keystream(keystream_bit_len))
@@ -94,25 +94,24 @@ class TriviumStreamCipher(Cipher):
         return configuration_keystream_bit_len
 
     def trivium_state_initialization(self, key, iv):
-        cst0 = self.add_constant_component(13, 0x00000).id
-        cst1 = self.add_constant_component(4, 0x0).id
-        cst2 = self.add_constant_component(111, 0xe000000000000000000000000000).id
+        cst0 = self.add_constant_component(13, 0x0).id
+        cst1 = self.add_constant_component(111, 0xe000000000000000000000000000).id
 
-        state0_id = [cst0] + key[0] + [cst1] + iv[0] + [cst2]
+        state0_id = [cst0] + key[0] + [cst0] + iv[0] + [cst1]
         state0_pos = [list(range(13)), list(range(self.key_bit_size)), list(range(4)), list(range(self.iv_bit_size)),
                       list(range(111))]
-        triv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size, FSR_DESCR).id
+        triv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size, NLFSR_DESCR).id
         triv_state = self.add_FSR_component([triv_state], [list(range(self.state_bit_size))], self.state_bit_size,
-                                                FSR_DESCR + [1151]).id
+                                            NLFSR_DESCR + [self.number_of_initialization_clocks - 1]).id
         return triv_state
 
     def trivium_key_stream(self, state, clock_number, key_stream):
         k_bits_id = [state, state, state, state, state, state]
         k_bits_pos = [[0], [27], [93], [108], [177], [222]]
-        key_bit = self.add_XOR_component( k_bits_id, k_bits_pos, 1).id
-        if clock_number is 0:
-            key_stream = self.add_round_output_component([key_bit], [list(range(1))], 1).id
+        key_stream_bit = self.add_XOR_component(k_bits_id, k_bits_pos, 1).id
+        if clock_number == 0:
+            key_stream = self.add_round_output_component([key_stream_bit], [list(range(1))], 1).id
         else:
-            key_stream = self.add_round_output_component([key_stream, key_bit], [list(range(clock_number)), [0]],
-                                                         clock_number + 1).id
+            key_stream = self.add_round_output_component([key_stream, key_stream_bit],
+                                                         [list(range(clock_number)), [0]], clock_number + 1).id
         return key_stream
