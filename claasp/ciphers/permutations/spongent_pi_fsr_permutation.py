@@ -76,8 +76,8 @@ class SpongentPiFSRPermutation(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.spongent_pi_permutation import SpongentPiPermutation
-        sage: spongentpi = SpongentPiPermutation(state_bit_size=160, number_of_rounds=80)
+        sage: from claasp.ciphers.permutations.spongent_pi_fsr_permutation import SpongentPiFSRPermutation
+        sage: spongentpi = SpongentPiFSRPermutation(state_bit_size=160, number_of_rounds=80)
         sage: spongentpi.number_of_rounds
         80
 
