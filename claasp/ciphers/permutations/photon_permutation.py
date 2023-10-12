@@ -60,12 +60,11 @@ class PhotonPermutation(Cipher):
         'constant_0_0'
     """
 
-    def __init__(self, t=256):
+    def __init__(self, t=256, number_of_rounds=12):
         self.cell_bits = 4
         self.d = 8
         self.t = t
         self.state_bit_size = self.cell_bits * self.d * self.d
-        number_of_rounds = 12
 
         super().__init__(family_name="photon",
                          cipher_type="permutation",
