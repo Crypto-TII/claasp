@@ -677,8 +677,8 @@ def THETA_KECCAK(input):
         True
     """
     # Xoring the 5 lanes of each rows
-    lane_len = 64
-    plane_len = 320
+    lane_len = len(input) // 25
+    plane_len = lane_len * 5
     lanes_xored = []
     for i in range(5):
         tmp = input[i * plane_len: i * plane_len + lane_len]
