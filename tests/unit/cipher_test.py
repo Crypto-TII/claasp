@@ -20,6 +20,20 @@ from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
+from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
+from claasp.ciphers.permutations.spongent_pi_permutation import SpongentPiPermutation
+from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
+from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
+from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
+from claasp.ciphers.permutations.xoodoo_invertible_permutation import XoodooInvertiblePermutation
+from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
+from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
+from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
+from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
+from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
+from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
 from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
@@ -541,3 +555,139 @@ def test_zero_correlation_linear_search():
     speck6 = SpeckBlockCipher(number_of_rounds=6)
     zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "yices-smt2")
     assert len(zero_correlation_linear_approximations) > 0
+
+
+def test_cipher_inverse():
+        key = 0xabcdef01abcdef01
+        plaintext = 0x01234567
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        key = 0x2b7e151628aed2a6abf7158809cf4f3c
+        plaintext = 0x6bc1bee22e409f96e93d7e117393172a
+        cipher = AESBlockCipher(number_of_rounds=2)
+        ciphertext = cipher.evaluate([key, plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        key = 0x0e2ddd5c5b4ca9d4
+        plaintext = 0xb779ee0a
+        cipher = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        key = 0x98edeafc899338c45fad
+        plaintext = 0x42c20fd3b586879e
+        cipher = PresentBlockCipher(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        plaintext = 0
+        cipher = AsconSboxSigmaPermutation(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+        key = 0x1211100a09080201
+        plaintext = 0x6120676e
+        cipher = SimonBlockCipher(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        key = 0x687ded3b3c85b3f35b1009863e2a8cbf
+        plaintext = 0x42c20fd3b586879e
+        cipher = MidoriBlockCipher(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        key = 0xffffeeee
+        plaintext = 0x5778
+        cipher = SkinnyBlockCipher(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        plaintext = 0x1234
+        cipher = SpongentPiPermutation(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+        key = 0x1de1c3c2c65880074c32dce537b22ab3
+        plaintext = 0xbd7d764dff0ada1e
+        cipher = XTeaBlockCipher(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        plaintext = 0x1234
+        cipher = PhotonPermutation(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+        key = 0x0f1e2d3c4b5a69788796a5b4c3d2e1f0
+        plaintext = 0x101112131415161718191a1b1c1d1e1f
+        cipher = LeaBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        plaintext = 0x1234
+        cipher = SparklePermutation(number_of_steps=2)
+        ciphertext = cipher.evaluate([plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+        plaintext = 0x1234
+        cipher = XoodooInvertiblePermutation(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+        key = 0x000102030405060708090A0B0C0D0E0F
+        plaintext = 0x000102030405060708090A0B0C0D0E0F
+        cipher = GiftSboxPermutation(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        key = 0x1de1c3c2c65880074c32dce537b22ab3
+        plaintext = 0xbd7d764dff0ada1e
+        cipher = RaidenBlockCipher(number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        key = 0x000000066770000000a0000000000001
+        plaintext = 0x0011223344556677
+        cipher = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        cipher = DESBlockCipher(number_of_rounds=4)
+        key = 0x133457799BBCDFF1
+        plaintext = 0x0123456789ABCDEF
+        ciphertext = cipher.evaluate([key, plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        cipher = SalsaPermutation(number_of_rounds=5)
+        plaintext = 0xffff
+        ciphertext = cipher.evaluate([plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+        cipher = BEA1BlockCipher(number_of_rounds=2)
+        key = 0x8cdd0f3459fb721e798655298d5c1
+        plaintext = 0x47a57eff5d6475a68916
+        ciphertext = cipher.evaluate([key, plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
