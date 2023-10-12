@@ -613,14 +613,21 @@ def milp_xor_truncated_wordwise(model, input_1, input_2, output):
 
 def fix_variables_value_deterministic_truncated_xor_differential_constraints(milp_model, model_variables, fixed_variables=[]):
     constraints = []
+    if 'Wordwise' in milp_model.__class__.__name__:
+        prefix = "_word"
+        suffix = "_class"
+    else:
+        prefix = ""
+        suffix = ""
+
     for fixed_variable in fixed_variables:
-        component_id = fixed_variable["component_id"]
         if fixed_variable["constraint_type"] == "equal":
             for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                constraints.append(model_variables[component_id + '_' + str(bit_position)] == fixed_variable["bit_values"][index])
+                component_bit = f'{fixed_variable["component_id"]}{prefix}_{bit_position}{suffix}'
+                constraints.append(model_variables[component_bit] == fixed_variable["bit_values"][index])
         else:
             if sum(fixed_variable["bit_values"]) == 0:
-                constraints.append(sum(model_variables[component_id + '_' + str(i)] for i in fixed_variable["bit_positions"]) >= 1)
+                constraints.append(sum(model_variables[f'{fixed_variable["component_id"]}{prefix}_{i}{suffix}'] for i in fixed_variable["bit_positions"]) >= 1)
             else:
                 M = milp_model._model.get_max(model_variables) + 1
                 d = milp_model._binary_variable
@@ -628,12 +635,12 @@ def fix_variables_value_deterministic_truncated_xor_differential_constraints(mil
 
                 for index, bit_position in enumerate(fixed_variable["bit_positions"]):
                     # eq = 1 iff bit_position == diff_index
-                    eq = d[component_id + "_" + str(bit_position) + "_is_diff_index"]
+                    eq = d[f'{fixed_variable["component_id"]}{prefix}_{bit_position}{suffix}_is_diff_index']
                     one_among_n += eq
 
                     # x[diff_index] < fixed_variable[diff_index] or fixed_variable[diff_index] < x[diff_index]
-                    dummy = d[component_id + "_" + str(bit_position) + "_diff_fixed_values"]
-                    a = model_variables[component_id + '_' + str(bit_position)]
+                    dummy = d[f'{fixed_variable["component_id"]}{prefix}_{bit_position}{suffix}_is_diff_index']
+                    a = model_variables[f'{fixed_variable["component_id"]}{prefix}_{bit_position}{suffix}']
                     b = fixed_variable["bit_values"][index]
                     constraints.extend([a <= b - 1 + M * (2 - dummy - eq), a >= b + 1 - M * (dummy + 1 - eq)])
 

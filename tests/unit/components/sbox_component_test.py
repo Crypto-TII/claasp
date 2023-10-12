@@ -387,10 +387,10 @@ def test_milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_
     key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
     trail = milp.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
 
-    assert trail['components_values']['sbox_0_1']['value'] == '2222'
-    assert trail['components_values']['sbox_0_2']['value'] == '2220'
-    assert trail['components_values']['sbox_0_3']['value'] == '2221'
-    assert trail['components_values']['sbox_0_4']['value'] == '2221'
+    assert trail['components_values']['sbox_0_1']['value'] == '????'
+    assert trail['components_values']['sbox_0_2']['value'] == '???0'
+    assert trail['components_values']['sbox_0_3']['value'] == '???1'
+    assert trail['components_values']['sbox_0_4']['value'] == '???1'
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     aes = AESBlockCipher(number_of_rounds=2)

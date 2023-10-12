@@ -878,7 +878,9 @@ class XOR(Component):
         constraints = []
 
         for i, output_var in enumerate(output_vars):
-            result_ids = [f'temp_xor_{j}_{self.id}_{i}'for j in range(number_of_inputs - 2)] + [output_var]
+            result_ids = [tuple([f'temp_xor_{j}_{self.id}_word_{i}_0', f'temp_xor_{j}_{self.id}_word_{i}_1'] + [
+                f'temp_xor_{j}_{self.id}_word_{i}_bit_{k}' for k in range(model.word_size)]) for j in
+                          range(number_of_inputs - 2)] + [output_var]
             constraints.extend(milp_utils.milp_xor_truncated_wordwise(model,
                                                                       input_vars[i::output_word_size][0],
                                                                       input_vars[i::output_word_size][1],
