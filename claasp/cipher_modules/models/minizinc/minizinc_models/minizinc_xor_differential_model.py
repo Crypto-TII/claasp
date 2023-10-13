@@ -48,25 +48,64 @@ class MinizincXorDifferentialModel(MinizincModel):
         else:
             return None
 
+    def _parse_solution(self, result, solution, list_of_vars, statistics='None'):
+        def get_hex_string_from_bool_dict(data, bool_dict, probability_vars_weights_):
+            temp_result = {}
+            for sublist in data:
+                reversed_list = sublist[::-1]
+                bool_list = [bool_dict[item] for item in reversed_list]
+                int_value = sum([2 ** i if bit else 0 for i, bit in enumerate(bool_list)])
+                component_id = "_".join(sublist[0].split("_")[:-1])
+                weight = 0
+                if component_id.startswith('modadd'):
+                    weight = probability_vars_weights_[f'p_{component_id}_0']['weight']
+                temp_result[component_id] = {'value': hex(int_value)[2:], 'weight': weight, 'sign': 1}
+
+            return temp_result
+
+        dict_of_solutions = solution.__dict__
+        parsed_solution = {}
+        probability_vars_weights = self.parse_probability_vars(result, solution)
+        solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
+        parsed_solution['total_weight'] = solution_total_weight
+        parsed_solution['component_values'] = get_hex_string_from_bool_dict(
+            list_of_vars, dict_of_solutions, probability_vars_weights
+        )
+        if statistics:
+            parsed_solution['statistics'] = result.statistics
+        return parsed_solution
+
     def _parse_result(self, result, solver_name, total_weight, model_type):
-        parsed_result = {'id': self.cipher_id, 'model_type': model_type, 'solver_name': solver_name}
+        def _entry_matches(entry, prefix):
+            valid_starts = [f"var bool: {prefix}", f"var 0..1: {prefix}"]
+            return any(entry.startswith(vs) for vs in valid_starts)
+
+        def group_strings_by_pattern(data: list) -> list:
+            prefixes = set([entry.split("_y")[0].split(": ")[1] for entry in data if "_y" in entry])
+            temp_result = []
+            for prefix in prefixes:
+                sublist = [entry.split(": ")[1][:-1] for entry in data if _entry_matches(entry, prefix)]
+                if sublist:
+                    temp_result.append(sublist)
+            return temp_result
+
+
+        list_of_vars = group_strings_by_pattern(self._variables_list)
+        common_parsed_data = {
+            'id': self.cipher_id,
+            'model_type': model_type,
+            'solver_name': solver_name
+        }
+
         if total_weight == "list_of_solutions":
             solutions = []
             for solution in result.solution:
-                parsed_solution = self.parse_probability_vars(result, solution)
-                solution_total_weight = 0
-                for _, item_value_and_weight in parsed_solution.items():
-                    solution_total_weight += item_value_and_weight['weight']
-                parsed_solution['total_weight'] = solution_total_weight
-                parsed_solution = {**parsed_solution, **parsed_result}
-                solutions.append(parsed_solution)
+                parsed_solution = self._parse_solution(result, solution, list_of_vars)
+                solutions.append({**parsed_solution, **common_parsed_data})
             return solutions
         else:
-            parsed_result['total_weight'] = total_weight
-            parsed_result['statistics'] = result.statistics
-            parsed_result = {**self.parse_probability_vars(result, result.solution), **parsed_result}
-
-        return parsed_result
+            parsed_result = self._parse_solution(result, result.solution, list_of_vars, result.statistics)
+            return {**parsed_result, **common_parsed_data}
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
         """
