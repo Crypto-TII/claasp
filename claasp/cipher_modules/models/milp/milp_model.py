@@ -286,7 +286,7 @@ class MilpModel:
         milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
         tracemalloc.stop()
 
-        if(solver_process.stderr):
+        if solver_process.stderr:
             raise MIPSolverException("Make sure that the solver is correctly installed.")
 
         if 'memory' in solver_specs:
@@ -403,11 +403,10 @@ class MilpModel:
             full_cipher_components = self._cipher.get_all_components_ids()
             backward_components = self._backward_cipher.get_all_components_ids() + self._backward_cipher.inputs
             index = full_cipher_components.index(objective_value)
-            updated_cipher_components = full_cipher_components[:index + 1] + [c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c for c in full_cipher_components[index:] ]
+            updated_cipher_components = full_cipher_components[:index + 1] + [c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c for c in full_cipher_components[index:]]
             list_component_ids = self._forward_cipher.inputs + updated_cipher_components
         else:
             list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
-
 
         for component_id in list_component_ids:
             dict_tmp = self.get_component_value_weight(model_type, component_id,
@@ -477,11 +476,11 @@ class MilpModel:
                                                                                            components_variables,
                                                                                            diff_str, suffix_dict)
         else:
-            return self._get_final_output_for_default_case(component_id, components_variables, diff_str, probability_variables,
-                         suffix_dict)
+            return self._get_final_output_for_default_case(component_id, components_variables, diff_str,
+                                                           probability_variables, suffix_dict)
 
     def _get_final_output_for_default_case(self, component_id, components_variables, diff_str, probability_variables,
-                         suffix_dict):
+                                           suffix_dict):
         final_output = []
         for suffix in suffix_dict.keys():
             diff_str[suffix] = ""
@@ -505,8 +504,9 @@ class MilpModel:
                 weight = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / 10.
             final_output.append(set_component_value_weight_sign(difference, weight))
         return final_output
-    def _get_final_output_bitwise_deterministic_truncated_xor_differential(self, component_id, components_variables, diff_str,
-                         suffix_dict):
+
+    def _get_final_output_bitwise_deterministic_truncated_xor_differential(self, component_id, components_variables,
+                                                                           diff_str, suffix_dict):
         final_output = []
         for suffix in suffix_dict.keys():
             diff_str[suffix] = ""
@@ -525,8 +525,8 @@ class MilpModel:
 
         return final_output
 
-    def _get_final_output_wordwise_deterministic_truncated_xor_differential(self, component_id, components_variables, diff_str,
-                         suffix_dict):
+    def _get_final_output_wordwise_deterministic_truncated_xor_differential(self, component_id, components_variables,
+                                                                            diff_str, suffix_dict):
         final_output = []
         for suffix in suffix_dict.keys():
             diff_str[suffix] = ""

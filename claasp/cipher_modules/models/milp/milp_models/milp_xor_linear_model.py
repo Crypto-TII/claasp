@@ -70,7 +70,7 @@ class MilpXorLinearModel(MilpModel):
         self.build_xor_linear_trail_model(weight, fixed_variables)
         mip = self._model
         p = self._integer_variable
-        for index, constraint in enumerate(self._model_constraints):
+        for constraint in self._model_constraints:
             mip.add_constraint(constraint)
         mip.add_constraint(p["probability"] == sum(
             p[self._non_linear_component_id[i] + "_probability"] for i in range(len(self._non_linear_component_id))))

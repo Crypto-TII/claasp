@@ -442,12 +442,12 @@ class SmtXorLinearModel(SmtModel):
         for component in self._cipher.get_all_components():
             hex_solution = utils.get_component_hex_value(component, out_suffix, variable2value)
             weight = self.calculate_component_weight(component, out_suffix, variable2value)
-            component_solution = set_component_solution(hex_solution, weight)
+            component_solution = set_component_solution(hex_solution, weight, 1)
             components_solutions[f'{component.id}{out_suffix}'] = component_solution
             total_weight += weight
 
             input_hex_value = utils.get_component_hex_value(component, in_suffix, variable2value)
-            component_solution = set_component_solution(input_hex_value, 0)
+            component_solution = set_component_solution(input_hex_value, 0, 1)
             components_solutions[f'{component.id}{in_suffix}'] = component_solution
 
         return components_solutions, total_weight
