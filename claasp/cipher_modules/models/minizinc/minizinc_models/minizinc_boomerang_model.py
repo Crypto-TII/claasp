@@ -64,6 +64,7 @@ class MinizincBoomerangModel(MinizincModel):
         def create_bottom_cipher(original_cipher):
             initial_nodes_from_bottom_graph = [node for node in self.bottom_graph if self.bottom_graph.has_edge(node, node)]
             bottom_cipher = deepcopy(original_cipher)
+            bottom_cipher._id = f'{original_cipher.id}_bottom'
             new_input_bit_positions = {}
             bottom_cipher._inputs_bit_size = []
             bottom_cipher._inputs = []
@@ -95,6 +96,7 @@ class MinizincBoomerangModel(MinizincModel):
 
         def create_top_cipher(original_cipher):
             top_cipher = deepcopy(original_cipher)
+            top_cipher._id = f'{original_cipher.id}_top'
             reduce_cipher_by_graph_components(top_cipher, original_cipher, self.top_graph)
             # remove empty rounds
             removing_empty_rounds(top_cipher)
