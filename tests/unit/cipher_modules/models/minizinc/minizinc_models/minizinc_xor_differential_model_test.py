@@ -316,7 +316,7 @@ def test_find_lowest_weight_xor_differential_trail():
     round4_weight = solution['component_values']['modadd_3_2']['weight'] + \
                     solution['component_values']['modadd_3_7']['weight']
     round5_weight = solution['component_values']['modadd_4_2']['weight'] + \
-                    .solution['component_values']['modadd_4_7']['weight']
+                    solution['component_values']['modadd_4_7']['weight']
     assert 2 <= round2_weight <= 4
     assert 2 <= round3_weight <= 4
     assert 2 <= round4_weight <= 4
