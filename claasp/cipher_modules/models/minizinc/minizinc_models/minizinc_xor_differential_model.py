@@ -57,20 +57,31 @@ class MinizincXorDifferentialModel(MinizincModel):
                 int_value = sum([2 ** i if bit else 0 for i, bit in enumerate(bool_list)])
                 component_id = "_".join(sublist[0].split("_")[:-1])
                 weight = 0
-                if component_id.startswith('modadd'):
+                if component_id.startswith('modadd') or component_id.startswith('modsub'):
                     weight = probability_vars_weights_[f'p_{component_id}_0']['weight']
                 temp_result[component_id] = {'value': hex(int_value)[2:], 'weight': weight, 'sign': 1}
 
             return temp_result
 
-        dict_of_solutions = solution.__dict__
+
         parsed_solution = {}
-        probability_vars_weights = self.parse_probability_vars(result, solution)
-        solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
-        parsed_solution['total_weight'] = solution_total_weight
-        parsed_solution['component_values'] = get_hex_string_from_bool_dict(
-            list_of_vars, dict_of_solutions, probability_vars_weights
-        )
+        parsed_solution['total_weight'] = None
+        parsed_solution['component_values'] = {}
+        #import code;
+        #code.interact(local=dict(globals(), **locals()))
+        if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+            dict_of_solutions = solution.__dict__
+            import code;
+            code.interact(local=dict(globals(), **locals()))
+            probability_vars_weights = self.parse_probability_vars(result, solution)
+            solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
+            parsed_solution['total_weight'] = solution_total_weight
+            parsed_solution['component_values'] = get_hex_string_from_bool_dict(
+                list_of_vars, dict_of_solutions, probability_vars_weights
+            )
+
+        parsed_solution['status'] = str(result.status)
+
         if statistics:
             parsed_solution['statistics'] = result.statistics
         return parsed_solution
@@ -88,7 +99,6 @@ class MinizincXorDifferentialModel(MinizincModel):
                 if sublist:
                     temp_result.append(sublist)
             return temp_result
-
 
         list_of_vars = group_strings_by_pattern(self._variables_list)
         common_parsed_data = {
@@ -349,6 +359,7 @@ class MinizincXorDifferentialModel(MinizincModel):
         """
         self.build_xor_differential_trail_model(-1, fixed_values)
         self._model_constraints.extend(self.weight_constraints(fixed_weight, "="))
+        self.write_minizinc_model_to_file('.')
         result = self.solve(solver_name=solver_name, all_solutions_=True)
         total_weight = self._get_total_weight(result)
         parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
