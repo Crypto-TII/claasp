@@ -1049,18 +1049,20 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
         for i in range(len(word_array)):
             c = 0
             for j in range(len(monomials)):
-                c += (input[(i * 8) + j]) * monomials[j]
+                c += (input[(i * bits_inside_word) + j]) * monomials[j]
             word_array[i] = c
 
         return word_array
 
-    def word_to_bits(word_array, bits_inside_word):
+    def word_to_bits(word_array, bits_inside_word, word_gf):
         output = BitArray()
+        d = word_gf.degree()
         s = f'0b'
         for _ in word_array[0]:
-            kl = list(_)
+            lm = []
+            for __ in range(d): lm.append(_.polynomial()[__])
             for j in range(bits_inside_word - 1, -1, -1):
-                v = f'1' if kl[j] else f'0'
+                v = f'1' if lm[j] else f'0'
                 s = s + v
         output.append(s)
         return output

@@ -20,7 +20,7 @@ from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_KEY, INPUT_INITIALIZATION_VECTOR
 
 PARAMETERS_CONFIGURATION_LIST = [{'iv_bit_size': 80, 'key_bit_size': 80, 'state_bit_size': 177,
-                                  'number_of_initialization_clocks': 4 * 177, 'keystream_bit_len': 2 ** 8}]
+                                  'number_of_initialization_clocks': 4*177, 'keystream_bit_len': 2 ** 8}]
 
 NLFSR_DESCR = [
     [
@@ -39,6 +39,7 @@ class BiviumStreamCipher(Cipher):
         - ``keystream_bit_len`` -- **integer** (default: `256`); number of clocks of the cipher.
         - ``key_bit_size`` --  fix 80-bit;
         - ``iv_bit_size`` --   fix 80-bit;
+
         EXAMPLES::
 
         sage: from claasp.ciphers.stream_ciphers.bivium_stream_cipher import BiviumStreamCipher
@@ -47,13 +48,16 @@ class BiviumStreamCipher(Cipher):
         sage: iv = 0xffffffffffffffffffff
         sage: ks = 0x30d0e5ede563dee67884718977510a4c22661cf128d8f75af4a2708276014d83
         sage: biv.evaluate([key, iv]) == ks
+        True
+
         sage: key = 0xffffffffff0000000000
         sage: iv = 0xffffffffff
         sage: ks = 0xdebe55784f853606399af3f6f4b8d0a706963a91f2ba4c687baea16da074f3c3
         sage: biv.evaluate([key, iv]) == ks
-    """
+        True
 
-    def __init__(self, iv_bit_size=80, key_bit_size=80, state_bit_size=177, number_of_initialization_clocks=4 * 177,
+    """
+    def __init__(self, iv_bit_size=80, key_bit_size=80, state_bit_size=177, number_of_initialization_clocks=4*177,
                  keystream_bit_len=2 ** 8):
         self.state_bit_size = state_bit_size
         self.key_bit_size = key_bit_size
