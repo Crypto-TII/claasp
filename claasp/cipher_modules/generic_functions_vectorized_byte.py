@@ -489,42 +489,6 @@ def byte_vector_mix_column_poly0(input, matrix, verbosity=False):
 
     return output
 
-
-def byte_vector_fsr(input, polynomial_index_list, loop, verbosity=False):
-    """
-    Computes the result of the FSR operation.
-
-    INPUT:
-
-    - ``input`` -- **np.array(dtype = np.uint8)** A numpy matrix with one row per byte and one column per sample.
-    - ``polynomial_index_list`` -- **list of integer list** The description of the polynomial of fsr. For example,
-      [[0],[1],[3],[2,5]] represents x0+x1+x3+x2*x5.
-    - ``loop`` -- **integer** Represents how many loops within this component need to be done.
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
-    """
-
-    output = np.copy(input)
-
-    for _ in range(loop):
-        output_bit = np.zeros_like(input[0])
-        for m in polynomial_index_list:
-            result = np.ones_like(input[0])
-            for index in m:
-                result &= output[index:]
-            output_bit = xor(result, output_bit)
-        output = np.roll(output, -1, axis=0)
-        output[-1:] = output_bit
-
-    if verbosity:
-        print("FSR")
-        print("FSR polynomial: ", polynomial_index_list)
-        print("input: ", input)
-        print("output: ", output)
-        print("---")
-
-    return output
-
-
 def print_component_info(input, output, component_type):
     print(component_type)
     print("Inputs : ")
