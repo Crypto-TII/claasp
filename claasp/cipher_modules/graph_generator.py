@@ -25,6 +25,7 @@ def create_networkx_graph_from_input_ids(cipher):
 
 def _get_predecessors_subgraph(original_graph, nodes):
     visited = set()
+
     def dfs(v):
         if v not in visited:
             visited.add(v)
@@ -47,6 +48,40 @@ def _get_descendants_subgraph(original_graph, start_nodes):
                 bottom_graph.add_node(successor)
 
     return bottom_graph
+
+
+def get_pure_successor_subgraph(graph, start_nodes):
+    """
+    Extracts a subgraph of `graph` containing nodes influenced by `start_nodes`
+    directly or indirectly without being influenced by any external node.
+
+    INPUT:
+    - ``graph`` -- **object**;  The original directed graph (networkx.DiGraph).
+    - ``start_nodes`` -- **list**;  List of starting nodes to determine influence.
+
+    EXAMPLES::
+        sage: import networkx as nx
+        sage: G = nx.DiGraph()
+        sage: G.add_edges_from([('a', 'c'), ('c', 'd'), ('b', 'c'), ('e', 'd')])
+        sage: start_nodes = ['a', 'e']
+        sage: subG = get_pure_successor_subgraph(G, start_nodes)
+        sage: subG.edges()
+        []
+    """
+    visited = set()
+    subgraph_nodes = set(start_nodes)
+    def dfs(node_):
+        if node_ in visited:
+            return
+        visited.add(node_)
+        valid_successors = [successor for successor in graph.successors(node_) if
+                            all(pred in subgraph_nodes for pred in graph.predecessors(successor))]
+        subgraph_nodes.update(valid_successors)
+        for successor in valid_successors:
+            dfs(successor)
+    for node in start_nodes:
+        dfs(node)
+    return graph.subgraph(subgraph_nodes)
 
 
 def split_cipher_graph_into_top_bottom(cipher, e0_bottom_ids, e1_top_ids):

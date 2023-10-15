@@ -1,4 +1,4 @@
-from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
+from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom, get_pure_successor_subgraph
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 
 
@@ -139,3 +139,19 @@ def test_split_cipher_graph_into_top_bottom():
     assert set(e1_graph.nodes()) == set(e1_graph_nodes)
     assert set(e0_graph.edges()) == set(e0_graph_edges)
     assert set(e1_graph.edges()) == set(e1_graph_edges)
+
+
+def test_get_pure_successor_subgraph():
+    import networkx as nx
+    original_graph = nx.DiGraph()
+    original_graph.add_edge('a', 'c')
+    original_graph.add_edge('b', 'c')
+    original_graph.add_edge('c', 'd')
+    original_graph.add_edge('d', 'e')
+    original_graph.add_edge('e', 'f')
+    original_graph.add_edge('e', 'g')
+    original_graph.add_edge('h', 'g')
+
+    start_nodes = ['a', 'b']
+    sub_graph = get_pure_successor_subgraph(original_graph, start_nodes)
+    assert sub_graph.edges() == set([('a', 'c'), ('c', 'd'), ('b', 'c'), ('d', 'e'), ('e', 'f')])
