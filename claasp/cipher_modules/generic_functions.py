@@ -1118,7 +1118,7 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
             registers.append(reg)
         word_array = registers
 
-    output = word_to_bits(word_array, bits_inside_word)
+    output = word_to_bits(word_array, bits_inside_word, word_gf)
     if verbosity:
         print("FSR:")
         for i in range(number_of_registers):
