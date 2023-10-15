@@ -290,7 +290,8 @@ class CpModel:
     def get_command_for_solver_process(self, input_file_path, model_type, solver_name):
         solvers = ['xor_differential_one_solution',
                    'xor_linear_one_solution',
-                   'deterministic_truncated_xor_differential_one_solution']
+                   'deterministic_truncated_xor_differential_one_solution',
+                   'impossible_xor_differential_one_solution']
         write_model_to_file(self._model_constraints, input_file_path)
         if model_type in solvers:
             command = ['minizinc', '--solver-statistics', '--solver', solver_name, input_file_path]
@@ -449,13 +450,15 @@ class CpModel:
         input_file_path = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name)
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        os.remove(input_file_path)
+        #os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
+            print(solver_output)
             if model_type in ['deterministic_truncated_xor_differential',
                               'deterministic_truncated_xor_differential_one_solution',
-                              'impossible_xor_differential']:
+                              'impossible_xor_differential',
+                              'impossible_xor_differential_one_solution']:
                 solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, True)
             else:
                 solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output)
@@ -473,7 +476,8 @@ class CpModel:
                                                           solver_name, solver_output, total_weight)
             if model_type in ['xor_differential_one_solution',
                               'xor_linear_one_solution',
-                              'deterministic_truncated_one_solution']:
+                              'deterministic_truncated_one_solution',
+                              'impossible_xor_differential_one_solution']:
                 return solutions[0]
             else:
                 return solutions

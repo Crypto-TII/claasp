@@ -63,7 +63,11 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
             if component.type not in component_types or \
                     (component.type == WORD_OPERATION and operation not in operation_types):
                 print(f'{component.id} not yet implemented')
-            variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
+            if component.type == SBOX:
+                variables, constraints, sbox_mant = component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_mant)
+                self.sbox_mant = sbox_mant
+            else:
+                variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
             self._variables_list.extend(variables)
             deterministic_truncated_xor_differential.extend(constraints)
 
@@ -315,7 +319,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
 
         return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name)
 
-    def input_deterministic_truncated_xor_differential_constraints(self, number_of_rounds=None, inverse=False):
+    def input_deterministic_truncated_xor_differential_constraints(self, number_of_rounds=None, inverse=False, middle_round=None):
         """
         Return a list of CP constraints for the inputs of the cipher for the first step model.
 
@@ -343,23 +347,49 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         cp_declarations = [f'array[0..{bit_size - 1}] of var 0..2: {input_};'
                            for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)]
         cipher = self._cipher
-        rounds = self._cipher.number_of_rounds - number_of_rounds if inverse else number_of_rounds
-        for component in cipher.get_all_components():
-            output_id_link = component.id
-            output_size = int(component.output_bit_size)
-            if 'output' in component.type \
-                    and inverse and cipher.get_round_from_component_id(component.id) == rounds - 1:
-                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link}_inverse;')
-            elif CIPHER_OUTPUT in component.type:
-                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
-                cp_constraints.append(f'constraint count({output_id_link},2) < {output_size};')
-            elif CONSTANT not in component.type:
-                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
-        if inverse:
-            for i, input in enumerate(self._cipher.inputs):
-                if CIPHER_OUTPUT in input:
-                    cp_constraints.append(f'constraint count({input},1) > 0;')
+        if middle_round == None:
+            rounds = number_of_rounds
+            for component in cipher.get_all_components():
+                output_id_link = component.id
+                output_size = int(component.output_bit_size)
+                if 'output' in component.type \
+                        and inverse and cipher.get_round_from_component_id(component.id) == rounds - 1:
+                    cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link}_inverse;')
+                elif CIPHER_OUTPUT in component.type:
+                    cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
+                    cp_constraints.append(f'constraint count({output_id_link},2) < {output_size};')
+                elif CONSTANT not in component.type:
+                    cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
+            cp_constraints.append('constraint count(plaintext,1) > 0;')
         else:
+            inverse_cipher = self.inverse_cipher
+            forward_components = []
+            for r in range(middle_round):
+                forward_components.extend(self._cipher.get_components_in_round(r))
+            backward_components = []
+            for r in range(number_of_rounds - middle_round + 1):
+                backward_components.extend(inverse_cipher.get_components_in_round(r))
+            cp_declarations.extend([f'array[0..{bit_size - 1}] of var 0..2: inverse_{input_};' for input_, bit_size in zip(inverse_cipher.inputs, inverse_cipher.inputs_bit_size)])  
+            for component in forward_components:
+                output_id_link = component.id
+                output_size = int(component.output_bit_size)
+                if 'output' in component.type:
+                    cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
+                elif CIPHER_OUTPUT in component.type:
+                    cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
+                    cp_constraints.append(f'constraint count({output_id_link},2) < {output_size};')
+                elif CONSTANT not in component.type:
+                    cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
+            for component in backward_components:
+                output_id_link = component.id
+                output_size = int(component.output_bit_size)
+                if 'output' in component.type:
+                    cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: inverse_{output_id_link};')
+                elif CIPHER_OUTPUT in component.type:
+                    cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: inverse_{output_id_link};')
+                    cp_constraints.append(f'constraint count(inverse_{output_id_link},2) < {output_size};')
+                elif CONSTANT not in component.type:
+                    cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: inverse_{output_id_link};')
             cp_constraints.append('constraint count(plaintext,1) > 0;')
 
         return cp_declarations, cp_constraints
