@@ -459,7 +459,7 @@ class CpModel:
                               'deterministic_truncated_xor_differential_one_solution',
                               'impossible_xor_differential',
                               'impossible_xor_differential_one_solution']:
-                solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, True)
+                solve_time, memory, components_values = self._parse_solver_output(solver_output, True)
             else:
                 solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output)
             if components_values == {}:
