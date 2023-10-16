@@ -1010,7 +1010,7 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
             if do_clocks[j] > 0:
                 output.rol(1, registers_start[j], registers_update_bit[j] + 1)
                 output[registers_update_bit[j]] = output_bits[j]
-    verbosity =True
+
     if verbosity:
         print("FSR:")
         for i in range(number_of_registers):
