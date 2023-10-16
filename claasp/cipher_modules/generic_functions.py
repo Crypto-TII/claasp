@@ -965,6 +965,7 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     - ``number_of_clocks`` -- **integer**; indicates how many loops this fsr component would operate, this is optional
         by default it is 1.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+
     """
 
     def get_polynomail(polynomial_index_list, R):
@@ -1009,15 +1010,15 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
             if do_clocks[j] > 0:
                 output.rol(1, registers_start[j], registers_update_bit[j] + 1)
                 output[registers_update_bit[j]] = output_bits[j]
+    verbosity =True
     if verbosity:
         print("FSR:")
         for i in range(number_of_registers):
             print("  F   = {}".format(registers_polynomial[i]))
-        for i in range(number_of_registers):
             if clock_polynomials[i] is None:
-                print("register_" + str(i + 1) + " clocks:", True)
+                print("register_" + str(i + 1) + " clock:", True)
             else:
-                print("register_" + str(i + 1) + " poly = {}".format(clock_polynomials[i]))
+                print("register_" + str(i + 1) + "clock poly = {}".format(clock_polynomials[i]))
         print("number of clocks: ", number_of_clocks)
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))
@@ -1037,6 +1038,7 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
         default, it is 1.
     - ``number_of_clocks`` -- **integer**; indicates how many loops this fsr component would operate.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+
     """
 
     def bits_to_word(input, bits_inside_word, word_gf):
@@ -1100,6 +1102,7 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
         registers_polynomial[i] = get_polynomail(registers_info[i][1], R)
         if len(registers_info[i]) > 2:
             clock_polynomials[i] = get_polynomail(registers_info[i][2], R)
+
     for r in range(number_of_clocks):
         do_clocks = [True for _ in range(number_of_registers)]
         output_words = [0 for _ in range(number_of_registers)]
@@ -1123,11 +1126,10 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
         print("FSR:")
         for i in range(number_of_registers):
             print("  F   = {}".format(registers_polynomial[i]))
-        for i in range(number_of_registers):
             if clock_polynomials[i] is None:
-                print("register_" + str(i + 1) + " clocks:", True)
+                print("register_" + str(i + 1) + " clock:", True)
             else:
-                print("register_" + str(i + 1) + " poly = {}".format(clock_polynomials[i]))
+                print("register_" + str(i + 1) + "clock poly = {}".format(clock_polynomials[i]))
         print("number of clocks: ", number_of_clocks)
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))

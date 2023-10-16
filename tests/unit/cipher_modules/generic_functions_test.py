@@ -70,8 +70,11 @@ def test_fsr_word():
 
     LFSR_DESCR = [
         [4,  # register's length
-         [[1, [0]], [2, [2]], [1, [3]]]  # feedback polynomial 1*s0 + z4*s2 + 1*s3,  z4=GF.gen()
+         [[1, [0]], [2, [2]], [1, [3]]]  # feedback polynomial: 0001*s0 + 0010*s2 + 0001*s3
          ]
     ]
     state_out = BitArray('0x41c1')
+
     assert fsr_word(state_in, LFSR_DESCR, word_size, number_of_clocks) == state_out
+
+
