@@ -3,12 +3,7 @@ name: Run pytest and SonarCloud Scan
 on:
   push:
     branches:
-      - '**'
-  pull_request:
-    types: [opened, synchronize, reopened, edited]
-    branches:
-      - develop
-      - main
+      - fix/update-distutils-in-tensorflow
 
 concurrency:
   group: run-pytest-tests_${{ github.ref }}
@@ -16,7 +11,7 @@ concurrency:
 
 jobs:
   run-pytest:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -24,26 +19,36 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
-    - name: Fix Directory Structure
-      run: |
-          mkdir /home/runner/_work/claasp_backup
-          mv -f /home/runner/_work/claasp/claasp/* /home/runner/_work/claasp_backup
-          rm -rf /home/runner/_work/claasp/
-          mkdir /home/runner/_work/claasp
-          mv -f /home/runner/_work/claasp_backup/* /home/runner/_work/claasp
-          chmod g+w /home/runner/_work/claasp/ -R
-          rm -rf /home/runner/_work/claasp_backup
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-    - name: Run remote-pytest
-      run: |
-            cd /home/runner/_work/claasp
-            make remote-pytest
-
-    - name: Upload Coverage.xml to artifacts
-      uses: actions/upload-artifact@v2
+    - name: Cache Docker layers
+      uses: actions/cache@v3
       with:
-        name: coverage-report
-        path: /home/runner/_work/claasp/coverage.xml
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Build
+      uses: docker/build-push-action@v4
+      id: built-image
+      with:
+        context: .
+        file: ./docker/Dockerfile
+        push: false
+        load: true
+        tags: claasp-lib
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+    - name: Move cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+    - name: Run tests
+      run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make remote-pytest
 
   run-code-coverage:
     runs-on: ubuntu-latest

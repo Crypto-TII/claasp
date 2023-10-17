@@ -67,7 +67,7 @@ ENV PATH="${PATH}:/opt/scip-803/build/bin"
 
 # Installing SageMath tools
 RUN sage -pip install bitstring==4.0.1 \
-  keras==2.13.1 \
+  keras==2.14.0 \
   minizinc==0.5.0 \
   pandas==1.5.2 \
   prettytable==3.6.0 \
@@ -79,13 +79,15 @@ RUN sage -pip install bitstring==4.0.1 \
   setuptools==59.6.0 \
   sphinx==4.5.0 \
   sphinxcontrib-bibtex==2.5.0 \
-  tensorflow==2.13.0 \
+  tensorflow==2.14.0 \
   pytest==7.2.1 \
   pytest-cov==4.0.0 \
   pytest-xdist==3.2.0 \
   pytest-benchmark==4.0.0 \
   networkx==2.8.8 \
   numpy==1.24.3
+
+RUN sed -i 's/import distutils as _distutils/import setuptools as _distutils/' /usr/local/lib/python3.10/dist-packages/tensorflow/__init__.py
 
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
