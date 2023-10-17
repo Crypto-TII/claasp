@@ -22,6 +22,16 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
+    - name: Remove innecessary files
+      run: |
+        rm -f *.log
+        rm -f *.tmp
+    
+    - name: Clean Docker images and containers
+      run: |
+        docker container prune -f
+        docker image prune -a -f
+
     - name: Cache Docker layers
       uses: actions/cache@v3
       with:
