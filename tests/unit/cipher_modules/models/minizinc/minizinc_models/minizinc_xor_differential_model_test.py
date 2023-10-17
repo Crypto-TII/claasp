@@ -201,13 +201,17 @@ def test_find_lowest_weight_xor_differential_trail():
                         'operator': '=',
                         'value': '0'}]
     solution = minizinc.find_lowest_weight_xor_differential_trail(solver_name='Xor', fixed_values=fixed_variables)
-    round1_weight = solution['p_modadd_0_1_0']['weight']
+    round1_weight = solution['component_values']['modadd_0_1']['weight']
     assert 2 <= round1_weight <= 4
 
-    round2_weight = solution['p_modadd_1_2_0']['weight'] + solution['p_modadd_1_7_0']['weight']
-    round3_weight = solution['p_modadd_2_2_0']['weight'] + solution['p_modadd_2_7_0']['weight']
-    round4_weight = solution['p_modadd_3_2_0']['weight'] + solution['p_modadd_3_7_0']['weight']
-    round5_weight = solution['p_modadd_4_2_0']['weight'] + solution['p_modadd_4_7_0']['weight']
+    round2_weight = solution['component_values']['modadd_1_2']['weight'] + \
+                    solution['component_values']['modadd_1_7']['weight']
+    round3_weight = solution['component_values']['modadd_2_2']['weight'] + \
+                    solution['component_values']['modadd_2_7']['weight']
+    round4_weight = solution['component_values']['modadd_3_2']['weight'] + \
+                    solution['component_values']['modadd_3_7']['weight']
+    round5_weight = solution['component_values']['modadd_4_2']['weight'] + \
+                    solution['component_values']['modadd_4_7']['weight']
     assert 2 <= round2_weight <= 4
     assert 2 <= round3_weight <= 4
     assert 2 <= round4_weight <= 4
@@ -302,13 +306,17 @@ def test_find_lowest_weight_xor_differential_trail():
                         'operator': '=',
                         'value': '0'}]
     solution = minizinc.find_lowest_weight_xor_differential_trail(solver_name='Xor', fixed_values=fixed_variables)
-    round1_weight = solution['p_modadd_0_1_0']['weight']
+    round1_weight = solution['component_values']['modadd_0_1']['weight']
     assert 2 <= round1_weight <= 4
 
-    round2_weight = solution['p_modadd_1_2_0']['weight'] + solution['p_modadd_1_7_0']['weight']
-    round3_weight = solution['p_modadd_2_2_0']['weight'] + solution['p_modadd_2_7_0']['weight']
-    round4_weight = solution['p_modadd_3_2_0']['weight'] + solution['p_modadd_3_7_0']['weight']
-    round5_weight = solution['p_modadd_4_2_0']['weight'] + solution['p_modadd_4_7_0']['weight']
+    round2_weight = solution['component_values']['modadd_1_2']['weight'] + \
+                    solution['component_values']['modadd_1_7']['weight']
+    round3_weight = solution['component_values']['modadd_2_2']['weight'] + \
+                    solution['component_values']['modadd_2_7']['weight']
+    round4_weight = solution['component_values']['modadd_3_2']['weight'] + \
+                    solution['component_values']['modadd_3_7']['weight']
+    round5_weight = solution['component_values']['modadd_4_2']['weight'] + \
+                    solution['component_values']['modadd_4_7']['weight']
     assert 2 <= round2_weight <= 4
     assert 2 <= round3_weight <= 4
     assert 2 <= round4_weight <= 4
