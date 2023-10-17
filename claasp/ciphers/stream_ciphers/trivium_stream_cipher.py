@@ -38,8 +38,9 @@ class TriviumStreamCipher(Cipher):
 
     INPUT:
         - ``keystream_bit_len`` -- **integer** (default: `512`); number of keystream clocks of the cipher.
+        - ``initialization_vector_bit_size`` --   fix 80-bit;
         - ``key_bit_size`` --  fix 80-bit;
-        - ``iv_bit_size`` --   fix 80-bit;
+
 
     EXAMPLES::
 
@@ -54,9 +55,10 @@ class TriviumStreamCipher(Cipher):
 
     def __init__(self, iv_bit_size=80, key_bit_size=80, state_bit_size=288, number_of_initialization_clocks=1152,
                  keystream_bit_len=512):
-        self.state_bit_size = state_bit_size
-        self.key_bit_size = key_bit_size
+
         self.iv_bit_size = iv_bit_size
+        self.key_bit_size = key_bit_size
+        self.state_bit_size = state_bit_size
         self.number_of_initialization_clocks = number_of_initialization_clocks
 
         super().__init__(family_name="trivium_stream_cipher",
@@ -71,34 +73,33 @@ class TriviumStreamCipher(Cipher):
         self.add_round()
         triv_state = self.trivium_state_initialization(key, iv)
 
-        for clock_number in range(self._get_len_of_keystream(keystream_bit_len)):
+        for clock_number in range(self.get_keystream_bit_len(keystream_bit_len)):
             self.add_round()
             key_stream = self.trivium_key_stream(triv_state, clock_number, key_stream)
             triv_state = self.add_FSR_component([triv_state], [list(range(self.state_bit_size))], state_bit_size,
                                                 NLFSR_DESCR).id
 
-        self.add_cipher_output_component([key_stream], [list(range(self._get_len_of_keystream(keystream_bit_len)))],
-                                         self._get_len_of_keystream(keystream_bit_len))
+        self.add_cipher_output_component([key_stream], [list(range(self.get_keystream_bit_len(keystream_bit_len)))],
+                                         self.get_keystream_bit_len(keystream_bit_len))
 
-    def _get_len_of_keystream(self, keystream_bit_len):
+    def get_keystream_bit_len(self, keystream_bit_len):
         if keystream_bit_len is not None:
             return keystream_bit_len
-        configuration_keystream_bit_len = None
-        for parameters in PARAMETERS_CONFIGURATION_LIST:
-            if parameters['iv_bit_size'] == self.iv_bit_size and parameters['key_bit_len'] == self.key_bit_size \
-                    and parameters['state_bit_size'] == self.state_bit_size:
-                configuration_keystream_bit_len = parameters['keystream_bit_len']
+        len_keystream = None
+        for items in PARAMETERS_CONFIGURATION_LIST:
+            if items['iv_bit_size'] == self.iv_bit_size and items['key_bit_len'] == self.key_bit_size \
+                    and items['state_bit_size'] == self.state_bit_size:
+                len_keystream = items['keystream_bit_len']
                 break
-        if configuration_keystream_bit_len is None:
-            raise ValueError("No available number of clocks for the given parameters.")
-        return configuration_keystream_bit_len
+        if len_keystream is None:
+            raise ValueError("No available length of keystream .")
+        return len_keystream
 
     def trivium_state_initialization(self, key, iv):
         cst0 = self.add_constant_component(13, 0x0).id
-        cst1 = self.add_constant_component(4, 0x0).id
-        cst2 = self.add_constant_component(111, 0xe000000000000000000000000000).id
+        cst1 = self.add_constant_component(111, 0xe000000000000000000000000000).id
 
-        state0_id = [cst0] + key[0] + [cst1] + iv[0] + [cst2]
+        state0_id = [cst0] + key[0] + [cst0] + iv[0] + [cst1]
         state0_pos = [list(range(13)), list(range(self.key_bit_size)), list(range(4)), list(range(self.iv_bit_size)),
                       list(range(111))]
         triv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size, NLFSR_DESCR).id
