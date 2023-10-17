@@ -71,8 +71,8 @@ class MinizincXorDifferentialModel(MinizincModel):
             if total_weight == 'list_of_solutions':
                 solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
             else:
-                solution_total_weight = result.objective
-            parsed_solution['total_weight'] = solution_total_weight
+                solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
+            parsed_solution['total_weight'] = sum(item['weight'] for item in probability_vars_weights.values())
             parsed_solution['component_values'] = get_hex_string_from_bool_dict(
                 list_of_vars, dict_of_solutions, probability_vars_weights
             )
@@ -421,6 +421,7 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         result = self.solve(solver_name=solver_name)
         total_weight = self._get_total_weight(result)
+
         parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
 
         return parsed_result
@@ -567,7 +568,8 @@ class MinizincXorDifferentialModel(MinizincModel):
             modadd_permutation_probability_vars = "++".join(permutation_probability_vars)
             objective_string.append(f'solve:: int_search({modular_addition_concatenation},'
                                     f' smallest, indomain_min, complete)')
-            objective_string.append(f'maximize max(sum({modadd_key_schedule_concatenation_vars}), sum({modadd_permutation_probability_vars}));')
+
+            objective_string.append(f'maximize min(sum({modadd_key_schedule_concatenation_vars}), sum({modadd_permutation_probability_vars}));')
 
         return objective_string
 
