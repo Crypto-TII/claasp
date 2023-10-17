@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
+from copy import deepcopy
 
 from minizinc import Status
 
@@ -364,6 +364,20 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         return parsed_result
 
+    def find_lowest_of_the_maximum_between_permutation_and_key_schedule_xor_differential_trail(
+            self, fixed_values=[], solver_name=None
+    ):
+        self.constraint_permutation_and_key_schedule_separately_by_input_sizes()
+        self.build_xor_differential_trail_model(-1, fixed_values)
+        self._model_constraints.extend(self.objective_generator(strategy='min_max_key_schedule_permutation'))
+        self._model_constraints.extend(self.weight_constraints())
+
+        result = self.solve(solver_name=solver_name)
+        total_weight = self._get_total_weight(result)
+        parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
+
+        return parsed_result
+
     def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=None):
         """
         Find the lowest weight solution in a MiniZinc MILP model.
@@ -437,14 +451,76 @@ class MinizincXorDifferentialModel(MinizincModel):
             f'output [ \"{self.cipher_id}, and window_size={self.window_size_list}\" ++ \"\\n\"];'])
         self._model_constraints.extend(output_string_for_cipher_inputs)
 
-    def objective_generator(self):
-        objective_string = []
-        modular_addition_concatenation = "++".join(self.probability_vars)
-        objective_string.append(f'solve:: int_search({modular_addition_concatenation},'
-                                f' smallest, indomain_min, complete)')
-        objective_string.append(f'minimize sum({modular_addition_concatenation});')
-        self.mzn_output_directives.append(f'output ["Total_Probability: "++show(sum('
-                                          f'{modular_addition_concatenation}))];')
+    def get_probability_vars_from_permutation(self):
+        cipher_copy = deepcopy(self.cipher)
+        cipher_permutation = cipher_copy.remove_key_schedule()
+        permutation_components = cipher_permutation.get_all_components()
+        probability_vars_from_permutation = []
+        for permutation_component in permutation_components:
+            if permutation_component.id.startswith('modadd') or permutation_component.id.startswith('modsub'):
+                for probability_var in self.probability_vars:
+                    if probability_var.startswith(f'p_{permutation_component.id}'):
+                        probability_vars_from_permutation.append(probability_var)
+        return probability_vars_from_permutation
+
+    def get_probability_vars_from_key_schedule(self):
+        all_components_ids = []
+        cipher_components = self.cipher.get_all_components()
+        for cipher_component in cipher_components:
+            all_components_ids.append(cipher_component.id)
+
+        cipher_copy = deepcopy(self.cipher)
+        cipher_permutation = cipher_copy.remove_key_schedule()
+        permutation_components = cipher_permutation.get_all_components()
+        permutation_component_ids = []
+
+        for permutation_component in permutation_components:
+            permutation_component_ids.append(permutation_component.id)
+
+        key_schedule_ids = set(all_components_ids) - set(permutation_component_ids)
+        key_schedule_prob_var_ids = []
+        for key_schedule_id in key_schedule_ids:
+            if key_schedule_id.startswith('modadd') or key_schedule_id.startswith('modsub'):
+                for probability_var in self.probability_vars:
+                    if probability_var.startswith(f'p_{key_schedule_id}'):
+                        key_schedule_prob_var_ids.append(probability_var)
+
+        return key_schedule_prob_var_ids
+
+    def constraint_permutation_and_key_schedule_separately_by_input_sizes(self):
+        key_schedule_probability_vars = list(set(self.get_probability_vars_from_key_schedule()))
+        permutation_probability_vars = list(set(self.get_probability_vars_from_permutation()))
+        modadd_key_schedule_concatenation_vars = "++".join(key_schedule_probability_vars)
+        modadd_permutation_probability_vars = "++".join(permutation_probability_vars)
+        key_index = self.cipher._inputs.index('key')
+        plaintext_index = self.cipher._inputs.index('plaintext')
+        key_input_bit_size = self.cipher._inputs_bit_size[key_index]
+        plaintext_input_bit_size = self.cipher._inputs_bit_size[plaintext_index]
+
+        self._model_constraints.append(f'sum({modadd_key_schedule_concatenation_vars}) <= {key_input_bit_size};')
+        self._model_constraints.append(f'sum({modadd_permutation_probability_vars}) <= {plaintext_input_bit_size};')
+
+    def objective_generator(self, strategy='min_all_probabilities'):
+        if strategy == 'min_all_probabilities':
+            objective_string = []
+            modular_addition_concatenation = "++".join(self.probability_vars)
+            objective_string.append(f'solve:: int_search({modular_addition_concatenation},'
+                                    f' smallest, indomain_min, complete)')
+            objective_string.append(f'minimize sum({modular_addition_concatenation});')
+            self.mzn_output_directives.append(f'output ["Total_Probability: "++show(sum('
+                                              f'{modular_addition_concatenation}))];')
+            print(objective_string)
+        elif strategy == 'min_max_key_schedule_permutation':
+            objective_string = []
+            modular_addition_concatenation = "++".join(self.probability_vars)
+            key_schedule_probability_vars = list(set(self.get_probability_vars_from_key_schedule()))
+            permutation_probability_vars = list(set(self.get_probability_vars_from_permutation()))
+
+            modadd_key_schedule_concatenation_vars = "++".join(key_schedule_probability_vars)
+            modadd_permutation_probability_vars = "++".join(permutation_probability_vars)
+            objective_string.append(f'solve:: int_search({modular_addition_concatenation},'
+                                    f' smallest, indomain_min, complete)')
+            objective_string.append(f'maximize max(sum({modadd_key_schedule_concatenation_vars}), sum({modadd_permutation_probability_vars}));')
 
         return objective_string
 
