@@ -183,4 +183,4 @@ def test_find_min_of_max_xor_differential_between_permutation_and_key_schedule()
     result = minizinc.find_min_of_max_xor_differential_between_permutation_and_key_schedule(
         fixed_values=fixed_variables_32_64, solver_name='Xor'
     )
-    print(result)
+    assert result['total_weight'] == 5
