@@ -168,14 +168,14 @@ def test_get_probability_vars_from_key_schedule():
     minizinc = MinizincXorDifferentialModel(speck4)
     minizinc.build_xor_differential_trail_model(fixed_variables=[])
     expected_result = ['p_modadd_1_2_0', 'p_modadd_2_2_0', 'p_modadd_3_2_0']
-    assert minizinc.get_probability_vars_from_key_schedule() == expected_result
+    assert set(minizinc.get_probability_vars_from_key_schedule()) == set(expected_result)
 
 
 def test_get_probability_vars_from_permutation():
     minizinc = MinizincXorDifferentialModel(speck4)
     minizinc.build_xor_differential_trail_model(fixed_variables=[])
     expected_result = ['p_modadd_0_1_0', 'p_modadd_1_7_0', 'p_modadd_2_7_0', 'p_modadd_3_7_0']
-    assert minizinc.get_probability_vars_from_permutation() == expected_result
+    assert set(minizinc.get_probability_vars_from_permutation()) == set(expected_result)
 
 
 def test_find_min_of_max_xor_differential_between_permutation_and_key_schedule():

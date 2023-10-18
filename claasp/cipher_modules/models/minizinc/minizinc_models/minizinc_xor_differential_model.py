@@ -508,7 +508,21 @@ class MinizincXorDifferentialModel(MinizincModel):
         return probability_vars_from_permutation
 
     def get_probability_vars_from_key_schedule(self):
-        key_schedule_ids = self.cipher.get_key_schedule_component_ids()
+        # TODO:: Refactor together with method get_key_schedule_component_ids from inverse_cipher.
+        all_components_ids = []
+        cipher_components = self.cipher.get_all_components()
+        for cipher_component in cipher_components:
+            all_components_ids.append(cipher_component.id)
+
+        cipher_copy = deepcopy(self.cipher)
+        cipher_permutation = cipher_copy.remove_key_schedule()
+        permutation_components = cipher_permutation.get_all_components()
+        permutation_component_ids = []
+
+        for permutation_component in permutation_components:
+            permutation_component_ids.append(permutation_component.id)
+
+        key_schedule_ids = set(all_components_ids) - set(permutation_component_ids)
         key_schedule_prob_var_ids = []
         for key_schedule_id in key_schedule_ids:
             if key_schedule_id.startswith('modadd') or key_schedule_id.startswith('modsub'):
