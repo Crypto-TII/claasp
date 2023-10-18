@@ -408,7 +408,7 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         return parsed_result
 
-    def find_lowest_of_the_maximum_between_permutation_and_key_schedule_xor_differential_trail(
+    def find_min_of_max_xor_differential_between_permutation_and_key_schedule(
             self, fixed_values=[], solver_name=None
     ):
         self.constraint_permutation_and_key_schedule_separately_by_input_sizes()
@@ -419,6 +419,7 @@ class MinizincXorDifferentialModel(MinizincModel):
         result = self.solve(solver_name=solver_name)
         total_weight = self._get_total_weight(result)
         parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
+        parsed_result['objective_strategy'] = 'min_max_key_schedule_permutation'
 
         return parsed_result
 
