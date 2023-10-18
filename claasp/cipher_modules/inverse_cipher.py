@@ -923,20 +923,6 @@ def get_component_from_id(component_id, self):
             return c
     return None
 
-def get_key_schedule_component_ids(self):
-    key_schedule_component_ids = [INPUT_KEY]
-    component_list = self.get_all_components()
-    for c in component_list:
-        flag_belong_to_key_schedule = True
-        for link in c.input_id_links:
-            if link not in key_schedule_component_ids:
-                flag_belong_to_key_schedule = False
-                break
-        if flag_belong_to_key_schedule or (c.type == CONSTANT):
-            key_schedule_component_ids.append(c.id)
-
-    return key_schedule_component_ids
-
 def is_output_bits_updated_equivalent_to_input_bits(output_bits_updated_list, input_bits_list, all_equivalent_bits):
     for bit in output_bits_updated_list:
         if not is_bit_adjacent_to_list_of_bits(bit, input_bits_list, all_equivalent_bits):

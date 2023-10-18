@@ -1994,6 +1994,20 @@ class Cipher:
         algebraic_model = AlgebraicModel(self)
         return algebraic_model.polynomial_system_at_round(r)
 
+    def get_key_schedule_component_ids(self):
+        key_schedule_component_ids = [INPUT_KEY]
+        component_list = self.get_all_components()
+        for c in component_list:
+            flag_belong_to_key_schedule = True
+            for link in c.input_id_links:
+                if link not in key_schedule_component_ids:
+                    flag_belong_to_key_schedule = False
+                    break
+            if flag_belong_to_key_schedule or (c.type == CONSTANT):
+                key_schedule_component_ids.append(c.id)
+
+        return key_schedule_component_ids
+
     def remove_key_schedule(self):
         return editor.remove_key_schedule(self)
 
