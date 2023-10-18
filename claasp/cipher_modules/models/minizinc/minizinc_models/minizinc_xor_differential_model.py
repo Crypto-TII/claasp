@@ -28,13 +28,15 @@ class MinizincXorDifferentialModel(MinizincModel):
     def __init__(self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp='sat'):
         super().__init__(cipher, window_size_list, probability_weight_per_round, sat_or_milp)
 
-    def _create_minizinc_1d_array_from_list(self, mzn_list):
+    @staticmethod
+    def _create_minizinc_1d_array_from_list(mzn_list):
         mzn_list_size = len(mzn_list)
         lst_temp = f'[{",".join(mzn_list)}]'
 
         return f'array1d(0..{mzn_list_size}-1, {lst_temp})'
 
-    def _get_total_weight(self, result):
+    @staticmethod
+    def _get_total_weight(result):
         if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
             if result.status == Status.OPTIMAL_SOLUTION:
                 return result.objective
@@ -48,7 +50,7 @@ class MinizincXorDifferentialModel(MinizincModel):
         else:
             return None
 
-    def _parse_solution(self, result, solution, list_of_vars, total_weight, statistics='None'):
+    def _parse_solution(self, result, solution, list_of_vars, statistics='None'):
         def get_hex_string_from_bool_dict(data, bool_dict, probability_vars_weights_):
             temp_result = {}
             for sublist in data:
@@ -67,12 +69,8 @@ class MinizincXorDifferentialModel(MinizincModel):
         if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
             dict_of_solutions = solution.__dict__
             probability_vars_weights = self.parse_probability_vars(result, solution)
-            solution_total_weight = 0
-            if total_weight == 'list_of_solutions':
-                solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
-            else:
-                solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
-            parsed_solution['total_weight'] = sum(item['weight'] for item in probability_vars_weights.values())
+            solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
+            parsed_solution['total_weight'] = solution_total_weight
             parsed_solution['component_values'] = get_hex_string_from_bool_dict(
                 list_of_vars, dict_of_solutions, probability_vars_weights
             )
@@ -107,11 +105,11 @@ class MinizincXorDifferentialModel(MinizincModel):
         if total_weight == "list_of_solutions":
             solutions = []
             for solution in result.solution:
-                parsed_solution = self._parse_solution(result, solution, list_of_vars, total_weight)
+                parsed_solution = self._parse_solution(result, solution, list_of_vars)
                 solutions.append({**parsed_solution, **common_parsed_data})
             return solutions
         else:
-            parsed_result = self._parse_solution(result, result.solution, list_of_vars, total_weight, result.statistics)
+            parsed_result = self._parse_solution(result, result.solution, list_of_vars, result.statistics)
             return {**parsed_result, **common_parsed_data}
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
@@ -356,9 +354,8 @@ class MinizincXorDifferentialModel(MinizincModel):
         """
         self.build_xor_differential_trail_model(-1, fixed_values)
         self._model_constraints.extend(self.weight_constraints(fixed_weight, "="))
-        self.write_minizinc_model_to_file('.')
         result = self.solve(solver_name=solver_name, all_solutions_=True)
-        total_weight = self._get_total_weight(result)
+        total_weight = MinizincXorDifferentialModel._get_total_weight(result)
         parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
 
         return parsed_result
@@ -406,7 +403,7 @@ class MinizincXorDifferentialModel(MinizincModel):
         self._model_constraints.extend(
             self.weight_constraints(min_weight, ">", max_weight))
         result = self.solve(solver_name=solver_name, all_solutions_=True)
-        total_weight = self._get_total_weight(result)
+        total_weight = MinizincXorDifferentialModel._get_total_weight(result)
         parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
 
         return parsed_result
@@ -421,7 +418,6 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         result = self.solve(solver_name=solver_name)
         total_weight = self._get_total_weight(result)
-
         parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
 
         return parsed_result
@@ -468,9 +464,8 @@ class MinizincXorDifferentialModel(MinizincModel):
         self.build_xor_differential_trail_model(-1, fixed_values)
         self._model_constraints.extend(self.objective_generator())
         self._model_constraints.extend(self.weight_constraints())
-        self.write_minizinc_model_to_file('.')
         result = self.solve(solver_name=solver_name)
-        total_weight = self._get_total_weight(result)
+        total_weight = MinizincXorDifferentialModel._get_total_weight(result)
         parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
 
         return parsed_result
@@ -482,7 +477,7 @@ class MinizincXorDifferentialModel(MinizincModel):
                                 for j in range(self._cipher.inputs_bit_size[i])]
             output_string_for_cipher_input = \
                 "output [\"cipher_input:" + self._cipher.inputs[i] + "\" ++ show(" + \
-                self._create_minizinc_1d_array_from_list(var_names_inputs) + ")++\"\\n\"];\n"
+                MinizincXorDifferentialModel._create_minizinc_1d_array_from_list(var_names_inputs) + ")++\"\\n\"];\n"
             output_string_for_cipher_inputs.append(output_string_for_cipher_input)
 
             for ii in range(len(var_names_inputs)):
@@ -512,20 +507,7 @@ class MinizincXorDifferentialModel(MinizincModel):
         return probability_vars_from_permutation
 
     def get_probability_vars_from_key_schedule(self):
-        all_components_ids = []
-        cipher_components = self.cipher.get_all_components()
-        for cipher_component in cipher_components:
-            all_components_ids.append(cipher_component.id)
-
-        cipher_copy = deepcopy(self.cipher)
-        cipher_permutation = cipher_copy.remove_key_schedule()
-        permutation_components = cipher_permutation.get_all_components()
-        permutation_component_ids = []
-
-        for permutation_component in permutation_components:
-            permutation_component_ids.append(permutation_component.id)
-
-        key_schedule_ids = set(all_components_ids) - set(permutation_component_ids)
+        key_schedule_ids = self.cipher.get_key_schedule_component_ids()
         key_schedule_prob_var_ids = []
         for key_schedule_id in key_schedule_ids:
             if key_schedule_id.startswith('modadd') or key_schedule_id.startswith('modsub'):
@@ -540,10 +522,10 @@ class MinizincXorDifferentialModel(MinizincModel):
         permutation_probability_vars = list(set(self.get_probability_vars_from_permutation()))
         modadd_key_schedule_concatenation_vars = "++".join(key_schedule_probability_vars)
         modadd_permutation_probability_vars = "++".join(permutation_probability_vars)
-        key_index = self.cipher._inputs.index('key')
-        plaintext_index = self.cipher._inputs.index('plaintext')
-        key_input_bit_size = self.cipher._inputs_bit_size[key_index]
-        plaintext_input_bit_size = self.cipher._inputs_bit_size[plaintext_index]
+        key_index = self.cipher.inputs.index('key')
+        plaintext_index = self.cipher.inputs.index('plaintext')
+        key_input_bit_size = self.cipher.inputs_bit_size[key_index]
+        plaintext_input_bit_size = self.cipher.inputs_bit_size[plaintext_index]
 
         self._model_constraints.append(f'sum({modadd_key_schedule_concatenation_vars}) <= {key_input_bit_size};')
         self._model_constraints.append(f'sum({modadd_permutation_probability_vars}) <= {plaintext_input_bit_size};')
@@ -557,7 +539,6 @@ class MinizincXorDifferentialModel(MinizincModel):
             objective_string.append(f'minimize sum({modular_addition_concatenation});')
             self.mzn_output_directives.append(f'output ["Total_Probability: "++show(sum('
                                               f'{modular_addition_concatenation}))];')
-            print(objective_string)
         elif strategy == 'min_max_key_schedule_permutation':
             objective_string = []
             modular_addition_concatenation = "++".join(self.probability_vars)
@@ -569,7 +550,9 @@ class MinizincXorDifferentialModel(MinizincModel):
             objective_string.append(f'solve:: int_search({modular_addition_concatenation},'
                                     f' smallest, indomain_min, complete)')
 
-            objective_string.append(f'maximize min(sum({modadd_key_schedule_concatenation_vars}), sum({modadd_permutation_probability_vars}));')
+            objective_string.append(f'minimize max(sum({modadd_key_schedule_concatenation_vars}), sum({modadd_permutation_probability_vars}));')
+        else:
+            raise NotImplementedError("Strategy {strategy} no implemented")
 
         return objective_string
 
