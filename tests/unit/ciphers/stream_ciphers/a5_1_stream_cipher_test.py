@@ -9,8 +9,8 @@ def test_a51():
     assert a51.component_from(0, 0).id == 'constant_0_0'
     assert a51.component_from(1, 0).id == 'fsr_1_0'
 
-    key = 0x48C4A2E691D5B3F7
+    key = 0x48c4a2e691d5b3f7
     frame = 0b0010110010000000000000
-    keystream = 0xcaed745fb9d13ede0ec562a18682cba286000ce8
+    keystream = 0x534eaa582fe8151ab6e1855a728c093f4d68d757ed949b4cbe41b7c6b
     assert a51.evaluate([key, frame]) == keystream
 
