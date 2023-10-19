@@ -18,7 +18,7 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_KEY, INPUT_INITIALIZATION_VECTOR, INPUT_STATE
+from claasp.name_mappings import INPUT_STATE
 
 PARAMETERS_CONFIGURATION_LIST = [{'key_bit_size': 128, 'lfsr_state_bit_size': 128, 'fsm_bit_size': 4,
                                   'keystream_bit_len': 125}]
@@ -49,22 +49,30 @@ class BluetoothStreamCipherE0(Cipher):
 
         INPUT:
         - ``keystream_bit_len`` -- **integer** (default: `125`);
-        - ``key_bit_size`` --  128-bit;
-        - ``lfsr_state_bit_size`` --  128-bit;
+        - ``key_bit_size (lfsr_state_size)`` --  128-bit;
         - ``finite_state_machine_bit_size`` --   4-bit;
+        - ``input_bit_size`` --   132-bit (128-bit lfsr_input_state.append(4-bit fsm_input_state));
+
 
         EXAMPLES:
 
         sage: from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
         sage: e0 = BluetoothStreamCipherE0(keystream_bit_len=125)
         sage: fsm=0xb
-        sage: ks=0x8cd29cc32668b90ee2312924376f1b4
         sage: key =0x25ac1ea08e1ec131e0a1780f7a2a42bb
-        sage: #input=key append fsm
-        sage: input=0x25ac1ea08e1ec131e0a1780f7a2a42bbb
-        sage: e0.evaluate([input])==ks
-
+        sage: input= int(hex(key<<4|fsm),16) #key.append(fsm)
+        sage: keystream=0x8cd29cc32668b90ee2312924376f1b4
+        sage: e0.evaluate([input])==keystream
         True
+
+        sage: fsm=0xd
+        sage: key =0xe22f92fff8c245c49d10359a02f1e555
+        sage: input= int(hex(key<<4|fsm),16) #key.append(fsm)
+        sage: keystream=0x1198636720bac54986d1ab5a494866c9
+        sage: e0.evaluate([input])==keystream
+        True
+
+
     """
 
     def __init__(self, key_bit_size=128, lfsr_state_bit_size=128, fsm_bit_size=4, keystream_bit_len=125):
@@ -82,8 +90,8 @@ class BluetoothStreamCipherE0(Cipher):
         fsm_id = [input_state.id[0], input_state.id[0], input_state.id[0], input_state.id[0]]
         fsm_pos = [[_] for _ in range(self.key_bit_size, self.key_bit_size+self.fsm_bit_size)]
         lfsr_state = input_state.id[0]
-        # lfsr_state,=self.lfsr_fms_state_initialization(key, self.key_bit_size)
         keystream = []
+
         for clock_number in range(self._get_len_of_keystream(keystream_bit_len)):
             self.add_round()
             keystream = self.e0_keystream(lfsr_state, fsm_id, fsm_pos, clock_number, keystream)
@@ -93,8 +101,6 @@ class BluetoothStreamCipherE0(Cipher):
 
         self.add_cipher_output_component([keystream], [list(range(self._get_len_of_keystream(keystream_bit_len)))],
                                          self._get_len_of_keystream(keystream_bit_len))
-
-    # def lfsr_state_initialization(self, INPUT_KEY, self.key_bit_size):
 
     def e0_nonlinear_function(self, lfsr_state, fsm_id, fsm_pos):
         x_id = y_id = z_id = u_id = lfsr_state
@@ -145,7 +151,7 @@ class BluetoothStreamCipherE0(Cipher):
                 configuration_keystream_bit_len = parameters['keystream_bit_len']
                 break
         if configuration_keystream_bit_len is None:
-            raise ValueError("No available number of clock for the given parameters.")
+            raise ValueError("No available len of keystream for the given parameters.")
         return configuration_keystream_bit_len
 
     def e0_keystream(self, lfsr_state, fsm_id, fsm_pos, clock_number, ks):
