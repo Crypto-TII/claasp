@@ -98,7 +98,7 @@ class Rotate(Component):
         return self.sat_constraints()
 
     def cms_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.cms_constraints()
+        return self.sat_deterministic_truncated_xor_differential_trail_constraints()
 
     def cms_xor_differential_propagation_constraints(self, model=None):
         return self.cms_constraints()
