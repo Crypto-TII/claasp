@@ -1,4 +1,4 @@
-
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -22,9 +22,14 @@ from claasp.component import Component
 from claasp.name_mappings import CONSTANT
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
     output_dictionary_that_contains_xor_inequalities,
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits)
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
+    update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs,
+    output_dictionary_that_contains_wordwise_truncated_xor_inequalities
+)
 
 
 def cp_build_truncated_table(numadd):
@@ -608,6 +613,363 @@ class XOR(Component):
 
     def milp_xor_linear_mask_propagation_constraints(self, model):
         return self.milp_xor_linear_constraints(model)
+
+    def milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for the XOR for two inputs
+        in deterministic truncated XOR differential model.
+
+        This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
+        model the result c of the truncated XOR between inputs a and b.
+
+        _______________
+         a  |  b  |  c
+        _______________
+         0  |  0  |  0
+         0  |  1  |  1
+         0  |  2  |  2
+         1  |  0  |  1
+         1  |  1  |  0
+         1  |  2  |  2
+         2  |  0  |  2
+         2  |  1  |  2
+         2  |  2  |  2
+        _______________
+
+        Espresso was used to reduce the number of constraints to 10 inequalities.
+        A k-input XOR is then split into k-1 2-input sequential XORs, for wich the results are stored in intermediate
+        variables.
+
+        INPUTS:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: xor_component = cipher.get_component_from_id("xor_0_5")
+            sage: variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
+            sage: variables
+            [('x[and_0_4_0_class_bit_0]', x_0),
+             ('x[and_0_4_0_class_bit_1]', x_1),
+             ...
+             ('x[xor_0_5_15_class_bit_0]', x_94),
+             ('x[xor_0_5_15_class_bit_1]', x_95)]
+            sage: constraints
+            [1 <= 1 - x_1 + x_33 + x_64 + x_65,
+             1 <= 1 + x_1 - x_33 + x_64 + x_65,
+             ...
+             1 <= 1 - x_30 + x_94,
+             1 <= 2 - x_62 - x_63]
+
+        """
+
+        x = model.binary_variable
+
+        output_bit_size = self.output_bit_size
+        input_id_tuples, output_id_tuples = self._get_input_output_variables_tuples()
+        input_ids, output_ids = self._get_input_output_variables()
+
+        variables = [(f"x[{var_elt}]", x[var_elt]) for var_tuple in input_id_tuples + output_id_tuples for var_elt in var_tuple]
+
+        linking_constraints = model.link_binary_tuples_to_integer_variables(input_id_tuples + output_id_tuples,
+                                                                            input_ids + output_ids)
+        number_of_inputs = self.description[1]
+        constraints = [] + linking_constraints
+
+        for i, output_id in enumerate(output_id_tuples):
+            result_ids = [(f'temp_xor_{j}_{self.id}_{i}_0', f'temp_xor_{j}_{self.id}_{i}_1')
+                          for j in range(number_of_inputs - 2)] + [output_id]
+            constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][0], input_id_tuples[i::output_bit_size][1], result_ids[0]))
+            for chunk in range(1, number_of_inputs - 1):
+                constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][chunk + 1], result_ids[chunk - 1], result_ids[chunk]))
+
+
+        return variables, constraints
+
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for XOR component
+        in deterministic truncated XOR differential model.
+
+        INPUTS:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: xor_component = cipher.get_component_from_id("xor_0_5")
+            sage: variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[and_0_4_0]', x_0),
+             ('x_class[and_0_4_1]', x_1),
+            ...
+             ('x_class[xor_0_5_14]', x_46),
+             ('x_class[xor_0_5_15]', x_47)]
+            sage: constraints
+            [x_0 <= 3 - 2*x_48,
+             2 - 2*x_48 <= x_0,
+            ...
+            x_47 <= 2 + 4*x_95,
+            2 <= x_47 + 4*x_95]
+
+        """
+
+        x_class = model.trunc_binvar
+
+        num_of_inputs = int(self.description[1])
+        input_bit_size = int(self.input_bit_size / num_of_inputs)
+        output_bit_size = self.output_bit_size
+        input_vars, output_vars = self._get_input_output_variables()
+
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+
+        constraints = []
+
+        # if a_i < 2 for all i then b = XOR(a_i, i in range(num_inputs))
+        # else b = 2
+        a = [[x_class[input_vars[i + chunk * input_bit_size]] for chunk in range(num_of_inputs)] for i in
+             range(input_bit_size)]
+        b = [x_class[output_vars[i]] for i in range(output_bit_size)]
+
+        for i in range(output_bit_size):
+            list_ai_less_2 = []
+            for chunk in range(num_of_inputs):
+                # a < 2  iff a_less_2 = 1
+                ai_less_2, constr = milp_utils.milp_less(model, a[i][chunk], 2, model._model.get_max(x_class))
+                constraints.extend(constr)
+                list_ai_less_2.append(ai_less_2)
+
+            # ai_less_2 = 1 for all i  iff all_ai_less_2 = 1
+            all_ai_less_2, constr = milp_utils.milp_generalized_and(model, list_ai_less_2)
+            constraints.extend(constr)
+
+            # if all_ai_less_2 == 1 then b = XOR(a_i, i in range(num_inputs))
+            # else b = 2
+            xor_constr = milp_utils.milp_generalized_xor(a[i], b[i])
+            constr = milp_utils.milp_if_then_else(all_ai_less_2, xor_constr, [b[i] == 2],
+                                                  model._model.get_max(x_class) * num_of_inputs)
+            constraints.extend(constr)
+
+        return variables, constraints
+
+
+    def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for XOR component
+        in deterministic truncated XOR differential model.
+
+        This does not implement the XOR for more than 2 inputs in a sequential manner.
+        Indeed, if Y = XOR(X_0, X_1, X_2), and the input patterns are:
+
+        delta_X_0 = 1
+        delta_X_1 = 2
+        delta_X_2 = 1
+
+        and X_0 = X_2, operating in a sequential way would yield delta_Y = 3.
+        However, since X_0 and X_1 cancel each other out, it is possible to infer that delta_Y = 2.
+        For this reason, we instead generate all valid combinations of input-output values D and use espresso to
+        obtain a reduced set of inequalities modeling D.
+
+        INPUTS:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: cipher = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: xor_component = cipher.get_component_from_id("xor_0_32")
+            sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x[xor_0_31_word_0_class_bit_0]', x_0),
+             ('x[xor_0_31_word_0_class_bit_1]', x_1),
+            ...
+             ('x[xor_0_32_30]', x_118),
+             ('x[xor_0_32_31]', x_119)]
+            sage: constraints
+            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_81,
+             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_81,
+             ...
+             1 <= 1 + x_31 - x_39,
+             1 <= 2 - x_30 - x_39]
+
+        """
+        x = model.binary_variable
+
+        num_of_inputs = int(self.description[1])
+        output_bit_size = self.output_bit_size
+        output_word_size = output_bit_size // model.word_size
+
+        input_vars, output_vars = self._get_wordwise_input_output_full_tuples(model)
+
+        variables = [(f"x[{var}]", x[var]) for sublist in input_vars + output_vars for var in sublist]
+
+        constraints = []
+        update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs(model.word_size,
+                                                                                             num_of_inputs)
+        dict_inequalities = output_dictionary_that_contains_wordwise_truncated_xor_inequalities()
+        inequalities = dict_inequalities[model.word_size][num_of_inputs]
+
+        for i in range(output_word_size):
+            all_vars = [x[_] for sublist in input_vars[i::output_word_size] + [output_vars[i]] for _ in sublist]
+            minimized_constraints = espresso_pos_to_constraints(inequalities, all_vars)
+            constraints.extend(minimized_constraints)
+
+        return variables, constraints
+
+
+    def milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for XOR component
+        in deterministic truncated XOR differential model.
+        It should perform the wordwise xor for multiple inputs faster than the
+        xor_wordwise_deterministic_truncated_xor_differential_constraints() methods but skips some cases
+        e.g. if DX1 = 1, DX2 = 2, DX3 = 1 and X1 = X3, then DY = XOR(DX1, DX2, DX3) = 2 but this method will
+        return 3
+
+        INPUTS:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: cipher = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: xor_component = cipher.get_component_from_id("xor_0_32")
+            sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(milp)
+            sage: variables
+            [('x[xor_0_31_word_0_class_bit_0]', x_0),
+             ('x[xor_0_31_word_0_class_bit_1]', x_1),
+             ...
+             ('x[xor_0_32_30]', x_118),
+             ('x[xor_0_32_31]', x_119)]
+            sage: constraints
+            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_81,
+             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_81,
+            ...
+             1 <= 1 + x_31 - x_39,
+             1 <= 2 - x_30 - x_39]
+
+
+        """
+        x = model.binary_variable
+
+        number_of_inputs = int(self.description[1])
+        output_word_size = self.output_bit_size // model.word_size
+
+        input_vars, output_vars = self._get_wordwise_input_output_full_tuples(model)
+        variables = [(f"x[{var}]", x[var]) for sublist in input_vars + output_vars for var in sublist]
+        constraints = []
+
+        for i, output_var in enumerate(output_vars):
+            result_ids = [tuple([f'temp_xor_{j}_{self.id}_word_{i}_0', f'temp_xor_{j}_{self.id}_word_{i}_1'] + [
+                f'temp_xor_{j}_{self.id}_word_{i}_bit_{k}' for k in range(model.word_size)]) for j in
+                          range(number_of_inputs - 2)] + [output_var]
+            constraints.extend(milp_utils.milp_xor_truncated_wordwise(model,
+                                                                      input_vars[i::output_word_size][0],
+                                                                      input_vars[i::output_word_size][1],
+                                                                      result_ids[0]))
+            for chunk in range(1, number_of_inputs - 1):
+                constraints.extend(milp_utils.milp_xor_truncated_wordwise(model,
+                                                                          input_vars[i::output_word_size][chunk + 1],
+                                                                          result_ids[chunk - 1],
+                                                                          result_ids[chunk]))
+
+        return variables, constraints
+
+    def milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for XOR component
+        in deterministic truncated XOR differential model.
+
+        It follows a simplified model:
+        if dX0 + dX1 > 2
+            then dY = 3
+	    elif dX0<2 /\ dX1<2
+	        then zeta Y = zetaX0 ^ zetaX1
+	    else dY = 2
+
+        INPUTS:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: cipher = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: xor_component = cipher.get_component_from_id("xor_0_32")
+            sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(milp)
+
+        """
+        x_class = model.trunc_wordvar
+
+        num_of_inputs = int(self.description[1])
+        output_bit_size = self.output_bit_size
+
+        input_class_vars, output_class_vars = self._get_wordwise_input_output_linked_class(model)
+
+
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_class_vars + output_class_vars]
+
+        constraints = []
+
+        input_vars = [x_class[var] for var in input_class_vars]
+        output_vars = [x_class[var] for var in output_class_vars]
+
+
+        for i in range(len(output_class_vars)):
+            input_words = input_vars[i::len(output_class_vars)]
+            input_a = input_words[0]
+            input_b = input_words[1]
+            output_c = output_vars[i]
+            var_if_list = []
+            then_constraints_list = []
+
+            # if dX0 + dX1 > 2 then dY = 3
+            a_b_greater_2, geq_2_constraints = milp_utils.milp_geq(model, input_a + input_b, 2, 2 * model._model.get_max(x_class) + 1)
+            var_if_list.append(a_b_greater_2)
+            constraints.extend(geq_2_constraints)
+            then_constraints_list.append([output_c == 3])
+
+
+            # elif dX0 < 2 /\ dX1 < 2 then zeta Y = zetaX0 ^ zetaX1
+            a_less_2, a_less_2_constraints = milp_utils.milp_less(model, input_a, 2, model._model.get_max(x_class) + 1)
+            b_less_2, b_less_2_constraints = milp_utils.milp_less(model, input_a, 2, model._model.get_max(x_class) + 1)
+            a_less_2_and_b_less_2, and_constraints = milp_utils.milp_and(model, a_less_2, b_less_2)
+
+            constraints.extend(a_less_2_constraints + b_less_2_constraints + and_constraints)
+
+            var_if_list.append(a_less_2_and_b_less_2)
+            xor_constraints = []
+            for _ in range(output_bit_size):
+                xor_constraints.extend(milp_utils.milp_xor(input_a, input_b, output_c))
+            then_constraints_list.append(xor_constraints)
+            # else dY = 2
+            else_constraints = [output_c == 2]
+
+            constraints.extend(milp_utils.milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraints, num_of_inputs * model._model.get_max(x_class)))
+
+            return variables, constraints
+
 
     def minizinc_constraints(self, model):
         r"""

@@ -55,6 +55,7 @@ class MinizincModel:
             self.false_value = "0"
 
         self.probability_vars = []
+        self.carries_vars = []
         self.mzn_comments = []
         self.intermediate_constraints_array = []
         self.mzn_output_directives = []
@@ -66,6 +67,7 @@ class MinizincModel:
         self._cipher = cipher
         self._variables_list = []
         self._model_constraints = []
+        self.carries_vars = []
         if probability_weight_per_round and len(probability_weight_per_round) != self._cipher.number_of_rounds:
             raise ValueError("probability_weight_per_round size must be equal to cipher_number_of_rounds")
 

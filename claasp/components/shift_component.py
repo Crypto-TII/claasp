@@ -459,8 +459,109 @@ class SHIFT(Component):
 
         return variables, constraints
 
-    def milp_deterministic_truncated_xor_differential_trail_constraints(self, model):
-        return self.milp_constraints(model)
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constrains modeling a component of type Shift.
+
+        EXAMPLE::
+
+            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+            sage: cipher = TeaBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: shift_component = cipher.get_component_from_id("shift_0_0")
+            sage: variables, constraints = shift_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[plaintext_8]', x_0),
+            ('x_class[plaintext_9]', x_1),
+            ...
+            ('x_class[shift_0_0_6]', x_14),
+            ('x_class[shift_0_0_7]', x_15)]
+            sage: constraints
+            [x_8 == x_4,
+            x_9 == x_5,
+            x_10 == x_6,
+            x_11 == x_7,
+            x_12 == 0,
+            x_13 == 0,
+            x_14 == 0,
+            x_15 == 0]
+
+        """
+        x_class = model.trunc_binvar
+
+        input_vars, output_vars = self._get_input_output_variables()
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+        constraints = []
+        output_bit_size = self.output_bit_size
+        shift_step = self.description[1]
+        abs_shift_step = abs(shift_step)
+
+        if shift_step < 0:
+            input_vars = input_vars[abs_shift_step:] + [0] * abs_shift_step
+        elif shift_step > 0:
+            input_vars = [0] * abs_shift_step + input_vars[:-abs_shift_step]
+
+        for i in range(output_bit_size):
+            if input_vars[i] == 0:
+                constraints.append(x_class[output_vars[i]] == 0)
+            else:
+                constraints.append(x_class[output_vars[i]] == x_class[input_vars[i]])
+
+        return variables, constraints
+
+    def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constrains modeling a component of type Shift.
+
+        EXAMPLE::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: cipher = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: from claasp.components.shift_component import SHIFT
+            sage: shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
+            sage: variables, constraints = shift_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[sbox_0_2_word_0_class]', x_0),
+             ('x_class[sbox_0_6_word_0_class]', x_1),
+             ...
+             ('x[shift_0_18_30]', x_70),
+             ('x[shift_0_18_31]', x_71)]
+            sage: constraints
+            [x_4 == x_1,
+             x_5 == x_2,
+             ...
+             x_70 == 0,
+             x_71 == 0]
+
+        """
+        x_class = model.trunc_wordvar
+
+        input_vars, output_vars = self._get_wordwise_input_output_linked_class(model)
+        class_variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+        constraints = []
+        output_word_size = self.output_bit_size // model.word_size
+        shift_step = self.description[1]
+        abs_shift_word_step = abs(shift_step) // model.word_size
+
+        if shift_step < 0:
+            input_vars = input_vars[abs_shift_word_step:] + [0] * abs_shift_word_step
+        elif shift_step > 0:
+            input_vars = [0] * abs_shift_word_step + input_vars[:-abs_shift_word_step]
+
+        for i in range(output_word_size):
+            if input_vars[i] == 0:
+                constraints.append(x_class[output_vars[i]] == 0)
+            else:
+                constraints.append(x_class[output_vars[i]] == x_class[input_vars[i]])
+
+        bit_variables, bit_constraints = self.milp_constraints(model)
+
+        return class_variables + bit_variables, constraints + bit_constraints
 
     def milp_xor_differential_propagation_constraints(self, model):
         return self.milp_constraints(model)

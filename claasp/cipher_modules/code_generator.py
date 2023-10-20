@@ -623,6 +623,8 @@ def build_function_call(component):
                    f"(component_input, {component.output_bit_size}, {component.description[1]})"
         elif component.description[0] == 'NOT':
             return f"{component.description[0]}(component_input)"
+        elif component.description[0] in ['MODADD', 'MODSUB']:
+            return f"{component.description[0]}(component_input, {component.description[1]}, {component.description[2]})"
         else:
             return f"{component.description[0]}(component_input, {component.description[1]})"
     elif component.type == CONSTANT:
@@ -779,7 +781,7 @@ def generate_word_based_c_code(cipher, word_size, intermediate_output, verbosity
         code.append('\tchar *str;')
     code.extend(get_rounds_word_based_c_code(cipher, intermediate_output, verbosity, word_size))
     code.append('}')
-    code.append('int main(int argc, char *argv[]) {{')
+    code.append('int main(int argc, char *argv[]) {')
     evaluate_args = []
     for i in range(len(cipher.inputs)):
         evaluate_args.append(cipher.inputs[i])
