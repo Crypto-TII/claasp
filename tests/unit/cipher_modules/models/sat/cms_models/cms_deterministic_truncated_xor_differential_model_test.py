@@ -1,5 +1,5 @@
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.cipher_modules.models.sat.cms_models.cms_deterministic_truncated_xor_differential_model import \
+from claasp.cipher_modules.models.sat.cms_models.cms_bitwise_deterministic_truncated_xor_differential_model import \
     CmsSatDeterministicTruncatedXorDifferentialModel
 
 
