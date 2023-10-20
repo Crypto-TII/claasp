@@ -44,9 +44,9 @@ For any further information, visit `CryptoMiniSat - XOR clauses
 <https://www.msoos.org/xor-clauses/>`_.
 """
 from claasp.cipher_modules.models.sat.utils import utils
-from claasp.cipher_modules.models.sat.sat_models.sat_deterministic_truncated_xor_differential_model import \
+from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import \
     SatDeterministicTruncatedXorDifferentialModel
-from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
+from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN,
                                   WORD_OPERATION)
 
 
@@ -79,7 +79,7 @@ class CmsSatDeterministicTruncatedXorDifferentialModel(SatDeterministicTruncated
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.sat.cms_models.cms_deterministic_truncated_xor_differential_model import CmsSatDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.sat.cms_models.cms_bitwise_deterministic_truncated_xor_differential_model import CmsSatDeterministicTruncatedXorDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=22)
             sage: cms = CmsSatDeterministicTruncatedXorDifferentialModel(speck)
             sage: cms.build_deterministic_truncated_xor_differential_trail_model()
@@ -89,12 +89,11 @@ class CmsSatDeterministicTruncatedXorDifferentialModel(SatDeterministicTruncated
         constraints = self.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
+        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION)
+        operation_types = ('AND', 'MODADD', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR')
 
         for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION]
             operation = component.description[0]
-            operation_types = ["ROTATE", "SHIFT"]
-
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.cms_deterministic_truncated_xor_differential_trail_constraints()
             else:
