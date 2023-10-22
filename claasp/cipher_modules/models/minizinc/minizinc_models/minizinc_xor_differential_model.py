@@ -51,7 +51,9 @@ class MinizincXorDifferentialModel(MinizincModel):
             return None
 
     @staticmethod
-    def _parse_solution(result, solution, list_of_vars, probability_vars, statistics='None'):
+    def _parse_solution(
+            result, solution, list_of_vars, probability_vars, result_status, solution_dict, result_statistics=None
+    ):
         def get_hex_string_from_bool_dict(data, bool_dict, probability_vars_weights_):
             temp_result = {}
             for sublist in data:
@@ -66,9 +68,9 @@ class MinizincXorDifferentialModel(MinizincModel):
 
             return temp_result
 
-        parsed_solution = {'total_weight': None, 'component_values': {}}
-        if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
-            dict_of_solutions = solution.__dict__
+        parsed_solution = {}
+        if result_status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+            dict_of_solutions = solution_dict
             probability_vars_weights = MinizincXorDifferentialModel.parse_probability_vars(
                 result, solution, probability_vars
             )
@@ -78,10 +80,7 @@ class MinizincXorDifferentialModel(MinizincModel):
                 list_of_vars, dict_of_solutions, probability_vars_weights
             )
 
-        parsed_solution['status'] = str(result.status)
 
-        if statistics:
-            parsed_solution['statistics'] = result.statistics
         return parsed_solution
 
     @staticmethod
@@ -111,14 +110,28 @@ class MinizincXorDifferentialModel(MinizincModel):
         if total_weight == "list_of_solutions":
             solutions = []
             for solution in result.solution:
-                parsed_solution = MinizincXorDifferentialModel._parse_solution(result, solution, list_of_vars, probability_vars)
+                parsed_solution = {'total_weight': None, 'component_values': {}}
+                parsed_solution_temp = {}
+                if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+                    parsed_solution_temp = MinizincXorDifferentialModel._parse_solution(
+                        result, solution, list_of_vars, probability_vars, result.status, solution.__dict__
+                    )
+                parsed_solution['status'] = str(result.status)
+                parsed_solution = {**parsed_solution, **parsed_solution_temp}
                 solutions.append({**parsed_solution, **common_parsed_data})
+
             return solutions
         else:
-            parsed_result = MinizincXorDifferentialModel._parse_solution(
-                result, result.solution, list_of_vars, probability_vars, result.statistics
-            )
-            return {**parsed_result, **common_parsed_data}
+            parsed_solution = {'total_weight': None, 'component_values': {}}
+            parsed_solution_temp = {}
+            if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+                parsed_solution_temp = MinizincXorDifferentialModel._parse_solution(
+                    result, result.solution, list_of_vars, probability_vars, result.status,
+                    result.solution.__dict__, result.statistics
+                )
+            parsed_solution['status'] = str(result.status)
+            parsed_solution = {**parsed_solution, **parsed_solution_temp}
+            return {**parsed_solution, **common_parsed_data}
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
         """
@@ -364,7 +377,7 @@ class MinizincXorDifferentialModel(MinizincModel):
         self._model_constraints.extend(self.weight_constraints(fixed_weight, "="))
         result = self.solve(solver_name=solver_name, all_solutions_=True)
         total_weight = MinizincXorDifferentialModel._get_total_weight(result)
-        parsed_result = self._parse_result(
+        parsed_result = MinizincXorDifferentialModel._parse_result(
             result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
             self.probability_vars
         )
