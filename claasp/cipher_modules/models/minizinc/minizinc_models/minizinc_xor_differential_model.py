@@ -50,7 +50,8 @@ class MinizincXorDifferentialModel(MinizincModel):
         else:
             return None
 
-    def _parse_solution(self, result, solution, list_of_vars, statistics='None'):
+    @staticmethod
+    def _parse_solution(result, solution, list_of_vars, probability_vars, statistics='None'):
         def get_hex_string_from_bool_dict(data, bool_dict, probability_vars_weights_):
             temp_result = {}
             for sublist in data:
@@ -68,7 +69,9 @@ class MinizincXorDifferentialModel(MinizincModel):
         parsed_solution = {'total_weight': None, 'component_values': {}}
         if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
             dict_of_solutions = solution.__dict__
-            probability_vars_weights = self.parse_probability_vars(result, solution)
+            probability_vars_weights = MinizincXorDifferentialModel.parse_probability_vars(
+                result, solution, probability_vars
+            )
             solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
             parsed_solution['total_weight'] = solution_total_weight
             parsed_solution['component_values'] = get_hex_string_from_bool_dict(
@@ -81,7 +84,10 @@ class MinizincXorDifferentialModel(MinizincModel):
             parsed_solution['statistics'] = result.statistics
         return parsed_solution
 
-    def _parse_result(self, result, solver_name, total_weight, model_type):
+    @staticmethod
+    def _parse_result(
+            result, solver_name, total_weight, model_type, _variables_list, cipher_id, probability_vars
+    ):
         def _entry_matches(entry, prefix):
             valid_starts = [f"var bool: {prefix}", f"var 0..1: {prefix}"]
             return any(entry.startswith(vs) for vs in valid_starts)
@@ -95,9 +101,9 @@ class MinizincXorDifferentialModel(MinizincModel):
                     temp_result.append(sublist)
             return temp_result
 
-        list_of_vars = group_strings_by_pattern(self._variables_list)
+        list_of_vars = group_strings_by_pattern(_variables_list)
         common_parsed_data = {
-            'id': self.cipher_id,
+            'id': cipher_id,
             'model_type': model_type,
             'solver_name': solver_name
         }
@@ -105,11 +111,13 @@ class MinizincXorDifferentialModel(MinizincModel):
         if total_weight == "list_of_solutions":
             solutions = []
             for solution in result.solution:
-                parsed_solution = self._parse_solution(result, solution, list_of_vars)
+                parsed_solution = MinizincXorDifferentialModel._parse_solution(result, solution, list_of_vars, probability_vars)
                 solutions.append({**parsed_solution, **common_parsed_data})
             return solutions
         else:
-            parsed_result = self._parse_solution(result, result.solution, list_of_vars, result.statistics)
+            parsed_result = MinizincXorDifferentialModel._parse_solution(
+                result, result.solution, list_of_vars, probability_vars, result.statistics
+            )
             return {**parsed_result, **common_parsed_data}
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
@@ -356,7 +364,10 @@ class MinizincXorDifferentialModel(MinizincModel):
         self._model_constraints.extend(self.weight_constraints(fixed_weight, "="))
         result = self.solve(solver_name=solver_name, all_solutions_=True)
         total_weight = MinizincXorDifferentialModel._get_total_weight(result)
-        parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
+        parsed_result = self._parse_result(
+            result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
+            self.probability_vars
+        )
 
         return parsed_result
 
@@ -404,7 +415,10 @@ class MinizincXorDifferentialModel(MinizincModel):
             self.weight_constraints(min_weight, ">", max_weight))
         result = self.solve(solver_name=solver_name, all_solutions_=True)
         total_weight = MinizincXorDifferentialModel._get_total_weight(result)
-        parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
+        parsed_result = self._parse_result(
+            result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
+            self.probability_vars
+        )
 
         return parsed_result
 
@@ -418,7 +432,10 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         result = self.solve(solver_name=solver_name)
         total_weight = self._get_total_weight(result)
-        parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
+        parsed_result = MinizincXorDifferentialModel._parse_result(
+            result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
+            self.probability_vars
+        )
         parsed_result['objective_strategy'] = 'min_max_key_schedule_permutation'
 
         return parsed_result
@@ -467,7 +484,10 @@ class MinizincXorDifferentialModel(MinizincModel):
         self._model_constraints.extend(self.weight_constraints())
         result = self.solve(solver_name=solver_name)
         total_weight = MinizincXorDifferentialModel._get_total_weight(result)
-        parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
+        parsed_result = self._parse_result(
+            result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
+            self.probability_vars
+        )
 
         return parsed_result
 
@@ -477,7 +497,7 @@ class MinizincXorDifferentialModel(MinizincModel):
             var_names_inputs = [self._cipher.inputs[i] + "_" + self.output_postfix + str(j)
                                 for j in range(self._cipher.inputs_bit_size[i])]
             output_string_for_cipher_input = \
-                "output [\"cipher_input:" + self._cipher.inputs[i] + "\" ++ show(" + \
+                "output [\"cipher_input:" + self._cipher.inputs[i] + ":\" ++ show(" + \
                 MinizincXorDifferentialModel._create_minizinc_1d_array_from_list(var_names_inputs) + ")++\"\\n\"];\n"
             output_string_for_cipher_inputs.append(output_string_for_cipher_input)
 
@@ -571,11 +591,12 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         return objective_string
 
-    def parse_probability_vars(self, result, solution):
+    @staticmethod
+    def parse_probability_vars(result, solution, probability_vars):
         parsed_result = {}
         if result.status not in [Status.UNKNOWN, Status.UNSATISFIABLE, Status.ERROR]:
 
-            for probability_var in self.probability_vars:
+            for probability_var in probability_vars:
                 lst_value = solution.__dict__[probability_var]
                 parsed_result[probability_var] = {
                     'value': str(hex(int("".join(str(0) if str(x) in ["false", "0"] else str(1) for x in lst_value),
