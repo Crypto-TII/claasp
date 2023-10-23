@@ -191,18 +191,18 @@ def add_padding(a, number_of_rows, res_vector, word_size):
     for row in range(number_of_rows):
         tmp = poly_to_int(res_vector[row], word_size, a)
         if word_size == 8 and tmp < 16:
-            output_vector.append(4)
+            output_vector.append(BitArray(4))
         if word_size in [4, 8]:
             output_vector.append(hex(tmp))
         if word_size == 3 and tmp < 2:
-            output_vector.append(2)
+            output_vector.append(BitArray(2))
             output_vector.append(bin(tmp))
         elif word_size == 3 and tmp < 4:
-            output_vector.append(1)
+            output_vector.append(BitArray(1))
             output_vector.append(bin(tmp))
         elif word_size not in [4, 8]:
             if tmp < 2:
-                output_vector.append(1)
+                output_vector.append(BitArray(1))
             output_vector.append(bin(tmp))
 
     return output_vector
@@ -521,7 +521,7 @@ def NOT(input, verbosity=False):
     return output
 
 
-def MODADD(input, number_of_inputs, verbosity=False):
+def MODADD(input, number_of_inputs, modulus, verbosity=False):
     """
     The modulus is 2^w, where w=Floor(input_length/number_of_inputs).
 
@@ -533,7 +533,8 @@ def MODADD(input, number_of_inputs, verbosity=False):
     """
     block_len = input.len // number_of_inputs
     output = input[0:block_len].uint
-    modulus = 2 ** block_len
+    if modulus is None:
+        modulus = 2 ** block_len
     for i in range(1, number_of_inputs):
         output = (output + input[i * block_len:(i + 1) * block_len].uint) % modulus
 
@@ -547,7 +548,7 @@ def MODADD(input, number_of_inputs, verbosity=False):
     return output
 
 
-def MODSUB(input, number_of_inputs, verbosity=False):
+def MODSUB(input, number_of_inputs, modulus, verbosity=False):
     """
     The modulus is 2^w, where w=Floor(input_length/number_of_inputs).
 
@@ -559,7 +560,8 @@ def MODSUB(input, number_of_inputs, verbosity=False):
     """
     block_len = input.len // number_of_inputs
     output = input[0:block_len].uint
-    modulus = 2 ** block_len
+    if modulus is None:
+        modulus = 2 ** block_len
     for i in range(1, number_of_inputs):
         output = (output - input[i * block_len:(i + 1) * block_len].uint) % modulus
 
@@ -701,10 +703,10 @@ def THETA_KECCAK(input):
         parity_rows.append(lanes_xored[(4 + i) % 5] ^ rotated_xored_lanes[(1 + i) % 5])
 
     # Xor rows parity to the corresponding lane
-    output = 0
+    output = BitArray(0)
     for i in range(5):
         for j in range(5):
-            output += input[i * plane_len + j * lane_len: i * plane_len + (j + 1) * lane_len] ^ parity_rows[i]
+            output += input[i * plane_len + j * lane_len: i * plane_len + (j + 1) * lane_len] ^ BitArray(parity_rows[i])
 
     return output
 

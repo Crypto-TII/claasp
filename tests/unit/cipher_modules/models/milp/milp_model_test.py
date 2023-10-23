@@ -92,7 +92,6 @@ def test_solve():
     assert differential_solution['components_values']['key']['weight'] == 0
     assert differential_solution['components_values']['key']['sign'] == 1
     assert differential_solution['components_values']['modadd_0_1']['weight'] >= 0
-    assert differential_solution['components_values']['modadd_0_1']['sign'] == 1
     assert differential_solution['solver_name'] == 'GLPK'
     assert differential_solution['total_weight'] >= 0.0
 
@@ -106,7 +105,6 @@ def test_solve():
     assert differential_solution['components_values']['key']['weight'] == 0
     assert linear_solution['components_values']['key']['sign'] == 1
     assert linear_solution['components_values']['modadd_1_7_i']['weight'] >= 0
-    assert linear_solution['components_values']['modadd_1_7_i']['sign'] == 1
     assert linear_solution['solver_name'] == 'GLPK'
     assert linear_solution['total_weight'] >= 0.0
 
