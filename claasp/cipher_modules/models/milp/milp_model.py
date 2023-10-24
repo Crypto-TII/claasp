@@ -241,8 +241,7 @@ class MilpModel:
             constraints.append(p["probability"] == 10 * weight)
             variables = [("p[probability]", p["probability"])]
         elif weight != -1:
-            # constraints.append(p["probability"] <= -weight)
-            self._model.get_max(p["probability"], - 10 * weight)
+            self._model.set_max(p["probability"], - 10 * weight)
             variables = [("p[probability]", p["probability"])]
 
         return variables, constraints
