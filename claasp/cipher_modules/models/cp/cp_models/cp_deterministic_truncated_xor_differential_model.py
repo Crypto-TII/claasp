@@ -51,17 +51,12 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
 
     def add_solution_to_components_values(self, component_id, component_solution, components_values, j, output_to_parse,
                                           solution_number, string):
-        inverse_cipher = self.inverse_cipher
         if component_id in self._cipher.inputs:
             components_values[f'solution{solution_number}'][f'{component_id}'] = component_solution
-        elif component_id in self.inverse_cipher.inputs:
-            components_values[f'solution{solution_number}'][f'inverse_{component_id}'] = component_solution
         elif f'{component_id}_i' in string:
             components_values[f'solution{solution_number}'][f'{component_id}_i'] = component_solution
         elif f'{component_id}_o' in string:
             components_values[f'solution{solution_number}'][f'{component_id}_o'] = component_solution
-        elif f'inverse_{component_id} ' in string:
-            components_values[f'solution{solution_number}'][f'inverse_{component_id}'] = component_solution
         elif f'{component_id} ' in string:
             components_values[f'solution{solution_number}'][f'{component_id}'] = component_solution
     
@@ -631,12 +626,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
              ['0'])
         """
         components_values, memory, time = self.parse_solver_information(output_to_parse)
-        all_components = [*self._cipher.inputs]
-        for r in range(self.middle_round):
-            all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
-        for r in range(self._cipher.number_of_rounds - self.middle_round + 1):
-            all_components.extend(['inverse_' + component.id for component in [*self.inverse_cipher.get_components_in_round(r)]])
-        all_components.extend([*self.inverse_cipher.inputs])
+        all_components = [*self._cipher.inputs, *self._cipher.get_all_components_ids()]
         for component_id in all_components:
             solution_number = 1
             for j, string in enumerate(output_to_parse):
@@ -648,7 +638,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
                                                            output_to_parse, solution_number, string)
                 elif '----------' in string:
                     solution_number += 1
-        if 'impossible' in model_type:
+        if 'impossible' in model_type and solution_number > 1:
             components_values = self.extract_incompatibilities_from_output(components_values['solution1'])
 
         return time, memory, components_values
@@ -696,7 +686,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         input_file_path = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name)
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        os.remove(input_file_path)
+        #os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()

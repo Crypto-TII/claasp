@@ -291,7 +291,9 @@ class CpModel:
         solvers = ['xor_differential_one_solution',
                    'xor_linear_one_solution',
                    'deterministic_truncated_xor_differential_one_solution',
-                   'impossible_xor_differential_one_solution']
+                   'impossible_xor_differential_one_solution',
+                   'differential_pair_one_solution',
+                   'evaluate_cipher']
         write_model_to_file(self._model_constraints, input_file_path)
         if model_type in solvers:
             command = ['minizinc', '--solver-statistics', '--solver', solver_name, input_file_path]

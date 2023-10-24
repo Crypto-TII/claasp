@@ -339,7 +339,7 @@ class SBOX(Component):
     def cms_xor_linear_mask_propagation_constraints(self, model):
         return self.sat_xor_linear_mask_propagation_constraints(model)
 
-    def cp_constraints(self, sbox_mant):
+    def cp_constraints(self, sbox_mant, second=False):
         """
         Return lists of declarations and constraints for SBOX component for CP CIPHER model.
 
@@ -362,10 +362,14 @@ class SBOX(Component):
         output_id_link = self.id
         input_bit_positions = self.input_bit_positions
         sbox = self.description
+        if second:
+            sec_output_id_link = 'second_' + self.id
+        else:
+            sec_output_id_link = self.id
         already_in = False
-        output_id_link_sost = output_id_link
+        output_id_link_sost = sec_output_id_link
         for mant in sbox_mant:
-            if sbox == mant[0]:
+            if sbox == mant[0] and ((not second) or (second and 'second' in mant[1])):
                 already_in = True
                 output_id_link_sost = mant[1]
         cp_declarations = []
@@ -374,7 +378,7 @@ class SBOX(Component):
             bin_sbox = (','.join(f'{sbox[i]:0{output_size}b}') for i in range(2 ** input_size))
             table_values = ','.join([f'{i},{s}' for i, s in zip(bin_i, bin_sbox)])
             sbox_declaration = f'array [1..{len(sbox)}, 1..{input_size + output_size}] of int: ' \
-                               f'table_{output_id_link} = array2d(1..{len(sbox)}, 1..{input_size + output_size}, ' \
+                               f'table_{output_id_link_sost} = array2d(1..{len(sbox)}, 1..{input_size + output_size}, ' \
                                f'[{table_values}]);'
             cp_declarations.append(sbox_declaration)
             sbox_mant.append((sbox, output_id_link))
