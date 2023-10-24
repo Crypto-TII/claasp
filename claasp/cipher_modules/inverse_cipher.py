@@ -1,7 +1,8 @@
 from copy import *
 
 from sage.crypto.sbox import SBox
-from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
+from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component, \
+    get_inverse_matrix_in_integer_representation
 from claasp.component import Component
 from claasp.components import modsub_component, cipher_output_component, linear_layer_component
 from claasp.input import Input
@@ -725,13 +726,13 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == MIX_COLUMN:
-        input_id_links, input_bit_positions = compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(component, available_output_components, all_equivalent_bits, self)
-        binary_matrix = binary_matrix_of_linear_component(component)
-        inv_binary_matrix = binary_matrix.inverse()
-        inverse_component = Component(component.id, LINEAR_LAYER,
+        input_id_links, input_bit_positions = compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(
+            component, available_output_components, all_equivalent_bits, self)
+        inv_matrix = get_inverse_matrix_in_integer_representation(component)
+        inverse_component = Component(component.id, component.type,
                                       Input(component.input_bit_size, input_id_links, input_bit_positions),
-                                      component.output_bit_size, list(inv_binary_matrix.transpose()))
-        inverse_component.__class__ = linear_layer_component.LinearLayer
+                                      component.output_bit_size, [[list(row) for row in inv_matrix]] + component.description[1:])
+        inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == WORD_OPERATION and component.description[0] == "SIGMA":
