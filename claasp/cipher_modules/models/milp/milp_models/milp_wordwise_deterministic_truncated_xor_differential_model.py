@@ -384,8 +384,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         components_values = {}
         list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
         for component_id in list_component_ids:
-            dict_tmp = self._get_component_value_weight(component_id,
-                                                        objective_variables, components_variables)
+            dict_tmp = self._get_component_value_weight(component_id, components_variables)
             components_values[component_id] = dict_tmp
         return components_values
     def _parse_solver_output(self):
@@ -395,9 +394,9 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         objective_value = objective_variables["number_of_unknown_patterns"]
         components_values = self._get_component_values(objective_variables, components_variables)
 
-        return objective_value, objective_variables, components_values, components_variables
+        return objective_value, components_values
 
-    def _get_component_value_weight(self, component_id, probability_variables, components_variables):
+    def _get_component_value_weight(self, component_id, components_variables):
 
         wordsize = self._word_size
         if component_id in self._cipher.inputs:
@@ -408,15 +407,13 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         diff_str = {}
         suffix_dict = {"": output_size}
 
-        final_output = self._get_final_output(component_id, components_variables, diff_str,
-                                             probability_variables, suffix_dict)
+        final_output = self._get_final_output(component_id, components_variables, diff_str, suffix_dict)
         if len(final_output) == 1:
             final_output = final_output[0]
 
         return final_output
 
-    def _get_final_output(self, component_id, components_variables, diff_str,
-                                              probability_variables, suffix_dict):
+    def _get_final_output(self, component_id, components_variables, diff_str, suffix_dict):
         final_output = []
         for suffix in suffix_dict.keys():
             diff_str[suffix] = ""

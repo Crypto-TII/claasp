@@ -389,8 +389,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             full_cipher_components.insert(index + 1, incompatible_value)
             list_component_ids = self._forward_cipher.inputs + full_cipher_components
         for component_id in list_component_ids:
-            dict_tmp = self._get_component_value_weight(component_id,
-                                                       objective_variables, components_variables)
+            dict_tmp = self._get_component_value_weight(component_id, components_variables)
             components_values[component_id] = dict_tmp
         return components_values
 
@@ -406,9 +405,9 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             objective_variables = mip.get_values(self._integer_variable)
             objective_value = objective_variables["number_of_unknown_patterns"]
         components_values = self._get_component_values(objective_variables, components_variables)
-        return objective_value, objective_variables, components_values, components_variables
+        return objective_value, components_values
 
-    def _get_component_value_weight(self, component_id, probability_variables, components_variables):
+    def _get_component_value_weight(self, component_id, components_variables):
 
         if component_id in self._cipher.inputs:
             output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
@@ -426,8 +425,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             output_size = component.output_bit_size
         diff_str = {}
         suffix_dict = {"": output_size}
-        final_output = self._get_final_output(component_id, components_variables, diff_str,
-                                             probability_variables, suffix_dict)
+        final_output = self._get_final_output(component_id, components_variables, diff_str, suffix_dict)
         if len(final_output) == 1:
             final_output = final_output[0]
 

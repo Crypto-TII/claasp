@@ -335,13 +335,13 @@ class MilpModel:
         if external_solver_name:
             solver_name_in_solution = external_solver_name
             model_path = _write_model_to_lp_file(self, model_type)
-            status, objective_value, objective_variables, components_values, components_variables, milp_time, milp_memory = self._solve_with_external_solver(
+            status, objective_value, components_values, milp_time, milp_memory = self._solve_with_external_solver(
                 model_type, model_path, external_solver_name)
             os.remove(model_path)
         else:
             solver_name_in_solution = solver_name
             status, milp_time, milp_memory = self._solve_with_internal_solver()
-            objective_value, objective_variables, components_values, components_variables = self._parse_solver_output()
+            objective_value, components_values = self._parse_solver_output()
 
         solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name_in_solution, milp_time,
                                                          milp_memory, components_values, objective_value)

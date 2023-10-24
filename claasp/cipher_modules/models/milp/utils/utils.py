@@ -60,8 +60,6 @@ def _parse_external_solver_output(model, model_type, solver_name, solver_process
 
     solve_time = _get_data(solver_specs['time'], str(solver_process))
 
-    objective_variables = {}
-    components_variables = {}
     status = 'UNSATISFIABLE'
     total_weight = None
 
@@ -83,7 +81,7 @@ def _parse_external_solver_output(model, model_type, solver_name, solver_process
 
         components_values = model._get_component_values(objective_variables, components_variables)
 
-    return status, total_weight, objective_variables, components_values, components_variables, solve_time
+    return status, total_weight, components_values, solve_time
 
 
 def generate_espresso_input(valid_points):

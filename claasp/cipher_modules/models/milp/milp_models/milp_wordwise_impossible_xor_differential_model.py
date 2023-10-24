@@ -310,8 +310,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             full_cipher_components.insert(index + 1, incompatible_value)
             list_component_ids = self._forward_cipher.inputs + full_cipher_components
         for component_id in list_component_ids:
-            dict_tmp = self._get_component_value_weight(component_id,
-                                                        objective_variables, components_variables)
+            dict_tmp = self._get_component_value_weight(component_id, components_variables)
             components_values[component_id] = dict_tmp
         return components_values
 
@@ -329,9 +328,9 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             objective_value = objective_variables["number_of_unknown_patterns"]
         components_values = self._get_component_values(objective_variables, components_variables)
 
-        return objective_value, objective_variables, components_values, components_variables
+        return objective_value, components_values
 
-    def _get_component_value_weight(self, component_id, probability_variables, components_variables):
+    def _get_component_value_weight(self, component_id, components_variables):
 
         wordsize = self._word_size
         if component_id in self._cipher.inputs:
@@ -353,8 +352,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             output_size = component.output_bit_size // wordsize
         diff_str = {}
         suffix_dict = {"": output_size}
-        final_output = self._get_final_output(component_id, components_variables, diff_str,
-                                              probability_variables, suffix_dict)
+        final_output = self._get_final_output(component_id, components_variables, diff_str, suffix_dict)
         if len(final_output) == 1:
             final_output = final_output[0]
 

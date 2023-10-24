@@ -558,7 +558,7 @@ class MilpXorDifferentialModel(MilpModel):
         components_variables = mip.get_values(self._binary_variable)
         components_values = self._get_component_values(objective_variables, components_variables)
 
-        return objective_value, objective_variables, components_values, components_variables
+        return objective_value, components_values
 
     def _get_component_value_weight(self, component_id, probability_variables, components_variables):
 
