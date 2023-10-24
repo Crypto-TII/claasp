@@ -329,7 +329,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             objective_value = objective_variables["number_of_unknown_patterns"]
         components_values = self._get_component_values(objective_variables, components_variables)
 
-        return objective_value, objective_variables, components_values, components_variables
+        return objective_value, components_values
 
     def _get_component_value_weight(self, component_id, probability_variables, components_variables):
 
