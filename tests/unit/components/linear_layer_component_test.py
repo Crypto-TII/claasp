@@ -309,8 +309,8 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
     assert str(variables[0]) == "('x[rot_0_17_word_0_class_bit_0]', x_0)"
     assert str(variables[1]) == "('x[rot_0_17_word_0_class_bit_1]', x_1)"
-    assert str(variables[-2]) == "('x[mix_column_0_21_word_31_class_bit_0]', x_126)"
-    assert str(variables[-1]) == "('x[mix_column_0_21_word_31_class_bit_1]', x_127)"
+    assert str(variables[-2]) == "('x[mix_column_0_21_word_3_class_bit_0]', x_14)"
+    assert str(variables[-1]) == "('x[mix_column_0_21_word_3_class_bit_1]', x_15)"
 
     assert str(constraints[0]) == '1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 - x_15'
     assert str(constraints[1]) == '1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_7 - x_15'
