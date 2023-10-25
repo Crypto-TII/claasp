@@ -281,10 +281,32 @@ def branch_number(component, type, format):
         return min(calculate_weights_for_mix_column(component, format, type))
 
 def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, input_bit_size, output_bit_size):
-    G = PolynomialRing(GF(2 ** word_size), 'x')
+    """
+        sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import instantiate_matrix_over_correct_field, field_element_matrix_to_integer_matrix
+        sage: midori = MidoriBlockCipher(number_of_rounds=2)
+        sage: mix_column_component = midori.get_component_from_id('mix_column_0_20')
+        sage: description = mix_column_component.description
+        sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+                                                         mix_column_component.input_bit_size, mix_column_component.output_bit_size)
+
+        sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import instantiate_matrix_over_correct_field, field_element_matrix_to_integer_matrix
+        sage: midori = MidoriBlockCipher(number_of_rounds=2)
+        sage: mix_column_component = midori.get_component_from_id('mix_column_0_21')
+        sage: description = mix_column_component.description
+        sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+                                                         mix_column_component.input_bit_size, mix_column_component.output_bit_size)
+
+    """
+
+    G = PolynomialRing(GF(2), 'x')
     x = G.gen()
     irr_poly = int_to_poly(polynomial_as_int, word_size, x)
-    F = QuotientRing(G, G.ideal(irr_poly), 'a')
+    if irr_poly:
+        F = GF(2 ** word_size, name='a', modulus=irr_poly)
+    else:
+        F = GF(2 ** word_size)
     a = F.gen()
     input_word_size = input_bit_size // word_size
     output_word_size = output_bit_size // word_size
@@ -296,6 +318,7 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
     final_mtr = Matrix(F, mtr)
 
     return final_mtr, F
+
 def is_mds(component):
     """
     A matrix is MDS if and only if all the minors (determinants of square submatrices) are non-zero
@@ -337,9 +360,81 @@ def is_mds(component):
         for i in range(num_rows - size + 1):
             for j in range(num_cols - size + 1):
                 submatrix = final_mtr[i:i + size, j:j + size]
-                if submatrix.det() == 0:
+                if submatrix.is_singular():
                     return False
     return True
+
+def field_element_matrix_to_integer_matrix(matrix):
+    """
+    Converts a matrix of field elements to the corresponding integer matrix representation
+
+    INPUT:
+
+    - ``matrix`` -- **Matrix object**; a matrix whose entries are field elements
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import instantiate_matrix_over_correct_field, field_element_matrix_to_integer_matrix
+        sage: aes = AESBlockCipher(number_of_rounds=3)
+        sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
+        sage: description = mix_column_component.description
+        sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+                                                         mix_column_component.input_bit_size, mix_column_component.output_bit_size)
+        sage: mc_matrix
+        [    a a + 1     1     1]
+        [    1     a a + 1     1]
+        [    1     1     a a + 1]
+        [a + 1     1     1     a]
+        sage: field_element_matrix_to_integer_matrix(mc_matrix)
+        [2 3 1 1]
+        [1 2 3 1]
+        [1 1 2 3]
+        [3 1 1 2]
+    """
+
+    int_matrix = []
+    for i in range(matrix.nrows()):
+        for j in range(matrix.ncols()):
+            int_matrix.append(matrix[i][j].integer_representation())
+
+    return Matrix(matrix.nrows(), matrix.ncols(), int_matrix)
+
+def get_inverse_matrix_in_integer_representation(component):
+    """
+    Returns the inverse matrix in its integer representation
+
+    INPUT:
+
+    - ``component`` -- **Component object**; a component from the cipher
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import get_inverse_matrix_in_integer_representation
+        sage: aes = AESBlockCipher(number_of_rounds=3)
+        sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
+        sage: get_inverse_matrix_in_integer_representation(mix_column_component)
+        [14 11 13  9]
+        [ 9 14 11 13]
+        [13  9 14 11]
+        [11 13  9 14]
+
+        sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import get_inverse_matrix_in_integer_representation
+        sage: midori = MidoriBlockCipher(number_of_rounds=3)
+        sage: mix_column_component = midori.get_component_from_id('mix_column_0_20')
+        sage: get_inverse_matrix_in_integer_representation(mix_column_component)
+
+
+    """
+    if component.type != MIX_COLUMN:
+        raise Exception(f"Component is not of type {MIX_COLUMN}")
+
+    description = component.description
+    matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+                                                      component.input_bit_size, component.output_bit_size)
+    return field_element_matrix_to_integer_matrix(matrix.inverse())
 
 def has_maximal_branch_number(component):
     """
@@ -348,6 +443,13 @@ def has_maximal_branch_number(component):
     - ``component`` -- **Component object**; a component from the cipher
 
     EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
+        sage: twofish = TwofishBlockCipher(number_of_rounds=2)
+        sage: mix_column_component = twofish.get_component_from_id('mix_column_0_1')
+        sage: has_maximal_branch_number(mix_column_component)
+        True
 
         sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
@@ -374,7 +476,7 @@ def has_maximal_branch_number(component):
     word_size = int(description[2])
     output_word_size = component.output_bit_size // word_size
 
-    if component.type == "mix_column":
+    if component.type == MIX_COLUMN:
         return branch_number(component, 'linear', 'word') == (output_word_size + 1)
 
 def calculate_weights_for_mix_column(component, format, type):
