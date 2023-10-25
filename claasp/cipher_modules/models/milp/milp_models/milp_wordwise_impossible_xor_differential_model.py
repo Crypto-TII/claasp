@@ -287,32 +287,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         return solution
 
     def _get_component_values(self, objective_variables, components_variables):
-        components_values = {}
-        if self._forward_cipher == self._cipher:
-            inconsistent_component_var = \
-                [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
-            inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
-
-            full_cipher_components = self._cipher.get_all_components_ids()
-            backward_components = self._backward_cipher.get_all_components_ids() + self._backward_cipher.inputs
-            index = full_cipher_components.index(inconsistent_component_id)
-            updated_cipher_components = full_cipher_components[:index + 1] + [
-                c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c for c in
-                full_cipher_components[index:]]
-            list_component_ids = self._forward_cipher.inputs + updated_cipher_components
-        else:
-            full_cipher_components = self._cipher.get_all_components_ids()
-            backward_components = self._backward_cipher.get_all_components_ids()
-            incompatible_value = backward_components[-1]
-
-            incompatible_component_id = "_".join(incompatible_value.split("_")[:-1])
-            index = full_cipher_components.index(incompatible_component_id)
-            full_cipher_components.insert(index + 1, incompatible_value)
-            list_component_ids = self._forward_cipher.inputs + full_cipher_components
-        for component_id in list_component_ids:
-            dict_tmp = self._get_component_value_weight(component_id, components_variables)
-            components_values[component_id] = dict_tmp
-        return components_values
+        return  milp_utils._get_component_values_for_impossible_models(self, objective_variables, components_variables)
 
     def _parse_solver_output(self):
         mip = self._model
@@ -350,9 +325,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         else:
             component = self._cipher.get_component_from_id(component_id)
             output_size = component.output_bit_size // wordsize
-        diff_str = {}
-        suffix_dict = {"": output_size}
-        final_output = self._get_final_output(component_id, components_variables, diff_str, suffix_dict)
+        suffix_dict = {"_class": output_size}
+        final_output = self._get_final_output(component_id, components_variables, suffix_dict)
         if len(final_output) == 1:
             final_output = final_output[0]
 

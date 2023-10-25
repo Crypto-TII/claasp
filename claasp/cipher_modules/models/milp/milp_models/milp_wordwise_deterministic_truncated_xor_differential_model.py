@@ -19,7 +19,8 @@ import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORDWISE_DETERMINISTIC_TRUNCATED
-from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints, fix_variables_value_deterministic_truncated_xor_differential_constraints
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints, \
+    fix_variables_value_deterministic_truncated_xor_differential_constraints, _get_variables_values_as_string
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
@@ -404,26 +405,18 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         else:
             component = self._cipher.get_component_from_id(component_id)
             output_size = component.output_bit_size // wordsize
-        diff_str = {}
-        suffix_dict = {"": output_size}
-
-        final_output = self._get_final_output(component_id, components_variables, diff_str, suffix_dict)
+        suffix_dict = {"_class": output_size}
+        final_output = self._get_final_output(component_id, components_variables, suffix_dict)
         if len(final_output) == 1:
             final_output = final_output[0]
 
         return final_output
 
-    def _get_final_output(self, component_id, components_variables, diff_str, suffix_dict):
+    def _get_final_output(self, component_id, components_variables, suffix_dict):
         final_output = []
         for suffix in suffix_dict.keys():
-            diff_str[suffix] = ""
-            for i in range(suffix_dict[suffix]):
-                if component_id + "_word_" + str(i) + suffix + "_class" in components_variables:
-                    bit = components_variables[component_id + "_word_" + str(i) + suffix + "_class"]
-                    diff_str[suffix] += f"{bit}".split(".")[0]
-                else:
-                    diff_str[suffix] += "*"
-            difference = diff_str[suffix]
-            final_output.append(set_component_solution(difference))
+            diff_str = _get_variables_values_as_string(component_id + "_word", components_variables, suffix,
+                                                            suffix_dict[suffix])
+            final_output.append(set_component_solution(diff_str))
 
         return final_output

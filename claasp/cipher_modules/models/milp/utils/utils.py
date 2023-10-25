@@ -18,6 +18,8 @@ import pickle
 import re, os
 from subprocess import run
 
+from bitstring import BitArray
+
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
     output_dictionary_that_contains_xor_inequalities,
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits)
@@ -27,7 +29,10 @@ from claasp.cipher_modules.models.milp.utils.config import EXTERNAL_MILP_SOLVERS
 from sage.numerical.mip import MIPSolverException
 
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED, \
-    MILP_WORDWISE_DETERMINISTIC_TRUNCATED
+    MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_BACKWARD_SUFFIX
+
+
+### -------------------------External solver parsing methods------------------------- ###
 
 
 def _write_model_to_lp_file(model, model_type):
@@ -84,6 +89,9 @@ def _parse_external_solver_output(model, model_type, solver_name, solver_process
     return status, total_weight, components_values, solve_time
 
 
+### -------------------------Dictionary handling------------------------- ###
+
+
 def generate_espresso_input(valid_points):
 
     input_size = len(valid_points[0])
@@ -124,6 +132,10 @@ def delete_espresso_dictionary(file_path):
     write_file = open(file_path, 'wb')
     pickle.dump({}, write_file)
     write_file.close()
+
+
+### -------------------------MILP usual operations------------------------- ###
+
 
 def milp_less(model, a, b, big_m):
     """
@@ -650,3 +662,54 @@ def fix_variables_value_deterministic_truncated_xor_differential_constraints(mil
                 constraints.append(one_among_n == 1)
 
     return constraints
+
+### -------------------------Solution parser ------------------------- ###
+def _get_component_values_for_impossible_models(model, objective_variables, components_variables):
+    components_values = {}
+    if model._forward_cipher == model._cipher:
+        inconsistent_component_var = \
+        [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
+        inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
+
+        full_cipher_components = model._cipher.get_all_components_ids()
+        backward_components = model._backward_cipher.get_all_components_ids() + model._backward_cipher.inputs
+        index = full_cipher_components.index(inconsistent_component_id)
+        updated_cipher_components = full_cipher_components[:index + 1] + [
+            c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c for c in full_cipher_components[index:]]
+        list_component_ids = model._forward_cipher.inputs + updated_cipher_components
+    else:
+        full_cipher_components = model._cipher.get_all_components_ids()
+        backward_components = model._backward_cipher.get_all_components_ids()
+        incompatible_value = backward_components[-1]
+
+        incompatible_component_id = "_".join(incompatible_value.split("_")[:-1])
+        index = full_cipher_components.index(incompatible_component_id)
+        full_cipher_components.insert(index + 1, incompatible_value)
+        list_component_ids = model._forward_cipher.inputs + full_cipher_components
+    for component_id in list_component_ids:
+        dict_tmp = model._get_component_value_weight(component_id, components_variables)
+        components_values[component_id] = dict_tmp
+    return components_values
+
+
+def _get_variables_values_as_string(component_id, components_variables, suffix, suffix_length):
+    diff_str = ""
+    for i in range(suffix_length):
+        if component_id + "_" + str(i) + suffix in components_variables:
+            bit = components_variables[component_id + "_" + str(i) + suffix]
+            diff_str += f"{bit}".split(".")[0]
+        else:
+            diff_str += "*"
+    return diff_str
+
+def _string_to_hex( string):
+    string = "0b" + string
+    try:
+        value = BitArray(string)
+        try:
+            value = "0x" + value.hex
+        except Exception:
+            value = "0b" + value.bin
+    except Exception:
+        value = string
+    return value

@@ -381,29 +381,27 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         else:
             component = self._cipher.get_component_from_id(component_id)
             output_size = component.output_bit_size
-        diff_str = {}
         suffix_dict = {"": output_size}
-        final_output = self._get_final_output(component_id, components_variables, diff_str, suffix_dict)
+        final_output = self._get_final_output(component_id, components_variables, suffix_dict)
         if len(final_output) == 1:
             final_output = final_output[0]
 
         return final_output
 
-    def _get_final_output(self, component_id, components_variables, diff_str, suffix_dict):
+    def _get_final_output(self, component_id, components_variables, suffix_dict):
         final_output = []
         for suffix in suffix_dict.keys():
-            diff_str[suffix] = ""
+            diff_str = ""
             for i in range(suffix_dict[suffix]):
                 if component_id + "_" + str(i) + suffix in components_variables:
                     bit = components_variables[component_id + "_" + str(i) + suffix]
                     if bit < 2:
-                        diff_str[suffix] += f"{bit}".split(".")[0]
+                        diff_str += f"{bit}".split(".")[0]
                     else:
-                        diff_str[suffix] += "?"
+                        diff_str += "?"
                 else:
-                    diff_str[suffix] += "*"
-            difference = diff_str[suffix]
-            final_output.append(set_component_solution(difference))
+                    diff_str += "*"
+            final_output.append(set_component_solution(diff_str))
 
         return final_output
 
