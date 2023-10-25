@@ -1,3 +1,19 @@
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import INPUT_KEY, INPUT_INITIALIZATION_VECTOR
@@ -89,11 +105,7 @@ class Snow3GStreamCipher(Cipher):
         iv = [INPUT_INITIALIZATION_VECTOR], [list(range(self.iv_bit_size))]
         key = ComponentState([INPUT_KEY], [list(range(self.key_bit_size))])
 
-        self.add_round()
-        self.add_constant_component(WORD_SIZE, 0)
-        const_0 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-
-        self.snow3g_state_initialization(key, iv, const_0)
+        const_0 = self.snow3g_state_initialization(key, iv)
         F = self.clock_fsm(const_0)
         self.clock_lfsr(const_0)
         keystream = []
@@ -106,12 +118,19 @@ class Snow3GStreamCipher(Cipher):
         self.add_cipher_output_component([keystream], [list(range(keystream_word_size * WORD_SIZE))],
                                          keystream_word_size * WORD_SIZE)
 
-    def snow3g_state_initialization(self, key, iv, const_0):
+    def snow3g_state_initialization(self, key, iv):
+
+        self.add_round()
+        self.add_constant_component(WORD_SIZE, 0)
+        const_0 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         self.initial_filling_lfsr_fsm(key, iv, const_0)
         for i in range(self.number_of_initialization_clocks):
             F = self.clock_fsm(const_0)
             self.clock_lfsr_initialization_mode(F, const_0)
+            self.add_round()
+
+        return const_0
 
     def initial_filling_lfsr_fsm(self, key, iv, const_0):
         self.add_constant_component(WORD_SIZE, 0xffffffff)
@@ -199,34 +218,34 @@ class Snow3GStreamCipher(Cipher):
         return F
 
     def S1(self, w_id, w_pos, const_0):
-        sb = []
+        sba = []
         for i in range(4):
             self.add_SBOX_component(w_id, [w_pos[0][i * 8:i * 8 + 8]], 8, SBoxA)
-            sb.append([ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]])
+            sba.append([ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]])
 
-        id_0 = sb[0] + [const_0.id[0]] + sb[0] + sb[0] + [const_0.id[0]] + sb[0] + sb[0]
-        id_1 = sb[1] + [const_0.id[0]] + sb[1] + sb[1] + [const_0.id[0]] + sb[1] + sb[1]
-        id_2 = sb[2] + [const_0.id[0]] + sb[2] + sb[2] + [const_0.id[0]] + sb[2] + sb[2]
-        id_3 = sb[3] + [const_0.id[0]] + sb[3] + sb[3] + [const_0.id[0]] + sb[3] + sb[3]
+        id_0 = sba[0] + [const_0.id[0]] + sba[0] + sba[0] + [const_0.id[0]] + sba[0] + sba[0]
+        id_1 = sba[1] + [const_0.id[0]] + sba[1] + sba[1] + [const_0.id[0]] + sba[1] + sba[1]
+        id_2 = sba[2] + [const_0.id[0]] + sba[2] + sba[2] + [const_0.id[0]] + sba[2] + sba[2]
+        id_3 = sba[3] + [const_0.id[0]] + sba[3] + sba[3] + [const_0.id[0]] + sba[3] + sba[3]
         pos_0 = [list(range(1, 8))] + [[0, 1, 2, 3]] + [[0]] + [[0]] + [[0]] + [[0]] + [[0]]
 
-        ids = id_0 + sb[1] + sb[2] + id_3 + sb[3]
+        ids = id_0 + sba[1] + sba[2] + id_3 + sba[3]
         pos = pos_0 + [list(range(8))] + [list(range(8))] + pos_0 + [list(range(8))]
         self.add_XOR_component(ids, pos, 8)
         r0 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
-        ids = id_0 + sb[0] + id_1 + sb[2] + sb[3]
+        ids = id_0 + sba[0] + id_1 + sba[2] + sba[3]
         pos = pos_0 + [list(range(8))] + pos_0 + [list(range(8))] + [list(range(8))]
 
         self.add_XOR_component(ids, pos, 8)
         r1 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
-        ids = sb[0] + id_1 + sb[1] + id_2 + sb[3]
+        ids = sba[0] + id_1 + sba[1] + id_2 + sba[3]
         pos = [list(range(8))] + pos_0 + [list(range(8))] + pos_0 + [list(range(8))]
         self.add_XOR_component(ids, pos, 8)
         r2 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
-        ids = sb[0] + sb[1] + id_2 + sb[2] + id_3
+        ids = sba[0] + sba[1] + id_2 + sba[2] + id_3
         pos = [list(range(8))] + [list(range(8))] + pos_0 + [list(range(8))] + pos_0
         self.add_XOR_component(ids, pos, 8)
         r3 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
@@ -236,34 +255,34 @@ class Snow3GStreamCipher(Cipher):
         return S1_id, S1_pos
 
     def S2(self, w_id, w_pos, const_0):
-        sb = []
+        sbq = []
         for i in range(4):
             self.add_SBOX_component([w_id[i]], [w_pos[i]], 8, SBoxQ)
-            sb.append([ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]])
+            sbq.append([ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]])
 
-        id_0 = sb[0] + [const_0.id[0]] + sb[0] + sb[0] + [const_0.id[0]] + sb[0] + [const_0.id[0]] + sb[0]
-        id_1 = sb[1] + [const_0.id[0]] + sb[1] + sb[1] + [const_0.id[0]] + sb[1] + [const_0.id[0]] + sb[1]
-        id_2 = sb[2] + [const_0.id[0]] + sb[2] + sb[2] + [const_0.id[0]] + sb[2] + [const_0.id[0]] + sb[2]
-        id_3 = sb[3] + [const_0.id[0]] + sb[3] + sb[3] + [const_0.id[0]] + sb[3] + [const_0.id[0]] + sb[3]
+        id_0 = sbq[0] + [const_0.id[0]] + sbq[0] + sbq[0] + [const_0.id[0]] + sbq[0] + [const_0.id[0]] + sbq[0]
+        id_1 = sbq[1] + [const_0.id[0]] + sbq[1] + sbq[1] + [const_0.id[0]] + sbq[1] + [const_0.id[0]] + sbq[1]
+        id_2 = sbq[2] + [const_0.id[0]] + sbq[2] + sbq[2] + [const_0.id[0]] + sbq[2] + [const_0.id[0]] + sbq[2]
+        id_3 = sbq[3] + [const_0.id[0]] + sbq[3] + sbq[3] + [const_0.id[0]] + sbq[3] + [const_0.id[0]] + sbq[3]
         pos_0 = [list(range(1, 8))] + [[0, 1]] + [[0]] + [[0]] + [[0]] + [[0]] + [[0, 1]] + [[0]]
 
-        ids = id_0 + sb[1] + sb[2] + id_3 + sb[3]
+        ids = id_0 + sbq[1] + sbq[2] + id_3 + sbq[3]
         pos = pos_0 + [list(range(8))] + [list(range(8))] + pos_0 + [list(range(8))]
         self.add_XOR_component(ids, pos, 8)
         r0 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
-        ids = id_0 + sb[0] + id_1 + sb[2] + sb[3]
+        ids = id_0 + sbq[0] + id_1 + sbq[2] + sbq[3]
         pos = pos_0 + [list(range(8))] + pos_0 + [list(range(8))] + [list(range(8))]
 
         self.add_XOR_component(ids, pos, 8)
         r1 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
-        ids = sb[0] + id_1 + sb[1] + id_2 + sb[3]
+        ids = sbq[0] + id_1 + sbq[1] + id_2 + sbq[3]
         pos = [list(range(8))] + pos_0 + [list(range(8))] + pos_0 + [list(range(8))]
         self.add_XOR_component(ids, pos, 8)
         r2 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
-        ids = sb[0] + sb[1] + id_2 + sb[2] + id_3
+        ids = sbq[0] + sbq[1] + id_2 + sbq[2] + id_3
         pos = [list(range(8))] + [list(range(8))] + pos_0 + [list(range(8))] + pos_0
         self.add_XOR_component(ids, pos, 8)
         r3 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
