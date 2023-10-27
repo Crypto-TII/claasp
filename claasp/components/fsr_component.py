@@ -34,7 +34,3 @@ class FSR(Component):
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
         self.input_len = input_len
-
-
-
-

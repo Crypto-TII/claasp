@@ -489,7 +489,6 @@ def byte_vector_mix_column_poly0(input, matrix, verbosity=False):
 
     return output
 
-
 def print_component_info(input, output, component_type):
     print(component_type)
     print("Inputs : ")

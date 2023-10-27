@@ -677,8 +677,8 @@ def THETA_KECCAK(input):
         True
     """
     # Xoring the 5 lanes of each rows
-    lane_len = 64
-    plane_len = 320
+    lane_len = len(input) // 25
+    plane_len = lane_len * 5
     lanes_xored = []
     for i in range(5):
         tmp = input[i * plane_len: i * plane_len + lane_len]
@@ -965,6 +965,7 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     - ``number_of_clocks`` -- **integer**; indicates how many loops this fsr component would operate, this is optional
         by default it is 1.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+
     """
 
     def get_polynomail(polynomial_index_list, R):
@@ -1009,14 +1010,15 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
             if do_clocks[j] > 0:
                 output.rol(1, registers_start[j], registers_update_bit[j] + 1)
                 output[registers_update_bit[j]] = output_bits[j]
+
     if verbosity:
         print("FSR:")
         for i in range(number_of_registers):
             print("  F   = {}".format(registers_polynomial[i]))
             if clock_polynomials[i] is None:
-                print("register_" + str(i + 1) + " clocks:", True)
+                print("register_" + str(i + 1) + " clock:", True)
             else:
-                print("register_" + str(i + 1) + " poly = {}".format(clock_polynomials[i]))
+                print("register_" + str(i + 1) + " clock poly = {}".format(clock_polynomials[i]))
         print("number of clocks: ", number_of_clocks)
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))
@@ -1036,6 +1038,7 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
         default, it is 1.
     - ``number_of_clocks`` -- **integer**; indicates how many loops this fsr component would operate.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+
     """
 
     def bits_to_word(input, bits_inside_word, word_gf):
@@ -1048,18 +1051,20 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
         for i in range(len(word_array)):
             c = 0
             for j in range(len(monomials)):
-                c += (input[(i * 8) + j]) * monomials[j]
+                c += (input[(i * bits_inside_word) + j]) * monomials[j]
             word_array[i] = c
 
         return word_array
 
-    def word_to_bits(word_array, bits_inside_word):
+    def word_to_bits(word_array, bits_inside_word, word_gf):
         output = BitArray()
+        d = word_gf.degree()
         s = f'0b'
         for _ in word_array[0]:
-            kl = list(_)
+            lm = []
+            for __ in range(d): lm.append(_.polynomial()[__])
             for j in range(bits_inside_word - 1, -1, -1):
-                v = f'1' if kl[j] else f'0'
+                v = f'1' if lm[j] else f'0'
                 s = s + v
         output.append(s)
         return output
@@ -1097,6 +1102,7 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
         registers_polynomial[i] = get_polynomail(registers_info[i][1], R)
         if len(registers_info[i]) > 2:
             clock_polynomials[i] = get_polynomail(registers_info[i][2], R)
+
     for r in range(number_of_clocks):
         do_clocks = [True for _ in range(number_of_registers)]
         output_words = [0 for _ in range(number_of_registers)]
@@ -1115,16 +1121,15 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
             registers.append(reg)
         word_array = registers
 
-    output = word_to_bits(word_array, bits_inside_word)
+    output = word_to_bits(word_array, bits_inside_word, word_gf)
     if verbosity:
         print("FSR:")
         for i in range(number_of_registers):
             print("  F   = {}".format(registers_polynomial[i]))
-        for i in range(number_of_registers):
             if clock_polynomials[i] is None:
-                print("register_" + str(i + 1) + " clocks:", True)
+                print("register_" + str(i + 1) + " clock:", True)
             else:
-                print("register_" + str(i + 1) + " poly = {}".format(clock_polynomials[i]))
+                print("register_" + str(i + 1) + " clock poly = {}".format(clock_polynomials[i]))
         print("number of clocks: ", number_of_clocks)
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))
