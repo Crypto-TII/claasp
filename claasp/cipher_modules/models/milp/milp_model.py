@@ -40,17 +40,12 @@ import os
 import subprocess
 import time
 import tracemalloc
-from bitstring import BitArray
 
 from sage.numerical.mip import MixedIntegerLinearProgram, MIPSolverException
 
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT, EXTERNAL_MILP_SOLVERS
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORDWISE_DETERMINISTIC_TRUNCATED, \
-    MILP_WORDWISE_IMPOSSIBLE, MILP_BITWISE_IMPOSSIBLE, MILP_BITWISE_IMPOSSIBLE_AUTO, MILP_WORDWISE_IMPOSSIBLE_AUTO, \
-    MILP_BACKWARD_SUFFIX, MILP_BITWISE_DETERMINISTIC_TRUNCATED, MILP_PROBABILITY_SUFFIX
 from claasp.cipher_modules.models.milp.utils.utils import _get_data, _parse_external_solver_output, _write_model_to_lp_file
-from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dictionary,
-                                                set_component_value_weight_sign)
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 
 verbose = 0
 verbose_print = print if verbose else lambda *a, **k: None
@@ -294,7 +289,7 @@ class MilpModel:
 
         return _parse_external_solver_output(self, model_type, solver_name, solver_process) + (milp_memory,)
 
-    def _solve_with_internal_solver(self, model_type):
+    def _solve_with_internal_solver(self):
 
         mip = self._model
 
@@ -308,54 +303,13 @@ class MilpModel:
             time_end = time.time()
             milp_time = time_end - time_start
             verbose_print(f"Time for solving the model = {milp_time}")
-
             status = 'SATISFIABLE'
-
-            if model_type in [MILP_BITWISE_DETERMINISTIC_TRUNCATED, MILP_BITWISE_IMPOSSIBLE]:
-                x_class = self._trunc_binvar
-                intvars = self._integer_variable
-                components_variables = mip.get_values(x_class)
-                objective_variables = mip.get_values(intvars)
-                objective_value = objective_variables["number_of_unknown_patterns"]
-
-            elif model_type == MILP_BITWISE_IMPOSSIBLE_AUTO:
-                x_class = self._trunc_binvar
-                x = self._binary_variable
-                components_variables = mip.get_values(x_class)
-                objective_variables = mip.get_values(x)
-                inconsistent_component_var = [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
-                inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
-                objective_value = inconsistent_component_id
-
-            elif model_type in [MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_WORDWISE_IMPOSSIBLE]:
-                x_class = self._trunc_wordvar
-                intvars = self._integer_variable
-                components_variables = mip.get_values(x_class)
-                objective_variables = mip.get_values(intvars)
-                objective_value = objective_variables["number_of_unknown_patterns"]
-
-            elif model_type == MILP_WORDWISE_IMPOSSIBLE_AUTO:
-                x_class = self._trunc_wordvar
-                x = self._binary_variable
-                objective_variables = mip.get_values(x)
-                components_variables = mip.get_values(x_class)
-                inconsistent_component_var = \
-                [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
-                inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
-                objective_value = inconsistent_component_id
-
-            else:
-                x = self._binary_variable
-                p = self._integer_variable
-                objective_variables = mip.get_values(p)
-                objective_value = objective_variables["probability"] / 10.
-                components_variables = mip.get_values(x)
 
         except MIPSolverException as milp_exception:
             status = 'UNSATISFIABLE'
             print(milp_exception)
 
-        return status, objective_value, objective_variables, components_variables, milp_time, milp_memory
+        return status, milp_time, milp_memory
 
     def solve(self, model_type, solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
@@ -381,166 +335,18 @@ class MilpModel:
         if external_solver_name:
             solver_name_in_solution = external_solver_name
             model_path = _write_model_to_lp_file(self, model_type)
-            status, objective_value, objective_variables, components_variables, milp_time, milp_memory = self._solve_with_external_solver(
+            status, objective_value, components_values, milp_time, milp_memory = self._solve_with_external_solver(
                 model_type, model_path, external_solver_name)
             os.remove(model_path)
         else:
             solver_name_in_solution = solver_name
-            status, objective_value, objective_variables, components_variables, milp_time, milp_memory = self._solve_with_internal_solver(
-                model_type)
-
-        components_values = {}
-        if model_type in [MILP_BITWISE_IMPOSSIBLE, MILP_WORDWISE_IMPOSSIBLE]:
-            full_cipher_components = self._cipher.get_all_components_ids()
-            backward_components = self._backward_cipher.get_all_components_ids()
-            incompatible_value = backward_components[-1]
-
-            incompatible_component_id = "_".join(incompatible_value.split("_")[:-1])
-            index = full_cipher_components.index(incompatible_component_id)
-            full_cipher_components.insert(index + 1, incompatible_value)
-            list_component_ids = self._forward_cipher.inputs + full_cipher_components
-        elif model_type in [MILP_BITWISE_IMPOSSIBLE_AUTO, MILP_WORDWISE_IMPOSSIBLE_AUTO]:
-            full_cipher_components = self._cipher.get_all_components_ids()
-            backward_components = self._backward_cipher.get_all_components_ids() + self._backward_cipher.inputs
-            index = full_cipher_components.index(objective_value)
-            updated_cipher_components = full_cipher_components[:index + 1] + [c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c for c in full_cipher_components[index:] ]
-            list_component_ids = self._forward_cipher.inputs + updated_cipher_components
-        else:
-            list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
-
-
-        for component_id in list_component_ids:
-            dict_tmp = self.get_component_value_weight(model_type, component_id,
-                                                       objective_variables, components_variables)
-            if model_type == "xor_linear":
-                if component_id in self._cipher.inputs:
-                    components_values[component_id] = dict_tmp[1]
-                elif 'cipher_output' not in component_id:
-                    components_values[component_id + '_i'] = dict_tmp[0]
-                    components_values[component_id + '_o'] = dict_tmp[1]
-                else:
-                    components_values[component_id + '_o'] = dict_tmp[1]
-            else:
-                components_values[component_id] = dict_tmp
+            status, milp_time, milp_memory = self._solve_with_internal_solver()
+            objective_value, components_values = self._parse_solver_output()
 
         solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name_in_solution, milp_time,
                                                          milp_memory, components_values, objective_value)
         solution['status'] = status
         return solution
-
-    def get_component_value_weight(self, model_type, component_id, probability_variables, components_variables):
-
-        if model_type in [MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_WORDWISE_IMPOSSIBLE, MILP_WORDWISE_IMPOSSIBLE_AUTO]:
-            wordsize = self._word_size
-        else:
-            wordsize=1
-        if component_id in self._cipher.inputs:
-            output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)] // wordsize
-            input_size = output_size // wordsize
-        elif model_type in [MILP_BITWISE_IMPOSSIBLE, MILP_WORDWISE_IMPOSSIBLE] and component_id.endswith(MILP_BACKWARD_SUFFIX):
-            component = self._backward_cipher.get_component_from_id(component_id)
-            input_size = component.input_bit_size // wordsize
-            output_size = component.output_bit_size // wordsize
-        elif model_type in [MILP_BITWISE_IMPOSSIBLE_AUTO, MILP_WORDWISE_IMPOSSIBLE_AUTO] and component_id.endswith(MILP_BACKWARD_SUFFIX):
-            if component_id in self._backward_cipher.inputs:
-                output_size = self._backward_cipher.inputs_bit_size[self._backward_cipher.inputs.index(component_id)] // wordsize
-                input_size = output_size // wordsize
-            else:
-                component = self._backward_cipher.get_component_from_id(component_id)
-                input_size = component.input_bit_size // wordsize
-                output_size = component.output_bit_size // wordsize
-        else:
-            component = self._cipher.get_component_from_id(component_id)
-            input_size = component.input_bit_size // wordsize
-            output_size = component.output_bit_size // wordsize
-        diff_str = {}
-        if model_type != "xor_linear":
-            suffix_dict = {"": output_size}
-        else:
-            suffix_dict = {"_i": input_size, "_o": output_size}
-        final_output = self.get_final_output(model_type, component_id, components_variables, diff_str,
-                                             probability_variables, suffix_dict)
-        if len(final_output) == 1:
-            final_output = final_output[0]
-
-        return final_output
-
-    def get_final_output(self, model_type, component_id, components_variables, diff_str, probability_variables,
-                         suffix_dict):
-        if model_type in [MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_WORDWISE_IMPOSSIBLE, MILP_WORDWISE_IMPOSSIBLE_AUTO]:
-            return self._get_final_output_wordwise_deterministic_truncated_xor_differential(component_id,
-                                                                                            components_variables,
-                                                                                            diff_str, suffix_dict)
-        elif model_type in [MILP_BITWISE_DETERMINISTIC_TRUNCATED, MILP_BITWISE_IMPOSSIBLE,
-                            MILP_BITWISE_IMPOSSIBLE_AUTO]:
-            return self._get_final_output_bitwise_deterministic_truncated_xor_differential(component_id,
-                                                                                           components_variables,
-                                                                                           diff_str, suffix_dict)
-        else:
-            return self._get_final_output_for_default_case(component_id, components_variables, diff_str, probability_variables,
-                         suffix_dict)
-
-    def _get_final_output_for_default_case(self, component_id, components_variables, diff_str, probability_variables,
-                         suffix_dict):
-        final_output = []
-        for suffix in suffix_dict.keys():
-            diff_str[suffix] = ""
-            for i in range(suffix_dict[suffix]):
-                if component_id + "_" + str(i) + suffix in components_variables:
-                    bit = components_variables[component_id + "_" + str(i) + suffix]
-                    diff_str[suffix] += f"{bit}".split(".")[0]
-                else:
-                    diff_str[suffix] += "*"
-            diff_str[suffix] = "0b" + diff_str[suffix]
-            try:
-                difference = BitArray(diff_str[suffix])
-                try:
-                    difference = "0x" + difference.hex
-                except Exception:
-                    difference = "0b" + difference.bin
-            except Exception:
-                difference = diff_str[suffix]
-            weight = 0
-            if component_id + MILP_PROBABILITY_SUFFIX in probability_variables:
-                weight = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / 10.
-            final_output.append(set_component_value_weight_sign(difference, weight))
-        return final_output
-    def _get_final_output_bitwise_deterministic_truncated_xor_differential(self, component_id, components_variables, diff_str,
-                         suffix_dict):
-        final_output = []
-        for suffix in suffix_dict.keys():
-            diff_str[suffix] = ""
-            for i in range(suffix_dict[suffix]):
-                if component_id + "_" + str(i) + suffix in components_variables:
-                    bit = components_variables[component_id + "_" + str(i) + suffix]
-                    if bit < 2:
-                        diff_str[suffix] += f"{bit}".split(".")[0]
-                    else:
-                        diff_str[suffix] += "?"
-                else:
-                    diff_str[suffix] += "*"
-            weight = 0
-            difference = diff_str[suffix]
-            final_output.append(set_component_value_weight_sign(difference, weight))
-
-        return final_output
-
-    def _get_final_output_wordwise_deterministic_truncated_xor_differential(self, component_id, components_variables, diff_str,
-                         suffix_dict):
-        final_output = []
-        for suffix in suffix_dict.keys():
-            diff_str[suffix] = ""
-            for i in range(suffix_dict[suffix]):
-                if component_id + "_word_" + str(i) + suffix + "_class" in components_variables:
-                    bit = components_variables[component_id + "_word_" + str(i) + suffix + "_class"]
-                    diff_str[suffix] += f"{bit}".split(".")[0]
-                else:
-                    diff_str[suffix] += "*"
-            weight = 0
-            difference = diff_str[suffix]
-            final_output.append(set_component_value_weight_sign(difference, weight))
-
-        return final_output
 
     @property
     def binary_variable(self):

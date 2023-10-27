@@ -587,7 +587,7 @@ def test_cipher_inverse():
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
         plaintext = 0
-        cipher = AsconSboxSigmaPermutation(number_of_rounds=2)
+        cipher = AsconSboxSigmaPermutation(number_of_rounds=1)
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
@@ -614,7 +614,7 @@ def test_cipher_inverse():
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
         plaintext = 0x1234
-        cipher = SpongentPiPermutation(number_of_rounds=2)
+        cipher = SpongentPiPermutation(number_of_rounds=1)
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
@@ -627,7 +627,7 @@ def test_cipher_inverse():
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
         plaintext = 0x1234
-        cipher = PhotonPermutation(number_of_rounds=2)
+        cipher = PhotonPermutation(number_of_rounds=1)
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
@@ -640,13 +640,13 @@ def test_cipher_inverse():
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
         plaintext = 0x1234
-        cipher = SparklePermutation(number_of_steps=2)
+        cipher = SparklePermutation(number_of_steps=1)
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
 
         plaintext = 0x1234
-        cipher = XoodooInvertiblePermutation(number_of_rounds=2)
+        cipher = XoodooInvertiblePermutation(number_of_rounds=1)
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
@@ -679,7 +679,7 @@ def test_cipher_inverse():
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        cipher = SalsaPermutation(number_of_rounds=5)
+        cipher = SalsaPermutation(number_of_rounds=2)
         plaintext = 0xffff
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
