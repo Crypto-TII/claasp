@@ -77,7 +77,7 @@ def add_bit_to_bit_list(bit, bit_list):
         bit_list.append(bit)
     return
 
-def get_available_output_components(component, available_bits, self):
+def get_available_output_components(component, available_bits, self, return_index=False):
     cipher_components = get_cipher_components(self)
     available_output_components = []
     for c in cipher_components:
@@ -94,7 +94,10 @@ def get_available_output_components(component, available_bits, self):
                     if not is_bit_contained_in(bit, available_bits):
                         all_bits_available = False
                 if all_bits_available:
-                    available_output_components.append(c)
+                    if return_index:
+                        available_output_components.append((c, list(range(accumulator, accumulator + j + 1))))
+                    else:
+                        available_output_components.append(c)
             accumulator += len(c.input_bit_positions[i]) # changed
 
     return available_output_components
@@ -686,14 +689,13 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
         _add_output_bit_equivalences(id, input_bit_positions, component, all_equivalent_bits, available_bits)
 
 def order_input_id_links_for_modadd(component, input_id_links, input_bit_positions, available_bits, self):
-    available_output_components = get_available_output_components(component, available_bits, self)
-    output_component_ids = []
-    for available_output_component in available_output_components:
-        output_component_ids.append(available_output_component.id)
+    available_output_components_with_indices = get_available_output_components(component, available_bits, self, True)
 
     old_index = 0
     for index, input_id_link in enumerate(input_id_links):
-        if input_id_link in output_component_ids:
+        index_id_list = [_ for _, x in enumerate(available_output_components_with_indices) if
+                         x[0].id == input_id_link and set(x[1]) == set(input_bit_positions[index])]
+        if index_id_list:
             old_index = index
             break
     input_id_links.insert(0, input_id_links.pop(old_index))
