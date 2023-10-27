@@ -14,6 +14,7 @@ INPUT_MESSAGE = "input_message"
 INPUT_STATE = "input_state"
 INPUT_BLOCK_COUNT = "input_block_count"
 INPUT_TWEAK = "input_tweak"
+INPUT_FRAME = "input_frame"
 
 # component types
 CIPHER_INPUT = "cipher_input"
@@ -26,6 +27,7 @@ WORD_OPERATION = "word_operation"
 MIX_COLUMN = "mix_column"
 LINEAR_LAYER = "linear_layer"
 SBOX = "sbox"
+FSR = "fsr"
 
 # model types
 CIPHER = 'cipher'

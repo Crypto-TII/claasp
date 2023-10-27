@@ -165,6 +165,9 @@ class Cipher:
     def add_constant_component(self, output_bit_size, value):
         return editor.add_constant_component(self, output_bit_size, value)
 
+    def add_FSR_component(self, input_id_links, input_bit_positions, output_bit_size, description):
+        return editor.add_FSR_component(self, input_id_links, input_bit_positions, output_bit_size, description)
+
     def add_intermediate_output_component(self, input_id_links, input_bit_positions, output_bit_size, output_tag):
         return editor.add_intermediate_output_component(self, input_id_links, input_bit_positions,
                                                         output_bit_size, output_tag)
