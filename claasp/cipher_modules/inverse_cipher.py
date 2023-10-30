@@ -77,6 +77,18 @@ def add_bit_to_bit_list(bit, bit_list):
         bit_list.append(bit)
     return
 
+
+def _are_all_bits_available(id, input_bit_positions_len, offset, available_bits):
+    for j in range(input_bit_positions_len):
+        bit = {
+            "component_id": id,
+            "position": offset + j,
+            "type": "input"
+        }
+        if not is_bit_contained_in(bit, available_bits):
+            return False
+    return True
+
 def get_available_output_components(component, available_bits, self, return_index=False):
     cipher_components = get_cipher_components(self)
     available_output_components = []
@@ -84,18 +96,11 @@ def get_available_output_components(component, available_bits, self, return_inde
         accumulator = 0
         for i in range(len(c.input_id_links)):
             if (component.id == c.input_id_links[i]) and (c not in available_output_components):
-                all_bits_available = True
-                for j in range(len(c.input_bit_positions[i])):
-                    bit = {
-                        "component_id": c.id,
-                        "position": accumulator + j,
-                        "type": "input"
-                    }
-                    if not is_bit_contained_in(bit, available_bits):
-                        all_bits_available = False
+                all_bits_available = _are_all_bits_available(c.id, len(c.input_bit_positions[i]), accumulator,
+                                                             available_bits)
                 if all_bits_available:
                     if return_index:
-                        available_output_components.append((c, list(range(accumulator, accumulator + j + 1))))
+                        available_output_components.append((c, list(range(accumulator, accumulator + len(c.input_bit_positions[i])))))
                     else:
                         available_output_components.append(c)
             accumulator += len(c.input_bit_positions[i]) # changed
