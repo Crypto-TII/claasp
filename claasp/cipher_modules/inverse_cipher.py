@@ -107,7 +107,7 @@ def get_available_output_components(component, available_bits, self, return_inde
 
     return available_output_components
 
-def sort_input_id_links_and_input_bit_positions(input_id_links, input_bit_positions, component, self, all_equivalent_bits):
+def sort_input_id_links_and_input_bit_positions(input_id_links, input_bit_positions, component, self):
     updated_input_bit_positions = []
     updated_input_id_links = []
     ordered_list = []
@@ -744,7 +744,9 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == WORD_OPERATION and component.description[0] == "SIGMA":
         input_id_links, input_bit_positions = compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(component, output_components, all_equivalent_bits, self)
-        input_id_links, input_bit_positions = sort_input_id_links_and_input_bit_positions(input_id_links, input_bit_positions, component, self, all_equivalent_bits)
+        input_id_links, input_bit_positions = sort_input_id_links_and_input_bit_positions(input_id_links,
+                                                                                          input_bit_positions,
+                                                                                          component, self)
         binary_matrix = binary_matrix_of_linear_component(component)
         inv_binary_matrix = binary_matrix.inverse()
         inverse_component = Component(component.id, LINEAR_LAYER,
@@ -758,7 +760,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
             component, output_components, all_equivalent_bits, self)
         input_id_links_from_input_components, input_bit_positions_from_input_components = compute_input_id_links_and_input_bit_positions_for_inverse_component_from_input_components(component, available_bits, all_equivalent_bits, key_schedule_components, self)
         input_id_links_from_output_components, input_bit_positions_from_output_components = sort_input_id_links_and_input_bit_positions(
-            input_id_links_from_output_components, input_bit_positions_from_output_components, component, self, all_equivalent_bits)
+            input_id_links_from_output_components, input_bit_positions_from_output_components, component, self)
         input_id_links = input_id_links_from_input_components + input_id_links_from_output_components
         input_bit_positions = input_bit_positions_from_input_components + input_bit_positions_from_output_components
         inverse_component = Component(component.id, component.type,
@@ -777,7 +779,9 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == WORD_OPERATION and component.description[0] == "NOT":
         input_id_links, input_bit_positions = compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(component, available_output_components, all_equivalent_bits, self)
-        input_id_links, input_bit_positions = sort_input_id_links_and_input_bit_positions(input_id_links, input_bit_positions, component, self, all_equivalent_bits)
+        input_id_links, input_bit_positions = sort_input_id_links_and_input_bit_positions(input_id_links,
+                                                                                          input_bit_positions,
+                                                                                          component, self)
         inverse_component = Component(component.id, component.type,
                                       Input(component.input_bit_size, input_id_links, input_bit_positions),
                                       component.output_bit_size, [component.description[0], component.description[1]])
@@ -789,9 +793,8 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
             component, available_output_components, all_equivalent_bits, self)
         input_id_links_from_input_components, input_bit_positions_from_input_components = compute_input_id_links_and_input_bit_positions_for_inverse_component_from_input_components(
             component, available_bits, all_equivalent_bits, key_schedule_components, self)
-        input_id_links_from_output_components, input_bit_positions_from_output_components = sort_input_id_links_and_input_bit_positions(input_id_links_from_output_components,
-                                                                                      input_bit_positions_from_output_components, component,
-                                                                                      self, all_equivalent_bits)
+        input_id_links_from_output_components, input_bit_positions_from_output_components = sort_input_id_links_and_input_bit_positions(
+            input_id_links_from_output_components, input_bit_positions_from_output_components, component, self)
         input_id_links = input_id_links_from_input_components + input_id_links_from_output_components
         input_bit_positions = input_bit_positions_from_input_components + input_bit_positions_from_output_components
         input_id_links, input_bit_positions = order_input_id_links_for_modadd(component, input_id_links, input_bit_positions, available_bits, self)
