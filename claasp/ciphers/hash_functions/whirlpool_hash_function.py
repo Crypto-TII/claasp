@@ -23,6 +23,7 @@ PARAMETERS_CONFIGURATION_LIST = [{'word_size': 8, 'state_size': 8, 'number_of_ro
 
 
 class WhirlpoolHashFunction(Cipher):
+
     """
     Returns a cipher object of Whirlpool hash function.
 
