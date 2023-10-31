@@ -261,9 +261,9 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
     elif "inverse" in cipher.id:
-        code.append(f'  return intermediateOutputs["plaintext"]')
+        code.append('  return intermediateOutputs["plaintext"]')
     else:
-        code.append(f'  return intermediateOutputs["cipher_output"]')
+        code.append('  return intermediateOutputs["cipher_output"]')
 
     return '\n'.join(code)
 
@@ -333,9 +333,9 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
     elif "inverse" in cipher.id:
-        code.append(f'  return intermediateOutputs["plaintext"]')
+        code.append('  return intermediateOutputs["plaintext"]')
     else:
-        code.append(f'  return intermediateOutputs["cipher_output"]')
+        code.append('  return intermediateOutputs["cipher_output"]')
 
     return '\n'.join(code)
 
