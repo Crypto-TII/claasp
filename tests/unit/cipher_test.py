@@ -14,6 +14,7 @@ from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
 from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
 from claasp.ciphers.permutations.xoodoo_permutation import XoodooPermutation
@@ -713,3 +714,10 @@ def test_cipher_inverse():
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+        cipher = ChachaPermutation(number_of_rounds=3)
+        plaintext = 0x0001
+        ciphertext = cipher.evaluate([plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext]) == plaintext
+

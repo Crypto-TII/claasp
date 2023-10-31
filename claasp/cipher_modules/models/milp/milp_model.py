@@ -280,7 +280,7 @@ class MilpModel:
         milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
         tracemalloc.stop()
 
-        if(solver_process.stderr):
+        if solver_process.stderr:
             raise MIPSolverException("Make sure that the solver is correctly installed.")
 
         if 'memory' in solver_specs:
