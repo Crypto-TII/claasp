@@ -225,47 +225,20 @@ def smt_lipmaa(hw, alpha, beta, gamma, beta_1):
     """
     return smt_or((hw, smt_not(smt_xor((alpha, beta, gamma, beta_1)))))
 
+
 # ---------------------------- #
 #    - Parsing SMT output -    #
 # ---------------------------- #
 
 
-def z3_parser(to_parse):
-    tmp_dict = {}
-    start = to_parse.index('sat') + 2
-    stop = to_parse.index(')')
-    to_parse = to_parse[start: stop]
-    for i in range(0, len(to_parse), 2):
-        var_name = to_parse[i].split()[1]
-        var_value = 1 if to_parse[i + 1][4:-1] == 'true' else 0
-        tmp_dict[var_name] = var_value
+def get_component_hex_value(component, out_suffix, variable2value):
+    output_bit_size = component.output_bit_size
+    value = 0
+    for i in range(output_bit_size):
+        value <<= 1
+        if f'{component.id}_{i}{out_suffix}' in variable2value:
+            value ^= variable2value[f'{component.id}_{i}{out_suffix}']
+        hex_digits = output_bit_size // 4 + (output_bit_size % 4 != 0)
+        hex_value = f'{value:0{hex_digits}x}'
 
-    return tmp_dict
-
-
-def yices_parser(to_parse):
-    tmp_dict = {}
-    start = to_parse.index('sat') + 1
-    stop = to_parse.index('(')
-    to_parse = to_parse[start: stop]
-    for line in to_parse:
-        solution = line[3:-1].split(' ')
-        var_name = solution[0]
-        var_value = 1 if solution[1] == 'true' else 0
-        tmp_dict[var_name] = var_value
-
-    return tmp_dict
-
-
-def mathsat_parser(to_parse):
-    tmp_dict = {}
-    start = to_parse.index('(model') + 1
-    stop = to_parse.index(')')
-    to_parse = to_parse[start: stop]
-    for line in to_parse:
-        solution = line[14:-1].split(' ')
-        var_name = solution[0]
-        var_value = 1 if solution[3] == 'true' else 0
-        tmp_dict[var_name] = var_value
-
-    return tmp_dict
+    return hex_value

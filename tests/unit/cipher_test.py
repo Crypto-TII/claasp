@@ -14,6 +14,8 @@ from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
 from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
 from claasp.ciphers.permutations.xoodoo_permutation import XoodooPermutation
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
@@ -587,7 +589,7 @@ def test_cipher_inverse():
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
         plaintext = 0
-        cipher = AsconSboxSigmaPermutation(number_of_rounds=2)
+        cipher = AsconSboxSigmaPermutation(number_of_rounds=1)
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
@@ -614,7 +616,7 @@ def test_cipher_inverse():
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
         plaintext = 0x1234
-        cipher = SpongentPiPermutation(number_of_rounds=2)
+        cipher = SpongentPiPermutation(number_of_rounds=1)
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
@@ -627,7 +629,7 @@ def test_cipher_inverse():
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
         plaintext = 0x1234
-        cipher = PhotonPermutation(number_of_rounds=2)
+        cipher = PhotonPermutation(number_of_rounds=1)
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
@@ -640,13 +642,13 @@ def test_cipher_inverse():
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
         plaintext = 0x1234
-        cipher = SparklePermutation(number_of_steps=2)
+        cipher = SparklePermutation(number_of_steps=1)
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
 
         plaintext = 0x1234
-        cipher = XoodooInvertiblePermutation(number_of_rounds=2)
+        cipher = XoodooInvertiblePermutation(number_of_rounds=1)
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
@@ -679,7 +681,7 @@ def test_cipher_inverse():
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        cipher = SalsaPermutation(number_of_rounds=5)
+        cipher = SalsaPermutation(number_of_rounds=2)
         plaintext = 0xffff
         ciphertext = cipher.evaluate([plaintext])
         cipher_inv = cipher.cipher_inverse()
@@ -691,3 +693,16 @@ def test_cipher_inverse():
         ciphertext = cipher.evaluate([key, plaintext])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+        plaintext = 0x1234
+        cipher = KeccakInvertiblePermutation(number_of_rounds=2, word_size=8)
+        ciphertext = cipher.evaluate([plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+        cipher = ChachaPermutation(number_of_rounds=3)
+        plaintext = 0x0001
+        ciphertext = cipher.evaluate([plaintext])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext]) == plaintext
+

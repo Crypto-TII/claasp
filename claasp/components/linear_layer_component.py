@@ -543,6 +543,7 @@ class LinearLayer(Component):
 
         """
         x_class = model.trunc_binvar
+        x = model.binary_variable
 
         input_ids, output_ids = self._get_input_output_variables()
         variables = [(f"x_class[{var}]", x_class[var]) for var in input_ids + output_ids]
@@ -557,13 +558,21 @@ class LinearLayer(Component):
             col = [row[i] for row in matrix]
             number_of_inputs = len([bit for bit in col if bit])
             if number_of_inputs >= 2:
-                # performing generalized_xor_deterministic_truncated_xor_differential
                 xor_inputs = [input_id_tuples[j] for j in range(len(col)) if col[j]]
-                result_ids = [(f'temp_xor_{j}_{self.id}_{i}_0', f'temp_xor_{j}_{self.id}_{i}_1') for j in range(number_of_inputs - 2)] + [output_id_tuples[i]]
-                constraints.extend(milp_utils.milp_xor_truncated(model, xor_inputs[0], xor_inputs[1], result_ids[0]))
+                result_ids = [(f'temp_xor_{j}_{self.id}_{i}_0', f'temp_xor_{j}_{self.id}_{i}_1') for j in
+                              range(number_of_inputs - 2)] + [output_id_tuples[i]]
+                contains_2, greater_constraints = milp_utils.milp_greater(model, sum(
+                    x[input_msb] for input_msb in [id[0] for id in xor_inputs]), 0, len(xor_inputs) + 1)
+                constraints.extend(greater_constraints)
+
+                sequential_truncated_xor_constraints = milp_utils.milp_xor_truncated(model, xor_inputs[0], xor_inputs[1], result_ids[0])
                 for chunk in range(1, number_of_inputs - 1):
-                    constraints.extend(milp_utils.milp_xor_truncated(model, xor_inputs[chunk + 1],
+                    sequential_truncated_xor_constraints.extend(milp_utils.milp_xor_truncated(model, xor_inputs[chunk + 1],
                                                                      result_ids[chunk - 1], result_ids[chunk]))
+                # if one of the inputs is varied, then the output is varied,
+                # else, perform sequential_xor_deterministic_truncated_xor_differential
+                constraints.extend(milp_utils.milp_if_then_else(contains_2, [x_class[output_ids[i]] == 2], sequential_truncated_xor_constraints, 6))
+
             if number_of_inputs == 1:
                 for index, value in enumerate(col):
                     if value:

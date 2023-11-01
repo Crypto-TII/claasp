@@ -20,6 +20,7 @@
 import numpy as np
 from copy import copy
 from functools import reduce
+from operator import xor
 
 NB = 8  # Number of bits of the representation
 
@@ -487,7 +488,6 @@ def byte_vector_mix_column_poly0(input, matrix, verbosity=False):
         print("---")
 
     return output
-
 
 def print_component_info(input, output, component_type):
     print(component_type)
