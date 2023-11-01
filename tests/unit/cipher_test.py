@@ -9,6 +9,7 @@ from decimal import Decimal
 
 import claasp
 from claasp.cipher import Cipher
+from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
@@ -706,3 +707,9 @@ def test_cipher_inverse():
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext]) == plaintext
 
+        cipher = LBlockBlockCipher(number_of_rounds=2)
+        key = 0x012345689abcdeffedc
+        plaintext = 0x012345689abcdef
+        ciphertext = cipher.evaluate([plaintext, key])
+        cipher_inv = cipher.cipher_inverse()
+        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
