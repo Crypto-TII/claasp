@@ -12,10 +12,8 @@ def test_whirlpool_hash_function():
     assert whirlpool.id == 'whirlpool_hash_function_k512_o512_r4'
     assert whirlpool.component_from(3,0) == 'sbox_3_0'
 
-    whirlpool = WhirlpoolHashFunction()
-    key = 0x6162636462636465636465666465666765666768666768696768696a68696a6b8000000000000000000000000000000000000000000000000000000000000000
-    ciphertext = 0x7738e1b541a036ea458d50f80fa01c447288ce97d1a0dcf01695ffd6e71d092533be309f012a5909729114595f086e760718afe365bc09deb6afa180bcec2a98
-    assert whirlpool.evaluate([key]) == ciphertext
+    # The following test vector values have been obtained from the reference implementation of Whirlpool
+    # available at https://web.archive.org/web/20171129084214/http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
 
     key = 0x61626380000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018
     ciphertext = 0x4e2448a4c6f486bb16b6562c73b4020bf3043e3a731bce721ae1b303d97e6d4c7181eebdb6c57e277d0e34957114cbd6c797fc9d95d8b582d225292076d4eef5
@@ -33,6 +31,13 @@ def test_whirlpool_hash_function():
     ciphertext = 0xf1d754662636ffe92c82ebb9212a484a8d38631ead4238f5442ee13b8054e41b08bf2a9251c30b6a0b8aae86177ab4a6f68f673e7207865d5d9819a3dba4eb3b
     assert whirlpool.evaluate([key]) == ciphertext
 
+    #The following test vector values have been hand made
+
     key = 0x68656c6c6f686f77617265796f758000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000070
     ciphertext = 0x2600a67308114432afa3193d3ae9c4ef0babb2442527dc639d09bea96cae5ece16ffddf15cb81bf2830ecbab906b4518d12c88fbd8a3ff769f61c9ac29350d38
+    assert whirlpool.evaluate([key]) == ciphertext
+
+    whirlpool = WhirlpoolHashFunction()
+    key = 0x6162636462636465636465666465666765666768666768696768696a68696a6b8000000000000000000000000000000000000000000000000000000000000000
+    ciphertext = 0x7738e1b541a036ea458d50f80fa01c447288ce97d1a0dcf01695ffd6e71d092533be309f012a5909729114595f086e760718afe365bc09deb6afa180bcec2a98
     assert whirlpool.evaluate([key]) == ciphertext
