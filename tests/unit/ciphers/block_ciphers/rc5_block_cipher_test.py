@@ -14,6 +14,9 @@ def test_rc5_block_cipher():
     assert rc5.id == 'rc5_block_cipher_k64_p32_o32_r4'
     assert rc5.component_from(3, 1).id == 'xor_3_1'
 
+    # The following test vector values have been obtained from
+    # https://datatracker.ietf.org/doc/html/draft-krovetz-rc6-rc5-vectors-00#section-4
+
     rc5 = RC5BlockCipher(word_size=8, number_of_rounds=12, key_size=32)
     key = 0x00010203
     plaintext = 0x0001
