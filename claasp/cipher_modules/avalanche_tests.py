@@ -65,8 +65,8 @@ def avalanche_tests(cipher, number_of_samples=5, avalanche_dependence_uniform_bi
                                                      diffusion_tests, input_name, intermediate_output_name)
                     calculate_average_difference(all_output_vectors, criterion_name, parameters, diffusion_tests,
                                                  input_name, intermediate_output_name)
-                    calculate_worst_input_differences(cipher, criterion_name, largest_round_criterion_not_satisfied,
-                                                      diffusion_tests, input_name, intermediate_output_name)
+                    #calculate_worst_input_differences(cipher, criterion_name, largest_round_criterion_not_satisfied,
+                    #                                  diffusion_tests, input_name, intermediate_output_name)
     #diffusion_tests["test_results"] = test_results
 
     return diffusion_tests
@@ -166,7 +166,7 @@ def calculate_regular_difference(criterion_name, dict_criterion, dict_intermedia
 
 def calculate_average_difference(all_output_vectors, criterion_name, dict_parameters, dict_test_results, input_name,
                                  intermediate_output_name):
-    #dict_for_average_diff = {"input_difference_type": "average", "input_difference_value": 'average'}
+    dict_for_average_diff = {"input_difference_value": 'average'}
     output_vectors = []
     for current_round in all_output_vectors.keys():
         tmp_dict = {}
@@ -186,8 +186,8 @@ def calculate_average_difference(all_output_vectors, criterion_name, dict_parame
         tmp_dict["round"] = current_round
         tmp_dict["output_component_id"] = "None"
         output_vectors.append(tmp_dict["vector"])
-    #dict_for_average_diff["output_vectors"] = output_vectors
-    dict_test_results["test_results"][input_name][intermediate_output_name][criterion_name].append(output_vectors)
+    dict_for_average_diff["vectors"] = output_vectors
+    dict_test_results["test_results"][input_name][intermediate_output_name][criterion_name].append(dict_for_average_diff)
 
 
 def calculate_worst_input_differences(cipher, criterion_name, largest_round_criterion_not_satisfied,

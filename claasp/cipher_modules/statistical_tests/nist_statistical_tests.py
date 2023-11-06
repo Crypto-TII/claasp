@@ -40,8 +40,8 @@ class StatisticalTests:
         self._cipher_primitive = cipher.id + "_" + "_".join(str_of_inputs_bit_size)
 
     @staticmethod
-    def run_nist_statistical_tests_tool_interactively(input_file, bit_stream_length, number_of_bit_streams,
-                                                      input_file_format,
+    def run_nist_statistical_tests_tool_interactively(input_file, bit_stream_length=10000, number_of_bit_streams=10,
+                                                      input_file_format=1,
                                                       statistical_test_option_list=15 * '1'):
         """
         Run statistical tests using the NIST test suite [1]. The result will be in experiments folder.
