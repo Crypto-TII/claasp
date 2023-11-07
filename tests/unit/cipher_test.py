@@ -225,6 +225,21 @@ def test_evaluate_vectorized():
 
     assert int.from_bytes(result[-1][1].tobytes(), byteorder='big') == C1Lib
 
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    speck_inv = speck.cipher_inverse()
+    K = np.random.randint(256, size=(8, 2), dtype=np.uint8)
+    C = np.random.randint(256, size=(4, 2), dtype=np.uint8)
+    result = speck_inv.evaluate_vectorized([C, K])
+    K0Lib = int.from_bytes(K[:, 0].tobytes(), byteorder='big')
+    K1Lib = int.from_bytes(K[:, 1].tobytes(), byteorder='big')
+    C0Lib = int.from_bytes(C[:, 0].tobytes(), byteorder='big')
+    C1Lib = int.from_bytes(C[:, 1].tobytes(), byteorder='big')
+    P0Lib = speck_inv.evaluate([C0Lib, K0Lib])
+    P1Lib = speck_inv.evaluate([C1Lib, K1Lib])
+
+    assert int.from_bytes(result[-1][0].tobytes(), byteorder='big') == P0Lib
+    assert int.from_bytes(result[-1][1].tobytes(), byteorder='big') == P1Lib
+
 
 def test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis():
     plaintext_input = [Decimal('1') for _ in range(32)]

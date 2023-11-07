@@ -991,7 +991,7 @@ class Cipher:
             False # loop 96
 
         """
-        inverted_cipher = Cipher(f"{self.id}" + "_inverse", f"{self.type}", [], [], self.output_bit_size)
+        inverted_cipher = Cipher(f"{self.id}{CIPHER_INVERSE_SUFFIX}", f"{self.type}", [], [], self.output_bit_size)
 
         inverted_cipher_components = []
         cipher_components_tmp = get_cipher_components(self)
