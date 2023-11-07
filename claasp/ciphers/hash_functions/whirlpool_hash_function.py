@@ -23,7 +23,6 @@ PARAMETERS_CONFIGURATION_LIST = [{'word_size': 8, 'state_size': 8, 'number_of_ro
 
 
 class WhirlpoolHashFunction(Cipher):
-
     """
     Returns a cipher object of Whirlpool hash function.
 
@@ -99,8 +98,6 @@ class WhirlpoolHashFunction(Cipher):
 
         ]
 
-        # self.ROUND_CONSTANT = [ S[8(r-1)+j] for j in range(8) ] + [0x00 for _ in range(56)]
-
         self.add_round()
 
         round_key = self.add_constant_component(self.CIPHER_BLOCK_SIZE, 0x00)  # Initial Key value
@@ -142,9 +139,8 @@ class WhirlpoolHashFunction(Cipher):
                                                    [[i for i in range(self.CIPHER_BLOCK_SIZE)]],
                                                    self.CIPHER_BLOCK_SIZE,
                                                    'intermediate_output')
-            if round_number != number_of_rounds -1:
+            if round_number != number_of_rounds - 1:
                 self.add_round()
-
 
         output = self.add_XOR_component([INPUT_KEY, add_round_key.id],
                                         [[i for i in range(self.CIPHER_BLOCK_SIZE)] for _ in range(2)],
@@ -194,7 +190,7 @@ class WhirlpoolHashFunction(Cipher):
         round_constant_value = ['0x'] + [format(self.sbox[8 * (round_number) + j], '02x') for j in
                                          range(8)] + ['00' for _ in range(56)]
 
-        round_constant_string = ('').join(round_constant_value)
+        round_constant_string = ''.join(round_constant_value)
         round_constant_hex_value = int(round_constant_string, 16)
         round_constant = self.add_constant_component(self.CIPHER_BLOCK_SIZE, round_constant_hex_value)
         return round_constant
