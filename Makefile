@@ -21,7 +21,7 @@ builddocker:
 	docker build -f docker/Dockerfile -t $(DOCKER_IMG_NAME) .
 
 rundocker: builddocker
-	docker run -i -p 8888:8888 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
+	docker run -i -p 8887:8887 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
 	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
 
 builddocker-m1:
