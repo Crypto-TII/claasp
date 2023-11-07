@@ -29,6 +29,7 @@ from keras.callbacks import ModelCheckpoint
 def neural_network_blackbox_distinguisher_tests(cipher, nb_samples=10000,
                                                 hidden_layers=[32, 32, 32], number_of_epochs=10, rounds_to_train=[]):
     results = {"input_parameters": {
+        "test_name": "neural_network_blackbox_distinguisher_tests",
         "number_of_samples": nb_samples,
         "hidden_layers": hidden_layers,
         "number_of_epochs": number_of_epochs}, "test_results": {}}
@@ -177,6 +178,7 @@ def create_structure(base_output, cipher, test_name, partial_result):
 def neural_network_differential_distinguisher_tests(cipher, nb_samples=10000, hidden_layers=[32, 32, 32],
                                                     number_of_epochs=10, diff=[0x01, 0x0a], rounds_to_train=[]):
     results = {"input_parameters": {
+        "test_name": "neural_network_differential_distinguisher_tests",
         "number_of_samples": nb_samples,
         "input_differences": diff,
         "hidden_layers": hidden_layers,

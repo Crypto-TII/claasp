@@ -218,6 +218,7 @@ class StatisticalTests:
             test_dict["test_name"] = seqs[12]
             test_list.append(test_dict)
         report_dict["randomness_test"] = test_list
+        report_dict["test_name"] = "nist_statistical_tests"
         f.close()
         print(f'Parsing {report_filename} is finished.')
         return report_dict

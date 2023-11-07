@@ -140,6 +140,7 @@ class DieharderTests:
         report_dict["failed_tests"] = failed_tests
         report_dict["passed_tests_proportion"] = passed_tests / total_tests
         report_dict["total_tests"] = total_tests
+        report_dict["test_name"] = "dieharder_statistical_tests"
         f.close()
         print(f'Parsing {report_filename} is finished.')
         return report_dict

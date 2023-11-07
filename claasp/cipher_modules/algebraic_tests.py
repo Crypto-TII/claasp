@@ -56,7 +56,8 @@ def algebraic_tests(cipher, timeout=60):
             tests_up_to_round.append(result)
 
     input_parameters = {
-        "timeout": timeout
+        "timeout": timeout,
+        "test_name": "algebraic_tests"
     }
 
     test_results = {

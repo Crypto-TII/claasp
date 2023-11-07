@@ -174,6 +174,7 @@ class SatXorDifferentialModel(SatModel):
             self._model_constraints.append(' '.join(literals))
             solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
             solution['building_time_seconds'] = end_building_time - start_building_time
+            solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
 
         return solutions_list
 
@@ -222,6 +223,8 @@ class SatXorDifferentialModel(SatModel):
             solutions = self.find_all_xor_differential_trails_with_fixed_weight(weight,
                                                                                 fixed_values=fixed_values,
                                                                                 solver_name=solver_name)
+            for solution in solutions_list:
+                solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
             solutions_list.extend(solutions)
 
         return solutions_list
@@ -284,6 +287,7 @@ class SatXorDifferentialModel(SatModel):
             max_memory = max((max_memory, solution['memory_megabytes']))
         solution['solving_time_seconds'] = total_time
         solution['memory_megabytes'] = max_memory
+        solution['test_name'] = "find_lowest_weight_xor_differential_trail"
 
         return solution
 
@@ -329,6 +333,7 @@ class SatXorDifferentialModel(SatModel):
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
+        solution['test_name'] = "find_one_xor_differential_trail"
 
         return solution
 
@@ -375,6 +380,7 @@ class SatXorDifferentialModel(SatModel):
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
+        solution['test_name'] = "find_one_xor_differential_trail_with_fixed_weight"
 
         return solution
 

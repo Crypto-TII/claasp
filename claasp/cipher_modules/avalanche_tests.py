@@ -37,6 +37,7 @@ def avalanche_tests(cipher, number_of_samples=5, avalanche_dependence_uniform_bi
                                                                      avalanche_dependence_uniform_bias)
     intermediate_output_names = add_intermediate_output_components_id_to_dictionary(cipher.get_all_components())
     diffusion_tests = {"input_parameters": {
+        "test_name": "avalanche_tests",
         "number_of_samples": number_of_samples,
         "avalanche_dependence_uniform_bias": avalanche_dependence_uniform_bias,
         "avalanche_dependence_criterion_threshold": avalanche_dependence_criterion_threshold,

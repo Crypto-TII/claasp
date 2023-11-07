@@ -305,6 +305,7 @@ class MilpXorLinearModel(MilpModel):
             try:
                 solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
                 solution['building_time'] = building_time
+                solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
                 self._number_of_trails_found += 1
                 verbose_print(f"trails found : {self._number_of_trails_found}")
                 list_trails.append(solution)
@@ -402,6 +403,7 @@ class MilpXorLinearModel(MilpModel):
                 try:
                     solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
                     solution['building_time'] = building_time
+                    solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
                     self._number_of_trails_found += 1
                     verbose_print(f"trails found : {self._number_of_trails_found}")
                     list_trails.append(solution)
@@ -475,6 +477,7 @@ class MilpXorLinearModel(MilpModel):
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
@@ -513,6 +516,7 @@ class MilpXorLinearModel(MilpModel):
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
@@ -555,6 +559,7 @@ class MilpXorLinearModel(MilpModel):
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_one_xor_linear_trail_with_fixed_weight"
 
         return solution
 

@@ -320,6 +320,7 @@ def continuous_diffusion_tests(cipher,
                                is_diffusion_factor=True):
     continuous_diffusion_tests = {
         'input_parameters': {
+            'test_name': "continuous_diffusion_tests",
             'continuous_avalanche_factor_number_of_samples': continuous_avalanche_factor_number_of_samples,
             'threshold_for_avalanche_factor': threshold_for_avalanche_factor,
             'continuous_neutral_measure_beta_number_of_samples': continuous_neutral_measure_beta_number_of_samples,

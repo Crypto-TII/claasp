@@ -162,7 +162,7 @@ class SatXorLinearModel(SatModel):
             self._model_constraints.append(' '.join(literals))
             solution = self.solve(XOR_LINEAR, solver_name=solver_name)
             solution['building_time_seconds'] = end_building_time - start_building_time
-
+            solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
         return solutions_list
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
@@ -205,6 +205,8 @@ class SatXorLinearModel(SatModel):
             solutions = self.find_all_xor_linear_trails_with_fixed_weight(weight,
                                                                           fixed_values=fixed_values,
                                                                           solver_name=solver_name)
+            for solution in solutions:
+                solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
             solutions_list.extend(solutions)
 
         return solutions_list
@@ -263,6 +265,7 @@ class SatXorLinearModel(SatModel):
             max_memory = max((max_memory, solution['memory_megabytes']))
         solution['solving_time_seconds'] = total_time
         solution['memory_megabytes'] = max_memory
+        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
@@ -309,6 +312,7 @@ class SatXorLinearModel(SatModel):
         end_building_time = time.time()
         solution = self.solve(XOR_LINEAR, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
+        solution['test_name'] = "find_one_xor_linear_trail"
 
         return solution
 
@@ -351,6 +355,7 @@ class SatXorLinearModel(SatModel):
         end_building_time = time.time()
         solution = self.solve(XOR_LINEAR, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
+        solution['test_name'] = "find_one_xor_linear_trail_with_fixed_weight"
 
         return solution
 

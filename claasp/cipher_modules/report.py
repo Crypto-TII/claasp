@@ -1,23 +1,22 @@
-
 import os
 from math import ceil
-import numpy as np
 from plotly.subplots import make_subplots
 from plotly import express as px
 import plotly.graph_objects as go
 import pandas as pd
-import matplotlib.pyplot as plt
+
 
 class Report:
 
-    def __init__(self,cipher, test_name, test_report):
+    def __init__(self, cipher, test_report):
 
         ########
         ########
 
         self.cipher = cipher
         self.test_report = test_report
-        self.test_name = test_name
+
+        self.test_name = test_report['test_name'] if type(test_report) is dict else test_report[0]['test_name']
 
         try:
             self.input_parameters = test_report['input_parameters']
@@ -27,15 +26,16 @@ class Report:
             self.input_parameters = {}
             self.test_results = test_report
 
-
-    def print_colored_state(self, state):
+    def print_colored_state(self, state, verbose):
         for line in state:
             print('', end='')
             for x in line:
                 print(f'{x} ', end='')
 
             occ = [i for i in range(len(line)) if line[i] != '_']
-            print(f'\tactive words positions = {occ}')
+            if verbose:
+                print(f'\tactive words positions = {occ}')
+
     def print_trail(self):
 
         component_types = []
@@ -43,14 +43,6 @@ class Report:
         for comp in list(self.test_results['components_values'].keys()):
             if comp.split('_')[0] not in component_types + ['intermediate', 'cipher']:
                 component_types.append(comp.split('_')[0])
-
-        if self.cipher._type == 'hash_function':
-            plaintext_value = self.test_results['components_values'][('key')]['value']
-            block_size = self.cipher.inputs_bit_size[self.cipher._inputs.index('key')]
-
-        else:
-            plaintext_value = self.test_results['components_values'][('plaintext')]['value']
-            block_size = self.cipher.inputs_bit_size[self.cipher._inputs.index('plaintext')]
 
         comp_choice = {'intermediate': 1, 'cipher': 1}
 
@@ -60,6 +52,10 @@ class Report:
                 choice = input("Error. Only answer using y (yes) or n (no)")
             comp_choice[C] = 1 if choice == 'y' else 0
 
+        verbose_choice = input("Do you want a verbose output? (y or n)")
+        while verbose_choice not in ['y', 'n']:
+            verbose_choice = input("Answer with y or n")
+        verbose = 1 if verbose_choice == 'y' else 0
         out_list = {}
 
         key_flow = ['key']
@@ -70,9 +66,13 @@ class Report:
         while self.cipher.output_bit_size % word_size != 0:
             word_size = int(input('Choose a valid word_size\n\n'))
 
-        state_size = int(input("Choose a state size for the cipher\n"))
+        state_size = int(input("Choose the cipher matrix's number of rows\n"))
         while (self.cipher.output_bit_size // word_size) % state_size != 0:
-            state_size = int(input('Choose a valid state_size\n\n'))
+            state_size = int(input('Choose a valid number\n\n'))
+
+        key_state_size = int(input("Choose the key flow's matrix number of rows\n"))
+        while (self.cipher.output_bit_size // word_size) % state_size != 0:
+            key_state_size = int(input('Choose a valid number\n\n'))
 
         word_denominator = '1' if word_size == 1 else 'A'
 
@@ -99,13 +99,16 @@ class Report:
                 word_list = [word_denominator if ''.join(bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
                              range(0, len(bin_list), word_size)]
 
-                if 'intermediate' in comp_id or 'cipher' in comp_id:
+                if ('intermediate' in comp_id or 'cipher' in comp_id) and comp_id not in key_flow:
                     size = (state_size, len(word_list) // state_size)
+
+                elif ('intermediate' in comp_id or 'cipher' in comp_id) and comp_id in key_flow and comp_id != 'key':
+                    size = (key_state_size, len(word_list) // key_state_size)
+
                 else:
                     size = (1, len(word_list))
 
                 out_format = [[] for _ in range(size[0])]
-
                 for i in range(size[0]):
                     for j in range(size[1]):
                         if word_list[j + i * size[1]] == word_denominator:
@@ -121,12 +124,15 @@ class Report:
                 if comp_id == 'plaintext' or comp_id == 'key':
                     print(f' \t{comp_id}')
                 else:
-                    print(f' \t{comp_id}\tInput Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
-                self.print_colored_state(out_list[comp_id][0])
-                print('\t local weight = ' + str(out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
+                    if verbose:
+                        print(
+                            f' \t{comp_id}\tInput Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
+                    else:
+                        print(f' \t{comp_id}\t')
+                self.print_colored_state(out_list[comp_id][0], verbose)
+                if verbose: print('\tlocal weight = ' + str(out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
                     out_list[comp_id][2]))
-            print()
-
+                print()
         print()
         print("KEY FLOW")
         print()
@@ -137,11 +143,16 @@ class Report:
                 if comp_id == 'plaintext' or comp_id == 'key':
                     print(f' \t{comp_id}')
                 else:
-                    print(f' \t{comp_id}\tInput Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
-                self.print_colored_state(out_list[comp_id][0])
-                print(' \tlocal weight = ' + str(out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
+                    if verbose:
+                        print(
+                            f' \t{comp_id}\tInput Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
+                    else:
+                        print(f' \t{comp_id}\t')
+                self.print_colored_state(out_list[comp_id][0], verbose)
+                if verbose: print(' \tlocal weight = ' + str(out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
                     out_list[comp_id][2]))
-            print()
+                print()
+
     def produce_graph(self):
         inputs = list(self.test_results.keys())
 
@@ -158,7 +169,8 @@ class Report:
                 results = list(self.test_results[it][out].keys())
 
                 for res in results:
-                    if not os.path.exists(self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out + '/' + res):
+                    if not os.path.exists(
+                            self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out + '/' + res):
                         os.mkdir(self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out + '/' + res)
 
                     ### Make Graphs
@@ -199,27 +211,26 @@ class Report:
                             fig = px.line(df, range_x=[1, self.cipher.number_of_rounds],
                                           range_y=[min(df[0]) - 1, max(df[0]) + 1])
                             fig.update_layout(xaxis_title="number_of_rounds", yaxis_title="test_result")
-                            fig.write_image(self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out + '/' + res +
-                                            '/' + str(res) + '.png',
-                                            scale=4)
+                            fig.write_image(
+                                self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out + '/' + res +
+                                '/' + str(res) + '.png',
+                                scale=4)
 
                             fig.data = []
                             fig.layout = {}
 
-
     def analyze_report(self):
 
-        if not os.path.exists(os.getcwd()+'/Graph_Results'):
-            os.mkdir(os.getcwd()+'/Graph_Results')
+        if not os.path.exists(os.getcwd() + '/Graph_Results'):
+            os.mkdir(os.getcwd() + '/Graph_Results')
 
-        if not os.path.exists(os.getcwd()+'/Graph_Results/' + self.cipher.id):
-            os.mkdir(os.getcwd()+'/Graph_Results/' + self.cipher.id)
+        if not os.path.exists(os.getcwd() + '/Graph_Results/' + self.cipher.id):
+            os.mkdir(os.getcwd() + '/Graph_Results/' + self.cipher.id)
 
-        if not os.path.exists(os.getcwd()+'/Graph_Results/' + self.cipher.id + '/' + self.test_name):
-            os.mkdir(os.getcwd()+'/Graph_Results/' + self.cipher.id + '/' + self.test_name)
+        if not os.path.exists(os.getcwd() + '/Graph_Results/' + self.cipher.id + '/' + self.test_name):
+            os.mkdir(os.getcwd() + '/Graph_Results/' + self.cipher.id + '/' + self.test_name)
 
         try:
             self.print_trail()
         except KeyError:
             self.produce_graph()
-
