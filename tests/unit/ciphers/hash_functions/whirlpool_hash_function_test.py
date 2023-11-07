@@ -10,10 +10,12 @@ def test_whirlpool_hash_function():
     whirlpool = WhirlpoolHashFunction(number_of_rounds=4)
     assert whirlpool.number_of_rounds == 4
     assert whirlpool.id == 'whirlpool_hash_function_k512_o512_r4'
-    assert whirlpool.component_from(3,0) == 'sbox_3_0'
+    assert whirlpool.component_from(3,0).id == 'sbox_3_0'
 
     # The following test vector values have been obtained from the reference implementation of Whirlpool
     # available at https://web.archive.org/web/20171129084214/http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
+
+    whirlpool = WhirlpoolHashFunction()
 
     key = 0x61626380000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018
     ciphertext = 0x4e2448a4c6f486bb16b6562c73b4020bf3043e3a731bce721ae1b303d97e6d4c7181eebdb6c57e277d0e34957114cbd6c797fc9d95d8b582d225292076d4eef5
