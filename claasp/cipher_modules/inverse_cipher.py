@@ -1101,7 +1101,8 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
                         available_output_components):
                     if (available_output_component.id not in component.input_id_links) and (
                             available_output_component.id != component.id):
-                        index_id = available_output_component.input_id_links.index(link)
+                        index_id_list = [_ for _, x in enumerate(available_output_component.input_id_links) if x == link and set(available_output_component.input_bit_positions[_]) <= set(original_input_bit_positions_of_link)]
+                        index_id = index_id_list[0] if index_id_list else available_output_component.input_id_links.index(link)
                         starting_bit = 0
                         for index_list, list_bit_positions in enumerate(available_output_component.input_bit_positions):
                             if index_list == index_id:
@@ -1116,11 +1117,11 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
                                 # get input bit positions
                                 accumulator = 0 # changed
                                 for j in range(len(available_output_component.input_id_links)):
-                                    if component.input_id_links[i] == available_output_component.input_id_links[j]:
+                                    if j == index_id:
                                         l = [h for h in range(accumulator, accumulator + len(component.input_bit_positions[i]))]
                                         l_ordered = find_correct_order(link, original_input_bit_positions_of_link, available_output_component.id, l, all_equivalent_bits)
                                         input_bit_positions.append(l_ordered)
-                                        # break?
+                                        break
                                     else:
                                         accumulator += len(available_output_component.input_bit_positions[j]) # changed
     else:
