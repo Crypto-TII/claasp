@@ -1,6 +1,6 @@
 from bitstring import BitArray
-from claasp.cipher_modules.generic_functions import ROTATE, SIGMA, THETA_KECCAK, THETA_XOODOO, SHIFT
-
+from claasp.cipher_modules.generic_functions import (ROTATE, SIGMA, THETA_KECCAK, THETA_XOODOO, SHIFT, fsr_binary,
+                                                     fsr_word)
 
 def test_ROTATE():
     b = BitArray("0x8")
@@ -42,3 +42,39 @@ def test_SHIFT():
     assert b.bin == '1111'
     assert SHIFT(b, 1).bin == '0111'
     assert SHIFT(b, -2).bin == '1100'
+
+def test_fsr_binary():
+    state_in = BitArray('0xc6e')
+    NLFSR_DESCR = [
+        [5, [[4], [5], [6, 7]]],  # Register_len:5,  feedback poly: s4 + s5 + s6*s7
+        [7, [[0], [8], [1, 2]]]  # Register_len:7, feedback poly: s0 + s1*s2 + s8
+    ]
+    number_of_clocks = 1
+    state_out = BitArray('0x8dc')
+
+    assert fsr_binary(state_in, NLFSR_DESCR, number_of_clocks) == state_out
+
+
+def test_fsr_word():
+    state_in = BitArray('0xf41c')
+    word_size = 4
+    LFSR_DESCR = [
+        [4,  # register's length
+         [[1, [0]], [1, [2]], [1, [3]]]  # feedback polynomial 1*s0 + 1*s2 + 1*s3
+         ]
+    ]
+    number_of_clocks = 1
+    state_out = BitArray('0x41c2')
+
+    assert fsr_word(state_in, LFSR_DESCR, word_size, number_of_clocks) == state_out
+
+    LFSR_DESCR = [
+        [4,  # register's length
+         [[1, [0]], [2, [2]], [1, [3]]]  # feedback polynomial: 0001*s0 + 0010*s2 + 0001*s3
+         ]
+    ]
+    state_out = BitArray('0x41c1')
+
+    assert fsr_word(state_in, LFSR_DESCR, word_size, number_of_clocks) == state_out
+
+
