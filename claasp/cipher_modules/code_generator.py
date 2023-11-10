@@ -26,7 +26,7 @@ import claasp
 from claasp.component import free_input
 from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, CONSTANT,
                                   CONCATENATE, PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
-                                  FSR)
+                                  FSR, CIPHER_INVERSE_SUFFIX)
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -260,6 +260,8 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
             code.append(f'  bit_vector_print_as_hex_values("{name}_output", {name})')
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
+    elif CIPHER_INVERSE_SUFFIX in cipher.id:
+        code.append('  return intermediateOutputs["plaintext"]')
     else:
         code.append('  return intermediateOutputs["cipher_output"]')
 
@@ -330,6 +332,8 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
             code.append(f'  byte_vector_print_as_hex_values("{name}_output", {name})')
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
+    elif CIPHER_INVERSE_SUFFIX in cipher.id:
+        code.append('  return intermediateOutputs["plaintext"]')
     else:
         code.append('  return intermediateOutputs["cipher_output"]')
 
