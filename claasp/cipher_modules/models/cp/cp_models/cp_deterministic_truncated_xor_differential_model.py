@@ -35,19 +35,20 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
 
     def add_solutions_from_components_values(self, components_values, memory, model_type, solutions, solve_time,
                                              solver_name, solver_output):
-        solution = convert_solver_solution_to_dictionary(
-            self.cipher_id,
-            model_type,
-            solver_name,
-            solve_time,
-            memory,
-            components_values[f'solution1'],
-            0)
-        if 'UNSATISFIABLE' in solver_output[0]:
-            solution['status'] = 'UNSATISFIABLE'
-        else:
-            solution['status'] = 'SATISFIABLE'
-        solutions.append(solution)
+        for nsol in components_values.keys():
+            solution = convert_solver_solution_to_dictionary(
+                self.cipher_id,
+                model_type,
+                solver_name,
+                solve_time,
+                memory,
+                components_values[nsol],
+                0)
+            if 'UNSATISFIABLE' in solver_output[0]:
+                solution['status'] = 'UNSATISFIABLE'
+            else:
+                solution['status'] = 'SATISFIABLE'
+            solutions.append(solution)
 
     def add_solution_to_components_values(self, component_id, component_solution, components_values, j, output_to_parse,
                                           solution_number, string):
@@ -639,7 +640,8 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
                 elif '----------' in string:
                     solution_number += 1
         if 'impossible' in model_type and solution_number > 1:
-            components_values = self.extract_incompatibilities_from_output(components_values['solution1'])
+            for nsol in components_values.keys():
+                components_values[nsol] = self.extract_incompatibilities_from_output(components_values[nsol])
 
         return time, memory, components_values
             
