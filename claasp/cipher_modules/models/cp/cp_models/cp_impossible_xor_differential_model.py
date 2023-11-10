@@ -156,7 +156,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         self._model_prefix.extend(variables)
         self._variables_list.extend(constraints)
         deterministic_truncated_xor_differential.extend(
-            self.final_impossible_constraints(middle_round))
+            self.final_impossible_constraints(number_of_rounds, middle_round))
         self._model_constraints = self._model_prefix + self._variables_list + deterministic_truncated_xor_differential
         
     def extract_incompatibilities_from_output(self, components_values):
@@ -189,8 +189,22 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         solutions = {'solution1' : incompatibilities}
                     
         return solutions
+        
+    def extract_key_schedule(self):
+        cipher = self._cipher
+        key_schedule_components = ['key']
+        for component in cipher.get_all_components():
+            component_inputs = component.input_id_links
+            ks = True
+            for comp_input in component_inputs:
+                if 'constant' not in comp_input and comp_input not in key_schedule_components:
+                    ks = False
+            if ks:
+                key_schedule_components.append(component.id)
+                
+        return key_schedule_components
 
-    def final_impossible_constraints(self, middle_round):
+    def final_impossible_constraints(self, number_of_rounds, middle_round):
         """
         Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
 
@@ -214,12 +228,13 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         cp_constraints = [solve_satisfy]
         new_constraint = 'output['
         incompatibility_constraint = 'constraint'
+        key_schedule_components = self.extract_key_schedule()
         for element in cipher_inputs:
             new_constraint = f'{new_constraint}\"{element} = \"++ show({element}) ++ \"\\n\" ++'
         for element in cipher_outputs:
             new_constraint = f'{new_constraint}\"inverse_{element} = \"++ show(inverse_{element}) ++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
         for component in cipher.get_components_in_round(middle_round-1):
-            if component.type != CONSTANT:
+            if component.type != CONSTANT and component.id not in key_schedule_components:
                 component_id = component.id
                 input_id_links = component.input_id_links
                 input_bit_positions = component.input_bit_positions

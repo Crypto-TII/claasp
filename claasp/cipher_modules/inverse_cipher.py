@@ -3,8 +3,10 @@ from copy import *
 from sage.crypto.sbox import SBox
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component, \
     get_inverse_matrix_in_integer_representation
+from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids
 from claasp.component import Component
-from claasp.components import modsub_component, cipher_output_component, linear_layer_component
+from claasp.components import modsub_component, cipher_output_component, linear_layer_component, \
+    intermediate_output_component
 from claasp.input import Input
 from claasp.name_mappings import *
 
@@ -509,13 +511,19 @@ def are_there_enough_available_inputs_to_evaluate_component(component, available
         return True
 
 
+def _get_successor_components(component_id, cipher):
+    graph_cipher = create_networkx_graph_from_input_ids(cipher)
+    return list(graph_cipher.successors(component_id))
+
 def are_there_enough_available_inputs_to_perform_inversion(component, available_bits, all_equivalent_bits, self):
     """
     NOTE: it assumes that the component input size is a multiple of the output size
     """
     # STEP 1 - Special case for output components which have no output links (only cipher output)
-    if (component.type == CIPHER_OUTPUT) or (component.id == "key"):
+    if (component.type == CIPHER_OUTPUT) or (component.id == INPUT_KEY):
         return True
+    if (component.type == INTERMEDIATE_OUTPUT and _get_successor_components(component.id, self) == []):
+        return False
 
     # STEP 2 - Other components
     bit_lists_link_to_component_from_output = component_output_bits(component, self)
@@ -598,9 +606,7 @@ def is_possibly_invertible_component(component):
         is_invertible = False
     elif component.type == WORD_OPERATION and component.description[0] == "NOT":
         is_invertible = True
-    elif component.type == CIPHER_INPUT:
-        is_invertible = True
-    elif component.type == CIPHER_OUTPUT:
+    elif component.type in [CIPHER_INPUT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT]:
         is_invertible = True
     else:
         is_invertible = False
@@ -831,6 +837,15 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
                                       component.output_bit_size, [component.id])
         inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", -1)
+        update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
+    elif component.type == INTERMEDIATE_OUTPUT:
+        input_id_links, input_bit_positions = compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(
+            component, available_output_components, all_equivalent_bits, self)
+        inverse_component = Component(component.id, INTERMEDIATE_OUTPUT,
+                                      Input(component.output_bit_size, input_id_links, input_bit_positions),
+                                      component.output_bit_size, [component.id])
+        inverse_component.__class__ = intermediate_output_component.IntermediateOutput
+        setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     else:
         inverse_component = Component("NA", "NA",

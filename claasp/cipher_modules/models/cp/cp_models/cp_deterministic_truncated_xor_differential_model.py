@@ -558,9 +558,9 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
             value = string.replace(f'{component_id}_i', '')
         elif f'{component_id}_o' in string:
             value = string.replace(f'{component_id}_o', '')
-        elif f'inverse_{component_id} ' in string:
+        elif f'inverse_{component_id}' in string:
             value = string.replace(f'inverse_{component_id}', '')
-        elif f'{component_id} ' in string:
+        elif f'{component_id}' in string:
             value = string.replace(component_id, '')
         value = value.replace('= [', '')
         value = value.replace(']', '')
@@ -630,7 +630,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         for component_id in all_components:
             solution_number = 1
             for j, string in enumerate(output_to_parse):
-                if f'{component_id} ' in string or f'{component_id}_i' in string or f'{component_id}_o' in string or f'inverse_{component_id}' in string:
+                if f'{component_id}' in string or f'{component_id}_i' in string or f'{component_id}_o' in string or f'inverse_{component_id}' in string:
                     value = self.format_component_value(component_id, string)
                     component_solution = {}
                     component_solution['value'] = value
