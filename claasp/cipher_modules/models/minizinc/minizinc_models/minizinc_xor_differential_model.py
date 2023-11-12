@@ -25,7 +25,11 @@ from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, W
 
 class MinizincXorDifferentialModel(MinizincModel):
 
-    def __init__(self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp='sat'):
+    def __init__(
+        self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp='sat',
+            include_word_operations_mzn_file=True
+    ):
+        self.include_word_operations_mzn_file = include_word_operations_mzn_file
         super().__init__(cipher, window_size_list, probability_weight_per_round, sat_or_milp)
 
     @staticmethod
@@ -475,7 +479,9 @@ class MinizincXorDifferentialModel(MinizincModel):
         else:
             from claasp.cipher_modules.models.milp.utils.mzn_predicates import get_word_operations
 
-        self._model_constraints.extend([get_word_operations()])
+
+        if self.include_word_operations_mzn_file:
+            self._model_constraints.extend([get_word_operations()])
         self._model_constraints.extend([
             f'output [ \"{self.cipher_id}, and window_size={self.window_size_list}\" ++ \"\\n\"];'])
         self._model_constraints.extend(output_string_for_cipher_inputs)

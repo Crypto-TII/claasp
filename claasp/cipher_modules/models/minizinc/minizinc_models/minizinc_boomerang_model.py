@@ -140,14 +140,16 @@ class MinizincBoomerangModel(MinizincModel):
             return f'constraint onlyLargeSwitch_BCT_enum({dLL}, {dRR}, {nLL}, {nRR}, 1, {branch_size}) = true;\n'
 
         self.differential_model_top_cipher = MinizincXorDifferentialModel(
-            self.top_cipher, window_size_list=[0 for i in range(self.top_cipher.number_of_rounds)]
+            self.top_cipher, window_size_list=[0 for i in range(self.top_cipher.number_of_rounds)],
+            sat_or_milp='sat', include_word_operations_mzn_file=False
         )
         self.differential_model_top_cipher.build_xor_differential_trail_model(
             -1, fixed_variables_for_top_cipher
         )
 
         self.differential_model_bottom_cipher = MinizincXorDifferentialModel(
-            self.bottom_cipher, window_size_list=[0 for i in range(self.bottom_cipher.number_of_rounds)]
+            self.bottom_cipher, window_size_list=[0 for i in range(self.bottom_cipher.number_of_rounds)],
+            sat_or_milp='sat', include_word_operations_mzn_file=False
         )
         self.differential_model_bottom_cipher.build_xor_differential_trail_model(
             -1, fixed_variables_for_bottom_cipher
@@ -196,11 +198,13 @@ class MinizincBoomerangModel(MinizincModel):
         model_string_bottom = "\n".join(self.differential_model_bottom_cipher.mzn_comments) + "\n".join(
             self.differential_model_bottom_cipher.mzn_output_directives)
         if prefix == "":
-            filename = f'{file_path}/{self.differential_model_top_cipher.cipher_id}_mzn_{self.differential_model_top_cipher.sat_or_milp}.mzn'
+            filename = f'{file_path}/{self.original_cipher.id}_mzn_{self.differential_model_top_cipher.sat_or_milp}.mzn'
         else:
-            filename = f'{file_path}/{prefix}_{self.differential_model_top_cipher.cipher_id}_mzn_{self.differential_model_top_cipher.sat_or_milp}.mzn'
+            filename = f'{file_path}/{prefix}_{self.original_cipher.id}_mzn_{self.differential_model_top_cipher.sat_or_milp}.mzn'
+
 
         f = open(filename, "w")
+
         f.write(
             model_string_top + "\n" + model_string_bottom + "\n" + "\n".join(self._variables_list) + "\n" + "\n".join(self._model_constraints)
         )
