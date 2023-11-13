@@ -669,7 +669,7 @@ def run_sat_solver(solver_name, options, dimacs_input, host=None, env_vars_strin
     solver_specs = constants.SAT_SOLVERS[solver_name]
     command = solver_specs['command'][:] + options
     if host:
-        command = [env_vars_string] + ['ssh', f'{host}'] + command
+        command = ['ssh', f'{host}'] + [env_vars_string] + command
     solver_process = subprocess.run(command, input=dimacs_input, capture_output=True, text=True)
     solver_output = solver_process.stdout.splitlines()
     status = [line for line in solver_output if line.startswith('s')][0].split()[1]

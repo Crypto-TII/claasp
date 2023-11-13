@@ -67,9 +67,6 @@ class CipherOutput(Component):
         """
         return self.sat_constraints()
 
-    def cms_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.sat_deterministic_truncated_xor_differential_trail_constraints()
-
     def cms_xor_differential_propagation_constraints(self, model):
         return self.cms_constraints()
 
@@ -592,9 +589,6 @@ class CipherOutput(Component):
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
-
-    def smt_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.smt_constraints()
 
     def smt_xor_differential_propagation_constraints(self, model):
         return self.smt_constraints()

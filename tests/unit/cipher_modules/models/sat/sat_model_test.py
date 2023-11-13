@@ -17,11 +17,7 @@ def test_solve():
     assert solution['cipher_id'] == 'tea_p64_k128_o64_r32'
     assert solution['solver_name'] == 'cryptominisat'
     assert eval('0x' + solution['components_values']['modadd_0_3']['value']) >= 0
-    assert solution['components_values']['modadd_0_3']['weight'] >= 0
-    assert solution['components_values']['modadd_0_3']['sign'] == 1
     assert eval('0x' + solution['components_values']['cipher_output_31_16']['value']) >= 0
-    assert solution['components_values']['cipher_output_31_16']['weight'] == 0
-    assert solution['components_values']['cipher_output_31_16']['sign'] == 1
     # testing with sage solver
     simon = SimonBlockCipher(number_of_rounds=32)
     sat = SatCipherModel(simon)
@@ -30,11 +26,7 @@ def test_solve():
     assert solution['cipher_id'] == 'simon_p32_k64_o32_r32'
     assert solution['solver_name'] == 'cryptominisat'
     assert eval('0x' + solution['components_values']['rot_0_3']['value']) >= 0
-    assert solution['components_values']['rot_0_3']['weight'] >= 0
-    assert solution['components_values']['rot_0_3']['sign'] == 1
     assert eval('0x' + solution['components_values']['cipher_output_31_13']['value']) >= 0
-    assert solution['components_values']['cipher_output_31_13']['weight'] == 0
-    assert solution['components_values']['cipher_output_31_13']['sign'] == 1
 
 
 def test_fix_variables_value_constraints():

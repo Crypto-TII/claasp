@@ -43,11 +43,10 @@ XOR operations were overridden.
 For any further information, visit `CryptoMiniSat - XOR clauses
 <https://www.msoos.org/xor-clauses/>`_.
 """
-from claasp.cipher_modules.models.sat.utils import utils
+
+
 from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import \
     SatDeterministicTruncatedXorDifferentialModel
-from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN,
-                                  WORD_OPERATION)
 
 
 class CmsSatDeterministicTruncatedXorDifferentialModel(SatDeterministicTruncatedXorDifferentialModel):
@@ -56,48 +55,7 @@ class CmsSatDeterministicTruncatedXorDifferentialModel(SatDeterministicTruncated
                  counter='sequential', compact=False):
         super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
-    def _add_clauses_to_solver(self, numerical_cnf, solver):
-        """
-        Add clauses to the (internal) SAT solver.
-
-        It needs to be overwritten in this class because it must handle the XOR clauses.
-        """
-        utils.cms_add_clauses_to_solver(numerical_cnf, solver)
-
-    def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[]):
-        """
-        Build the model for the search of deterministic truncated XOR DIFFERENTIAL trails.
-
-        INPUT:
-
-        - ``fixed_variables`` -- **list**  (default: `[]`); the variables to be fixed in standard format
-
-        .. SEEALSO::
-
-            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.sat.cms_models.cms_bitwise_deterministic_truncated_xor_differential_model import CmsSatDeterministicTruncatedXorDifferentialModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=22)
-            sage: cms = CmsSatDeterministicTruncatedXorDifferentialModel(speck)
-            sage: cms.build_deterministic_truncated_xor_differential_trail_model()
-            ...
-        """
-        variables = []
-        constraints = self.fix_variables_value_constraints(fixed_variables)
-        self._variables_list = []
-        self._model_constraints = constraints
-        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION)
-        operation_types = ('AND', 'MODADD', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR')
-
-        for component in self._cipher.get_all_components():
-            operation = component.description[0]
-            if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
-                variables, constraints = component.cms_deterministic_truncated_xor_differential_trail_constraints()
-            else:
-                print(f'{component.id} not yet implemented')
-
-            self._variables_list.extend(variables)
-            self._model_constraints.extend(constraints)
+        print("\n*** WARNING ***\n"
+              "At the best of the authors knowldege, deterministic truncated XOR differential model "
+              "cannot take any advantage of CryptoMiniSat. Therefore, the implementation is the same "
+              "of the SAT one.")

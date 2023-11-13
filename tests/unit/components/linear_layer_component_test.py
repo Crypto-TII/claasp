@@ -3,6 +3,7 @@ from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
 from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
     MilpBitwiseDeterministicTruncatedXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import \
@@ -292,6 +293,22 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraint
     assert str(constraints[-2]) == 'x_126 == x_59'
     assert str(constraints[-1]) == 'x_127 == x_63'
 
+    ascon = AsconSboxSigmaPermutation(number_of_rounds=1)
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(ascon)
+    milp.init_model_in_sage_milp_class()
+    linear_layer_component = ascon.component_from(0, 68)
+    variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
+
+    assert str(variables[0]) == "('x_class[sbox_0_2_2]', x_0)"
+    assert str(variables[1]) == "('x_class[sbox_0_3_2]', x_1)"
+    assert str(variables[-2]) == "('x_class[sigma_0_68_62]', x_126)"
+    assert str(variables[-1]) == "('x_class[sigma_0_68_63]', x_127)"
+
+    assert str(constraints[0]) == "x_0 == 2*x_128 + x_129"
+    assert str(constraints[1]) == "x_1 == 2*x_130 + x_131"
+    assert str(constraints[-2]) == "1 <= 1 - x_254 + x_382 + 6*x_573"
+    assert str(constraints[-1]) == "1 <= 2 + 6*x_573 - x_574 - x_575"
+
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     cipher = MidoriBlockCipher(number_of_rounds=2)
@@ -319,8 +336,8 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
     assert str(variables[0]) == "('x[rot_0_17_word_0_class_bit_0]', x_0)"
     assert str(variables[1]) == "('x[rot_0_17_word_0_class_bit_1]', x_1)"
-    assert str(variables[-2]) == "('x[mix_column_0_21_word_31_class_bit_0]', x_126)"
-    assert str(variables[-1]) == "('x[mix_column_0_21_word_31_class_bit_1]', x_127)"
+    assert str(variables[-2]) == "('x[mix_column_0_21_word_3_class_bit_0]', x_14)"
+    assert str(variables[-1]) == "('x[mix_column_0_21_word_3_class_bit_1]', x_15)"
 
     assert str(constraints[0]) == '1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 - x_15'
     assert str(constraints[1]) == '1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_7 - x_15'

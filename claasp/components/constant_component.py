@@ -131,9 +131,6 @@ class Constant(Component):
         """
         return self.sat_constraints()
 
-    def cms_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.sat_deterministic_truncated_xor_differential_trail_constraints()
-
     def cms_xor_differential_propagation_constraints(self, model):
         return self.sat_xor_differential_propagation_constraints()
 
@@ -648,9 +645,6 @@ class Constant(Component):
                        for i in range(output_bit_len)]
 
         return output_bit_ids, constraints
-
-    def smt_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.smt_xor_differential_propagation_constraints()
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
