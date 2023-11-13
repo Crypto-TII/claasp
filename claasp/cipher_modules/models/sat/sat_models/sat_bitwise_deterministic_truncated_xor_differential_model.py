@@ -64,3 +64,69 @@ class SatDeterministicTruncatedXorDifferentialModel(SatModel):
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
+
+    def fix_variables_value_constraints(self, fixed_variables=[]):
+        """
+        Return constraints for fixed variables
+
+        Return lists of variables and clauses for fixing variables in bitwise
+        deterministic truncated XOR differential model.
+
+        INPUT:
+
+        - ``fixed_variables`` -- **list** (default: `[]`); variables in default format
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import SatDeterministicTruncatedXorDifferentialModel
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: sat = SatDeterministicTruncatedXorDifferentialModel(speck)
+            sage: fixed_variables = [{
+            ....:    'component_id': 'plaintext',
+            ....:    'constraint_type': 'equal',
+            ....:    'bit_positions': [0, 1, 2, 3],
+            ....:    'bit_values': [1, 0, 1, 1]
+            ....: }, {
+            ....:    'component_id': 'ciphertext',
+            ....:    'constraint_type': 'not_equal',
+            ....:    'bit_positions': [0, 1, 2, 3],
+            ....:    'bit_values': [2, 1, 1, 0]
+            ....: }]
+            sage: sat.fix_variables_value_constraints(fixed_variables)
+            ['-plaintext_0_0',
+             'plaintext_0_1',
+             '-plaintext_1_0',
+             '-plaintext_1_1',
+             '-plaintext_2_0',
+             'plaintext_2_1',
+             '-plaintext_3_0',
+             'plaintext_3_1',
+             '-ciphertext_0_0 ciphertext_1_0 -ciphertext_1_1 ciphertext_2_0 -ciphertext_2_1 ciphertext_3_0 ciphertext_3_1']
+        """
+        constraints = []
+        for variable in fixed_variables:
+            component_id = variable['component_id']
+            is_equal = (variable['constraint_type'] == 'equal')
+            bit_positions = variable['bit_positions']
+            bit_values = variable['bit_values']
+            if is_equal:
+                for position, value in zip(bit_positions, bit_values):
+                    if value == 0:
+                        constraints.extend((f'-{component_id}_{position}_0', f'-{component_id}_{position}_1'))
+                    elif value == 1:
+                        constraints.extend((f'-{component_id}_{position}_0', f'{component_id}_{position}_1'))
+                    elif value == 2:
+                        constraints.append(f'{component_id}_{position}_0')
+            else:
+                clause = []
+                for position, value in zip(bit_positions, bit_values):
+                    if value == 0:
+                        clause.extend((f'{component_id}_{position}_0', f'{component_id}_{position}_1'))
+                    elif value == 1:
+                        clause.extend((f'{component_id}_{position}_0', f'-{component_id}_{position}_1'))
+                    elif value == 2:
+                        clause.append(f'-{component_id}_{position}_0')
+                constraints.append(' '.join(clause))
+
+        return constraints
