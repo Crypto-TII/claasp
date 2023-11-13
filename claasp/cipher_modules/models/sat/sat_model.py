@@ -153,6 +153,22 @@ class SatModel:
 
         return components_solutions
 
+    def _get_cipher_inputs_components_solutions_double_ids(self, variable2value):
+        components_solutions = {}
+        for cipher_input, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+            values = []
+            for i in range(bit_size):
+                value = 0
+                if f'{cipher_input}_{i}_0' in variable2value:
+                    value ^= variable2value[f'{cipher_input}_{i}_0'] << 1
+                if f'{cipher_input}_{i}_1' in variable2value:
+                    value ^= variable2value[f'{cipher_input}_{i}_1']
+                values.append(f'{value}')
+            component_solution = set_component_solution(''.join(values))
+            components_solutions[cipher_input] = component_solution
+
+        return components_solutions
+
     def _get_component_hex_value(self, component, out_suffix, variable2value):
         output_bit_size = component.output_bit_size
         value = 0
@@ -164,6 +180,20 @@ class SatModel:
             hex_value = f'{value:0{hex_digits}x}'
 
         return hex_value
+
+    def _get_component_value_double_ids(self, component, variable2value):
+        output_bit_size = component.output_bit_size
+        values = []
+        for i in range(output_bit_size):
+            variable_value = 0
+            if f'{component.id}_{i}_0' in variable2value:
+                variable_value ^= variable2value[f'{component.id}_{i}_0'] << 1
+            if f'{component.id}_{i}_1' in variable2value:
+                variable_value ^= variable2value[f'{component.id}_{i}_1']
+            values.append(f'{variable_value}')
+        value = ''.join(values)
+
+        return value
 
     def _get_solver_solution_parsed(self, variable2number, values):
         variable2value = {}

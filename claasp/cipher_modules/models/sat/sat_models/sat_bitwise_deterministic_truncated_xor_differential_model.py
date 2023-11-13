@@ -17,9 +17,12 @@
 # ****************************************************************************
 
 
+import time
+
 from claasp.cipher_modules.models.sat.sat_model import SatModel
-from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN,
-                                  WORD_OPERATION)
+from claasp.cipher_modules.models.utils import set_component_solution
+from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
+                                  INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION)
 
 
 class SatDeterministicTruncatedXorDifferentialModel(SatModel):
@@ -71,6 +74,10 @@ class SatDeterministicTruncatedXorDifferentialModel(SatModel):
 
         Return lists of variables and clauses for fixing variables in bitwise
         deterministic truncated XOR differential model.
+
+        .. SEEALSO::
+
+           :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
 
         INPUT:
 
@@ -130,3 +137,66 @@ class SatDeterministicTruncatedXorDifferentialModel(SatModel):
                 constraints.append(' '.join(clause))
 
         return constraints
+
+    def find_one_bitwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[],
+                                                                        solver_name='cryptominisat'):
+        """
+        Returns one deterministic truncated XOR differential trail.
+
+        INPUTS:
+
+        - ``fixed_values`` -- *list of dict*, the variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``solver_name`` -- *str*, the solver to call
+
+        EXAMPLE::
+
+            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import SatDeterministicTruncatedXorDifferentialModel
+            sage: M = SatDeterministicTruncatedXorDifferentialModel(speck)
+            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+            sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
+            sage: trail = M.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
+            ...
+
+            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import SatDeterministicTruncatedXorDifferentialModel
+            sage: M = SatDeterministicTruncatedXorDifferentialModel(speck)
+            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+            sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
+            sage: out = set_fixed_variables(component_id='cipher_output_2_12', constraint_type='equal', bit_positions=range(32), bit_values=[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+            sage: trail = M.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key, out]) # doctest: +SKIP
+            ...
+
+            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: present = PresentBlockCipher(number_of_rounds=1)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import SatDeterministicTruncatedXorDifferentialModel
+            sage: sat = SatDeterministicTruncatedXorDifferentialModel(present)
+            sage: sat.init_model_in_sage_sat_class()
+            sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(80), bit_values=[0]*80)
+            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(64), bit_values=[2,0,0,0] + [1,0,0,1] + [0,0,0,1] + [1,0,0,0] + [0] * 48)
+            sage: trail = sat.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key]) # doctest: +SKIP
+            ...
+
+        """
+        start_building_time = time.time()
+        self.build_deterministic_truncated_xor_differential_trail_model(fixed_variables=fixed_values)
+        end_building_time = time.time()
+        solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name)
+        solution['building_time_seconds'] = end_building_time - start_building_time
+
+        return solution
+
+    def _parse_solver_output(self, variable2value):
+        components_solutions = self._get_cipher_inputs_components_solutions_double_ids(variable2value)
+        for component in self._cipher.get_all_components():
+            value = self._get_component_value_double_ids(component, variable2value)
+            component_solution = set_component_solution(value)
+            components_solutions[f'{component.id}'] = component_solution
+
+        return components_solutions, None
