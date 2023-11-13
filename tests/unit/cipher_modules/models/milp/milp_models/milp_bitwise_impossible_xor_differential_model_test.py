@@ -3,7 +3,7 @@ from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_impossible_xor_differential_model import \
     MilpBitwiseImpossibleXorDifferentialModel
 
-
+SIMON_INCOMPATIBLE_ROUND_OUTPUT = '????????00?????0???????0????????'
 def test_build_bitwise_impossible_xor_differential_trail_model():
     simon = SimonBlockCipher(block_bit_size=32, number_of_rounds=2)
     milp = MilpBitwiseImpossibleXorDifferentialModel(simon)
@@ -31,7 +31,7 @@ def test_find_one_bitwise_impossible_xor_differential_trail_model():
     trail = milp.find_one_bitwise_impossible_xor_differential_trail(6, fixed_values=[plaintext, key, ciphertext])
     assert trail['status'] == 'SATISFIABLE'
     assert trail['components_values']['intermediate_output_5_12']['value'] == '????????????????0??????1??????0?'
-    assert trail['components_values']['intermediate_output_5_12_backward']['value'] == '????????00?????0???????0????????'
+    assert trail['components_values']['intermediate_output_5_12_backward']['value'] == SIMON_INCOMPATIBLE_ROUND_OUTPUT
     
 def test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model():
     simon = SimonBlockCipher(block_bit_size=32, number_of_rounds=11)
@@ -43,5 +43,20 @@ def test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic
     trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model(fixed_values=[plaintext, key, key_backward, ciphertext_backward])
     assert trail['status'] == 'SATISFIABLE'
     assert trail['components_values']['plaintext']['value'] == '00000000000000000000000000000001'
-    assert trail['components_values']['intermediate_output_5_12_backward']['value'] == '????????00?????0???????0????????'
+    assert trail['components_values']['intermediate_output_5_12_backward']['value'] == SIMON_INCOMPATIBLE_ROUND_OUTPUT
     assert trail['components_values']['cipher_output_10_13_backward']['value'] == '000000?0?00000000000000000000000'
+
+def test_find_one_bitwise_impossible_xor_differential_trail_with_fixed_component():
+    simon = SimonBlockCipher(block_bit_size=32, number_of_rounds=11)
+    milp = MilpBitwiseImpossibleXorDifferentialModel(simon)
+    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0] * 31 + [1])
+    key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64),
+                                    bit_values=[0] * 64)
+    ciphertext = set_fixed_variables(component_id='cipher_output_10_13', constraint_type='equal',
+                                           bit_positions=range(32), bit_values=[0] * 6 + [2, 0, 2] + [0] * 23)
+    trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_fixed_component(['intermediate_output_5_12'], fixed_values=[plaintext, key, ciphertext])
+    assert trail['status'] == 'SATISFIABLE'
+    assert trail['components_values']['plaintext']['value'] == '00000000000000000000000000000001'
+    assert trail['components_values']['intermediate_output_5_12']['value'] == '????????????????0??????1??????0?'
+    assert trail['components_values']['intermediate_output_5_12_backward']['value'] == SIMON_INCOMPATIBLE_ROUND_OUTPUT
+    assert trail['components_values']['cipher_output_10_13']['value'] == '000000?0?00000000000000000000000'
