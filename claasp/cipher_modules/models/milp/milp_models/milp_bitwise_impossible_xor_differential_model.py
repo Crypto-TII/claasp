@@ -140,7 +140,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         INPUT:
 
         - ``model_type`` -- **string**; the model to solve
-        - ``component_id_list`` -- **list** (default: `[]`); list of component IDs where incompatibility occurs
+        - ``component_id_list`` -- **list** (default: `None`); list of component IDs where incompatibility occurs
         - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in
           standard format
 
