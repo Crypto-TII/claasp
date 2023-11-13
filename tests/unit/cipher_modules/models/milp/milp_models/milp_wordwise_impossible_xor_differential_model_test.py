@@ -49,13 +49,13 @@ def test_find_one_wordwise_impossible_xor_differential_trail_model_with_fixed_co
                               bit_values=[0] * 128)
     ciphertext = set_fixed_variables(component_id='cipher_output_1_32', constraint_type='equal', bit_positions=range(16),
                                     bit_values=[1] + [0]*15)
-    trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_fixed_component(['intermediate_output_0_37'], fixed_bits=[key],
+    trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_fixed_component(['mix_column_0_21'], fixed_bits=[key],
                                                                      fixed_words=[plaintext, ciphertext])
     assert trail['status'] == 'SATISFIABLE'
     assert trail['components_values']['plaintext']['value'] == '1003000000000000'
     assert trail['components_values']['key']['value'] == '0000000000000000'
     assert trail['components_values']['cipher_output_1_32']['value'] == '1000000000000000'
-    assert trail['components_values']['intermediate_output_0_37']['value'] == '2222333300000000'
+    assert trail['components_values']['xor_0_36_backward']['value'] == '2000000000000000'
     assert trail['components_values']['intermediate_output_0_37_backward']['value'] == '2000000000000000'
 
 

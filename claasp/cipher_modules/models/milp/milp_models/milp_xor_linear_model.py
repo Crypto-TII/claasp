@@ -26,7 +26,8 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits, \
     output_dictionary_that_contains_xor_inequalities
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX, \
+    MILP_BUILDING_MESSAGE
 from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, _string_to_hex
 from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list, \
     set_component_solution
@@ -68,7 +69,7 @@ class MilpXorLinearModel(MilpModel):
             sage: mip.number_of_variables()
             1018
         """
-        verbose_print("Building model in progress ...")
+        verbose_print(MILP_BUILDING_MESSAGE)
         self.build_xor_linear_trail_model(weight, fixed_variables)
         mip = self._model
         p = self._integer_variable

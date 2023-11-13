@@ -23,7 +23,7 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_
     update_dictionary_that_contains_wordwise_truncated_input_inequalities, \
     output_dictionary_that_contains_wordwise_truncated_input_inequalities
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORDWISE_IMPOSSIBLE_AUTO, \
-    MILP_WORDWISE_IMPOSSIBLE, MILP_BACKWARD_SUFFIX
+    MILP_WORDWISE_IMPOSSIBLE, MILP_BACKWARD_SUFFIX, MILP_BUILDING_MESSAGE
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import CIPHER_OUTPUT
@@ -95,7 +95,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: milp.add_constraints_to_build_in_sage_milp_class(1, get_single_key_scenario_format_for_fixed_values(aes))
 
         """
-        verbose_print("Building model in progress ...")
+        verbose_print(MILP_BUILDING_MESSAGE)
 
         mip = self._model
         x = self._binary_variable
@@ -172,7 +172,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: milp.add_constraints_to_build_in_sage_milp_class_with_fixed_components(["intermediate_output_0_37"], get_single_key_scenario_format_for_fixed_values(aes))
 
         """
-        verbose_print("Building model in progress ...")
+        verbose_print(MILP_BUILDING_MESSAGE)
 
         mip = self._model
         x = self._binary_variable
@@ -198,8 +198,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         backward_cipher = self._cipher.cipher_partial_inverse(middle_round_number, self._cipher.number_of_rounds - 1, keep_key_schedule=False)
 
         self._incompatible_components = component_id_list
-        backward_last_round_components = backward_cipher._rounds.round_at(self._cipher.number_of_rounds - 1 - middle_round_number).get_components_ids() + [backward_cipher.get_all_components_ids()[-1]]
-
+        backward_last_round_components = set(backward_cipher._rounds.round_at(self._cipher.number_of_rounds - 1 - middle_round_number).get_components_ids() + [backward_cipher.get_all_components_ids()[-1]])
         self._backward_cipher = backward_cipher.add_suffix_to_components(MILP_BACKWARD_SUFFIX, backward_last_round_components)
 
 
@@ -265,7 +264,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: milp.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(get_single_key_scenario_format_for_fixed_values(aes))
 
         """
-        verbose_print("Building model in progress ...")
+        verbose_print(MILP_BUILDING_MESSAGE)
 
         mip = self._model
         x = self._binary_variable
@@ -367,7 +366,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
-            sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_fixed_component(['intermediate_output_0_37'], get_single_key_scenario_format_for_fixed_values(aes))
+            sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_fixed_component(['mix_column_0_21'], get_single_key_scenario_format_for_fixed_values(aes))
 
         """
         start = time.time()
