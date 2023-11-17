@@ -23,7 +23,7 @@ from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 
 from claasp.input import Input
 from claasp.component import Component, free_input
-from claasp.utils.utils import bits_to_words_array, words_array_to_bits
+# from claasp.utils.utils import bits_to_words_array, words_array_to_bits
 
 
 def _get_polynomial_from_binary_polynomial_index_list(polynomial_index_list, R):

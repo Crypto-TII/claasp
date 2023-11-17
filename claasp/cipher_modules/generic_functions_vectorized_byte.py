@@ -21,6 +21,7 @@ import numpy as np
 from copy import copy
 from functools import reduce
 from operator import xor
+from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_fsr_binary
 
 NB = 8  # Number of bits of the representation
 

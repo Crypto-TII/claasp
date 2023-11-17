@@ -492,3 +492,4 @@ def poly_to_int(polynom, word_size, a):
     output = int("0b" + output, base=2)
 
     return output
+
