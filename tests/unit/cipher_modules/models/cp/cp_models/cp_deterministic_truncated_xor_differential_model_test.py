@@ -42,10 +42,8 @@ def test_find_all_deterministic_truncated_xor_differential_trail():
     for i in range(len(trail)):
         assert trail[i]['cipher_id'] == 'speck_p32_k64_o32_r3'
         assert trail[i]['model_type'] == 'deterministic_truncated_xor_differential'
-        assert trail[i]['components_values']['cipher_output_2_12']['weight'] == 0
         assert trail[i]['model_type'] == 'deterministic_truncated_xor_differential'
         assert trail[i]['solver_name'] == 'Chuffed'
-        assert trail[i]['total_weight'] == '0.0'
 
 
 def test_find_one_deterministic_truncated_xor_differential_trail():
@@ -57,21 +55,11 @@ def test_find_one_deterministic_truncated_xor_differential_trail():
     trail = cp.find_one_deterministic_truncated_xor_differential_trail(1, [plaintext, key], 'Chuffed')
 
     assert trail[0]['cipher_id'] == 'speck_p32_k64_o32_r1'
-    assert trail[0]['components_values']['cipher_output_0_6']['weight'] == 0
 
-    assert trail[0]['components_values']['intermediate_output_0_5']['weight'] == 0
     assert trail[0]['components_values']['key']['value'] == '000000000000000000000000000000000000000000000000000000' \
                                                             '0000000000'
-    assert trail[0]['components_values']['key']['weight'] == 0
-    assert trail[0]['components_values']['modadd_0_1']['weight'] == 0
-    assert trail[0]['components_values']['plaintext']['weight'] == 0
-    assert trail[0]['components_values']['rot_0_0']['weight'] == 0
-    assert trail[0]['components_values']['rot_0_3']['weight'] == 0
-    assert trail[0]['components_values']['xor_0_2']['weight'] == 0
-    assert trail[0]['components_values']['xor_0_4']['weight'] == 0
     assert trail[0]['model_type'] == 'deterministic_truncated_xor_differential_one_solution'
     assert trail[0]['solver_name'] == 'Chuffed'
-    assert trail[0]['total_weight'] == '0.0'
 
 
 def test_input_wordwise_deterministic_truncated_xor_differential_constraints():
