@@ -77,6 +77,7 @@ def get_constraints(list_key, list_data, key_differential, suffix=""):
         component_ids.append(component_id)
         fixed_variables.append(get_constraint(component_id, key_schedule_bit_size, binary_list))
         round_number += 1
+        print(component_id, hex(num))
 
     round_number = 0
     number_of_states = len(list_data) - 1
@@ -86,6 +87,7 @@ def get_constraints(list_key, list_data, key_differential, suffix=""):
         component_ids.append(component_id)
         fixed_variables.append(get_constraint(component_id, block_bit_size, binary_list))
         round_number += 1
+        print(component_id, hex(num))
     return fixed_variables, component_ids
 
 
@@ -161,44 +163,36 @@ def test_satisfiable_differential_trail_single_key():
 def test_unsatisfiable_differential_trail_related_key():
     """ The following is an incompatible trail presented in Table 28 of [Sad2020]_."""
 
-    speck = SpeckBlockCipher(number_of_rounds=14, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
+    speck = SpeckBlockCipher(number_of_rounds=11, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
     speck.convert_to_compound_xor_cipher()
     sat = SatCipherModel(speck)
     list_key = [
-        0x0025,
-        0x0080,
-        0x0200,
-        0x0800,
-        0x0000,
-        0x0000,
-        0x0000,
-        0x0040,
-        0x0140,
-        0x0240,
-        0x87C0,
-        0x0042,
-        0x8140,
-        0x0557
+        0x8942,
+        0x2000,
+        0x102,
+        0x400,
+        0x000a,
+        0x520,
+        0x01a0,
+        0x1000,
+        0x400a,
+        0x9
     ]
-
     list_data = [
-        0x50A45021,
-        0x508100A0,
-        0x02810001,
-        0x00040000,
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00400040,
-        0x81008000,
-        0x81428140,
-        0x80028500,
-        0x80429440,
-        0x9000C102,
-        0xC575C17E
+        0x00042a50,
+        0xa1400800,
+        0x2000,
+        0x8000,
+        0x81028100,
+        0x80028400,
+        0x810a9108,
+        0xb92afd08,
+        0x4ba6bf85,
+        0xff320124,
+        0x24d02040,
+        0x80000100
     ]
-    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0001400008800025, '_pair1_pair2')
+    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x8150244608038310, '_pair1_pair2')
     sat.build_cipher_model(fixed_variables=fixed_variables)
     assert sat.solve(CIPHER, solver_name="cryptominisat")["status"] == "UNSATISFIABLE"
 
