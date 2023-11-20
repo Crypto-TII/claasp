@@ -2,7 +2,8 @@ from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model impo
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-from claasp.name_mappings import CIPHER
+from claasp.name_mappings import CIPHER, XOR_DIFFERENTIAL
+
 key_bit_size = 64
 block_bit_size = 32
 key_schedule_bit_size = 16
@@ -76,6 +77,7 @@ def get_constraints(list_key, list_data, key_differential, suffix=""):
         component_ids.append(component_id)
         fixed_variables.append(get_constraint(component_id, key_schedule_bit_size, binary_list))
         round_number += 1
+        print(component_id, hex(num))
 
     round_number = 0
     number_of_states = len(list_data) - 1
@@ -85,6 +87,7 @@ def get_constraints(list_key, list_data, key_differential, suffix=""):
         component_ids.append(component_id)
         fixed_variables.append(get_constraint(component_id, block_bit_size, binary_list))
         round_number += 1
+        print(component_id, hex(num))
     return fixed_variables, component_ids
 
 
@@ -127,6 +130,7 @@ def test_satisfiable_differential_trail_related_key():
         0x8102850a,
     ]
     fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0a80088000681000, '_pair1_pair2')
+    print(fixed_variables)
     sat.build_cipher_model(fixed_variables=fixed_variables)
 
     assert sat.solve(CIPHER, solver_name="cryptominisat")["status"] == "SATISFIABLE"
@@ -159,44 +163,36 @@ def test_satisfiable_differential_trail_single_key():
 def test_unsatisfiable_differential_trail_related_key():
     """ The following is an incompatible trail presented in Table 28 of [Sad2020]_."""
 
-    speck = SpeckBlockCipher(number_of_rounds=14, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
+    speck = SpeckBlockCipher(number_of_rounds=11, block_bit_size=block_bit_size, key_bit_size=key_bit_size)
     speck.convert_to_compound_xor_cipher()
     sat = SatCipherModel(speck)
     list_key = [
-        0x0025,
-        0x0080,
-        0x0200,
-        0x0800,
-        0x0000,
-        0x0000,
-        0x0000,
-        0x0040,
-        0x0140,
-        0x0240,
-        0x87C0,
-        0x0042,
-        0x8140,
-        0x0557
+        0x8942,
+        0x2000,
+        0x102,
+        0x400,
+        0x000a,
+        0x520,
+        0x01a0,
+        0x1000,
+        0x400a,
+        0x9
     ]
-
     list_data = [
-        0x50A45021,
-        0x508100A0,
-        0x02810001,
-        0x00040000,
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00400040,
-        0x81008000,
-        0x81428140,
-        0x80028500,
-        0x80429440,
-        0x9000C102,
-        0xC575C17E
+        0x00042a50,
+        0xa1400800,
+        0x2000,
+        0x8000,
+        0x81028100,
+        0x80028400,
+        0x810a9108,
+        0xb92afd08,
+        0x4ba6bf85,
+        0xff320124,
+        0x24d02040,
+        0x80000100
     ]
-    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0001400008800025, '_pair1_pair2')
+    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x8150244608038310, '_pair1_pair2')
     sat.build_cipher_model(fixed_variables=fixed_variables)
     assert sat.solve(CIPHER, solver_name="cryptominisat")["status"] == "UNSATISFIABLE"
 
@@ -220,3 +216,95 @@ def test_satisfiable_differential_trail_single_key_generated_using_claasp():
     fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0)
     sat.build_cipher_model(fixed_variables=fixed_variables)
     assert sat.solve(CIPHER, solver_name="cryptominisat")["status"] == "SATISFIABLE"
+
+
+def test_build_xor_differential_model_and_checker_unsat():
+    list_key = [
+        0x0,
+        0x0,
+        0x0,
+        0x8000,
+        0x8002,
+        0xfff4,
+        0x19bf,
+        0x0e0d,
+        0x3834,
+        0x6090,
+        0x0,
+        0x0,
+        0x8100,
+        0x606,
+        0x1e1e
+    ]
+    list_data = [
+        0x0,
+        0x0,
+        0x0,
+        0x80008000,
+        0x1020100,
+        0xfb0aff0a,
+        0xbb534778,
+        0xe1fffc1e,
+        0xfa7f0a04,
+        0x28000010,
+        0x400000,
+        0x80008000,
+        0x2,
+        0x0604060c,
+        0x101e082e
+    ]
+    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x0040000000000000, '_pair1_pair2')
+    speck = SpeckBlockCipher(number_of_rounds=15)
+    sat = SatXorDifferentialModel(speck, window_size_by_round=[0, 0, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0])
+    sat.build_xor_differential_trail_and_checker_model_at_intermediate_output_level(
+        144, fixed_variables=fixed_variables
+    )
+    solution = sat.solve(XOR_DIFFERENTIAL, solver_name='kissat')
+    assert solution['status'] == 'UNSATISFIABLE'
+
+
+def test_build_xor_differential_model_and_checker_sat():
+    list_key = [
+        0x0,
+        0x40,
+        0x8100,
+        0x8002,
+        0x8,
+        0x00d8,
+        0x400,
+        0x1000,
+        0x4001,
+        0x0,
+        0x0,
+        0x200,
+        0x0,
+        0x0,
+        0x4
+    ]
+    list_data = [
+        0x28140810,
+        0x20400000,
+        0x80008000,
+        0x2,
+        0x80008008,
+        0x81008122,
+        0x8284860e,
+        0x8b099333,
+        0xb7d9fb17,
+        0xfc771028,
+        0x00a04000,
+        0x10000,
+        0x0,
+        0x0,
+        0x0,
+        0x40004
+
+    ]
+    fixed_variables, component_ids = get_constraints(list_key, list_data, 0x8002204020000000, '_pair1_pair2')
+    speck = SpeckBlockCipher(number_of_rounds=15)
+    sat = SatXorDifferentialModel(speck, window_size_by_round=[0, 0, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0])
+    sat.build_xor_differential_trail_and_checker_model_at_intermediate_output_level(
+        92, fixed_variables=fixed_variables
+    )
+    solution = sat.solve(XOR_DIFFERENTIAL, solver_name='kissat')
+    assert solution['status'] == 'SATISFIABLE'
