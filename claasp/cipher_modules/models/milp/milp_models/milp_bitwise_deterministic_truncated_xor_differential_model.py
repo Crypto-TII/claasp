@@ -18,7 +18,7 @@
 import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED, \
-    MILP_BACKWARD_SUFFIX
+    MILP_BACKWARD_SUFFIX, MILP_BUILDING_MESSAGE
 from claasp.cipher_modules.models.milp.utils.utils import fix_variables_value_deterministic_truncated_xor_differential_constraints
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
 from claasp.cipher_modules.models.utils import set_component_solution
@@ -79,7 +79,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             sage: milp.add_constraints_to_build_in_sage_milp_class()
 
         """
-        verbose_print("Building model in progress ...")
+        verbose_print(MILP_BUILDING_MESSAGE)
 
         mip = self._model
         x = self._binary_variable

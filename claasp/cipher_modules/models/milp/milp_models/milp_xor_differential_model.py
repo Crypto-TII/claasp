@@ -22,7 +22,8 @@ from bitstring import BitArray
 
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_DIFFERENTIAL, MILP_PROBABILITY_SUFFIX
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_DIFFERENTIAL, MILP_PROBABILITY_SUFFIX, \
+    MILP_BUILDING_MESSAGE
 from claasp.cipher_modules.models.milp.utils.utils import _string_to_hex, _get_variables_values_as_string
 from claasp.cipher_modules.models.utils import integer_to_bit_list, set_component_solution
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
@@ -63,7 +64,7 @@ class MilpXorDifferentialModel(MilpModel):
             sage: mip.number_of_variables()
             468
         """
-        verbose_print("Building model in progress ...")
+        verbose_print(MILP_BUILDING_MESSAGE)
         self.build_xor_differential_trail_model(weight, fixed_variables)
         mip = self._model
         p = self._integer_variable
