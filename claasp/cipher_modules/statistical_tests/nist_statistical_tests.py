@@ -893,6 +893,7 @@ class StatisticalTests:
         # output of cipher
         outputs = a51.evaluate_vectorized(inputs, intermediate_outputs=True)
         register_state = outputs[REGISTER_STATE]
+        number_of_rounds = len(register_state)
         # avalanche output of cipher
         outputs_avanlanche_list = [
             np.zeros(shape=(self.number_of_samples, (a51.inputs_bit_size[input_index] * block_size)), dtype=np.uint8)
@@ -908,13 +909,13 @@ class StatisticalTests:
             inputs_avalanche[input_index] = xor(inputs_avalanche[input_index], mask)
             outputs_avanlanche = a51.evaluate_vectorized(inputs_avalanche, intermediate_outputs=True)
             register_state_avalanche = outputs_avanlanche[REGISTER_STATE]
-            for r in range(self.cipher.number_of_rounds):
+            for r in range(number_of_rounds):
                 outputs_avanlanche_list[r][:, i * block_size // 8: (i + 1) * block_size // 8] = \
                     xor(register_state[r], register_state_avalanche[r])
             mask = np.roll(mask, -1, axis=0)
 
         dataset = []
-        for r in range(self.cipher.number_of_rounds):
+        for r in range(number_of_rounds):
             samples_r = np.unpackbits(outputs_avanlanche_list[r])
             samples_r = np.packbits(samples_r, axis=0)
             dataset.append(samples_r)
