@@ -174,7 +174,7 @@ class FSR(Component):
     #     output_polynomials = y+vector(x)
     #     return output_polynomials
 
-    def get_bit_based_vectorized_python_code(self, params):
+    def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         if len(self.description) > 2:
             clocks = self.description[2]
         else:

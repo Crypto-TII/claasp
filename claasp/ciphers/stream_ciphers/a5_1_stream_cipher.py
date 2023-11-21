@@ -19,7 +19,7 @@
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
 from claasp.utils.utils import get_inputs_parameter
-from claasp.name_mappings import INPUT_KEY, INPUT_FRAME
+from claasp.name_mappings import INPUT_KEY, INPUT_FRAME, REGISTER_STATE
 
 
 BIT_LENGTH = "BIT_LENGTH"
@@ -105,6 +105,7 @@ class A51StreamCipher(Cipher):
         cipher_output=[]
         for r in range(number_of_rounds):
             regs = self.round_function(regs=regs, regs_size=regs_size, fsr_description=fsr_description)
+            self.add_intermediate_output_component(regs.id, regs.input_bit_positions, regs_size, REGISTER_STATE)
             regs_xor_output = []
             for i in range(len(REGISTERS)):
                 regs_xor_output.append(ComponentState(regs.id, [[regs_output_bit[i]]]))

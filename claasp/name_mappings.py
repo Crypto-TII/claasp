@@ -29,6 +29,9 @@ LINEAR_LAYER = "linear_layer"
 SBOX = "sbox"
 FSR = "fsr"
 
+# output tags
+REGISTER_STATE = "register_state"
+
 # model types
 CIPHER = 'cipher'
 XOR_DIFFERENTIAL = 'xor_differential'

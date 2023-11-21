@@ -25,6 +25,12 @@ import pathlib
 from datetime import timedelta
 import matplotlib.pyplot as plt
 
+import numpy as np
+from claasp.name_mappings import REGISTER_STATE
+from copy import deepcopy
+from operator import xor
+
+
 
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType
 
@@ -818,3 +824,104 @@ class StatisticalTests:
         self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
 
         return self._generate_sts_dicts(dataset, round_start, round_end, "high_density", flag_chart)
+
+
+    def run_stream_cipher_avalanche_nist_statistics_test(
+            self, input_index, number_of_samples_in_one_line, number_of_lines, round_start=0, round_end=0,
+            nist_sts_report_folder_prefix=reports_path, flag_chart=False):
+        r"""
+        Run the avalanche test using NIST statistical tools.
+
+        INPUT:
+
+        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example,
+          inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
+          means it will generate the plaintext avalanche dataset
+        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should
+          be passed to the statistical test tool
+        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
+        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
+          starts from 0)
+        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
+          from 0), if set to 0, means run to the last round
+        - ``nist_sts_report_folder_prefix`` -- **string**
+          (default: `test_reports/statistical_tests/nist_statistics_report`); the folder to save the generated
+          statistics report from NIST STS
+        - ``flag_chart`` -- **boolean** (default: `False`); draw the chart from nist statistical test if set to True
+
+
+        OUTPUT:
+
+        - ``nist_sts_report_dicts`` -- Dictionary-structure result parsed from nist statistical report. One could also
+          see the corresponding report generated under the folder nist_statistics_report folder
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+            sage: F = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
+            sage: result = F.run_avalanche_nist_statistics_test(0, 10, 10, round_end=2)
+                 Statistical Testing In Progress.........
+            ...
+            Finished.
+        """
+        self.dataset_type = DatasetType.avalanche
+        self.input_index = input_index
+        if round_end == 0:
+            round_end = self.cipher.number_of_rounds
+        self.number_of_lines = number_of_lines
+        block_size = 64
+        self.number_of_blocks_in_one_sample = self.cipher.inputs_bit_size[self.input_index]
+        self.number_of_samples_in_one_line = number_of_samples_in_one_line
+        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
+        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
+        self.folder_prefix = nist_sts_report_folder_prefix
+
+        self._create_report_folder()
+
+        dataset_generate_time = time.time()
+
+        # generate input
+        inputs = []
+        a51 = self.cipher
+        for i in range(len(self.cipher.inputs)):
+            if i == input_index:
+                inputs.append(np.random.randint(2, size=(self.cipher.inputs_bit_size[i], self.number_of_samples), dtype=np.uint8))
+            else:
+                inputs.append(np.zeros(shape=(self.cipher.inputs_bit_size[i], self.number_of_samples), dtype=np.uint8))
+
+        # output of cipher
+        outputs = a51.evaluate_vectorized(inputs, intermediate_outputs=True)
+        register_state = outputs[REGISTER_STATE]
+        # avalanche output of cipher
+        outputs_avanlanche_list = [
+            np.zeros(shape=(self.number_of_samples, (a51.inputs_bit_size[input_index] * block_size)), dtype=np.uint8)
+            for _ in range(self.cipher.number_of_rounds)
+        ]
+
+        # mask to generate avalanche data
+        mask = np.zeros(shape=(self.cipher.inputs_bit_size[input_index], 1), dtype=np.uint8)
+        mask[-1] = 1
+
+        for i in range(a51.inputs_bit_size[input_index]):
+            inputs_avalanche = deepcopy(inputs)
+            inputs_avalanche[input_index] = xor(inputs_avalanche[input_index], mask)
+            outputs_avanlanche = a51.evaluate_vectorized(inputs_avalanche, intermediate_outputs=True)
+            register_state_avalanche = outputs_avanlanche[REGISTER_STATE]
+            for r in range(self.cipher.number_of_rounds):
+                outputs_avanlanche_list[r][:, i * block_size // 8: (i + 1) * block_size // 8] = \
+                    xor(register_state[r], register_state_avalanche[r])
+            mask = np.roll(mask, -1, axis=0)
+
+        dataset = []
+        for r in range(self.cipher.number_of_rounds):
+            samples_r = np.unpackbits(outputs_avanlanche_list[r])
+            samples_r = np.packbits(samples_r, axis=0)
+            dataset.append(samples_r)
+
+        dataset_generate_time = time.time() - dataset_generate_time
+        if not dataset:
+            return
+        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
+
+        return self._generate_sts_dicts(dataset, round_start, round_end, "avalanche", flag_chart)

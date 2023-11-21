@@ -509,7 +509,7 @@ def bit_vector_fsr_binary(input, registers_info, clocks, verbosity=False):
 
     INPUT:
 
-    - ``input`` -- **np.array(dtype = np.uint8)** A numpy matrix with one row per byte and one column per sample.
+    - ``input`` -- **np.array(dtype = np.uint8)** A numpy matrix with one row per bit and one column per sample.
     - ``register_info`` -- **list of register** The description of the registers of fsr. register_info is defined as
       [length_of_register, fsr_polynomial, clock_polynomial]. For example,
       [[8, [[0],[1],[3],[2,5]], [[2],[10]]], [8, [[10],[11],[13],[12,15]]]]] represents two registers inside this
@@ -519,40 +519,42 @@ def bit_vector_fsr_binary(input, registers_info, clocks, verbosity=False):
     - ``clocks`` -- **integer** Represents how many clocks would be done within this component.
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    output = np.copy(input)
+    output = bit_vector_CONCAT(input)
 
     number_of_registers = len(registers_info)
     registers_start = [0 for _ in range(number_of_registers)]
     registers_update_bit = [0 for _ in range(number_of_registers)]
 
     end = 0
-    for i in len(registers_info):
+    for i in range(number_of_registers):
         registers_start[i] = end
         end += registers_info[i][0]
         registers_update_bit[i] = end - 1
 
     for _ in range(clocks):
+        output_bits = [np.zeros_like(output[0, :]) for __ in range(number_of_registers)]
+        clock_bits = [np.zeros_like(output[0, :]) for __ in range(number_of_registers)]
+
         for i in range(number_of_registers):
-            output_bit = np.zeros_like(input[0])
             for m in registers_info[i][1]:
-                result = np.ones_like(input[0])
+                result = np.ones_like(output[0, :])
                 for index in m:
-                    result &= output[index:]
-                output_bit = xor(result, output_bit)
+                    result &= output[index, :]
+                output_bits[i] = xor(result, output_bits[i])
 
-            if len(registers_info[i] > 2):
-                clock_bit = np.zeros_like(input[0])
+            if len(registers_info[i]) > 2:
                 for m in registers_info[i][2]:
-                    result = np.ones_like(input[0])
+                    result = np.ones_like(output[0, :])
                     for index in m:
-                        result &= clock_bit[index:]
-                    clock_bit = xor(result, clock_bit)
+                        result &= output[index, :]
+                    clock_bits[i] = xor(result, clock_bits[i])
             else:
-                clock_bit = np.zeros_like(input[1])
+                clock_bits[i].fill(1)
 
+        for i in range(number_of_registers):
             for k in range(registers_start[i], registers_update_bit[i]):
-                output[k] = xor(clock_bit&output_bit[k + 1], xor(clock_bit, 1) & output_bit[k])
-            output[registers_update_bit[i]] = xor(clock_bit & output_bit, xor(clock_bit, 1) & output_bit[registers_update_bit[i]])
+                output[k, :] = xor((clock_bits[i] & output[k+1, :]), (xor(clock_bits[i], 1) & output[k, :]))
+            output[registers_update_bit[i], :] = xor((clock_bits[i] & output_bits[i]), (xor(clock_bits[i], 1) & output[registers_update_bit[i], :]))
 
     if verbosity:
         print("FSR")
