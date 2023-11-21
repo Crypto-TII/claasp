@@ -30,9 +30,9 @@ def get_round_data_values(dictionary, number_of_rounds, suffix=""):
 def get_intermediate_component_id_from_key_schedule(round_number, number_of_rounds, suffix):
     component_id = ''
     if round_number == 0:
-        component_id = f'intermediate_output_0_5{suffix}'
+        component_id = f'intermediate_output_0_5'
     if 0 < round_number < number_of_rounds:
-        component_id = f'intermediate_output_{round_number}_11{suffix}'
+        component_id = f'intermediate_output_{round_number}_11'
     return component_id
 
 
@@ -41,11 +41,11 @@ def get_intermediate_component_id_from_main_process(round_number, number_of_roun
     if round_number == 0:
         component_id = f'plaintext{suffix}'
     if round_number == 1:
-        component_id = f'intermediate_output_0_6{suffix}'
+        component_id = f'intermediate_output_0_6'
     if 1 < round_number < number_of_rounds:
-        component_id = f'intermediate_output_{round_number - 1}_12{suffix}'
+        component_id = f'intermediate_output_{round_number - 1}_12'
     if round_number == number_of_rounds:
-        component_id = f'cipher_output_{number_of_rounds - 1}_12{suffix}'
+        component_id = f'cipher_output_{number_of_rounds - 1}_12'
     return component_id
 
 
