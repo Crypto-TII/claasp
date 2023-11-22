@@ -939,6 +939,7 @@ def get_component_from_id(component_id, self):
             return c
     return None
 
+
 def get_key_schedule_component_ids(self):
     key_schedule_component_ids = [INPUT_KEY]
     component_list = self.get_all_components()
@@ -952,6 +953,7 @@ def get_key_schedule_component_ids(self):
             key_schedule_component_ids.append(c.id)
 
     return key_schedule_component_ids
+
 
 def is_output_bits_updated_equivalent_to_input_bits(output_bits_updated_list, input_bits_list, all_equivalent_bits):
     for bit in output_bits_updated_list:
