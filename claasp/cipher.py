@@ -19,7 +19,6 @@
 import os
 import sys
 import inspect
-from copy import deepcopy
 
 import claasp
 from claasp import editor
@@ -29,9 +28,8 @@ from claasp.rounds import Rounds
 from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-from claasp.cipher_modules import continuous_tests, neural_network_tests, code_generator, \
+from claasp.cipher_modules import continuous_tests, code_generator, \
     component_analysis_tests, avalanche_tests, algebraic_tests
-from claasp.name_mappings import CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, MIX_COLUMN, SBOX, WORD_OPERATION
 import importlib
 from claasp.cipher_modules.inverse_cipher import *
 
@@ -1257,7 +1255,8 @@ class Cipher:
             sage: cipher = SpeckBlockCipher()
             sage: diff, scores, highest_round = find_good_input_difference_for_neural_distinguisher(cipher, [True, False], verbose = False, number_of_generations=5)
         """
-        return neural_network_tests.find_good_input_difference_for_neural_distinguisher(self,
+        from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
+        return find_good_input_difference_for_neural_distinguisher(self,
                                                                                         difference_positions,
                                                                                         initial_population,
                                                                                         number_of_generations,
@@ -1374,7 +1373,7 @@ class Cipher:
           sage: cipher.run_autond_pipeline()
           """
         from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network, \
-            train_neural_distinguisher, int_difference_to_input_differences, neural_staged_training
+            int_difference_to_input_differences, neural_staged_training
 
         def data_generator(nr, samples):
             return get_differential_dataset(self, input_difference, number_of_rounds=nr,
@@ -1797,7 +1796,8 @@ class Cipher:
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
             sage: #speck(number_of_rounds=22).neural_network_blackbox_distinguisher_tests(nb_samples = 10) # random
         """
-        return neural_network_tests.neural_network_blackbox_distinguisher_tests(
+        from claasp.cipher_modules.neural_network_tests import neural_network_blackbox_distinguisher_tests
+        return neural_network_blackbox_distinguisher_tests(
             self, nb_samples, hidden_layers, number_of_epochs)
 
     def neural_network_differential_distinguisher_tests(
@@ -1818,7 +1818,8 @@ class Cipher:
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
             sage: #speck(number_of_rounds=22).neural_network_differential_distinguisher_tests(nb_samples = 10) # random
         """
-        return neural_network_tests.neural_network_differential_distinguisher_tests(
+        from claasp.cipher_modules.neural_network_tests import neural_network_differential_distinguisher_tests
+        return neural_network_differential_distinguisher_tests(
             self, nb_samples, hidden_layers, number_of_epochs, diff)
 
     def print(self):
