@@ -405,7 +405,7 @@ def test_neural_network_blackbox_distinguisher_tests():
 def test_neural_network_differential_distinguisher_tests():
     results = SpeckBlockCipher(number_of_rounds=5).neural_network_differential_distinguisher_tests(nb_samples=10)
     assert results['input_parameters'] == \
-           {'number_of_samples': 10, 'input_differences': [1], 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10, 'test_name': 'neural_network_differential_distinguisher_tests'}
+           {'plaintext_input_bit_size': 32, 'key_input_bit_size': 64,'min_accuracy_value': 0, 'max_accuracy_value': 1,'number_of_samples': 10, 'input_differences': [1], 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10, 'test_name': 'neural_network_differential_distinguisher_tests'}
 
 
 def test_polynomial_system():
