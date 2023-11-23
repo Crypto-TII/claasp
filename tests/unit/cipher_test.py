@@ -173,12 +173,11 @@ def test_delete_generated_evaluate_c_shared_library():
 def test_diffusion_tests():
     speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
     d = speck.diffusion_tests(number_of_samples=100)
-    assert d["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"]["differences"][0][
-        "output_vectors"][0]["vector"] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    assert d["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][0]["vectors"][0] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=4)
     d = aes.diffusion_tests(number_of_samples=1000)
-    assert d["input_parameters"]["'round_key_output_avalanche_dependence_vectors_input_bit_size"] == 128
+    assert d["input_parameters"]["round_key_output_avalanche_dependence_vectors_input_bit_size"] == 128
 
     ascon = AsconPermutation(number_of_rounds=5)
     d = ascon.diffusion_tests(number_of_samples=1000)
@@ -186,9 +185,7 @@ def test_diffusion_tests():
 
     keccak = KeccakPermutation(number_of_rounds=5, word_size=8)
     d = keccak.diffusion_tests(number_of_samples=1000)
-    avalanche_dependence_uniform_vectors = d["test_results"]['plaintext']['round_output_nonlinear'][
-        'avalanche_dependence_uniform_vectors']
-    assert d["input_parameters"]['round_output_avalanche_dependence_uniform_vectors_input_bit_size'] == 200
+    assert d["input_parameters"]["round_output_avalanche_dependence_uniform_vectors_input_bit_size"] == 200
 
 
 def test_evaluate_using_c():
