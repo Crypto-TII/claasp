@@ -5,6 +5,7 @@ from plotly import express as px
 import plotly.graph_objects as go
 import pandas as pd
 import json
+import shutil
 
 
 def _print_colored_state(state, verbose):
@@ -27,7 +28,6 @@ def _dict_to_latex_table(nested_dict, header_list):
     latex_code = "\\begin{longtable}{|" + "c|" * (num_columns + 1) + "}\n"
     latex_code += "\\hline\n"
 
-    # Add single column header
     for i in range(len(header_list)):
         if i == len(header_list)-1:
             latex_code += header_list[i] + " "
@@ -37,7 +37,6 @@ def _dict_to_latex_table(nested_dict, header_list):
     latex_code += "\\\\\n"
     latex_code += "\\hline\n"
 
-    # Add data rows
     line_count = 0
     for subdict_label, subdict_values in nested_dict.items():
         row = f"{subdict_label} & " + " & ".join(map(str, subdict_values.values())) + " \\\\\n"
@@ -45,11 +44,10 @@ def _dict_to_latex_table(nested_dict, header_list):
         latex_code += "\\hline\n"
         line_count += 1
 
-        # Break to the next page after the specified number of lines
         if line_count == 35:
-            latex_code += "\\end{longtable}\n\n"  # End the current longtable
+            latex_code += "\\end{longtable}\n\n"
             latex_code += "\\newpage\n\n"
-            latex_code += "\\begin{longtable}{|" + "c|" * (num_columns + 1) + "}\n"  # Start a new longtable
+            latex_code += "\\begin{longtable}{|" + "c|" * (num_columns + 1) + "}\n"
             latex_code += "\\hline\n"
             for i in range(len(header_list)):
                 if i == len(header_list) - 1:
@@ -58,7 +56,7 @@ def _dict_to_latex_table(nested_dict, header_list):
                     latex_code += header_list[i] + " & "
             latex_code += " \\\\\n"
             latex_code += "\\hline\n"
-            line_count = 0  # Reset line count for the new page
+            line_count = 0
 
     latex_code += "\\end{longtable}"
     return latex_code
@@ -98,6 +96,39 @@ def _latex_heatmap(table, table_string, bit_count):
 class Report:
 
     def __init__(self, cipher, test_report):
+        """
+                Construct an instance of the Report class.
+
+                This class is used to store reports of trail search functions and statistical tests.
+
+                INPUT:
+
+                - ``cipher`` -- **cipher**; the cipher object on which the test was performed
+                - ``test_report`` -- **dict**: the output of the test function
+
+                EXAMPLES::
+
+                sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+                sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+                sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+                sage: from claasp.cipher_modules.report import Report
+                sage: speck = SpeckBlockCipher(number_of_rounds=5)
+                sage: sat = SatXorDifferentialModel(speck)
+                sage: plaintext = set_fixed_variables(
+                ....:         component_id='plaintext',
+                ....:         constraint_type='not_equal',
+                ....:         bit_positions=range(32),
+                ....:         bit_values=(0,)*32)
+                sage: key = set_fixed_variables(
+                ....:         component_id='key',
+                ....:         constraint_type='equal',
+                ....:         bit_positions=range(64),
+                ....:         bit_values=(0,)*64)
+                sage: trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
+                sage: report = Report(speck, trail)
+
+        """
+
 
         self.cipher = cipher
         self.test_report = test_report
@@ -503,6 +534,30 @@ class Report:
                      show_or=False, show_not=False, show_plaintext=True, show_key=True,
                      show_intermediate_output=True, show_cipher_output=True):
 
+        """
+            Prints the graphical representation of the Report.
+
+            INPUT:
+
+            ``word_size`` -- **integer**: the word_size to be used for the trail representation
+            ``state_size``  -- **integer**: the state_size to be used for the trail representation
+            ``key_state_size`` -- **integer**: the key_state_size to be used for the trail representation
+            ``output_directory`` -- **string**: the directory in which to store the reports
+            ``verbose`` -- **bool**: determines wether to print out a verbose output or not
+            ``show_*`` -- **bool**: boolean value to determine wether to display each specific component when visualizing a trail
+
+            EXAMPLES:
+
+                sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+                sage: from claasp.cipher_modules.report import Report
+                sage: speck = SpeckBlockCipher(number_of_rounds=5)
+                sage: avalanche_test_results = speck.diffusion_tests()
+                sage: report = Report(speck, avalanche_test_results)
+                sage: report.print_report()
+
+        """
+
+
         if 'trail' in self.test_name:
             self._print_trail(word_size, state_size, key_state_size, verbose, show_word_permutation,
                               show_var_shift, show_var_rotate, show_theta_xoodoo,
@@ -524,3 +579,9 @@ class Report:
             if not os.path.exists(output_directory + '/' + self.cipher.id + '/' + self.test_name):
                 os.mkdir(output_directory + '/' + self.cipher.id + '/' + self.test_name)
             self._produce_graph(output_directory)
+
+    def clean_reports(self, output_dir=os.getcwd() + '/test_reports'):
+
+        shutil.rmtree(output_dir)
+
+
