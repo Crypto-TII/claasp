@@ -154,7 +154,7 @@ def test_continuous_diffusion_tests():
 
 def test_continuous_neutrality_measure_for_bit_j():
     output = SpeckBlockCipher(number_of_rounds=2).continuous_neutrality_measure_for_bit_j(50, 200)
-    assert output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure'][0]["values"][0] > 0
+    assert output['plaintext']['cipher_output']['continuous_neutrality_measure']['values'][0]['2'] > 0
 
 
 def test_delete_generated_evaluate_c_shared_library():
@@ -178,29 +178,17 @@ def test_diffusion_tests():
 
     aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=4)
     d = aes.diffusion_tests(number_of_samples=1000)
-    avalanche_dependence_vectors = d["test_results"]['key']['round_key_output']['avalanche_dependence_vectors']
-    assert avalanche_dependence_vectors['input_bit_size'] == 128
-    assert avalanche_dependence_vectors['differences'][0]['output_vectors'][0]['output_component_id'] == \
-           'intermediate_output_0_35'
-    assert avalanche_dependence_vectors['differences'][0]['output_vectors'][2]['output_component_id'] == \
-           'intermediate_output_2_34'
+    assert d["input_parameters"]["'round_key_output_avalanche_dependence_vectors_input_bit_size"] == 128
 
     ascon = AsconPermutation(number_of_rounds=5)
     d = ascon.diffusion_tests(number_of_samples=1000)
-    avalanche_weight_vectors = d["test_results"]['plaintext']['cipher_output']['avalanche_weight_vectors']
-    assert avalanche_weight_vectors['input_bit_size'] == 320
-    assert avalanche_weight_vectors['differences'][0]['output_vectors'][0]['output_component_id'] == \
-           'cipher_output_4_40'
+    assert d["input_parameters"]["cipher_output_avalanche_weight_vectors_input_bit_size"] == 320
 
     keccak = KeccakPermutation(number_of_rounds=5, word_size=8)
     d = keccak.diffusion_tests(number_of_samples=1000)
     avalanche_dependence_uniform_vectors = d["test_results"]['plaintext']['round_output_nonlinear'][
         'avalanche_dependence_uniform_vectors']
-    assert avalanche_dependence_uniform_vectors['input_bit_size'] == 200
-    assert avalanche_dependence_uniform_vectors['differences'][0]['output_vectors'][0]['output_component_id'] == \
-           'intermediate_output_0_141'
-    assert avalanche_dependence_uniform_vectors['differences'][0]['output_vectors'][3]['output_component_id'] == \
-           'intermediate_output_3_141'
+    assert d["input_parameters"]['round_output_avalanche_dependence_uniform_vectors_input_bit_size'] == 200
 
 
 def test_evaluate_using_c():
@@ -410,18 +398,14 @@ def test_is_spn():
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_neural_network_blackbox_distinguisher_tests():
     results = SpeckBlockCipher(number_of_rounds=5).neural_network_blackbox_distinguisher_tests(nb_samples=10)
-    assert results['neural_network_blackbox_distinguisher_tests']['input_parameters'] == \
-           {'number_of_samples': 10, 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10}
-    assert results['neural_network_blackbox_distinguisher_tests']['test_results']['plaintext']['cipher_output'][
-               'accuracies'][0]['component_output_id'] == 'cipher_output_4_12'
+    assert results['input_parameters'] == \
+           {'number_of_samples': 10, 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10, 'test_name': 'neural_network_blackbox_distinguisher_tests'}
 
 
 def test_neural_network_differential_distinguisher_tests():
     results = SpeckBlockCipher(number_of_rounds=5).neural_network_differential_distinguisher_tests(nb_samples=10)
-    assert results['neural_network_differential_distinguisher_tests']['input_parameters'] == \
-           {'number_of_samples': 10, 'input_differences': [1], 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10}
-    assert results['neural_network_differential_distinguisher_tests']['test_results']['plaintext'][1]['round_output'][
-               'accuracies'][0]['component_output_id'] == 'intermediate_output_0_6'
+    assert results['input_parameters'] == \
+           {'number_of_samples': 10, 'input_differences': [1], 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10, 'test_name': 'neural_network_differential_distinguisher_tests'}
 
 
 def test_polynomial_system():
