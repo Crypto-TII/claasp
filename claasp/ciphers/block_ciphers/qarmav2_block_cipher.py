@@ -187,7 +187,7 @@ class QARMAv2BlockCipher(Cipher):
             key_1 = key_0
         else:
             key_1 = self.add_permutation_component([INPUT_KEY, majority_function(INPUT_KEY).id],
-                                                   [[i for i in range(self.KEY_BLOCK_SIZE, 3*self.KEY_BLOCK_SIZE/2)], [i for i in range(self.KEY_BLOCK_SIZE/2)]],
+                                                   [[i for i in range(self.KEY_BLOCK_SIZE, 3*self.KEY_BLOCK_SIZE//2)], [i for i in range(self.KEY_BLOCK_SIZE//2)]],
                                                    self.KEY_BLOCK_SIZE,
                                                    [i for i in range(self.KEY_BLOCK_SIZE)])
         key_state = [key_0, key_1]
@@ -257,18 +257,14 @@ class QARMAv2BlockCipher(Cipher):
                 
             round_state_rotate = []
             for l in range(number_of_layers):
-                for c in range(4):
-                    rotate = self.add_mix_column_component([round_state_shuffle[l].id],
-                                                           [[i for i in range(4*c, 4*c+4)]+[i for i in range(4*c+16, 4*c+20)]+[i for i in range(4*c+32, 4*c+36)]+[i for i in range(4*c+48, 4*c+52)]],
-                                                           self.LAYER_BLOCK_SIZE/4,
-                                                           [self.mix_column_matrix, 0x11, self.SBOX_BIT_SIZE])
-                    round_state_rotate.append(rotate)
-            
+                for col in range(4):
+                    round_state_rotate.extend(self.M_function([round_state_shuffle[l].id for i in range(4)], [[i for i in range(4*col+16*j, 4*col+16*j+4)] for j in range(4)]))
+                
             round_sboxes = []
             for l in range(number_of_layers):
                 for sb in range(self.LAYER_SBOXES):
-                    sbox = self.add_SBOX_component([round_state_rotate[sb%4+4*l].id],
-                                                   [[i for i in range(4*int(sb/4), 4*int(sb/4)+4)]],
+                    sbox = self.add_SBOX_component([round_state_rotate[int(sb/4)+4*(sb%4)+16*l]],
+                                                   [[i for i in range(4)]],
                                                    self.SBOX_BIT_SIZE, 
                                                    self.sbox)
                     round_sboxes.append(sbox)
@@ -333,18 +329,14 @@ class QARMAv2BlockCipher(Cipher):
                 
         round_state_rotate = []
         for l in range(number_of_layers):
-            for c in range(4):
-                rotate = self.add_mix_column_component([round_state_shuffle[l].id],
-                                                       [[i for i in range(4*c, 4*c+4)]+[i for i in range(4*c+16, 4*c+20)]+[i for i in range(4*c+32, 4*c+36)]+[i for i in range(4*c+48, 4*c+52)]],
-                                                       self.LAYER_BLOCK_SIZE/4,
-                                                       [self.mix_column_matrix, 0x11, self.SBOX_BIT_SIZE])
-                round_state_rotate.append(rotate)
-            
+            for col in range(4):
+                round_state_rotate.extend(self.M_function([round_state_shuffle[l].id for i in range(4)], [[i for i in range(4*col+16*j, 4*col+16*j+4)] for j in range(4)]))
+                
         central_keyed_state = []
         for l in range(number_of_layers):
             for w in range(16):
-                central_xor = self.add_XOR_component([round_state_rotate[w%4+4*l].id, W[(number_of_rounds)%2].id],
-                                                     [[i for i in range(self.WORD_SIZE*int(w/4), self.WORD_SIZE*int(w/4)+4)], [i for i in range(64*l + 4*w, 64*l + 4*w + 4)]],
+                central_xor = self.add_XOR_component([round_state_rotate[int(w/4)+4*(w%4)+16*l], W[(number_of_rounds)%2].id],
+                                                     [[i for i in range(4)], [i for i in range(64*l + 4*w, 64*l + 4*w + 4)]],
                                                      self.WORD_SIZE)
                 central_keyed_state.append(central_xor)
         
@@ -381,17 +373,13 @@ class QARMAv2BlockCipher(Cipher):
                 
             round_state_rotate = []
             for l in range(number_of_layers):
-                for c in range(4):
-                    rotate = self.add_mix_column_component([round_sboxes[c+4*i+16*l].id for i in range(4)],
-                                                           [[i for i in range(4)] for j in range(4)],
-                                                           self.LAYER_BLOCK_SIZE/4,
-                                                           [self.mix_column_matrix, 0x11, self.SBOX_BIT_SIZE])
-                    round_state_rotate.append(rotate)
-            
+                for col in range(4):
+                    round_state_rotate.extend(self.M_function([round_sboxes[col+4*i+16*l].id for i in range(4)], [[i for i in range(4)] for j in range(4)]))
+                
             round_state_shuffle = []
             for l in range(number_of_layers):
-                shuffled_state = self.add_permutation_component([round_state_rotate[i%4+4*l].id for i in range(16)],
-                                                 [[i for i in range(4*int(j/4), 4*int(j/4)+4)] for j in range(16)],
+                shuffled_state = self.add_permutation_component([round_state_rotate[int(i/4)+4*(i%4)+16*l] for i in range(16)],
+                                                 [[i for i in range(4)] for j in range(16)],
                                                  self.LAYER_BLOCK_SIZE,
                                                  inverse_state_permutation)
                 round_state_shuffle.append(shuffled_state)
@@ -543,6 +531,14 @@ class QARMAv2BlockCipher(Cipher):
                                                  self.KEY_BLOCK_SIZE,
                                                  -1))  
         return(key_new)
+        
+    def M_function(self, input_ids, input_pos):
+        output = []
+        for c in range(4):
+            output.append(self.add_XOR_component([input_ids[(c + r + 1)%4] for r in range(3)],
+                                                 [input_pos[(c + r + 1)%4][r+1:] + input_pos[(c + r + 1)%4][:r+1] for r in range(3)],
+                                                 4).id)
+        return output
         
     def majority_function(self, key):
         maj_key_size = self.KEY_BLOCK_SIZE/2

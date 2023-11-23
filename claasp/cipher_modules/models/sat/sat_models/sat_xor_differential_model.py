@@ -18,8 +18,10 @@
 
 
 import time
+from copy import deepcopy
 
 from claasp.cipher_modules.models.sat.sat_model import SatModel
+from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX, WORD_OPERATION, XOR_DIFFERENTIAL)
@@ -75,6 +77,39 @@ class SatXorDifferentialModel(SatModel):
             variables, constraints = self.weight_constraints(weight)
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
+
+    def build_xor_differential_trail_and_checker_model_at_intermediate_output_level(
+            self, weight=-1, fixed_variables=[]
+    ):
+        """
+        Build the model for the search of XOR DIFFERENTIAL trails and the model to check that there is at least one pair
+        satisfying such trails at the intermediate output level.
+
+        INPUT:
+
+        - ``weight`` -- **integer** (default: `-1`); a specific weight. If set to non-negative integer, fixes the XOR
+          trail weight
+        - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format
+
+        .. SEEALSO::
+
+            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: speck = SpeckBlockCipher(number_of_rounds=22)
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: sat.build_xor_differential_trail_and_checker_model_at_intermediate_output_level()
+        """
+        self.build_xor_differential_trail_model(weight, fixed_variables)
+        internal_cipher = deepcopy(self._cipher)
+        internal_cipher.convert_to_compound_xor_cipher()
+        sat = SatCipherModel(internal_cipher)
+        sat.build_cipher_model()
+        self._variables_list.extend(sat._variables_list)
+        self._model_constraints.extend(sat._model_constraints)
 
     def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
                                                            solver_name='cryptominisat'):
