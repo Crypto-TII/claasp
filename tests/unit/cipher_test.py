@@ -273,6 +273,18 @@ def test_neural_staged_training():
     results_dbitnet = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
     assert results_dbitnet[5] >= 0
 
+def test_train_gohr_neural_distinguisher():
+    cipher = SpeckBlockCipher()
+    input_differences = [0x400000, 0]
+    number_of_rounds = 5
+    result = cipher.train_gohr_neural_distinguisher(input_differences, number_of_rounds, word_size=16, number_of_epochs=1, training_samples = 10**3, testing_samples = 10**3)
+    assert result > 0
+
+def test_run_autond_pipeline():
+    cipher = SpeckBlockCipher()
+    result = cipher.run_autond_pipeline(optimizer_samples=10 ** 3, optimizer_generations=1,
+                            training_samples=10 ** 2, testing_samples=10 ** 2, number_of_epochs=1, verbose=False)
+    assert not result is {}
 
 def test_get_differential_dataset():
     diff_value_plain_key = [0x400000, 0]

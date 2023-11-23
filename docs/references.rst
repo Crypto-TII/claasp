@@ -95,6 +95,10 @@
         multivariate systems over finite fields* : J. Mathematical
         Cryptology,3(3):177–197, 2009
 
+.. [BGHR2023]
+        Bellini E., Gerault D., Hambitzer A., Rossi M: A Cipher-Agnostic Neural Training Pipeline with Automated
+        Finding of Good Input Differences : In IACR Transactions on Symmetric Cryptology 2023
+
 .. [BCC+2010]
         Bouillaguet C., Chen H-C., Cheng H-C, Chou T., Niederhagen R., Shamir
         A., Yang B. Y. : *Fast exhaustive search for polynomial systems in F2*
@@ -246,6 +250,10 @@
 .. only:: html
 
         **G**
+
+.. [Go2019]
+        Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
+* : In Advances in Cryptology – CRYPTO 2019
 
 .. _claasp-ref-H:
 
