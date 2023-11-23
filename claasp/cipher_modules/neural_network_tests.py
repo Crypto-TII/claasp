@@ -560,11 +560,12 @@ def int_difference_to_np_uint8(input_lengths, difference_positions, differences=
         Splits a difference received as an integer into differences for each input that needs one, in np.uint8 format.
     """
 
+    differences =
     num_bytes = 0
     for i in range(len(input_lengths)):
         if difference_positions[i]:
             num_bytes += input_lengths[i] // 8
-    numpy_differences = np.uint8([(differences >> ((num_bytes - i - 1) * 8)) & 0xffff
+    numpy_differences = np.uint8([(differences >> ((num_bytes - i - 1) * 8)) & 0xff
                                   for i in range(num_bytes)]).reshape((num_bytes, -1))
     taken = 0
     number_of_differences = 0
