@@ -8,7 +8,7 @@ def test_build_impossible_xor_differential_trail_model():
     speck = SpeckBlockCipher(number_of_rounds=5)
     cp = CpImpossibleXorDifferentialModel(speck)
     fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
-    cp.build_impossible_xor_differential_trail_model(number_of_rounds=5, fixed_values=fixed_variables, middle_round=3)
+    cp.build_impossible_xor_differential_trail_model(number_of_rounds=5, fixed_variables=fixed_variables, middle_round=3)
 
     assert len(cp.model_constraints) == 1566
     assert cp.model_constraints[2] == 'array[0..31] of var 0..2: plaintext;'

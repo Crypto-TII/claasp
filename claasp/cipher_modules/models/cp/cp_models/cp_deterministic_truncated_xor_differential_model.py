@@ -105,7 +105,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
             self._variables_list.extend(variables)
             deterministic_truncated_xor_differential.extend(constraints)
 
-        variables, constraints = self.input_deterministic_truncated_xor_differential_constraints(number_of_rounds)
+        variables, constraints = self.input_deterministic_truncated_xor_differential_constraints()
         self._model_prefix.extend(variables)
         self._variables_list.extend(constraints)
         deterministic_truncated_xor_differential.extend(
