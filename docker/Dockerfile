@@ -85,8 +85,6 @@ RUN sage -pip install bitstring==4.0.1 \
   pytest-xdist==3.2.0 \
   pytest-benchmark==4.0.0
 
-RUN pip install plotly -U kaleido
-
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
 COPY required_dependencies/utilities.c /opt/
