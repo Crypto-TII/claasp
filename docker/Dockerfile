@@ -85,8 +85,6 @@ RUN sage -pip install bitstring==4.0.1 \
   pytest-xdist==3.2.0 \
   pytest-benchmark==4.0.0
 
-RUN pip install plotly -U kaleido
-
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
 COPY required_dependencies/utilities.c /opt/
@@ -297,5 +295,8 @@ RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/liblzma.so.5
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libselinux.so.1
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libsystemd.so.0
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libcrypt.so.1
+
+RUN sage -pip install plotly -U kaleido
+
 
 WORKDIR /home/sage/tii-claasp
