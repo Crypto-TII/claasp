@@ -384,10 +384,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         for component in cipher.get_all_components():
             output_id_link = component.id
             output_size = int(component.output_bit_size)
-            if 'output' in component.type \
-                    and inverse and cipher.get_round_from_component_id(component.id) == rounds - 1:
-                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link}_inverse;')
-            elif CIPHER_OUTPUT in component.type:
+            if CIPHER_OUTPUT in component.type:
                 cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
                 cp_constraints.append(f'constraint count({output_id_link},2) < {output_size};')
             elif CONSTANT not in component.type:
