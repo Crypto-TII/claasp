@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -20,7 +19,6 @@
 import os
 import sys
 import inspect
-from copy import deepcopy
 
 import claasp
 from claasp import editor
@@ -30,9 +28,8 @@ from claasp.rounds import Rounds
 from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-from claasp.cipher_modules import continuous_tests, neural_network_tests, code_generator, \
+from claasp.cipher_modules import continuous_tests, code_generator, \
     component_analysis_tests, avalanche_tests, algebraic_tests
-from claasp.name_mappings import CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, MIX_COLUMN, SBOX, WORD_OPERATION
 import importlib
 from claasp.cipher_modules.inverse_cipher import *
 
@@ -180,10 +177,10 @@ class Cipher:
         return editor.add_mix_column_component(self, input_id_links, input_bit_positions,
                                                output_bit_size, mix_column_description)
 
-    def add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus = None):
+    def add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
         return editor.add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
-    def add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus = None):
+    def add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
         return editor.add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
     def add_NOT_component(self, input_id_links, input_bit_positions, output_bit_size):
@@ -307,7 +304,7 @@ class Cipher:
             analysis_results['diffusion_tests'] = \
                 avalanche_tests.avalanche_tests(self, **tmp_tests_configuration["diffusion_tests"])
         if "component_analysis_tests" in tests_configuration and tests_configuration[
-                "component_analysis_tests"]["run_tests"]:
+            "component_analysis_tests"]["run_tests"]:
             analysis_results["component_analysis_tests"] = component_analysis_tests.component_analysis_tests(self)
         if "algebraic_tests" in tests_configuration and tests_configuration["algebraic_tests"]["run_tests"]:
             timeout = tests_configuration["algebraic_tests"]["timeout"]
@@ -648,7 +645,8 @@ class Cipher:
                                                run_avalanche_dependence_uniform, run_avalanche_weight,
                                                run_avalanche_entropy)
 
-    def generate_heatmap_graphs_for_avalanche_tests(self, avalanche_results, difference_positions=None, criterion_names=None):
+    def generate_heatmap_graphs_for_avalanche_tests(self, avalanche_results, difference_positions=None,
+                                                    criterion_names=None):
         """
         Return a string containing latex instructions to generate heatmap graphs of the avalanche tests.
         The string can then be printed on a terminal or on a file.
@@ -684,7 +682,8 @@ class Cipher:
             sage: d = cipher.diffusion_tests(number_of_samples=100) # long
             sage: h = cipher.generate_heatmap_graphs_for_avalanche_tests(d, [1,193], ["avalanche_dependence_vectors", "avalanche_entropy_vectors"]) # long
         """
-        return avalanche_tests.generate_heatmap_graphs_for_avalanche_tests(self, avalanche_results, difference_positions, criterion_names)
+        return avalanche_tests.generate_heatmap_graphs_for_avalanche_tests(self, avalanche_results,
+                                                                           difference_positions, criterion_names)
 
     def evaluate(self, cipher_input, intermediate_output=False, verbosity=False):
         """
@@ -1005,16 +1004,22 @@ class Cipher:
                 # print(c.id, "---------", len(cipher_components_tmp))
                 # OPTION 1 - Add components that are not invertible
                 if are_there_enough_available_inputs_to_evaluate_component(c, available_bits, all_equivalent_bits,
-                                                       key_schedule_component_ids, self):
+                                                                           key_schedule_component_ids, self):
                     # print("--------> evaluated")
-                    inverted_component = evaluated_component(c, available_bits, key_schedule_component_ids, all_equivalent_bits, self)
+                    inverted_component = evaluated_component(c, available_bits, key_schedule_component_ids,
+                                                             all_equivalent_bits, self)
                     update_available_bits_with_component_output_bits(c, available_bits, self)
                     inverted_cipher_components.append(inverted_component)
                     cipher_components_tmp.remove(c)
                 # OPTION 2 - Add components that are invertible
-                elif (is_possibly_invertible_component(c) and are_there_enough_available_inputs_to_perform_inversion(c, available_bits, all_equivalent_bits, self)) or (c.type == CIPHER_INPUT and (c.description[0] == INPUT_KEY or c.description[0] == INPUT_TWEAK)):
+                elif (is_possibly_invertible_component(c) and are_there_enough_available_inputs_to_perform_inversion(c,
+                                                                                                                     available_bits,
+                                                                                                                     all_equivalent_bits,
+                                                                                                                     self)) or (
+                        c.type == CIPHER_INPUT and (c.description[0] == INPUT_KEY or c.description[0] == INPUT_TWEAK)):
                     # print("--------> inverted")
-                    inverted_component = component_inverse(c, available_bits, all_equivalent_bits, key_schedule_component_ids, self)
+                    inverted_component = component_inverse(c, available_bits, all_equivalent_bits,
+                                                           key_schedule_component_ids, self)
                     update_available_bits_with_component_input_bits(c, available_bits)
                     update_available_bits_with_component_output_bits(c, available_bits, self)
                     inverted_cipher_components.append(inverted_component)
@@ -1036,11 +1041,13 @@ class Cipher:
             elif component.id in key_schedule_component_ids:
                 inverted_cipher._rounds.round_at(0)._components.append(component)
             else:
-                inverted_cipher._rounds.round_at(self.number_of_rounds - 1 - component.round)._components.append(component)
+                inverted_cipher._rounds.round_at(self.number_of_rounds - 1 - component.round)._components.append(
+                    component)
 
         sorted_inverted_cipher = sort_cipher_graph(inverted_cipher)
 
         return sorted_inverted_cipher
+
     def get_partial_cipher(self, start_round=None, end_round=None, keep_key_schedule=True):
 
         if start_round is None:
@@ -1052,11 +1059,13 @@ class Cipher:
         assert start_round <= end_round
 
         inputs = deepcopy(self.inputs)
-        partial_cipher = Cipher(f"{self.family_name}_partial_{start_round}_to_{end_round}", f"{self.type}", inputs, self._inputs_bit_size, self.output_bit_size)
+        partial_cipher = Cipher(f"{self.family_name}_partial_{start_round}_to_{end_round}", f"{self.type}", inputs,
+                                self._inputs_bit_size, self.output_bit_size)
         for round in self.rounds_as_list:
             partial_cipher.rounds_as_list.append(deepcopy(round))
 
-        removed_components_ids, intermediate_outputs = remove_components_from_rounds(partial_cipher, start_round, end_round, keep_key_schedule)
+        removed_components_ids, intermediate_outputs = remove_components_from_rounds(partial_cipher, start_round,
+                                                                                     end_round, keep_key_schedule)
 
         if start_round > 0:
             for input_type in set(self.inputs) - {INPUT_KEY}:
@@ -1136,7 +1145,8 @@ class Cipher:
         partial_cipher_inverse = partial_cipher.cipher_inverse()
 
         key_schedule_component_ids = get_key_schedule_component_ids(partial_cipher_inverse)
-        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in key_schedule_component_ids[1:]]
+        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in
+                                   key_schedule_component_ids[1:]]
 
         if not keep_key_schedule:
             for current_round in partial_cipher_inverse.rounds_as_list:
@@ -1245,7 +1255,8 @@ class Cipher:
             sage: cipher = SpeckBlockCipher()
             sage: diff, scores, highest_round = find_good_input_difference_for_neural_distinguisher(cipher, [True, False], verbose = False, number_of_generations=5)
         """
-        return neural_network_tests.find_good_input_difference_for_neural_distinguisher(self,
+        from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
+        return find_good_input_difference_for_neural_distinguisher(self,
                                                                                         difference_positions,
                                                                                         initial_population,
                                                                                         number_of_generations,
@@ -1253,8 +1264,8 @@ class Cipher:
                                                                                         previous_generation,
                                                                                         verbose)
 
-
-    def train_neural_distinguisher(self, data_generator, starting_round, neural_network, training_samples=10**7, testing_samples=10**6, epochs = 5, pipeline = True):
+    def train_neural_distinguisher(self, data_generator, starting_round, neural_network, training_samples=10 ** 7,
+                                   testing_samples=10 ** 6, epochs=5, pipeline=True):
         """
         Trains a neural distinguisher for the data generated by the data_generator function, using the provided neural network, at round starting_rounds. 
         If pipeline is set to True, retrains the distinguisher for one more round, as long as the validation accuracy remains significant.
@@ -1274,7 +1285,7 @@ class Cipher:
         - ``verbose`` -- **boolean** (default: `False`); verbosity
 
         EXAMPLES::
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 	    sage: from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
 	    sage: cipher = SpeckBlockCipher()
 	    sage: input_differences = [0x400000, 0]
@@ -1284,12 +1295,111 @@ class Cipher:
         """
         if pipeline:
             from claasp.cipher_modules.neural_network_tests import neural_staged_training
-            acc = neural_staged_training(self, data_generator, starting_round, neural_network, training_samples, testing_samples, epochs)
+            acc = neural_staged_training(self, data_generator, starting_round, neural_network, training_samples,
+                                         testing_samples, epochs)
         else:
             from claasp.cipher_modules.neural_network_tests import train_neural_distinguisher
-            acc = train_neural_distinguisher(self, data_generator, starting_round, neural_network, training_samples, testing_samples, epochs)
+            acc = train_neural_distinguisher(self, data_generator, starting_round, neural_network, training_samples,
+                                             testing_samples, epochs)
         return acc
 
+    def train_gohr_neural_distinguisher(self, input_difference, number_of_rounds, depth=1, word_size=0,
+                                        training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=200):
+        """
+          Trains a differential neural distinguisher on nr rounds, for the input difference input_difference, using a slightly
+          modified (AMSGrad instead of cyclic learning rate schedule) depth depth Gohr's RESNet ([Go2019]).
+
+          INPUT:
+
+          - ``input_difference`` -- **list of integers**; The input difference, expressed as a list with one value per
+            input to the cipher.
+          - ``number_of_rounds`` -- **integer**; number of rounds to analyze
+          - ``depth`` -- **integer**; (default: `1`) the depth of the neural network, as defined in Gohr's paper
+          - ``word_size`` -- **integer**; the word size of the cipher, determines the shape of the neural network.
+          Defaults to output_bit_size when unspecified (may reduce the accuracy of the obtained distinguisher).
+          - ``training_samples`` -- **integer**; (default: `10**7`) number samples used for training
+          - ``testing_samples`` -- **integer**; (default: `10**6`) number samples used for testing
+          - ``number_of_epochs`` -- **integer**; (default: `40`) number of training epochs
+
+          EXAMPLES::
+          sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+          sage: cipher = SpeckBlockCipher()
+          sage: input_differences = [0x400000, 0]
+          sage: number_of_rounds = 5
+          sage: cipher.train_gohr_neural_distinguisher(input_differences, number_of_rounds, word_size = 16, number_of_epochs = 1)
+          2000/2000 [==============================] - 294s 146ms/step - loss: 0.0890 - acc: 0.8876 - val_loss: 0.0734 - val_acc: 0.9101
+          Validation accuracy at 5 rounds :0.9101160168647766
+          0.9101160168647766
+          """
+
+        def data_generator(nr, samples):
+            return get_differential_dataset(self, input_difference, number_of_rounds=nr,
+                                            samples=samples)
+
+        from claasp.cipher_modules.neural_network_tests import get_differential_dataset, \
+            train_neural_distinguisher, get_neural_network
+        input_size = self.output_bit_size * 2
+        neural_network = get_neural_network('gohr_resnet', input_size = input_size, depth=depth, word_size=word_size)
+        return train_neural_distinguisher(self, data_generator, number_of_rounds, neural_network, training_samples,
+                                          testing_samples, num_epochs=number_of_epochs)
+
+    def run_autond_pipeline(self, difference_positions=None, optimizer_samples=10 ** 4, optimizer_generations=50,
+                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False):
+        """
+          Runs the AutoND pipeline ([BGHR2023]):
+            - Find an input difference for the inputs set to True in difference_positions using an optimizer
+            - Train a neural distinguisher based on DBitNET for that input difference, increasing the number of rounds
+            until the accuracy is no better than random guessing.
+
+          INPUT:
+
+          - ``difference_positions`` -- **list of booleans**; default: `True in the plaintext position, False in the
+          other positions`. If specified, must have the same length as self.inputs_bit_size, and contain one boolean per
+          input position. The optimizer will look for input differences in the positions set to True; by default,
+          the single-key case will be run.
+          - ``optimizer_samples`` -- **integer**; number of samples used by the optimizer; higher values increase the
+          quality of the optimizer, at the cost of a longer runtime.
+          - ``optimizer_generations`` -- **integer**; (default: `50`) number of generations used by the optimizer;
+          higher values increase the runtime.
+          - ``training_samples`` -- **integer**; (default: `10**7`) number samples used for training
+          - ``testing_samples`` -- **integer**; (default: `10**6`) number samples used for testing
+          - ``number_of_epochs`` -- **integer**; (default: `40`) number of training epochs
+          - ``verbose`` -- **boolean**; (default: `False`) verbosity of the optimizer
+
+
+          EXAMPLES::
+          sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+          sage: cipher = SpeckBlockCipher()
+          sage: cipher.run_autond_pipeline()
+          """
+        from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network, \
+            int_difference_to_input_differences, neural_staged_training
+
+        def data_generator(nr, samples):
+            return get_differential_dataset(self, input_difference, number_of_rounds=nr,
+                                            samples=samples)
+
+        if difference_positions is None:
+            difference_positions = []
+            for inp in self.inputs:
+                if 'plaintext' in inp:
+                    difference_positions.append(True)
+                else:
+                    difference_positions.append(False)
+        assert True in difference_positions, "At least one position in difference_positions must be set to True. If " \
+                                             "the default value was used, the primitive has no input named `plaintext`."
+
+        diff, scores, highest_round = self.find_good_input_difference_for_neural_distinguisher(difference_positions,
+                                                                                               number_of_generations=optimizer_generations,
+                                                                                               nb_samples=optimizer_samples,
+                                                                                               verbose=verbose)
+        input_difference = int_difference_to_input_differences(diff[-1], difference_positions, self.inputs_bit_size)
+        input_size = self.output_bit_size * 2
+        neural_network = get_neural_network('dbitnet', input_size = input_size)
+        nr = max(1, highest_round-1)
+        print(f'Training DBitNet on input difference {[hex(x) for x in input_difference]}, from round {nr-1}...')
+        return neural_staged_training(self, data_generator, nr, neural_network, training_samples,
+                                      testing_samples, number_of_epochs)
 
 
     def generate_bit_based_c_code(self, intermediate_output=False, verbosity=False):
@@ -1486,8 +1596,7 @@ class Cipher:
         """
         return self._rounds.get_round_from_component_id(component_id)
 
-
-    def impossible_differential_search(self, technique = "sat", solver = "Kissat", scenario = "single-key"):
+    def impossible_differential_search(self, technique="sat", solver="Kissat", scenario="single-key"):
         """
         Return a list of impossible differentials if there are any; otherwise return an empty list
         INPUT:
@@ -1687,7 +1796,8 @@ class Cipher:
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
             sage: #speck(number_of_rounds=22).neural_network_blackbox_distinguisher_tests(nb_samples = 10) # random
         """
-        return neural_network_tests.neural_network_blackbox_distinguisher_tests(
+        from claasp.cipher_modules.neural_network_tests import neural_network_blackbox_distinguisher_tests
+        return neural_network_blackbox_distinguisher_tests(
             self, nb_samples, hidden_layers, number_of_epochs)
 
     def neural_network_differential_distinguisher_tests(
@@ -1708,7 +1818,8 @@ class Cipher:
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
             sage: #speck(number_of_rounds=22).neural_network_differential_distinguisher_tests(nb_samples = 10) # random
         """
-        return neural_network_tests.neural_network_differential_distinguisher_tests(
+        from claasp.cipher_modules.neural_network_tests import neural_network_differential_distinguisher_tests
+        return neural_network_differential_distinguisher_tests(
             self, nb_samples, hidden_layers, number_of_epochs, diff)
 
     def print(self):
@@ -2076,15 +2187,13 @@ class Cipher:
         """
         return tester.test_vector_check(self, list_of_test_vectors_input, list_of_test_vectors_output)
 
-
     def inputs_size_to_dict(self):
         inputs_dictionary = {}
         for i, name in enumerate(self.inputs):
             inputs_dictionary[name] = self.inputs_bit_size[i]
         return inputs_dictionary
 
-
-    def find_impossible_property(self, type, technique = "sat", solver = "kissat", scenario = "single-key"):
+    def find_impossible_property(self, type, technique="sat", solver="kissat", scenario="single-key"):
         """
         From [SGLYTQH2017] : Finds impossible differentials or zero-correlation linear approximations (based on type)
         by fixing the input and output iteratively to all possible Hamming weight 1 value, and asking the solver
@@ -2121,7 +2230,7 @@ class Cipher:
                     fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
                                                             integer_to_bit_list(1 << output_bit_position, plain_bits,
                                                                                 'big')))
-                    solution = search_function(fixed_values, solver_name = solver)
+                    solution = search_function(fixed_values, solver_name=solver)
                     if solution['status'] == "UNSATISFIABLE":
                         impossible.append((1 << input_bit_position, 1 << output_bit_position))
         elif scenario == "related-key":
@@ -2137,12 +2246,12 @@ class Cipher:
                     fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
                                                             integer_to_bit_list(1 << output_bit_position, plain_bits,
                                                                                 'big')))
-                    solution = search_function(fixed_values, solver_name = solver)
+                    solution = search_function(fixed_values, solver_name=solver)
                     if solution['status'] == "UNSATISFIABLE":
                         impossible.append((1 << input_bit_position, 1 << output_bit_position))
         return impossible
 
-    def zero_correlation_linear_search(self, technique = "sat", solver = "Kissat"):
+    def zero_correlation_linear_search(self, technique="sat", solver="Kissat"):
         """
         Return a list of zero_correlation linear approximations if there are any; otherwise return an empty list
         INPUT:

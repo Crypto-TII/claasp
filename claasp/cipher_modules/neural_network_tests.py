@@ -20,6 +20,7 @@ import os
 import secrets
 import random
 import numpy as np
+import pandas as pd
 
 from math import sqrt
 from claasp.cipher_modules import evaluator
@@ -263,10 +264,13 @@ def get_differential_dataset(cipher, input_differences, number_of_rounds, sample
     return x, y
 
 
-def get_neural_network(network_name, input_size, word_size = None):
+def get_neural_network(network_name, input_size, word_size = None, depth = 1):
     from tensorflow.keras.optimizers import Adam
     if network_name == 'gohr_resnet':
-        neural_network = make_resnet(word_size = word_size, input_size = input_size)
+        if word_size is None or word_size == 0:
+            print("Word size not specified for ", network_name, ", defaulting to ciphertext size...")
+            word_size = cipher.output_bit_size
+        neural_network = make_resnet(word_size = word_size, input_size = input_size, depth = depth)
     elif network_name == 'dbitnet':
         neural_network = make_dbitnet(input_size = input_size)
     neural_network.compile(optimizer=Adam(amsgrad=True), loss='mse', metrics=['acc'])
@@ -279,13 +283,21 @@ def make_checkpoint(datei):
 
 
 def train_neural_distinguisher(cipher, data_generator, starting_round, neural_network, training_samples=10 ** 7,
-                           testing_samples=10 ** 6, num_epochs=1):
+                           testing_samples=10 ** 6, num_epochs=1, save_network_and_history_in = ''):
     acc = 1
     bs = 5000
+    if save_network_and_history_in is '':
+        callbacks = None
+        save = False
+    else:
+        save = True
+        callbacks = [make_checkpoint(save_network_and_history_in + '.h5')]
     x, y = data_generator(samples = training_samples, nr = starting_round)
     x_eval, y_eval = data_generator(samples = testing_samples, nr = starting_round)
-    h = neural_network.fit(x, y, epochs=num_epochs, batch_size=bs, validation_data=(x_eval, y_eval))
+    h = neural_network.fit(x, y, epochs=num_epochs, batch_size=bs, validation_data=(x_eval, y_eval), callbacks = callbacks)
     acc = np.max(h.history["val_acc"])
+    if save:
+        pd.to_pickle(h.history, f'{save_network_and_history_in}_training_history.pkl')
     print(f'Validation accuracy at {starting_round} rounds :{acc}')
     return acc
 
@@ -505,8 +517,8 @@ def evolutionary_algorithm(previous_generation, initial_population, number_of_ge
 def evaluate_multiple_differences(input_lengths, difference_positions, encrypt, candidate_differences, inputs0, c0,
                                   threshold):
     inputs1 = [None for _ in inputs0]
-    formatted_differences, number_of_differences = format_difference(input_lengths, difference_positions,
-                                                                     candidate_differences)
+    formatted_differences, number_of_differences = int_difference_to_np_uint8(input_lengths, difference_positions,
+                                                                              candidate_differences)
     for input_index in range(len(difference_positions)):
         difference_in_input = formatted_differences[input_index]
         if difference_positions[input_index]:
@@ -530,15 +542,29 @@ def evaluate_multiple_differences(input_lengths, difference_positions, encrypt, 
     return scores, i
 
 
-def format_difference(input_lengths, difference_positions, differences=None):
-    # Splits a difference received as an integer into differences for each input that needs one
-    # num_bytes = np.sum(input_lengths[difference_positions==True]) // 8
+def int_difference_to_input_differences(diff, difference_positions, input_bit_sizes):
+    formated = []
+    """
+        Splits a difference received as an integer into differences for each input that needs one, in integer format.
+    """
+    for i in range(len(input_bit_sizes)):
+        if difference_positions[i]:
+            formated.append(diff&2**input_bit_sizes[i]-1)
+            diff = diff >> input_bit_sizes[i]
+        else:
+            formated.append(0)
+    return formated
+
+def int_difference_to_np_uint8(input_lengths, difference_positions, differences=None):
+    """
+        Splits a difference received as an integer into differences for each input that needs one, in np.uint8 format.
+    """
+
     num_bytes = 0
     for i in range(len(input_lengths)):
         if difference_positions[i]:
             num_bytes += input_lengths[i] // 8
-    # num_bytes = np.sum(x for x in input_lengths if difference_positions==True]) // 8
-    numpy_differences = np.uint8([(differences >> ((num_bytes - i - 1) * 8)) & 0xffff
+    numpy_differences = np.uint8([(differences >> ((num_bytes - i - 1) * 8)) & 0xff
                                   for i in range(num_bytes)]).reshape((num_bytes, -1))
     taken = 0
     number_of_differences = 0
