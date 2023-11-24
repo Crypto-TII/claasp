@@ -456,14 +456,7 @@ class CpModel:
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
-            print(solver_output)
-            if model_type in ['deterministic_truncated_xor_differential',
-                              'deterministic_truncated_xor_differential_one_solution',
-                              'impossible_xor_differential',
-                              'impossible_xor_differential_one_solution']:
-                solve_time, memory, components_values = self._parse_solver_output(solver_output, True)
-            else:
-                solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output)
+            solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output)
             if components_values == {}:
                 solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name,
                                                                  solve_time, memory,

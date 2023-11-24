@@ -152,7 +152,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         self._variables_list.extend(inverse_variables)
         deterministic_truncated_xor_differential.extend(inverse_constraints)
 
-        variables, constraints = self.input_deterministic_truncated_xor_differential_constraints(number_of_rounds = number_of_rounds, middle_round = middle_round)
+        variables, constraints = self.input_impossible_xor_differential_constraints(number_of_rounds = number_of_rounds, middle_round = middle_round)
         self._model_prefix.extend(variables)
         self._variables_list.extend(constraints)
         deterministic_truncated_xor_differential.extend(
@@ -358,6 +358,46 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
 
         return self.solve('impossible_xor_differential_one_solution', solver_name)
     
+    def input_impossible_xor_differential_constraints(self, number_of_rounds=None, middle_round=None):
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
+        cp_constraints = []
+        cp_declarations = [f'array[0..{bit_size - 1}] of var 0..2: {input_};'
+                           for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)]
+        cipher = self._cipher
+        inverse_cipher = self.inverse_cipher
+        forward_components = []
+        for r in range(middle_round):
+            forward_components.extend(self._cipher.get_components_in_round(r))
+        backward_components = []
+        for r in range(number_of_rounds - middle_round + 1):
+            backward_components.extend(inverse_cipher.get_components_in_round(r))
+        cp_declarations.extend([f'array[0..{bit_size - 1}] of var 0..2: inverse_{input_};' for input_, bit_size in zip(inverse_cipher.inputs, inverse_cipher.inputs_bit_size)])  
+        for component in forward_components:
+            output_id_link = component.id
+            output_size = int(component.output_bit_size)
+            if 'output' in component.type:
+                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
+            elif CIPHER_OUTPUT in component.type:
+                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
+                cp_constraints.append(f'constraint count({output_id_link},2) < {output_size};')
+            elif CONSTANT not in component.type:
+                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
+        for component in backward_components:
+            output_id_link = component.id
+            output_size = int(component.output_bit_size)
+            if 'output' in component.type:
+                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: inverse_{output_id_link};')
+            elif CIPHER_OUTPUT in component.type:
+                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: inverse_{output_id_link};')
+                cp_constraints.append(f'constraint count(inverse_{output_id_link},2) < {output_size};')
+            elif CONSTANT not in component.type:
+                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: inverse_{output_id_link};')
+        cp_constraints.append('constraint count(plaintext,1) > 0;')
+
+        return cp_declarations, cp_constraints
+
     def _parse_solver_output(self, output_to_parse, model_type):
         """
         Parse solver solution (if needed).
