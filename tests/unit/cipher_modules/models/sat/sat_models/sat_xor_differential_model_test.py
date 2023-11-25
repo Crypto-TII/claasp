@@ -58,13 +58,28 @@ def test_find_one_xor_differential_trail():
 
 def test_find_one_xor_differential_trail_with_fixed_weight():
     speck = SpeckBlockCipher(number_of_rounds=3)
-    sat = SatXorDifferentialModel(speck, window_size_by_round=[0,0,0])
+    sat = SatXorDifferentialModel(speck, window_size_by_round=[0, 0, 0])
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=(0,) * 32)
     key = set_fixed_variables(component_id='key', constraint_type='equal',
                               bit_positions=range(64), bit_values=(0,) * 64)
     result = sat.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[plaintext, key])
 
+    assert result['total_weight'] == 3.0
+
+
+def test_find_one_xor_differential_trail_with_fixed_weight_and_window_heuristic_per_component():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    filtered_objects = [obj.id for obj in speck.get_all_components() if obj.description[0] == "MODADD"]
+    dict_of_window_heuristic_per_component = {}
+    for component_id in filtered_objects:
+        dict_of_window_heuristic_per_component[component_id] = 0
+    sat = SatXorDifferentialModel(speck, window_size_by_component_id=dict_of_window_heuristic_per_component)
+    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
+                                    bit_positions=range(32), bit_values=(0,) * 32)
+    key = set_fixed_variables(component_id='key', constraint_type='equal',
+                              bit_positions=range(64), bit_values=(0,) * 64)
+    result = sat.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[plaintext, key])
     assert result['total_weight'] == 3.0
 
 
