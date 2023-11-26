@@ -979,7 +979,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([key, plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False #  sbox_1_56 --------- 124 -- the length of [input_bit_positions] is not equal to input_bit_size
+            True
 
             sage: from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
             sage: cipher = KasumiBlockCipher(number_of_rounds=2)
