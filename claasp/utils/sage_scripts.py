@@ -36,7 +36,6 @@ def get_ciphers():
     ciphers_files.extend(listdir('claasp/ciphers/stream_ciphers'))
     ciphers_files = list(set(ciphers_files))
     ciphers = [cipher for cipher in ciphers_files if get_cipher_type(cipher)]
-
     return ciphers
 
 

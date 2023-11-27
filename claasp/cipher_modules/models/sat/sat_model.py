@@ -88,14 +88,14 @@ import uuid
 
 from sage.sat.solvers.satsolver import SAT
 
+from claasp.editor import remove_permutations, remove_rotations
 from claasp.cipher_modules.models.sat.utils import constants, utils
-from claasp.cipher_modules.models.utils import set_component_value_weight_sign, convert_solver_solution_to_dictionary
+from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
 from claasp.name_mappings import (SBOX, CIPHER, XOR_LINEAR)
 
 
 class SatModel:
-    def __init__(self, cipher, window_size=-1,
-                 window_size_weight_pr_vars=-1,
+    def __init__(self, cipher, window_size_weight_pr_vars=-1,
                  counter='sequential',
                  compact=False):
         """
@@ -104,18 +104,16 @@ class SatModel:
         INPUT:
 
         - ``cipher`` -- **Cipher object**; an instance of the cipher.
-        - ``window_size`` -- **integer** (default: `-1`)
         - ``window_size_weight_pr_vars`` -- **integer** (default: `-1`)
         - ``counter`` -- **string** (default: `sequential`)
         - ``compact`` -- **boolean** (default: False); set to True for using a simplified cipher (it will remove
           rotations and permutations)
         """
         # remove rotations and permutations (if any)
-        internal_graph = copy.deepcopy(cipher)
+        internal_cipher = copy.deepcopy(cipher)
         if compact:
-            new_rounds = utils.remove_rotations(internal_graph.rounds_as_list)
-            new_rounds = utils.remove_permutations(new_rounds)
-            internal_graph['cipher_rounds'] = new_rounds
+            internal_cipher = remove_permutations(internal_cipher)
+            internal_cipher = remove_rotations(internal_cipher)
 
         # set the counter to fix the weight
         if counter == 'sequential':
@@ -123,12 +121,11 @@ class SatModel:
         else:
             self._counter = self._parallel_counter
 
-        self._cipher = internal_graph
+        self._cipher = internal_cipher
         self._variables_list = []
         self._model_constraints = []
         self._sboxes_ddt_templates = {}
         self._sboxes_lat_templates = {}
-        self._window_size = window_size
         self.window_size_weight_pr_vars = window_size_weight_pr_vars
 
     def _add_clauses_to_solver(self, numerical_cnf, solver):
@@ -141,27 +138,39 @@ class SatModel:
         for clause in numerical_cnf:
             solver.add_clause([int(literal) for literal in clause.split()])
 
-    def _get_components_values(self, out_suffix, output_values_dict):
-        components_values = {}
+    def _get_cipher_inputs_components_solutions(self, out_suffix, variable2value):
+        components_solutions = {}
         for cipher_input, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
             value = 0
             for i in range(bit_size):
                 value <<= 1
-                if f'{cipher_input}_{i}{out_suffix}' in output_values_dict:
-                    value ^= output_values_dict[f'{cipher_input}_{i}{out_suffix}']
+                if f'{cipher_input}_{i}{out_suffix}' in variable2value:
+                    value ^= variable2value[f'{cipher_input}_{i}{out_suffix}']
             hex_digits = bit_size // 4 + (bit_size % 4 != 0)
             hex_value = f'{value:0{hex_digits}x}'
-            component = set_component_value_weight_sign(hex_value)
-            components_values[cipher_input] = component
+            component_solution = set_component_solution(hex_value)
+            components_solutions[cipher_input] = component_solution
 
-        return components_values
+        return components_solutions
 
-    def _get_solver_solution_parsed(self, dimacs_dict, output_values):
-        output_values_dict = {}
-        for i, key in enumerate(dimacs_dict):
-            output_values_dict[key] = 0 if output_values[i][0] == '-' else 1
+    def _get_component_hex_value(self, component, out_suffix, variable2value):
+        output_bit_size = component.output_bit_size
+        value = 0
+        for i in range(output_bit_size):
+            value <<= 1
+            if f'{component.id}_{i}{out_suffix}' in variable2value:
+                value ^= variable2value[f'{component.id}_{i}{out_suffix}']
+            hex_digits = output_bit_size // 4 + (output_bit_size % 4 != 0)
+            hex_value = f'{value:0{hex_digits}x}'
 
-        return output_values_dict
+        return hex_value
+
+    def _get_solver_solution_parsed(self, variable2number, values):
+        variable2value = {}
+        for i, variable in enumerate(variable2number):
+            variable2value[variable] = 0 if values[i][0] == '-' else 1
+
+        return variable2value
 
     def _parallel_counter(self, hw_list, weight):
         """
@@ -259,7 +268,7 @@ class SatModel:
         self._variables_list.extend(variables)
         self._model_constraints.extend(constraints)
 
-    def _solve_with_external_sat_solver(self, model_type, solver_name, options, host=None):
+    def _solve_with_external_sat_solver(self, model_type, solver_name, options, host=None, env_vars_string=""):
         if host and (solver_name not in constants.SAT_SOLVERS_DIMACS_COMPLIANT):
             raise ValueError('{solver_name} not supported.')
 
@@ -271,7 +280,7 @@ class SatModel:
         file_id = f'{uuid.uuid4()}'
         if host is not None:
             status, sat_time, sat_memory, values = utils.run_sat_solver(solver_name, options,
-                                                                        dimacs, host)
+                                                                        dimacs, host, env_vars_string)
         else:
             if solver_name in constants.SAT_SOLVERS_DIMACS_COMPLIANT:
                 status, sat_time, sat_memory, values = utils.run_sat_solver(solver_name, options,
@@ -281,19 +290,23 @@ class SatModel:
                 output_file = f'{self.cipher_id}_{file_id}_sat_output.cnf'
                 status, sat_time, sat_memory, values = utils.run_minisat(options, dimacs,
                                                                          input_file, output_file)
+            elif solver_name == 'parkissat':
+                input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
+                status, sat_time, sat_memory, values = utils.run_parkissat(options, dimacs, input_file)
             elif solver_name == 'yices-sat':
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
                 status, sat_time, sat_memory, values = utils.run_yices(options, dimacs, input_file)
 
         # parsing the solution
         if status == 'SATISFIABLE':
-            component2value, total_weight = self._parse_solver_output(model_type, values,
-                                                                      variable2number)
-            total_weight = float(total_weight)
+            variable2value = self._get_solver_solution_parsed(variable2number, values)
+            component2fields, total_weight = self._parse_solver_output(variable2value)
         else:
-            component2value, total_weight = {}, None
+            component2fields, total_weight = {}, None
+        if total_weight is not None:
+            total_weight = float(total_weight)
         solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name, sat_time,
-                                                         sat_memory, component2value, total_weight)
+                                                         sat_memory, component2fields, total_weight)
         solution['status'] = status
 
         return solution
@@ -304,21 +317,22 @@ class SatModel:
         self._add_clauses_to_solver(numerical_cnf, solver)
         start_time = time.time()
         tracemalloc.start()
-        output_values = solver()
+        values = solver()
         sat_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
         tracemalloc.stop()
         sat_time = time.time() - start_time
-        if output_values:
-            output_values = [f'{v-1}' for v in output_values[1:]]
-            component2value, total_weight = self._parse_solver_output(model_type, output_values,
-                                                                      variable2number)
-            total_weight = float(total_weight)
+        if values:
+            values = [f'{v-1}' for v in values[1:]]
+            variable2value = self._get_solver_solution_parsed(variable2number, values)
+            component2fields, total_weight = self._parse_solver_output(variable2value)
             status = 'SATISFIABLE'
         else:
-            component2value, total_weight = {}, None
+            component2fields, total_weight = {}, None
             status = 'UNSATISFIABLE'
+        if total_weight is not None:
+            total_weight = float(total_weight)
         solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name, sat_time,
-                                                         sat_memory, component2value, total_weight)
+                                                         sat_memory, component2fields, total_weight)
         solution['status'] = status
 
         return solution
@@ -376,55 +390,12 @@ class SatModel:
 
         return constraints
 
-    def _parse_solver_output(self, model_type, output_values, dimacs_dict):
-        out_suffix = ''
-        in_suffix = ''
-        if model_type == XOR_LINEAR:
-            out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-            in_suffix = constants.INPUT_BIT_ID_SUFFIX
-
-        output_values_dict = self._get_solver_solution_parsed(dimacs_dict, output_values)
-
-        # building cipher components
-        components_values = self._get_components_values(out_suffix, output_values_dict)
-        total_weight = 0
-        for component in self._cipher.get_all_components():
-            output_bit_size = component.output_bit_size
-            output_value = self.get_component_value(component, out_suffix, output_bit_size,
-                                                    output_values_dict)
-            hex_digits = output_bit_size // 4 + (output_bit_size % 4 != 0)
-            hex_value = f'{output_value:0{hex_digits}x}'
-            weight = self.calculate_component_weight(component, model_type, out_suffix,
-                                                     output_bit_size, output_values_dict)
-            component_value = set_component_value_weight_sign(hex_value, weight)
-            components_values[f'{component.id}{out_suffix}'] = component_value
-            total_weight += weight
-            if model_type == XOR_LINEAR:
-                input_value = self.get_component_value(component, in_suffix, output_bit_size,
-                                                       output_values_dict)
-                hex_digits = output_bit_size // 4 + (output_bit_size % 4 != 0)
-                hex_value = f'{input_value:0{hex_digits}x}'
-                component_value = set_component_value_weight_sign(hex_value, 0)
-                components_values[f'{component.id}{in_suffix}'] = component_value
-
-        return components_values, total_weight
-
-    def get_component_value(self, component, out_suffix, output_bit_size, output_values_dict):
-        value = 0
-        for i in range(output_bit_size):
-            value <<= 1
-            if f'{component.id}_{i}{out_suffix}' in output_values_dict:
-                value ^= output_values_dict[f'{component.id}_{i}{out_suffix}']
-        return value
-
-    def calculate_component_weight(self, component, model_type, out_suffix, output_bit_size, output_values_dict):
+    def calculate_component_weight(self, component, out_suffix, output_values_dict):
         weight = 0
-        if model_type != CIPHER and ('MODADD' in component.description or
-                                     'AND' in component.description or
-                                     'OR' in component.description or
-                                     SBOX in component.type):
+        if ('MODADD' in component.description or 'AND' in component.description
+                or 'OR' in component.description or SBOX in component.type):
             weight = sum([output_values_dict[f'hw_{component.id}_{i}{out_suffix}']
-                          for i in range(output_bit_size)])
+                          for i in range(component.output_bit_size)])
         return weight
 
     def solve(self, model_type, solver_name='cryptominisat', options=None):
@@ -546,7 +517,3 @@ class SatModel:
     @property
     def sboxes_lat_templates(self):
         return self._sboxes_lat_templates
-
-    @property
-    def window_size(self):
-        return self._window_size

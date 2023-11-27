@@ -95,6 +95,10 @@
         multivariate systems over finite fields* : J. Mathematical
         Cryptology,3(3):177–197, 2009
 
+.. [BGHR2023]
+        Bellini E., Gerault D., Hambitzer A., Rossi M: A Cipher-Agnostic Neural Training Pipeline with Automated
+        Finding of Good Input Differences : In IACR Transactions on Symmetric Cryptology 2023
+
 .. [BCC+2010]
         Bouillaguet C., Chen H-C., Cheng H-C, Chou T., Niederhagen R., Shamir
         A., Yang B. Y. : *Fast exhaustive search for polynomial systems in F2*
@@ -247,6 +251,10 @@
 
         **G**
 
+.. [Go2019]
+        Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
+* : In Advances in Cryptology – CRYPTO 2019
+
 .. _claasp-ref-H:
 
 .. only:: html
@@ -390,6 +398,10 @@
         Stern J. : *A method for finding codewords of small weight* : In
         International Colloquium on Coding Theory and Applications. pp.
         106–113.  Springer (1988)
+
+.. [SGLYTQH2017]
+        Sun S., Gerault D., Lafourcade P., Yang Q., Todo Y., Qiao K., Hu L. : *Analysis of AES, SKINNY,
+        and others with constraint programming* : In IACR transactions on symmetric cryptology 2017 (1), 281--306
 
 .. _claasp-ref-T:
 

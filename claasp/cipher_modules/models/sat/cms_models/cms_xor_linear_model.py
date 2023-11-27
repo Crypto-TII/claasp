@@ -50,9 +50,9 @@ from claasp.name_mappings import CONSTANT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_
 
 class CmsSatXorLinearModel(SatXorLinearModel):
 
-    def __init__(self, cipher, window_size=-1, window_size_weight_pr_vars=-1,
+    def __init__(self, cipher, window_size_weight_pr_vars=-1,
                  counter='sequential', compact=False):
-        super().__init__(cipher, window_size, window_size_weight_pr_vars, counter, compact)
+        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
 
     def _add_clauses_to_solver(self, numerical_cnf, solver):

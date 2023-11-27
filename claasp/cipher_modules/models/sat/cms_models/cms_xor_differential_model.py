@@ -50,9 +50,9 @@ from claasp.name_mappings import WORD_OPERATION, CONSTANT, INTERMEDIATE_OUTPUT, 
 
 class CmsSatXorDifferentialModel(SatXorDifferentialModel):
 
-    def __init__(self, cipher, window_size=-1, window_size_weight_pr_vars=-1,
-                 counter='sequential', compact=False):
-        super().__init__(cipher, window_size, window_size_weight_pr_vars, counter, compact)
+    def __init__(self, cipher, window_size_weight_pr_vars=-1,
+                 counter='sequential', compact=False, window_size_by_round=None):
+        super().__init__(cipher, window_size_weight_pr_vars, counter, compact, window_size_by_round)
 
     def _add_clauses_to_solver(self, numerical_cnf, solver):
         """

@@ -21,6 +21,7 @@ import time
 
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.cipher_modules.models.smt.utils import constants, utils
+from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX, WORD_OPERATION, XOR_DIFFERENTIAL)
 
@@ -116,8 +117,8 @@ class SmtXorDifferentialModel(SmtModel):
             ....:     bit_positions=range(64),
             ....:     bit_values=integer_to_bit_list(0, 64, 'big'))
             sage: trails = smt.find_all_xor_differential_trails_with_fixed_weight(9, fixed_values=[plaintext, key])
-            sage: len(trails) == 2
-            True
+            sage: len(trails)
+            2
         """
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
@@ -185,8 +186,8 @@ class SmtXorDifferentialModel(SmtModel):
             ....:     bit_positions=range(64),
             ....:     bit_values=integer_to_bit_list(0, 64, 'big'))
             sage: trails = smt.find_all_xor_differential_trails_with_weight_at_most(9, 10, fixed_values=[plaintext, key])
-            sage: len(trails) == 28
-            True
+            sage: len(trails)
+            28
         """
         solutions_list = []
         for weight in range(min_weight, max_weight + 1):
@@ -357,3 +358,16 @@ class SmtXorDifferentialModel(SmtModel):
                              else f'{input_}_{j}'
                              for j in range(bit_len)])
         return operands
+
+    def _parse_solver_output(self, variable2value):
+        out_suffix = ''
+        components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
+        total_weight = 0
+        for component in self._cipher.get_all_components():
+            hex_value = utils.get_component_hex_value(component, out_suffix, variable2value)
+            weight = self.calculate_component_weight(component, out_suffix, variable2value)
+            component_solution = set_component_solution(hex_value, weight)
+            components_solutions[f'{component.id}{out_suffix}'] = component_solution
+            total_weight += weight
+
+        return components_solutions, total_weight

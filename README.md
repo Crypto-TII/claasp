@@ -18,11 +18,6 @@ implemented using [Python3](https://www.python.org/).
 
 A brief user's guide with instructions on how to get started with CLAASP 
 is available in `docs/USER_GUIDE.md` file.
-
-### Developer's Guide
-
-A brief developer's guide with instructions on how to contribute to the project 
-is available in `docs/DEVELOPER_GUIDE.md` file.
  
 ### Full documentation
 
@@ -38,8 +33,8 @@ These instructions allow to generate:
 
 ## Source code
 
-All source code is stored in the folder ``claasp/``.
+All source code is stored in the folder `claasp/`.
 
 ## Contributing
 We want you to help us grow this library, so, please, feel free to submit your Pull Request following the 
-[CONTRIBUTING.md](./CONTRIBUTING.md) conventions.
+[CONTRIBUTING.md](docs/CONTRIBUTING.md) conventions.

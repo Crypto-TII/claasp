@@ -18,16 +18,20 @@
 
 
 import time
+from copy import deepcopy
 
 from claasp.cipher_modules.models.sat.sat_model import SatModel
+from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
+from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX, WORD_OPERATION, XOR_DIFFERENTIAL)
 
 
 class SatXorDifferentialModel(SatModel):
-    def __init__(self, cipher, window_size=-1, window_size_weight_pr_vars=-1,
-                 counter='sequential', compact=False):
-        super().__init__(cipher, window_size, window_size_weight_pr_vars, counter, compact)
+    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False,
+                 window_size_by_round=None):
+        self._window_size_by_round = window_size_by_round
+        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
         """
@@ -73,6 +77,39 @@ class SatXorDifferentialModel(SatModel):
             variables, constraints = self.weight_constraints(weight)
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
+
+    def build_xor_differential_trail_and_checker_model_at_intermediate_output_level(
+            self, weight=-1, fixed_variables=[]
+    ):
+        """
+        Build the model for the search of XOR DIFFERENTIAL trails and the model to check that there is at least one pair
+        satisfying such trails at the intermediate output level.
+
+        INPUT:
+
+        - ``weight`` -- **integer** (default: `-1`); a specific weight. If set to non-negative integer, fixes the XOR
+          trail weight
+        - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format
+
+        .. SEEALSO::
+
+            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: speck = SpeckBlockCipher(number_of_rounds=22)
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: sat.build_xor_differential_trail_and_checker_model_at_intermediate_output_level()
+        """
+        self.build_xor_differential_trail_model(weight, fixed_variables)
+        internal_cipher = deepcopy(self._cipher)
+        internal_cipher.convert_to_compound_xor_cipher()
+        sat = SatCipherModel(internal_cipher)
+        sat.build_cipher_model()
+        self._variables_list.extend(sat._variables_list)
+        self._model_constraints.extend(sat._model_constraints)
 
     def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
                                                            solver_name='cryptominisat'):
@@ -315,7 +352,7 @@ class SatXorDifferentialModel(SatModel):
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorDifferentialModel(speck, window_size=0)
+            sage: sat = SatXorDifferentialModel(speck, window_size_by_round=[0, 0, 0])
             sage: plaintext = set_fixed_variables(
             ....:     component_id='plaintext',
             ....:     constraint_type='not_equal',
@@ -339,3 +376,20 @@ class SatXorDifferentialModel(SatModel):
         solution['building_time_seconds'] = end_building_time - start_building_time
 
         return solution
+
+    def _parse_solver_output(self, variable2value):
+        out_suffix = ''
+        components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
+        total_weight = 0
+        for component in self._cipher.get_all_components():
+            hex_value = self._get_component_hex_value(component, out_suffix, variable2value)
+            weight = self.calculate_component_weight(component, out_suffix, variable2value)
+            component_solution = set_component_solution(hex_value, weight)
+            components_solutions[f'{component.id}{out_suffix}'] = component_solution
+            total_weight += weight
+
+        return components_solutions, total_weight
+
+    @property
+    def window_size_by_round(self):
+        return self._window_size_by_round
