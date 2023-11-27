@@ -137,6 +137,15 @@ sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 sage: aes = AESBlockCipher()
 ```
 
+##### 1.2.1.1 bea1
+- ``number_of_rounds``: number of rounds of the cipher. Default value is 11.
+
+Example:
+```
+sage: from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
+sage: bea = BEA1BlockCipher()
+```
+
 ##### 1.2.1.2 constant
 - ``block_bit_size``: cipher input and output block bit size of the cipher. Default value is 3.
 - ``number_of_rounds``: number of rounds of the cipher. Default value is 3.

@@ -20,14 +20,15 @@
 import time
 
 from claasp.cipher_modules.models.sat.sat_model import SatModel
+from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CIPHER, WORD_OPERATION, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX)
 
 
 class SatCipherModel(SatModel):
-    def __init__(self, cipher, window_size=-1, window_size_weight_pr_vars=-1,
+    def __init__(self, cipher,  window_size_weight_pr_vars=-1,
                  counter='sequential', compact=False):
-        super().__init__(cipher, window_size, window_size_weight_pr_vars, counter, compact)
+        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
     def build_cipher_model(self, fixed_variables=[]):
         """
@@ -82,26 +83,26 @@ class SatCipherModel(SatModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=22)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
             sage: sat = SatCipherModel(speck)
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: ciphertext = set_fixed_variables(
-            ....:         component_id='cipher_output_21_12',
+            ....:         component_id=speck.get_all_components_ids()[-1],
             ....:         constraint_type='equal',
             ....:         bit_positions=range(32),
-            ....:         bit_values=[1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1,
-            ....:                     0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1])
+            ....:         bit_values=integer_to_bit_list(endianness='big', list_length=32, int_value=0xaffec7ed))
             sage: sat.find_missing_bits(fixed_values=[ciphertext]) # random
             {'cipher_id': 'speck_p32_k64_o32_r22',
              'model_type': 'cipher',
              'solver_name': 'cryptominisat',
              ...
-              'intermediate_output_21_11': {'value': '6069', 'weight': 0, 'sign': 1},
-              'cipher_output_21_12': {'value': 'e7c92d3f', 'weight': 0, 'sign': 1}},
-             'total_weight': 0,
-             'status': 'SATISFIABLE'}
+              'intermediate_output_21_11': {'value': '1411'},
+              'cipher_output_21_12': {'value': 'affec7ed'}},
+             'total_weight': None,
+             'status': 'SATISFIABLE',
+             'building_time_seconds': 0.019376516342163086}
         """
         start_building_time = time.time()
         self.build_cipher_model(fixed_variables=fixed_values)
@@ -110,3 +111,13 @@ class SatCipherModel(SatModel):
         solution['building_time_seconds'] = end_building_time - start_building_time
 
         return solution
+
+    def _parse_solver_output(self, variable2value):
+        out_suffix = ''
+        components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
+        for component in self._cipher.get_all_components():
+            hex_value = self._get_component_hex_value(component, out_suffix, variable2value)
+            component_solution = set_component_solution(hex_value)
+            components_solutions[component.id] = component_solution
+
+        return components_solutions, None

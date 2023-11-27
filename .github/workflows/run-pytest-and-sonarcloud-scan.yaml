@@ -10,9 +10,13 @@ on:
       - develop
       - main
 
+concurrency:
+  group: run-pytest-tests_${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  run-pytest-and-sonarcloud-scan:
-    runs-on: ubuntu-latest
+  run-pytest:
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -20,39 +24,43 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
-
-    - name: Build
-      uses: docker/build-push-action@v4
-      id: built-image
-      with:
-        context: .
-        file: ./docker/Dockerfile
-        push: false
-        load: true
-        tags: claasp-lib
-        cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-
-    - name: Move cache
+    - name: Fix Directory Structure
       run: |
-        rm -rf /tmp/.buildx-cache
-        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          mkdir /home/runner/_work/claasp_backup
+          mv -f /home/runner/_work/claasp/claasp/* /home/runner/_work/claasp_backup
+          rm -rf /home/runner/_work/claasp/
+          mkdir /home/runner/_work/claasp
+          mv -f /home/runner/_work/claasp_backup/* /home/runner/_work/claasp
+          chmod g+w /home/runner/_work/claasp/ -R
+          rm -rf /home/runner/_work/claasp_backup
 
-    - name: Run tests
-      run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make remote-pytest
+    - name: Run remote-pytest
+      run: |
+            cd /home/runner/_work/claasp
+            make remote-pytest
+
+    - name: Upload Coverage.xml to artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: /home/runner/_work/claasp/coverage.xml
+
+  run-code-coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Download Latest Coverage.xml from Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: coverage-report
 
     - name: Override Coverage Source Path for Sonar
-      run: sed -i "s/<source>\/home\/sage\/tii-claasp\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
+      run: sed -i "s/<source>\/home\/runner\/_work\/claasp\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
 
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
@@ -63,3 +71,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    needs: run-pytest
