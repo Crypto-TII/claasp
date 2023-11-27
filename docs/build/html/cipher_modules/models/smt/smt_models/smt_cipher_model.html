@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
     <link rel="next" title="Smt xor linear model" href="smt_xor_linear_model.html" />
-    <link rel="prev" title="Smt xor differential model" href="smt_xor_differential_model.html" />
+    <link rel="prev" title="Smt deterministic truncated xor differential model" href="smt_deterministic_truncated_xor_differential_model.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -36,7 +36,7 @@
           <a href="smt_xor_linear_model.html" title="Smt xor linear model"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="smt_xor_differential_model.html" title="Smt xor differential model"
+          <a href="smt_deterministic_truncated_xor_differential_model.html" title="Smt deterministic truncated xor differential model"
              accesskey="P">previous</a> |</li>
   
     
@@ -86,6 +86,11 @@ the variables that need to be fixed to a certain value
 </div>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_cipher_model.SmtCipherModel.calculate_component_weight">
+<span class="sig-name descname"><span class="pre">calculate_component_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_cipher_model.SmtCipherModel.calculate_component_weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_cipher_model.SmtCipherModel.cipher_id">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cipher_id</span></span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_cipher_model.SmtCipherModel.cipher_id" title="Permalink to this definition">¶</a></dt>
@@ -128,25 +133,24 @@ the variables that need to be fixed to a certain value
 <p><a class="reference internal" href="../smt_model.html#smt-solvers"><span class="std std-ref">SMT standard of Cipher</span></a></p>
 </div>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.smt.smt_models.smt_cipher_model</span> <span class="kn">import</span> <span class="n">SmtCipherModel</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.smt.smt_models.smt_cipher_model</span> <span class="kn">import</span> <span class="n">SmtCipherModel</span>
 <span class="gp">sage: </span><span class="n">smt</span> <span class="o">=</span> <span class="n">SmtCipherModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span><span class="p">,</span> <span class="n">integer_to_bit_list</span>
 <span class="gp">sage: </span><span class="n">ciphertext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
-<span class="gp">....: </span>        <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;cipher_output_21_12&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>        <span class="n">component_id</span><span class="o">=</span><span class="n">speck</span><span class="o">.</span><span class="n">get_all_components_ids</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
 <span class="gp">....: </span>        <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span>
 <span class="gp">....: </span>        <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
-<span class="gp">....: </span>        <span class="n">bit_values</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
-<span class="gp">....: </span>                    <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="gp">sage: </span><span class="n">smt</span><span class="o">.</span><span class="n">find_missing_bits</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">ciphertext</span><span class="p">],</span> <span class="n">solver_name</span><span class="o">=</span><span class="s1">&#39;yices-smt2&#39;</span><span class="p">)</span> <span class="c1"># random</span>
+<span class="gp">....: </span>        <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="n">endianness</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">,</span> <span class="n">list_length</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">int_value</span><span class="o">=</span><span class="mh">0xaffec7ed</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">smt</span><span class="o">.</span><span class="n">find_missing_bits</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">ciphertext</span><span class="p">])</span> <span class="c1"># random</span>
 <span class="go">{&#39;cipher_id&#39;: &#39;speck_k64_p32_o32_r22&#39;,</span>
 <span class="go"> &#39;model_type&#39;: &#39;speck_k64_p32_o32_r22&#39;,</span>
 <span class="go"> &#39;solver_name&#39;: &#39;cryptominisat&#39;,</span>
 <span class="go"> ...</span>
-<span class="go">  &#39;intermediate_output_21_11&#39;: {&#39;value&#39;: &#39;6dc5&#39;, &#39;weight&#39;: 0},</span>
-<span class="go">  &#39;cipher_output_21_12&#39;: {&#39;value&#39;: &#39;e7c92d3f&#39;, &#39;weight&#39;: 0}},</span>
-<span class="go"> &#39;total_weight&#39;: 0}</span>
+<span class="go">  &#39;intermediate_output_21_11&#39;: {&#39;value&#39;: &#39;90fe&#39;, &#39;weight&#39;: 0},</span>
+<span class="go">  &#39;cipher_output_21_12&#39;: {&#39;value&#39;: &#39;affec7ed&#39;, &#39;weight&#39;: 0}},</span>
+<span class="go"> &#39;total_weight&#39;: None}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -175,16 +179,6 @@ the variables that need to be fixed to a certain value
 </pre></div>
 </div>
 </dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_cipher_model.SmtCipherModel.get_cipher_components_for_components_values">
-<span class="sig-name descname"><span class="pre">get_cipher_components_for_components_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_cipher_model.SmtCipherModel.get_cipher_components_for_components_values" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_cipher_model.SmtCipherModel.get_cipher_input_for_components_values">
-<span class="sig-name descname"><span class="pre">get_cipher_input_for_components_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_cipher_model.SmtCipherModel.get_cipher_input_for_components_values" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_cipher_model.SmtCipherModel.get_xor_probability_constraints">
@@ -292,8 +286,8 @@ the variables that need to be fixed to a certain value
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="smt_xor_differential_model.html"
-                          title="previous chapter">Smt xor differential model</a></p>
+    <p class="topless"><a href="smt_deterministic_truncated_xor_differential_model.html"
+                          title="previous chapter">Smt deterministic truncated xor differential model</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
@@ -334,7 +328,7 @@ the variables that need to be fixed to a certain value
           <a href="smt_xor_linear_model.html" title="Smt xor linear model"
              >next</a> |</li>
         <li class="right" >
-          <a href="smt_xor_differential_model.html" title="Smt xor differential model"
+          <a href="smt_deterministic_truncated_xor_differential_model.html" title="Smt deterministic truncated xor differential model"
              >previous</a> |</li>
   
     

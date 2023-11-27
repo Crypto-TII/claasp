@@ -16,8 +16,8 @@
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Smt model" href="../../smt/smt_model.html" />
-    <link rel="prev" title="Minizinc cipher model" href="minizinc_cipher_model.html" />
+    <link rel="next" title="Minizinc deterministic truncated xor differential model" href="minizinc_deterministic_truncated_xor_differential_model.html" />
+    <link rel="prev" title="Minizinc model" href="../minizinc_model.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +33,10 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../../smt/smt_model.html" title="Smt model"
+          <a href="minizinc_deterministic_truncated_xor_differential_model.html" title="Minizinc deterministic truncated xor differential model"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="minizinc_cipher_model.html" title="Minizinc cipher model"
+          <a href="../minizinc_model.html" title="Minizinc model"
              accesskey="P">previous</a> |</li>
   
     
@@ -245,6 +245,11 @@ dictionaries contain name, bit_size and value (as integer)
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.constraint_permutation_and_key_schedule_separately_by_input_sizes">
+<span class="sig-name descname"><span class="pre">constraint_permutation_and_key_schedule_separately_by_input_sizes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.constraint_permutation_and_key_schedule_separately_by_input_sizes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight">
 <span class="sig-name descname"><span class="pre">find_all_xor_differential_trails_with_fixed_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all the XOR differential trails with weight equal to <code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code>.</p>
@@ -363,6 +368,11 @@ fixed</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.find_min_of_max_xor_differential_between_permutation_and_key_schedule">
+<span class="sig-name descname"><span class="pre">find_min_of_max_xor_differential_between_permutation_and_key_schedule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.find_min_of_max_xor_differential_between_permutation_and_key_schedule" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.fix_variables_value_constraints">
 <span class="sig-name descname"><span class="pre">fix_variables_value_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.fix_variables_value_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of constraints that fix the input variables to a specific value.</p>
@@ -401,6 +411,16 @@ fixed</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.get_probability_vars_from_key_schedule">
+<span class="sig-name descname"><span class="pre">get_probability_vars_from_key_schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.get_probability_vars_from_key_schedule" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.get_probability_vars_from_permutation">
+<span class="sig-name descname"><span class="pre">get_probability_vars_from_permutation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.get_probability_vars_from_permutation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.init_constraints">
 <span class="sig-name descname"><span class="pre">init_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.init_constraints" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -429,7 +449,7 @@ fixed</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.objective_generator">
-<span class="sig-name descname"><span class="pre">objective_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.objective_generator" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">objective_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'min_all_probabilities'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.objective_generator" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -439,12 +459,22 @@ fixed</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.parse_probability_vars">
-<span class="sig-name descname"><span class="pre">parse_probability_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.parse_probability_vars" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_probability_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probability_vars</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.parse_probability_vars" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.satisfy_generator">
 <span class="sig-name descname"><span class="pre">satisfy_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.satisfy_generator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.set_max_number_of_carries_on_arx_cipher">
+<span class="sig-name descname"><span class="pre">set_max_number_of_carries_on_arx_cipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_number_of_carries</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.set_max_number_of_carries_on_arx_cipher" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.set_max_number_of_nonlinear_carries">
+<span class="sig-name descname"><span class="pre">set_max_number_of_nonlinear_carries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_number_of_nonlinear_carries</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model.MinizincXorDifferentialModel.set_max_number_of_nonlinear_carries" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -553,13 +583,13 @@ the instance (Only available when the <code class="docutils literal notranslate"
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="minizinc_cipher_model.html"
-                          title="previous chapter">Minizinc cipher model</a></p>
+    <p class="topless"><a href="../minizinc_model.html"
+                          title="previous chapter">Minizinc model</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="../../smt/smt_model.html"
-                          title="next chapter">Smt model</a></p>
+    <p class="topless"><a href="minizinc_deterministic_truncated_xor_differential_model.html"
+                          title="next chapter">Minizinc deterministic truncated xor differential model</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -592,10 +622,10 @@ the instance (Only available when the <code class="docutils literal notranslate"
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../../smt/smt_model.html" title="Smt model"
+          <a href="minizinc_deterministic_truncated_xor_differential_model.html" title="Minizinc deterministic truncated xor differential model"
              >next</a> |</li>
         <li class="right" >
-          <a href="minizinc_cipher_model.html" title="Minizinc cipher model"
+          <a href="../minizinc_model.html" title="Minizinc model"
              >previous</a> |</li>
   
     

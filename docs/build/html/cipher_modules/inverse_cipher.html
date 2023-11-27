@@ -1,0 +1,470 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Inverse cipher &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Generic functions" href="generic_functions.html" />
+    <link rel="prev" title="Graph generator" href="graph_generator.html" />
+    <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
+    <script src="../_static/thebe.js" type="text/javascript"></script>
+    <script src="../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generic_functions.html" title="Generic functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="graph_generator.html" title="Graph generator"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Inverse cipher</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cipher_modules.inverse_cipher">
+<span id="inverse-cipher"></span><h1>Inverse cipher<a class="headerlink" href="#module-cipher_modules.inverse_cipher" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.add_bit_to_bit_list">
+<span class="sig-name descname"><span class="pre">add_bit_to_bit_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.add_bit_to_bit_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.add_new_component_to_list">
+<span class="sig-name descname"><span class="pre">add_new_component_to_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.add_new_component_to_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.all_input_bits_available">
+<span class="sig-name descname"><span class="pre">all_input_bits_available</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.all_input_bits_available" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.all_output_bits_available">
+<span class="sig-name descname"><span class="pre">all_output_bits_available</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.all_output_bits_available" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.all_output_updated_bits_available">
+<span class="sig-name descname"><span class="pre">all_output_updated_bits_available</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.all_output_updated_bits_available" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.are_equal_components">
+<span class="sig-name descname"><span class="pre">are_equal_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.are_equal_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.are_there_enough_available_inputs_to_evaluate_component">
+<span class="sig-name descname"><span class="pre">are_there_enough_available_inputs_to_evaluate_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_schedule_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.are_there_enough_available_inputs_to_evaluate_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.are_there_enough_available_inputs_to_perform_inversion">
+<span class="sig-name descname"><span class="pre">are_there_enough_available_inputs_to_perform_inversion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.are_there_enough_available_inputs_to_perform_inversion" title="Permalink to this definition">¶</a></dt>
+<dd><p>NOTE: it assumes that the component input size is a multiple of the output size</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.are_these_bits_available">
+<span class="sig-name descname"><span class="pre">are_these_bits_available</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bits_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.are_these_bits_available" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.cipher_find_component">
+<span class="sig-name descname"><span class="pre">cipher_find_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.cipher_find_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.component_input_bits">
+<span class="sig-name descname"><span class="pre">component_input_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.component_input_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.component_inverse">
+<span class="sig-name descname"><span class="pre">component_inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_schedule_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.component_inverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>This functions assumes that the component is actually invertible.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.component_output_bits">
+<span class="sig-name descname"><span class="pre">component_output_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.component_output_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components">
+<span class="sig-name descname"><span class="pre">compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_output_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.compute_input_id_links_and_input_bit_positions_for_inverse_component_from_input_components">
+<span class="sig-name descname"><span class="pre">compute_input_id_links_and_input_bit_positions_for_inverse_component_from_input_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_schedule_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.compute_input_id_links_and_input_bit_positions_for_inverse_component_from_input_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.delete_orphan_links">
+<span class="sig-name descname"><span class="pre">delete_orphan_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.delete_orphan_links" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete orphans elements from input_id_link
+INPUT:
+- <code class="docutils literal notranslate"><span class="pre">cipher</span></code> – dictionary with a graph representation
+- <code class="docutils literal notranslate"><span class="pre">round_number</span></code> – round index</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.equivalent_bits_in_common">
+<span class="sig-name descname"><span class="pre">equivalent_bits_in_common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bits_of_an_output_component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.equivalent_bits_in_common" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.evaluated_component">
+<span class="sig-name descname"><span class="pre">evaluated_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_schedule_component_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.evaluated_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.find_correct_order">
+<span class="sig-name descname"><span class="pre">find_correct_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.find_correct_order" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.find_correct_order_for_inversion">
+<span class="sig-name descname"><span class="pre">find_correct_order_for_inversion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.find_correct_order_for_inversion" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.find_input_id_link_bits_equivalent">
+<span class="sig-name descname"><span class="pre">find_input_id_link_bits_equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inverse_component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.find_input_id_link_bits_equivalent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_all_bit_names">
+<span class="sig-name descname"><span class="pre">get_all_bit_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_all_bit_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_all_components_with_the_same_input_id_link_and_input_bit_positions">
+<span class="sig-name descname"><span class="pre">get_all_components_with_the_same_input_id_link_and_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_all_components_with_the_same_input_id_link_and_input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_all_equivalent_bits">
+<span class="sig-name descname"><span class="pre">get_all_equivalent_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_all_equivalent_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_available_output_components">
+<span class="sig-name descname"><span class="pre">get_available_output_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_available_output_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_cipher_components">
+<span class="sig-name descname"><span class="pre">get_cipher_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_cipher_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_component_from_id">
+<span class="sig-name descname"><span class="pre">get_component_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_component_from_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_equivalent_input_bit_from_output_bit">
+<span class="sig-name descname"><span class="pre">get_equivalent_input_bit_from_output_bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">potential_unwanted_component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_schedule_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_equivalent_input_bit_from_output_bit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_key_schedule_component_ids">
+<span class="sig-name descname"><span class="pre">get_key_schedule_component_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_key_schedule_component_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_most_recent_intermediate_output">
+<span class="sig-name descname"><span class="pre">get_most_recent_intermediate_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_outputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_most_recent_intermediate_output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_output_components">
+<span class="sig-name descname"><span class="pre">get_output_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_output_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_relative_position">
+<span class="sig-name descname"><span class="pre">get_relative_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descendant</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_relative_position" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.is_bit_adjacent_to_list_of_bits">
+<span class="sig-name descname"><span class="pre">is_bit_adjacent_to_list_of_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_bit_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.is_bit_adjacent_to_list_of_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.is_bit_contained_in">
+<span class="sig-name descname"><span class="pre">is_bit_contained_in</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.is_bit_contained_in" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.is_intersection_of_input_id_links_null">
+<span class="sig-name descname"><span class="pre">is_intersection_of_input_id_links_null</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inverse_component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.is_intersection_of_input_id_links_null" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.is_output_bits_updated_equivalent_to_input_bits">
+<span class="sig-name descname"><span class="pre">is_output_bits_updated_equivalent_to_input_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_bits_updated_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bits_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.is_output_bits_updated_equivalent_to_input_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.is_possibly_invertible_component">
+<span class="sig-name descname"><span class="pre">is_possibly_invertible_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.is_possibly_invertible_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.order_input_id_links_for_modadd">
+<span class="sig-name descname"><span class="pre">order_input_id_links_for_modadd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.order_input_id_links_for_modadd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.remove_components_from_rounds">
+<span class="sig-name descname"><span class="pre">remove_components_from_rounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_round</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_round</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_key_schedule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.remove_components_from_rounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.sort_cipher_graph">
+<span class="sig-name descname"><span class="pre">sort_cipher_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.sort_cipher_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sorts the cipher graph in a way that
+each component input is defined before the current component.</p>
+<p>INPUT:
+- <code class="docutils literal notranslate"><span class="pre">cipher</span></code> – graph representation of a cipher as a python dictionary</p>
+<dl class="simple">
+<dt>EXAMPLE::</dt><dd><p>sage: from tii.graph_representations.creator import GraphRepresentationCreator
+sage: GR = GraphRepresentationCreator()
+sage: cipher_python_dictionary = GR.identity_block_cipher_creator()
+sage: sorted_cipher = GR.sort_cipher_graph(cipher_python_dictionary)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.sort_input_id_links_and_input_bit_positions">
+<span class="sig-name descname"><span class="pre">sort_input_id_links_and_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.sort_input_id_links_and_input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.topological_sort">
+<span class="sig-name descname"><span class="pre">topological_sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.topological_sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform topological sort on round components.
+INPUT:
+- <code class="docutils literal notranslate"><span class="pre">round_list</span></code> – list of components</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.update_available_bits_with_component_input_bits">
+<span class="sig-name descname"><span class="pre">update_available_bits_with_component_input_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.update_available_bits_with_component_input_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.update_available_bits_with_component_output_bits">
+<span class="sig-name descname"><span class="pre">update_available_bits_with_component_output_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.update_available_bits_with_component_output_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.update_input_links_from_rounds">
+<span class="sig-name descname"><span class="pre">update_input_links_from_rounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_rounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">removed_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_outputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.update_input_links_from_rounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.inverse_cipher.update_output_bits">
+<span class="sig-name descname"><span class="pre">update_output_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inverse_component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_equivalent_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.update_output_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="graph_generator.html"
+                          title="previous chapter">Graph generator</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="generic_functions.html"
+                          title="next chapter">Generic functions</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/cipher_modules/inverse_cipher.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generic_functions.html" title="Generic functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="graph_generator.html" title="Graph generator"
+             >previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Inverse cipher</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>

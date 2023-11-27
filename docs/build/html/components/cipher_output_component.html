@@ -16,8 +16,8 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Constant component" href="constant_component.html" />
-    <link rel="prev" title="Shift component" href="shift_component.html" />
+    <link rel="next" title="Templates" href="../utils/templates.html" />
+    <link rel="prev" title="Word permutation component" href="word_permutation_component.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
     <script src="../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +33,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="constant_component.html" title="Constant component"
+          <a href="../utils/templates.html" title="Templates"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="shift_component.html" title="Shift component"
+          <a href="word_permutation_component.html" title="Word permutation component"
              accesskey="P">previous</a> |</li>
   
     
@@ -99,11 +99,6 @@
 </pre></div>
 </div>
 </dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.cms_deterministic_truncated_xor_differential_trail_constraints">
-<span class="sig-name descname"><span class="pre">cms_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.cipher_output_component.CipherOutput.cms_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.cms_xor_differential_propagation_constraints">
@@ -276,6 +271,33 @@ intermediate and cipher), for CP xor linear.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.milp_bitwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">milp_bitwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.cipher_output_component.CipherOutput.milp_bitwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of variables and a list of constraints modeling a component of type
+Intermediate_output or Cipher_output for the bitwise deterministic truncated xor differential model.</p>
+<p>EXAMPLE:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.simon_block_cipher</span> <span class="kn">import</span> <span class="n">SimonBlockCipher</span>
+<span class="gp">sage: </span><span class="n">simon</span> <span class="o">=</span> <span class="n">SimonBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">simon</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">output_component</span> <span class="o">=</span> <span class="n">simon</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">output_component</span><span class="o">.</span><span class="n">milp_bitwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x_class[xor_1_6_0]&#39;, x_0),</span>
+<span class="go">(&#39;x_class[xor_1_6_1]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go">(&#39;x_class[cipher_output_1_8_30]&#39;, x_62),</span>
+<span class="go">(&#39;x_class[cipher_output_1_8_31]&#39;, x_63)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_32 == x_0,</span>
+<span class="go">...</span>
+<span class="go"> x_63 == x_31]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.milp_constraints">
 <span class="sig-name descname"><span class="pre">milp_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.cipher_output_component.CipherOutput.milp_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return lists variables and constrains modeling a component of type
@@ -305,9 +327,33 @@ OUTPUT (both intermediate and cipher), for MILP CIPHER model.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.milp_deterministic_truncated_xor_differential_trail_constraints">
-<span class="sig-name descname"><span class="pre">milp_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.cipher_output_component.CipherOutput.milp_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.milp_wordwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">milp_wordwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.cipher_output_component.CipherOutput.milp_wordwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of variables and a list of constrains modeling a component of type
+Intermediate_output or Cipher_output for the wordwise deterministic truncated xor differential model.</p>
+<p>EXAMPLE:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">output_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">output_component</span><span class="o">.</span><span class="n">milp_wordwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x_class[xor_1_31_word_0_class]&#39;, x_0),</span>
+<span class="go"> (&#39;x_class[xor_1_31_word_1_class]&#39;, x_1),</span>
+<span class="go"> ...</span>
+<span class="go"> (&#39;x[cipher_output_1_32_126]&#39;, x_286),</span>
+<span class="go"> (&#39;x[cipher_output_1_32_127]&#39;, x_287)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_16 == x_0,</span>
+<span class="go"> x_17 == x_1,</span>
+<span class="go"> ...</span>
+<span class="go"> x_286 == x_158,</span>
+<span class="go"> x_287 == x_159]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.milp_xor_differential_propagation_constraints">
@@ -477,6 +523,11 @@ OUTPUT (both intermediate and cipher), for MILP CIPHER model.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.set_id">
+<span class="sig-name descname"><span class="pre">set_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.cipher_output_component.CipherOutput.set_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.set_input_bit_positions">
 <span class="sig-name descname"><span class="pre">set_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.cipher_output_component.CipherOutput.set_input_bit_positions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -512,11 +563,6 @@ OUTPUT (both intermediate and cipher), for MILP CIPHER model.</p>
 </pre></div>
 </div>
 </dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.smt_deterministic_truncated_xor_differential_trail_constraints">
-<span class="sig-name descname"><span class="pre">smt_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.cipher_output_component.CipherOutput.smt_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="components.cipher_output_component.CipherOutput.smt_xor_differential_propagation_constraints">
@@ -573,13 +619,13 @@ OUTPUT (both intermediate and cipher), for MILP CIPHER model.</p>
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="shift_component.html"
-                          title="previous chapter">Shift component</a></p>
+    <p class="topless"><a href="word_permutation_component.html"
+                          title="previous chapter">Word permutation component</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="constant_component.html"
-                          title="next chapter">Constant component</a></p>
+    <p class="topless"><a href="../utils/templates.html"
+                          title="next chapter">Templates</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -612,10 +658,10 @@ OUTPUT (both intermediate and cipher), for MILP CIPHER model.</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="constant_component.html" title="Constant component"
+          <a href="../utils/templates.html" title="Templates"
              >next</a> |</li>
         <li class="right" >
-          <a href="shift_component.html" title="Shift component"
+          <a href="word_permutation_component.html" title="Word permutation component"
              >previous</a> |</li>
   
     
