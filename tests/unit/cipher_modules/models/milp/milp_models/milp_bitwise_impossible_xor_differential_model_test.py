@@ -103,10 +103,11 @@ def test_find_one_bitwise_impossible_xor_differential_trail_with_fixed_component
                                                2, 2, 2, 2, 2, 2, 2, 2])
      P5 = set_fixed_variables(component_id='cipher_output_4_71', constraint_type='equal', bit_positions=range(320),
                                    bit_values=[0] * 192 + [1] + [0] * 127)
-     trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_fixed_component(["sbox_3_56"],
-                                                                                               fixed_values=[plaintext,
-                                                                                                             P1, P2, P3,
-                                                                                                             P5])
+     trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_component(["sbox_3_56"],
+                                                                                                        fixed_values=[
+                                                                                                            plaintext,
+                                                                                                            P1, P2, P3,
+                                                                                                            P5])
      assert trail['status'] == 'SATISFIABLE'
      assert trail['components_values']['sbox_3_56']['value'] == '00000'
      assert trail['components_values']['sigma_3_69_backward']['value'] == '1000101000101010101010000000001010001000000010101000001010000000'
