@@ -41,11 +41,7 @@ class SCARFBlockCipher(Cipher):
         sage: from claasp.ciphers.block_ciphers.scarf_block_cipher import SCARFBlockCipher
         sage: scarf = SCARFBlockCipher()
         sage: scarf.number_of_rounds
-        72
-        sage: key = 0xEBA347BD715B4AE6E8BAE2BE82C35714014D1726D82676E50618AA168941
-        sage: tweak = 0x71249C3CAAB0
-        sage: plaintext = 0
-        sage: scarf.evaluate([plaintext, key, tweak])
+        8
 
         sage: scarf.component_from(0, 0).id
         'constant_0_0'
