@@ -65,7 +65,7 @@ def _dict_to_latex_table(nested_dict, header_list):
 
 
 def _latex_heatmap(table, table_string, bit_count):
-    table_string += "\hspace*{-4cm}\n\\begin{tikzpicture}[scale=1.1]\n\t\\foreach \y [count=\\n] in {\n\t\t"
+    table_string += "\\hspace*{-4cm}\n\\begin{tikzpicture}[scale=1.1]\n\t\\foreach \\y [count=\\n] in {\n\t\t"
     for round in table:
         table_string += "{"
         for i in range(len(round)):
@@ -74,22 +74,22 @@ def _latex_heatmap(table, table_string, bit_count):
             else:
                 table_string += str("{:.3f}".format(round[i])) + ","
         table_string += "},\n\t\t"
-    table_string += ("} {\n\t%heatmap tiles\n\t\\foreach\\x [count=\m] in \\y {\n\t\t\pgfmathsetmacro{"
+    table_string += ("} {\n\t%heatmap tiles\n\t\\foreach\\x [count=\\m] in \\y {\n\t\t\\pgfmathsetmacro{"
                      "\\colorgradient}{\\x * 100}\n\t\t\\node[fill=green!\\colorgradient!red, minimum size=6mm, "
-                     "text=white] at (\m,-\\n*0.6) {\\x};\n\t}\n\t}\n\t\t%rowlabels\n\\foreach \\a [count=\i] in {")
+                     "text=white] at (\\m,-\\n*0.6) {\\x};\n\t}\n\t}\n\t\t%rowlabels\n\\foreach \\a [count=\\i] in {")
     for i in range(len(table)):
         if i != len(table) - 1:
             table_string += "round" + str(i + 1) + ","
         else:
             table_string += "round" + str(i + 1) + "} {\n\t"
 
-    table_string += "\\node[minimum size=6mm] at (0,-\i*0.6) {\\a};}\n\t\t%column labels\n\t \\foreach \\a [count=\i] in {"
+    table_string += "\\node[minimum size=6mm] at (0,-\\i*0.6) {\\a};}\n\t\t%column labels\n\t \\foreach \\a [count=\\i] in {"
     for i in range(bit_count[0], bit_count[1]):
         if i != bit_count[1] - 1:
             table_string += "bit" + str(i) + ","
         else:
             table_string += "bit" + str(i) + "} {\n\t"
-    table_string += "\\node[minimum size=6mm] at (\i,0) {\\a};}\n\end{tikzpicture}\\newline\\newline\n"
+    table_string += "\\node[minimum size=6mm] at (\\i,0) {\\a};}\n\\end{tikzpicture}\\newline\\newline\n"
     return table_string
 
 
@@ -177,7 +177,7 @@ class Report:
                 else:
                     headers = ["components_ids", "value", "weight", "sign"]
                     with open(path + '/' + self.test_name + '.tex', "w") as f:
-                        f.write(_dict_to_latex_table(self.test_report["components_values" if 'trail' in self.test_name else "test_results"], header_list=headers).replace('_','\_'))
+                        f.write(_dict_to_latex_table(self.test_report["components_values" if 'trail' in self.test_name else "test_results"], header_list=headers).replace('_','\\_'))
 
         else:
 
@@ -257,8 +257,6 @@ class Report:
 
                                     diff = str(result["input_difference_value"])
 
-
-
                                 else:
 
                                     rounds = ['rounds' + str(i) for i in range(len(result[res_key]))]
@@ -273,7 +271,7 @@ class Report:
 
                                 if not isinstance(result[res_key][0], list):
                                     with open(path + '/' + self.test_name + '.tex', "w") as f:
-                                        f.write(pd.DataFrame(result).style.to_latex().replace('_', '\_'))
+                                        f.write(pd.DataFrame(result).style.to_latex().replace('_', '\\_'))
 
                                 else:
                                     table = result[res_key]
@@ -284,16 +282,16 @@ class Report:
                                         bit_count = (i * 16, (i + 1) * 16)
                                         table_string = _latex_heatmap(table_split, table_string, bit_count)
 
-                                    table_string += "\caption{" + self.test_name.replace("_",
-                                                                                         "\_") + "\_" + it + "\_" + out.replace(
-                                        "_", "\_") + "\_" + test.replace("_", "\_") + "\_" + result[
+                                    table_string += "\\caption{" + self.test_name.replace("_",
+                                                                                         "\\_") + "\\_" + it + "\\_" + out.replace(
+                                        "_", "\\_") + "\\_" + test.replace("_", "\\_") + "\\_" + result[
                                                         "input_difference_value"] + ("}"
-                                                                                     "\label{fig:" + self.test_name.replace(
-                                        "_", "\_") + "\_" + it + "\_" + out.replace("_", "\_") + "\_" + test.replace("_",
-                                                                                                                     "\_") + "\_" +
+                                                                                     "\\label{fig:" + self.test_name.replace(
+                                        "_", "\\_") + "\\_" + it + "\\_" + out.replace("_", "\\_") + "\\_" + test.replace("_",
+                                                                                                                     "\\_") + "\\_" +
                                                                                      result[
                                                                                          "input_difference_value"] + "}\n")
-                                    table_string += "\end{figure}"
+                                    table_string += "\\end{figure}"
                                     with open(path + '/' + str(result["input_difference_value"]) + file_format, 'w') as fp:
                                         fp.write(table_string)
 
@@ -580,7 +578,7 @@ class Report:
                 os.mkdir(output_directory + '/' + self.cipher.id + '/' + self.test_name)
             self._produce_graph(output_directory)
 
-    def clean_reports(self, output_dir=os.getcwd() + '/test_reports'):
+    def clean_reports(self, output_dir=os.getcwd() + '/test_reports/reports'):
 
         shutil.rmtree(output_dir)
 
