@@ -314,7 +314,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuple]))
 
 
-    def find_one_wordwise_impossible_xor_differential_trail(self, middle_round=None, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT):
+    def find_one_wordwise_impossible_xor_differential_trail(self, middle_round=None, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Returns one wordwise impossible XOR differential trail.
 
@@ -324,6 +324,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         - ``middle_round`` -- **integer**; the round number for which the incompatibility occurs
         - ``fixed_bits`` -- *list of dict*, the bit variables to be fixed in standard format
         - ``fixed_words`` -- *list of dict*, the word variables to be fixed in standard format
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLE::
 
@@ -343,12 +344,12 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         self.add_constraints_to_build_in_sage_milp_class(middle_round, fixed_bits, fixed_words)
         end = time.time()
         building_time = end - start
-        solution = self.solve(MILP_WORDWISE_IMPOSSIBLE, solver_name)
+        solution = self.solve(MILP_WORDWISE_IMPOSSIBLE, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
 
-    def find_one_wordwise_impossible_xor_differential_trail_with_fixed_component(self, component_id_list, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT):
+    def find_one_wordwise_impossible_xor_differential_trail_with_chosen_components(self, component_id_list, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Returns one wordwise impossible XOR differential trail.
 
@@ -358,6 +359,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         - ``component_id_list`` -- **str**; the list of component ids for which the incompatibility occurs
         - ``fixed_bits`` -- *list of dict*, the bit variables to be fixed in standard format
         - ``fixed_words`` -- *list of dict*, the word variables to be fixed in standard format
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLE::
 
@@ -366,7 +368,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
-            sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_fixed_component(['mix_column_0_21'], get_single_key_scenario_format_for_fixed_values(aes))
+            sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_chosen_components(['mix_column_0_21'], get_single_key_scenario_format_for_fixed_values(aes))
 
         """
         start = time.time()
@@ -377,12 +379,12 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         self.add_constraints_to_build_in_sage_milp_class_with_fixed_components(component_id_list, fixed_bits, fixed_words)
         end = time.time()
         building_time = end - start
-        solution = self.solve(MILP_WORDWISE_IMPOSSIBLE, solver_name)
+        solution = self.solve(MILP_WORDWISE_IMPOSSIBLE, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
 
-    def find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model(self, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT):
+    def find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model(self, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Returns one wordwise impossible XOR differential trail.
 
@@ -391,6 +393,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         - ``solver_name`` -- *str*, the solver to call
         - ``fixed_bits`` -- *list of dict*, the bit variables to be fixed in standard format
         - ``fixed_words`` -- *list of dict*, the word variables to be fixed in standard format
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLE::
 
@@ -410,7 +413,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         self.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(fixed_bits, fixed_words)
         end = time.time()
         building_time = end - start
-        solution = self.solve(MILP_WORDWISE_IMPOSSIBLE_AUTO, solver_name)
+        solution = self.solve(MILP_WORDWISE_IMPOSSIBLE_AUTO, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution

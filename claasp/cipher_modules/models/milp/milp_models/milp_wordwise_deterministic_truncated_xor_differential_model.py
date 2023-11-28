@@ -19,7 +19,7 @@ import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORDWISE_DETERMINISTIC_TRUNCATED, \
-    MILP_BUILDING_MESSAGE
+    MILP_BUILDING_MESSAGE, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints, \
     fix_variables_value_deterministic_truncated_xor_differential_constraints, _get_variables_values_as_string
 from claasp.cipher_modules.models.utils import set_component_solution
@@ -110,7 +110,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         # objective is the number of unknown patterns i.e. tuples of the form (1, x)
         _, output_ids = last_component._get_wordwise_input_output_linked_class_tuples(self)
-        mip.add_constraint(p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in output_ids]))
+        mip.add_constraint(p[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE] == sum(x[output_msb] for output_msb in [id[0] for id in output_ids]))
 
     def build_wordwise_deterministic_truncated_xor_differential_trail_model(self, fixed_bits=[], fixed_words=[], cipher_list=None):
         """
@@ -292,7 +292,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         return variables, constraints
 
-    def find_one_wordwise_deterministic_truncated_xor_differential_trail(self, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT):
+    def find_one_wordwise_deterministic_truncated_xor_differential_trail(self, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Returns one deterministic truncated XOR differential trail.
 
@@ -303,6 +303,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
           standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
         - ``fixed_words`` -- *list of dict*, the word variables to be fixed in
           standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLE::
 
@@ -326,12 +327,12 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(fixed_bits, fixed_words)
         end = time.time()
         building_time = end - start
-        solution = self.solve(MILP_WORDWISE_DETERMINISTIC_TRUNCATED, solver_name)
+        solution = self.solve(MILP_WORDWISE_DETERMINISTIC_TRUNCATED, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
 
-    def find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(self, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT):
+    def find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(self, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return the solution representing a differential trail with the lowest number of unknown variables.
 
@@ -340,6 +341,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         - ``solver_name`` -- *str*, the solver to call
         - ``fixed_bits`` -- *list of dict*, the bit variables to be fixed in standard format
         - ``fixed_words`` -- *list of dict*, the word variables to be fixed in standard format
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLE::
 
@@ -362,12 +364,12 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         p = self._integer_variable
-        mip.set_objective(p["number_of_unknown_patterns"])
+        mip.set_objective(p[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE])
 
         self.add_constraints_to_build_in_sage_milp_class(fixed_bits, fixed_words)
         end = time.time()
         building_time = end - start
-        solution = self.solve(MILP_WORDWISE_DETERMINISTIC_TRUNCATED, solver_name)
+        solution = self.solve(MILP_WORDWISE_DETERMINISTIC_TRUNCATED, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
@@ -393,7 +395,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         mip = self._model
         components_variables = mip.get_values(self._trunc_wordvar)
         objective_variables = mip.get_values(self._integer_variable)
-        objective_value = objective_variables["number_of_unknown_patterns"]
+        objective_value = objective_variables[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE]
         components_values = self._get_component_values(objective_variables, components_variables)
 
         return objective_value, components_values

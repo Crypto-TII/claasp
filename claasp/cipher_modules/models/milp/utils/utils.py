@@ -29,7 +29,9 @@ from claasp.cipher_modules.models.milp.utils.config import EXTERNAL_MILP_SOLVERS
 from sage.numerical.mip import MIPSolverException
 
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED, \
-    MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_BACKWARD_SUFFIX
+    MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_BACKWARD_SUFFIX, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE, \
+    MILP_XOR_DIFFERENTIAL_OBJECTIVE, MILP_BITWISE_IMPOSSIBLE, MILP_WORDWISE_IMPOSSIBLE, MILP_BITWISE_IMPOSSIBLE_AUTO, \
+    MILP_WORDWISE_IMPOSSIBLE_AUTO
 
 
 ### -------------------------External solver parsing methods------------------------- ###
@@ -66,7 +68,7 @@ def _parse_external_solver_output(model, model_type, solver_name, solver_process
     solve_time = _get_data(solver_specs['time'], str(solver_process))
 
     status = 'UNSATISFIABLE'
-    total_weight = None
+    objective_value = None
 
     if solver_specs['unsat_condition'] not in str(solver_process):
         status = 'SATISFIABLE'
@@ -76,17 +78,34 @@ def _parse_external_solver_output(model, model_type, solver_name, solver_process
         with open(solution_file_path, 'r') as lp_file:
             read_file = lp_file.read()
 
-        components_variables = _get_variables_value(model.binary_variable, read_file)
-        objective_variables = _get_variables_value(model.integer_variable, read_file)
-
-        if model_type not in [MILP_BITWISE_DETERMINISTIC_TRUNCATED, MILP_WORDWISE_DETERMINISTIC_TRUNCATED]:
-            total_weight = objective_variables["probability"] / 10.
+        if model_type in [MILP_BITWISE_DETERMINISTIC_TRUNCATED, MILP_BITWISE_IMPOSSIBLE]:
+            components_variables = _get_variables_value(model.trunc_binvar, read_file)
+            objective_variables = _get_variables_value(model.integer_variable, read_file)
+            objective_value = objective_variables[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE]
+        elif model_type == MILP_BITWISE_IMPOSSIBLE_AUTO:
+            components_variables = _get_variables_value(model.trunc_binvar, read_file)
+            objective_variables = _get_variables_value(model.binary_variable, read_file)
+            inconsistent_component_var = \
+                [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
+            objective_value = "_".join(inconsistent_component_var.split("_")[:-3])
+        elif model_type in [MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_WORDWISE_IMPOSSIBLE]:
+            components_variables = _get_variables_value(model.trunc_wordvar, read_file)
+            objective_variables = _get_variables_value(model.integer_variable, read_file)
+            objective_value = objective_variables[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE]
+        elif model_type == MILP_WORDWISE_IMPOSSIBLE_AUTO:
+            components_variables = _get_variables_value(model.trunc_wordvar, read_file)
+            objective_variables = _get_variables_value(model.binary_variable, read_file)
+            inconsistent_component_var = \
+                [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
+            objective_value = "_".join(inconsistent_component_var.split("_")[:-3])
         else:
-            total_weight = objective_variables["probability"]
+            components_variables = _get_variables_value(model.binary_variable, read_file)
+            objective_variables = _get_variables_value(model.integer_variable, read_file)
+            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / 10.
 
         components_values = model._get_component_values(objective_variables, components_variables)
 
-    return status, total_weight, components_values, solve_time
+    return status, objective_value, components_values, solve_time
 
 
 ### -------------------------Dictionary handling------------------------- ###
@@ -670,7 +689,6 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
         inconsistent_component_var = \
         [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
         inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
-
         full_cipher_components = model._cipher.get_all_components_ids()
         backward_components = model._backward_cipher.get_all_components_ids() + model._backward_cipher.inputs
         index = full_cipher_components.index(inconsistent_component_id)
