@@ -14,3 +14,7 @@ def test_scarf_block_cipher():
     tweak = 0x71249C3CAAB0
     ciphertext = 0xBD
     assert cipher.evaluate([plaintext, key, tweak]) == ciphertext
+
+    plaintext = 0x3FF
+    ciphertext = 0x145
+    assert cipher.evaluate([plaintext, key, tweak]) == ciphertext
