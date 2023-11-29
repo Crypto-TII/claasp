@@ -21,15 +21,19 @@ def _print_colored_state(state, verbose):
             print()
 
 
-def _dict_to_latex_table(nested_dict, header_list):
+def _dict_to_latex_table(data_dict, header_list):
+    if not data_dict:
+        return "Empty dictionary."
 
-    num_columns = len(next(iter(nested_dict.values())))
+    # Check if the values are dictionaries or lists
+    is_nested = isinstance(next(iter(data_dict.values())), dict)
 
-    latex_code = "\\begin{longtable}{|" + "c|" * (num_columns + 1) + "}\n"
+    num_columns = len(header_list)
+    latex_code = "\\begin{longtable}{|" + "c|" * (num_columns) + "}\n"
     latex_code += "\\hline\n"
 
     for i in range(len(header_list)):
-        if i == len(header_list)-1:
+        if i == len(header_list) - 1:
             latex_code += header_list[i] + " "
         else:
             latex_code += header_list[i] + " & "
@@ -37,30 +41,29 @@ def _dict_to_latex_table(nested_dict, header_list):
     latex_code += "\\\\\n"
     latex_code += "\\hline\n"
 
-    line_count = 0
-    for subdict_label, subdict_values in nested_dict.items():
-        row = f"{subdict_label} & " + " & ".join(map(str, subdict_values.values())) + " \\\\\n"
+    # Determine the maximum number of rows needed
+    max_rows = max(len(values) for values in data_dict.values()) if not is_nested else 1
+
+    for row_index in range(max_rows):
+        row_values = []
+
+        for key, values in data_dict.items():
+            if is_nested:
+                # For nested dictionary
+                row_values.append(str(values.get(header_list[row_index], "")))
+            else:
+                # For regular dictionary with lists as values
+                if row_index < len(values):
+                    row_values.append(str(values[row_index]))
+                else:
+                    row_values.append("")
+
+        row = " & ".join(row_values) + " \\\\\n"
         latex_code += row
         latex_code += "\\hline\n"
-        line_count += 1
-
-        if line_count == 35:
-            latex_code += "\\end{longtable}\n\n"
-            latex_code += "\\newpage\n\n"
-            latex_code += "\\begin{longtable}{|" + "c|" * (num_columns + 1) + "}\n"
-            latex_code += "\\hline\n"
-            for i in range(len(header_list)):
-                if i == len(header_list) - 1:
-                    latex_code += header_list[i] + " "
-                else:
-                    latex_code += header_list[i] + " & "
-            latex_code += " \\\\\n"
-            latex_code += "\\hline\n"
-            line_count = 0
 
     latex_code += "\\end{longtable}"
     return latex_code
-
 
 
 
@@ -133,6 +136,9 @@ class Report:
         self.cipher = cipher
         self.test_report = test_report
 
+        if 'test_name' in test_report.keys():
+            self.test_name = test_report['test_name']
+
         try:
             self.input_parameters = test_report['input_parameters']
             self.test_name = test_report['input_parameters']['test_name']
@@ -143,13 +149,28 @@ class Report:
 
     def _export(self, file_format, output_dir):
 
+
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        if 'trail' in self.test_name or 'algebraic' in self.test_name:
+        if not os.path.exists(output_dir + '/' + self.cipher.id):
+            os.makedirs(output_dir + '/' + self.cipher.id)
 
-            if not os.path.exists(output_dir + '/' + self.cipher.id):
-                os.makedirs(output_dir + '/' + self.cipher.id)
+        if 'statistical' in self.test_name:
+
+            if file_format == '.csv':
+                df = pd.DataFrame.from_dict(self.test_report["randomness_test"])
+                df.to_csv(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format)
+
+            if file_format == '.json':
+                with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
+                    json.dump(self.test_report["randomness_test"], fp, default=lambda x: float(x))
+
+            if file_format == '.tex':
+                with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
+                    fp.write(pd.DataFrame(self.test_report["randomness_test"]).style.to_latex())
+
+        elif 'trail' in self.test_name or 'algebraic' in self.test_name:
 
             if 'trail' in self.test_name:
                 if not os.path.exists(output_dir + '/' + self.cipher.id + '/trail_search_results'):
@@ -173,11 +194,11 @@ class Report:
 
                 if 'algebraic' in self.test_name:
                     with open(path + '/' + self.test_name + '.tex', "w") as f:
-                        f.write(pd.DataFrame(self.test_report["test_results"]).style.to_latex())
+                        f.write(_dict_to_latex_table(self.test_report["test_results"], header_list=["number of variables", "number of equations", "number of monomials", "max degree of equation", "test passed"]).replace('_','\\_'))
                 else:
-                    headers = ["components_ids", "value", "weight", "sign"]
+                    headers = ["Component_id", "Value", "Weight"]
                     with open(path + '/' + self.test_name + '.tex', "w") as f:
-                        f.write(_dict_to_latex_table(self.test_report["components_values" if 'trail' in self.test_name else "test_results"], header_list=headers).replace('_','\\_'))
+                        f.write(_dict_to_latex_table(self.test_report["components_values"], header_list=headers).replace('_','\\_'))
 
         else:
 
@@ -268,10 +289,9 @@ class Report:
                                     json.dump(elastic_dict, fp, default=lambda x: float(x))
 
                             elif file_format == '.tex':
-
                                 if not isinstance(result[res_key][0], list):
                                     with open(path + '/' + self.test_name + '.tex', "w") as f:
-                                        f.write(pd.DataFrame(result).style.to_latex().replace('_', '\\_'))
+                                        f.write(_dict_to_latex_table(dict(pd.DataFrame(result)),header_list=[res_key,"component_id"]).replace('_','\\_'))
 
                                 else:
                                     table = result[res_key]
@@ -343,8 +363,9 @@ class Report:
 
         for comp_id in self.test_report['components_values'].keys():
 
-            rel_prob = self.test_report['components_values'][comp_id]['weight']
-            abs_prob += rel_prob
+            if comp_id != "plaintext" and comp_id != "key":
+                rel_prob = self.test_report['components_values'][comp_id]['weight']
+                abs_prob += rel_prob
 
             # Check input links
 
@@ -380,7 +401,8 @@ class Report:
                             out_format[i].append(f'\033[31;4m{word_list[j + i * size[1]]}\033[0m')
                         else:
                             out_format[i].append(word_list[j + i * size[1]])
-                out_list[comp_id] = (out_format, rel_prob, abs_prob)
+
+                out_list[comp_id] = (out_format, rel_prob, abs_prob) if comp_id not in ["plaintext", "key"] else (out_format, 0, 0)
 
         for comp_id in out_list.keys():
             if comp_id not in key_flow:
@@ -429,12 +451,10 @@ class Report:
             printable_dict['rounds'] = 1
             if 'dieharder' in self.test_name:
                 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-                DieharderTests.generate_chart_round(printable_dict,
-                                                    output_directory + output_directory + '/' + self.cipher.id + '/' + 'dieharder_statistical_test.png')
+                DieharderTests.generate_chart_round(printable_dict)
             elif 'nist' in self.test_name:
                 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-                StatisticalTests.generate_chart_round(printable_dict,
-                                                      output_directory + output_directory + '/' + self.cipher.id + '/' + 'nist_statistical_test.png')
+                StatisticalTests.generate_chart_round(printable_dict)
 
         elif 'algebraic' in self.test_name:
             print(self.test_report)
@@ -469,10 +489,22 @@ class Report:
                         for case in list(data):
                             res_key = [x for x in case.keys() if x in ['values', 'vectors', 'accuracies']][0]
 
+                            if out == 'round_output':
+                                output_res = self.test_report['test_results'][it]['cipher_output'][res]
+                                if "input_difference_value" in case.keys():
+                                    diff_key = case["input_difference_value"]
+                                    output = [out for out in output_res if out["input_difference_value"] == diff_key][0]
+                                    cipher_output = output[res_key][0]
+                                else:
+                                    cipher_output = output_res[0][res_key][0]
+
+                                case[res_key].append(cipher_output)
+
                             graph_data = {}
                             for i in range(len(case[res_key])):
                                 graph_data[i + 1] = [case[res_key][i]] if type(case[res_key][i]) != list else \
                                     case[res_key][i]
+
 
                             df = pd.DataFrame.from_dict(graph_data).T
                             if len(graph_data[1]) > 1:
@@ -488,11 +520,11 @@ class Report:
                                                              text=[['{:.3f}'.format(float(y)) for y in x] for x in
                                                                    z_data],
                                                              x=list(range(i * 32, 32 * (i + 1))),
-                                                             y=list(range(self.cipher.number_of_rounds - 1)), zmin=0,
+                                                             y=list(range(1,self.cipher.number_of_rounds+1)), zmin=0,
                                                              zmax=1, zauto=False),
                                                   i + 1, 1)
                                     fig.update_layout({
-                                        'font': {'size': 8 * 2 / num_subplots},
+                                        'font': {'size': 8},
                                         'xaxis' + str(i + 1): {'tick0': 0, 'dtick': 1, 'nticks': len(z_data),
                                                                'tickfont': {'size': 8}},
                                         'yaxis' + str(i + 1): {'tick0': 0, 'dtick': 1,
@@ -506,9 +538,9 @@ class Report:
 
                             else:
 
-                                fig = px.line(df, range_x=[0, self.cipher.number_of_rounds - 1],
+                                fig = px.line(df, range_x=[1, self.cipher.number_of_rounds],
                                               range_y=[min(df[0]) - 1, max(df[0]) + 1])
-                                fig.update_layout(xaxis_title="number_of_rounds", yaxis_title="test_result",
+                                fig.update_layout(xaxis_title="round", yaxis_title=res_key,
                                                   showlegend=False)
                                 fig.write_image(output_directory + '/' +
                                                 self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res +
@@ -580,6 +612,10 @@ class Report:
 
     def clean_reports(self, output_dir=os.getcwd() + '/test_reports/reports'):
 
-        shutil.rmtree(output_dir)
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
+        else:
+            print("Directory " + output_dir + " not found")
+            return
 
 
