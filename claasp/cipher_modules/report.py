@@ -180,6 +180,8 @@ class Report:
 
             else:
                 path = output_dir + '/' + self.cipher.id + '/' + self.test_name
+                if not os.path.exists(path):
+                    os.makedirs(path)
 
             if file_format == '.csv':
 
@@ -189,7 +191,6 @@ class Report:
             elif file_format == '.json':
                 with open(path + '/' + self.test_name + file_format, 'w') as fp:
                     json.dump(self.test_report["components_values" if 'trail' in self.test_name else "test_results"], fp, default=lambda x: float(x))
-
             elif file_format == '.tex':
 
                 if 'algebraic' in self.test_name:
