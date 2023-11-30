@@ -68,7 +68,6 @@ def avalanche_tests(cipher, number_of_samples=5, avalanche_dependence_uniform_bi
                                                  input_name, intermediate_output_name)
                     #calculate_worst_input_differences(cipher, criterion_name, largest_round_criterion_not_satisfied,
                     #                                  diffusion_tests, input_name, intermediate_output_name)
-    #diffusion_tests["test_results"] = test_results
 
     return diffusion_tests
 
