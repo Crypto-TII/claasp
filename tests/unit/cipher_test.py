@@ -154,7 +154,8 @@ def test_continuous_diffusion_tests():
 
 def test_continuous_neutrality_measure_for_bit_j():
     output = SpeckBlockCipher(number_of_rounds=2).continuous_neutrality_measure_for_bit_j(50, 200)
-    assert output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure'][0]["values"][0] > 0
+    print(output)
+    assert output['plaintext']['cipher_output']['continuous_neutrality_measure']["values"][0]['2'] > 0
 
 
 def test_delete_generated_evaluate_c_shared_library():
