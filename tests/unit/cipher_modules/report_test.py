@@ -68,7 +68,6 @@ def test_save_as_DataFrame():
     trail = smt.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
 
     algebraic_results = speck.algebraic_tests(timeout=1)
-
     algebraic_report = Report(speck, algebraic_results)
     algebraic_report.save_as_DataFrame()
 
