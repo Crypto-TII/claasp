@@ -52,7 +52,7 @@ FANCY_EVALUATE_C_FILE = 'claasp/cipher_modules/fancy_block_cipher_p24_k24_o24_r2
 def test_algebraic_tests():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     d = speck.algebraic_tests(5)
-    assert d == {'input_parameters': {'timeout': 5}, 'test_results': {'number_of_variables': [304, 800],
+    assert d == {'input_parameters': {'timeout': 5, 'test_name': 'algebraic_tests'}, 'test_results': {'number_of_variables': [304, 800],
                                                                       'number_of_equations': [240, 688],
                                                                       'number_of_monomials': [304, 800],
                                                                       'max_degree_of_equations': [1, 1],
@@ -85,8 +85,7 @@ def test_analyze_cipher():
                                                "avalanche_entropy_criterion_threshold": 0.1},
                            "component_analysis_tests": {"run_tests": True}}
     analysis = sp.analyze_cipher(tests_configuration)
-    assert analysis["diffusion_tests"]["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][
-        "differences"][31]["output_vectors"][0]["vector"] == [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
+    assert analysis["diffusion_tests"]["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][31]["vectors"][0] == [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
 
 
 def test_avalanche_probability_vectors():
@@ -150,12 +149,12 @@ def test_continuous_diffusion_factor():
 def test_continuous_diffusion_tests():
     speck_cipher = SpeckBlockCipher(number_of_rounds=1)
     output = speck_cipher.continuous_diffusion_tests()
-    assert output['plaintext']['round_key_output']['continuous_neutrality_measure']['values'][0]['1'] == 0.0
+    assert output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure'][0]["values"][0] == 0.0
 
 
 def test_continuous_neutrality_measure_for_bit_j():
     output = SpeckBlockCipher(number_of_rounds=2).continuous_neutrality_measure_for_bit_j(50, 200)
-    assert output['plaintext']['cipher_output']['continuous_neutrality_measure']['values'][0]['2'] > 0
+    assert output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure'][0]["values"][0] > 0
 
 
 def test_delete_generated_evaluate_c_shared_library():
@@ -309,33 +308,35 @@ def test_generate_bit_based_c_code():
     assert '\tprintf("\\nROUND 0\\n\\n");\n' in bit_based_c_code
 
 
-def test_generate_csv_report():
-    tii_path = inspect.getfile(claasp)
-    tii_dir_path = os.path.dirname(tii_path)
-    identity = IdentityBlockCipher()
-    identity.generate_csv_report(10, f"{tii_dir_path}/{identity.id}_report.csv")
-    assert os.path.isfile(f"{tii_dir_path}/{identity.id}_report.csv")
+### Replaced by equivalent functions in Report class
 
-    os.remove(f"{tii_dir_path}/{identity.id}_report.csv")
+#def test_generate_csv_report():
+#    tii_path = inspect.getfile(claasp)
+#    tii_dir_path = os.path.dirname(tii_path)
+#    identity = IdentityBlockCipher()
+#    identity.generate_csv_report(10, f"{tii_dir_path}/{identity.id}_report.csv")
+#    assert os.path.isfile(f"{tii_dir_path}/{identity.id}_report.csv")
+
+#    os.remove(f"{tii_dir_path}/{identity.id}_report.csv")
 
 
-def test_generate_heatmap_graphs_for_avalanche_tests():
-    sp = SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=5)
-    d = sp.diffusion_tests(number_of_samples=100)
-    h = sp.generate_heatmap_graphs_for_avalanche_tests(d)
-    documentclass_pt_ = '\\documentclass[12pt]'
-    assert h[:20] == documentclass_pt_
-
-    ascon = AsconPermutation(number_of_rounds=4)
-    d = ascon.diffusion_tests(number_of_samples=100)
-    h = ascon.generate_heatmap_graphs_for_avalanche_tests(d, [0], ["avalanche_weight_vectors"])
-    assert h[:20] == documentclass_pt_
-
-    cipher = XoodooPermutation(number_of_rounds=4)
-    d = cipher.diffusion_tests(number_of_samples=100)
-    h = cipher.generate_heatmap_graphs_for_avalanche_tests(d, [1, 193], ["avalanche_dependence_vectors",
-                                                                         "avalanche_entropy_vectors"])
-    assert h[:20] == documentclass_pt_
+# def test_generate_heatmap_graphs_for_avalanche_tests():
+#     sp = SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=5)
+#     d = sp.diffusion_tests(number_of_samples=100)
+#     h = sp.generate_heatmap_graphs_for_avalanche_tests(d)
+#     documentclass_pt_ = '\\documentclass[12pt]'
+#     assert h[:20] == documentclass_pt_
+#
+#     ascon = AsconPermutation(number_of_rounds=4)
+#     d = ascon.diffusion_tests(number_of_samples=100)
+#     h = ascon.generate_heatmap_graphs_for_avalanche_tests(d, [0], ["avalanche_weight_vectors"])
+#     assert h[:20] == documentclass_pt_
+#
+#     cipher = XoodooPermutation(number_of_rounds=4)
+#     d = cipher.diffusion_tests(number_of_samples=100)
+#     h = cipher.generate_heatmap_graphs_for_avalanche_tests(d, [1, 193], ["avalanche_dependence_vectors",
+#                                                                          "avalanche_entropy_vectors"])
+#     assert h[:20] == documentclass_pt_
 
 
 def test_generate_word_based_c_code():

@@ -121,7 +121,7 @@ def test_find_one_xor_linear_trail_with_fixed_weight_with_external_solver():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     milp = MilpXorLinearModel(speck.remove_key_schedule())
     trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="glpk")
-    assert len(trail) == 9
+    assert len(trail) == 10
     assert trail["total_weight"] == 1.0
 
 
