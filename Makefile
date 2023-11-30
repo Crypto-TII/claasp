@@ -44,7 +44,7 @@ remote-pytest:
 	pytest -v -n=16 --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/
 
 pytest:
-	pytest -v -n=auto --dist loadfile tests/unit/
+	pytest -v -n=16 --dist loadfile tests/unit/
 
 pytest-coverage:
 	pytest -v -n=2 --dist loadfile --cov-report term-missing --cov=$(PACKAGE) tests/unit/
