@@ -22,6 +22,7 @@ def test_print_report():
     trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
     trail_report = Report(speck, trail)
     trail_report.print_report()
+
 def test_save_as_latex_table():
 
     simon = SimonBlockCipher(number_of_rounds=3)
