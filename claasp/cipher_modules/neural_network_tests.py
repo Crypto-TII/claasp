@@ -538,8 +538,8 @@ def evolutionary_algorithm(previous_generation, initial_population, number_of_ge
 def evaluate_multiple_differences(input_lengths, difference_positions, encrypt, candidate_differences, inputs0, c0,
                                   threshold):
     inputs1 = [None for _ in inputs0]
-    formatted_differences, number_of_differences = format_difference(input_lengths, difference_positions,
-                                                                     candidate_differences)
+    formatted_differences, number_of_differences = int_difference_to_np_uint8(input_lengths, difference_positions,
+                                                                              candidate_differences)
     for input_index in range(len(difference_positions)):
         difference_in_input = formatted_differences[input_index]
         if difference_positions[input_index]:
@@ -561,7 +561,6 @@ def evaluate_multiple_differences(input_lengths, difference_positions, encrypt, 
             break
 
     return scores, i
-
 
 def int_difference_to_input_differences(diff, difference_positions, input_bit_sizes):
     formated = []

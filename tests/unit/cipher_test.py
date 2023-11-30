@@ -137,19 +137,20 @@ def test_compute_criterion_from_avalanche_probability_vectors():
 def test_continuous_avalanche_factor():
     aes = AESBlockCipher(number_of_rounds=5)
     result = aes.continuous_avalanche_factor(0.001, 300)
-    assert result['plaintext']['cipher_output']['continuous_avalanche_factor']['values'][0]['value'] > 0.1
+    print(result)
+    assert result['plaintext']['cipher_output']['continuous_avalanche_factor']['values'][0] > 0.1
 
 
 def test_continuous_diffusion_factor():
     speck = SpeckBlockCipher(number_of_rounds=2)
     output = speck.continuous_diffusion_factor(5, 20)
-    assert output['plaintext']['cipher_output']['diffusion_factor']['values'][0]['2'] > 0
+    assert output['plaintext']['cipher_output']['diffusion_factor']['values'][0] > 0
 
 
 def test_continuous_diffusion_tests():
     speck_cipher = SpeckBlockCipher(number_of_rounds=1)
     output = speck_cipher.continuous_diffusion_tests()
-    assert output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure'][0]["values"][0] == 0.0
+    assert output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure']["values"][0] == 0.0
 
 
 def test_continuous_neutrality_measure_for_bit_j():
@@ -244,7 +245,8 @@ def test_find_good_input_difference_for_neural_distinguisher():
                                                                                       number_of_generations=5)
 
     assert str(type(diff)) == "<class 'numpy.ndarray'>"
-    # assert str(type(scores)) == "<class 'numpy.ndarray'>"
+    assert str(type(scores)) == "<class 'numpy.ndarray'>"
+
 
 
 def test_neural_staged_training():
