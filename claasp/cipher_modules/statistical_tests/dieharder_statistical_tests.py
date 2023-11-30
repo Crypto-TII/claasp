@@ -146,7 +146,7 @@ class DieharderTests:
         return report_dict
 
     @staticmethod
-    def generate_chart_round(report_dict):
+    def generate_chart_round(report_dict, output_dir=''):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -199,9 +199,10 @@ class DieharderTests:
             f'{report_dict["cipher_name"]}: {report_dict["data_type"]}, Round {report_dict["round"]}|{report_dict["rounds"]}')
         plt.xlabel('Tests')
         plt.yticks([-1, 0, 1], ['FAILED', 'WEAK', 'PASSED'])
-        chart_filename = f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
-        plt.savefig(chart_filename)
-        print(f'Drawing round {report_dict["round"]} is finished. Please find the chart in file {chart_filename}.')
+        if output_dir =='':
+            output_dir = f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
+        plt.savefig(output_dir)
+        print(f'Drawing round {report_dict["round"]} is finished. Please find the chart in file {output_dir}.')
 
     @staticmethod
     def generate_chart_all(report_dict_list):

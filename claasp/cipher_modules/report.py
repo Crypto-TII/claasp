@@ -4,81 +4,317 @@ from plotly.subplots import make_subplots
 from plotly import express as px
 import plotly.graph_objects as go
 import pandas as pd
+import json
+
+
+def _print_colored_state(state, verbose):
+    for line in state:
+        print('', end='')
+        for x in line:
+            print(f'{x} ', end='')
+
+        occ = [i for i in range(len(line)) if line[i] != '_']
+        if verbose:
+            print(f'\tactive words positions = {occ}')
+        else:
+            print()
+
+
+def _dict_to_latex_table(nested_dict, header_list):
+
+    num_columns = len(next(iter(nested_dict.values())))
+
+    latex_code = "\\begin{longtable}{|" + "c|" * (num_columns + 1) + "}\n"
+    latex_code += "\\hline\n"
+
+    # Add single column header
+    for i in range(len(header_list)):
+        if i == len(header_list)-1:
+            latex_code += header_list[i] + " "
+        else:
+            latex_code += header_list[i] + " & "
+
+    latex_code += "\\\\\n"
+    latex_code += "\\hline\n"
+
+    # Add data rows
+    line_count = 0
+    for subdict_label, subdict_values in nested_dict.items():
+        row = f"{subdict_label} & " + " & ".join(map(str, subdict_values.values())) + " \\\\\n"
+        latex_code += row
+        latex_code += "\\hline\n"
+        line_count += 1
+
+        # Break to the next page after the specified number of lines
+        if line_count == 35:
+            latex_code += "\\end{longtable}\n\n"  # End the current longtable
+            latex_code += "\\newpage\n\n"
+            latex_code += "\\begin{longtable}{|" + "c|" * (num_columns + 1) + "}\n"  # Start a new longtable
+            latex_code += "\\hline\n"
+            for i in range(len(header_list)):
+                if i == len(header_list) - 1:
+                    latex_code += header_list[i] + " "
+                else:
+                    latex_code += header_list[i] + " & "
+            latex_code += " \\\\\n"
+            latex_code += "\\hline\n"
+            line_count = 0  # Reset line count for the new page
+
+    latex_code += "\\end{longtable}"
+    return latex_code
+
+
+
+
+def _latex_heatmap(table, table_string, bit_count):
+    table_string += "\hspace*{-4cm}\n\\begin{tikzpicture}[scale=1.1]\n\t\\foreach \y [count=\\n] in {\n\t\t"
+    for round in table:
+        table_string += "{"
+        for i in range(len(round)):
+            if i == len(round) - 1:
+                table_string += str("{:.3f}".format(round[i]))
+            else:
+                table_string += str("{:.3f}".format(round[i])) + ","
+        table_string += "},\n\t\t"
+    table_string += ("} {\n\t%heatmap tiles\n\t\\foreach\\x [count=\m] in \\y {\n\t\t\pgfmathsetmacro{"
+                     "\\colorgradient}{\\x * 100}\n\t\t\\node[fill=green!\\colorgradient!red, minimum size=6mm, "
+                     "text=white] at (\m,-\\n*0.6) {\\x};\n\t}\n\t}\n\t\t%rowlabels\n\\foreach \\a [count=\i] in {")
+    for i in range(len(table)):
+        if i != len(table) - 1:
+            table_string += "round" + str(i + 1) + ","
+        else:
+            table_string += "round" + str(i + 1) + "} {\n\t"
+
+    table_string += "\\node[minimum size=6mm] at (0,-\i*0.6) {\\a};}\n\t\t%column labels\n\t \\foreach \\a [count=\i] in {"
+    for i in range(bit_count[0], bit_count[1]):
+        if i != bit_count[1] - 1:
+            table_string += "bit" + str(i) + ","
+        else:
+            table_string += "bit" + str(i) + "} {\n\t"
+    table_string += "\\node[minimum size=6mm] at (\i,0) {\\a};}\n\end{tikzpicture}\\newline\\newline\n"
+    return table_string
 
 
 class Report:
 
     def __init__(self, cipher, test_report):
 
-        ########
-        ########
-
         self.cipher = cipher
         self.test_report = test_report
 
-        self.test_name = test_report['test_name'] if type(test_report) is dict else test_report[0]['test_name']
-
         try:
             self.input_parameters = test_report['input_parameters']
-            self.test_results = test_report['test_results']
+            self.test_name = test_report['input_parameters']['test_name']
 
         except KeyError:
             self.input_parameters = {}
-            self.test_results = test_report
+            self.test_name = test_report['test_name'] if type(test_report) is dict else test_report[0]['test_name']
 
-    def print_colored_state(self, state, verbose):
-        for line in state:
-            print('', end='')
-            for x in line:
-                print(f'{x} ', end='')
+    def _export(self, file_format, output_dir):
 
-            occ = [i for i in range(len(line)) if line[i] != '_']
-            if verbose:
-                print(f'\tactive words positions = {occ}')
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
-    def print_trail(self):
+        if 'trail' in self.test_name or 'algebraic' in self.test_name:
 
+            if not os.path.exists(output_dir + '/' + self.cipher.id):
+                os.makedirs(output_dir + '/' + self.cipher.id)
+
+            if 'trail' in self.test_name:
+                if not os.path.exists(output_dir + '/' + self.cipher.id + '/trail_search_results'):
+                    os.makedirs(output_dir + '/' + self.cipher.id + '/trail_search_results')
+
+                path = output_dir + '/' + self.cipher.id + '/trail_search_results'
+
+            else:
+                path = output_dir + '/' + self.cipher.id + '/' + self.test_name
+
+            if file_format == '.csv':
+
+                df = pd.DataFrame.from_dict(self.test_report["components_values" if 'trail' in self.test_name else "test_results"])
+                df.to_csv(path + '/' + self.test_name + file_format)
+
+            elif file_format == '.json':
+                with open(path + '/' + self.test_name + file_format, 'w') as fp:
+                    json.dump(self.test_report["components_values" if 'trail' in self.test_name else "test_results"], fp, default=lambda x: float(x))
+
+            elif file_format == '.tex':
+
+                if 'algebraic' in self.test_name:
+                    with open(path + '/' + self.test_name + '.tex', "w") as f:
+                        f.write(pd.DataFrame(self.test_report["test_results"]).style.to_latex())
+                else:
+                    headers = ["components_ids", "value", "weight", "sign"]
+                    with open(path + '/' + self.test_name + '.tex', "w") as f:
+                        f.write(_dict_to_latex_table(self.test_report["components_values" if 'trail' in self.test_name else "test_results"], header_list=headers).replace('_','\_'))
+
+        else:
+
+            if not os.path.exists(output_dir + '/' + self.cipher.id):
+                os.makedirs(output_dir + '/' + self.cipher.id)
+
+            for it in self.test_report["test_results"].keys():
+                if not os.path.exists(output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
+                    "test_name"] + '_tables/' + it):
+                    os.makedirs(output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
+                        "test_name"] + '_tables/' + it)
+
+                for out in self.test_report["test_results"][it].keys():
+
+                    if not os.path.exists(
+                            output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
+                                "test_name"] + '_tables/' + it + '/' + out):
+                        os.makedirs(output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
+                            "test_name"] + '_tables/' + it + '/' + out)
+
+                    for test in self.test_report["test_results"][it][out].keys():
+
+                        if not os.path.exists(
+                                output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
+                                    "test_name"] + '_tables/' + it + '/' + out + '/' + test):
+                            os.makedirs(output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
+                                "test_name"] + '_tables/' + it + '/' + out + '/' + test)
+
+                        for result in self.test_report["test_results"][it][out][test]:
+                            path = output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
+                                "test_name"] + '_tables/' + it + '/' + out + '/' + test
+
+                            res_key = [x for x in result.keys() if x in ['values', 'vectors', 'accuracies']][0]
+
+                            if file_format == '.csv':
+
+                                elastic_dict = {}
+                                rounds = []
+                                if isinstance(result[res_key][0], list):
+                                    for i in range(len(result[res_key])):
+                                        rounds += ['round' + str(i)] * len(result[res_key][0])
+
+                                    bits = ['bit' + str(i) for i in range(len(result[res_key][0]))]
+                                    bits *= len(result[res_key])
+                                    elastic_dict["Bits"] = bits
+                                    elastic_dict["value"] = []
+                                    for round_num in result[res_key]:
+                                        for bit_value in round_num:
+                                            elastic_dict["value"].append(bit_value)
+
+                                    diff = str(result["input_difference_value"])
+
+                                else:
+
+                                    rounds = ['rounds' + str(i) for i in range(len(result[res_key]))]
+                                    elastic_dict["value"] = result[res_key]
+                                    diff = test
+                                elastic_dict["Rounds"] = rounds
+                                df = pd.DataFrame(elastic_dict)
+
+                                df.to_csv(path + '/' + diff + file_format)
+
+                            elif file_format == '.json':
+                                elastic_dict = {}
+                                rounds = []
+                                if isinstance(result[res_key][0], list):
+                                    for i in range(len(result[res_key])):
+                                        rounds += ['round' + str(i)] * len(result[res_key][0])
+
+                                    bits = ['bit' + str(i) for i in range(len(result[res_key][0]))]
+                                    bits *= len(result[res_key])
+                                    elastic_dict["Bits"] = bits
+                                    elastic_dict["value"] = []
+                                    for round_num in result[res_key]:
+                                        for bit_value in round_num:
+                                            elastic_dict["value"].append(bit_value)
+
+                                    diff = str(result["input_difference_value"])
+
+
+
+                                else:
+
+                                    rounds = ['rounds' + str(i) for i in range(len(result[res_key]))]
+                                    elastic_dict["value"] = result[res_key]
+                                    diff = test
+                                elastic_dict["Rounds"] = rounds
+
+                                with open(path + '/' + diff + file_format, 'w') as fp:
+                                    json.dump(elastic_dict, fp, default=lambda x: float(x))
+
+                            elif file_format == '.tex':
+
+                                if not isinstance(result[res_key][0], list):
+                                    with open(path + '/' + self.test_name + '.tex', "w") as f:
+                                        f.write(pd.DataFrame(result).style.to_latex().replace('_', '\_'))
+
+                                else:
+                                    table = result[res_key]
+                                    table_count = ceil(len(table[0]) / 16)
+                                    table_string = "\\begin{figure}[h]\n"
+                                    for i in range(table_count):
+                                        table_split = [bits[i * 16:(i + 1) * 16] for bits in table]
+                                        bit_count = (i * 16, (i + 1) * 16)
+                                        table_string = _latex_heatmap(table_split, table_string, bit_count)
+
+                                    table_string += "\caption{" + self.test_name.replace("_",
+                                                                                         "\_") + "\_" + it + "\_" + out.replace(
+                                        "_", "\_") + "\_" + test.replace("_", "\_") + "\_" + result[
+                                                        "input_difference_value"] + ("}"
+                                                                                     "\label{fig:" + self.test_name.replace(
+                                        "_", "\_") + "\_" + it + "\_" + out.replace("_", "\_") + "\_" + test.replace("_",
+                                                                                                                     "\_") + "\_" +
+                                                                                     result[
+                                                                                         "input_difference_value"] + "}\n")
+                                    table_string += "\end{figure}"
+                                    with open(path + '/' + str(result["input_difference_value"]) + file_format, 'w') as fp:
+                                        fp.write(table_string)
+
+        print("Report saved in " + output_dir + '/' + self.cipher.id)
+
+    def save_as_DataFrame(self, output_dir=os.getcwd() + '/test_reports'):
+        self._export(file_format='.csv', output_dir=output_dir)
+
+    def save_as_latex_table(self, output_dir=os.getcwd() + '/test_reports'):
+        self._export(file_format='.tex', output_dir=output_dir)
+
+    def save_as_json(self, output_dir=os.getcwd() + '/test_reports'):
+        self._export(file_format='.json', output_dir=output_dir)
+
+    def _print_trail(self, word_size, state_size, key_state_size, verbose, show_word_permutation,
+                     show_var_shift, show_var_rotate, show_theta_xoodoo,
+                     show_theta_keccak, show_shift_rows, show_sigma, show_reverse,
+                     show_permuation, show_multi_input_non_linear_logical_operator,
+                     show_modular, show_modsub,
+                     show_constant, show_rot, show_sbox, show_mix_column,
+                     show_shift, show_linear_layer, show_xor, show_modadd,
+                     show_and,
+                     show_or, show_not, show_plaintext, show_key,
+                     show_intermediate_output, show_cipher_output):
+
+        input_comps = list(locals().keys())
         component_types = []
 
-        for comp in list(self.test_results['components_values'].keys()):
-            if comp.split('_')[0] not in component_types + ['intermediate', 'cipher']:
-                component_types.append(comp.split('_')[0])
+        for comp in list(self.test_report['components_values'].keys()):
+            if (comp == 'key' or comp == 'plaintext') and comp not in component_types:
+                component_types.append(comp)
+            elif '_'.join(comp.split('_')[:-2]) not in component_types:
+                component_types.append('_'.join(comp.split('_')[:-2]))
 
-        comp_choice = {'intermediate': 1, 'cipher': 1}
+        show_components = {}
 
-        for C in component_types:
-            choice = input("do you want to visualize " + C + " components? (y/n)\n\n")
-            while choice not in ['y', 'n']:
-                choice = input("Error. Only answer using y (yes) or n (no)")
-            comp_choice[C] = 1 if choice == 'y' else 0
+        for comp in component_types:
+            for comp_choice in input_comps:
+                if 'show_' + comp == comp_choice:
+                    show_components[comp] = locals()[comp_choice]
 
-        verbose_choice = input("Do you want a verbose output? (y or n)")
-        while verbose_choice not in ['y', 'n']:
-            verbose_choice = input("Answer with y or n")
-        verbose = 1 if verbose_choice == 'y' else 0
         out_list = {}
 
         key_flow = ['key']
 
         abs_prob = 0
 
-        word_size = int(input("Choose a word size for the cipher\n"))
-        while self.cipher.output_bit_size % word_size != 0:
-            word_size = int(input('Choose a valid word_size\n\n'))
-
-        state_size = int(input("Choose the cipher matrix's number of rows\n"))
-        while (self.cipher.output_bit_size // word_size) % state_size != 0:
-            state_size = int(input('Choose a valid number\n\n'))
-
-        key_state_size = int(input("Choose the key flow's matrix number of rows\n"))
-        while (self.cipher.output_bit_size // word_size) % state_size != 0:
-            key_state_size = int(input('Choose a valid number\n\n'))
-
         word_denominator = '1' if word_size == 1 else 'A'
 
-        for comp_id in self.test_results['components_values'].keys():
+        for comp_id in self.test_report['components_values'].keys():
 
-            rel_prob = self.test_results['components_values'][comp_id]['weight']
+            rel_prob = self.test_report['components_values'][comp_id]['weight']
             abs_prob += rel_prob
 
             # Check input links
@@ -90,9 +326,10 @@ class Report:
                     key_flow.append(comp_id)
                     key_flow = key_flow + [constant_id for constant_id in input_links if 'constant' in constant_id]
 
-            if comp_choice[comp_id.split('_')[0]]:
+            if show_components['_'.join(comp_id.split('_')[:-2]) if comp_id not in ['plaintext', 'key', 'cipher_output',
+                                                                                    'intermediate_output'] else comp_id]:
 
-                value = self.test_results['components_values'][comp_id]['value']
+                value = self.test_report['components_values'][comp_id]['value']
 
                 bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value)))
 
@@ -107,7 +344,6 @@ class Report:
 
                 else:
                     size = (1, len(word_list))
-
                 out_format = [[] for _ in range(size[0])]
                 for i in range(size[0]):
                     for j in range(size[1]):
@@ -117,20 +353,19 @@ class Report:
                             out_format[i].append(word_list[j + i * size[1]])
                 out_list[comp_id] = (out_format, rel_prob, abs_prob)
 
-        ##Check KeyFlow
-
         for comp_id in out_list.keys():
             if comp_id not in key_flow:
                 if comp_id == 'plaintext' or comp_id == 'key':
-                    print(f' \t{comp_id}')
+                    print(f'\t{comp_id}\t')
                 else:
                     if verbose:
                         print(
-                            f' \t{comp_id}\tInput Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
+                            f' \t{comp_id}        Input Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
                     else:
                         print(f' \t{comp_id}\t')
-                self.print_colored_state(out_list[comp_id][0], verbose)
-                if verbose: print('\tlocal weight = ' + str(out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
+                _print_colored_state(out_list[comp_id][0], verbose)
+                if verbose: print('  ' * len(out_list[comp_id][0][0]) + '\tlocal weight = ' + str(
+                    out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
                     out_list[comp_id][2]))
                 print()
         print()
@@ -139,98 +374,153 @@ class Report:
 
         for comp_id in key_flow:
 
-            if comp_choice[comp_id.split('_')[0]]:
+            if show_components['_'.join(comp_id.split('_')[:-2]) if comp_id not in ['plaintext', 'key', 'cipher_output',
+                                                                                    'intermediate_output'] else comp_id]:
                 if comp_id == 'plaintext' or comp_id == 'key':
-                    print(f' \t{comp_id}')
+                    print(f'\t{comp_id}\t')
                 else:
                     if verbose:
                         print(
-                            f' \t{comp_id}\tInput Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
+                            f' \t{comp_id}       Input Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
                     else:
                         print(f' \t{comp_id}\t')
-                self.print_colored_state(out_list[comp_id][0], verbose)
-                if verbose: print(' \tlocal weight = ' + str(out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
+                _print_colored_state(out_list[comp_id][0], verbose)
+                if verbose: print('  ' * len(out_list[comp_id][0][0]) + '\tlocal weight = ' + str(
+                    out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
                     out_list[comp_id][2]))
                 print()
 
-    def produce_graph(self):
-        inputs = list(self.test_results.keys())
+    def _produce_graph(self, output_directory):
 
-        for it in inputs:
-            if not os.path.exists(self.cipher.id + "_results/" + self.test_name + '/' + it):
-                os.mkdir(self.cipher.id + "_results/" + self.test_name + '/' + it)
-            outputs = list(self.test_results[it].keys())
-            for out in outputs:
-                if out == 'cipher_output':
-                    continue
-                if not os.path.exists(self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out):
-                    os.mkdir(self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out)
+        if 'statistical' in self.test_name:
+            printable_dict = self.test_report
+            printable_dict['data_type'] = 'random'
+            printable_dict['cipher_name'] = self.cipher.family_name
+            printable_dict['round'] = 1
+            printable_dict['rounds'] = 1
+            if 'dieharder' in self.test_name:
+                from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+                DieharderTests.generate_chart_round(printable_dict,
+                                                    output_directory + output_directory + '/' + self.cipher.id + '/' + 'dieharder_statistical_test.png')
+            elif 'nist' in self.test_name:
+                from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+                StatisticalTests.generate_chart_round(printable_dict,
+                                                      output_directory + output_directory + '/' + self.cipher.id + '/' + 'nist_statistical_test.png')
 
-                results = list(self.test_results[it][out].keys())
+        elif 'algebraic' in self.test_name:
+            print(self.test_report)
+        else:
 
-                for res in results:
+            inputs = list(self.test_report['test_results'].keys())
+            for it in inputs:
+                if not os.path.exists(
+                        output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it):
+                    os.mkdir(output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it)
+                outputs = list(self.test_report['test_results'][it].keys())
+                for out in outputs:
+                    if out == 'cipher_output':
+                        continue
                     if not os.path.exists(
-                            self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out + '/' + res):
-                        os.mkdir(self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out + '/' + res)
+                            output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it + '/' + out):
+                        os.mkdir(
+                            output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it + '/' + out)
 
-                    ### Make Graphs
+                    results = list(self.test_report['test_results'][it][out].keys())
 
-                    data = self.test_results[it][out][res]
+                    for res in results:
+                        if not os.path.exists(output_directory + '/' +
+                                              self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res):
+                            os.mkdir(
+                                output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res)
 
-                    for case in list(data):
-                        res_key = [x for x in case.keys() if x in ['values', 'vectors', 'accuracies']][0]
+                        ### Make Graphs
 
-                        graph_data = {}
-                        for i in range(len(case[res_key])):
-                            graph_data[i + 1] = [case[res_key][i]] if type(case[res_key][i]) != list else case[res_key][
-                                i]
+                        data = self.test_report['test_results'][it][out][res]
 
-                        df = pd.DataFrame.from_dict(graph_data).T
+                        for case in list(data):
+                            res_key = [x for x in case.keys() if x in ['values', 'vectors', 'accuracies']][0]
 
-                        if len(graph_data[1]) > 1:
-                            num_subplots = int(ceil(self.cipher.output_bit_size / 32))
-                            fig = make_subplots(num_subplots, 1, vertical_spacing=0.08)
-                            for i in range(num_subplots):
-                                z_data = [x[32 * i: min(len(x), 32 * (i + 1))] for x in list(graph_data.values())]
-                                fig.add_trace(go.Heatmap(z=z_data, coloraxis='coloraxis', texttemplate="%{text}",
-                                                         text=[[str(round(y, 3)) for y in x] for x in z_data], xgap=3,
-                                                         ygap=3, zmin=0, zmid=0.5, zmax=1), i + 1, 1)
+                            graph_data = {}
+                            for i in range(len(case[res_key])):
+                                graph_data[i + 1] = [case[res_key][i]] if type(case[res_key][i]) != list else \
+                                    case[res_key][i]
+
+                            df = pd.DataFrame.from_dict(graph_data).T
+                            if len(graph_data[1]) > 1:
+                                num_subplots = int(ceil(len(graph_data[1]) / 32))
+                                fig = make_subplots(num_subplots, 1, vertical_spacing=0.08)
                                 fig.update_layout({
-                                    'xaxis' + str(i + 1): {'nticks': 33, 'tickfont': {'size': 8}},
-                                    'yaxis' + str(i + 1): {'nticks': 1 + len(list(graph_data)), 'tickfont': {'size': 8}}
-                                })
-                            fig.update_coloraxes(colorscale='rdylgn')
-                            fig.write_image(
-                                self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out + '/' + res + '/' + str(
+                                    'coloraxis': {'colorscale': 'rdylgn',
+                                                  'cmin': 0,
+                                                  'cmax': 1}})
+                                for i in range(num_subplots):
+                                    z_data = [x[32 * i: min(len(x), 32 * (i + 1))] for x in list(graph_data.values())]
+                                    fig.add_trace(go.Heatmap(z=z_data, coloraxis='coloraxis', texttemplate="%{text}",
+                                                             text=[['{:.3f}'.format(float(y)) for y in x] for x in
+                                                                   z_data],
+                                                             x=list(range(i * 32, 32 * (i + 1))),
+                                                             y=list(range(self.cipher.number_of_rounds - 1)), zmin=0,
+                                                             zmax=1, zauto=False),
+                                                  i + 1, 1)
+                                    fig.update_layout({
+                                        'font': {'size': 8 * 2 / num_subplots},
+                                        'xaxis' + str(i + 1): {'tick0': 0, 'dtick': 1, 'nticks': len(z_data),
+                                                               'tickfont': {'size': 8}},
+                                        'yaxis' + str(i + 1): {'tick0': 0, 'dtick': 1,
+                                                               'tickfont': {'size': 8}, 'autorange': 'reversed'}
+                                    })
+                                fig.write_image(output_directory + '/' +
+                                                self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res + '/' + str(
                                     res) + '_' + str(case['input_difference_value']) + '.png', scale=4)
-                            fig.data = []
-                            fig.layout = {}
+                                fig.data = []
+                                fig.layout = {}
 
-                        else:
+                            else:
 
-                            fig = px.line(df, range_x=[1, self.cipher.number_of_rounds],
-                                          range_y=[min(df[0]) - 1, max(df[0]) + 1])
-                            fig.update_layout(xaxis_title="number_of_rounds", yaxis_title="test_result")
-                            fig.write_image(
-                                self.cipher.id + "_results/" + self.test_name + '/' + it + '/' + out + '/' + res +
-                                '/' + str(res) + '.png',
-                                scale=4)
+                                fig = px.line(df, range_x=[0, self.cipher.number_of_rounds - 1],
+                                              range_y=[min(df[0]) - 1, max(df[0]) + 1])
+                                fig.update_layout(xaxis_title="number_of_rounds", yaxis_title="test_result",
+                                                  showlegend=False)
+                                fig.write_image(output_directory + '/' +
+                                                self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res +
+                                                '/' + str(res) + '.png',
+                                                scale=4)
 
-                            fig.data = []
-                            fig.layout = {}
+                                fig.data = []
+                                fig.layout = {}
 
-    def analyze_report(self):
+        print("Results saved in " + output_directory)
 
-        if not os.path.exists(os.getcwd() + '/Graph_Results'):
-            os.mkdir(os.getcwd() + '/Graph_Results')
+    def print_report(self, word_size=1, state_size=1, key_state_size=1, output_directory=os.getcwd() + '/test_reports',
+                     verbose=False, show_word_permutation=False,
+                     show_var_shift=False, show_var_rotate=False, show_theta_xoodoo=False,
+                     show_theta_keccak=False, show_shift_rows=False, show_sigma=False, show_reverse=False,
+                     show_permuation=False, show_multi_input_non_linear_logical_operator=False,
+                     show_modular=False, show_modsub=False,
+                     show_constant=False, show_rot=False, show_sbox=False, show_mix_column=False,
+                     show_shift=False, show_linear_layer=False, show_xor=False, show_modadd=False,
+                     show_and=False,
+                     show_or=False, show_not=False, show_plaintext=True, show_key=True,
+                     show_intermediate_output=True, show_cipher_output=True):
 
-        if not os.path.exists(os.getcwd() + '/Graph_Results/' + self.cipher.id):
-            os.mkdir(os.getcwd() + '/Graph_Results/' + self.cipher.id)
+        if 'trail' in self.test_name:
+            self._print_trail(word_size, state_size, key_state_size, verbose, show_word_permutation,
+                              show_var_shift, show_var_rotate, show_theta_xoodoo,
+                              show_theta_keccak, show_shift_rows, show_sigma, show_reverse,
+                              show_permuation, show_multi_input_non_linear_logical_operator,
+                              show_modular, show_modsub,
+                              show_constant, show_rot, show_sbox, show_mix_column,
+                              show_shift, show_linear_layer, show_xor, show_modadd,
+                              show_and,
+                              show_or, show_not, show_plaintext, show_key,
+                              show_intermediate_output, show_cipher_output)
+        else:
+            if not os.path.exists(output_directory):
+                os.mkdir(output_directory)
 
-        if not os.path.exists(os.getcwd() + '/Graph_Results/' + self.cipher.id + '/' + self.test_name):
-            os.mkdir(os.getcwd() + '/Graph_Results/' + self.cipher.id + '/' + self.test_name)
+            if not os.path.exists(output_directory + '/' + self.cipher.id):
+                os.mkdir(output_directory + '/' + self.cipher.id)
 
-        try:
-            self.print_trail()
-        except KeyError:
-            self.produce_graph()
+            if not os.path.exists(output_directory + '/' + self.cipher.id + '/' + self.test_name):
+                os.mkdir(output_directory + '/' + self.cipher.id + '/' + self.test_name)
+            self._produce_graph(output_directory)

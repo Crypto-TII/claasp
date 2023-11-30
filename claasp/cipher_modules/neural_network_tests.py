@@ -89,10 +89,9 @@ def update_partial_result(cipher, component_output_ids, ds, index, test_name, la
             tmp_dict["component_ids"].append(component_output_ids[k][i])
 
         if blackbox == False:
-            tmp_dict["input_difference"] = hex(diff)
+            tmp_dict["input_difference_value"] = hex(diff)
         partial_result[k][test_name].append(tmp_dict)
 
-        # print(partial_result)
 
 
 def update_blackbox_distinguisher_tests_ds(base_inputs, base_output, cipher, ds, index, labels, nb_samples):
@@ -206,7 +205,6 @@ def neural_network_differential_distinguisher_tests(cipher, nb_samples=10000, hi
             update_distinguisher_vectorized_tests_ds(base_inputs, cipher, d, ds, index, labels, nb_samples)
             update_partial_result(cipher, component_output_ids, ds, index, test_name, labels,
                                   number_of_epochs, partial_result, d, blackbox=False, rounds_to_train=rounds_to_train)
-            # print(result_list)
         results["test_results"][it] = partial_result
 
     return results

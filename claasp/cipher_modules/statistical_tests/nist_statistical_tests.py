@@ -224,7 +224,7 @@ class StatisticalTests:
         return report_dict
 
     @staticmethod
-    def generate_chart_round(report_dict, report_folder=""):
+    def generate_chart_round(report_dict, output_dir=''):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -271,8 +271,9 @@ class StatisticalTests:
         plt.title(f'{report_dict["cipher_name"]}:{report_dict["data_type"]}, Round " {report_dict["round"]}|{report_dict["rounds"]}')
         plt.xlabel('Test ID')
         plt.ylabel('Passing Rate')
-        chart_filename = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
-        plt.savefig(os.path.join(report_folder, chart_filename))
+        if output_dir == '':
+            output_dir = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
+        plt.savefig(output_dir)
         print(f'Drawing round {report_dict["round"]} is finished.')
 
     @staticmethod
