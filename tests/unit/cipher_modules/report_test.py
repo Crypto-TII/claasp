@@ -53,7 +53,6 @@ def test_save_as_latex_table():
 
 
 def test_save_as_DataFrame():
-
     speck = SpeckBlockCipher(number_of_rounds=4)
     smt = SmtXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
