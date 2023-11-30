@@ -46,9 +46,7 @@ def test_save_as_latex_table():
     avalanche_report.save_as_latex_table()
 
     trail_report = Report(simon, trail)
-
     trail_report.save_as_latex_table()
-
 
 
 def test_save_as_DataFrame():
