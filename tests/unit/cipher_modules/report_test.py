@@ -4,6 +4,8 @@ from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.report import Report
+from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
 
 def test_print_report():
 
@@ -23,6 +25,20 @@ def test_print_report():
     trail_report = Report(speck, trail)
     trail_report.print_report()
 
+
+    #### Adding tests for code coverage, currently not accurate as the statistical tests are not actually performed on Speck
+    nist_result = StatisticalTests.run_nist_statistical_tests_tool_interactively(f'claasp/cipher_modules/statistical_tests/input_data_example',
+10000, 10, 1)
+    dieharder_result = DieharderTests.run_dieharder_statistical_tests_tool_interactively( f'claasp/cipher_modules/statistical_tests/input_data_example')
+
+    parsed_result_nist = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
+    parsed_result_dieharder = DieharderTests.parse_report(f'dieharder_test_output.txt')
+
+    nist_report = Report(speck, parsed_result_nist)
+    dieharder_report = Report(speck, parsed_result_dieharder)
+
+    nist_report.print_report()
+    dieharder_report.print_report()
 def test_save_as_latex_table():
 
     simon = SimonBlockCipher(number_of_rounds=3)
