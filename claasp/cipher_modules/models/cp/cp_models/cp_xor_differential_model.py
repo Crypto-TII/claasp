@@ -19,7 +19,6 @@
 
 import math
 import time as tm
-
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.models.cp.cp_model import CpModel, solve_satisfy
@@ -247,7 +246,7 @@ class CpXorDifferentialModel(CpModel):
         solutions = self.solve(XOR_DIFFERENTIAL, solver_name)
         for solution in solutions:
             solution['building_time_seconds'] = build_time
-
+            solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
         return solutions
 
     def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight=64, fixed_values=[],
@@ -294,6 +293,7 @@ class CpXorDifferentialModel(CpModel):
         solutions = self.solve(XOR_DIFFERENTIAL, solver_name)
         for solution in solutions:
             solution['building_time_seconds'] = build_time
+            solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
 
         return solutions
 
@@ -354,6 +354,7 @@ class CpXorDifferentialModel(CpModel):
         build_time = end - start
         solution = self.solve('xor_differential_one_solution', solver_name)
         solution['building_time_seconds'] = build_time
+        solution['test_name'] = "find_lowest_weight_xor_differential_trail"
 
         return solution
 
@@ -396,7 +397,7 @@ class CpXorDifferentialModel(CpModel):
         build_time = end - start
         solution = self.solve('xor_differential_one_solution', solver_name)
         solution['building_time_seconds'] = build_time
-
+        solution['test_name'] = "find_one_xor_differential_trail"
         return solution
 
     def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[],
@@ -440,6 +441,7 @@ class CpXorDifferentialModel(CpModel):
         build_time = end - start
         solution = self.solve('xor_differential_one_solution', solver_name)
         solution['building_time_seconds'] = build_time
+        solution['test_name'] = "find_one_xor_differential_trail_with_fixed_weight"
 
         return solution
 

@@ -241,7 +241,7 @@ class CpXorLinearModel(CpModel):
         solutions = self.solve(XOR_LINEAR, solver_name)
         for solution in solutions:
             solution['building_time_seconds'] = build_time
-
+            solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
         return solutions
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight=64,
@@ -281,6 +281,7 @@ class CpXorLinearModel(CpModel):
         solutions = self.solve(XOR_LINEAR, solver_name)
         for solution in solutions:
             solution['building_time_seconds'] = build_time
+            solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
 
         return solutions
 
@@ -326,6 +327,7 @@ class CpXorLinearModel(CpModel):
         build_time = end - start
         solution = self.solve('xor_linear_one_solution', solver_name)
         solution['building_time_seconds'] = build_time
+        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
@@ -367,6 +369,7 @@ class CpXorLinearModel(CpModel):
         build_time = end - start
         solution = self.solve('xor_linear_one_solution', solver_name)
         solution['building_time_seconds'] = build_time
+        solution['test_name'] = "find_one_xor_linear_trail"
 
         return solution
 
@@ -407,6 +410,7 @@ class CpXorLinearModel(CpModel):
         build_time = end - start
         solution = self.solve('xor_linear_one_solution', solver_name)
         solution['building_time_seconds'] = build_time
+        solution['test_name'] = "find_one_xor_linear_trail_with_fixed_weight"
 
         return solution
 

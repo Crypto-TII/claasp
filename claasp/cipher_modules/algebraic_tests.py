@@ -20,7 +20,7 @@
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
 
-def algebraic_tests(cipher, timeout):
+def algebraic_tests(cipher, timeout=60):
     from sage.structure.sequence import Sequence
     nvars_up_to_round = []
 
@@ -56,7 +56,8 @@ def algebraic_tests(cipher, timeout):
             tests_up_to_round.append(result)
 
     input_parameters = {
-        "timeout": timeout
+        "timeout": timeout,
+        "test_name": "algebraic_tests"
     }
 
     test_results = {
