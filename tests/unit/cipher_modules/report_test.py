@@ -35,7 +35,7 @@ def test_print_report():
     blackbox_report = Report(speck,blackbox_results)
     blackbox_report.print_report()
 
-    algebraic_results = speck.algebraic_tests()
+    algebraic_results = speck.algebraic_tests(timeout=1)
     algebraic_report = Report(speck, algebraic_results)
     algebraic_report.print_report()
 
@@ -68,7 +68,6 @@ def test_save_as_latex_table():
     avalanche_report = Report(simon, avalanche_test_results)
     avalanche_report.save_as_latex_table()
 
-
     trail_report = Report(simon, trail)
     trail_report.save_as_latex_table()
 
@@ -91,7 +90,6 @@ def test_save_as_DataFrame():
     algebraic_results = speck.algebraic_tests(timeout=1)
     algebraic_report = Report(speck, algebraic_results)
     algebraic_report.save_as_DataFrame()
-
 
     trail_report = Report(speck, trail)
     trail_report.save_as_DataFrame()
@@ -117,7 +115,6 @@ def test_save_as_json():
     trail = milp.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
 
     trail_report = Report(simon, trail)
-
 
     algebraic_results = simon.algebraic_tests(timeout=1)
     algebraic_report = Report(simon, algebraic_results)
