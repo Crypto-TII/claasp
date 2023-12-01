@@ -27,22 +27,25 @@ def test_print_report():
     trail_report = Report(speck, trail)
     trail_report.print_report()
 
+    avalanche_results = speck.diffusion_tests()
+    avalanche_report = Report(speck, avalanche_results)
+    avalanche_report.print_report()
+
+    blackbox_results = speck.neural_network_blackbox_distinguisher_tests()
+    blackbox_report = Report(speck,blackbox_results)
+    blackbox_report.print_report()
+
+    algebraic_results = speck.algebraic_tests()
+    algebraic_report = Report(speck, algebraic_results)
+    algebraic_report.print_report()
 
     #### Adding tests for code coverage, currently not accurate as the statistical tests are not actually performed on Speck
     nist_result = StatisticalTests.run_nist_statistical_tests_tool_interactively(f'claasp/cipher_modules/statistical_tests/input_data_example',
 10000, 10, 1)
-    dieharder_result = DieharderTests.run_dieharder_statistical_tests_tool_interactively( f'claasp/cipher_modules/statistical_tests/input_data_example')
-
     parsed_result_nist = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
-    parsed_result_dieharder = DieharderTests.parse_report(f'dieharder_test_output.txt')
-
     nist_report = Report(speck, parsed_result_nist)
-    dieharder_report = Report(speck, parsed_result_dieharder)
-
-
-
     nist_report.print_report()
-    dieharder_report.print_report()
+
 def test_save_as_latex_table():
 
     simon = SimonBlockCipher(number_of_rounds=2)
