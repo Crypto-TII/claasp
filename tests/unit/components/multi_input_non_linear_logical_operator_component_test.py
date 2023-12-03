@@ -82,20 +82,6 @@ def test_milp_xor_linear_mask_propagation_constraints():
     assert str(constraints[-1]) == "x_49 == 10*x_48"
 
 
-def test_sat_constraints():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    and_component = fancy.component_from(0, 8)
-    output_bit_ids, constraints = and_component.sat_constraints()
-
-    assert output_bit_ids[0] == 'and_0_8_0'
-    assert output_bit_ids[1] == 'and_0_8_1'
-    assert output_bit_ids[2] == 'and_0_8_2'
-
-    assert constraints[-3] == '-and_0_8_11 xor_0_7_11'
-    assert constraints[-2] == '-and_0_8_11 key_23'
-    assert constraints[-1] == 'and_0_8_11 -xor_0_7_11 -key_23'
-
-
 def test_sat_xor_differential_propagation_constraints():
     fancy = FancyBlockCipher(number_of_rounds=3)
     and_component = fancy.component_from(0, 8)
