@@ -78,7 +78,8 @@ def _compute_conditional_expected_value_for_continuous_metric(cipher, lambda_val
             values.append(value_object)
 
         continuous_diffusion_tests[tag_input][tag_output]["continuous_avalanche_factor"] = {}
-        continuous_diffusion_tests[tag_input][tag_output]["continuous_avalanche_factor"]["values"] = values
+        value_list = [X['value'] for X in values]
+        continuous_diffusion_tests[tag_input][tag_output]["continuous_avalanche_factor"]["values"] = value_list
 
     return continuous_diffusion_tests
 
@@ -291,6 +292,12 @@ def continuous_diffusion_factor(cipher, beta_number_of_samples, gf_number_sample
                                       output_tag, input_bit)
         i += 1
 
+    for it in continuous_neutrality_measures.keys():
+        for out in continuous_neutrality_measures[it].keys():
+            copy_values = [list(X.values()) for X in continuous_neutrality_measures[it][out]['diffusion_factor']['values']]
+            copy_values = [value for round in copy_values for value in round]
+            continuous_neutrality_measures[it][out]['diffusion_factor']['values'] = copy_values
+
     return continuous_neutrality_measures
 
 
@@ -318,7 +325,19 @@ def continuous_diffusion_tests(cipher,
                                is_continuous_avalanche_factor=True,
                                is_continuous_neutrality_measure=True,
                                is_diffusion_factor=True):
-    continuous_diffusion_tests = {}
+    continuous_diffusion_tests = {"input_parameters": {
+        'continuous_avalanche_factor_number_of_samples': continuous_avalanche_factor_number_of_samples,
+        'threshold_for_avalanche_factor': threshold_for_avalanche_factor,
+        'continuous_neutral_measure_beta_number_of_samples': continuous_neutral_measure_beta_number_of_samples,
+        'continuous_neutral_measure_gf_number_samples': continuous_neutral_measure_gf_number_samples,
+        'continuous_diffusion_factor_beta_number_of_samples': continuous_diffusion_factor_beta_number_of_samples,
+        'continuous_diffusion_factor_gf_number_samples': continuous_diffusion_factor_gf_number_samples,
+        'is_continuous_avalanche_factor': is_continuous_avalanche_factor,
+        'is_continuous_neutrality_measure': is_continuous_neutrality_measure,
+        'is_diffusion_factor': is_diffusion_factor
+    },
+    "test_results": {}}
+
     if is_diffusion_factor:
         continuous_diffusion_factor_output = continuous_diffusion_factor(
             cipher,
@@ -329,6 +348,7 @@ def continuous_diffusion_tests(cipher,
             cipher,
             continuous_neutral_measure_beta_number_of_samples,
             continuous_neutral_measure_gf_number_samples)
+
     if is_continuous_avalanche_factor:
         continuous_avalanche_factor_output = continuous_avalanche_factor(cipher,
                                                                          threshold_for_avalanche_factor,
@@ -336,10 +356,19 @@ def continuous_diffusion_tests(cipher,
 
     inputs_tags = list(continuous_neutrality_measure_output.keys())
     output_tags = list(continuous_neutrality_measure_output[inputs_tags[0]].keys())
+
+    for it in inputs_tags:
+        for out in output_tags:
+            copy_values = [list(X.values()) for X in continuous_neutrality_measure_output[it][out]['continuous_neutrality_measure']['values']]
+            copy_values = [value for round in copy_values for value in round]
+            continuous_neutrality_measure_output[it][out]['continuous_neutrality_measure']['values'] = copy_values
+            continuous_neutrality_measure_output[it][out]['continuous_neutrality_measure'].pop('input_bit')
+            continuous_neutrality_measure_output[it][out]['continuous_neutrality_measure'].pop('output_bits')
+
     for input_tag in inputs_tags:
-        continuous_diffusion_tests[input_tag] = {}
+        continuous_diffusion_tests["test_results"][input_tag] = {}
         for output_tag in output_tags:
-            continuous_diffusion_tests[input_tag][output_tag] = {
+            continuous_diffusion_tests["test_results"][input_tag][output_tag] = {
                 **continuous_neutrality_measure_output[input_tag][output_tag],
                 **continuous_avalanche_factor_output[input_tag][output_tag],
                 **continuous_diffusion_factor_output[input_tag][output_tag],

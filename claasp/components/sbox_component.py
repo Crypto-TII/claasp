@@ -234,6 +234,7 @@ class SBOX(Component):
         output_vars = list(map(ring_R, output_vars))
 
         return S.polynomials(input_vars, output_vars)
+        
     def get_ddt_with_undisturbed_transitions(self):
         """
         Returns a list of all truncated input/outputs tuples that have undisturbed differential bits
@@ -338,7 +339,7 @@ class SBOX(Component):
     def cms_xor_linear_mask_propagation_constraints(self, model):
         return self.sat_xor_linear_mask_propagation_constraints(model)
 
-    def cp_constraints(self, sbox_mant):
+    def cp_constraints(self, sbox_mant, second=False):
         """
         Return lists of declarations and constraints for SBOX component for CP CIPHER model.
 
@@ -361,10 +362,14 @@ class SBOX(Component):
         output_id_link = self.id
         input_bit_positions = self.input_bit_positions
         sbox = self.description
+        if second:
+            sec_output_id_link = 'second_' + self.id
+        else:
+            sec_output_id_link = self.id
         already_in = False
-        output_id_link_sost = output_id_link
+        output_id_link_sost = sec_output_id_link
         for mant in sbox_mant:
-            if sbox == mant[0]:
+            if sbox == mant[0] and ((not second) or (second and 'second' in mant[1])):
                 already_in = True
                 output_id_link_sost = mant[1]
         cp_declarations = []
@@ -373,7 +378,7 @@ class SBOX(Component):
             bin_sbox = (','.join(f'{sbox[i]:0{output_size}b}') for i in range(2 ** input_size))
             table_values = ','.join([f'{i},{s}' for i, s in zip(bin_i, bin_sbox)])
             sbox_declaration = f'array [1..{len(sbox)}, 1..{input_size + output_size}] of int: ' \
-                               f'table_{output_id_link} = array2d(1..{len(sbox)}, 1..{input_size + output_size}, ' \
+                               f'table_{output_id_link_sost} = array2d(1..{len(sbox)}, 1..{input_size + output_size}, ' \
                                f'[{table_values}]);'
             cp_declarations.append(sbox_declaration)
             sbox_mant.append((sbox, output_id_link))
@@ -387,7 +392,7 @@ class SBOX(Component):
 
         return cp_declarations, cp_constraints
 
-    def cp_deterministic_truncated_xor_differential_constraints(self, inverse=False):
+    def cp_deterministic_truncated_xor_differential_constraints(self, sbox_mant, inverse=False):
         r"""
         Return lists of declarations and constraints for SBOX component for CP deterministic truncated xor differential.
 
@@ -402,39 +407,57 @@ class SBOX(Component):
             sage: sbox_component = aes.component_from(0, 1)
             sage: sbox_component.cp_deterministic_truncated_xor_differential_constraints()
             ([],
-             ['constraint if xor_0_0[0] == 0 /\\ xor_0_0[1] == 0 /\\ xor_0_0[2] == 0 /\\ xor_0_0[3] == 0 /\\ xor_0_0[4] == 0 /\\ xor_0_0[5] == 0 /\\ xor_0_0[6] == 0 /\\ xor_0_0[7] then forall(i in 0..7)(sbox_0_1[i] = 0) else forall(i in 0..7)(sbox_0_1[i] = 2) endif;'])
+             ['constraint table(xor_0_0[0]++xor_0_0[1]++xor_0_0[2]++xor_0_0[3]++xor_0_0[4]++xor_0_0[5]++xor_0_0[6]++xor_0_0[7]++'
+             '[sbox_0_1[0]]++[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]]++[sbox_0_1[4]]++[sbox_0_1[5]]++[sbox_0_1[6]]++[sbox_0_1[7]], '
+             '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2'
+             '...'
+             '2,2,0,2,1,2,1,2,2,2,2,2,2,2,2,2,1,0,2,2,1,2,2,2,2,2,2,2,2,2,2,2);'])
         """
         input_id_links = self.input_id_links
         output_id_link = self.id
+        if inverse:
+            inv_output_id_link = 'inverse_' + self.id
+        else:
+            inv_output_id_link = self.id
         output_size = self.output_bit_size
         input_bit_positions = self.input_bit_positions
         cp_declarations = []
         cp_constraints = []
         all_inputs = []
-        if inverse:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}_inverse[{position}]' for position in bit_positions])
-                elements = all_inputs[:]
-                operation = ' == 0 /\\ '.join(elements)
-                cp_constraints.append(
-                    f'constraint if {operation}'
-                    f' then forall(i in 0..{output_size - 1})({output_id_link}_inverse[i] = 0)'
-                    f' else forall(i in 0..{output_size - 1})({output_id_link}_inverse[i] = 2) endif;')
-        else:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-                elements = all_inputs[:]
-                operation = ' == 0 /\\ '.join(elements)
-                cp_constraints.append(
-                    f'constraint if {operation}'
-                    f' then forall(i in 0..{output_size - 1})({output_id_link}[i] = 0)'
-                    f' else forall(i in 0..{output_size - 1})({output_id_link}[i] = 2) endif;')
+        eventual_undisturbed_bits = self.get_ddt_with_undisturbed_transitions()
+        num_pairs = len(eventual_undisturbed_bits)
+        len_input = len(eventual_undisturbed_bits[0][0])
+        len_output = len(eventual_undisturbed_bits[0][1])
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'[{id_link}[{position}]]' for position in bit_positions])
+        table_input = '++'.join(all_inputs)
+        table_output = '++'.join([f'[{output_id_link}[{i}]]' for i in range(output_size)])
+        undisturbed_bits_ddt = []
+        for pair in eventual_undisturbed_bits:
+            undisturbed_bits_ddt += list(pair[0]) + list(pair[1])
+        for i in range(len(undisturbed_bits_ddt)):
+            undisturbed_bits_ddt[i] = str(undisturbed_bits_ddt[i])
+        undisturbed_table_bits = ','.join(undisturbed_bits_ddt)
+        already_in = False
+        output_id_link_sost = inv_output_id_link
+        for mant in sbox_mant:
+            if undisturbed_table_bits == mant[0] and ((not inverse) or (inverse and 'inverse' in mant[1])):
+                already_in = True
+                output_id_link_sost = mant[1]
+        if not already_in:
+            sbox_mant.append([undisturbed_table_bits, inv_output_id_link])
+            undisturbed_declaration = f'array [1..{num_pairs}, 1..{len_input + len_output}] of int: ' \
+                                      f'table_{output_id_link_sost} = array2d(1..{num_pairs}, 1..{len_input + len_output}, ' \
+                                      f'[{undisturbed_table_bits}]);'
+            cp_declarations.append(undisturbed_declaration)
+        new_constraint = f'constraint table({table_input}++{table_output}, table_{output_id_link_sost});'
+        cp_constraints.append(new_constraint)
+                    
+        return cp_declarations, cp_constraints, sbox_mant
 
-        return cp_declarations, cp_constraints
-
-    def cp_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.cp_deterministic_truncated_xor_differential_constraints()
-
+    def cp_deterministic_truncated_xor_differential_trail_constraints(self, sbox_mant, inverse=False):
+        return self.cp_deterministic_truncated_xor_differential_constraints(sbox_mant, inverse)
+        
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists of declarations and constraints for SBOX component for CP wordwise deterministic truncated xor differential.
