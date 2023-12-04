@@ -1,0 +1,28 @@
+name: Run clean docker images
+
+on:
+  push:
+    branches:
+      - test/clean-github-actions-docker-images
+jobs:
+  run-clean-docker-images:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Remove unnecessary files
+      run: |
+        rm -f *.log
+        rm -f *.tmp
+
+    - name: Clean Docker images and containers
+      run: |
+        docker container prune -f
+        docker image prune -a -f
