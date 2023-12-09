@@ -69,6 +69,7 @@ def _parse_external_solver_output(model, model_type, solver_name, solver_process
 
     status = 'UNSATISFIABLE'
     objective_value = None
+    components_values = None
 
     if solver_specs['unsat_condition'] not in str(solver_process):
         status = 'SATISFIABLE'
@@ -703,7 +704,7 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
         for id in model._incompatible_components:
             backward_incompatible_component = model._backward_cipher.get_component_from_id(id + f"{MILP_BACKWARD_SUFFIX}")
             input_ids, _ =  backward_incompatible_component._get_input_output_variables()
-            renamed_input_ids = set(["_".join(id.split("_")[:-2]) for id in input_ids])
+            renamed_input_ids = set(["_".join(id.split("_")[:-2]) if MILP_BACKWARD_SUFFIX in id else "_".join(id.split("_")[:-1]) for id in input_ids])
             indices += sorted(indices + [full_cipher_components.index(c) for c in renamed_input_ids])
 
         updated_cipher_components = full_cipher_components[:indices[0]] + [

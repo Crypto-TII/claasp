@@ -16,6 +16,8 @@
 # ****************************************************************************
 
 import time
+
+from claasp.cipher_modules.inverse_cipher import get_key_schedule_component_ids
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import verbose_print
 from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
@@ -26,7 +28,7 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORD
     MILP_WORDWISE_IMPOSSIBLE, MILP_BACKWARD_SUFFIX, MILP_BUILDING_MESSAGE
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.cipher_modules.models.utils import set_component_solution
-from claasp.name_mappings import CIPHER_OUTPUT
+from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 
 
@@ -146,7 +148,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuple]))
 
 
-    def add_constraints_to_build_in_sage_milp_class_with_fixed_components(self, component_id_list=None, fixed_bits=[], fixed_words=[]):
+    def add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components(self, component_id_list=None, fixed_bits=[], fixed_words=[]):
         """
         Take the constraints contained in self._model_constraints and add them to the build-in sage class.
 
@@ -182,7 +184,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         if component_id_list == None:
             return self.add_constraints_to_build_in_sage_milp_class(fixed_bits=fixed_bits, fixed_words=fixed_words)
 
-        assert set(component_id_list) <= set(self._cipher.get_all_components_ids())
+        assert set(component_id_list) <= set(self._cipher.get_all_components_ids()) - set(get_key_schedule_component_ids(self._cipher))
 
         middle_round_numbers = [self._cipher.get_round_from_component_id(id) for id in component_id_list]
 
@@ -199,7 +201,16 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
         self._incompatible_components = component_id_list
         backward_last_round_components = set(backward_cipher._rounds.round_at(self._cipher.number_of_rounds - 1 - middle_round_number).get_components_ids() + [backward_cipher.get_all_components_ids()[-1]])
-        self._backward_cipher = backward_cipher.add_suffix_to_components(MILP_BACKWARD_SUFFIX, backward_last_round_components)
+        input_id_links_of_chosen_components = [_ for c in
+                                               [backward_cipher.get_component_from_id(id) for id in component_id_list]
+                                               for _ in c.input_id_links]
+        round_input_id_links_of_chosen_components = [backward_cipher.get_round_from_component_id(id) for id in
+                                                     input_id_links_of_chosen_components]
+        links_round = [_ for r in round_input_id_links_of_chosen_components for _ in
+                       backward_cipher._rounds.round_at(r).get_components_ids()]
+        self._backward_cipher = backward_cipher.add_suffix_to_components(MILP_BACKWARD_SUFFIX,
+                                                                         backward_last_round_components | set(
+                                                                             links_round))
 
 
         self.build_wordwise_impossible_xor_differential_trail_model(fixed_bits, fixed_words)
@@ -217,8 +228,15 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
             backward_component = self._backward_cipher.get_component_from_id(id + f"{MILP_BACKWARD_SUFFIX}")
             input_ids, _ = backward_component._get_wordwise_input_output_linked_class(self)
-            backward_vars = [x_class[id] for id in input_ids]
+            backward_vars = [x_class[id] for id in input_ids if INPUT_KEY not in id]
             inconsistent_vars = [x[f"{forward_component.id}_inconsistent_{_}"] for _ in range(output_size)]
+
+            # for multiple input components such as the XOR, ensures compatibility occurs on the correct branch
+            for index, input_id in enumerate(["_".join(i.split("_")[:-1]) if MILP_BACKWARD_SUFFIX in i else i for i in
+                                              backward_component.input_id_links]):
+                if INPUT_KEY not in input_id and self._cipher.get_component_from_id(input_id).input_id_links == [id]:
+                    backward_vars = [x_class[f'{input_id}_{pos}'] for pos in
+                                     backward_component.input_bit_positions[index]]
 
             constraints.extend([sum(inconsistent_vars) == 1])
             for inconsistent_index in range(output_size):
@@ -239,7 +257,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuple]))
 
 
-    def add_constraints_to_build_fully_automatic_model_in_sage_milp_class(self, fixed_bits=[], fixed_words=[]):
+    def add_constraints_to_build_fully_automatic_model_in_sage_milp_class(self, fixed_bits=[], fixed_words=[], include_all_components=False):
         """
         Take the constraints contained in self._model_constraints and add them to the build-in sage class.
 
@@ -248,6 +266,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         - ``model_type`` -- **string**; the model to solve
         - ``fixed_bits`` -- *list of dict*, the bit variables to be fixed in standard format
         - ``fixed_words`` -- *list of dict*, the word variables to be fixed in standard format
+        - ``include_all_components`` -- **boolean** (default: `False`); when set to `True`, every component output can be a source
+          of incompatibility; otherwise, only round outputs are considered
 
         .. SEEALSO::
 
@@ -282,17 +302,32 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         constraints = []
         forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
         all_inconsistent_vars = []
-        backward_round_outputs = [c for c in self._backward_cipher.get_all_components() if
-                                  c.description == ['round_output'] and set(c.input_id_links) != {
+        backward_components = [c for c in self._backward_cipher.get_all_components() if
+                               c.description == ['round_output'] and set(c.input_id_links) != {
                                       forward_output.id + MILP_BACKWARD_SUFFIX}]
 
-        for backward_round_output in backward_round_outputs:
-            output_size = backward_round_output.output_bit_size // self.word_size
-            _, output_ids = backward_round_output._get_wordwise_input_output_linked_class(self)
+        key_flow = set(get_key_schedule_component_ids(self._cipher)) - {INPUT_KEY}
+        backward_key_flow = [f'{id}{MILP_BACKWARD_SUFFIX}' for id in key_flow]
 
-            backward_vars = [x_class[id] for id in output_ids]
+        if include_all_components:
+            backward_components = set(self._backward_cipher.get_all_components()) - set(
+                self._backward_cipher.get_component_from_id(key_flow_id) for key_flow_id in backward_key_flow)
+
+        for backward_component in backward_components:
+            output_size = backward_component.output_bit_size // self.word_size
+            input_ids, output_ids = backward_component._get_wordwise_input_output_linked_class(self)
+
+            if include_all_components:
+                # for multiple input components such as the XOR, ensures compatibility occurs on the correct branch
+                inputs_to_be_kept = []
+                for index, input_id in enumerate(["_".join(i.split("_")[:-1]) for i in set(backward_component.input_id_links)]):
+                    if f'{INPUT_KEY}' not in input_id and [link+MILP_BACKWARD_SUFFIX for link in self._cipher.get_component_from_id(input_id).input_id_links] == [backward_component.id]:
+                        inputs_to_be_kept.extend([_ for _ in input_ids if input_id in _])
+                backward_vars = [x_class[id] for id in (inputs_to_be_kept or input_ids) if INPUT_KEY not in id]
+            else:
+                backward_vars = [x_class[id] for id in output_ids]
             forward_vars = [x_class["_".join(id.split("_")[:-4] + id.split("_")[-3:])] for id in output_ids]
-            inconsistent_vars = [x[f"{backward_round_output.id}_inconsistent_{_}"] for _ in range(output_size)]
+            inconsistent_vars = [x[f"{backward_component.id}_inconsistent_{_}"] for _ in range(output_size)]
             all_inconsistent_vars += inconsistent_vars
 
             for inconsistent_index in range(output_size):
@@ -376,7 +411,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
-        self.add_constraints_to_build_in_sage_milp_class_with_fixed_components(component_id_list, fixed_bits, fixed_words)
+        self.add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components(component_id_list,
+                                                                                             fixed_bits, fixed_words)
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_WORDWISE_IMPOSSIBLE, solver_name, external_solver_name)
@@ -384,7 +420,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
         return solution
 
-    def find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model(self, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model(self, fixed_bits=[], fixed_words=[], include_all_components=False, solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Returns one wordwise impossible XOR differential trail.
 
@@ -393,6 +429,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         - ``solver_name`` -- *str*, the solver to call
         - ``fixed_bits`` -- *list of dict*, the bit variables to be fixed in standard format
         - ``fixed_words`` -- *list of dict*, the word variables to be fixed in standard format
+        - ``include_all_components`` -- **boolean** (default: `False`); when set to `True`, every component output can be a source
+          of incompatibility; otherwise, only round outputs are considered
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLE::
@@ -410,7 +448,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
-        self.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(fixed_bits, fixed_words)
+        self.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(fixed_bits, fixed_words, include_all_components=include_all_components)
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_WORDWISE_IMPOSSIBLE_AUTO, solver_name, external_solver_name)
