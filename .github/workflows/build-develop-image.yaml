@@ -30,11 +30,11 @@ jobs:
           ${{ runner.os }}-buildx-
 
 
-    - name: Print Environment Variables
-      run: |
-        echo "DOCKER_PASSWORD: $DOCKER_PASSWORD"
-      env:
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+    - name: Login dockerhub
+      uses: docker/login-action@v3
+      with:
+        username: devopscrc
+        password: ${{  secrets.DOCKER_REGISTRY_PASSWORD }}
 
     - name: Build
       uses: docker/build-push-action@v4
