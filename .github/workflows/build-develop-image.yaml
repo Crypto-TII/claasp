@@ -33,7 +33,7 @@ jobs:
     - name: Login dockerhub
       uses: docker/login-action@v3
       with:
-        username: devopscrc
+        username: ${{ secrets.DOCKER_REGISTRY_USER }}
         password: ${{  secrets.DOCKER_REGISTRY_PASSWORD }}
 
     - name: Build
