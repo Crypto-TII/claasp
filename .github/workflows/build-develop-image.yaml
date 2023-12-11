@@ -29,6 +29,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildx-
 
+
+    - name: Print Environment Variables
+      run: |
+        echo "DOCKER_PASSWORD: $DOCKER_PASSWORD"
+      env:
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
     - name: Build
       uses: docker/build-push-action@v4
       id: built-image
