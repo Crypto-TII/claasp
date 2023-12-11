@@ -47,9 +47,6 @@ jobs:
         tags: tiicrc/test-lib:latest
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-      env:
-        DOCKER_USERNAME: devopscrc
-        DOCKER_PASSWORD: ${{  secrets.DOCKER_REGISTRY_PASSWORD }}
 
     - name: Move cache
       run: |
