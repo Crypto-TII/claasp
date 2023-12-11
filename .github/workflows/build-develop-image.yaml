@@ -34,9 +34,10 @@ jobs:
       id: built-image
       with:
         context: .
-        file: ./docker/Dockerfile
+        file: ./docker/DockerfileTest
         push: true
-        tags: tiicrc/claasp-lib:latest
+        # tags: tiicrc/claasp-lib:latest
+        tags: tiicrc/test-lib:latest
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
       env:
