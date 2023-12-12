@@ -53,9 +53,8 @@ jobs:
     #     mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
     - name: Trigger workflow in another repository
-      uses: peter-evans/repository-dispatch@v1
+      uses: peter-evans/repository-dispatch@v2
       with:
         token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        repo: Crypto-TII/test-code-image
+        repository: Crypto-TII/test-code-image
         event-type: build-code-image
-        client-payload: '{"key": "value"}'
