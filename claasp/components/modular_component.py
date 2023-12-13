@@ -909,24 +909,25 @@ class Modular(Component):
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
-        constraints = []
-        for i in range(out_len):
-            pivot = (in_ids_0[i], in_ids_1[i], in_ids_0[i + out_len], in_ids_1[i + out_len])
-            for j in range(0, i):
-                constraints.extend(f'{out_ids_0[j]} -{p}' for p in pivot)
-            for j in range(i + 1, out_len):
-                constraints.extend(f'-{in_ids_0[j]} -{p}' for p in pivot)
-                constraints.extend(f'-{in_ids_1[j]} -{p}' for p in pivot)
-                constraints.extend(f'-{in_ids_0[j + out_len]} -{p}' for p in pivot)
-                constraints.extend(f'-{in_ids_1[j + out_len]} -{p}' for p in pivot)
-                constraints.extend(f'-{out_ids_0[j]} -{p}' for p in pivot)
-                constraints.extend(f'-{out_ids_1[j]} -{p}' for p in pivot)
-            xor_constraints = sat_utils.cnf_xor_truncated((out_ids_0[i], out_ids_1[i]),
-                                                          (pivot[0], pivot[1]),
-                                                          (pivot[2], pivot[3]))
-            constraints.extend(xor_constraints)
+        carry_ids_0 = [f'carry_{out_id}_0' for out_id in out_ids_0]
+        carry_ids_1 = [f'carry_{out_id}_1' for out_id in out_ids_1]
+        constraints = [f'-{carry_ids_0[-1]} -{carry_ids_1[-1]}']
+        constraints.extend(sat_utils.modadd_truncated_msb((out_ids_0[0], out_ids_1[0]),
+                                                          (in_ids_0[0], in_ids_1[0]),
+                                                          (in_ids_0[out_len], in_ids_1[out_len]),
+                                                          (carry_ids_0[0], carry_ids_1[0])))
+        for i in range(1, out_len - 1):
+            constraints.extend(sat_utils.modadd_truncated((out_ids_0[i], out_ids_1[i]),
+                                                          (in_ids_0[i], in_ids_1[i]),
+                                                          (in_ids_0[i+out_len], in_ids_1[i+out_len]),
+                                                          (carry_ids_0[i], carry_ids_1[i]),
+                                                          (carry_ids_0[i-1], carry_ids_1[i-1])))
+        constraints.extend(sat_utils.modadd_truncated_lsb((out_ids_0[-1], out_ids_1[-1]),
+                                                          (in_ids_0[out_len-1], in_ids_1[out_len-1]),
+                                                          (in_ids_0[2*out_len-1], in_ids_1[2*out_len-1]),
+                                                          (carry_ids_0[-2], carry_ids_1[-2])))
 
-        return out_ids_0 + out_ids_1, constraints
+        return out_ids_0 + out_ids_1 + carry_ids_0 + carry_ids_1, constraints
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
