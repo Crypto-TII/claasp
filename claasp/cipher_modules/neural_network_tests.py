@@ -313,7 +313,7 @@ def train_neural_distinguisher(cipher, data_generator, starting_round, neural_ne
     bs = 5000
     x, y = data_generator(samples=training_samples, nr=starting_round)
     x_eval, y_eval = data_generator(samples=testing_samples, nr=starting_round)
-    h = neural_network.fit(x, y, epochs=num_epochs, batch_size=bs, validation_data=(x_eval, y_eval))
+    h = neural_network.fit(x, y, epochs=int(num_epochs), batch_size=bs, validation_data=(x_eval, y_eval))
     acc = np.max(h.history["val_acc"])
     print(f'Validation accuracy at {starting_round} rounds :{acc}')
     return acc
