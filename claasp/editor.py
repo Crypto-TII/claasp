@@ -1826,3 +1826,4 @@ def get_output_bit_size_from_id(cipher_list, component_id):
     except ValueError as e:
         sys.exit(str(e))
 
+

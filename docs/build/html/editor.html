@@ -16,8 +16,8 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Templates" href="utils/templates.html" />
-    <link rel="prev" title="Round" href="round.html" />
+    <link rel="next" title="Cipher" href="cipher.html" />
+    <link rel="prev" title="Compound xor differential cipher" href="compound_xor_differential_cipher.html" />
     <link rel="icon" href="_static/sageicon.png" type="image/x-icon" />
     <script src="_static/thebe.js" type="text/javascript"></script>
     <script src="_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +33,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="utils/templates.html" title="Templates"
+          <a href="cipher.html" title="Cipher"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="round.html" title="Round"
+          <a href="compound_xor_differential_cipher.html" title="Compound xor differential cipher"
              accesskey="P">previous</a> |</li>
   
     
@@ -95,8 +95,66 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="editor.add_FSR_component">
+<span class="sig-name descname"><span class="pre">add_FSR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.add_FSR_component" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this function to create and add an lfsr/nlfsr component to editor.</p>
+<p>INPUT:
+- <code class="docutils literal notranslate"><span class="pre">cipher</span></code> – <strong>Cipher object</strong>; an instance of the object cipher
+- <code class="docutils literal notranslate"><span class="pre">input_id_links</span></code> – <strong>list</strong>; the list of input_id links
+- <code class="docutils literal notranslate"><span class="pre">input_bit_positions</span></code> – <strong>list</strong>; the list of input_bits corresponding to the input_id links
+- <code class="docutils literal notranslate"><span class="pre">output_bit_size</span></code> – <strong>integer</strong>; the output bits of the component
+- <code class="docutils literal notranslate"><span class="pre">description</span></code> – <strong>[registers_info, integer, integer]</strong>; registers_info are the information of the list of fsr</p>
+<blockquote>
+<div><p>registers, which is represented as [register_1_info, register_2_info, …, register_n_info]. In each of the
+register information it contains [register_word_length, register_polynomial, clock_polynomial] where
+register_word_length is an integer that specifies the word length of the register. register_polynomial is the
+feedback polynomial of the register in fsr. For example, [[0],[1],[3],[2,5]] represents x0+x1+x3+x2*x5.
+clock_polynomial is the polynomial of register clock. If this field is not specified, by default, it will be
+performed always. For the polynomial with more than one bit in a word, the polynomial will be represented as
+coefficient and monomials. For example, [[2, [0]], [5, [1]], [15, [3]], [3,[2,5]]] with 4 bits in a word
+represents 0010*x0+0101*x1+1111*x3+0011*x2*x5. The second integer parameter determines how many bits inside a
+word. The third integer parameter determines how many clocks would be performed within this component. If this
+field is not specified, it would be always 1.
+For example, a description such as [[[5, [[4], [5], [6, 7]]],[7, [[0], [8], [1, 2]]]], 1] has two registers. The
+first one is [5, [[4], [5], [6, 7]], i.e. a register of length 5, its feedback polynomial is x4+x5+x6*x7.
+The second register is [7, [[0], [8], [1, 2]] of length 7, and its feedback polynomial is x0+x8+x1*x2.
+The last entry in the description list represents the word size which is 1-bit in this example.
+By default, the registers clock one time.</p>
+</div></blockquote>
+<p>EXAMPLES:</p>
+<blockquote>
+<div><p>sage: from claasp.cipher import Cipher
+sage: cipher = Cipher(“cipher_name”, “fsr”, [“input”], [12], 12)
+sage: cipher.add_round()
+sage: fsr_0_0 = cipher.add_FSR_component([“input”, “input”], [[0,1,2,3,4],[0,1,2,3,4,5,6]], 12, [[
+[5, [[4], [5], [6, 7]]],  # Register_len:5,  feedback poly: x4 + x5 + x6*x7
+[7, [[0], [8], [1, 2]]]  # Register_len:7, feedback poly: x0 + x1*x2 + x8
+], 1])
+sage: cipher.print()
+cipher_id = cipher_name_i12_o12_r1
+cipher_type = fsr
+cipher_inputs = [‘input’]
+cipher_inputs_bit_size = [12]
+cipher_output_bit_size = 12
+cipher_number_of_rounds = 1</p>
+<dl class="simple">
+<dt>&lt;BLANKLINE&gt;</dt><dd><p># round = 0 - round component = 0
+id = fsr_0_0
+type = fsr
+input_bit_size = 12
+input_id_link = [‘input’, ‘input’]
+input_bit_positions = [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5, 6]]
+output_bit_size = 12
+description = [[[5, [[4], [5], [6, 7]]], [7, [[0], [8], [1, 2]]]], 1]</p>
+</dd>
+</dl>
+<p>cipher_reference_code = None</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="editor.add_MODADD_component">
-<span class="sig-name descname"><span class="pre">add_MODADD_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.add_MODADD_component" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_MODADD_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulus</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.add_MODADD_component" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this function to create and add a modadd component to editor.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -133,7 +191,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="editor.add_MODSUB_component">
-<span class="sig-name descname"><span class="pre">add_MODSUB_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.add_MODSUB_component" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_MODSUB_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulus</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.add_MODSUB_component" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this function to create a modsub component in the editor.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -1080,6 +1138,11 @@ rotation</p></li>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="editor.get_output_bit_size_from_id">
+<span class="sig-name descname"><span class="pre">get_output_bit_size_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.get_output_bit_size_from_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="editor.get_unique_links_information">
 <span class="sig-name descname"><span class="pre">get_unique_links_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_links</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#editor.get_unique_links_information" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1418,13 +1481,13 @@ rotation</p></li>
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="round.html"
-                          title="previous chapter">Round</a></p>
+    <p class="topless"><a href="compound_xor_differential_cipher.html"
+                          title="previous chapter">Compound xor differential cipher</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="utils/templates.html"
-                          title="next chapter">Templates</a></p>
+    <p class="topless"><a href="cipher.html"
+                          title="next chapter">Cipher</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -1457,10 +1520,10 @@ rotation</p></li>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="utils/templates.html" title="Templates"
+          <a href="cipher.html" title="Cipher"
              >next</a> |</li>
         <li class="right" >
-          <a href="round.html" title="Round"
+          <a href="compound_xor_differential_cipher.html" title="Compound xor differential cipher"
              >previous</a> |</li>
   
     

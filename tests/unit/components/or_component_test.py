@@ -53,6 +53,20 @@ def test_generic_sign_linear_constraints():
     assert or_component.generic_sign_linear_constraints(input_tert, output) == 1
 
 
+def test_sat_constraints():
+    gift = GiftPermutation(number_of_rounds=3)
+    or_component = gift.component_from(0, 4)
+    output_bit_ids, constraints = or_component.sat_constraints()
+
+    assert output_bit_ids[0] == 'or_0_4_0'
+    assert output_bit_ids[1] == 'or_0_4_1'
+    assert output_bit_ids[2] == 'or_0_4_2'
+
+    assert constraints[-3] == 'or_0_4_31 -xor_0_3_31'
+    assert constraints[-2] == 'or_0_4_31 -xor_0_1_31'
+    assert constraints[-1] == '-or_0_4_31 xor_0_3_31 xor_0_1_31'
+
+
 def test_smt_constraints():
     gift = GiftPermutation(number_of_rounds=3)
     or_component = gift.component_from(0, 4)

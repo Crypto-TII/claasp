@@ -132,7 +132,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         mip.add_constraint(p["number_of_unknown_patterns"] == sum(
             x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuples]))
 
-    def add_constraints_to_build_in_sage_milp_class_with_fixed_components(self, component_id_list=None,
+    def add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components(self, component_id_list=None,
                                                                           fixed_variables=[]):
         """
         Take the constraints contained in self._model_constraints and add them to the build-in sage class.
@@ -155,7 +155,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: milp = MilpBitwiseImpossibleXorDifferentialModel(speck)
             sage: milp.init_model_in_sage_milp_class()
-            sage: milp.add_constraints_to_build_in_sage_milp_class_with_fixed_components(["rot_1_4"])
+            sage: milp.add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components(["rot_1_4"])
 
         """
 
@@ -294,7 +294,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuples]))
 
     def find_one_bitwise_impossible_xor_differential_trail(self, middle_round, fixed_values=[],
-                                                           solver_name=SOLVER_DEFAULT):
+                                                           solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Returns one bitwise impossible XOR differential trail.
 
@@ -304,6 +304,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         - ``middle_round`` -- **integer**; the round number for which the incompatibility occurs
         - ``fixed_values`` -- *list of dict*, the variables to be fixed in
           standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
 
@@ -354,13 +355,13 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         self.add_constraints_to_build_in_sage_milp_class(middle_round, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve(MILP_BITWISE_IMPOSSIBLE, solver_name)
+        solution = self.solve(MILP_BITWISE_IMPOSSIBLE, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
 
-    def find_one_bitwise_impossible_xor_differential_trail_with_fixed_component(self, component_id_list, fixed_values=[],
-                                                                                solver_name=SOLVER_DEFAULT):
+    def find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components(self, component_id_list, fixed_values=[],
+                                                                                solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Returns one bitwise impossible XOR differential trail.
 
@@ -370,6 +371,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         - ``component_id_list`` -- **str**; the list of component ids for which the incompatibility occurs
         - ``fixed_values`` -- *list of dict*, the variables to be fixed in
           standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
 
@@ -381,7 +383,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0]*31 + [1])
             sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
             sage: ciphertext = set_fixed_variables(component_id='cipher_output_10_13', constraint_type='equal', bit_positions=range(32), bit_values=[0]*6 + [2,0,2] + [0]*23)
-            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_fixed_component(['intermediate_output_5_12'], fixed_values=[plaintext, key, ciphertext])
+            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components(['intermediate_output_5_12'], fixed_values=[plaintext, key, ciphertext])
 
 
             sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
@@ -395,7 +397,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             sage: P2 = set_fixed_variables(component_id='intermediate_output_1_71', constraint_type='equal', bit_positions=range(320), bit_values= [2, 2, 0, 2, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 2, 2, 0, 2, 0, 0, 2, 2, 0, 0, 2, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 2, 2, 0, 2, 2, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2, 2, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2, 0, 0, 0, 0, 2, 2, 0, 0, 2, 2, 0, 0, 2, 0, 2, 2, 2, 0, 2, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0])
             sage: P3 = set_fixed_variables(component_id='intermediate_output_2_71', constraint_type='equal', bit_positions=range(320), bit_values= [2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 0, 2, 0, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 0, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2, 2, 0, 2, 0, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2])
             sage: P5 = set_fixed_variables(component_id='cipher_output_4_71', constraint_type='equal', bit_positions=range(320), bit_values= [0]*192 + [1] + [0]* 127)
-            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_fixed_component(["sbox_3_56"], fixed_values=[plaintext, P1, P2, P3, P4, P5])
+            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components(["sbox_3_56"], fixed_values=[plaintext, P1, P2, P3, P5])
 
 
         """
@@ -404,16 +406,16 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
-        self.add_constraints_to_build_in_sage_milp_class_with_fixed_components(component_id_list, fixed_values)
+        self.add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components(component_id_list, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve(MILP_BITWISE_IMPOSSIBLE, solver_name)
+        solution = self.solve(MILP_BITWISE_IMPOSSIBLE, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
 
     def find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model(self, fixed_values=[],
-                                                                                      solver_name=SOLVER_DEFAULT):
+                                                                                      solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Returns one bitwise impossible XOR differential trail.
 
@@ -423,6 +425,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         - ``middle_round`` -- **integer**; the round number for which the incompatibility occurs
         - ``fixed_values`` -- *list of dict*, the variables to be fixed in
           standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
 
@@ -457,7 +460,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         self.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve(MILP_BITWISE_IMPOSSIBLE_AUTO, solver_name)
+        solution = self.solve(MILP_BITWISE_IMPOSSIBLE_AUTO, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
