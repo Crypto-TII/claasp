@@ -3,7 +3,7 @@ from claasp.cipher_modules.models.sat.cms_models.cms_bitwise_deterministic_trunc
     CmsSatDeterministicTruncatedXorDifferentialModel
 
 
-def test_build_deterministic_truncated_xor_differential_trail_model():
+def test_build_bitwise_deterministic_truncated_xor_differential_trail_model():
     speck = SpeckBlockCipher(number_of_rounds=22)
     cms = CmsSatDeterministicTruncatedXorDifferentialModel(speck)
-    cms.build_deterministic_truncated_xor_differential_trail_model()
+    cms.build_bitwise_deterministic_truncated_xor_differential_trail_model()
