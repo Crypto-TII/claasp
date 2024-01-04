@@ -173,16 +173,19 @@ def smt_get_sbox_probability_constraints(bit_ids, template):
 
     return constraints
 
+
 def _to_int(bits):
-    return int("".join(str(x) for x in bits), 2)
+    return int("".join(str(bit) for bit in bits), 2)
+
 
 def _combine_truncated(input_1, input_2):
-    return [val if val == input_2[_] else 2 for _, val in enumerate(input_1)]
+    return [bit_1 if bit_1 == bit_2 else 2 for bit_1, bit_2 in zip(input_1, input_2)]
+
 
 def _get_truncated_output_difference(ddt_row, n):
     output_bits = [2] * n
     has_undisturbed_bits = False
-    list_of_delta_out = [delta_out for delta_out, proba in enumerate(ddt_row) if proba]
+    list_of_delta_out = [delta_out for delta_out, probability in enumerate(ddt_row) if probability]
     for bit in range(n):
         delta = [j & (1 << bit) for j in list_of_delta_out]
         if delta.count(delta[0]) == len(delta):
@@ -234,6 +237,7 @@ class SBOX(Component):
         output_vars = list(map(ring_R, output_vars))
 
         return S.polynomials(input_vars, output_vars)
+
     def get_ddt_with_undisturbed_transitions(self):
         """
         Returns a list of all truncated input/outputs tuples that have undisturbed differential bits
@@ -300,7 +304,7 @@ class SBOX(Component):
             inputs_to_combine = newly_combined_inputs
 
         for input_bits in set(list(product([0, 1, 2], repeat=n))).difference(set(tested_inputs)):
-            valid_points.append((input_bits, tuple([2] * n)))
+            valid_points.append((input_bits, (2,)*n))
 
         return valid_points
 
@@ -1380,6 +1384,57 @@ class SBOX(Component):
                 constraints.append(constraint)
 
         return output_bit_ids, constraints
+
+    def sat_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for a generic S-BOX in SAT deterministic truncated XOR DIFFERENTIAL model.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: from claasp.cipher_modules.models.sat.sat_model import SatModel
+            sage: present = PresentBlockCipher(number_of_rounds=3)
+            sage: sbox_component = present.component_from(0, 2)
+            sage: sat = SatModel(present)
+            sage: sbox_component.sat_deterministic_truncated_xor_differential_constraints()
+            (['sbox_0_2_0_0',
+              'sbox_0_2_1_0',
+              'sbox_0_2_2_0',
+              ...
+              '-xor_0_0_6_0 sbox_0_2_3_0',
+              '-xor_0_0_5_0 sbox_0_2_3_0',
+              '-xor_0_0_4_0 sbox_0_2_3_0'])
+        """
+        valid_transitions = self.get_ddt_with_undisturbed_transitions()
+        # building espresso input and run it
+        espresso_input_length = 2 * (len(valid_transitions[0][0]) + len(valid_transitions[0][1]))
+        espresso_input = [f".i {espresso_input_length}", ".o 1"]
+        for transition in valid_transitions:
+            espresso_condition = ['0'*(value == 0 or value == 1) + '1'*(value == 2) for value in transition[0]]
+            espresso_condition += ['0'*(value == 0) + '1'*(value == 1) + '-'*(value == 2) for value in transition[0]]
+            espresso_condition += ['0'*(value == 0 or value == 1) + '1'*(value == 2) for value in transition[1]]
+            espresso_condition += ['0'*(value == 0) + '1'*(value == 1) + '-'*(value == 2) for value in transition[1]]
+            espresso_input += ["".join(espresso_condition) + " 1"]
+        espresso_input += [".e"]
+        espresso_input = "\n".join(espresso_input)
+        espresso_process = subprocess.run(['espresso', '-epos'], input=espresso_input, capture_output=True, text=True)
+        espresso_output = espresso_process.stdout.splitlines()
+        # building constraints
+        input_ids_0, input_ids_1 = self._generate_input_double_ids()
+        _, output_ids_0, output_ids_1 = self._generate_output_double_ids()
+        input_ids = input_ids_0 + input_ids_1
+        output_ids = output_ids_0 + output_ids_1
+        ids = input_ids + output_ids
+        constraints = []
+        for line in espresso_output[4:-1]:
+            literals = ['-' * int(line[i]) + ids[i] for i in range(espresso_input_length) if line[i] != '-']
+            constraints.append(' '.join(literals))
+
+        return output_ids, constraints
 
     def sat_xor_differential_propagation_constraints(self, model):
         """
