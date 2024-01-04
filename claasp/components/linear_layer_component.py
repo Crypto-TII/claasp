@@ -727,7 +727,11 @@ class LinearLayer(Component):
             result_ids = [(f'inter_{j}_{self.id}_{i}_0', f'inter_{j}_{self.id}_{i}_1')
                           for j in range(len(operands) - 2)]
             result_ids.append(out_ids_pair)
-            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, operands))
+            if len(operands) == 1:
+                constraints.extend(sat_utils.cnf_equivalent([result_ids[0][0], operands[0][0]]))
+                constraints.extend(sat_utils.cnf_equivalent([result_ids[0][1], operands[0][1]]))
+            else:
+                constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, operands))
 
         return out_ids_0 + out_ids_1, constraints
 

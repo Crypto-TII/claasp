@@ -1385,7 +1385,7 @@ class SBOX(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_constraints(self):
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for a generic S-BOX in SAT deterministic truncated XOR DIFFERENTIAL model.
 
@@ -1400,7 +1400,7 @@ class SBOX(Component):
             sage: present = PresentBlockCipher(number_of_rounds=3)
             sage: sbox_component = present.component_from(0, 2)
             sage: sat = SatModel(present)
-            sage: sbox_component.sat_deterministic_truncated_xor_differential_constraints()
+            sage: sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['sbox_0_2_0_0',
               'sbox_0_2_1_0',
               'sbox_0_2_2_0',

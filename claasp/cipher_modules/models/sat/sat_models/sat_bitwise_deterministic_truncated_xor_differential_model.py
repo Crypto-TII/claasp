@@ -177,7 +177,6 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             sage: present = PresentBlockCipher(number_of_rounds=1)
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import SatBitwiseDeterministicTruncatedXorDifferentialModel
             sage: sat = SatBitwiseDeterministicTruncatedXorDifferentialModel(present)
-            sage: sat.init_model_in_sage_sat_class()
             sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(80), bit_values=[0]*80)
             sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(64), bit_values=[2,0,0,0] + [1,0,0,1] + [0,0,0,1] + [1,0,0,0] + [0] * 48)
             sage: trail = sat.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key]) # doctest: +SKIP
