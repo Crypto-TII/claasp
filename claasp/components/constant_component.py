@@ -520,7 +520,7 @@ class Constant(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for CONSTANT in SAT
         DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
@@ -538,7 +538,7 @@ class Constant(Component):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: constant_component = speck.component_from(2, 0)
-            sage: constant_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            sage: constant_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['constant_2_0_0_0',
               'constant_2_0_1_0',
               'constant_2_0_2_0',

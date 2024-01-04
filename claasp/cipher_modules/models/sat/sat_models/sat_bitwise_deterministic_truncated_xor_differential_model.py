@@ -22,7 +22,7 @@ import time
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
-                                  INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION)
+                                  INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
 
 
 class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
@@ -55,13 +55,13 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
         constraints = self.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
-        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION)
+        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
         operation_types = ('AND', 'MODADD', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR')
 
         for component in self._cipher.get_all_components():
             operation = component.description[0]
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
-                variables, constraints = component.sat_deterministic_truncated_xor_differential_trail_constraints()
+                variables, constraints = component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             else:
                 print(f'{component.id} not yet implemented')
 

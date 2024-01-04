@@ -1080,7 +1080,7 @@ class XOR(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for XOR in SAT
         DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
@@ -1098,7 +1098,7 @@ class XOR(Component):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['xor_0_2_0_0',
               'xor_0_2_1_0',
               'xor_0_2_2_0',

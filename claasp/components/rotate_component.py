@@ -674,7 +674,7 @@ class Rotate(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for ROTATION in SAT
         DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
@@ -692,7 +692,7 @@ class Rotate(Component):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: rotate_component = speck.component_from(1, 1)
-            sage: rotate_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            sage: rotate_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['rot_1_1_0_0',
               'rot_1_1_1_0',
               'rot_1_1_2_0',

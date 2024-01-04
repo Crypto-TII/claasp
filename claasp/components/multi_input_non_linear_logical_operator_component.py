@@ -401,7 +401,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for AND/OR in SAT
         DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
@@ -419,7 +419,7 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: and_component = fancy.component_from(0, 8)
-            sage: and_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            sage: and_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['and_0_8_0_0',
               'and_0_8_1_0',
               'and_0_8_2_0',

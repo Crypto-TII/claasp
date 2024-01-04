@@ -524,7 +524,7 @@ class NOT(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for NOT in SAT
         DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
@@ -542,7 +542,7 @@ class NOT(Component):
             sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
             sage: gift = GiftPermutation(number_of_rounds=3)
             sage: not_component = gift.component_from(0, 8)
-            sage: not_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            sage: not_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['not_0_8_0_0',
               'not_0_8_1_0',
               'not_0_8_2_0',

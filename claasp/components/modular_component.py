@@ -880,7 +880,7 @@ class Modular(Component):
         result = output_bit_ids + dummy_bit_ids + hw_bit_ids, constraints
         return result
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for Modular Addition
         in DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
@@ -898,7 +898,7 @@ class Modular(Component):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: modadd_component = speck.component_from(0, 1)
-            sage: modadd_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            sage: modadd_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['modadd_0_1_0_0',
               'modadd_0_1_1_0',
               'modadd_0_1_2_0',

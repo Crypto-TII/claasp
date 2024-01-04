@@ -695,7 +695,7 @@ class LinearLayer(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for LINEAR LAYER in
         SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
@@ -713,7 +713,7 @@ class LinearLayer(Component):
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: constraints = linear_layer_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            sage: constraints = linear_layer_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             sage: constraints[1][11]
             'inter_0_linear_layer_0_6_0_1 inter_1_linear_layer_0_6_0_0 inter_1_linear_layer_0_6_0_1 -sbox_0_1_0_1'
         """

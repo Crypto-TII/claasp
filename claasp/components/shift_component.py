@@ -705,7 +705,7 @@ class SHIFT(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for SHIFT in SAT
         DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
@@ -723,7 +723,7 @@ class SHIFT(Component):
             sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
             sage: tea = TeaBlockCipher(number_of_rounds=3)
             sage: shift_component = tea.component_from(0, 0)
-            sage: shift_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+            sage: shift_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['shift_0_0_0_0',
               'shift_0_0_1_0',
               'shift_0_0_2_0',
