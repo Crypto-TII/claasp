@@ -52,9 +52,20 @@ jobs:
     #     rm -rf /tmp/.buildx-cache
     #     mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-    - name: Trigger workflow in another repository
-      uses: peter-evans/repository-dispatch@v2
-      with:
-        token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        repository: hernandezj84/test-code-image
-        event-type: build-code-image
+    # - name: Trigger workflow in another repository
+    #   uses: peter-evans/repository-dispatch@v2
+    #   with:
+    #     token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    #     repository: hernandezj84/test-code-image
+    #     event-type: build-code-image
+    - name: Get current commit information
+      run: |
+        git clone ${{ secrets.DEPLOYMENT_REPOSITORY }} deployment-repo
+        git config --global user.name 'Github'
+        git config --global user.email ${{ secrets.DEPLOYMENT_REPOSITORY_EMAIL }}
+        cd deployment-repo && echo "Date: $(date) Commit: $(git rev-parse HEAD)" >> claasp-dev.log
+        git commit -am "Updating deployment-repo from github"
+        git push origin master
+
+
+
