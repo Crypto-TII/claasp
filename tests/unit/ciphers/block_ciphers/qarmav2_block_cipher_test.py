@@ -26,9 +26,9 @@ def test_qarmav2_block_cipher():
     ciphertext = 0xd459510ab82c66fc
     assert qarmav2.evaluate([key, plaintext, tweak]) == ciphertext
 
-    #qarmav2 = QARMAv2BlockCipher(number_of_layers = 2, number_of_rounds = 9, key_bit_size = 256, tweak_bit_size = 256)
-    #key = 0x00102030405060708090a0b0c0d0e0f00f0e0d0c0b0a09080706050403020100
-    #plaintext = 0x00000000000000000000000000000000
-    #tweak = 0x7e5c3a18f6d4b290e5c3a18f6d4b29071eb852fc630da741b852fc960da741eb
-    #ciphertext = 0x361262e2ecf88f03f4ea898d6a4f412f
-    #assert qarmav2.evaluate([key, plaintext, tweak]) == ciphertext
+    qarmav2 = QARMAv2BlockCipher(number_of_layers = 2, number_of_rounds = 9, key_bit_size = 256, tweak_bit_size = 256)
+    key = 0x00102030405060708090a0b0c0d0e0f00f0e0d0c0b0a09080706050403020100
+    plaintext = 0x00000000000000000000000000000000
+    tweak = 0x7e5c3a18f6d4b290e5c3a18f6d4b29071eb852fc630da741b852fc960da741eb
+    ciphertext = 0x361262e2ecf88f03f4ea898d6a4f412f
+    assert qarmav2.evaluate([key, plaintext, tweak]) == ciphertext

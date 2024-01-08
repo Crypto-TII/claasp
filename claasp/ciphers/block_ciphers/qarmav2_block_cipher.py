@@ -358,7 +358,7 @@ class QARMAv2BlockCipher(Cipher):
             exchanging_rows = list(range(self.NUM_SBOXES))
             
         id_links = [[state] for _ in range(self.NUM_SBOXES)]
-        bit_positions = [[list(range(4*i, 4*i + 4))] for i in range(self.NUM_SBOXES)]
+        bit_positions = [[list(range(4*exchanging_rows[i], 4*exchanging_rows[i] + 4))] for i in range(self.NUM_SBOXES)]
         sboxed_state = self.state_sboxing(id_links, bit_positions, self.inverse_sbox)
         
         id_links = sboxed_state
@@ -375,7 +375,7 @@ class QARMAv2BlockCipher(Cipher):
                               list(range(4*(i%16), 4*(i%16) + 4))] for i in range(self.NUM_SBOXES)]
             masked_state = self.state_masking(id_links, bit_positions)
         else:
-            id_links = [[rotated_state[(4*self.state_shuffle.index(i%16) + (self.state_shuffle.index(i%16)//4)%4)%16],
+            id_links = [[rotated_state[(4*self.state_shuffle.index(i%16) + (self.state_shuffle.index(i%16)//4)%4)%16 + 16*(i//16)],
                          key_state[(round_number + 1)%2][0][0],
                          tweak_state[(round_number + 1)%2][0][0],
                          constants_states[(round_number - 1)*self.number_of_layers + i//16]] for i in range(self.NUM_SBOXES)]
@@ -465,17 +465,17 @@ class QARMAv2BlockCipher(Cipher):
         if self.number_of_layers == 2:
             key_state[0] = [[self.add_XOR_component(key_state[0][0]+[alpha[0], alpha[1]],
                                                     key_state[0][1]+[list(range(self.LAYER_BLOCK_SIZE)), list(range(self.LAYER_BLOCK_SIZE))],
-                                                    self.KEY_BLOCK_SIZE).id], [list(range(self.LAYER_BLOCK_SIZE))]]
+                                                    self.KEY_BLOCK_SIZE).id], [list(range(self.KEY_BLOCK_SIZE))]]
             key_state[1] = [[self.add_XOR_component(key_state[1][0]+[beta[0], beta[1]],
                                                   key_state[1][1]+[list(range(self.LAYER_BLOCK_SIZE)), list(range(self.LAYER_BLOCK_SIZE))],
-                                                  self.KEY_BLOCK_SIZE).id], [list(range(self.LAYER_BLOCK_SIZE))]]
+                                                  self.KEY_BLOCK_SIZE).id], [list(range(self.KEY_BLOCK_SIZE))]]
         else:
             key_state[0] = [[self.add_XOR_component(key_state[0][0]+[alpha[0]],
                                                     key_state[0][1]+[list(range(self.LAYER_BLOCK_SIZE))],
-                                                    self.KEY_BLOCK_SIZE).id], [list(range(self.LAYER_BLOCK_SIZE))]]
+                                                    self.KEY_BLOCK_SIZE).id], [list(range(self.KEY_BLOCK_SIZE))]]
             key_state[1] = [[self.add_XOR_component(key_state[1][0]+[beta[0]],
                                                     key_state[1][1]+[list(range(self.LAYER_BLOCK_SIZE))],
-                                                    self.KEY_BLOCK_SIZE).id], [list(range(self.LAYER_BLOCK_SIZE))]]
+                                                    self.KEY_BLOCK_SIZE).id], [list(range(self.KEY_BLOCK_SIZE))]]
                                               
         return key_state
         
