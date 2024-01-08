@@ -642,7 +642,7 @@ def build_function_call(component):
     elif component.type == FSR:
         registers_info = component.description[0]
         bits_inside_word = component.description[1]
-        if len(component.description) is 2:
+        if len(component.description) == 2:
             number_of_clocks = 1
         else:
             number_of_clocks = component.description[2]
