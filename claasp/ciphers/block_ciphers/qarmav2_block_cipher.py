@@ -312,7 +312,7 @@ class QARMAv2BlockCipher(Cipher):
         bit_positions = [[list(range(4))] for _ in range(self.NUM_SBOXES)]
         sboxed_state = self.state_sboxing(id_links, bit_positions, self.sbox)
                                      
-        if self.number_of_layers == 2 and (number_of_rounds - round_number)%2 == 0:
+        if self.number_of_layers == 2 and (self.NROUNDS - round_number)%2 == 0:
             round_output = self.add_round_output_component([sboxed_state[i] for i in self.exchange_rows_shuffle],
                                                            [list(range(4)) for _ in range(self.NUM_SBOXES)],
                                                            self.CIPHER_BLOCK_SIZE).id
@@ -467,7 +467,7 @@ class QARMAv2BlockCipher(Cipher):
                                                     key_state[0][1]+[list(range(self.LAYER_BLOCK_SIZE)), list(range(self.LAYER_BLOCK_SIZE))],
                                                     self.KEY_BLOCK_SIZE).id], [list(range(self.LAYER_BLOCK_SIZE))]]
             key_state[1] = [[self.add_XOR_component(key_state[1][0]+[beta[0], beta[1]],
-                                                  key_state[1][0]+[list(range(self.LAYER_BLOCK_SIZE)), list(range(self.LAYER_BLOCK_SIZE))],
+                                                  key_state[1][1]+[list(range(self.LAYER_BLOCK_SIZE)), list(range(self.LAYER_BLOCK_SIZE))],
                                                   self.KEY_BLOCK_SIZE).id], [list(range(self.LAYER_BLOCK_SIZE))]]
         else:
             key_state[0] = [[self.add_XOR_component(key_state[0][0]+[alpha[0]],
