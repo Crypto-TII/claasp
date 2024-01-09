@@ -32,6 +32,7 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITW
     MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_BACKWARD_SUFFIX, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE, \
     MILP_XOR_DIFFERENTIAL_OBJECTIVE, MILP_BITWISE_IMPOSSIBLE, MILP_WORDWISE_IMPOSSIBLE, MILP_BITWISE_IMPOSSIBLE_AUTO, \
     MILP_WORDWISE_IMPOSSIBLE_AUTO
+from claasp.name_mappings import INPUT_KEY
 
 
 ### -------------------------External solver parsing methods------------------------- ###
@@ -682,6 +683,52 @@ def fix_variables_value_deterministic_truncated_xor_differential_constraints(mil
                 constraints.append(one_among_n == 1)
 
     return constraints
+
+def generate_incompatiblity_constraints_for_component(model, model_type, x, x_class, backward_component, include_all_components):
+
+    assert model_type in [MILP_BITWISE_IMPOSSIBLE_AUTO, MILP_WORDWISE_IMPOSSIBLE_AUTO]
+
+    incompatiblity_constraints = []
+
+    if model_type == MILP_BITWISE_IMPOSSIBLE_AUTO:
+        output_size = backward_component.output_bit_size
+        input_ids, output_ids = backward_component._get_input_output_variables()
+
+    else:
+        output_size = backward_component.output_bit_size // model.word_size
+        input_ids, output_ids = backward_component._get_wordwise_input_output_linked_class(model)
+
+
+    if include_all_components:
+        # for multiple input components such as the XOR, ensures compatibility occurs on the correct branch
+        inputs_to_be_kept = []
+        for index, input_id in enumerate(["_".join(i.split("_")[:-1]) for i in set(backward_component.input_id_links)]):
+            if f'{INPUT_KEY}' not in input_id and [link + MILP_BACKWARD_SUFFIX for link in
+                                                   model._cipher.get_component_from_id(input_id).input_id_links] == [
+                backward_component.id]:
+                inputs_to_be_kept.extend([_ for _ in input_ids if input_id in _])
+        backward_vars = [x_class[id] for id in (inputs_to_be_kept or input_ids) if INPUT_KEY not in id]
+    else:
+        backward_vars = [x_class[id] for id in output_ids]
+
+    if model_type == MILP_BITWISE_IMPOSSIBLE_AUTO:
+        forward_vars = [x_class["_".join(id.split("_")[:-2] + [id.split("_")[-1]])] for id in output_ids]
+    else:
+        forward_vars = [x_class["_".join(id.split("_")[:-4] + id.split("_")[-3:])] for id in output_ids]
+
+    inconsistent_vars = [x[f"{backward_component.id}_inconsistent_{_}"] for _ in range(output_size)]
+
+    for inconsistent_index in range(output_size):
+        if model_type == MILP_BITWISE_IMPOSSIBLE_AUTO:
+            incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] == 1]
+        else:
+            incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
+        incompatiblity_constraints.extend(milp_if_then(inconsistent_vars[inconsistent_index], incompatibility_constraint,
+                                    model._model.get_max(x_class) * 2))
+
+
+    return incompatiblity_constraints, inconsistent_vars
+
 
 ### -------------------------Solution parser ------------------------- ###
 def _get_component_values_for_impossible_models(model, objective_variables, components_variables):

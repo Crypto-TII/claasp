@@ -314,25 +314,10 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
                 self._backward_cipher.get_component_from_id(key_flow_id) for key_flow_id in backward_key_flow)
 
         for backward_component in backward_components:
-            output_size = backward_component.output_bit_size // self.word_size
-            input_ids, output_ids = backward_component._get_wordwise_input_output_linked_class(self)
-
-            if include_all_components:
-                # for multiple input components such as the XOR, ensures compatibility occurs on the correct branch
-                inputs_to_be_kept = []
-                for index, input_id in enumerate(["_".join(i.split("_")[:-1]) for i in set(backward_component.input_id_links)]):
-                    if f'{INPUT_KEY}' not in input_id and [link+MILP_BACKWARD_SUFFIX for link in self._cipher.get_component_from_id(input_id).input_id_links] == [backward_component.id]:
-                        inputs_to_be_kept.extend([_ for _ in input_ids if input_id in _])
-                backward_vars = [x_class[id] for id in (inputs_to_be_kept or input_ids) if INPUT_KEY not in id]
-            else:
-                backward_vars = [x_class[id] for id in output_ids]
-            forward_vars = [x_class["_".join(id.split("_")[:-4] + id.split("_")[-3:])] for id in output_ids]
-            inconsistent_vars = [x[f"{backward_component.id}_inconsistent_{_}"] for _ in range(output_size)]
+            incompatibility_constraints, inconsistent_vars = milp_utils.generate_incompatiblity_constraints_for_component(
+                self, MILP_WORDWISE_IMPOSSIBLE_AUTO, x, x_class, backward_component, include_all_components)
             all_inconsistent_vars += inconsistent_vars
-
-            for inconsistent_index in range(output_size):
-                incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
-                constraints.extend(milp_utils.milp_if_then(inconsistent_vars[inconsistent_index], incompatibility_constraint, self._model.get_max(x_class) * 2))
+            constraints.extend(incompatibility_constraints)
 
         # decryption input is fixed and non-zero
         constraints.extend(
