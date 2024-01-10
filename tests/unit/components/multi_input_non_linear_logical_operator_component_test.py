@@ -96,10 +96,10 @@ def test_sat_constraints():
     assert constraints[-1] == 'and_0_8_11 -xor_0_7_11 -key_23'
 
 
-def test_sat_deterministic_truncated_xor_differential_trail_constraints():
+def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
     fancy = FancyBlockCipher(number_of_rounds=3)
     and_component = fancy.component_from(0, 8)
-    output_bit_ids, constraints = and_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+    output_bit_ids, constraints = and_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
     assert output_bit_ids[0] == 'and_0_8_0_0'
     assert output_bit_ids[7] == 'and_0_8_7_0'

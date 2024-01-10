@@ -46,10 +46,10 @@ For any further information, visit `CryptoMiniSat - XOR clauses
 
 
 from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import \
-    SatDeterministicTruncatedXorDifferentialModel
+    SatBitwiseDeterministicTruncatedXorDifferentialModel
 
 
-class CmsSatDeterministicTruncatedXorDifferentialModel(SatDeterministicTruncatedXorDifferentialModel):
+class CmsSatDeterministicTruncatedXorDifferentialModel(SatBitwiseDeterministicTruncatedXorDifferentialModel):
 
     def __init__(self, cipher, window_size_weight_pr_vars=-1,
                  counter='sequential', compact=False):

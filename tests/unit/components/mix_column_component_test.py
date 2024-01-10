@@ -148,10 +148,10 @@ def test_sat_constraints():
     assert constraints[-1] == 'mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'
 
 
-def test_sat_deterministic_truncated_xor_differential_trail_constraints():
+def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
     midori = MidoriBlockCipher(number_of_rounds=3)
     mix_column_component = midori.component_from(0, 23)
-    output_bit_ids, constraints = mix_column_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+    output_bit_ids, constraints = mix_column_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
     assert output_bit_ids[3] == 'mix_column_0_23_3_0'
     assert output_bit_ids[9] == 'mix_column_0_23_9_0'

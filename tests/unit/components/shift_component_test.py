@@ -174,10 +174,10 @@ def test_sat_constraints():
     assert constraints[-1] == '-shift_0_0_31'
 
 
-def test_sat_deterministic_truncated_xor_differential_trail_constraints():
+def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
     tea = TeaBlockCipher(number_of_rounds=3)
     shift_component = tea.component_from(0, 0)
-    output_bit_ids, constraints = shift_component.sat_deterministic_truncated_xor_differential_trail_constraints()
+    output_bit_ids, constraints = shift_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
     assert output_bit_ids[0] == 'shift_0_0_0_0'
     assert output_bit_ids[25] == 'shift_0_0_25_0'
