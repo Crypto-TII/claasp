@@ -29,7 +29,7 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORD
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils, milp_truncated_utils
 
 
 class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTruncatedXorDifferentialModel):
@@ -299,36 +299,17 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             mip.add_constraint(constraint)
 
         # finding incompatibility
-        constraints = []
-        forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
-        all_inconsistent_vars = []
-        backward_components = [c for c in self._backward_cipher.get_all_components() if
-                               c.description == ['round_output'] and set(c.input_id_links) != {
-                                      forward_output.id + MILP_BACKWARD_SUFFIX}]
-
-        key_flow = set(get_key_schedule_component_ids(self._cipher)) - {INPUT_KEY}
-        backward_key_flow = [f'{id}{MILP_BACKWARD_SUFFIX}' for id in key_flow]
-
-        if include_all_components:
-            backward_components = set(self._backward_cipher.get_all_components()) - set(
-                self._backward_cipher.get_component_from_id(key_flow_id) for key_flow_id in backward_key_flow)
-
-        for backward_component in backward_components:
-            incompatibility_constraints, inconsistent_vars = milp_utils.generate_incompatiblity_constraints_for_component(
-                self, MILP_WORDWISE_IMPOSSIBLE_AUTO, x, x_class, backward_component, include_all_components)
-            all_inconsistent_vars += inconsistent_vars
-            constraints.extend(incompatibility_constraints)
+        constraints = milp_truncated_utils.generate_all_incompatibility_constraints_for_fully_automatic_model(self, MILP_WORDWISE_IMPOSSIBLE_AUTO, x, x_class, include_all_components)
 
         # decryption input is fixed and non-zero
         constraints.extend(
             [x_class[id] <= 1 for id in self._backward_cipher.inputs] + [sum([x_class[id] for id in self._backward_cipher.inputs]) >= 1])
 
-        constraints.extend([sum(all_inconsistent_vars) == 1])
-
         for constraint in constraints:
             mip.add_constraint(constraint)
 
         # unknown patterns are tuples of the form (1,x) (i.e pattern = 2 or 3)
+        forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
         _, forward_output_id_tuple = forward_output._get_wordwise_input_output_linked_class_tuples(self)
         mip.add_constraint(
         p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuple]))
