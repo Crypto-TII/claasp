@@ -214,11 +214,9 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
 
         self.build_wordwise_impossible_xor_differential_trail_model(fixed_bits, fixed_words)
-        for index, constraint in enumerate(self._model_constraints):
-            mip.add_constraint(constraint)
 
         # finding incompatibility
-        constraints = []
+        incompatibility_constraints = []
 
         for id in component_id_list:
             forward_component = self._cipher.get_component_from_id(id)
@@ -238,25 +236,22 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
                     backward_vars = [x_class[f'{input_id}_{pos}'] for pos in
                                      backward_component.input_bit_positions[index]]
 
-            constraints.extend([sum(inconsistent_vars) == 1])
+            incompatibility_constraints.extend([sum(inconsistent_vars) == 1])
             for inconsistent_index in range(output_size):
                 incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
-                constraints.extend(milp_utils.milp_if_then(inconsistent_vars[inconsistent_index], incompatibility_constraint, self._model.get_max(x_class) * 2))
+                incompatibility_constraints.extend(milp_utils.milp_if_then(inconsistent_vars[inconsistent_index], incompatibility_constraint, self._model.get_max(x_class) * 2))
 
         # output is fixed
         cipher_output = [c for c in self._cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
         _, cipher_output_ids = cipher_output._get_wordwise_input_output_linked_class(self)
-        constraints.extend([x_class[id] <= 1 for id in cipher_output_ids] + [sum([x_class[id] for id in cipher_output_ids]) >= 1])
-
-        for constraint in constraints:
-            mip.add_constraint(constraint)
+        incompatibility_constraints.extend([x_class[id] <= 1 for id in cipher_output_ids] + [sum([x_class[id] for id in cipher_output_ids]) >= 1])
 
         # unknown patterns are tuples of the form (1,x) (i.e pattern = 2 or 3)
         _, forward_output_id_tuple = forward_component._get_wordwise_input_output_linked_class_tuples(self)
-        mip.add_constraint(
-        p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuple]))
+        optimization_constraint = [p["number_of_unknown_patterns"] == sum(x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuple])]
 
-
+        for constraint in self._model_constraints + incompatibility_constraints + optimization_constraint:
+            mip.add_constraint(constraint)
     def add_constraints_to_build_fully_automatic_model_in_sage_milp_class(self, fixed_bits=[], fixed_words=[], include_all_components=False):
         """
         Take the constraints contained in self._model_constraints and add them to the build-in sage class.

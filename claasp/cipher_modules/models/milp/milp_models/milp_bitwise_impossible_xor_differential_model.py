@@ -194,11 +194,9 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables)
 
 
-        for index, constraint in enumerate(self._model_constraints):
-            mip.add_constraint(constraint)
 
         # finding incompatibility
-        constraints = []
+        incompatibility_constraints = []
 
         for id in component_id_list:
             forward_component = self._cipher.get_component_from_id(id)
@@ -216,19 +214,18 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
                 if INPUT_KEY not in input_id and self._cipher.get_component_from_id(input_id).input_id_links == [id]:
                     backward_vars = [x_class[f'{input_id}_{pos}'] for pos in backward_component.input_bit_positions[index]]
 
-            constraints.extend([sum(inconsistent_vars) == 1])
+            incompatibility_constraints.extend([sum(inconsistent_vars) == 1])
             for inconsistent_index in range(output_bit_size):
                 incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] == 1]
-                constraints.extend(
+                incompatibility_constraints.extend(
                     milp_utils.milp_if_then(inconsistent_vars[inconsistent_index], incompatibility_constraint,
                                             self._model.get_max(x_class) * 2))
 
-        for constraint in constraints:
-            mip.add_constraint(constraint)
-
         _, forward_output_id_tuples = forward_component._get_input_output_variables_tuples()
-        mip.add_constraint(p["number_of_unknown_patterns"] == sum(
-            x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuples]))
+        optimization_constraint = [p["number_of_unknown_patterns"] == sum(
+            x[output_msb] for output_msb in [id[0] for id in forward_output_id_tuples])]
+        for constraint in self._model_constraints + incompatibility_constraints + optimization_constraint:
+            mip.add_constraint(constraint)
 
     def add_constraints_to_build_fully_automatic_model_in_sage_milp_class(self, fixed_variables=[], include_all_components=False):
 
