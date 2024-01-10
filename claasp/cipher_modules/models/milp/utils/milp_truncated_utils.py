@@ -11,11 +11,11 @@ def generate_incompatiblity_constraints_for_component(model, model_type, x, x_cl
     if model_type == MILP_BITWISE_IMPOSSIBLE_AUTO:
         output_size = backward_component.output_bit_size
         input_ids, output_ids = backward_component._get_input_output_variables()
-
+        forward_vars = [x_class["_".join(id.split("_")[:-2] + [id.split("_")[-1]])] for id in output_ids]
     else:
         output_size = backward_component.output_bit_size // model.word_size
         input_ids, output_ids = backward_component._get_wordwise_input_output_linked_class(model)
-
+        forward_vars = [x_class["_".join(id.split("_")[:-4] + id.split("_")[-3:])] for id in output_ids]
 
     if include_all_components:
         # for multiple input components such as the XOR, ensures compatibility occurs on the correct branch
@@ -28,11 +28,6 @@ def generate_incompatiblity_constraints_for_component(model, model_type, x, x_cl
         backward_vars = [x_class[id] for id in (inputs_to_be_kept or input_ids) if INPUT_KEY not in id]
     else:
         backward_vars = [x_class[id] for id in output_ids]
-
-    if model_type == MILP_BITWISE_IMPOSSIBLE_AUTO:
-        forward_vars = [x_class["_".join(id.split("_")[:-2] + [id.split("_")[-1]])] for id in output_ids]
-    else:
-        forward_vars = [x_class["_".join(id.split("_")[:-4] + id.split("_")[-3:])] for id in output_ids]
 
     inconsistent_vars = [x[f"{backward_component.id}_inconsistent_{_}"] for _ in range(output_size)]
 
