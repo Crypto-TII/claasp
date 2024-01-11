@@ -761,7 +761,7 @@ class MixColumn(LinearLayer):
                              for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
         self.set_description(matrix_transposed)
-        out_ids, constraints = super().sat_deterministic_truncated_xor_differential_trail_constraints()
+        out_ids, constraints = super().sat_bitwise_deterministic_truncated_xor_differential_constraints()
         self.set_description(original_description)
         return out_ids, constraints
 
