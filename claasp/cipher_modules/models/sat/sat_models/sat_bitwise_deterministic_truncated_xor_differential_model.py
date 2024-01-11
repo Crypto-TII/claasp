@@ -117,24 +117,22 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             is_equal = (variable['constraint_type'] == 'equal')
             bit_positions = variable['bit_positions']
             bit_values = variable['bit_values']
+            variables_ids = []
+            for position, value in zip(bit_positions, bit_values):
+                false_sign = '-' * is_equal
+                true_sign = '-' * (not is_equal)
+                if value == 0:
+                    variables_ids.append(f'{false_sign}{component_id}_{position}_0')
+                    variables_ids.append(f'{false_sign}{component_id}_{position}_1')
+                elif value == 1:
+                    variables_ids.append(f'{false_sign}{component_id}_{position}_0')
+                    variables_ids.append(f'{true_sign}{component_id}_{position}_1')
+                elif value == 2:
+                    variables_ids.append(f'{true_sign}{component_id}_{position}_0')
             if is_equal:
-                for position, value in zip(bit_positions, bit_values):
-                    if value == 0:
-                        constraints.extend((f'-{component_id}_{position}_0', f'-{component_id}_{position}_1'))
-                    elif value == 1:
-                        constraints.extend((f'-{component_id}_{position}_0', f'{component_id}_{position}_1'))
-                    elif value == 2:
-                        constraints.append(f'{component_id}_{position}_0')
+                constraints.extend(variables_ids)
             else:
-                clause = []
-                for position, value in zip(bit_positions, bit_values):
-                    if value == 0:
-                        clause.extend((f'{component_id}_{position}_0', f'{component_id}_{position}_1'))
-                    elif value == 1:
-                        clause.extend((f'{component_id}_{position}_0', f'-{component_id}_{position}_1'))
-                    elif value == 2:
-                        clause.append(f'-{component_id}_{position}_0')
-                constraints.append(' '.join(clause))
+                constraints.append(' '.join(variables_ids))
 
         return constraints
 
