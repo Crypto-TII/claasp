@@ -303,5 +303,5 @@ RUN sage -pip install plotly -U kaleido
 
 WORKDIR /home/sage/tii-claasp
 
-RUN if [ "$COPY_CLAASP_LIBRARY" = "true" ] ; COPY . . ; fi
-RUN if [ "$INSTALL_CLAASP_LIBRARY" = "true" ] ; make install ; fi
+RUN if [ "$COPY_CLAASP_LIBRARY" = "true" ] ; then COPY . . ; fi
+RUN if [ "$INSTALL_CLAASP_LIBRARY" = "true" ] ; then make install ; fi
