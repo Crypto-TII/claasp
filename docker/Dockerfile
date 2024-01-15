@@ -2,6 +2,8 @@ FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GUROBI_ARCH=linux64
+ARG COPY_CLAASP_LIBRARY=false
+ARG INSTALL_CLAASP_LIBRARY=false
 
 # Install dependencies with apt-get
 RUN apt-get -qq update
@@ -300,3 +302,6 @@ RUN sage -pip install plotly -U kaleido
 
 
 WORKDIR /home/sage/tii-claasp
+
+RUN if [ "$COPY_CLAASP_LIBRARY" = "true" ] ; COPY . . ; fi
+RUN if [ "$INSTALL_CLAASP_LIBRARY" = "true" ] ; make install ; fi
