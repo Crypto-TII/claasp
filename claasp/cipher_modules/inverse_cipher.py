@@ -833,7 +833,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
             component, available_output_components, all_equivalent_bits, self)
         inverse_component = Component(component.id, INTERMEDIATE_OUTPUT,
                                       Input(component.output_bit_size, input_id_links, input_bit_positions),
-                                      component.output_bit_size, [component.id])
+                                      component.output_bit_size, component.description)
         inverse_component.__class__ = intermediate_output_component.IntermediateOutput
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
