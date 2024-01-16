@@ -17,6 +17,7 @@
 # ****************************************************************************
 
 
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
 
@@ -210,6 +211,42 @@ class OR(MultiInputNonlinearLogicalOperator):
 
     def get_byte_based_vectorized_python_code(self, params):
         return [f'  {self.id} = byte_vector_OR({params})']
+
+    def sat_constraints(self):
+        """
+        Return a list of variables and a list of clauses for OR operation in SAT CIPHER model.
+
+        This method support AND operation using more than two operands.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+            sage: gift = GiftPermutation(number_of_rounds=3)
+            sage: or_component = gift.component_from(0, 4)
+            sage: or_component.sat_constraints()
+            (['or_0_4_0',
+              'or_0_4_1',
+              'or_0_4_2',
+              ...
+              'or_0_4_31 -xor_0_3_31',
+              'or_0_4_31 -xor_0_1_31',
+              '-or_0_4_31 xor_0_3_31 xor_0_1_31'])
+        """
+        _, input_bit_ids = self._generate_input_ids()
+        output_bit_len, output_bit_ids = self._generate_output_ids()
+        constraints = []
+        for i in range(output_bit_len):
+            constraints.extend(sat_utils.cnf_or(output_bit_ids[i], input_bit_ids[i::output_bit_len]))
+
+        return output_bit_ids, constraints
 
     def smt_constraints(self):
         """

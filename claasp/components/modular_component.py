@@ -838,6 +838,18 @@ class Modular(Component):
               'modadd_0_1_15 rot_0_0_15 -plaintext_31',
               '-modadd_0_1_15 -rot_0_0_15 -plaintext_31'])
         """
+        def extend_constraints_for_window_size(
+                output_bit_len_, window_size_, input_bit_ids_, output_bit_ids_, constraints_
+        ):
+            if window_size_ != -1:
+                for i in range(output_bit_len_ - window_size_):
+                    n_window_vars_ = [0] * ((window_size_ + 1) * 3)
+                    for j in range(window_size_ + 1):
+                        n_window_vars_[3 * j + 0] = input_bit_ids_[i + j]
+                        n_window_vars_[3 * j + 1] = input_bit_ids_[output_bit_len_ + i + j]
+                        n_window_vars_[3 * j + 2] = output_bit_ids_[i + j]
+                    constraints_.extend(sat_n_window_heuristc_bit_level(window_size_, n_window_vars_))
+
         _, input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         dummy_bit_ids = [f'dummy_{output_bit_ids[i]}' for i in range(output_bit_len - 1)]
@@ -867,16 +879,16 @@ class Modular(Component):
                 constraints.extend(sat_utils.cnf_n_window_heuristic_on_w_vars(
                     hw_bit_ids[i: i + (model.window_size_weight_pr_vars + 1)]))
         component_round_number = model._cipher.get_round_from_component_id(self.id)
-        if model.window_size_by_round != None:
+
+        if model.window_size_by_round is not None:
             window_size = model.window_size_by_round[component_round_number]
-            if window_size != -1:
-                for i in range(output_bit_len - window_size):
-                    n_window_vars = [0] * ((window_size + 1) * 3)
-                    for j in range(window_size + 1):
-                        n_window_vars[3 * j + 0] = input_bit_ids[i + j]
-                        n_window_vars[3 * j + 1] = input_bit_ids[output_bit_len + i + j]
-                        n_window_vars[3 * j + 2] = output_bit_ids[i + j]
-                    constraints.extend(sat_n_window_heuristc_bit_level(window_size, n_window_vars))
+            extend_constraints_for_window_size(output_bit_len, window_size, input_bit_ids, output_bit_ids, constraints)
+
+        if model.window_size_by_component_id is not None:
+            if self.id not in model.window_size_by_component_id:
+                raise ValueError(f"component with id {self.id} is not in the list window_size_by_component_id")
+            window_size = model.window_size_by_component_id[self.id]
+            extend_constraints_for_window_size(output_bit_len, window_size, input_bit_ids, output_bit_ids, constraints)
         result = output_bit_ids + dummy_bit_ids + hw_bit_ids, constraints
         return result
 
