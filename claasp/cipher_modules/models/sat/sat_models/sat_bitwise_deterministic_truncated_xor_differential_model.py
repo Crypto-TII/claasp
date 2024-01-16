@@ -22,21 +22,23 @@ import time
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
-                                  INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+                                  INTERMEDIATE_OUTPUT, INPUT_PLAINTEXT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
 
 
 class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
-    def __init__(self, cipher, window_size_weight_pr_vars=-1,
-                 counter='sequential', compact=False):
+    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False):
         super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
-    def build_bitwise_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[]):
+    def build_bitwise_deterministic_truncated_xor_differential_trail_model(self, number_of_unknown_variables=None, fixed_variables=[]):
         """
         Build the model for the search of deterministic truncated XOR DIFFERENTIAL trails.
 
         INPUT:
 
-        - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format
+        - ``number_of_unknown_variables`` -- **int** (default: None); the number
+          of unknown variables that we want to have in the trail
+        - ``fixed_variables`` -- **list** (default: `[]`); the variables to be
+          fixed in standard format
 
         .. SEEALSO::
 
@@ -65,6 +67,11 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             else:
                 print(f'{component.id} not yet implemented')
 
+            self._variables_list.extend(variables)
+            self._model_constraints.extend(constraints)
+
+        if number_of_unknown_variables is not None:
+            variables, constraints = self.weight_constraints(number_of_unknown_variables)
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
@@ -188,6 +195,84 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
         solution['building_time_seconds'] = end_building_time - start_building_time
 
         return solution
+
+    def find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[], solver_name='cryptominisat'):
+        """
+        Return the solution representing a differential trail with the lowest number of unknown variables.
+
+        INPUTS:
+
+        - ``fixed_values`` -- *list of dict*, the variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``solver_name`` -- *str*, the solver to call
+
+        EXAMPLE::
+
+            sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import SatBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: S = SatBitwiseDeterministicTruncatedXorDifferentialModel(speck)
+            sage: trail = S.find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(get_single_key_scenario_format_for_fixed_values(speck))
+            sage: trail['status']
+            'SATISFIABLE'
+        """
+        current_unknowns_count = 1
+        start_building_time = time.time()
+        self.build_bitwise_deterministic_truncated_xor_differential_trail_model(
+            number_of_unknown_variables=current_unknowns_count, fixed_variables=fixed_values)
+        end_building_time = time.time()
+        solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name)
+        solution['building_time_seconds'] = end_building_time - start_building_time
+        total_time = solution['solving_time_seconds']
+        max_memory = solution['memory_megabytes']
+        while solution['status'] != 'SATISFIABLE':
+            current_unknowns_count += 1
+            start_building_time = time.time()
+            self.build_bitwise_deterministic_truncated_xor_differential_trail_model(
+                number_of_unknown_variables=current_unknowns_count, fixed_variables=fixed_values)
+            end_building_time = time.time()
+            solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name)
+            solution['building_time_seconds'] = end_building_time - start_building_time
+            total_time += solution['solving_time_seconds']
+            max_memory = max((max_memory, solution['memory_megabytes']))
+        solution['solving_time_seconds'] = total_time
+        solution['memory_megabytes'] = max_memory
+
+        return solution
+
+    def weight_constraints(self, number_of_unknown_variables):
+        """
+        Return lists of variables and constraints that fix the number of unknown
+        variables of the input and the output of the trail to a specific value.
+
+        INPUT:
+
+        - ``number_of_unknown_variables`` -- **int**; the number of the unknown variables
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import SatBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: sat = SatBitwiseDeterministicTruncatedXorDifferentialModel(speck)
+            sage: sat.build_bitwise_deterministic_truncated_xor_differential_trail_model()
+            sage: sat.weight_constraints(4)
+            (['dummy_hw_0_0_0',
+              'dummy_hw_0_0_1',
+              'dummy_hw_0_0_2',
+              ...
+              '-dummy_hw_0_61_3 dummy_hw_0_62_3',
+              '-cipher_output_2_12_30_0 -dummy_hw_0_61_3',
+              '-cipher_output_2_12_31_0 -dummy_hw_0_62_3'])
+        """
+        cipher_output_id = self._cipher.get_all_components_ids()[-1]
+        set_to_be_minimized = [f"{INPUT_PLAINTEXT}_{i}_0"
+                               for i in range(self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_PLAINTEXT)])]
+        set_to_be_minimized.extend([bit_id for bit_id in self._variables_list
+                                    if bit_id.startswith(cipher_output_id) and bit_id.endswith("_0")])
+
+        return self._counter(set_to_be_minimized, number_of_unknown_variables)
 
     def _parse_solver_output(self, variable2value):
         components_solutions = self._get_cipher_inputs_components_solutions_double_ids(variable2value)

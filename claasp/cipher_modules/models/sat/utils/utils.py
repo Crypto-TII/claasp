@@ -654,47 +654,44 @@ def cnf_xor_truncated_seq(results, variables):
 
 
 def modadd_truncated_lsb(result, variable_0, variable_1, next_carry):
-    return [f'{next_carry[0]} {result[0]} -{result[1]}',
+    return [f'{next_carry[0]} -{next_carry[1]}',
+            f'{next_carry[0]} -{variable_1[1]}',
+            f'{next_carry[0]} -{result[0]}',
+            f'{next_carry[0]} -{result[1]}',
+            f'{result[0]} -{variable_0[0]}',
+            f'{result[0]} -{variable_1[0]}',
             f'{variable_0[0]} {variable_1[0]} -{result[0]}',
-            f'{variable_0[0]} {result[0]} -{variable_1[0]}',
-            f'{variable_1[0]} {result[0]} -{variable_0[0]}',
-            f'{result[0]} -{variable_1[0]} -{result[1]}',
-            f'{next_carry[0]} {variable_0[0]} {variable_1[0]} -{next_carry[1]}',
-            f'{next_carry[0]} {variable_0[0]} {variable_1[0]} -{variable_1[1]}',
-            f'{variable_0[0]} {variable_0[1]} {variable_1[0]} {variable_1[1]} -{next_carry[0]}',
-            f'{variable_0[0]} {variable_0[1]} {variable_1[0]} {result[1]} -{variable_1[1]}',
-            f'{variable_0[0]} {variable_1[0]} {variable_1[1]} {result[1]} -{variable_0[1]}',
+            f'{variable_0[1]} {variable_1[1]} {result[0]} -{next_carry[0]}',
+            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
+            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
             f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
 
 
 def modadd_truncated(result, variable_0, variable_1, carry, next_carry):
-    return [f'{carry[0]} -{carry[1]}',
-            f'{next_carry[0]} -{carry[0]}',
+    return [f'{next_carry[0]} -{next_carry[1]}',
+            f'{next_carry[0]} -{variable_1[1]}',
+            f'{next_carry[0]} -{result[0]}',
+            f'{next_carry[0]} -{result[1]}',
             f'{result[0]} -{carry[0]}',
-            f'{next_carry[0]} {result[0]} -{result[1]}',
-            f'{variable_0[0]} {result[0]} -{variable_1[0]}',
-            f'{variable_1[0]} {result[0]} -{variable_0[0]}',
-            f'{result[0]} -{variable_1[0]} -{result[1]}',
-            f'{carry[0]} {variable_0[0]} {variable_1[0]} -{result[0]}',
-            f'{next_carry[0]} {variable_0[0]} {variable_1[0]} -{next_carry[1]}',
-            f'{next_carry[0]} {variable_0[0]} {variable_1[0]} -{variable_1[1]}',
-            f'{variable_0[0]} {variable_0[1]} {variable_1[1]} {result[0]} -{next_carry[0]}',
-            f'{variable_0[0]} {variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
-            f'{variable_0[0]} {variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
+            f'{result[0]} -{carry[1]}',
+            f'{result[0]} -{variable_0[0]}',
+            f'{result[0]} -{variable_1[0]}',
+            f'{variable_0[1]} {variable_1[1]} {result[0]} -{next_carry[0]}',
+            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
+            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
+            f'{carry[0]} {carry[1]} {variable_0[0]} {variable_1[0]} -{result[0]}',
             f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
 
 
 def modadd_truncated_msb(result, variable_0, variable_1, carry):
-    return [f'{carry[0]} -{carry[1]}',
-            f'{result[0]} -{carry[0]}',
-            f'{variable_0[0]} {result[0]} -{variable_1[0]}',
-            f'{variable_1[0]} {result[0]} -{variable_0[0]}',
-            f'{result[0]} -{variable_1[0]} -{result[1]}',
-            f'{carry[0]} {variable_0[0]} {variable_1[0]} -{result[0]}',
+    return [f'{result[0]} -{carry[0]}',
+            f'{result[0]} -{carry[1]}',
+            f'{result[0]} -{variable_0[0]}',
+            f'{result[0]} -{variable_1[0]}',
             f'{variable_0[1]} {variable_1[1]} {result[0]} -{result[1]}',
-            f'{variable_0[0]} {variable_0[1]} {variable_1[0]} {variable_1[1]} -{result[0]}',
-            f'{variable_0[0]} {variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
-            f'{variable_0[0]} {variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
+            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
+            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
+            f'{carry[0]} {carry[1]} {variable_0[0]} {variable_1[0]} -{result[0]}',
             f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
 
 

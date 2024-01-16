@@ -164,7 +164,7 @@ class SatModel:
                 if f'{cipher_input}_{i}_1' in variable2value:
                     value ^= variable2value[f'{cipher_input}_{i}_1']
                 values.append(f'{value}')
-            component_solution = set_component_solution(''.join(values).replace('2', '?'))
+            component_solution = set_component_solution(''.join(values).replace('2', '?').replace('3', '?'))
             components_solutions[cipher_input] = component_solution
 
         return components_solutions
@@ -191,7 +191,7 @@ class SatModel:
             if f'{component.id}_{i}_1' in variable2value:
                 variable_value ^= variable2value[f'{component.id}_{i}_1']
             values.append(f'{variable_value}')
-        value = ''.join(values).replace('2', '?')
+        value = ''.join(values).replace('2', '?').replace('3', '?')
 
         return value
 
