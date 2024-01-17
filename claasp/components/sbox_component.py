@@ -1396,10 +1396,8 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-            sage: from claasp.cipher_modules.models.sat.sat_model import SatModel
             sage: present = PresentBlockCipher(number_of_rounds=3)
             sage: sbox_component = present.component_from(0, 2)
-            sage: sat = SatModel(present)
             sage: sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['sbox_0_2_0_0',
               'sbox_0_2_1_0',

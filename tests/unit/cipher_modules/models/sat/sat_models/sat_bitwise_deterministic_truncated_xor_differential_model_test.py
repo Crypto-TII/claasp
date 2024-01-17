@@ -1,4 +1,4 @@
-from claasp.cipher_modules.models.utils import set_fixed_variables
+from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values, set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import \
     SatBitwiseDeterministicTruncatedXorDifferentialModel
@@ -21,17 +21,24 @@ def test_find_one_bitwise_deterministic_truncated_xor_differential_trail():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     sat = SatBitwiseDeterministicTruncatedXorDifferentialModel(speck)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
-                                    bit_values=[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0,
-                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-    key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
+                                    bit_values=(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0,
+                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+    key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=(0,) * 64)
     trail = sat.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
     assert trail['components_values']['intermediate_output_0_6']['value'] == '????100000000000????100000000011'
 
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
     sat = SatBitwiseDeterministicTruncatedXorDifferentialModel(speck)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
-                                    bit_values=[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                0, 0, 0, 0, 0, 0, 0, 0])
-    key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
+                                    bit_values=(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                0, 0, 0, 0, 0, 0, 0, 0))
+    key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=(0,) * 64)
     trail = sat.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
     assert trail['components_values']['cipher_output_2_12']['value'] == '???????????????0????????????????'
+
+
+def test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    sat = SatBitwiseDeterministicTruncatedXorDifferentialModel(speck)
+    trail = sat.find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(get_single_key_scenario_format_for_fixed_values(speck))
+    assert trail['status'] == 'SATISFIABLE'
