@@ -1,12 +1,9 @@
 name: Build and push image from develop
 on:
-#  pull_request:
-#    types: [ closed ]
-#    branches:
-#      - develop
-  push:
+  pull_request:
+    types: [ closed ]
     branches:
-      - feature/build-claasp-image-workflow
+      - main
 
 jobs:
   build-image:
@@ -61,6 +58,3 @@ jobs:
         git add claasp-dev.log
         git commit -m "Updating deployment-repo from github"
         git push origin master
-
-
-
