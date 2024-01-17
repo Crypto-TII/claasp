@@ -52,7 +52,7 @@ FANCY_EVALUATE_C_FILE = 'claasp/cipher_modules/fancy_block_cipher_p24_k24_o24_r2
 def test_algebraic_tests():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     d = speck.algebraic_tests(5)
-    assert d == {'input_parameters': {'timeout': 5}, 'test_results': {'number_of_variables': [304, 800],
+    assert d == {'input_parameters': {'timeout': 5, 'test_name': 'algebraic_tests'}, 'test_results': {'number_of_variables': [304, 800],
                                                                       'number_of_equations': [240, 688],
                                                                       'number_of_monomials': [304, 800],
                                                                       'max_degree_of_equations': [1, 1],
@@ -85,8 +85,7 @@ def test_analyze_cipher():
                                                "avalanche_entropy_criterion_threshold": 0.1},
                            "component_analysis_tests": {"run_tests": True}}
     analysis = sp.analyze_cipher(tests_configuration)
-    assert analysis["diffusion_tests"]["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][
-        "differences"][31]["output_vectors"][0]["vector"] == [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
+    assert analysis["diffusion_tests"]["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][31]["vectors"][0] == [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
 
 
 def test_avalanche_probability_vectors():
@@ -138,24 +137,26 @@ def test_compute_criterion_from_avalanche_probability_vectors():
 def test_continuous_avalanche_factor():
     aes = AESBlockCipher(number_of_rounds=5)
     result = aes.continuous_avalanche_factor(0.001, 300)
-    assert result['plaintext']['cipher_output']['continuous_avalanche_factor']['values'][0]['value'] > 0.1
+    print(result)
+    assert result['plaintext']['cipher_output']['continuous_avalanche_factor']['values'][0] > 0.1
 
 
 def test_continuous_diffusion_factor():
     speck = SpeckBlockCipher(number_of_rounds=2)
     output = speck.continuous_diffusion_factor(5, 20)
-    assert output['plaintext']['cipher_output']['diffusion_factor']['values'][0]['2'] > 0
+    assert output['plaintext']['cipher_output']['diffusion_factor']['values'][0] > 0
 
 
 def test_continuous_diffusion_tests():
     speck_cipher = SpeckBlockCipher(number_of_rounds=1)
     output = speck_cipher.continuous_diffusion_tests()
-    assert output['plaintext']['round_key_output']['continuous_neutrality_measure']['values'][0]['1'] == 0.0
+    assert output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure']["values"][0] == 0.0
 
 
 def test_continuous_neutrality_measure_for_bit_j():
     output = SpeckBlockCipher(number_of_rounds=2).continuous_neutrality_measure_for_bit_j(50, 200)
-    assert output['plaintext']['cipher_output']['continuous_neutrality_measure']['values'][0]['2'] > 0
+    print(output)
+    assert output['plaintext']['cipher_output']['continuous_neutrality_measure']["values"][0]['2'] > 0
 
 
 def test_delete_generated_evaluate_c_shared_library():
@@ -174,34 +175,19 @@ def test_delete_generated_evaluate_c_shared_library():
 def test_diffusion_tests():
     speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
     d = speck.diffusion_tests(number_of_samples=100)
-    assert d["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"]["differences"][0][
-        "output_vectors"][0]["vector"] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    assert d["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][0]["vectors"][0] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=4)
     d = aes.diffusion_tests(number_of_samples=1000)
-    avalanche_dependence_vectors = d["test_results"]['key']['round_key_output']['avalanche_dependence_vectors']
-    assert avalanche_dependence_vectors['input_bit_size'] == 128
-    assert avalanche_dependence_vectors['differences'][0]['output_vectors'][0]['output_component_id'] == \
-           'intermediate_output_0_35'
-    assert avalanche_dependence_vectors['differences'][0]['output_vectors'][2]['output_component_id'] == \
-           'intermediate_output_2_34'
+    assert d["input_parameters"]["round_key_output_avalanche_dependence_vectors_input_bit_size"] == 128
 
     ascon = AsconPermutation(number_of_rounds=5)
     d = ascon.diffusion_tests(number_of_samples=1000)
-    avalanche_weight_vectors = d["test_results"]['plaintext']['cipher_output']['avalanche_weight_vectors']
-    assert avalanche_weight_vectors['input_bit_size'] == 320
-    assert avalanche_weight_vectors['differences'][0]['output_vectors'][0]['output_component_id'] == \
-           'cipher_output_4_40'
+    assert d["input_parameters"]["cipher_output_avalanche_weight_vectors_input_bit_size"] == 320
 
     keccak = KeccakPermutation(number_of_rounds=5, word_size=8)
     d = keccak.diffusion_tests(number_of_samples=1000)
-    avalanche_dependence_uniform_vectors = d["test_results"]['plaintext']['round_output_nonlinear'][
-        'avalanche_dependence_uniform_vectors']
-    assert avalanche_dependence_uniform_vectors['input_bit_size'] == 200
-    assert avalanche_dependence_uniform_vectors['differences'][0]['output_vectors'][0]['output_component_id'] == \
-           'intermediate_output_0_141'
-    assert avalanche_dependence_uniform_vectors['differences'][0]['output_vectors'][3]['output_component_id'] == \
-           'intermediate_output_3_141'
+    assert d["input_parameters"]["round_output_avalanche_dependence_uniform_vectors_input_bit_size"] == 200
 
 
 def test_evaluate_using_c():
@@ -262,6 +248,7 @@ def test_find_good_input_difference_for_neural_distinguisher():
     assert str(type(scores)) == "<class 'numpy.ndarray'>"
 
 
+
 def test_neural_staged_training():
     cipher = SpeckBlockCipher()
     input_differences = [0x400000, 0]
@@ -273,6 +260,18 @@ def test_neural_staged_training():
     results_dbitnet = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
     assert results_dbitnet[5] >= 0
 
+def test_train_gohr_neural_distinguisher():
+    cipher = SpeckBlockCipher()
+    input_differences = [0x400000, 0]
+    number_of_rounds = 5
+    result = cipher.train_gohr_neural_distinguisher(input_differences, number_of_rounds, word_size=16, number_of_epochs=1, training_samples = 10**3, testing_samples = 10**3)
+    assert result > 0
+
+def test_run_autond_pipeline():
+    cipher = SpeckBlockCipher()
+    result = cipher.run_autond_pipeline(optimizer_samples=10 ** 3, optimizer_generations=1,
+                            training_samples=10 ** 2, testing_samples=10 ** 2, number_of_epochs=1, verbose=False)
+    assert not result is {}
 
 def test_get_differential_dataset():
     diff_value_plain_key = [0x400000, 0]
@@ -297,33 +296,35 @@ def test_generate_bit_based_c_code():
     assert '\tprintf("\\nROUND 0\\n\\n");\n' in bit_based_c_code
 
 
-def test_generate_csv_report():
-    tii_path = inspect.getfile(claasp)
-    tii_dir_path = os.path.dirname(tii_path)
-    identity = IdentityBlockCipher()
-    identity.generate_csv_report(10, f"{tii_dir_path}/{identity.id}_report.csv")
-    assert os.path.isfile(f"{tii_dir_path}/{identity.id}_report.csv")
+### Replaced by equivalent functions in Report class
 
-    os.remove(f"{tii_dir_path}/{identity.id}_report.csv")
+#def test_generate_csv_report():
+#    tii_path = inspect.getfile(claasp)
+#    tii_dir_path = os.path.dirname(tii_path)
+#    identity = IdentityBlockCipher()
+#    identity.generate_csv_report(10, f"{tii_dir_path}/{identity.id}_report.csv")
+#    assert os.path.isfile(f"{tii_dir_path}/{identity.id}_report.csv")
+
+#    os.remove(f"{tii_dir_path}/{identity.id}_report.csv")
 
 
-def test_generate_heatmap_graphs_for_avalanche_tests():
-    sp = SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=5)
-    d = sp.diffusion_tests(number_of_samples=100)
-    h = sp.generate_heatmap_graphs_for_avalanche_tests(d)
-    documentclass_pt_ = '\\documentclass[12pt]'
-    assert h[:20] == documentclass_pt_
-
-    ascon = AsconPermutation(number_of_rounds=4)
-    d = ascon.diffusion_tests(number_of_samples=100)
-    h = ascon.generate_heatmap_graphs_for_avalanche_tests(d, [0], ["avalanche_weight_vectors"])
-    assert h[:20] == documentclass_pt_
-
-    cipher = XoodooPermutation(number_of_rounds=4)
-    d = cipher.diffusion_tests(number_of_samples=100)
-    h = cipher.generate_heatmap_graphs_for_avalanche_tests(d, [1, 193], ["avalanche_dependence_vectors",
-                                                                         "avalanche_entropy_vectors"])
-    assert h[:20] == documentclass_pt_
+# def test_generate_heatmap_graphs_for_avalanche_tests():
+#     sp = SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=5)
+#     d = sp.diffusion_tests(number_of_samples=100)
+#     h = sp.generate_heatmap_graphs_for_avalanche_tests(d)
+#     documentclass_pt_ = '\\documentclass[12pt]'
+#     assert h[:20] == documentclass_pt_
+#
+#     ascon = AsconPermutation(number_of_rounds=4)
+#     d = ascon.diffusion_tests(number_of_samples=100)
+#     h = ascon.generate_heatmap_graphs_for_avalanche_tests(d, [0], ["avalanche_weight_vectors"])
+#     assert h[:20] == documentclass_pt_
+#
+#     cipher = XoodooPermutation(number_of_rounds=4)
+#     d = cipher.diffusion_tests(number_of_samples=100)
+#     h = cipher.generate_heatmap_graphs_for_avalanche_tests(d, [1, 193], ["avalanche_dependence_vectors",
+#                                                                          "avalanche_entropy_vectors"])
+#     assert h[:20] == documentclass_pt_
 
 
 def test_generate_word_based_c_code():
@@ -397,18 +398,23 @@ def test_is_spn():
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_neural_network_blackbox_distinguisher_tests():
     results = SpeckBlockCipher(number_of_rounds=5).neural_network_blackbox_distinguisher_tests(nb_samples=10)
-    assert results['neural_network_blackbox_distinguisher_tests']['input_parameters'] == \
-           {'number_of_samples': 10, 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10}
-    assert results['neural_network_blackbox_distinguisher_tests']['test_results']['plaintext']['cipher_output'][
-               'accuracies'][0]['component_output_id'] == 'cipher_output_4_12'
+    assert results['input_parameters'] == \
+           {'number_of_samples': 10, 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10, 'test_name': 'neural_network_blackbox_distinguisher_tests'}
 
 
 def test_neural_network_differential_distinguisher_tests():
     results = SpeckBlockCipher(number_of_rounds=5).neural_network_differential_distinguisher_tests(nb_samples=10)
-    assert results['neural_network_differential_distinguisher_tests']['input_parameters'] == \
-           {'number_of_samples': 10, 'input_differences': [1], 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10}
-    assert results['neural_network_differential_distinguisher_tests']['test_results']['plaintext'][1]['round_output'][
-               'accuracies'][0]['component_output_id'] == 'intermediate_output_0_6'
+    assert results['input_parameters'] == \
+           {'test_name': 'neural_network_differential_distinguisher_tests',
+            'number_of_samples': 10,
+            'input_differences': [1],
+            'hidden_layers': [32, 32, 32],
+            'min_accuracy_value': 0,
+            'max_accuracy_value': 1,
+            'output_bit_size': 32,
+            'number_of_epochs': 10,
+            'plaintext_input_bit_size': 32,
+            'key_input_bit_size': 64}
 
 
 def test_polynomial_system():

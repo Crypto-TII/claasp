@@ -22,7 +22,8 @@ from bitstring import BitArray
 
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_DIFFERENTIAL, MILP_PROBABILITY_SUFFIX
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_DIFFERENTIAL, MILP_PROBABILITY_SUFFIX, \
+    MILP_BUILDING_MESSAGE, MILP_XOR_DIFFERENTIAL_OBJECTIVE
 from claasp.cipher_modules.models.milp.utils.utils import _string_to_hex, _get_variables_values_as_string
 from claasp.cipher_modules.models.utils import integer_to_bit_list, set_component_solution
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
@@ -63,13 +64,13 @@ class MilpXorDifferentialModel(MilpModel):
             sage: mip.number_of_variables()
             468
         """
-        verbose_print("Building model in progress ...")
+        verbose_print(MILP_BUILDING_MESSAGE)
         self.build_xor_differential_trail_model(weight, fixed_variables)
         mip = self._model
         p = self._integer_variable
         for index, constraint in enumerate(self._model_constraints):
             mip.add_constraint(constraint)
-        mip.add_constraint(p["probability"] == sum(
+        mip.add_constraint(p[MILP_XOR_DIFFERENTIAL_OBJECTIVE] == sum(
             p[self._non_linear_component_id[i] + "_probability"] for i in range(len(self._non_linear_component_id))))
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
@@ -177,6 +178,7 @@ class MilpXorDifferentialModel(MilpModel):
             try:
                 solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
                 solution['building_time'] = building_time
+                solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
                 self._number_of_trails_found += 1
                 verbose_print(f"trails found : {self._number_of_trails_found}")
                 list_trails.append(solution)
@@ -341,6 +343,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need to
           be fixed
         - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
 
@@ -377,6 +380,7 @@ class MilpXorDifferentialModel(MilpModel):
                 try:
                     solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
                     solution['building_time'] = building_time
+                    solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
                     self._number_of_trails_found += 1
                     verbose_print(f"trails found : {self._number_of_trails_found}")
                     list_trails.append(solution)
@@ -427,13 +431,14 @@ class MilpXorDifferentialModel(MilpModel):
         verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         p = self._integer_variable
-        mip.set_objective(p["probability"])
+        mip.set_objective(p[MILP_XOR_DIFFERENTIAL_OBJECTIVE])
 
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_lowest_weight_xor_differential_trail"
 
         return solution
 
@@ -446,6 +451,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
             format
         - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         .. SEEALSO::
 
@@ -470,6 +476,7 @@ class MilpXorDifferentialModel(MilpModel):
         building_time = end - start
         solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_one_xor_differential_trail"
 
         return solution
 
@@ -484,6 +491,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
             format
         - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         .. SEEALSO::
 
@@ -512,6 +520,7 @@ class MilpXorDifferentialModel(MilpModel):
         building_time = end - start
         solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_one_xor_differential_trail_with_fixed_weight"
 
         return solution
 
@@ -555,7 +564,7 @@ class MilpXorDifferentialModel(MilpModel):
     def _parse_solver_output(self):
         mip = self._model
         objective_variables = mip.get_values(self._integer_variable)
-        objective_value = objective_variables["probability"] / 10.
+        objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / 10.
         components_variables = mip.get_values(self._binary_variable)
         components_values = self._get_component_values(objective_variables, components_variables)
 

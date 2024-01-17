@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
+from copy import deepcopy
 
 from minizinc import Status
 
@@ -50,7 +50,10 @@ class MinizincXorDifferentialModel(MinizincModel):
         else:
             return None
 
-    def _parse_solution(self, result, solution, list_of_vars, statistics='None'):
+    @staticmethod
+    def _parse_solution(
+            result, solution, list_of_vars, probability_vars, result_status, solution_dict, result_statistics=None
+    ):
         def get_hex_string_from_bool_dict(data, bool_dict, probability_vars_weights_):
             temp_result = {}
             for sublist in data:
@@ -65,23 +68,25 @@ class MinizincXorDifferentialModel(MinizincModel):
 
             return temp_result
 
-        parsed_solution = {'total_weight': None, 'component_values': {}}
-        if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
-            dict_of_solutions = solution.__dict__
-            probability_vars_weights = self.parse_probability_vars(result, solution)
+        parsed_solution = {}
+        if result_status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+            dict_of_solutions = solution_dict
+            probability_vars_weights = MinizincXorDifferentialModel.parse_probability_vars(
+                result, solution, probability_vars
+            )
             solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
             parsed_solution['total_weight'] = solution_total_weight
             parsed_solution['component_values'] = get_hex_string_from_bool_dict(
                 list_of_vars, dict_of_solutions, probability_vars_weights
             )
 
-        parsed_solution['status'] = str(result.status)
 
-        if statistics:
-            parsed_solution['statistics'] = result.statistics
         return parsed_solution
 
-    def _parse_result(self, result, solver_name, total_weight, model_type):
+    @staticmethod
+    def _parse_result(
+            result, solver_name, total_weight, model_type, _variables_list, cipher_id, probability_vars
+    ):
         def _entry_matches(entry, prefix):
             valid_starts = [f"var bool: {prefix}", f"var 0..1: {prefix}"]
             return any(entry.startswith(vs) for vs in valid_starts)
@@ -95,9 +100,9 @@ class MinizincXorDifferentialModel(MinizincModel):
                     temp_result.append(sublist)
             return temp_result
 
-        list_of_vars = group_strings_by_pattern(self._variables_list)
+        list_of_vars = group_strings_by_pattern(_variables_list)
         common_parsed_data = {
-            'id': self.cipher_id,
+            'id': cipher_id,
             'model_type': model_type,
             'solver_name': solver_name
         }
@@ -105,12 +110,28 @@ class MinizincXorDifferentialModel(MinizincModel):
         if total_weight == "list_of_solutions":
             solutions = []
             for solution in result.solution:
-                parsed_solution = self._parse_solution(result, solution, list_of_vars)
+                parsed_solution = {'total_weight': None, 'component_values': {}}
+                parsed_solution_temp = {}
+                if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+                    parsed_solution_temp = MinizincXorDifferentialModel._parse_solution(
+                        result, solution, list_of_vars, probability_vars, result.status, solution.__dict__
+                    )
+                parsed_solution['status'] = str(result.status)
+                parsed_solution = {**parsed_solution, **parsed_solution_temp}
                 solutions.append({**parsed_solution, **common_parsed_data})
+
             return solutions
         else:
-            parsed_result = self._parse_solution(result, result.solution, list_of_vars, result.statistics)
-            return {**parsed_result, **common_parsed_data}
+            parsed_solution = {'total_weight': None, 'component_values': {}}
+            parsed_solution_temp = {}
+            if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+                parsed_solution_temp = MinizincXorDifferentialModel._parse_solution(
+                    result, result.solution, list_of_vars, probability_vars, result.status,
+                    result.solution.__dict__, result.statistics
+                )
+            parsed_solution['status'] = str(result.status)
+            parsed_solution = {**parsed_solution, **parsed_solution_temp}
+            return {**parsed_solution, **common_parsed_data}
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
         """
@@ -356,7 +377,10 @@ class MinizincXorDifferentialModel(MinizincModel):
         self._model_constraints.extend(self.weight_constraints(fixed_weight, "="))
         result = self.solve(solver_name=solver_name, all_solutions_=True)
         total_weight = MinizincXorDifferentialModel._get_total_weight(result)
-        parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
+        parsed_result = MinizincXorDifferentialModel._parse_result(
+            result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
+            self.probability_vars
+        )
 
         return parsed_result
 
@@ -404,7 +428,28 @@ class MinizincXorDifferentialModel(MinizincModel):
             self.weight_constraints(min_weight, ">", max_weight))
         result = self.solve(solver_name=solver_name, all_solutions_=True)
         total_weight = MinizincXorDifferentialModel._get_total_weight(result)
-        parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
+        parsed_result = self._parse_result(
+            result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
+            self.probability_vars
+        )
+
+        return parsed_result
+
+    def find_min_of_max_xor_differential_between_permutation_and_key_schedule(
+            self, fixed_values=[], solver_name=None
+    ):
+        self.constraint_permutation_and_key_schedule_separately_by_input_sizes()
+        self.build_xor_differential_trail_model(-1, fixed_values)
+        self._model_constraints.extend(self.objective_generator(strategy='min_max_key_schedule_permutation'))
+        self._model_constraints.extend(self.weight_constraints())
+
+        result = self.solve(solver_name=solver_name)
+        total_weight = self._get_total_weight(result)
+        parsed_result = MinizincXorDifferentialModel._parse_result(
+            result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
+            self.probability_vars
+        )
+        parsed_result['objective_strategy'] = 'min_max_key_schedule_permutation'
 
         return parsed_result
 
@@ -452,7 +497,10 @@ class MinizincXorDifferentialModel(MinizincModel):
         self._model_constraints.extend(self.weight_constraints())
         result = self.solve(solver_name=solver_name)
         total_weight = MinizincXorDifferentialModel._get_total_weight(result)
-        parsed_result = self._parse_result(result, solver_name, total_weight, 'xor_differential')
+        parsed_result = self._parse_result(
+            result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
+            self.probability_vars
+        )
 
         return parsed_result
 
@@ -462,7 +510,7 @@ class MinizincXorDifferentialModel(MinizincModel):
             var_names_inputs = [self._cipher.inputs[i] + "_" + self.output_postfix + str(j)
                                 for j in range(self._cipher.inputs_bit_size[i])]
             output_string_for_cipher_input = \
-                "output [\"cipher_input:" + self._cipher.inputs[i] + "\" ++ show(" + \
+                "output [\"cipher_input:" + self._cipher.inputs[i] + ":\" ++ show(" + \
                 MinizincXorDifferentialModel._create_minizinc_1d_array_from_list(var_names_inputs) + ")++\"\\n\"];\n"
             output_string_for_cipher_inputs.append(output_string_for_cipher_input)
 
@@ -480,22 +528,88 @@ class MinizincXorDifferentialModel(MinizincModel):
             f'output [ \"{self.cipher_id}, and window_size={self.window_size_list}\" ++ \"\\n\"];'])
         self._model_constraints.extend(output_string_for_cipher_inputs)
 
-    def objective_generator(self):
-        objective_string = []
-        modular_addition_concatenation = "++".join(self.probability_vars)
-        objective_string.append(f'solve:: int_search({modular_addition_concatenation},'
-                                f' smallest, indomain_min, complete)')
-        objective_string.append(f'minimize sum({modular_addition_concatenation});')
-        self.mzn_output_directives.append(f'output ["Total_Probability: "++show(sum('
-                                          f'{modular_addition_concatenation}))];')
+    def get_probability_vars_from_permutation(self):
+        cipher_copy = deepcopy(self.cipher)
+        cipher_permutation = cipher_copy.remove_key_schedule()
+        permutation_components = cipher_permutation.get_all_components()
+        probability_vars_from_permutation = []
+        for permutation_component in permutation_components:
+            if permutation_component.id.startswith('modadd') or permutation_component.id.startswith('modsub'):
+                for probability_var in self.probability_vars:
+                    if probability_var.startswith(f'p_{permutation_component.id}'):
+                        probability_vars_from_permutation.append(probability_var)
+        return probability_vars_from_permutation
+
+    def get_probability_vars_from_key_schedule(self):
+        # TODO:: Refactor together with method get_key_schedule_component_ids from inverse_cipher.
+        all_components_ids = []
+        cipher_components = self.cipher.get_all_components()
+        for cipher_component in cipher_components:
+            all_components_ids.append(cipher_component.id)
+
+        cipher_copy = deepcopy(self.cipher)
+        cipher_permutation = cipher_copy.remove_key_schedule()
+        permutation_components = cipher_permutation.get_all_components()
+        permutation_component_ids = []
+
+        for permutation_component in permutation_components:
+            permutation_component_ids.append(permutation_component.id)
+
+        key_schedule_ids = set(all_components_ids) - set(permutation_component_ids)
+        key_schedule_prob_var_ids = []
+        for key_schedule_id in key_schedule_ids:
+            if key_schedule_id.startswith('modadd') or key_schedule_id.startswith('modsub'):
+                for probability_var in self.probability_vars:
+                    if probability_var.startswith(f'p_{key_schedule_id}'):
+                        key_schedule_prob_var_ids.append(probability_var)
+
+        return key_schedule_prob_var_ids
+
+    def constraint_permutation_and_key_schedule_separately_by_input_sizes(self):
+        key_schedule_probability_vars = list(set(self.get_probability_vars_from_key_schedule()))
+        permutation_probability_vars = list(set(self.get_probability_vars_from_permutation()))
+        modadd_key_schedule_concatenation_vars = "++".join(key_schedule_probability_vars)
+        modadd_permutation_probability_vars = "++".join(permutation_probability_vars)
+        key_index = self.cipher.inputs.index('key')
+        plaintext_index = self.cipher.inputs.index('plaintext')
+        key_input_bit_size = self.cipher.inputs_bit_size[key_index]
+        plaintext_input_bit_size = self.cipher.inputs_bit_size[plaintext_index]
+
+        self._model_constraints.append(f'sum({modadd_key_schedule_concatenation_vars}) <= {key_input_bit_size};')
+        self._model_constraints.append(f'sum({modadd_permutation_probability_vars}) <= {plaintext_input_bit_size};')
+
+    def objective_generator(self, strategy='min_all_probabilities'):
+        if strategy == 'min_all_probabilities':
+            objective_string = []
+            modular_addition_concatenation = "++".join(self.probability_vars)
+            objective_string.append(f'solve:: int_search({modular_addition_concatenation},'
+                                    f' smallest, indomain_min, complete)')
+            objective_string.append(f'minimize sum({modular_addition_concatenation});')
+            self.mzn_output_directives.append(f'output ["Total_Probability: "++show(sum('
+                                              f'{modular_addition_concatenation}))];')
+        elif strategy == 'min_max_key_schedule_permutation':
+            objective_string = []
+            modular_addition_concatenation = "++".join(self.probability_vars)
+            key_schedule_probability_vars = list(set(self.get_probability_vars_from_key_schedule()))
+            permutation_probability_vars = list(set(self.get_probability_vars_from_permutation()))
+
+            modadd_key_schedule_concatenation_vars = "++".join(key_schedule_probability_vars)
+            modadd_permutation_probability_vars = "++".join(permutation_probability_vars)
+            objective_string.append(f'solve:: int_search({modular_addition_concatenation},'
+                                    f' smallest, indomain_min, complete)')
+
+            objective_string.append(f'minimize max(sum({modadd_key_schedule_concatenation_vars}), sum({modadd_permutation_probability_vars}));')
+        else:
+            raise NotImplementedError("Strategy {strategy} no implemented")
 
         return objective_string
 
-    def parse_probability_vars(self, result, solution):
+    @staticmethod
+    def parse_probability_vars(result, solution, probability_vars):
         parsed_result = {}
         if result.status not in [Status.UNKNOWN, Status.UNSATISFIABLE, Status.ERROR]:
 
-            for probability_var in self.probability_vars:
+            for probability_var in probability_vars:
                 lst_value = solution.__dict__[probability_var]
                 parsed_result[probability_var] = {
                     'value': str(hex(int("".join(str(0) if str(x) in ["false", "0"] else str(1) for x in lst_value),

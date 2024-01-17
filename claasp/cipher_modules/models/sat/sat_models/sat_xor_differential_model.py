@@ -18,8 +18,10 @@
 
 
 import time
+from copy import deepcopy
 
 from claasp.cipher_modules.models.sat.sat_model import SatModel
+from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX, WORD_OPERATION, XOR_DIFFERENTIAL)
@@ -27,8 +29,9 @@ from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, 
 
 class SatXorDifferentialModel(SatModel):
     def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False,
-                 window_size_by_round=None):
+                 window_size_by_round=None, window_size_by_component_id=None):
         self._window_size_by_round = window_size_by_round
+        self._window_size_by_component_id = window_size_by_component_id
         super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
@@ -75,6 +78,39 @@ class SatXorDifferentialModel(SatModel):
             variables, constraints = self.weight_constraints(weight)
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
+
+    def build_xor_differential_trail_and_checker_model_at_intermediate_output_level(
+            self, weight=-1, fixed_variables=[]
+    ):
+        """
+        Build the model for the search of XOR DIFFERENTIAL trails and the model to check that there is at least one pair
+        satisfying such trails at the intermediate output level.
+
+        INPUT:
+
+        - ``weight`` -- **integer** (default: `-1`); a specific weight. If set to non-negative integer, fixes the XOR
+          trail weight
+        - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format
+
+        .. SEEALSO::
+
+            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: speck = SpeckBlockCipher(number_of_rounds=22)
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: sat.build_xor_differential_trail_and_checker_model_at_intermediate_output_level()
+        """
+        self.build_xor_differential_trail_model(weight, fixed_variables)
+        internal_cipher = deepcopy(self._cipher)
+        internal_cipher.convert_to_compound_xor_cipher()
+        sat = SatCipherModel(internal_cipher)
+        sat.build_cipher_model()
+        self._variables_list.extend(sat._variables_list)
+        self._model_constraints.extend(sat._model_constraints)
 
     def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
                                                            solver_name='cryptominisat'):
@@ -138,6 +174,7 @@ class SatXorDifferentialModel(SatModel):
             self._model_constraints.append(' '.join(literals))
             solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
             solution['building_time_seconds'] = end_building_time - start_building_time
+            solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
 
         return solutions_list
 
@@ -186,6 +223,8 @@ class SatXorDifferentialModel(SatModel):
             solutions = self.find_all_xor_differential_trails_with_fixed_weight(weight,
                                                                                 fixed_values=fixed_values,
                                                                                 solver_name=solver_name)
+            for solution in solutions_list:
+                solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
             solutions_list.extend(solutions)
 
         return solutions_list
@@ -248,6 +287,7 @@ class SatXorDifferentialModel(SatModel):
             max_memory = max((max_memory, solution['memory_megabytes']))
         solution['solving_time_seconds'] = total_time
         solution['memory_megabytes'] = max_memory
+        solution['test_name'] = "find_lowest_weight_xor_differential_trail"
 
         return solution
 
@@ -293,6 +333,7 @@ class SatXorDifferentialModel(SatModel):
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
+        solution['test_name'] = "find_one_xor_differential_trail"
 
         return solution
 
@@ -339,6 +380,7 @@ class SatXorDifferentialModel(SatModel):
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
+        solution['test_name'] = "find_one_xor_differential_trail_with_fixed_weight"
 
         return solution
 
@@ -358,3 +400,7 @@ class SatXorDifferentialModel(SatModel):
     @property
     def window_size_by_round(self):
         return self._window_size_by_round
+
+    @property
+    def window_size_by_component_id(self):
+        return self._window_size_by_component_id

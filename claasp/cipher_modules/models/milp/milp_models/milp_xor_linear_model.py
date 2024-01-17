@@ -26,7 +26,8 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits, \
     output_dictionary_that_contains_xor_inequalities
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX, \
+    MILP_BUILDING_MESSAGE, MILP_XOR_LINEAR_OBJECTIVE
 from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, _string_to_hex
 from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list, \
     set_component_solution
@@ -68,13 +69,13 @@ class MilpXorLinearModel(MilpModel):
             sage: mip.number_of_variables()
             1018
         """
-        verbose_print("Building model in progress ...")
+        verbose_print(MILP_BUILDING_MESSAGE)
         self.build_xor_linear_trail_model(weight, fixed_variables)
         mip = self._model
         p = self._integer_variable
         for constraint in self._model_constraints:
             mip.add_constraint(constraint)
-        mip.add_constraint(p["probability"] == sum(
+        mip.add_constraint(p[MILP_XOR_LINEAR_OBJECTIVE] == sum(
             p[self._non_linear_component_id[i] + "_probability"] for i in range(len(self._non_linear_component_id))))
 
     def branch_xor_linear_constraints(self):
@@ -304,6 +305,7 @@ class MilpXorLinearModel(MilpModel):
             try:
                 solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
                 solution['building_time'] = building_time
+                solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
                 self._number_of_trails_found += 1
                 verbose_print(f"trails found : {self._number_of_trails_found}")
                 list_trails.append(solution)
@@ -401,6 +403,7 @@ class MilpXorLinearModel(MilpModel):
                 try:
                     solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
                     solution['building_time'] = building_time
+                    solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
                     self._number_of_trails_found += 1
                     verbose_print(f"trails found : {self._number_of_trails_found}")
                     list_trails.append(solution)
@@ -468,12 +471,13 @@ class MilpXorLinearModel(MilpModel):
         verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         p = self._integer_variable
-        mip.set_objective(p["probability"])
+        mip.set_objective(p[MILP_XOR_LINEAR_OBJECTIVE])
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
@@ -512,6 +516,7 @@ class MilpXorLinearModel(MilpModel):
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
@@ -554,6 +559,7 @@ class MilpXorLinearModel(MilpModel):
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_one_xor_linear_trail_with_fixed_weight"
 
         return solution
 
@@ -713,7 +719,7 @@ class MilpXorLinearModel(MilpModel):
     def _parse_solver_output(self):
         mip = self._model
         objective_variables = mip.get_values(self._integer_variable)
-        objective_value = objective_variables["probability"] / 10.
+        objective_value = objective_variables[MILP_XOR_LINEAR_OBJECTIVE] / 10.
         components_variables = mip.get_values(self._binary_variable)
         components_values = self._get_component_values(objective_variables, components_variables)
 

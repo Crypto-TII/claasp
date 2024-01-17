@@ -63,15 +63,13 @@ def test_cp_constraints():
 def test_cp_deterministic_truncated_xor_differential_constraints():
     aes = AESBlockCipher(number_of_rounds=3)
     sbox_component = aes.component_from(0, 1)
-    declarations, constraints = sbox_component.cp_deterministic_truncated_xor_differential_constraints()
+    declarations, constraints, sbox_mant = sbox_component.cp_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
+    print(constraints)
 
-    assert declarations == []
-
-    assert constraints == ['constraint if xor_0_0[0] == 0 /\\ xor_0_0[1] == 0 /\\ xor_0_0[2] == 0 /\\ '
-                           'xor_0_0[3] == 0 /\\ xor_0_0[4] == 0 /\\ xor_0_0[5] == 0 /\\ xor_0_0[6] == 0 /\\ '
-                           'xor_0_0[7] then forall(i in 0..7)(sbox_0_1[i] = 0) else '
-                           'forall(i in 0..7)(sbox_0_1[i] = 2) endif;']
-
+    assert constraints == ['constraint table([xor_0_0[0]]++[xor_0_0[1]]++[xor_0_0[2]]++[xor_0_0[3]]++[xor_0_0[4]]++[xor_0_0[5]]++'
+                                    '[xor_0_0[6]]++[xor_0_0[7]]++[sbox_0_1[0]]++[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]]++[sbox_0_1[4]]++'
+                                    '[sbox_0_1[5]]++[sbox_0_1[6]]++[sbox_0_1[7]], table_sbox_0_1);']
+                                 
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
     aes = AESBlockCipher(number_of_rounds=3)

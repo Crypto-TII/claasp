@@ -55,7 +55,7 @@ def linear_layer_to_binary_matrix(linear_layer_function, input_bit_size, output_
         for i in range(p_matrix.nrows()):
             p_matrix[i] = vector_space.random_element()
 
-    c_matrix = matrix(GF(2), input_bit_size, output_bit_size, input_bit_size)
+    c_matrix = matrix(GF(2), input_bit_size, output_bit_size)#, input_bit_size)
     for i in range(c_matrix.nrows()):
         result = linear_layer_function(BitArray(list(p_matrix[i])), *list_specific_inputs)
         c_matrix[i] = vector(GF(2), result)
