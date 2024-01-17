@@ -46,9 +46,6 @@ jobs:
         tags: tiicrc/claasp-lib:latest
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-        build-args: |
-          COPY_CLAASP_LIBRARY=true
-          INSTALL_CLAASP_LIBRARY=true
 
     - name: Move cache
       run: |
