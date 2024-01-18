@@ -83,7 +83,9 @@ RUN sage -pip install bitstring==4.0.1 \
   pytest==7.2.1 \
   pytest-cov==4.0.0 \
   pytest-xdist==3.2.0 \
-  pytest-benchmark==4.0.0
+  pytest-benchmark==4.0.0 \
+  networkx==2.8.8 \
+  numpy==1.24.3
 
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
