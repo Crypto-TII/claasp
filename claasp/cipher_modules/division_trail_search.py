@@ -160,6 +160,7 @@ class MilpDivisionTrailModel():
                 input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
         output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
 
+        # do I need copy here ???
         input_vars_concat = []
         for key in input_vars.keys():
             input_vars_concat += input_vars[key]
@@ -167,6 +168,24 @@ class MilpDivisionTrailModel():
         for block_id in range(component.description[1]):
             for i in range(int(len(input_vars_concat)//2)):
                 self._model.addConstr(output_vars[i] == input_vars_concat[i] + input_vars_concat[i + len(input_vars_concat)//2])
+        self._model.update()
+
+    def add_rotate_constraints(self, component):
+        input_vars = {}
+        for index, input_name in enumerate(component.input_id_links):
+            input_vars[input_name] = []
+            for i in component.input_bit_positions[index]:
+                input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
+        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+
+        # do I need copy here ???
+        input_vars_concat = []
+        for key in input_vars.keys():
+            input_vars_concat += input_vars[key]
+
+        rotate_offset = component.description[1]
+        for i in range(component.output_bit_size):
+            self._model.addConstr(output_vars[i] == input_vars_concat[i-rotate_offset % component.output_bit_size])
         self._model.update()
 
 
@@ -181,6 +200,8 @@ class MilpDivisionTrailModel():
             elif component.type == "word_operation":
                 if component.description[0] == "XOR":
                     self.add_xor_constraints(component)
+                if component.description[0] == "ROTATE":
+                    self.add_rotate_constraints(component)
             else:
                 print("not yet implemented")
 
