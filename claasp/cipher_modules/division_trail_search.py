@@ -6,7 +6,6 @@ from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
 
-
 class MilpDivisionTrailModel():
     """
     EXAMPLES::
@@ -44,11 +43,11 @@ class MilpDivisionTrailModel():
         anfs = []
         sbox = SBox(component.description)
         for i in range(component.input_bit_size):
-            anfs.append(sbox.component_function(1 << i).algebraic_normal_form())
+            anfs.append(sbox.component_function(1<<i).algebraic_normal_form())
         return anfs
 
     def get_monomial_occurences(self, component):
-        B = BooleanPolynomialRing(component.input_bit_size, 'x')
+        B = BooleanPolynomialRing(component.input_bit_size,'x')
         anfs = self.get_anfs_from_sbox(component)
 
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
@@ -59,9 +58,8 @@ class MilpDivisionTrailModel():
 
         monomials_degree_based = {}
         sbox = SBox(component.description)
-        for deg in range(sbox.max_degree() + 1):
-            monomials_degree_based[deg] = dict(
-                Counter([monomial for monomial in monomials if monomial.degree() == deg]))
+        for deg in range(sbox.max_degree()+1):
+            monomials_degree_based[deg] = dict(Counter([monomial for monomial in monomials if monomial.degree() == deg]))
             if deg >= 2:
                 for monomial in monomials_degree_based[deg].keys():
                     deg1_monomials = monomial.variables()
@@ -76,7 +74,7 @@ class MilpDivisionTrailModel():
 
         monomial_occurences = self.get_monomial_occurences(component)
         print(monomial_occurences)
-        B = BooleanPolynomialRing(component.input_bit_size, 'x')
+        B = BooleanPolynomialRing(component.input_bit_size,'x')
         x = B.variable_names()
 
         copy_xi = {}
@@ -106,11 +104,12 @@ class MilpDivisionTrailModel():
         self._model.update()
         return copy_monomials_deg
 
+
     def add_sbox_constraints(self, component):
         input_vars = self._model.addVars(list(range(5)), vtype=GRB.BINARY)
         output_vars = self._model.addVars(list(range(5)), vtype=GRB.BINARY)
 
-        B = BooleanPolynomialRing(component.input_bit_size, 'x')
+        B = BooleanPolynomialRing(component.input_bit_size,'x')
         x = B.variable_names()
         anfs = self.get_anfs_from_sbox(component)
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
@@ -133,8 +132,7 @@ class MilpDivisionTrailModel():
                     current = copy_monomials_deg[deg]["current"]
                     for deg1_monomial in monomial.variables():
                         current_deg1 = copy_monomials_deg[1][deg1_monomial]["current"]
-                        self._model.addConstr(
-                            copy_monomials_deg[deg][current] == copy_monomials_deg[1][deg1_monomial][current_deg1])
+                        self._model.addConstr(copy_monomials_deg[deg][current] == copy_monomials_deg[1][deg1_monomial][current_deg1])
                         copy_monomials_deg[1][deg1_monomial]["current"] += 1
                     constr += copy_monomials_deg[deg][current]
                     copy_monomials_deg[deg]["current"] += 1
@@ -147,32 +145,47 @@ class MilpDivisionTrailModel():
 
         self._model.update()
 
-    def create_cipher_input_output_vars(self):
-        inputs = {}
-        for index, input in enumerate(self._cipher.inputs):
-            inputs[input] = self._model.addVars(list(range(self._cipher.inputs_bit_size[index])), vtype=GRB.BINARY)
-        ciphertext = self._model.addVars(list(range(self._cipher.output_bit_size)), vtype=GRB.BINARY)
-        return inputs, ciphertext
+    def set_cipher_input_output_vars(self):
+        for index, input_name in enumerate(self._cipher.inputs):
+            self._model.addVars(list(range(self._cipher.inputs_bit_size[index])), vtype=GRB.BINARY, name=input_name)
+        self._model.addVars(list(range(self._cipher.output_bit_size)), vtype=GRB.BINARY, name="ciphertext")
+        self._model.update()
 
-    # def create_component_input_output_vars(self):
 
-    # def add_xor_constraints(self, component):
-    #     print("doisjd")
+    def add_xor_constraints(self, component):
+        input_vars = {}
+        for index, input_name in enumerate(component.input_id_links):
+            input_vars[input_name] = []
+            for i in component.input_bit_positions[index]:
+                input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
+        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+
+        input_vars_concat = []
+        for key in input_vars.keys():
+            input_vars_concat += input_vars[key]
+
+        for block_id in range(component.description[1]):
+            for i in range(int(len(input_vars_concat)//2)):
+                self._model.addConstr(output_vars[i] == input_vars_concat[i] + input_vars_concat[i + len(input_vars_concat)//2])
+        self._model.update()
+
 
     def add_constraints(self):
         self.build_gurobi_model()
-        inputs, output = self.create_cipher_input_output_vars()
+        self.set_cipher_input_output_vars()
         word_operations_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
         for component in self._cipher.get_all_components():
             if component.type == SBOX:
                 self.add_sbox_constraints(component)
-            elif component.type in word_operations_types:
-                if component.description[0] = "ROTATE":
+            elif component.type == "word_operation":
+                if component.description[0] == "XOR":
                     self.add_xor_constraints(component)
             else:
-                print("not sbox")
+                print("not yet implemented")
+
 
         return self._model
+
 
 # ascon_sbox = [4, 11, 31, 20, 26, 21, 9, 2, 27, 5, 8, 18, 29, 3, 6, 28, 30, 19, 7, 14, 0, 13, 17, 24, 16, 12, 1, 25, 22, 10, 15, 23]
