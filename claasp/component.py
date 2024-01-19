@@ -322,10 +322,8 @@ class Component:
         input_class_ids = []
 
         for index, link in enumerate(self.input_id_links):
-            for pos in range(len(self.input_bit_positions[index]) // model.word_size):
-                input_class_ids.append(link + '_word_' + str(
-                        (pos * model.word_size + self.input_bit_positions[index][
-                            0]) // model.word_size) + '_class')
+            for pos in self.input_bit_positions[index][::model.word_size]:
+                input_class_ids.append(link + '_word_' + str(pos // model.word_size) + '_class')
 
         return input_class_ids, output_class_ids
 
