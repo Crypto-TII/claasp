@@ -235,8 +235,22 @@ class MilpDivisionTrailModel():
             else:
                 print("not yet implemented")
 
-
         return self._model
+
+
+    def solve_constraints(self):
+        self.add_constraints()
+        output_vars = []
+        for i in range(self._cipher.output_bit_size):
+            output_vars.append(self._model.getVarByName(f"ciphertext[{i}]"))
+        ks = self._model.addVar()
+        self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size)))
+        self._model.addConstr(ks == 1)
+        self._model.addConstr(output_vars[0] == 1)
+        self._model.update()
+        self._model.optimize()
+        solCount = self._model.SolCount
+        print('Number of solutions found: ' + str(solCount))
 
 
 # ascon_sbox = [4, 11, 31, 20, 26, 21, 9, 2, 27, 5, 8, 18, 29, 3, 6, 28, 30, 19, 7, 14, 0, 13, 17, 24, 16, 12, 1, 25, 22, 10, 15, 23]
