@@ -68,9 +68,9 @@ class MilpDivisionTrailModel():
 
         return monomials_degree_based
 
-    def create_gurobi_vars_sbox(self, component):
-        input_vars = self._model.addVars(list(range(5)), vtype=GRB.BINARY)
-        output_vars = self._model.addVars(list(range(5)), vtype=GRB.BINARY)
+    def create_gurobi_vars_sbox(self, component, input_vars_concat):
+        # input_vars = self._model.addVars(list(range(5)), vtype=GRB.BINARY)
+        # output_vars = self._model.addVars(list(range(5)), vtype=GRB.BINARY)
 
         monomial_occurences = self.get_monomial_occurences(component)
         print(monomial_occurences)
@@ -78,13 +78,13 @@ class MilpDivisionTrailModel():
         x = B.variable_names()
 
         copy_xi = {}
-        for xi in x:
+        for index, xi in enumerate(x):
             nb_occurence_xi = monomial_occurences[1][B(xi)]
             if nb_occurence_xi != 0:
                 copy_xi[B(xi)] = self._model.addVars(list(range(nb_occurence_xi)), vtype=GRB.BINARY)
                 for i in range(nb_occurence_xi):
-                    self._model.addConstr(input_vars[0] >= copy_xi[B(xi)][i])
-                self._model.addConstr(sum(copy_xi[B(xi)][i] for i in range(nb_occurence_xi)) >= input_vars[0])
+                    self._model.addConstr(input_vars_concat[index] >= copy_xi[B(xi)][i])
+                self._model.addConstr(sum(copy_xi[B(xi)][i] for i in range(nb_occurence_xi)) >= input_vars_concat[index])
 
         copy_monomials_deg = {}
         for deg in list(monomial_occurences.keys()):
@@ -106,8 +106,19 @@ class MilpDivisionTrailModel():
 
 
     def add_sbox_constraints(self, component):
-        input_vars = self._model.addVars(list(range(5)), vtype=GRB.BINARY)
-        output_vars = self._model.addVars(list(range(5)), vtype=GRB.BINARY)
+        # input_vars = self._model.addVars(list(range(5)), vtype=GRB.BINARY)
+        # output_vars = self._model.addVars(list(range(5)), vtype=GRB.BINARY)
+
+        input_vars = {}
+        for index, input_name in enumerate(component.input_id_links):
+            input_vars[input_name] = []
+            for i in component.input_bit_positions[index]:
+                input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
+        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+
+        input_vars_concat = []
+        for key in input_vars.keys():
+            input_vars_concat += input_vars[key]
 
         B = BooleanPolynomialRing(component.input_bit_size,'x')
         x = B.variable_names()
@@ -115,7 +126,7 @@ class MilpDivisionTrailModel():
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
         print(anfs)
 
-        copy_monomials_deg = self.create_gurobi_vars_sbox(component)
+        copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
         print(copy_monomials_deg)
 
         for index, anf in enumerate(anfs):
@@ -188,6 +199,23 @@ class MilpDivisionTrailModel():
             self._model.addConstr(output_vars[i] == input_vars_concat[i-rotate_offset % component.output_bit_size])
         self._model.update()
 
+    def add_cipher_output_constraints(self, component):
+        input_vars = {}
+        for index, input_name in enumerate(component.input_id_links):
+            input_vars[input_name] = []
+            for i in component.input_bit_positions[index]:
+                input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
+        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+
+        # do I need copy here ???
+        input_vars_concat = []
+        for key in input_vars.keys():
+            input_vars_concat += input_vars[key]
+
+        for i in range(component.output_bit_size):
+            self._model.addConstr(output_vars[i] == input_vars_concat[i])
+        self._model.update()
+
 
     def add_constraints(self):
         self.build_gurobi_model()
@@ -197,6 +225,8 @@ class MilpDivisionTrailModel():
         for component in self._cipher.get_all_components():
             if component.type == SBOX:
                 self.add_sbox_constraints(component)
+            elif component.type == "cipher_output":
+                self.add_cipher_output_constraints(component)
             elif component.type == "word_operation":
                 if component.description[0] == "XOR":
                     self.add_xor_constraints(component)
