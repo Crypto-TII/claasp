@@ -82,6 +82,34 @@ def test_milp_xor_linear_mask_propagation_constraints():
     assert str(constraints[-1]) == "x_49 == 10*x_48"
 
 
+def test_sat_constraints():
+    fancy = FancyBlockCipher(number_of_rounds=3)
+    and_component = fancy.component_from(0, 8)
+    output_bit_ids, constraints = and_component.sat_constraints()
+
+    assert output_bit_ids[0] == 'and_0_8_0'
+    assert output_bit_ids[1] == 'and_0_8_1'
+    assert output_bit_ids[2] == 'and_0_8_2'
+
+    assert constraints[-3] == '-and_0_8_11 xor_0_7_11'
+    assert constraints[-2] == '-and_0_8_11 key_23'
+    assert constraints[-1] == 'and_0_8_11 -xor_0_7_11 -key_23'
+
+
+def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
+    fancy = FancyBlockCipher(number_of_rounds=3)
+    and_component = fancy.component_from(0, 8)
+    output_bit_ids, constraints = and_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+
+    assert output_bit_ids[0] == 'and_0_8_0_0'
+    assert output_bit_ids[7] == 'and_0_8_7_0'
+    assert output_bit_ids[14] == 'and_0_8_2_1'
+
+    assert constraints[-14] == 'and_0_8_9_0 -and_0_8_9_1'
+    assert constraints[-7] == 'xor_0_7_10_0 key_22_0 xor_0_7_10_1 key_22_1 -and_0_8_10_0'
+    assert constraints[-1] == 'xor_0_7_11_0 key_23_0 xor_0_7_11_1 key_23_1 -and_0_8_11_0'
+    
+
 def test_sat_xor_differential_propagation_constraints():
     fancy = FancyBlockCipher(number_of_rounds=3)
     and_component = fancy.component_from(0, 8)

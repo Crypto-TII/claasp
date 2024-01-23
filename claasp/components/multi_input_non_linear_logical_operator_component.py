@@ -365,6 +365,81 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         return result
 
+    def sat_constraints(self):
+        """
+        Return a list of variables and a list of clauses for AND operation in SAT CIPHER model.
+
+        This method support AND operation using more than two operands.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: and_component = fancy.component_from(0, 8)
+            sage: and_component.sat_constraints()
+            (['and_0_8_0',
+              'and_0_8_1',
+              'and_0_8_2',
+              ...
+              '-and_0_8_11 xor_0_7_11',
+              '-and_0_8_11 key_23',
+              'and_0_8_11 -xor_0_7_11 -key_23'])
+        """
+        _, input_bit_ids = self._generate_input_ids()
+        output_bit_len, output_bit_ids = self._generate_output_ids()
+        constraints = []
+        for i in range(output_bit_len):
+            constraints.extend(sat_utils.cnf_and(output_bit_ids[i], input_bit_ids[i::output_bit_len]))
+
+        return output_bit_ids, constraints
+
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for AND/OR in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: and_component = fancy.component_from(0, 8)
+            sage: and_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            (['and_0_8_0_0',
+              'and_0_8_1_0',
+              'and_0_8_2_0',
+              ...
+              'and_0_8_11_0 -key_23_1',
+              'and_0_8_11_0 -and_0_8_11_1',
+              'xor_0_7_11_0 key_23_0 xor_0_7_11_1 key_23_1 -and_0_8_11_0'])
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        constraints = []
+        for i in range(out_len):
+            constraints.extend([f'{out_ids_0[i]} -{in_id}' for in_id in in_ids_0[i::out_len]])
+            constraints.extend([f'{out_ids_0[i]} -{in_id}' for in_id in in_ids_1[i::out_len]])
+            constraints.append(f'{out_ids_0[i]} -{out_ids_1[i]}')
+            clause = f'{" ".join(in_ids_0[i::out_len])} {" ".join(in_ids_1[i::out_len])} -{out_ids_0[i]}'
+            constraints.append(clause)
+
+        return out_ids_0 + out_ids_1, constraints
+
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses for AND operation in SAT XOR DIFFERENTIAL model.

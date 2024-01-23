@@ -260,6 +260,20 @@ def test_sat_constraints():
     assert constraints[-1] == '-xor_0_0_4 -xor_0_0_5 -xor_0_0_6 -xor_0_0_7 -sbox_0_2_3'
 
 
+def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
+    present = PresentBlockCipher(number_of_rounds=3)
+    sbox_component = present.component_from(0, 2)
+    output_bit_ids, constraints = sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+
+    assert output_bit_ids[0] == 'sbox_0_2_0_0'
+    assert output_bit_ids[1] == 'sbox_0_2_1_0'
+    assert output_bit_ids[2] == 'sbox_0_2_2_0'
+
+    assert constraints[-3] == '-xor_0_0_6_0 sbox_0_2_3_0'
+    assert constraints[-2] == '-xor_0_0_5_0 sbox_0_2_3_0'
+    assert constraints[-1] == '-xor_0_0_4_0 sbox_0_2_3_0'
+
+
 def test_sat_xor_differential_propagation_constraints():
     present = PresentBlockCipher(number_of_rounds=3)
     sbox_component = present.component_from(0, 2)

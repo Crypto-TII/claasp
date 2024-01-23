@@ -734,6 +734,37 @@ class MixColumn(LinearLayer):
         result = variables, constraints
         return result
 
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for MIX COLUMN in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+            sage: midori = MidoriBlockCipher(number_of_rounds=3)
+            sage: mix_column_component = midori.component_from(0, 23)
+            sage: out_ids, constraints = mix_column_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            sage: constraints[7]
+            'mix_column_0_23_0_0 -inter_0_mix_column_0_23_0_0'
+        """
+        matrix = binary_matrix_of_linear_component(self)
+        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())]
+                             for j in range(matrix.ncols())]
+        original_description = deepcopy(self.description)
+        self.set_description(matrix_transposed)
+        out_ids, constraints = super().sat_bitwise_deterministic_truncated_xor_differential_constraints()
+        self.set_description(original_description)
+        return out_ids, constraints
+
     def sat_xor_differential_propagation_constraints(self, model):
         return self.sat_constraints()
 

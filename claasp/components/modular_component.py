@@ -892,6 +892,55 @@ class Modular(Component):
         result = output_bit_ids + dummy_bit_ids + hw_bit_ids, constraints
         return result
 
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for Modular Addition
+        in DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: modadd_component = speck.component_from(0, 1)
+            sage: modadd_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            (['modadd_0_1_0_0',
+              'modadd_0_1_1_0',
+              'modadd_0_1_2_0',
+              ...
+              'rot_0_0_15_0 plaintext_31_0 -rot_0_0_15_1 -modadd_0_1_15_0',
+              'rot_0_0_15_0 plaintext_31_0 -plaintext_31_1 -modadd_0_1_15_0',
+              'modadd_0_1_15_0 -rot_0_0_15_1 -plaintext_31_1 -modadd_0_1_15_1'])
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        carry_ids_0 = [f'carry_{out_id}_0' for out_id in out_ids_0]
+        carry_ids_1 = [f'carry_{out_id}_1' for out_id in out_ids_1]
+        constraints = [f'-{carry_ids_0[-1]} -{carry_ids_1[-1]}']
+        constraints.extend(sat_utils.modadd_truncated_msb((out_ids_0[0], out_ids_1[0]),
+                                                          (in_ids_0[0], in_ids_1[0]),
+                                                          (in_ids_0[out_len], in_ids_1[out_len]),
+                                                          (carry_ids_0[0], carry_ids_1[0])))
+        for i in range(1, out_len - 1):
+            constraints.extend(sat_utils.modadd_truncated((out_ids_0[i], out_ids_1[i]),
+                                                          (in_ids_0[i], in_ids_1[i]),
+                                                          (in_ids_0[i+out_len], in_ids_1[i+out_len]),
+                                                          (carry_ids_0[i], carry_ids_1[i]),
+                                                          (carry_ids_0[i-1], carry_ids_1[i-1])))
+        constraints.extend(sat_utils.modadd_truncated_lsb((out_ids_0[-1], out_ids_1[-1]),
+                                                          (in_ids_0[out_len-1], in_ids_1[out_len-1]),
+                                                          (in_ids_0[2*out_len-1], in_ids_1[2*out_len-1]),
+                                                          (carry_ids_0[-2], carry_ids_1[-2])))
+
+        return out_ids_0 + out_ids_1 + carry_ids_0 + carry_ids_1, constraints
+
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses for fixing variables in SAT XOR LINEAR model.
