@@ -131,13 +131,16 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
         constraints.extend([sum(inconsistent_vars) == 1])
         for inconsistent_index in range(output_size):
-            incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
-            constraints.extend(milp_utils.milp_if_then(inconsistent_vars[inconsistent_index], incompatibility_constraint, self._model.get_max(x_class) * 2))
+            incompatibility_constraints = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
+            dummy = x[f'dummy_incompatibility_{x[forward_vars[inconsistent_index]]}_or_{x[backward_vars[inconsistent_index]]}_is_0']
+            incompatibility_constraints += [forward_vars[inconsistent_index] <= self._model.get_max(x_class) * (1 - dummy)]
+            incompatibility_constraints += [backward_vars[inconsistent_index] <= self._model.get_max(x_class) * dummy]
+            constraints.extend(milp_utils.milp_if_then(inconsistent_vars[inconsistent_index], incompatibility_constraints, self._model.get_max(x_class) * 2))
 
         # output is fixed
         cipher_output = [c for c in self._cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
         _, cipher_output_ids = cipher_output._get_wordwise_input_output_linked_class(self)
-        constraints.extend([x_class[id] <= 1 for id in cipher_output_ids] + [sum([x_class[id] for id in cipher_output_ids]) >= 1])
+        constraints.extend([x_class[id] <= 2 for id in cipher_output_ids] + [sum([x_class[id] for id in cipher_output_ids]) >= 1])
 
         for constraint in constraints:
             mip.add_constraint(constraint)
