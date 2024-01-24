@@ -239,7 +239,7 @@ class MilpDivisionTrailModel():
         self.set_cipher_input_output_vars()
         word_operations_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
-        for component in self._cipher.get_all_components()[:3]:
+        for component in self._cipher.get_all_components()[:5]:
             if component.type == SBOX:
                 self.add_sbox_constraints(component)
             elif component.type == "cipher_output":
@@ -258,13 +258,13 @@ class MilpDivisionTrailModel():
     def solve_constraints(self):
         self.add_constraints()
         output_vars = []
-        for i in range(3): #self._cipher.output_bit_size
-            output_vars.append(self._model.getVarByName(f"sbox_0_2[{i}]"))
+        for i in range(6): #self._cipher.output_bit_size
+            output_vars.append(self._model.getVarByName(f"rot_0_4[{i}]"))
         print(output_vars)
         ks = self._model.addVar()
-        self._model.addConstr(ks == sum(output_vars[i] for i in range(3)))
+        self._model.addConstr(ks == sum(output_vars[i] for i in range(6)))
         self._model.addConstr(ks == 1)
-        self._model.addConstr(output_vars[0] == 1)
+        self._model.addConstr(output_vars[1] == 1)
         self._model.update()
         self._model.write("division_trail_model_toy_cipher.lp")
         self._model.optimize()
