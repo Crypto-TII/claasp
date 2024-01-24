@@ -18,7 +18,7 @@ from copy import deepcopy
 from minizinc import Status
 
 from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
-from claasp.cipher_modules.models.milp.utils.mzn_bct_predicates import get_bct_operations
+from claasp.cipher_modules.models.minizinc.utils.mzn_bct_predicates import get_bct_operations
 from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
 from claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model import \
     MinizincXorDifferentialModel
