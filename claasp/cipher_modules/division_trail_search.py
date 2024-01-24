@@ -22,7 +22,7 @@ class MilpDivisionTrailModel():
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.add_constraints()
+        sage: milp.solve_constraints()
 
     """
 
@@ -54,7 +54,7 @@ class MilpDivisionTrailModel():
         monomials = []
         for anf in anfs:
             monomials += anf.monomials()
-        print(monomials)
+        # print(monomials)
 
         monomials_degree_based = {}
         sbox = SBox(component.description)
@@ -74,6 +74,7 @@ class MilpDivisionTrailModel():
 
         monomial_occurences = self.get_monomial_occurences(component)
         print(monomial_occurences)
+        print("#########")
         B = BooleanPolynomialRing(component.input_bit_size,'x')
         x = B.variable_names()
 
@@ -81,16 +82,18 @@ class MilpDivisionTrailModel():
         for index, xi in enumerate(x):
             nb_occurence_xi = monomial_occurences[1][B(xi)]
             if nb_occurence_xi != 0:
-                copy_xi[B(xi)] = self._model.addVars(list(range(nb_occurence_xi)), vtype=GRB.BINARY)
+                copy_xi[B(xi)] = self._model.addVars(list(range(nb_occurence_xi)), vtype=GRB.BINARY, name="copy_"+xi)
+                self._model.update()
                 for i in range(nb_occurence_xi):
                     self._model.addConstr(input_vars_concat[index] >= copy_xi[B(xi)][i])
                 self._model.addConstr(sum(copy_xi[B(xi)][i] for i in range(nb_occurence_xi)) >= input_vars_concat[index])
 
         copy_monomials_deg = {}
         for deg in list(monomial_occurences.keys()):
-            if deg >= 2:
+            if deg >= 2: # here you are looking at only deg 2, what if deg 3 or more?
                 nb_monomials = sum(monomial_occurences[2].values())
-                copy_monomials_deg[deg] = self._model.addVars(list(range(nb_monomials)), vtype=GRB.BINARY)
+                copy_monomials_deg[deg] = self._model.addVars(list(range(nb_monomials)), vtype=GRB.BINARY, name="copy_deg2")
+                self._model.update()
 
         copy_monomials_deg[1] = copy_xi
         degrees = list(copy_monomials_deg.keys())
@@ -119,15 +122,23 @@ class MilpDivisionTrailModel():
         input_vars_concat = []
         for key in input_vars.keys():
             input_vars_concat += input_vars[key]
+        print("#########")
+        self._model.update()
+        print(input_vars_concat)
+        print(output_vars)
+        print("#########")
 
         B = BooleanPolynomialRing(component.input_bit_size,'x')
         x = B.variable_names()
         anfs = self.get_anfs_from_sbox(component)
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
+        anfs.reverse()
         print(anfs)
+        print("#########")
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
         print(copy_monomials_deg)
+        print("#########")
 
         for index, anf in enumerate(anfs):
             constr = 0
@@ -153,13 +164,15 @@ class MilpDivisionTrailModel():
                 self._model.addConstr(output_vars[index] == constr)
             else:
                 self._model.addConstr(output_vars[index] >= constr)
+            print(copy_monomials_deg)
+            print("#########")
 
         self._model.update()
 
     def set_cipher_input_output_vars(self):
         for index, input_name in enumerate(self._cipher.inputs):
             self._model.addVars(list(range(self._cipher.inputs_bit_size[index])), vtype=GRB.BINARY, name=input_name)
-        self._model.addVars(list(range(self._cipher.output_bit_size)), vtype=GRB.BINARY, name="ciphertext")
+        # self._model.addVars(list(range(self._cipher.output_bit_size)), vtype=GRB.BINARY, name="ciphertext")
         self._model.update()
 
 
@@ -170,15 +183,19 @@ class MilpDivisionTrailModel():
             for i in component.input_bit_positions[index]:
                 input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
         output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+        self._model.update()
+        print("###################")
+        print(input_vars)
+        print(output_vars)
 
         # do I need copy here ???
         input_vars_concat = []
         for key in input_vars.keys():
             input_vars_concat += input_vars[key]
 
-        for block_id in range(component.description[1]):
-            for i in range(int(len(input_vars_concat)//2)):
-                self._model.addConstr(output_vars[i] == input_vars_concat[i] + input_vars_concat[i + len(input_vars_concat)//2])
+        block_size = int(len(input_vars_concat)//2)
+        for i in range(block_size):
+            self._model.addConstr(output_vars[i] == input_vars_concat[i] + input_vars_concat[i + block_size])
         self._model.update()
 
     def add_rotate_constraints(self, component):
@@ -222,7 +239,7 @@ class MilpDivisionTrailModel():
         self.set_cipher_input_output_vars()
         word_operations_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.get_all_components()[:3]:
             if component.type == SBOX:
                 self.add_sbox_constraints(component)
             elif component.type == "cipher_output":
@@ -241,16 +258,28 @@ class MilpDivisionTrailModel():
     def solve_constraints(self):
         self.add_constraints()
         output_vars = []
-        for i in range(self._cipher.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"ciphertext[{i}]"))
+        for i in range(3): #self._cipher.output_bit_size
+            output_vars.append(self._model.getVarByName(f"sbox_0_2[{i}]"))
+        print(output_vars)
         ks = self._model.addVar()
-        self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size)))
+        self._model.addConstr(ks == sum(output_vars[i] for i in range(3)))
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[0] == 1)
         self._model.update()
+        self._model.write("division_trail_model_toy_cipher.lp")
         self._model.optimize()
         solCount = self._model.SolCount
         print('Number of solutions found: ' + str(solCount))
+
+        monomials = []
+        for sol in range(solCount):
+            self._model.setParam(GRB.Param.SolutionNumber, sol)
+            values = self._model.Xn
+            print(values[:6])
+            print(values[6:12])
+            print(len(values))
+
+        return self._model
 
 
 # ascon_sbox = [4, 11, 31, 20, 26, 21, 9, 2, 27, 5, 8, 18, 29, 3, 6, 28, 30, 19, 7, 14, 0, 13, 17, 24, 16, 12, 1, 25, 22, 10, 15, 23]
