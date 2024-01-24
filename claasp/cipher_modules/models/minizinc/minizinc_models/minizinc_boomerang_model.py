@@ -154,23 +154,10 @@ class MinizincBoomerangModel(MinizincModel):
         self.differential_model_bottom_cipher.build_xor_differential_trail_model(
             -1, fixed_variables_for_bottom_cipher
         )
-        #branch_size = 32
-        #bct_constraints1 = create_bct_mzn_constraint_from_component_ids('modadd_3_0', 'rot_3_11', 'modadd_4_0',
-        #                                                                'new_rot_3_11', branch_size)
-        #bct_constraints2 = create_bct_mzn_constraint_from_component_ids('modadd_3_6', 'rot_3_17', 'modadd_4_6',
-        #                                                                'new_rot_3_17', branch_size)
-        #bct_constraints3 = create_bct_mzn_constraint_from_component_ids('modadd_3_12', 'rot_3_5', 'modadd_4_12',
-        #                                                                'new_rot_3_5', branch_size)
-        #bct_constraints4 = create_bct_mzn_constraint_from_component_ids('modadd_3_18', 'rot_3_23', 'modadd_4_18',
-        #                                                                'new_rot_3_23', branch_size)
+
         for bct in bcts:
             bct_mzn_model = create_bct_mzn_constraint_from_component_ids(*bct)
             self.differential_model_bottom_cipher.add_constraint_from_str(bct_mzn_model)
-        #differential_model_bottom_cipher.add_constraint_from_str(bct_constraints1)
-        #differential_model_bottom_cipher.add_constraint_from_str(bct_constraints2)
-        #differential_model_bottom_cipher.add_constraint_from_str(bct_constraints3)
-        #differential_model_bottom_cipher.add_constraint_from_str(bct_constraints4)
-        #self.differential_model_bottom_cipher.add_constraint_from_str("include \"bct_model.mzn\";\n")
 
         self.differential_model_bottom_cipher._model_constraints.extend(
             self.objective_generator(self.differential_model_top_cipher, self.differential_model_bottom_cipher)
@@ -240,7 +227,6 @@ class MinizincBoomerangModel(MinizincModel):
                            entry.startswith(f"var bool: {prefix}") and "_y" in entry]
                 if sublist:
                     results.append(sublist)
-
 
         return results
 
