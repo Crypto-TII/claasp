@@ -22,10 +22,7 @@ from claasp.cipher_modules.models.minizinc.utils.mzn_bct_predicates import get_b
 from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
 from claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model import \
     MinizincXorDifferentialModel
-
-
-def filter_out_strings_containing_substring(strings_list, substring):
-    return [string for string in strings_list if substring not in string]
+from claasp.cipher_modules.models.minizinc.utils.utils import group_strings_by_pattern
 
 
 class MinizincBoomerangModel(MinizincModel):
@@ -235,23 +232,6 @@ class MinizincBoomerangModel(MinizincModel):
 
         return parsed_result
 
-    def group_strings_by_pattern(self, result):
-        results = []
-        # Get unique prefixes
-        if result.status not in [Status.UNKNOWN, Status.UNSATISFIABLE, Status.ERROR]:
-            data = self._variables_list
-            data = filter_out_strings_containing_substring(data, 'array')
-            prefixes = set([entry.split("_y")[0].split(": ")[1] for entry in data if "_y" in entry])
-
-            # For each prefix, collect matching strings
-            for prefix in prefixes:
-                sublist = [entry.split(": ")[1][:-1] for entry in data if
-                           entry.startswith(f"var bool: {prefix}") and "_y" in entry]
-                if sublist:
-                    results.append(sublist)
-
-        return results
-
     def parse_components_with_solution(self, result, solution):
         dict_of_component_value = {}
 
@@ -269,12 +249,12 @@ class MinizincBoomerangModel(MinizincModel):
             return hex_values
 
         if result.status not in [Status.UNKNOWN, Status.UNSATISFIABLE, Status.ERROR]:
-            list_of_sublist_of_vars = self.group_strings_by_pattern(result)
+            list_of_sublist_of_vars = group_strings_by_pattern(self._variables_list)
             dict_of_component_value = get_hex_from_sublists(list_of_sublist_of_vars, solution.__dict__)
 
         return {'component_values': dict_of_component_value}
 
-    def _parse_result(self, result, solver_name, total_weight, model_type):
+    def bct_parse_result(self, result, solver_name, total_weight, model_type):
         parsed_result = {'id': self.cipher_id, 'model_type': model_type, 'solver_name': solver_name}
         if total_weight == "list_of_solutions":
             solutions = []

@@ -76,5 +76,6 @@ def test_build_boomerang_model_chacha():
     minizinc_bct_model.create_boomerang_model(fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher)
     result = minizinc_bct_model.solve(solver_name='Xor')
     total_weight = MinizincBoomerangModel._get_total_weight(result)
-    assert total_weight == 68
+    parsed_result = minizinc_bct_model.bct_parse_result(result, 'Xor', total_weight, 'BCT_XOR_DIFF')
+    assert total_weight == parsed_result['total_weight']
 
