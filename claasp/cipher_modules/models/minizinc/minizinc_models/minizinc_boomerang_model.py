@@ -32,7 +32,7 @@ class MinizincBoomerangModel(MinizincModel):
     def __init__(self, cipher, top_end_ids, bottom_start_ids, middle_ids, window_size_list=None, sat_or_milp='sat'):
         self.top_end_ids = top_end_ids
         self.bottom_start_ids = bottom_start_ids
-        self.middle_ids = middle_ids
+        self.sboxes_ids = middle_ids
         self.original_cipher = cipher
         self.top_cipher = None
         self.bottom_cipher = None
@@ -81,7 +81,7 @@ class MinizincBoomerangModel(MinizincModel):
         bottom_cipher._inputs = []
         self.update_bottom_cipher_inputs(bottom_cipher, original_cipher, initial_nodes, new_input_bit_positions)
 
-        for middle_id in self.middle_ids:
+        for middle_id in self.sboxes_ids:
             bottom_cipher._inputs.append(middle_id)
             bottom_cipher._inputs_bit_size.append(
                 original_cipher.get_component_from_id(middle_id).output_bit_size
@@ -157,35 +157,7 @@ class MinizincBoomerangModel(MinizincModel):
         else:
             return None
 
-    def create_boomerang_model(self, fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher, bcts):
-        def create_bct_mzn_constraint_from_component_ids(
-                delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id,
-                branch_size
-        ):
-            delta_left_vars = []
-            delta_right_vars = []
-            nabla_left_vars = []
-            nabla_right_vars = []
-            for i in range(branch_size):
-                delta_left_vars.append(f'{delta_left_component_id}_y{i}')
-                delta_right_vars.append(f'{delta_right_component_id}_y{i}')
-                nabla_left_vars.append(f'{nabla_left_component_id}_y{i}')
-                nabla_right_vars.append(f'{nabla_right_component_id}_y{i}')
-            delta_left_str = ",".join(delta_left_vars)
-            delta_right_str = ",".join(delta_right_vars)
-            nabla_left_str = ",".join(nabla_left_vars)
-            nabla_right_str = ",".join(nabla_right_vars)
-
-            delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
-            delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
-            nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
-            nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
-
-            return (
-                f"constraint onlyLargeSwitch_BCT_enum({delta_left}, {delta_right}, "
-                f"{nabla_left}, {nabla_right}, 1, {branch_size}) = true;\n"
-            )
-
+    def create_boomerang_model(self, fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher):
         self.create_top_and_bottom_ciphers_from_subgraphs()
 
         self.differential_model_top_cipher = MinizincXorDifferentialModel(
@@ -204,8 +176,9 @@ class MinizincBoomerangModel(MinizincModel):
             -1, fixed_variables_for_bottom_cipher
         )
 
-        for bct in bcts:
-            bct_mzn_model = create_bct_mzn_constraint_from_component_ids(*bct)
+        for sbox_component_id in self.sboxes_ids:
+            sbox_component = self.original_cipher.get_component_from_id(sbox_component_id)
+            bct_mzn_model = sbox_component.create_bct_mzn_constraint_from_component_ids()
             self.differential_model_bottom_cipher.add_constraint_from_str(bct_mzn_model)
 
         self.differential_model_bottom_cipher.extend_model_constraints(
@@ -288,7 +261,7 @@ class MinizincBoomerangModel(MinizincModel):
                 bit_str = ''.join(['1' if bool_dict[val] else '0' for val in sublist])
                 component_id = sublist[0][:-3]
                 weight = 0
-                if component_id.startswith('modadd') and component_id not in self.middle_ids:
+                if component_id.startswith('modadd') and component_id not in self.sboxes_ids:
                     p_modadd_var = [s for s in bool_dict.keys() if s.startswith(f'p_{component_id}')]
                     weight = sum(bool_dict[p_modadd_var[0]])
                 hex_values[component_id] = {'value': hex(int(bit_str, 2)), 'weight': weight, 'sign': 1}

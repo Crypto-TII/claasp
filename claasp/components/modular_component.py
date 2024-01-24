@@ -1135,3 +1135,35 @@ class Modular(Component):
             x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] for i in range(output_bit_size)))
 
         return variables, constraints
+
+    def create_bct_mzn_constraint_from_component_ids(self):
+        component_dict = self.as_python_dictionary()
+        delta_left_component_id = component_dict['input_id_link'][0]
+        delta_right_component_id = component_dict['input_id_link'][1]
+        nabla_left_component_id = self.id
+        nabla_right_component_id = f'new_{delta_right_component_id}'
+        branch_size = self.output_bit_size
+        delta_left_vars = []
+        delta_right_vars = []
+        nabla_left_vars = []
+        nabla_right_vars = []
+        for i in range(branch_size):
+            delta_left_vars.append(f'{delta_left_component_id}_y{i}')
+            delta_right_vars.append(f'{delta_right_component_id}_y{i}')
+            nabla_left_vars.append(f'{nabla_left_component_id}_y{i}')
+            nabla_right_vars.append(f'{nabla_right_component_id}_y{i}')
+        delta_left_str = ",".join(delta_left_vars)
+        delta_right_str = ",".join(delta_right_vars)
+        nabla_left_str = ",".join(nabla_left_vars)
+        nabla_right_str = ",".join(nabla_right_vars)
+
+        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
+        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
+        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
+        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
+
+        constraint = (
+            f"constraint onlyLargeSwitch_BCT_enum({delta_left}, {delta_right}, "
+            f"{nabla_left}, {nabla_right}, 1, {branch_size}) = true;\n"
+        )
+        return constraint
