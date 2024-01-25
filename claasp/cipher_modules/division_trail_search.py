@@ -25,6 +25,13 @@ class MilpDivisionTrailModel():
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(1)
 
+        sage: from claasp.ciphers.toys.toyspn2 import ToySPN2
+        sage: cipher = ToySPN2(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(1)
+
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
         sage: cipher = SimonBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
@@ -36,14 +43,13 @@ class MilpDivisionTrailModel():
 
     def __init__(self, cipher):
         self._cipher = cipher
-        self._variables_list = []
-        self._model_constraints = []
+        self._variables = None
         self._model = None
 
     def build_gurobi_model(self):
         model = Model()
         model.Params.LogToConsole = 0
-        model.setParam("PoolSolutions", 200000000)
+        model.setParam("PoolSolutions", 200) # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -84,7 +90,7 @@ class MilpDivisionTrailModel():
         for index, xi in enumerate(x):
             nb_occurence_xi = monomial_occurences[1][B(xi)]
             if nb_occurence_xi != 0:
-                copy_xi[B(xi)] = self._model.addVars(list(range(nb_occurence_xi)), vtype=GRB.BINARY, name="copy_"+xi)
+                copy_xi[B(xi)] = self._model.addVars(list(range(nb_occurence_xi)), vtype=GRB.BINARY, name=input_vars_concat[index].VarName + "_" +xi)
                 self._model.update()
                 for i in range(nb_occurence_xi):
                     self._model.addConstr(input_vars_concat[index] >= copy_xi[B(xi)][i])
@@ -94,7 +100,7 @@ class MilpDivisionTrailModel():
         for deg in list(monomial_occurences.keys()):
             if deg >= 2: # here you are looking at only deg 2, what if deg 3 or more?
                 nb_monomials = sum(monomial_occurences[2].values())
-                copy_monomials_deg[deg] = self._model.addVars(list(range(nb_monomials)), vtype=GRB.BINARY, name="copy_deg2")
+                copy_monomials_deg[deg] = self._model.addVars(list(range(nb_monomials)), vtype=GRB.BINARY) #name="copy_deg2"
                 self._model.update()
 
         copy_monomials_deg[1] = copy_xi
@@ -111,17 +117,27 @@ class MilpDivisionTrailModel():
 
 
     def add_sbox_constraints(self, component):
-        input_vars = {}
-        for index, input_name in enumerate(component.input_id_links):
-            input_vars[input_name] = []
-            for i in component.input_bit_positions[index]:
-                input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
-        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+        # input_vars = {}
+        # for index, input_name in enumerate(component.input_id_links):
+        #     input_vars[input_name] = []
+        #     for i in component.input_bit_positions[index]:
+        #         input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
+        # output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+        output_vars = []
+        for i in range(component.output_bit_size):
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+
+        # input_vars_concat = []
+        # for key in input_vars.keys():
+        #     input_vars_concat += input_vars[key]
+        # self._model.update()
 
         input_vars_concat = []
-        for key in input_vars.keys():
-            input_vars_concat += input_vars[key]
-        self._model.update()
+        for index, input_name in enumerate(component.input_id_links):
+            current = self._variables[input_name]["current"]
+            for pos in component.input_bit_positions[index]:
+                input_vars_concat.append(self._variables[input_name][current][pos])
+            # self._variables[input_name]["current"] += 1
 
         B = BooleanPolynomialRing(component.input_bit_size,'x')
         x = B.variable_names()
@@ -161,21 +177,36 @@ class MilpDivisionTrailModel():
     def set_cipher_input_output_vars(self):
         for index, input_name in enumerate(self._cipher.inputs):
             self._model.addVars(list(range(self._cipher.inputs_bit_size[index])), vtype=GRB.BINARY, name=input_name)
-        # self._model.addVars(list(range(self._cipher.output_bit_size)), vtype=GRB.BINARY, name="ciphertext")
+
+        l = self.how_many_times_key_appear()
+        copy_key = []
+        for index, component in enumerate(l):
+            copy_key.append(self._model.addVars(list(range(6)), vtype=GRB.BINARY, name="copy_key_" + component.id))
+
         self._model.update()
 
     def add_xor_constraints(self, component):
-        input_vars = {}
-        for index, input_name in enumerate(component.input_id_links):
-            input_vars[input_name] = []
-            for i in component.input_bit_positions[index]:
-                input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
-        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
-        self._model.update()
+        # input_vars = {}
+        # for index, input_name in enumerate(component.input_id_links):
+        #     input_vars[input_name] = []
+        #     for i in component.input_bit_positions[index]:
+        #         input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
+        # output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+        output_vars = []
+        for i in range(component.output_bit_size):
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        # self._model.update()
+
+        # input_vars_concat = []
+        # for key in input_vars.keys():
+        #     input_vars_concat += input_vars[key]
 
         input_vars_concat = []
-        for key in input_vars.keys():
-            input_vars_concat += input_vars[key]
+        for index, input_name in enumerate(component.input_id_links):
+            current = self._variables[input_name]["current"]
+            for pos in component.input_bit_positions[index]:
+                input_vars_concat.append(self._variables[input_name][current][pos])
+            self._variables[input_name]["current"] += 1
 
         block_size = int(len(input_vars_concat)//component.description[1])
         for i in range(block_size):
@@ -183,16 +214,26 @@ class MilpDivisionTrailModel():
         self._model.update()
 
     def add_rotate_constraints(self, component):
-        input_vars = {}
-        for index, input_name in enumerate(component.input_id_links):
-            input_vars[input_name] = []
-            for i in component.input_bit_positions[index]:
-                input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
-        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+        # input_vars = {}
+        # for index, input_name in enumerate(component.input_id_links):
+        #     input_vars[input_name] = []
+        #     for i in component.input_bit_positions[index]:
+        #         input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
+        # output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+        output_vars = []
+        for i in range(component.output_bit_size):
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+
+        # input_vars_concat = []
+        # for key in input_vars.keys():
+        #     input_vars_concat += input_vars[key]
 
         input_vars_concat = []
-        for key in input_vars.keys():
-            input_vars_concat += input_vars[key]
+        for index, input_name in enumerate(component.input_id_links):
+            current = self._variables[input_name]["current"]
+            for pos in component.input_bit_positions[index]:
+                input_vars_concat.append(self._variables[input_name][current][pos])
+            self._variables[input_name]["current"] += 1
 
         rotate_offset = component.description[1]
         for i in range(component.output_bit_size):
@@ -200,16 +241,26 @@ class MilpDivisionTrailModel():
         self._model.update()
 
     def add_and_constraints(self, component):
-        input_vars = {}
-        for index, input_name in enumerate(component.input_id_links):
-            input_vars[input_name] = []
-            for i in component.input_bit_positions[index]:
-                input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
-        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+        # input_vars = {}
+        # for index, input_name in enumerate(component.input_id_links):
+        #     input_vars[input_name] = []
+        #     for i in component.input_bit_positions[index]:
+        #         input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
+        # output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+        output_vars = []
+        for i in range(component.output_bit_size):
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+
+        # input_vars_concat = []
+        # for key in input_vars.keys():
+        #     input_vars_concat += input_vars[key]
 
         input_vars_concat = []
-        for key in input_vars.keys():
-            input_vars_concat += input_vars[key]
+        for index, input_name in enumerate(component.input_id_links):
+            current = self._variables[input_name]["current"]
+            for pos in component.input_bit_positions[index]:
+                input_vars_concat.append(self._variables[input_name][current][pos])
+            self._variables[input_name]["current"] += 1
 
         block_size = int(len(input_vars_concat)//component.description[1])
         for i in range(component.output_bit_size):
@@ -252,17 +303,18 @@ class MilpDivisionTrailModel():
                         tmp += self._cipher.inputs[1][0] + str(var%self._cipher.inputs_bit_size[0])
             else:
                 tmp += str(1)
-            # uncomment if you also want the nb of occurences 
+            # uncomment if you also want the nb of occurences
             # l.append((tmp, monomial[-1]))
             l.append(tmp)
         print(l)
 
     def add_constraints(self):
         self.build_gurobi_model()
-        self.set_cipher_input_output_vars()
+        self.create_gurobi_vars_from_all_components()
         word_operations_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
         for component in self._cipher.get_all_components():
+            print(component.id)
             if component.type == SBOX:
                 self.add_sbox_constraints(component)
             elif component.type == "cipher_output":
@@ -281,6 +333,58 @@ class MilpDivisionTrailModel():
 
         return self._model
 
+    def get_where_component_is_used(self):
+        occurences = {}
+        ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        for name in ids:
+            for component in self._cipher.get_all_components():
+                if (name in component.input_id_links) and (component.type != "intermediate_output"):
+                    index = component.input_id_links.index(name)
+                    if name not in occurences.keys():
+                        occurences[name] = []
+                    occurences[name] += component.input_bit_positions[index]
+
+        occurences_final = {}
+        for name in occurences.keys():
+            counter = Counter(occurences[name])
+            maximum_occ = max(counter.values())
+            occurences_final[name] = maximum_occ
+
+        return occurences_final
+
+    def create_gurobi_vars_from_all_components(self):
+        occurences = self.get_where_component_is_used()
+        all_vars = {}
+        for component_id in occurences.keys():
+            nb_occurence = occurences[component_id]
+            all_vars[component_id] = {}
+            all_vars[component_id]["current"] = 0
+            if component_id not in self._cipher.inputs:
+                component = self._cipher.get_component_from_id(component_id)
+                all_vars[component_id][0] = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+                if nb_occurence >= 2:
+                    all_vars[component_id]["current"] = 1
+                    for i in range(nb_occurence):
+                        all_vars[component_id][i+1] = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name="copy_"+component_id+f"_{i}")
+                    for i in range(component.output_bit_size):
+                        for j in range(nb_occurence):
+                            self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][j+1][i])
+                        self._model.addConstr(sum(all_vars[component_id][j+1][i] for j in range(nb_occurence)) >= all_vars[component_id][0][i])
+            else:
+                index = self._cipher.inputs.index(component_id)
+                input_size = self._cipher.inputs_bit_size[index]
+                all_vars[component_id][0] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY, name=component_id)
+                if nb_occurence >= 2:
+                    all_vars[component_id]["current"] = 1
+                    for i in range(nb_occurence):
+                        all_vars[component_id][i+1] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY, name="copy_"+component_id+f"_{i}")
+                    for i in range(input_size):
+                        for j in range(nb_occurence):
+                            self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][j+1][i])
+                        self._model.addConstr(sum(all_vars[component_id][j+1][i] for j in range(nb_occurence)) >= all_vars[component_id][0][i])
+        self._model.update()
+        self._variables = all_vars
+
 
     def find_anf_for_specific_output_bit(self, output_bit_index):
         start = time.time()
@@ -288,13 +392,20 @@ class MilpDivisionTrailModel():
         output_id = self.get_cipher_output_component_id()
         output_vars = []
         for i in range(self._cipher.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{output_id}[{i}]"))
+            output_vars.append(self._model.getVarByName(f"{output_id}[{i}]")) # {output_id}
         ks = self._model.addVar()
         self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size)))
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[output_bit_index] == 1)
+
+        # key = []
+        # for i in range(6):
+        #     key.append(self._model.getVarByName(f"key[{i}]"))
+        # for i in range(6):
+        #     self._model.addConstr(key[i] == 0)
+
         self._model.update()
-        # self._model.write("division_trail_model_toy_cipher.lp")
+        self._model.write("division_trail_model_toy_cipher.lp")
         end = time.time()
         building_time = end - start
         print(f"building_time : {building_time}")
@@ -323,15 +434,5 @@ class MilpDivisionTrailModel():
         monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
         monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
         self.pretty_print(monomials_even_occurences_removed)
-
-
-
-
-
-
-
-
-
-
-
+        return self._model
 
