@@ -1,3 +1,4 @@
+import time
 from gurobipy import *
 from sage.crypto.sbox import SBox
 from sage.crypto.boolean_function import BooleanFunction
@@ -19,6 +20,13 @@ class MilpDivisionTrailModel():
 
         sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
         sage: cipher = ToySPN1(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(1)
+
+        sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        sage: cipher = SimonBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
@@ -156,7 +164,6 @@ class MilpDivisionTrailModel():
         # self._model.addVars(list(range(self._cipher.output_bit_size)), vtype=GRB.BINARY, name="ciphertext")
         self._model.update()
 
-
     def add_xor_constraints(self, component):
         input_vars = {}
         for index, input_name in enumerate(component.input_id_links):
@@ -170,9 +177,9 @@ class MilpDivisionTrailModel():
         for key in input_vars.keys():
             input_vars_concat += input_vars[key]
 
-        block_size = int(len(input_vars_concat)//2)
+        block_size = int(len(input_vars_concat)//component.description[1])
         for i in range(block_size):
-            self._model.addConstr(output_vars[i] == input_vars_concat[i] + input_vars_concat[i + block_size])
+            self._model.addConstr(output_vars[i] == input_vars_concat[i] + input_vars_concat[i + block_size]) # works only if 2 blocks
         self._model.update()
 
     def add_rotate_constraints(self, component):
@@ -190,6 +197,25 @@ class MilpDivisionTrailModel():
         rotate_offset = component.description[1]
         for i in range(component.output_bit_size):
             self._model.addConstr(output_vars[i] == input_vars_concat[i-rotate_offset % component.output_bit_size])
+        self._model.update()
+
+    def add_and_constraints(self, component):
+        input_vars = {}
+        for index, input_name in enumerate(component.input_id_links):
+            input_vars[input_name] = []
+            for i in component.input_bit_positions[index]:
+                input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
+        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
+
+        input_vars_concat = []
+        for key in input_vars.keys():
+            input_vars_concat += input_vars[key]
+
+        block_size = int(len(input_vars_concat)//component.description[1])
+        for i in range(component.output_bit_size):
+            self._model.addConstr(output_vars[i] >= input_vars_concat[i])
+            self._model.addConstr(output_vars[i] >= input_vars_concat[i + block_size])
+            self._model.addConstr(output_vars[i] <= input_vars_concat[i] + input_vars_concat[i + block_size])
         self._model.update()
 
     def add_cipher_output_constraints(self, component):
@@ -219,14 +245,14 @@ class MilpDivisionTrailModel():
         for monomial in monomials:
             tmp = ""
             if len(monomial) != 1:
-                for var in monomial[:-1]:
-                    if var < 6:
-                        tmp += "p" + str(var)
+                for var in monomial[:-1]: #[:1] to remove the occurences
+                    if var < self._cipher.inputs_bit_size[0]:
+                        tmp += self._cipher.inputs[0][0] + str(var)
                     else:
-                        tmp += "k" + str(var%6)
+                        tmp += self._cipher.inputs[1][0] + str(var%self._cipher.inputs_bit_size[0])
             else:
                 tmp += str(1)
-            # uncomment if you also want the nb of occurences
+            # uncomment if you also want the nb of occurences 
             # l.append((tmp, monomial[-1]))
             l.append(tmp)
         print(l)
@@ -246,8 +272,10 @@ class MilpDivisionTrailModel():
             elif component.type == "word_operation":
                 if component.description[0] == "XOR":
                     self.add_xor_constraints(component)
-                if component.description[0] == "ROTATE":
+                elif component.description[0] == "ROTATE":
                     self.add_rotate_constraints(component)
+                elif component.description[0] == "AND":
+                    self.add_and_constraints(component)
             else:
                 print("not yet implemented")
 
@@ -255,6 +283,7 @@ class MilpDivisionTrailModel():
 
 
     def find_anf_for_specific_output_bit(self, output_bit_index):
+        start = time.time()
         self.add_constraints()
         output_id = self.get_cipher_output_component_id()
         output_vars = []
@@ -266,10 +295,17 @@ class MilpDivisionTrailModel():
         self._model.addConstr(output_vars[output_bit_index] == 1)
         self._model.update()
         # self._model.write("division_trail_model_toy_cipher.lp")
-        self._model.optimize()
+        end = time.time()
+        building_time = end - start
+        print(f"building_time : {building_time}")
 
+        start = time.time()
+        self._model.optimize()
+        end = time.time()
+        solving_time = end - start
+        print(f"solving_time : {solving_time}")
         solCount = self._model.SolCount
-        print('Number of solutions found: ' + str(solCount))
+        print('Number of solutions/monomials found: ' + str(solCount))
         monomials = []
         for sol in range(solCount):
             self._model.setParam(GRB.Param.SolutionNumber, sol)
@@ -287,3 +323,15 @@ class MilpDivisionTrailModel():
         monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
         monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
         self.pretty_print(monomials_even_occurences_removed)
+
+
+
+
+
+
+
+
+
+
+
+
