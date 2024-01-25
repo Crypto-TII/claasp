@@ -2391,9 +2391,4 @@ class Cipher:
         round_number = self.get_round_from_component_id(component_id)
         self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
 
-    def update_input_bit_positions_from_component_id(self, component_id, new_input_bit_positions):
-        round_number = self.get_round_from_component_id(component_id)
-        self._rounds.rounds[round_number].update_input_bit_positions_from_component_id(
-            component_id, new_input_bit_positions
-        )
 

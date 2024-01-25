@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-from copy import deepcopy
 
 from claasp.round import Round
 from claasp.DTOs.power_of_2_word_based_dto import PowerOf2WordBasedDTO

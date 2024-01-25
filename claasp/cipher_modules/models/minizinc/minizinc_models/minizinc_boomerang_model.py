@@ -19,13 +19,12 @@ from minizinc import Status
 
 from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
 from claasp.cipher_modules.models.minizinc.utils.mzn_bct_predicates import get_bct_operations
-from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
 from claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model import \
     MinizincXorDifferentialModel
 from claasp.cipher_modules.models.minizinc.utils.utils import group_strings_by_pattern
 
 
-class MinizincBoomerangModel(MinizincModel):
+class MinizincBoomerangModel(MinizincXorDifferentialModel):
     def __init__(self, cipher, top_end_ids, bottom_start_ids, middle_ids, window_size_list=None, sat_or_milp='sat'):
         self.top_end_ids = top_end_ids
         self.bottom_start_ids = bottom_start_ids
@@ -139,21 +138,6 @@ class MinizincBoomerangModel(MinizincModel):
 
         return objective_string
 
-    @staticmethod
-    def _get_total_weight(result):
-        if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
-            if result.status == Status.OPTIMAL_SOLUTION:
-                return result.objective
-            elif result.status in [Status.SATISFIED]:
-                if isinstance(result.solution, list):
-                    return "list_of_solutions"
-                else:
-                    return result.solution.objective
-            elif result.status in [Status.ALL_SOLUTIONS]:
-                return []
-        else:
-            return None
-
     def create_boomerang_model(self, fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher):
         self.create_top_and_bottom_ciphers_from_subgraphs()
 
@@ -218,19 +202,6 @@ class MinizincBoomerangModel(MinizincModel):
                 self._model_constraints)
         )
         f.close()
-
-    def parse_probability_vars(self, result, solution):
-        parsed_result = {}
-        if result.status not in [Status.UNKNOWN, Status.UNSATISFIABLE, Status.ERROR]:
-            for probability_var in self.probability_vars:
-                lst_value = solution.__dict__[probability_var]
-                parsed_result[probability_var] = {
-                    'value': str(hex(int("".join(str(0) if str(x) in ["false", "0"] else str(1) for x in lst_value),
-                                         2))),
-                    'weight': sum(lst_value)
-                }
-
-        return parsed_result
 
     def parse_components_with_solution(self, result, solution):
         dict_of_component_value = {}
