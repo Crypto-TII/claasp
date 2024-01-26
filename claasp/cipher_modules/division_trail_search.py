@@ -25,6 +25,20 @@ class MilpDivisionTrailModel():
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(1)
 
+        sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
+        sage: cipher = ToySPN1(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0)], 1)
+
+        sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
+        sage: cipher = ToySPN1(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.check_presence_of_particular_monomial_in_all_anf([("plaintext", 0)])
+
         sage: from claasp.ciphers.toys.toyspn2 import ToySPN2
         sage: cipher = ToySPN2(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
@@ -49,7 +63,7 @@ class MilpDivisionTrailModel():
     def build_gurobi_model(self):
         model = Model()
         model.Params.LogToConsole = 0
-        model.setParam("PoolSolutions", 200) # 200000000
+        model.setParam("PoolSolutions", 200000000) # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -246,10 +260,7 @@ class MilpDivisionTrailModel():
         #     input_vars[input_name] = []
         #     for i in component.input_bit_positions[index]:
         #         input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
-        # output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
-        output_vars = []
-        for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
 
         # input_vars_concat = []
         # for key in input_vars.keys():
@@ -314,7 +325,7 @@ class MilpDivisionTrailModel():
         word_operations_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
         for component in self._cipher.get_all_components():
-            print(component.id)
+            # print(component.id)
             if component.type == SBOX:
                 self.add_sbox_constraints(component)
             elif component.type == "cipher_output":
@@ -435,4 +446,72 @@ class MilpDivisionTrailModel():
         monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
         self.pretty_print(monomials_even_occurences_removed)
         return self._model
+
+    def check_presence_of_particular_monomial_in_specific_anf(self, monomial, output_bit_index):
+        start = time.time()
+        self.add_constraints()
+        output_id = self.get_cipher_output_component_id()
+        output_vars = []
+        for i in range(self._cipher.output_bit_size):
+            output_vars.append(self._model.getVarByName(f"{output_id}[{i}]"))
+        ks = self._model.addVar()
+        self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size)))
+        self._model.addConstr(ks == 1)
+        self._model.addConstr(output_vars[output_bit_index] == 1)
+
+        for term in monomial:
+            var_term = self._model.getVarByName(f"{term[0]}[{term[1]}]")
+            self._model.addConstr(var_term == 1)
+
+        self._model.write("division_trail_model_toy_cipher.lp")
+
+        self._model.update()
+        end = time.time()
+        building_time = end - start
+        print(f"building_time : {building_time}")
+
+        start = time.time()
+        self._model.optimize()
+        end = time.time()
+        solving_time = end - start
+        print(f"solving_time : {solving_time}")
+
+        solCount = self._model.SolCount
+        print('Number of solutions/monomials found: ' + str(solCount))
+        monomials = []
+        for sol in range(solCount):
+            self._model.setParam(GRB.Param.SolutionNumber, sol)
+            values = self._model.Xn
+            tmp = []
+            for index, v in enumerate(values[:12]):
+                if v == 1:
+                    tmp.append(index)
+            monomials.append(tmp)
+
+        monomials_with_occurences = [x+[monomials.count(x)] for x in monomials]
+        monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
+        monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
+        self.pretty_print(monomials_even_occurences_removed)
+        return self._model
+
+    def check_presence_of_particular_monomial_in_all_anf(self, monomial):
+        s = ""
+        for term in monomial:
+            s += term[0][0]+str(term[1])
+        for i in range(self._cipher.output_bit_size):
+            print(f"\nSearch of {s} in anf {i} :")
+            self.check_presence_of_particular_monomial_in_specific_anf(monomial, i)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
