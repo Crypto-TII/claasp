@@ -36,6 +36,7 @@ class MinizincBoomerangModel(MinizincXorDifferentialModel):
         self.differential_model_top_cipher = None
         self.differential_model_bottom_cipher = None
         self.probability_vars = None
+        self.filename = None
         super().__init__(cipher, window_size_list, None, sat_or_milp)
         self.top_graph, self.bottom_graph = split_cipher_graph_into_top_bottom(cipher, self.top_end_ids,
                                                                                self.bottom_start_ids)
@@ -192,9 +193,11 @@ class MinizincBoomerangModel(MinizincXorDifferentialModel):
             self.differential_model_bottom_cipher.mzn_output_directives)
         if prefix == "":
             filename = f'{file_path}/{self.original_cipher.id}_mzn_{self.differential_model_top_cipher.sat_or_milp}.mzn'
+            self.filename = filename
         else:
             filename = f'{file_path}/{prefix}_{self.original_cipher.id}_mzn_'
             filename += f'{self.differential_model_top_cipher.sat_or_milp}.mzn'
+            self.filename = filename
 
         f = open(filename, "w")
         f.write(

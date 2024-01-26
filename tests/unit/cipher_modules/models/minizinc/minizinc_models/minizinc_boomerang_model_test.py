@@ -1,5 +1,6 @@
 from claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_boomerang_model import MinizincBoomerangModel
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.name_mappings import BOOMERANG_XOR_DIFFERENTIAL
 
 
 def test_build_boomerang_model_chacha():
@@ -76,6 +77,11 @@ def test_build_boomerang_model_chacha():
     minizinc_bct_model.create_boomerang_model(fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher)
     result = minizinc_bct_model.solve(solver_name='Xor')
     total_weight = MinizincBoomerangModel._get_total_weight(result)
-    parsed_result = minizinc_bct_model.bct_parse_result(result, 'Xor', total_weight, 'BCT_XOR_DIFF')
+    parsed_result = minizinc_bct_model.bct_parse_result(result, 'Xor', total_weight, BOOMERANG_XOR_DIFFERENTIAL)
+    filename = '.'
+    minizinc_bct_model.write_minizinc_model_to_file(filename)
+    import os
+    assert os.path.exists(minizinc_bct_model.filename), "File was not created"
+    os.remove(minizinc_bct_model.filename)
     assert total_weight == parsed_result['total_weight']
 
