@@ -40,6 +40,7 @@ class MinizincBoomerangModel(MinizincXorDifferentialModel):
         super().__init__(cipher, window_size_list, None, sat_or_milp)
         self.top_graph, self.bottom_graph = split_cipher_graph_into_top_bottom(cipher, self.top_end_ids,
                                                                                self.bottom_start_ids)
+        self.create_top_and_bottom_ciphers_from_subgraphs()
 
     @staticmethod
     def remove_empty_rounds(cipher):
@@ -85,11 +86,20 @@ class MinizincBoomerangModel(MinizincXorDifferentialModel):
             )
 
     def update_bottom_cipher_inputs(self, bottom_cipher, original_cipher, initial_nodes, new_input_bit_positions):
+
         for node_id in initial_nodes:
-            old_component = original_cipher.get_component_from_id(node_id)
-            new_input_id_links = self.get_new_input_id_links(old_component, bottom_cipher)
-            bottom_cipher.update_input_id_links_from_component_id(old_component.id, new_input_id_links)
-            new_input_bit_positions[old_component.id] = old_component.input_bit_positions
+            if node_id in original_cipher.inputs:
+                bottom_cipher._inputs.append(node_id)
+                index_node_id = original_cipher._inputs.index(node_id)
+                bottom_cipher._inputs_bit_size.append(original_cipher._inputs_bit_size[index_node_id])
+                index_input_to_delete = self.top_cipher._inputs.index(node_id)
+                del self.top_cipher._inputs[index_input_to_delete]
+                del self.top_cipher._inputs_bit_size[index_input_to_delete]
+            else:
+                old_component = original_cipher.get_component_from_id(node_id)
+                new_input_id_links = self.get_new_input_id_links(old_component, bottom_cipher)
+                bottom_cipher.update_input_id_links_from_component_id(old_component.id, new_input_id_links)
+                new_input_bit_positions[old_component.id] = old_component.input_bit_positions
 
     def get_new_input_id_links(self, component, bottom_cipher):
         new_input_id_links = deepcopy(component.input_id_links)
@@ -140,8 +150,6 @@ class MinizincBoomerangModel(MinizincXorDifferentialModel):
         return objective_string
 
     def create_boomerang_model(self, fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher):
-        self.create_top_and_bottom_ciphers_from_subgraphs()
-
         self.differential_model_top_cipher = MinizincXorDifferentialModel(
             self.top_cipher, window_size_list=[0 for _ in range(self.top_cipher.number_of_rounds)],
             sat_or_milp='sat', include_word_operations_mzn_file=False
