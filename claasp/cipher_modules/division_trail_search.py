@@ -317,6 +317,7 @@ class MilpDivisionTrailModel():
             # uncomment if you also want the nb of occurences
             # l.append((tmp, monomial[-1]))
             l.append(tmp)
+        print(f'Number of monomials found: {len(l)}')
         print(l)
 
     def add_constraints(self):
@@ -427,7 +428,7 @@ class MilpDivisionTrailModel():
         solving_time = end - start
         print(f"solving_time : {solving_time}")
         solCount = self._model.SolCount
-        print('Number of solutions/monomials found: ' + str(solCount))
+        print('Number of solutions (might cancel each other) found: ' + str(solCount))
         monomials = []
         for sol in range(solCount):
             self._model.setParam(GRB.Param.SolutionNumber, sol)
@@ -501,17 +502,4 @@ class MilpDivisionTrailModel():
         for i in range(self._cipher.output_bit_size):
             print(f"\nSearch of {s} in anf {i} :")
             self.check_presence_of_particular_monomial_in_specific_anf(monomial, i)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
