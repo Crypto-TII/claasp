@@ -695,6 +695,15 @@ def modadd_truncated_msb(result, variable_0, variable_1, carry):
             f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
 
 
+def incompatibility(incompatibility_var, forward_var, backward_var):
+    return [f'-{forward_var[0]} -{incompatibility_var}',
+            f'-{backward_var[0]} -{incompatibility_var}',
+            f'{forward_var[1]} {backward_var[1]} -{incompatibility_var}',
+            f'-{forward_var[1]} -{backward_var[1]} -{incompatibility_var}',
+            f'{forward_var[0]} {forward_var[1]} {backward_var[0]} {incompatibility_var} -{backward_var[1]}',
+            f'{forward_var[0]} {backward_var[0]} {backward_var[1]} {incompatibility_var} -{forward_var[1]}']
+
+
 # ---------------------------- #
 #    - Running SAT solver -    #
 # ---------------------------- #
