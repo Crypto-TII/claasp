@@ -280,6 +280,7 @@ def branch_number(component, type, format):
     elif component.type == "mix_column":
         return min(calculate_weights_for_mix_column(component, format, type))
 
+
 def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, input_bit_size, output_bit_size):
     """
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
@@ -318,6 +319,7 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
     final_mtr = Matrix(F, mtr)
 
     return final_mtr, F
+
 
 def is_mds(component):
     """
@@ -364,6 +366,7 @@ def is_mds(component):
                     return False
     return True
 
+
 def field_element_matrix_to_integer_matrix(matrix):
     """
     Converts a matrix of field elements to the corresponding integer matrix representation
@@ -400,6 +403,7 @@ def field_element_matrix_to_integer_matrix(matrix):
 
     return Matrix(matrix.nrows(), matrix.ncols(), int_matrix)
 
+
 def get_inverse_matrix_in_integer_representation(component):
     """
     Returns the inverse matrix in its integer representation
@@ -435,6 +439,7 @@ def get_inverse_matrix_in_integer_representation(component):
     matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
                                                       component.input_bit_size, component.output_bit_size)
     return field_element_matrix_to_integer_matrix(matrix.inverse())
+
 
 def has_maximal_branch_number(component):
     """
@@ -478,6 +483,7 @@ def has_maximal_branch_number(component):
 
     if component.type == MIX_COLUMN:
         return branch_number(component, 'linear', 'word') == (output_word_size + 1)
+
 
 def calculate_weights_for_mix_column(component, format, type):
     if format == 'word':
@@ -569,6 +575,8 @@ def select_properties_function(boolean_polynomial_ring, operation):
         return word_operation_properties(operation, boolean_polynomial_ring)
     if (component.type == WORD_OPERATION) and (component.description[0] == "MODADD"):
         return word_operation_properties(operation, boolean_polynomial_ring)
+    if component.type == 'fsr':
+        return fsr_properties(operation)
 
     if component.type == WORD_OPERATION:
         print(f"TODO : {component.description[0]}")
@@ -632,17 +640,21 @@ def get_all_operations(cipher):
         collect_component_operations(component, tmp_cipher_operations)
 
     for operation in list(tmp_cipher_operations.keys()):
-        if operation not in [LINEAR_LAYER, MIX_COLUMN]:
+        if operation not in [LINEAR_LAYER, MIX_COLUMN, 'fsr']:
             tmp_cipher_operations[operation]["distinguisher"] = \
                 list(set(tmp_cipher_operations[operation]["distinguisher"]))
+        if operation == 'fsr':
+            tmp_list = []
+            for item in tmp_cipher_operations[operation]["distinguisher"]:
+                if item not in tmp_list:
+                    tmp_list.append(item)
+            tmp_cipher_operations[operation]["distinguisher"] = tmp_list
         tmp_cipher_operations[operation]["types"] = \
             [[] for _ in range(len(tmp_cipher_operations[operation]["distinguisher"]))]
         collect_components_with_the_same_operation(operation, tmp_cipher_operations)
-
     cipher_operations = {}
     for operation in list(tmp_cipher_operations.keys()):
         add_attributes_to_operation(cipher_operations, operation, tmp_cipher_operations)
-
     return cipher_operations
 
 
@@ -769,6 +781,48 @@ def order_of_linear_component(component):
         return binary_matrix.multiplicative_order()
     except Exception:
         return 0
+
+
+def fsr_properties(operation):
+    component = operation[0]
+    component_dict = {"type": component.type, "input_bit_size": component.input_bit_size,
+                      "output_bit_size": component.output_bit_size, "description": component.description,
+                      "number_of_occurrences": operation[1], "component_id_list": operation[2]}
+
+    desc = component.description
+    registers_len = []
+    registers_type = []
+    registers_feedback_relation_deg = []
+    for r in desc[0]:
+        registers_len.append(r[0])
+        d = 0
+        for term in r[1]:
+            if d < len(term):
+                d = len(term)
+        registers_feedback_relation_deg.append(d)
+        if d > 1:
+            registers_type.append('non-linear')
+        else:
+            registers_type.append('linear')
+    component_dict['number_of_registers'] = len(registers_len)
+    component_dict['length_of_registers'] = registers_len
+    component_dict['type_of_registers'] = registers_type
+    component_dict['degree_of_feedback_relation_of_registers'] = registers_feedback_relation_deg
+
+    R = GF(2)['x']
+    lfsrs_primitive = []
+    exp = 0
+    for index, r in enumerate(desc[0]):
+        exp = exp + registers_len[index]
+        if registers_type[index] == 'linear':
+            f = R(1)
+            for term in r[1]:
+                f = f + R.gen() ** (exp - term[0])
+            print(f)
+            lfsrs_primitive.append(f.is_primitive())
+
+    component_dict['linear_registers_feedback_polynomial_primitive'] = lfsrs_primitive
+    return component_dict
 
 
 def sbox_properties(operation):
