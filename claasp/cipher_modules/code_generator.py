@@ -248,7 +248,6 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
 
     code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
     for component in cipher.get_all_components():
-        start = time.time()
         params = prepare_input_bit_based_vectorized_python_code_string(component)
         component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
@@ -260,8 +259,6 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
         name = component.id
         if verbosity and component.type != 'constant':
             code.append(f'  bit_vector_print_as_hex_values("{name}_output", {name})')
-        end=time.time()
-        print(f'{component.id} time = {end-start}')
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
     elif CIPHER_INVERSE_SUFFIX in cipher.id:
@@ -319,7 +316,6 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         code.append(f'  {cipher.inputs[i]}=input[{i}]')
         bit_sizes[cipher.inputs[i]] = cipher.inputs_bit_size[i]
     for component in cipher.get_all_components():
-        start = time.time()
         params = prepare_input_byte_based_vectorized_python_code_string(bit_sizes, component)
         bit_sizes[component.id] = component.output_bit_size
         component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
@@ -335,8 +331,6 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         if verbosity and component.type != 'constant':
             code.append(f'  byte_vector_print_as_hex_values("{name}_input", {params})')
             code.append(f'  byte_vector_print_as_hex_values("{name}_output", {name})')
-        end=time.time()
-        print(f'{component.id} time = {end-start}')
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
     elif CIPHER_INVERSE_SUFFIX in cipher.id:
@@ -648,7 +642,7 @@ def build_function_call(component):
     elif component.type == FSR:
         registers_info = component.description[0]
         bits_inside_word = component.description[1]
-        if len(component.description) is 2:
+        if len(component.description) == 2:
             number_of_clocks = 1
         else:
             number_of_clocks = component.description[2]

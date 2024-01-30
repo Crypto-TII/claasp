@@ -21,7 +21,9 @@ from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_prin
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORDWISE_DETERMINISTIC_TRUNCATED, \
     MILP_BUILDING_MESSAGE, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints, \
-    fix_variables_value_deterministic_truncated_xor_differential_constraints, _get_variables_values_as_string
+    _get_variables_values_as_string
+from claasp.cipher_modules.models.milp.utils.milp_truncated_utils import \
+    fix_variables_value_deterministic_truncated_xor_differential_constraints
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
@@ -38,7 +40,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
     def __init__(self, cipher, n_window_heuristic=None):
         super().__init__(cipher, n_window_heuristic)
         self._trunc_wordvar = None
-        self._word_size = 1
+        self._word_size = 4
         if self._cipher.is_spn():
             for component in self._cipher.get_all_components():
                 if SBOX in component.type:
@@ -156,7 +158,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             operation = component.description[0]
             operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
-            if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
+            if component.type in component_types or operation in operation_types:
                 variables, constraints = component.milp_wordwise_deterministic_truncated_xor_differential_constraints(self)
             else:
                 print(f'{component.id} not yet implemented')

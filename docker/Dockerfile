@@ -1,7 +1,9 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS claasp-base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GUROBI_ARCH=linux64
+ARG COPY_CLAASP_LIBRARY=false
+ARG INSTALL_CLAASP_LIBRARY=false
 
 # Install dependencies with apt-get
 RUN apt-get -qq update
@@ -83,7 +85,9 @@ RUN sage -pip install bitstring==4.0.1 \
   pytest==7.2.1 \
   pytest-cov==4.0.0 \
   pytest-xdist==3.2.0 \
-  pytest-benchmark==4.0.0
+  pytest-benchmark==4.0.0 \
+  networkx==2.8.8 \
+  numpy==1.24.3
 
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
@@ -300,3 +304,9 @@ RUN sage -pip install plotly -U kaleido
 
 
 WORKDIR /home/sage/tii-claasp
+
+FROM claasp-base AS claasp-lib
+
+COPY . .
+
+RUN make install

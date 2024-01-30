@@ -17,7 +17,11 @@ def get_cipher_components(self):
         setattr(c, 'round', int(c.id.split("_")[-2]))
     # build input components
     for index, input_id in enumerate(self.inputs):
-        input_component = Component(input_id, "cipher_input", Input(0, [[]], [[]]), self.inputs_bit_size[index], [input_id])
+        if INPUT_KEY in input_id:
+            input_component = Component(input_id, "cipher_input", Input(0, [[]], [[]]), self.inputs_bit_size[index],
+                                        [INPUT_KEY])
+        else:
+            input_component = Component(input_id, "cipher_input", Input(0, [[]], [[]]), self.inputs_bit_size[index], [input_id])
         setattr(input_component, 'round', -1)
         component_list.append(input_component)
     return component_list
@@ -673,7 +677,7 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
     flag_is_intersection_of_input_id_links_null, input_bit_positions = is_intersection_of_input_id_links_null(
         inverse_component, component)
 
-    if (component.id == INPUT_KEY) or (component.type == CONSTANT):
+    if (component.description == [INPUT_KEY]) or (component.type == CONSTANT):
         for i in range(component.output_bit_size):
             output_bit_name_updated = id + "_" + str(i) + "_output_updated"
             bit = {
@@ -821,7 +825,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
                                       component.output_bit_size, [component.id])
         inverse_component.__class__ = cipher_output_component.CipherOutput
         setattr(inverse_component, "round", component.round)
-    elif component.type == CIPHER_INPUT and (component.id == INPUT_KEY or component.id == INPUT_TWEAK):
+    elif component.type == CIPHER_INPUT and (component.description == [INPUT_KEY] or component.id == INPUT_TWEAK):
         inverse_component = Component(component.id, CIPHER_INPUT,
                                       Input(0, [[]], [[]]),
                                       component.output_bit_size, [component.id])
@@ -833,7 +837,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
             component, available_output_components, all_equivalent_bits, self)
         inverse_component = Component(component.id, INTERMEDIATE_OUTPUT,
                                       Input(component.output_bit_size, input_id_links, input_bit_positions),
-                                      component.output_bit_size, [component.id])
+                                      component.output_bit_size, component.description)
         inverse_component.__class__ = intermediate_output_component.IntermediateOutput
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
@@ -941,7 +945,7 @@ def get_component_from_id(component_id, self):
 
 
 def get_key_schedule_component_ids(self):
-    key_schedule_component_ids = [INPUT_KEY]
+    key_schedule_component_ids = [input for input in self.inputs if INPUT_KEY in input]
     component_list = self.get_all_components()
     for c in component_list:
         flag_belong_to_key_schedule = True
@@ -1248,7 +1252,7 @@ def sort_cipher_graph(cipher):
 def remove_components_from_rounds(cipher, start_round, end_round, keep_key_schedule):
     list_of_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1:]
     key_schedule_component_ids = get_key_schedule_component_ids(cipher)
-    key_schedule_components = [cipher.get_component_from_id(id) for id in key_schedule_component_ids[1:]]
+    key_schedule_components = [cipher.get_component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id]
 
     if not keep_key_schedule:
         for current_round in cipher.rounds_as_list:

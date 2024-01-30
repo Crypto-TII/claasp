@@ -1068,7 +1068,7 @@ class Cipher:
                                                                                      end_round, keep_key_schedule)
 
         if start_round > 0:
-            for input_type in set(self.inputs) - {INPUT_KEY}:
+            for input_type in set([input for input in self.inputs if INPUT_KEY not in input]):
                 removed_components_ids.append(input_type)
                 input_index = partial_cipher.inputs.index(input_type)
                 partial_cipher.inputs.pop(input_index)
@@ -1145,8 +1145,8 @@ class Cipher:
         partial_cipher_inverse = partial_cipher.cipher_inverse()
 
         key_schedule_component_ids = get_key_schedule_component_ids(partial_cipher_inverse)
-        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in
-                                   key_schedule_component_ids[1:]]
+        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in key_schedule_component_ids if
+                                   INPUT_KEY not in id]
 
         if not keep_key_schedule:
             for current_round in partial_cipher_inverse.rounds_as_list:

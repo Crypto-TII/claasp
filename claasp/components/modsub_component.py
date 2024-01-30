@@ -139,7 +139,7 @@ class MODSUB(Modular):
 
         return cp_declarations, cp_constraints
 
-    def get_bit_based_vectorized_python_code(self, params,convert_output_to_bytes):
+    def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         return [f'  {self.id} = bit_vector_MODSUB([{",".join(params)} ], '
                 f'{self.description[1]}, {self.output_bit_size})']
 
