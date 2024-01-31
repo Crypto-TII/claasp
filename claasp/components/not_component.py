@@ -133,7 +133,7 @@ class NOT(Component):
 
         return cp_declarations, cp_constraints
 
-    def cp_deterministic_truncated_xor_differential_constraints(self, inverse=False):
+    def cp_deterministic_truncated_xor_differential_constraints(self):
         """
         Return lists of declarations and constraints for NOT for CP deterministic truncated xor differential model.
 
@@ -157,21 +157,56 @@ class NOT(Component):
         input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        if inverse:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}_inverse[{position}]' for position in bit_positions])
-            cp_constraints = [f'constraint {output_id_link}_inverse[{i}] = {input_};'
-                              for i, input_ in enumerate(all_inputs)]
-        else:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-            cp_constraints = [f'constraint {output_id_link}[{i}] = {input_};'
-                              for i, input_ in enumerate(all_inputs)]
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        cp_constraints = [f'constraint {output_id_link}[{i}] = {input_};'
+                          for i, input_ in enumerate(all_inputs)]
 
         return cp_declarations, cp_constraints
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
+
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return lists of declarations and constraints for NOT for CP deterministic truncated xor differential model.
+
+        INPUT:
+
+        - ``inverse`` -- **boolean** (default: `False`)
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+            sage: gift = GiftPermutation(number_of_rounds=3)
+            sage: not_component = gift.component_from(0, 8)
+            sage: not_component.cp_wordwise_deterministic_truncated_xor_differential_constraints()
+            ([],
+             ['constraint not_0_8[0] = xor_0_6[0];',
+             ...
+              'constraint not_0_8[31] = xor_0_6[31];'])
+        """
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        cp_declarations = []
+        all_inputs_value = []
+        all_inputs_active = []
+        word_size = model.word_size
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
+                                     for j in range(len(bit_positions) // word_size)])
+            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
+                                      for j in range(len(bit_positions) // word_size)])
+        input_len = len(all_inputs_value)
+        cp_constraints = []
+        for i in range(input_len):
+            cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[i]};')
+            cp_constraints.append(f'if {all_inputs_value[i]} < 0 then {output_id_link}_value[{i}] = {all_inputs_value[i]} '\
+                                  f'else {output_id_link}_value[{i}] = {2**word_size - 1} - {all_inputs_value[i]}')
+
+        return cp_declarations, cp_constraints
+
 
     def cp_xor_differential_first_step_constraints(self, model):
         """

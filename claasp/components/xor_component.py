@@ -267,7 +267,7 @@ class XOR(Component):
 
         return cp_declarations, cp_constraints
 
-    def cp_deterministic_truncated_xor_differential_constraints(self, inverse=False):
+    def cp_deterministic_truncated_xor_differential_constraints(self):
         r"""
         Return list declarations and constraints for XOR component CP deterministic truncated XOR differential model.
 
@@ -292,23 +292,15 @@ class XOR(Component):
         input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        if inverse:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}_inverse[{position}]' for position in bit_positions])
-        else:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         cp_constraints = []
         for i in range(output_size):
             operation = ' < 2) /\\ ('.join(all_inputs[i::output_size])
             new_constraint = 'constraint if (('
             new_constraint += operation + '< 2)) then '
             operation2 = ' + '.join(all_inputs[i::output_size])
-            if inverse:
-                new_constraint += f'{output_id_link}_inverse[{i}] = ({operation2}) mod 2 ' \
-                                  f'else {output_id_link}_inverse[{i}] = 2 endif;'
-            else:
-                new_constraint += f'{output_id_link}[{i}] = ({operation2}) mod 2 else {output_id_link}[{i}] = 2 endif;'
+            new_constraint += f'{output_id_link}[{i}] = ({operation2}) mod 2 else {output_id_link}[{i}] = 2 endif;'
             cp_constraints.append(new_constraint)
 
         return cp_declarations, cp_constraints
@@ -363,7 +355,7 @@ class XOR(Component):
             new_constraint = 'constraint '
             for summand in range(numadd - 2):
                 new_constraint += f'if temp_{numadd + summand - 1}_{i}_active + temp_{summand}_{i}_active > 2 then ' \
-                                  f'temp_{numadd + summand}_{i}_active == 3 /\\ temp_{numadd + summand}_{i}_value = -2 '
+                                  f'temp_{numadd + summand}_{i}_active = 3 /\\ temp_{numadd + summand}_{i}_value = -2 '
                 new_constraint += f'elif temp_{numadd + summand - 1}_{i}_active + temp_{summand}_{i}_active == 1 then' \
                                   f' temp_{numadd + summand}_{i}_active = 1 /\\ temp_{numadd + summand}_{i}_value =' \
                                   f' temp_{numadd + summand - 1}_{i}_value + temp_{summand}_{i}_value '
