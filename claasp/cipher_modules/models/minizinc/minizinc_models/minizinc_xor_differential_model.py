@@ -25,7 +25,11 @@ from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, W
 
 class MinizincXorDifferentialModel(MinizincModel):
 
-    def __init__(self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp='sat'):
+    def __init__(
+        self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp='sat',
+            include_word_operations_mzn_file=True
+    ):
+        self.include_word_operations_mzn_file = include_word_operations_mzn_file
         super().__init__(cipher, window_size_list, probability_weight_per_round, sat_or_milp)
 
     @staticmethod
@@ -79,7 +83,6 @@ class MinizincXorDifferentialModel(MinizincModel):
             parsed_solution['component_values'] = get_hex_string_from_bool_dict(
                 list_of_vars, dict_of_solutions, probability_vars_weights
             )
-
 
         return parsed_solution
 
@@ -523,7 +526,8 @@ class MinizincXorDifferentialModel(MinizincModel):
         else:
             from claasp.cipher_modules.models.milp.utils.mzn_predicates import get_word_operations
 
-        self._model_constraints.extend([get_word_operations()])
+        if self.include_word_operations_mzn_file:
+            self._model_constraints.extend([get_word_operations()])
         self._model_constraints.extend([
             f'output [ \"{self.cipher_id}, and window_size={self.window_size_list}\" ++ \"\\n\"];'])
         self._model_constraints.extend(output_string_for_cipher_inputs)
@@ -693,3 +697,14 @@ class MinizincXorDifferentialModel(MinizincModel):
         concatenated_str = " ++ ".join(var['mzn_carry_array_name'] for var in self.carries_vars)
         self._model_constraints.append(f'constraint sum({concatenated_str}) <= {max_number_of_carries};\n')
 
+    def extend_variables(self, variables):
+        self._variables_list.extend(variables)
+
+    def extend_model_constraints(self, constraints):
+        self._model_constraints.extend(constraints)
+
+    def get_variables(self):
+        return self._variables_list
+
+    def get_model_constraints(self):
+        return self._model_constraints
