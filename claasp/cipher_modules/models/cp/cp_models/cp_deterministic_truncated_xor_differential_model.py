@@ -61,7 +61,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         elif f'{component_id} ' in string:
             components_values[f'solution{solution_number}'][f'{component_id}'] = component_solution
     
-    def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[], number_of_rounds=None):
+    def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[], number_of_rounds=None, minimize=False):
         """
         Build the CP model for the search of deterministic truncated XOR differential trails.
 
@@ -166,7 +166,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         self._model_constraints.extend(
             self.final_impossible_constraints(number_of_rounds))
 
-    def final_deterministic_truncated_xor_differential_constraints(self):
+    def final_deterministic_truncated_xor_differential_constraints(self, minimize=False):
         """
         Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
 
@@ -185,14 +185,18 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         """
         cipher_inputs = self._cipher.inputs
         cipher = self._cipher
-        cp_constraints = [solve_satisfy]
+        cp_constraints = []
         new_constraint = 'output['
         for element in cipher_inputs:
             new_constraint = f'{new_constraint}\"{element} = \"++ show({element}) ++ \"\\n\" ++'
         for component_id in cipher.get_all_components_ids():
             new_constraint = new_constraint + \
                 f'\"{component_id} = \"++ show({component_id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+            if 'cipher_output' in component_id and minimize:
+                cp_constraints.append(f'solve minimize count([component_id}, 2);')
         new_constraint = new_constraint[:-2] + '];'
+        if cp_constraints == []:
+            cp_constraints.append(solve_satisfy)
         cp_constraints.append(new_constraint)
 
         return cp_constraints
@@ -244,6 +248,64 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         cp_constraints.append(new_constraint)
 
         return cp_constraints
+
+    def find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
+                                                                fixed_values=[], solver_name='Chuffed'):
+        """
+        Return the solution representing a differential trail with any weight.
+
+        INPUT:
+
+        - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
+        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
+
+          * ``'Chuffed'``
+          * ``'Gecode'``
+          * ``'COIN-BC'``
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=1)
+            sage: cp = CpDeterministicTruncatedXorDifferentialModel(speck)
+            sage: plaintext = set_fixed_variables(
+            ....:         component_id='plaintext',
+            ....:         constraint_type='not_equal',
+            ....:         bit_positions=range(32),
+            ....:         bit_values=[0]*32)
+            sage: key = set_fixed_variables(
+            ....:         component_id='key',
+            ....:         constraint_type='equal',
+            ....:         bit_positions=range(64),
+            ....:         bit_values=[0]*64)
+            sage: cp.find_one_deterministic_truncated_xor_differential_trail(1, [plaintext,key], 'Chuffed') # random
+            [{'cipher_id': 'speck_p32_k64_o32_r1',
+              'components_values': {'cipher_output_0_6': {'value': '22222222222222212222222222222220',
+                'weight': 0},
+               'intermediate_output_0_5': {'value': '0000000000000000', 'weight': 0},
+               'key': {'value': '0000000000000000000000000000000000000000000000000000000000000000',
+                'weight': 0},
+               'modadd_0_1': {'value': '2222222222222221', 'weight': 0},
+               'plaintext': {'value': '11111111011111111111111111111111', 'weight': 0},
+               'rot_0_0': {'value': '1111111111111110', 'weight': 0},
+               'rot_0_3': {'value': '1111111111111111', 'weight': 0},
+               'xor_0_2': {'value': '2222222222222221', 'weight': 0},
+               'xor_0_4': {'value': '2222222222222220', 'weight': 0}},
+              'memory_megabytes': 0.01,
+              'model_type': 'deterministic_truncated_xor_differential_one_solution',
+              'solver_name': 'Chuffed',
+              'solving_time_seconds': 0.0,
+              'total_weight': '0.0'}]
+        """
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
+        self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds, minimize = True)
+
+        return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name)
 
     def find_all_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
                                                                 fixed_values=[], solver_name='Chuffed'):

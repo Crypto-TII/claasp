@@ -223,8 +223,6 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                     model_constraints.append(constraint)
                     
         return model_constraints
-            
-        
         
     def clean_inverse_impossible_variables_constraints(self, backward_components, inverse_variables, inverse_constraints):
         for component in backward_components:
@@ -259,10 +257,15 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                 start = new_start
         return inverse_variables, inverse_constraints
         
-    def extract_incompatibilities_from_output(self, components_values):
+    def extract_incompatibilities_from_output(self, components_values, initial_round = None, final_round = None):
         cipher = self._cipher
         inverse_cipher = self.inverse_cipher
-        incompatibilities = {'plaintext': components_values['plaintext']}
+        if initial_round is None or initial_round == 0:
+            incompatibilities = {'plaintext': components_values['plaintext']}
+        else:
+            for component in cipher.get_components_in_round(initial_round - 2):
+                if 'output' in component.id and component.id in component_values.keys():
+                    incompatibilities = {component.id: components_values[component.id]}
         for component in cipher.get_all_components():
             if 'inverse_' + component.id in components_values.keys():
                 incompatibility = False
@@ -298,7 +301,13 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                                     incompatibilities[id_link] = components_values[id_link]
                                 incompatibilities['inverse_' + component.id] = components_values['inverse_' + component.id]
                                 incompatibility = False
-        incompatibilities['inverse_' + cipher.get_all_components_ids()[-1]] = components_values['inverse_' + cipher.get_all_components_ids()[-1]]
+        if final_round is None or final_round == cipher.number_of_rounds:
+            incompatibilities['inverse_' + cipher.get_all_components_ids()[-1]] = components_values['inverse_' + cipher.get_all_components_ids()[-1]]
+        else:
+            for component in cipher.get_components_in_round(final_round - 1):
+                if 'output' in component.id and 'inverse_' + component.id in component_values.keys():
+                    incompatibilities['inverse_' + component.id] = components_values['inverse_' + component.id]
+        
         solutions = {'solution1' : incompatibilities}
                     
         return solutions
