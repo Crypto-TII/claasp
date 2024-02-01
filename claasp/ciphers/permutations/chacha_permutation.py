@@ -68,11 +68,11 @@ class ChachaPermutation(Cipher):
                  cipher_family="chacha_permutation", cipher_type="permutation",
                  inputs=None, cipher_inputs_bit_size=None,
                  rotations=[8, 7, 16, 12],
-                 word_size=32, start_round="odd"):
+                 word_size=32, start_round="odd", start_with_bottom_half=False):
         init_latin_dances_cipher(
             self, super(), INPUT_PLAINTEXT, state_of_components, number_of_rounds,
             start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, [COLUMNS, DIAGONALS],
-            word_size, rotations
+            word_size, rotations, start_with_bottom_half
         )
 
     def top_half_quarter_round(self, a, b, c, d, state):
