@@ -37,7 +37,7 @@ class QARMAv2BlockCipher(Cipher):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.qarmav2_block_cipher import QARMAv2BlockCipher
-        sage: qarmav2 = QARMAv2WordwiseBlockCipher(number_of_rounds = 4)
+        sage: qarmav2 = QARMAv2BlockCipher(number_of_rounds = 4)
         sage: key = 0x0123456789abcdeffedcba9876543210
         sage: tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
         sage: plaintext = 0x0000000000000000
