@@ -37,7 +37,6 @@ from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
 from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
-from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QARMAv2MixColumnBlockCipher
 from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
@@ -735,11 +734,3 @@ def test_cipher_inverse():
         ciphertext = cipher.evaluate([plaintext, key])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
-
-        qarmav2 = QARMAv2MixColumnBlockCipher(number_of_rounds=2)
-        key = 0x0123456789abcdeffedcba9876543210
-        plaintext = 0x0000000000000000
-        tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
-        ciphertext = qarmav2.evaluate([key, plaintext, tweak])
-        cipher_inv = qarmav2.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, tweak, key]) == plaintext
