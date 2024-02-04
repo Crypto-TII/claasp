@@ -303,7 +303,7 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
     G = PolynomialRing(GF(2), 'x')
     x = G.gen()
     irr_poly = int_to_poly(polynomial_as_int, word_size, x)
-    if irr_poly:
+    if irr_poly.is_irreducible():
         F = GF(2 ** word_size, name='a', modulus=irr_poly)
     else:
         F = GF(2 ** word_size)
