@@ -785,43 +785,76 @@ def order_of_linear_component(component):
 
 def fsr_properties(operation):
     component = operation[0]
+    fsr_word_size = component.description[1]
     component_dict = {"type": component.type, "input_bit_size": component.input_bit_size,
-                      "output_bit_size": component.output_bit_size, "description": component.description,
-                      "number_of_occurrences": operation[1], "component_id_list": operation[2]}
+                      "output_bit_size": component.output_bit_size, "fsr_word_size": fsr_word_size,
+                      "description": component.description, "number_of_occurrences": operation[1],
+                      "component_id_list": operation[2]}
 
     desc = component.description
     registers_len = []
     registers_type = []
     registers_feedback_relation_deg = []
+    lin_flag = False
     for r in desc[0]:
         registers_len.append(r[0])
         d = 0
-        for term in r[1]:
-            if d < len(term):
-                d = len(term)
+        if fsr_word_size == 1:
+            for term in r[1]:
+                if d < len(term):  # case for binary register
+                    d = len(term)
+        else:
+            for term in r[1]:
+                if d < len(term[1]):  # case for non-binary register
+                    d = len(term[1])
         registers_feedback_relation_deg.append(d)
         if d > 1:
             registers_type.append('non-linear')
         else:
             registers_type.append('linear')
+            lin_flag = True
+
     component_dict['number_of_registers'] = len(registers_len)
     component_dict['length_of_registers'] = registers_len
     component_dict['type_of_registers'] = registers_type
     component_dict['degree_of_feedback_relation_of_registers'] = registers_feedback_relation_deg
 
-    R = GF(2)['x']
-    lfsrs_primitive = []
-    exp = 0
-    for index, r in enumerate(desc[0]):
-        exp = exp + registers_len[index]
-        if registers_type[index] == 'linear':
-            f = R(1)
-            for term in r[1]:
-                f = f + R.gen() ** (exp - term[0])
-            print(f)
-            lfsrs_primitive.append(f.is_primitive())
+    if lin_flag:
+        lfsrs_primitive = []
+        if fsr_word_size == 1:
+            exp = 0
+            R = GF(2)['x']
+            for index, r in enumerate(desc[0]):
+                exp = exp + registers_len[index]
+                if registers_type[index] == 'linear':
+                    f = R(1)
+                    for term in r[1]:
+                        f = f + R.gen() ** (exp - term[0])
+                    print(f)
+                    lfsrs_primitive.append(f.is_primitive())
+            del R
+        else:
+            exp = 0
+            R = GF(2 ** fsr_word_size)['x']
+            x = R.gens()
+            a = R.construction()[1].gen()
+            for index, r in enumerate(desc[0]):
+                exp = exp + registers_len[index]
+                if registers_type[index] == 'linear':
+                    p = R(1)
+                    for term in r[1]:
+                        m = 0
+                        coef = "{0:b}".format(term[0])
+                        for i in range(len(coef)):
+                            if coef[i] == '1':  m = m + pow(a, len(coef) - 1 - i)
+                        m = m * x[0] ** (exp - term[1][0])
+                        p += m
+                    print(p)
+                    lfsrs_primitive.append(p.is_primitive())
+                    breakpoint()
+            del R
 
-    component_dict['linear_registers_feedback_polynomial_primitive'] = lfsrs_primitive
+        component_dict['linear_registers_feedback_polynomial_primitive'] = lfsrs_primitive
     return component_dict
 
 
