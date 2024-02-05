@@ -752,7 +752,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
         G = PolynomialRing(GF(2), 'x')
         x = G.gen()
         irr_poly = int_to_poly(int(description[1]), int(description[2]), x)
-        if not irr_poly.is_irreducible():
+        if irr_poly and not irr_poly.is_irreducible():
             binary_matrix = binary_matrix_of_linear_component(component)
             inv_binary_matrix = binary_matrix.inverse()
             inverse_component = Component(component.id, LINEAR_LAYER, Input(component.input_bit_size, input_id_links, input_bit_positions), component.output_bit_size, list(inv_binary_matrix.transpose()))
