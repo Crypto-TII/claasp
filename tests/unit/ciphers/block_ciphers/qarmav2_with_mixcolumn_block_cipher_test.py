@@ -8,8 +8,8 @@ def test_qarmav2_mixcolumn_block_cipher():
     qarmav2 = QARMAv2MixColumnBlockCipher(number_of_rounds = 4)
     assert qarmav2.type == 'block_cipher'
     assert qarmav2.family_name == 'qarmav2_block_cipher'
-    assert qarmav2.number_of_rounds == 8
-    assert qarmav2.id == 'qarmav2_block_cipher_k128_p64_i128_o64_r8'
+    assert qarmav2.number_of_rounds == 9
+    assert qarmav2.id == 'qarmav2_block_cipher_k128_p64_i128_o64_r9'
     assert qarmav2.component_from(0, 0).id == 'linear_layer_0_0'
 
     qarmav2 = QARMAv2MixColumnBlockCipher(number_of_rounds = 4)
