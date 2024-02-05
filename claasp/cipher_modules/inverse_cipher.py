@@ -8,6 +8,9 @@ from claasp.component import Component
 from claasp.components import modsub_component, cipher_output_component, linear_layer_component, \
     intermediate_output_component
 from claasp.input import Input
+from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from claasp.cipher_modules.component_analysis_tests import int_to_poly
 from claasp.name_mappings import *
 
 
@@ -677,7 +680,7 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
     flag_is_intersection_of_input_id_links_null, input_bit_positions = is_intersection_of_input_id_links_null(
         inverse_component, component)
 
-    if (component.description == [INPUT_KEY]) or (component.type == CONSTANT):
+    if (component.description == [INPUT_KEY]) or (component.description == [INPUT_TWEAK]) or(component.type == CONSTANT):
         for i in range(component.output_bit_size):
             output_bit_name_updated = id + "_" + str(i) + "_output_updated"
             bit = {
@@ -745,11 +748,21 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
     elif component.type == MIX_COLUMN:
         input_id_links, input_bit_positions = compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(
             component, available_output_components, all_equivalent_bits, self)
-        inv_matrix = get_inverse_matrix_in_integer_representation(component)
-        inverse_component = Component(component.id, component.type,
-                                      Input(component.input_bit_size, input_id_links, input_bit_positions),
-                                      component.output_bit_size, [[list(row) for row in inv_matrix]] + component.description[1:])
-        inverse_component.__class__ = component.__class__
+        description = component.description
+        G = PolynomialRing(GF(2), 'x')
+        x = G.gen()
+        irr_poly = int_to_poly(int(description[1]), int(description[2]), x)
+        if irr_poly and not irr_poly.is_irreducible():
+            binary_matrix = binary_matrix_of_linear_component(component)
+            inv_binary_matrix = binary_matrix.inverse()
+            inverse_component = Component(component.id, LINEAR_LAYER, Input(component.input_bit_size, input_id_links, input_bit_positions), component.output_bit_size, list(inv_binary_matrix.transpose()))
+            inverse_component.__class__ = linear_layer_component.LinearLayer
+        else:
+            inv_matrix = get_inverse_matrix_in_integer_representation(component)
+            inverse_component = Component(component.id, component.type,
+                                          Input(component.input_bit_size, input_id_links, input_bit_positions),
+                                          component.output_bit_size, [[list(row) for row in inv_matrix]] + component.description[1:])
+            inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == WORD_OPERATION and component.description[0] == "SIGMA":
@@ -945,7 +958,7 @@ def get_component_from_id(component_id, self):
 
 
 def get_key_schedule_component_ids(self):
-    key_schedule_component_ids = [input for input in self.inputs if INPUT_KEY in input]
+    key_schedule_component_ids = [input for input in self.inputs if INPUT_KEY in input or INPUT_TWEAK in input]
     component_list = self.get_all_components()
     for c in component_list:
         flag_belong_to_key_schedule = True
