@@ -527,12 +527,12 @@ class QARMAv2MixColumnBlockCipher(Cipher):
         alpha, beta = self.constants_update()
 
         if self.number_of_layers == 2:
-            key_state[0] = self.add_XOR_component([key_state[0].id, alpha[0].id, alpha[1]],
+            key_state[0] = self.add_XOR_component([key_state[0].id, alpha[0], alpha[1]],
                                                   [[i for i in range(self.KEY_BLOCK_SIZE)],
                                                    [i for i in range(self.LAYER_BLOCK_SIZE)],
                                                    [i for i in range(self.LAYER_BLOCK_SIZE)]],
                                                   self.KEY_BLOCK_SIZE)
-            key_state[1] = self.add_XOR_component([key_state[1].id, beta[0].id, beta[1]],
+            key_state[1] = self.add_XOR_component([key_state[1].id, beta[0], beta[1]],
                                                   [[i for i in range(self.KEY_BLOCK_SIZE)],
                                                    [i for i in range(self.LAYER_BLOCK_SIZE)],
                                                    [i for i in range(self.LAYER_BLOCK_SIZE)]],
