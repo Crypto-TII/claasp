@@ -1,7 +1,9 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS claasp-base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GUROBI_ARCH=linux64
+ARG COPY_CLAASP_LIBRARY=false
+ARG INSTALL_CLAASP_LIBRARY=false
 
 # Install dependencies with apt-get
 RUN apt-get -qq update
@@ -302,3 +304,9 @@ RUN sage -pip install plotly -U kaleido
 
 
 WORKDIR /home/sage/tii-claasp
+
+FROM claasp-base AS claasp-lib
+
+COPY . .
+
+RUN make install

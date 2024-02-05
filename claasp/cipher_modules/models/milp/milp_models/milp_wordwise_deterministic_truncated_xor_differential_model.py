@@ -40,7 +40,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
     def __init__(self, cipher, n_window_heuristic=None):
         super().__init__(cipher, n_window_heuristic)
         self._trunc_wordvar = None
-        self._word_size = 1
+        self._word_size = 4
         if self._cipher.is_spn():
             for component in self._cipher.get_all_components():
                 if SBOX in component.type:
@@ -158,7 +158,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             operation = component.description[0]
             operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
-            if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
+            if component.type in component_types or operation in operation_types:
                 variables, constraints = component.milp_wordwise_deterministic_truncated_xor_differential_constraints(self)
             else:
                 print(f'{component.id} not yet implemented')

@@ -1068,7 +1068,7 @@ class Cipher:
                                                                                      end_round, keep_key_schedule)
 
         if start_round > 0:
-            for input_type in set(self.inputs) - {INPUT_KEY}:
+            for input_type in set([input for input in self.inputs if INPUT_KEY not in input]):
                 removed_components_ids.append(input_type)
                 input_index = partial_cipher.inputs.index(input_type)
                 partial_cipher.inputs.pop(input_index)
@@ -1145,8 +1145,8 @@ class Cipher:
         partial_cipher_inverse = partial_cipher.cipher_inverse()
 
         key_schedule_component_ids = get_key_schedule_component_ids(partial_cipher_inverse)
-        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in
-                                   key_schedule_component_ids[1:]]
+        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in key_schedule_component_ids if
+                                   INPUT_KEY not in id]
 
         if not keep_key_schedule:
             for current_round in partial_cipher_inverse.rounds_as_list:
@@ -2319,3 +2319,76 @@ class Cipher:
     @property
     def type(self):
         return self._type
+
+    def create_networx_graph_from_input_ids(self):
+        import networkx as nx
+        data = self.as_python_dictionary()['cipher_rounds']
+        # Create a directed graph
+        G = nx.DiGraph()
+
+        # Flatten the list of lists
+        flat_data = [item for sublist in data for item in sublist]
+
+        # Add nodes
+        for item in flat_data:
+            G.add_node(item["id"])
+
+        # Add edges based on input_id_link
+        for item in flat_data:
+            for input_id in item.get("input_id_link", []):
+                # Adding an edge from input_id to the current item's id
+                G.add_edge(input_id, item["id"])
+
+        return G
+
+    def create_top_and_bottom_subgraphs_from_components_graph(self, e0_bottom_ids, e1_top_ids):
+        import networkx as nx
+
+        def induced_subgraph_of_predecessors(DG, nodes):
+            visited = set()
+
+            def dfs(v):
+                if v not in visited:
+                    visited.add(v)
+                    for predecessor in DG.predecessors(v):
+                        dfs(predecessor)
+
+            for node in nodes:
+                dfs(node)
+
+            return DG.subgraph(visited)
+
+        def get_descendants_subgraph(G, start_nodes):
+            """
+            Extract a subgraph containing only the descendants (successors) of a given list of nodes from a graph.
+
+            Parameters:
+            - G (nx.DiGraph): The original directed graph.
+            - start_nodes (list): The list of nodes to start the search from.
+
+            Returns:
+            - H (nx.DiGraph): The subgraph containing start_nodes and their descendants.
+            """
+            # Create an empty directed subgraph
+            H = nx.DiGraph()
+
+            # Add nodes from start_nodes to the subgraph and their descendants
+            for node in start_nodes:
+                if node in G:
+                    H.add_node(node)
+                    for successor in nx.dfs_successors(G, source=node):
+                        H.add_edge(node, successor)
+                        H.add_node(successor)
+
+            return H
+
+        graph_cipher = self.create_networx_graph_from_input_ids()
+        ancestors_ids = induced_subgraph_of_predecessors(graph_cipher, e0_bottom_ids)
+        descendants_ids = get_descendants_subgraph(graph_cipher, e1_top_ids)
+        return ancestors_ids, descendants_ids
+
+    def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
+        round_number = self.get_round_from_component_id(component_id)
+        self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
+
+
