@@ -99,6 +99,7 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
             sage: trail = sat.find_one_bitwise_impossible_xor_differential_trail(7, fixed_values=[plaintext, key, ciphertext])
 
             # https://eprint.iacr.org/2016/490.pdf
+            # requires to comment the constraints ' '.join(incompatibility_ids) as we are considering half rounds not full rounds
             sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
             sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
             sage: ascon = AsconSboxSigmaPermutation(number_of_rounds=5)
