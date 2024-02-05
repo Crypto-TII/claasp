@@ -140,6 +140,7 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
             self._model_constraints.extend(utils.incompatibility(incompatibility_ids[i],
                                                                  (forward_out_ids_0[i], forward_out_ids_1[i]),
                                                                  (backward_out_ids_0[i], backward_out_ids_1[i])))
+        self._model_constraints.append(' '.join(incompatibility_ids))
 
         solution = self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name=solver_name)
         solution['building_time'] = building_time
