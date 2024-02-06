@@ -25,7 +25,8 @@ PARAMETERS_CONFIGURATION_LIST = [
 
 class QARMAv2MixColumnBlockCipher(Cipher):
     """
-    Return a cipher object of Qarma v2 Block Cipher. This version uses the MixColumn component to model the diffusion layer.
+    Return a cipher object of Qarma v2 Block Cipher. This version uses the MixColumn component to model the diffusion layer, resulting in an invertible cipher object.
+    However, it may be less efficient that the QARMAv2BlockCipher cipher object for vectorized evaluation.
 
     INPUT:
 
