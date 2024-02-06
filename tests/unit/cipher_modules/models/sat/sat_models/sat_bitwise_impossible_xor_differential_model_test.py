@@ -1,5 +1,4 @@
-from claasp.cipher_modules.models.utils import (
-    get_single_key_scenario_format_for_fixed_values, integer_to_bit_list, set_fixed_variables)
+from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_impossible_xor_differential_model import \

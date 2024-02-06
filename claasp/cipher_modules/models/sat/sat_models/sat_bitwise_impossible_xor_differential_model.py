@@ -168,6 +168,6 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
             component_solution = set_component_solution(value)
             components_solutions[component.id] = component_solution
             if component.id == last_backward_component_id[:-9]:
-                components_solutions[last_backward_component_id] = last_backward_component_value
+                components_solutions[last_backward_component_id] = set_component_solution(last_backward_component_value)
 
         return components_solutions, None
