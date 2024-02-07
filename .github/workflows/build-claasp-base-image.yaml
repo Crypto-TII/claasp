@@ -38,7 +38,8 @@ jobs:
         context: .
         file: ./docker/Dockerfile
         push: true
-        tags: tiicrc/claasp-lib:latest
+        tags: tiicrc/claasp-base:latest
+        target: claasp-base
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
