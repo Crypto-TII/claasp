@@ -24,7 +24,7 @@ def test_chacha_permutation():
     chacha = ChachaPermutation(number_of_rounds=1)
     assert chacha.get_component_from_id("rot_0_2").description[1] == -16
 
-    chacha = ChachaPermutation(number_of_rounds=1, start_with_bottom_half=True)
+    chacha = ChachaPermutation(number_of_rounds=1, start_round=('odd', 'bottom'))
     assert chacha.get_component_from_id("rot_0_2").description[1] == -8
 
 

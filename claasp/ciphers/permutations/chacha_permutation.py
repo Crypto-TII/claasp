@@ -54,7 +54,7 @@ class ChachaPermutation(Cipher):
     - ``cipher_inputs_bit_size`` -- **integer** (default: `None`)
     - ``rotations`` -- *list of integer* (default: `[8, 7, 16, 12]`)
     - ``word_size`` --  **integer** (default: `32`)
-    - ``start_round`` --  **string** (default: `odd`)
+    - ``start_round`` --  **tuple of strings** (default: (`odd`, `top`)
 
     EXAMPLES::
 
@@ -68,11 +68,11 @@ class ChachaPermutation(Cipher):
                  cipher_family="chacha_permutation", cipher_type="permutation",
                  inputs=None, cipher_inputs_bit_size=None,
                  rotations=[8, 7, 16, 12],
-                 word_size=32, start_round="odd", start_with_bottom_half=False):
+                 word_size=32, start_round=("odd", "top")):
         init_latin_dances_cipher(
             self, super(), INPUT_PLAINTEXT, state_of_components, number_of_rounds,
             start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, [COLUMNS, DIAGONALS],
-            word_size, rotations, start_with_bottom_half
+            word_size, rotations
         )
 
     def top_half_quarter_round(self, a, b, c, d, state):

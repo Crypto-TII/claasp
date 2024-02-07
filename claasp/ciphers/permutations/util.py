@@ -118,7 +118,7 @@ def init_state_latin_dances(permutation, input_plaintext):
 def init_latin_dances_cipher(
         permutation, super_class, input_plaintext, state_of_components, number_of_rounds,
         start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, quarter_round_indexes, word_size,
-        rotations, start_with_bottom_half=False
+        rotations
 ):
     columns = quarter_round_indexes[0]
     diagonals = quarter_round_indexes[1]
@@ -147,11 +147,11 @@ def init_latin_dances_cipher(
                          cipher_output_bit_size=permutation.block_bit_size)
 
     for i in range(number_of_rounds):
-        if start_round == 'even':
+        if start_round[0] == 'even':
             j = i + 2
         else:
             j = i
-        if start_with_bottom_half:
+        if start_round[1] == 'bottom':
             j += 1
         permutation.add_round()
         half_like_round_function_latin_dances(permutation, j, columns, diagonals)
