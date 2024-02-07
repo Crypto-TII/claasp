@@ -32,6 +32,20 @@ class MilpDivisionTrailModel():
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(0)
 
+        sage: from claasp.ciphers.toys.toysbox import ToySBOX
+        sage: cipher = ToySBOX()
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.toys.toysimon import ToySIMON
+        sage: cipher = ToySIMON()
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
         sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
         sage: cipher = ToySPN1(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
@@ -208,7 +222,6 @@ class MilpDivisionTrailModel():
                 input_vars_concat.append(self._variables[input_name][current][pos])
             self._variables[input_name]["current"] += 1
 
-        # block_size = int(len(input_vars_concat)//component.description[1])
         block_size = component.output_bit_size
         for i in range(block_size):
             constr = 0
@@ -277,14 +290,9 @@ class MilpDivisionTrailModel():
                 return component.id
 
     def pretty_print(self, monomials):
-        # when occurence == 1, we don't need copy. When > 1, we need to also add the component itself
         occurences = self._occurences
-        # occurence_first_input = occurences[self._cipher.inputs[0]]
-        # if occurence_first_input > 1:
-        #     pos_second_input = self._cipher.inputs_bit_size[0]*(occurence_first_input+1)
-        # else:
-        #     pos_second_input = self._cipher.inputs_bit_size[0]*(occurence_first_input)
         pos_second_input = self.find_index_second_input()
+        print(f"pos_second_input = {pos_second_input}")
 
         l = []
         for monomial in monomials:
@@ -295,6 +303,7 @@ class MilpDivisionTrailModel():
                         tmp += self._cipher.inputs[0][0] + str(var)
                     elif pos_second_input <= var < pos_second_input + self._cipher.inputs_bit_size[1]:
                         tmp += self._cipher.inputs[1][0] + str(abs(pos_second_input - var))
+                    # if var is not in this range, it belongs to the copies, so no need to print
             else:
                 tmp += str(1)
             # uncomment if you also want the nb of occurences
@@ -330,7 +339,7 @@ class MilpDivisionTrailModel():
 
     def get_where_component_is_used(self):
         occurences = {}
-        ids = self._cipher.inputs + self._cipher.get_all_components_ids() #[:7]
+        ids = self._cipher.inputs + self._cipher.get_all_components_ids()
         for name in ids:
             for component in self._cipher.get_all_components():
                 if (name in component.input_id_links) and (component.type != "intermediate_output"):
@@ -348,14 +357,6 @@ class MilpDivisionTrailModel():
         self._occurences = occurences_final
         return occurences_final
 
-    # def create_vars_and_copy(self):
-    #     occurences = self._occurences
-    #     all_vars = {}
-    #     for component_id in occurences.keys():
-    #         all_vars[component_id] = {}
-    #         for pos in all_vars[component_id].keys():
-    #             nb_occurence = all_vars[component_id][pos]
-    #             all_vars[component_id][pos] = []
 
     def find_copy_indexes(self, input_bit_positions):
         already_visited = []
@@ -372,20 +373,11 @@ class MilpDivisionTrailModel():
         print(occurences)
         all_vars = {}
         for component_id in occurences.keys():
-            # nb_occurence = len(occurences[component_id])
             all_vars[component_id] = {}
             all_vars[component_id]["current"] = 0
             if component_id not in self._cipher.inputs:
                 component = self._cipher.get_component_from_id(component_id)
                 all_vars[component_id][0] = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
-                # if nb_occurence >= 2:
-                #     all_vars[component_id]["current"] = 1
-                #     for i in range(nb_occurence):
-                #         all_vars[component_id][i+1] = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name="copy_"+component_id+f"_{i}")
-                #     for i in range(component.output_bit_size):
-                #         for j in range(nb_occurence):
-                #             self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][j+1][i])
-                #         self._model.addConstr(sum(all_vars[component_id][j+1][i] for j in range(nb_occurence)) >= all_vars[component_id][0][i])
                 for input_bit_positions_indexes in occurences[component_id]:
                     input_bit_positions = input_bit_positions_indexes[0]
                     indexes = input_bit_positions_indexes[1]
@@ -402,14 +394,6 @@ class MilpDivisionTrailModel():
                 index = self._cipher.inputs.index(component_id)
                 input_size = self._cipher.inputs_bit_size[index]
                 all_vars[component_id][0] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY, name=component_id)
-                # if nb_occurence >= 2:
-                #     all_vars[component_id]["current"] = 1
-                #     for i in range(nb_occurence):
-                #         all_vars[component_id][i+1] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY, name="copy_"+component_id+f"_{i}")
-                #     for i in range(input_size):
-                #         for j in range(nb_occurence):
-                #             self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][j+1][i])
-                #         self._model.addConstr(sum(all_vars[component_id][j+1][i] for j in range(nb_occurence)) >= all_vars[component_id][0][i])
                 for input_bit_positions_indexes in occurences[component_id]:
                     input_bit_positions = input_bit_positions_indexes[0]
                     indexes = input_bit_positions_indexes[1]
@@ -430,8 +414,13 @@ class MilpDivisionTrailModel():
     def find_index_second_input(self):
         occurences = self._occurences
         index = 0
+        need_to_copy = False
         for input_bit_positions_indexes in occurences[self._cipher.inputs[0]]:
+            if len(input_bit_positions_indexes[1]) > 1:
+                need_to_copy = True
             index += len(input_bit_positions_indexes[0])*len(input_bit_positions_indexes[1])
+        if need_to_copy:
+            index += self._cipher.inputs_bit_size[0]
         return index
 
     def find_anf_for_specific_output_bit(self, output_bit_index):
@@ -446,36 +435,16 @@ class MilpDivisionTrailModel():
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[output_bit_index] == 1)
 
-        # for i in range(32): # self._cipher.output_bit_size
+        # for i in range(48): # self._cipher.output_bit_size
         #     key_var = self._model.getVarByName(f"key[{i}]")
         #     self._model.addConstr(key_var == 0)
 
         # for i in range(16,32): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"copy_plaintext_0[{i}]")
-        #     self._model.addConstr(c == 0)
-
-        # for i in range(16,32): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"copy_plaintext_1[{i}]")
-        #     self._model.addConstr(c == 0)
-
-        # for i in range(16,32): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"copy_plaintext_2[{i}]")
-        #     self._model.addConstr(c == 0)
-
-        # for i in range(16): # self._cipher.output_bit_size
         #     c = self._model.getVarByName(f"copy_plaintext_3[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(16,32): # self._cipher.output_bit_size
-        #     p_var = self._model.getVarByName(f"plaintext[{i}]")
-        #     self._model.addConstr(p_var == 0)
-
-        # for i in range(3,6): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"copy_xor_0_1_0[{i}]")
-        #     self._model.addConstr(c == 0)
-
-        # for i in range(3): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"copy_xor_0_1_1[{i}]")
+        # for i in range(16): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"copy_plaintext_4[{i}]")
         #     self._model.addConstr(c == 0)
 
         self._model.update()
@@ -485,10 +454,6 @@ class MilpDivisionTrailModel():
         print(f"building_time : {building_time}")
 
         occurences = self._occurences
-        # occurence_first_input = occurences[self._cipher.inputs[0]]
-        # if occurence_first_input > 1:
-        #     occurence_first_input += 1
-        # max_input_bit_pos = occurence_first_input*self._cipher.inputs_bit_size[0] + self._cipher.inputs_bit_size[1]
         index_second_input = self.find_index_second_input()
         max_input_bit_pos = index_second_input + self._cipher.inputs_bit_size[1]
         print(f"max_input_bit_pos = {max_input_bit_pos}")
@@ -505,22 +470,24 @@ class MilpDivisionTrailModel():
         for sol in range(solCount):
             self._model.setParam(GRB.Param.SolutionNumber, sol)
             values = self._model.Xn
-            # print(values[:6])
-            # print(values[6:12])
-            # print(values[12:18])
-            # print(values[18:24])
-            # print(values[24:30])
+            # print(values[:16])
+            # print(values[16:32])
+            # print(values[32:48])
+            # print(values[48:64])
+            # print(values[64:80])
             # print("################")
 
             # Simon 1 round
+            # print("plaintext")
             # print(values[:32])
             # print("copy plaintext")
-            # print(values[32:64])
-            # print(values[64:96])
-            # print(values[96:128])
-            # print(values[128:160])
+            # print(values[32:48])
+            # print(values[48:64])
+            # print(values[64:80])
+            # print(values[80:96])
+            # print(values[96:112])
             # print("key")
-            # print(values[160:224])
+            # print(values[112:176])
             # print("rots")
             # print(values[224:240])
             # print(values[240:256])
@@ -538,9 +505,13 @@ class MilpDivisionTrailModel():
                     tmp.append(index)
             monomials.append(tmp)
 
+        print(monomials)
         monomials_with_occurences = [x+[monomials.count(x)] for x in monomials]
+        print(monomials_with_occurences)
         monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
+        print(monomials_duplicates_removed)
         monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
+        print(monomials_even_occurences_removed)
         self.pretty_print(monomials_even_occurences_removed)
         return self._model
 
