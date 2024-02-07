@@ -148,7 +148,7 @@ class MilpDivisionTrailModel():
             current = self._variables[input_name]["current"]
             for pos in component.input_bit_positions[index]:
                 input_vars_concat.append(self._variables[input_name][current][pos])
-            # self._variables[input_name]["current"] += 1
+            self._variables[input_name]["current"] += 1
 
         B = BooleanPolynomialRing(component.input_bit_size,'x')
         x = B.variable_names()
@@ -279,11 +279,12 @@ class MilpDivisionTrailModel():
     def pretty_print(self, monomials):
         # when occurence == 1, we don't need copy. When > 1, we need to also add the component itself
         occurences = self._occurences
-        occurence_first_input = occurences[self._cipher.inputs[0]]
-        if occurence_first_input > 1:
-            pos_second_input = self._cipher.inputs_bit_size[0]*(occurence_first_input+1)
-        else:
-            pos_second_input = self._cipher.inputs_bit_size[0]*(occurence_first_input)
+        # occurence_first_input = occurences[self._cipher.inputs[0]]
+        # if occurence_first_input > 1:
+        #     pos_second_input = self._cipher.inputs_bit_size[0]*(occurence_first_input+1)
+        # else:
+        #     pos_second_input = self._cipher.inputs_bit_size[0]*(occurence_first_input)
+        pos_second_input = self.find_index_second_input()
 
         l = []
         for monomial in monomials:
@@ -293,7 +294,7 @@ class MilpDivisionTrailModel():
                     if var < self._cipher.inputs_bit_size[0]:
                         tmp += self._cipher.inputs[0][0] + str(var)
                     elif pos_second_input <= var < pos_second_input + self._cipher.inputs_bit_size[1]:
-                        tmp += self._cipher.inputs[1][0] + str(var%self._cipher.inputs_bit_size[0])
+                        tmp += self._cipher.inputs[1][0] + str(abs(pos_second_input - var))
             else:
                 tmp += str(1)
             # uncomment if you also want the nb of occurences
@@ -308,7 +309,7 @@ class MilpDivisionTrailModel():
         word_operations_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
         for component in self._cipher.get_all_components(): #[:5]
-            # print(component.id)
+            # print(f"---------> {component.id}")
             if component.type == SBOX:
                 self.add_sbox_constraints(component)
             elif component.type == "cipher_output":
@@ -336,52 +337,102 @@ class MilpDivisionTrailModel():
                     index = component.input_id_links.index(name)
                     if name not in occurences.keys():
                         occurences[name] = []
-                    occurences[name] += component.input_bit_positions[index]
+                    ## if we want to check the occurences of each bit
+                    # occurences[name] += component.input_bit_positions[index]
+                    occurences[name].append(component.input_bit_positions[index])
 
         occurences_final = {}
-        for name in occurences.keys():
-            counter = Counter(occurences[name])
-            maximum_occ = max(counter.values())
-            occurences_final[name] = maximum_occ
+        for component_id in occurences.keys():
+            occurences_final[component_id] = self.find_copy_indexes(occurences[component_id])
 
-        # occurences_final["plaintext"] = 3
         self._occurences = occurences_final
         return occurences_final
+
+    # def create_vars_and_copy(self):
+    #     occurences = self._occurences
+    #     all_vars = {}
+    #     for component_id in occurences.keys():
+    #         all_vars[component_id] = {}
+    #         for pos in all_vars[component_id].keys():
+    #             nb_occurence = all_vars[component_id][pos]
+    #             all_vars[component_id][pos] = []
+
+    def find_copy_indexes(self, input_bit_positions):
+        already_visited = []
+        l = []
+        for input_bit_position in input_bit_positions:
+            if input_bit_position not in already_visited:
+                already_visited.append(input_bit_position)
+                indexes = [i for i, j in enumerate(input_bit_positions) if j == input_bit_position]
+                l.append([input_bit_position, indexes])
+        return l
 
     def create_gurobi_vars_from_all_components(self):
         occurences = self.get_where_component_is_used()
         print(occurences)
         all_vars = {}
         for component_id in occurences.keys():
-            nb_occurence = occurences[component_id]
+            # nb_occurence = len(occurences[component_id])
             all_vars[component_id] = {}
             all_vars[component_id]["current"] = 0
             if component_id not in self._cipher.inputs:
                 component = self._cipher.get_component_from_id(component_id)
                 all_vars[component_id][0] = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
-                if nb_occurence >= 2:
-                    all_vars[component_id]["current"] = 1
-                    for i in range(nb_occurence):
-                        all_vars[component_id][i+1] = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name="copy_"+component_id+f"_{i}")
-                    for i in range(component.output_bit_size):
-                        for j in range(nb_occurence):
-                            self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][j+1][i])
-                        self._model.addConstr(sum(all_vars[component_id][j+1][i] for j in range(nb_occurence)) >= all_vars[component_id][0][i])
+                # if nb_occurence >= 2:
+                #     all_vars[component_id]["current"] = 1
+                #     for i in range(nb_occurence):
+                #         all_vars[component_id][i+1] = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name="copy_"+component_id+f"_{i}")
+                #     for i in range(component.output_bit_size):
+                #         for j in range(nb_occurence):
+                #             self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][j+1][i])
+                #         self._model.addConstr(sum(all_vars[component_id][j+1][i] for j in range(nb_occurence)) >= all_vars[component_id][0][i])
+                for input_bit_positions_indexes in occurences[component_id]:
+                    input_bit_positions = input_bit_positions_indexes[0]
+                    indexes = input_bit_positions_indexes[1]
+                    nb_occurence_for_this_input_bit_positions = len(indexes)
+                    if (len(indexes) > 1) or (len(occurences[component_id]) > 1):
+                        all_vars[component_id]["current"] = 1
+                        for pos in indexes:
+                            all_vars[component_id][pos+1] = self._model.addVars(input_bit_positions, vtype=GRB.BINARY, name="copy_"+component_id+f"_{pos}")
+                        for i in input_bit_positions:
+                            for pos in indexes:
+                                self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][pos+1][i])
+                            self._model.addConstr(sum(all_vars[component_id][pos+1][i] for pos in indexes) >= all_vars[component_id][0][i])
             else:
                 index = self._cipher.inputs.index(component_id)
                 input_size = self._cipher.inputs_bit_size[index]
                 all_vars[component_id][0] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY, name=component_id)
-                if nb_occurence >= 2:
-                    all_vars[component_id]["current"] = 1
-                    for i in range(nb_occurence):
-                        all_vars[component_id][i+1] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY, name="copy_"+component_id+f"_{i}")
-                    for i in range(input_size):
-                        for j in range(nb_occurence):
-                            self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][j+1][i])
-                        self._model.addConstr(sum(all_vars[component_id][j+1][i] for j in range(nb_occurence)) >= all_vars[component_id][0][i])
+                # if nb_occurence >= 2:
+                #     all_vars[component_id]["current"] = 1
+                #     for i in range(nb_occurence):
+                #         all_vars[component_id][i+1] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY, name="copy_"+component_id+f"_{i}")
+                #     for i in range(input_size):
+                #         for j in range(nb_occurence):
+                #             self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][j+1][i])
+                #         self._model.addConstr(sum(all_vars[component_id][j+1][i] for j in range(nb_occurence)) >= all_vars[component_id][0][i])
+                for input_bit_positions_indexes in occurences[component_id]:
+                    input_bit_positions = input_bit_positions_indexes[0]
+                    indexes = input_bit_positions_indexes[1]
+                    nb_occurence_for_this_input_bit_positions = len(indexes)
+                    if (len(indexes) > 1) or (len(occurences[component_id]) > 1):
+                        all_vars[component_id]["current"] = 1
+                        for pos in indexes:
+                            all_vars[component_id][pos+1] = self._model.addVars(input_bit_positions, vtype=GRB.BINARY, name="copy_"+component_id+f"_{pos}")
+                        for i in input_bit_positions:
+                            for pos in indexes:
+                                self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][pos+1][i])
+                            self._model.addConstr(sum(all_vars[component_id][pos+1][i] for pos in indexes) >= all_vars[component_id][0][i])
+
+
         self._model.update()
         self._variables = all_vars
 
+    def find_index_second_input(self):
+        occurences = self._occurences
+        index = 0
+        for input_bit_positions_indexes in occurences[self._cipher.inputs[0]]:
+            index += len(input_bit_positions_indexes[0])*len(input_bit_positions_indexes[1])
+        return index
 
     def find_anf_for_specific_output_bit(self, output_bit_index):
         start = time.time()
@@ -395,17 +446,37 @@ class MilpDivisionTrailModel():
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[output_bit_index] == 1)
 
-        # for i in range(48): # self._cipher.output_bit_size
+        # for i in range(32): # self._cipher.output_bit_size
         #     key_var = self._model.getVarByName(f"key[{i}]")
         #     self._model.addConstr(key_var == 0)
 
-        # for i in range(32): # self._cipher.output_bit_size
+        # for i in range(16,32): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"copy_plaintext_0[{i}]")
+        #     self._model.addConstr(c == 0)
+
+        # for i in range(16,32): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"copy_plaintext_1[{i}]")
+        #     self._model.addConstr(c == 0)
+
+        # for i in range(16,32): # self._cipher.output_bit_size
         #     c = self._model.getVarByName(f"copy_plaintext_2[{i}]")
+        #     self._model.addConstr(c == 0)
+
+        # for i in range(16): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"copy_plaintext_3[{i}]")
         #     self._model.addConstr(c == 0)
 
         # for i in range(16,32): # self._cipher.output_bit_size
         #     p_var = self._model.getVarByName(f"plaintext[{i}]")
         #     self._model.addConstr(p_var == 0)
+
+        # for i in range(3,6): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"copy_xor_0_1_0[{i}]")
+        #     self._model.addConstr(c == 0)
+
+        # for i in range(3): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"copy_xor_0_1_1[{i}]")
+        #     self._model.addConstr(c == 0)
 
         self._model.update()
         self._model.write("division_trail_model_toy_cipher.lp")
@@ -414,14 +485,13 @@ class MilpDivisionTrailModel():
         print(f"building_time : {building_time}")
 
         occurences = self._occurences
-        occurence_first_input = occurences[self._cipher.inputs[0]]
-        if occurence_first_input > 1:
-            occurence_first_input += 1
-        # occurence_second_input = occurences[self._cipher.inputs[1]]
-        # if occurence_second_input > 1:
-        #     occurence_second_input += 1
-        max_input_bit_pos = occurence_first_input*self._cipher.inputs_bit_size[0] + self._cipher.inputs_bit_size[1]
-        print(max_input_bit_pos)
+        # occurence_first_input = occurences[self._cipher.inputs[0]]
+        # if occurence_first_input > 1:
+        #     occurence_first_input += 1
+        # max_input_bit_pos = occurence_first_input*self._cipher.inputs_bit_size[0] + self._cipher.inputs_bit_size[1]
+        index_second_input = self.find_index_second_input()
+        max_input_bit_pos = index_second_input + self._cipher.inputs_bit_size[1]
+        print(f"max_input_bit_pos = {max_input_bit_pos}")
 
         start = time.time()
         # self._model.setObjective(0)
@@ -435,15 +505,31 @@ class MilpDivisionTrailModel():
         for sol in range(solCount):
             self._model.setParam(GRB.Param.SolutionNumber, sol)
             values = self._model.Xn
+            # print(values[:6])
+            # print(values[6:12])
+            # print(values[12:18])
+            # print(values[18:24])
+            # print(values[24:30])
+            # print("################")
+
+            # Simon 1 round
             # print(values[:32])
+            # print("copy plaintext")
             # print(values[32:64])
             # print(values[64:96])
             # print(values[96:128])
-            # print(values[128:192])
-            # print(values[192:208])
-            # print(values[208:224])
+            # print(values[128:160])
+            # print("key")
+            # print(values[160:224])
+            # print("rots")
             # print(values[224:240])
             # print(values[240:256])
+            # print(values[256:272])
+            # print("and")
+            # print(values[272:288])
+            # print("xors")
+            # print(values[288:304])
+            # print(values[304:320])
             # print("################")
             # print(len(values))
             tmp = []
