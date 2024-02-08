@@ -294,7 +294,7 @@ def get_neural_network(network_name, input_size, word_size = None, depth = 1):
     if network_name == 'gohr_resnet':
         if word_size is None or word_size == 0:
             print("Word size not specified for ", network_name, ", defaulting to ciphertext size...")
-            word_size = cipher.output_bit_size
+            word_size = input_size//2
         neural_network = make_resnet(word_size = word_size, input_size = input_size, depth = depth)
     elif network_name == 'dbitnet':
         neural_network = make_dbitnet(input_size = input_size)
@@ -306,14 +306,12 @@ def make_checkpoint(datei):
     res = ModelCheckpoint(datei, monitor='val_loss', save_best_only=True)
     return res
 
-
 def train_neural_distinguisher(cipher, data_generator, starting_round, neural_network, training_samples=10 ** 7,
-                               testing_samples=10 ** 6, num_epochs=1):
+                               testing_samples=10 ** 6, num_epochs=1, batch_size = 5000):
     acc = 1
-    bs = 5000
     x, y = data_generator(samples=training_samples, nr=starting_round)
     x_eval, y_eval = data_generator(samples=testing_samples, nr=starting_round)
-    h = neural_network.fit(x, y, epochs=int(num_epochs), batch_size=bs, validation_data=(x_eval, y_eval))
+    h = neural_network.fit(x, y, epochs=int(num_epochs), batch_size=batch_size, validation_data=(x_eval, y_eval))
     acc = np.max(h.history["val_acc"])
     print(f'Validation accuracy at {starting_round} rounds :{acc}')
     return acc

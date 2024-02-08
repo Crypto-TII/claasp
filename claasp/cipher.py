@@ -1344,7 +1344,7 @@ class Cipher:
                                           testing_samples, num_epochs=number_of_epochs)
 
     def run_autond_pipeline(self, difference_positions=None, optimizer_samples=10 ** 4, optimizer_generations=50,
-                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False):
+                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False, neural_net = 'dbitnet'):
         """
           Runs the AutoND pipeline ([BGHR2023]):
             - Find an input difference for the inputs set to True in difference_positions using an optimizer
@@ -1365,6 +1365,7 @@ class Cipher:
           - ``testing_samples`` -- **integer**; (default: `10**6`) number samples used for testing
           - ``number_of_epochs`` -- **integer**; (default: `40`) number of training epochs
           - ``verbose`` -- **boolean**; (default: `False`) verbosity of the optimizer
+          - ``neural_net`` -- **string**; (default: `dbitnet`) the neural network architecture to use; supports 'dbitnet' and 'gohr_resnet'
 
 
           EXAMPLES::
@@ -1395,9 +1396,9 @@ class Cipher:
                                                                                                verbose=verbose)
         input_difference = int_difference_to_input_differences(diff[-1], difference_positions, self.inputs_bit_size)
         input_size = self.output_bit_size * 2
-        neural_network = get_neural_network('dbitnet', input_size = input_size)
+        neural_network = get_neural_network(neural_net, input_size = input_size)
         nr = max(1, highest_round-1)
-        print(f'Training DBitNet on input difference {[hex(x) for x in input_difference]}, from round {nr-1}...')
+        print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.inputs}), from round {nr}...')
         return neural_staged_training(self, data_generator, nr, neural_network, training_samples,
                                       testing_samples, number_of_epochs)
 
