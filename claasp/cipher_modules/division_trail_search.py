@@ -11,12 +11,26 @@ class MilpDivisionTrailModel():
     """
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
-        sage: cipher = AsconSboxSigmaPermutation(number_of_rounds=2)
+        sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
+        sage: cipher = AsconPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.add_constraints()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation import AsconSboxSigmaNoMatrixPermutation
+        sage: cipher = AsconSboxSigmaNoMatrixPermutation(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
+        sage: cipher = GastonPermutation(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
 
         sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
         sage: cipher = ToySPN1(number_of_rounds=1)
@@ -32,6 +46,20 @@ class MilpDivisionTrailModel():
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(0)
 
+        sage: from claasp.ciphers.toys.toyconstant import ToyCONSTANT
+        sage: cipher = ToyCONSTANT()
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.toys.toynot import ToyNOT
+        sage: cipher = ToyNOT()
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
         sage: from claasp.ciphers.toys.toysbox import ToySBOX
         sage: cipher = ToySBOX()
         sage: from claasp.cipher_modules.division_trail_search import *
@@ -40,6 +68,13 @@ class MilpDivisionTrailModel():
         sage: milp.find_anf_for_specific_output_bit(0)
 
         sage: from claasp.ciphers.toys.toysimon import ToySIMON
+        sage: cipher = ToySIMON()
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.toys.toysimon_v2 import ToySIMON
         sage: cipher = ToySIMON()
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
@@ -85,7 +120,7 @@ class MilpDivisionTrailModel():
     def build_gurobi_model(self):
         model = Model()
         model.Params.LogToConsole = 0
-        model.setParam("PoolSolutions", 100) # 200000000
+        model.setParam("PoolSolutions", 1000) # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -216,18 +251,29 @@ class MilpDivisionTrailModel():
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
+        constant_flag = []
         for index, input_name in enumerate(component.input_id_links):
             current = self._variables[input_name]["current"]
             for pos in component.input_bit_positions[index]:
-                input_vars_concat.append(self._variables[input_name][current][pos])
+                if input_name[:8] == "constant":
+                    const_comp = self._cipher.get_component_from_id(input_name)
+                    constant_flag.append((int(const_comp.description[0], 16) & (1 << pos)) >> pos)
+                else:
+                    input_vars_concat.append(self._variables[input_name][current][pos])
             self._variables[input_name]["current"] += 1
 
         block_size = component.output_bit_size
+        nb_blocks = component.description[1]
+        if constant_flag != []:
+            nb_blocks -= 1
         for i in range(block_size):
             constr = 0
-            for j in range(component.description[1]):
+            for j in range(nb_blocks):
                 constr += input_vars_concat[i + block_size * j]
-            self._model.addConstr(output_vars[i] == constr)
+            if (constant_flag != []) and (constant_flag[i]):
+                self._model.addConstr(output_vars[i] >= constr)
+            else:
+                self._model.addConstr(output_vars[i] == constr)
         self._model.update()
 
     def add_rotate_constraints(self, component):
@@ -267,6 +313,33 @@ class MilpDivisionTrailModel():
             self._model.addConstr(output_vars[i] == input_vars_concat[i + block_size])
         self._model.update()
 
+    def add_not_constraints(self, component):
+        output_vars = []
+        for i in range(component.output_bit_size):
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+
+        input_vars_concat = []
+        for index, input_name in enumerate(component.input_id_links):
+            current = self._variables[input_name]["current"]
+            for pos in component.input_bit_positions[index]:
+                input_vars_concat.append(self._variables[input_name][current][pos])
+            self._variables[input_name]["current"] += 1
+        input_vars_concat
+
+        for i in range(component.output_bit_size):
+            self._model.addConstr(output_vars[i] >= input_vars_concat[i])
+        self._model.update()
+
+    def add_constant_constraints(self, component):
+        output_vars = []
+        for i in range(component.output_bit_size):
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+
+        const = int(component.description[0], 16)
+        for i in range(component.output_bit_size):
+            self._model.addConstr(output_vars[i] == (const & (1 << i)) >> i)
+        self._model.update()
+
     def add_cipher_output_constraints(self, component):
         input_vars = {}
         for index, input_name in enumerate(component.input_id_links):
@@ -293,22 +366,35 @@ class MilpDivisionTrailModel():
         occurences = self._occurences
         pos_second_input = self.find_index_second_input()
         print(f"pos_second_input = {pos_second_input}")
-
         l = []
-        for monomial in monomials:
-            tmp = ""
-            if len(monomial) != 1:
-                for var in monomial[:-1]: #[:1] to remove the occurences
-                    if var < self._cipher.inputs_bit_size[0]:
-                        tmp += self._cipher.inputs[0][0] + str(var)
-                    elif pos_second_input <= var < pos_second_input + self._cipher.inputs_bit_size[1]:
-                        tmp += self._cipher.inputs[1][0] + str(abs(pos_second_input - var))
-                    # if var is not in this range, it belongs to the copies, so no need to print
-            else:
-                tmp += str(1)
-            # uncomment if you also want the nb of occurences
-            # l.append((tmp, monomial[-1]))
-            l.append(tmp)
+        if len(self._cipher.inputs_bit_size) > 1:
+            for monomial in monomials:
+                tmp = ""
+                if len(monomial) != 1:
+                    for var in monomial[:-1]: #[:1] to remove the occurences
+                        if var < self._cipher.inputs_bit_size[0]:
+                            tmp += self._cipher.inputs[0][0] + str(var)
+                        elif pos_second_input <= var < pos_second_input + self._cipher.inputs_bit_size[1]:
+                            tmp += self._cipher.inputs[1][0] + str(abs(pos_second_input - var))
+                        # if var is not in this range, it belongs to the copies, so no need to print
+                else:
+                    tmp += str(1)
+                # uncomment if you also want the nb of occurences
+                # l.append((tmp, monomial[-1]))
+                l.append(tmp)
+        else:
+            for monomial in monomials:
+                tmp = ""
+                if len(monomial) != 1:
+                    for var in monomial[:-1]: #[:1] to remove the occurences
+                        if var < self._cipher.inputs_bit_size[0]:
+                            tmp += self._cipher.inputs[0][0] + str(var)
+                        # if var is not in this range, it belongs to the copies, so no need to print
+                else:
+                    tmp += str(1)
+                # uncomment if you also want the nb of occurences
+                # l.append((tmp, monomial[-1]))
+                l.append(tmp)
         print(f'Number of monomials found: {len(l)}')
         print(l)
 
@@ -323,6 +409,8 @@ class MilpDivisionTrailModel():
                 self.add_sbox_constraints(component)
             elif component.type == "cipher_output":
                 self.add_cipher_output_constraints(component)
+            elif component.type == "constant":
+                self.add_constant_constraints(component)
             elif component.type == "intermediate_output":
                 continue
             elif component.type == "word_operation":
@@ -332,8 +420,10 @@ class MilpDivisionTrailModel():
                     self.add_rotate_constraints(component)
                 elif component.description[0] == "AND":
                     self.add_and_constraints(component)
+                elif component.description[0] == "NOT":
+                    self.add_not_constraints(component)
             else:
-                print("not yet implemented")
+                print(f"---> {component.id} not yet implemented")
 
         return self._model
 
@@ -370,7 +460,7 @@ class MilpDivisionTrailModel():
 
     def create_gurobi_vars_from_all_components(self):
         occurences = self.get_where_component_is_used()
-        print(occurences)
+        # print(occurences)
         all_vars = {}
         for component_id in occurences.keys():
             all_vars[component_id] = {}
@@ -435,7 +525,7 @@ class MilpDivisionTrailModel():
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[output_bit_index] == 1)
 
-        # for i in range(48): # self._cipher.output_bit_size
+        # for i in range(16): # self._cipher.output_bit_size
         #     key_var = self._model.getVarByName(f"key[{i}]")
         #     self._model.addConstr(key_var == 0)
 
@@ -455,7 +545,10 @@ class MilpDivisionTrailModel():
 
         occurences = self._occurences
         index_second_input = self.find_index_second_input()
-        max_input_bit_pos = index_second_input + self._cipher.inputs_bit_size[1]
+        if len(self._cipher.inputs_bit_size) > 1:
+            max_input_bit_pos = index_second_input + self._cipher.inputs_bit_size[1]
+        else:
+            max_input_bit_pos = index_second_input
         print(f"max_input_bit_pos = {max_input_bit_pos}")
 
         start = time.time()
@@ -505,13 +598,9 @@ class MilpDivisionTrailModel():
                     tmp.append(index)
             monomials.append(tmp)
 
-        print(monomials)
         monomials_with_occurences = [x+[monomials.count(x)] for x in monomials]
-        print(monomials_with_occurences)
         monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
-        print(monomials_duplicates_removed)
         monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
-        print(monomials_even_occurences_removed)
         self.pretty_print(monomials_even_occurences_removed)
         return self._model
 
@@ -569,4 +658,3 @@ class MilpDivisionTrailModel():
         for i in range(self._cipher.output_bit_size):
             print(f"\nSearch of {s} in anf {i} :")
             self.check_presence_of_particular_monomial_in_specific_anf(monomial, i)
-
