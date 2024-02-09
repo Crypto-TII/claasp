@@ -193,7 +193,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
             new_constraint = new_constraint + \
                 f'\"{component_id} = \"++ show({component_id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
             if 'cipher_output' in component_id and minimize:
-                cp_constraints.append(f'solve minimize count([component_id}, 2);')
+                cp_constraints.append(f'solve minimize count({component_id}, 2);')
         new_constraint = new_constraint[:-2] + '];'
         if cp_constraints == []:
             cp_constraints.append(solve_satisfy)
@@ -716,7 +716,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         input_file_path = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name)
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        #os.remove(input_file_path)
+        os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
