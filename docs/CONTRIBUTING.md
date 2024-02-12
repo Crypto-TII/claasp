@@ -46,7 +46,7 @@ In order to collaborate with the project, you need to fork this projects.
 ## Pull requests
 
 Pull requests are the way to contribute to the project. Pull requests coming from forks will be reviewed and need to 
-have all the checks pasding green.
+have all the checks passing green.
 
 # Development environment
 
