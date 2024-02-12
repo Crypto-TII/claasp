@@ -1,8 +1,9 @@
 name: Build and push image for testing
 on:
-  push:
+  pull_request:
+    types: [ closed ]
     branches:
-      - fix/create-base-docker-image
+      - main
 
 jobs:
   build-image:
