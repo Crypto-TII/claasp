@@ -1397,8 +1397,7 @@ class Cipher:
         input_difference = int_difference_to_input_differences(diff[-1], difference_positions, self.inputs_bit_size)
         input_size = self.output_bit_size * 2
         neural_network = get_neural_network(neural_net, input_size = input_size)
-        #nr = max(1, highest_round-2)
-        nr = 1
+        nr = max(1, highest_round-1)
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.inputs}), from round {nr}...')
         return neural_staged_training(self, data_generator, nr, neural_network, training_samples,
                                       testing_samples, number_of_epochs)
