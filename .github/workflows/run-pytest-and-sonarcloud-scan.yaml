@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   run-pytest:
+    if: ${{ !github.event.repository.fork }}
     runs-on: self-hosted
     steps:
     - name: Checkout
@@ -46,8 +47,8 @@ jobs:
         path: /home/runner/_work/claasp/coverage.xml
 
   run-code-coverage:
-    runs-on: ubuntu-latest
     if: ${{ !github.event.repository.fork }}
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v3
