@@ -41,13 +41,12 @@ To contribute to this project, please, follow the following conventions.
 
 # GitHub collaboration
 
-In order to collaborate with the project, you need to fill this [Google form](https://forms.gle/rYMKW76fCF15Lnxm6) to 
-be added as a collaboratior in [CLAASP GitHub repository](https://github.com/Crypto-TII/claasp).
+In order to collaborate with the project, you need to fork this projects.
 
 ## Pull requests
 
-Pull requests are the way to contribute to the project. Only collaborators can create pull requests, so pull requests 
-coming from forks will be rejected.
+Pull requests are the way to contribute to the project. Pull requests coming from forks will be reviewed and need to 
+have all the checks pasding green.
 
 # Development environment
 
