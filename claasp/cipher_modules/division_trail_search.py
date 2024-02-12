@@ -433,12 +433,14 @@ class MilpDivisionTrailModel():
         for name in ids:
             for component in self._cipher.get_all_components():
                 if (name in component.input_id_links) and (component.type != "intermediate_output"):
-                    index = component.input_id_links.index(name)
+                    # index = component.input_id_links.index(name)
+                    indexes = [i for i, j in enumerate(component.input_id_links) if j == name]
                     if name not in occurences.keys():
                         occurences[name] = []
                     ## if we want to check the occurences of each bit
                     # occurences[name] += component.input_bit_positions[index]
-                    occurences[name].append(component.input_bit_positions[index])
+                    for index in indexes:
+                        occurences[name].append(component.input_bit_positions[index])
 
         occurences_final = {}
         for component_id in occurences.keys():
@@ -460,7 +462,7 @@ class MilpDivisionTrailModel():
 
     def create_gurobi_vars_from_all_components(self):
         occurences = self.get_where_component_is_used()
-        # print(occurences)
+        print(occurences)
         all_vars = {}
         for component_id in occurences.keys():
             all_vars[component_id] = {}
@@ -592,15 +594,33 @@ class MilpDivisionTrailModel():
             # print(values[304:320])
             # print("################")
             # print(len(values))
+
+            # tmp = []
+            # for index, v in enumerate(values[:max_input_bit_pos]):
+            #     if v == 1:
+            #         tmp.append(index)
+            # monomials.append(tmp)
+
             tmp = []
             for index, v in enumerate(values[:max_input_bit_pos]):
                 if v == 1:
-                    tmp.append(index)
+                    if len(self._cipher.inputs_bit_size) > 1:
+                        if index < self._cipher.inputs_bit_size[0]:
+                            tmp.append(index)
+                        elif index_second_input <= index < index_second_input + self._cipher.inputs_bit_size[1]:
+                            tmp.append(index)
+                    else:
+                        if index < self._cipher.inputs_bit_size[0]:
+                            tmp.append(index)
             monomials.append(tmp)
 
+        print(monomials)
         monomials_with_occurences = [x+[monomials.count(x)] for x in monomials]
+        print(monomials_with_occurences)
         monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
+        print(monomials_duplicates_removed)
         monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
+        print(monomials_even_occurences_removed)
         self.pretty_print(monomials_even_occurences_removed)
         return self._model
 
