@@ -11,8 +11,8 @@ To contribute to this project, please, follow the following conventions.
   - [Contributing to the documentation](#contributing-to-the-documentation)
 - [Project structure](#project-structure)
 - [GIT Conventions](#git-conventions)
-  - [Branches](#branches)
-  - [Pull Requests](#pull-requests)
+  - [Branches conventions](#branches-conventions)
+  - [Pull Requests conventions](#pull-requests-conventions)
 - [Best practices for development](#best-practices-for-development)
   - [Linter/Formatter](#linterformatter)
   - [Imports](#imports)
@@ -472,7 +472,7 @@ This is the current project structure.
 ```
 
 # GIT Conventions
-## Branches
+## Branches Conventions
 - `main` is the main branch.
 - `develop` is the branch where the latest changes are merged into.
 - `<fix|feature|breaking>/<task-name>` is the branch where a new feature is developed.
@@ -480,7 +480,7 @@ This is the current project structure.
 > ⚠️ We encourage you to follow this convention when creating new branches even though branches with the naming 
 > convention `<task-name>` are allowed. ⚠️ 
 
-## Pull Requests
+## Pull Requests Conventions
 - Pull Requests should be made from a `feature-branch` to `develop` and it should be reviewed by at least one person.
 - New branches to development tasks will have `develop` branch as origin. 
 - The only allowed Pull Requests to `main` branch must come from `develop` branch. All other Pull Requests will be 

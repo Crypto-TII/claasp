@@ -47,6 +47,13 @@ def test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic
     assert trail['components_values']['intermediate_output_5_12_backward']['value'] == SIMON_INCOMPATIBLE_ROUND_OUTPUT
     assert trail['components_values']['cipher_output_10_13_backward']['value'] == '000000?0?00000000000000000000000'
 
+    trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model(
+        fixed_values=[plaintext, key, key_backward, ciphertext_backward], include_all_components=True)
+    assert trail['status'] == 'SATISFIABLE'
+    assert trail['components_values']['plaintext']['value'] == '00000000000000000000000000000001'
+    assert trail['components_values']['intermediate_output_5_12_backward']['value'] == SIMON_INCOMPATIBLE_ROUND_OUTPUT
+    assert trail['components_values']['cipher_output_10_13_backward']['value'] == '000000?0?00000000000000000000000'
+
 def test_find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components():
      ascon = AsconSboxSigmaPermutation(number_of_rounds=5)
      milp = MilpBitwiseImpossibleXorDifferentialModel(ascon)

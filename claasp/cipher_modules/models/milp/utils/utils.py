@@ -69,6 +69,7 @@ def _parse_external_solver_output(model, model_type, solver_name, solver_process
 
     status = 'UNSATISFIABLE'
     objective_value = None
+    components_values = None
 
     if solver_specs['unsat_condition'] not in str(solver_process):
         status = 'SATISFIABLE'
@@ -645,42 +646,6 @@ def milp_xor_truncated_wordwise(model, input_1, input_2, output):
     all_vars = [x[i] for i in input_1 + input_2 + output]
     return espresso_pos_to_constraints(espresso_inequalities, all_vars)
 
-def fix_variables_value_deterministic_truncated_xor_differential_constraints(milp_model, model_variables, fixed_variables=[]):
-    constraints = []
-    if 'Wordwise' in milp_model.__class__.__name__:
-        prefix = "_word"
-        suffix = "_class"
-    else:
-        prefix = ""
-        suffix = ""
-
-    for fixed_variable in fixed_variables:
-        if fixed_variable["constraint_type"] == "equal":
-            for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                component_bit = f'{fixed_variable["component_id"]}{prefix}_{bit_position}{suffix}'
-                constraints.append(model_variables[component_bit] == fixed_variable["bit_values"][index])
-        else:
-            if sum(fixed_variable["bit_values"]) == 0:
-                constraints.append(sum(model_variables[f'{fixed_variable["component_id"]}{prefix}_{i}{suffix}'] for i in fixed_variable["bit_positions"]) >= 1)
-            else:
-                M = milp_model._model.get_max(model_variables) + 1
-                d = milp_model._binary_variable
-                one_among_n = 0
-
-                for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                    # eq = 1 iff bit_position == diff_index
-                    eq = d[f'{fixed_variable["component_id"]}{prefix}_{bit_position}{suffix}_is_diff_index']
-                    one_among_n += eq
-
-                    # x[diff_index] < fixed_variable[diff_index] or fixed_variable[diff_index] < x[diff_index]
-                    dummy = d[f'{fixed_variable["component_id"]}{prefix}_{bit_position}{suffix}_is_diff_index']
-                    a = model_variables[f'{fixed_variable["component_id"]}{prefix}_{bit_position}{suffix}']
-                    b = fixed_variable["bit_values"][index]
-                    constraints.extend([a <= b - 1 + M * (2 - dummy - eq), a >= b + 1 - M * (dummy + 1 - eq)])
-
-                constraints.append(one_among_n == 1)
-
-    return constraints
 
 ### -------------------------Solution parser ------------------------- ###
 def _get_component_values_for_impossible_models(model, objective_variables, components_variables):
@@ -703,7 +668,7 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
         for id in model._incompatible_components:
             backward_incompatible_component = model._backward_cipher.get_component_from_id(id + f"{MILP_BACKWARD_SUFFIX}")
             input_ids, _ =  backward_incompatible_component._get_input_output_variables()
-            renamed_input_ids = set(["_".join(id.split("_")[:-2]) for id in input_ids])
+            renamed_input_ids = set(["_".join(id.split("_")[:-2]) if MILP_BACKWARD_SUFFIX in id else "_".join(id.split("_")[:-1]) for id in input_ids])
             indices += sorted(indices + [full_cipher_components.index(c) for c in renamed_input_ids])
 
         updated_cipher_components = full_cipher_components[:indices[0]] + [

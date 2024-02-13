@@ -19,7 +19,8 @@ import time
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED, \
     MILP_BACKWARD_SUFFIX, MILP_BUILDING_MESSAGE, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE
-from claasp.cipher_modules.models.milp.utils.utils import fix_variables_value_deterministic_truncated_xor_differential_constraints
+from claasp.cipher_modules.models.milp.utils.milp_truncated_utils import \
+    fix_variables_value_deterministic_truncated_xor_differential_constraints
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
