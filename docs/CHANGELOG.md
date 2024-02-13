@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2024-01-30
+
+### Added
+
+- Sat deterministic truncated xor differential trail search.
+- Fully automatic milp search of xor differential impossible trails at component level.
+- Implement sat constraints for or operation.
+- Add action to build claasp-lib image every time a new version is deployed to main.
+- Create multi-stage build to generate docker image of claasp.
+- Add sat deterministic truncated trail search.
+
+### Changed
+
+- Qarmav2 creator optimized, permutations removed and complexity reduced.
+
+### Fixed
+
+- Inversion for primitives using subkeys as inputs.
+- Fixing networkx and numpy versions.
+- Adapted tests.
+- Move sat constraints for and in correct module.
+
 ## [2.0.0] - 2023-12-04
 
 ### Added
@@ -67,5 +89,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything! First public release.
 
+[2.1.0]: https://github.com/Crypto-TII/claasp/compare/v2.1.0..v2.0.0
 [1.1.0]: https://github.com/Crypto-TII/claasp/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Crypto-TII/claasp/releases/tag/v1.0.0
