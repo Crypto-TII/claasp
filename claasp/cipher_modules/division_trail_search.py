@@ -120,7 +120,7 @@ class MilpDivisionTrailModel():
     def build_gurobi_model(self):
         model = Model()
         model.Params.LogToConsole = 0
-        model.setParam("PoolSolutions", 1000) # 200000000
+        model.setParam("PoolSolutions", 30) # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -191,6 +191,8 @@ class MilpDivisionTrailModel():
         output_vars = []
         for i in range(component.output_bit_size):
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        # print(output_vars)
+        # print("###########")
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -203,7 +205,7 @@ class MilpDivisionTrailModel():
         x = B.variable_names()
         anfs = self.get_anfs_from_sbox(component)
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
-        anfs.reverse()
+        # anfs.reverse()
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
 
@@ -234,16 +236,16 @@ class MilpDivisionTrailModel():
 
         self._model.update()
 
-    def set_cipher_input_output_vars(self):
-        for index, input_name in enumerate(self._cipher.inputs):
-            self._model.addVars(list(range(self._cipher.inputs_bit_size[index])), vtype=GRB.BINARY, name=input_name)
+    # def set_cipher_input_output_vars(self):
+    #     for index, input_name in enumerate(self._cipher.inputs):
+    #         self._model.addVars(list(range(self._cipher.inputs_bit_size[index])), vtype=GRB.BINARY, name=input_name)
 
-        l = self.how_many_times_key_appear()
-        copy_key = []
-        for index, component in enumerate(l):
-            copy_key.append(self._model.addVars(list(range(6)), vtype=GRB.BINARY, name="copy_key_" + component.id))
+    #     l = self.how_many_times_key_appear()
+    #     copy_key = []
+    #     for index, component in enumerate(l):
+    #         copy_key.append(self._model.addVars(list(range(6)), vtype=GRB.BINARY, name="copy_key_" + component.id))
 
-        self._model.update()
+    #     self._model.update()
 
     def add_xor_constraints(self, component):
         output_vars = []
@@ -257,7 +259,7 @@ class MilpDivisionTrailModel():
             for pos in component.input_bit_positions[index]:
                 if input_name[:8] == "constant":
                     const_comp = self._cipher.get_component_from_id(input_name)
-                    constant_flag.append((int(const_comp.description[0], 16) & (1 << pos)) >> pos)
+                    constant_flag.append((int(const_comp.description[0], 16) & (1 << 63-pos)) >> 63-pos) # (const & (1 << 63-i)) >> 63-i)
                 else:
                     input_vars_concat.append(self._variables[input_name][current][pos])
             self._variables[input_name]["current"] += 1
@@ -337,7 +339,7 @@ class MilpDivisionTrailModel():
 
         const = int(component.description[0], 16)
         for i in range(component.output_bit_size):
-            self._model.addConstr(output_vars[i] == (const & (1 << i)) >> i)
+            self._model.addConstr(output_vars[i] == (const & (1 << 63-i)) >> 63-i)
         self._model.update()
 
     def add_cipher_output_constraints(self, component):
@@ -499,31 +501,37 @@ class MilpDivisionTrailModel():
                                 self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][pos+1][i])
                             self._model.addConstr(sum(all_vars[component_id][pos+1][i] for pos in indexes) >= all_vars[component_id][0][i])
 
-
+        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="rot_0_67")
         self._model.update()
         self._variables = all_vars
 
     def find_index_second_input(self):
         occurences = self._occurences
-        index = 0
-        need_to_copy = False
+        index = self._cipher.inputs_bit_size[0]
+        # need_to_copy = False
         for input_bit_positions_indexes in occurences[self._cipher.inputs[0]]:
             if len(input_bit_positions_indexes[1]) > 1:
-                need_to_copy = True
-            index += len(input_bit_positions_indexes[0])*len(input_bit_positions_indexes[1])
-        if need_to_copy:
-            index += self._cipher.inputs_bit_size[0]
+                # need_to_copy = True
+                index += len(input_bit_positions_indexes[0])*len(input_bit_positions_indexes[1])
+        # if need_to_copy:
+            # index += self._cipher.inputs_bit_size[0]
         return index
 
     def find_anf_for_specific_output_bit(self, output_bit_index):
         start = time.time()
+
         self.add_constraints()
         output_id = self.get_cipher_output_component_id()
         output_vars = []
         for i in range(self._cipher.output_bit_size): # self._cipher.output_bit_size
             output_vars.append(self._model.getVarByName(f"{output_id}[{i}]")) # {output_id}
+
+        # self.build_gurobi_model()
+        # output_vars = self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_1")
+        # self.add_constraints()
+
         ks = self._model.addVar()
-        self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size)))
+        self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size))) # self._cipher.output_bit_size
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[output_bit_index] == 1)
 
@@ -535,8 +543,24 @@ class MilpDivisionTrailModel():
         #     c = self._model.getVarByName(f"copy_plaintext_3[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(16): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"copy_plaintext_4[{i}]")
+        # for i in range(1, 64): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        #     self._model.addConstr(c == 0)
+
+        # for i in range(65, 128): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        #     self._model.addConstr(c == 0)
+
+        # for i in range(129, 192): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        #     self._model.addConstr(c == 0)
+
+        # for i in range(193, 256): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        #     self._model.addConstr(c == 0)
+
+        # for i in range(257, 320): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"plaintext[{i}]")
         #     self._model.addConstr(c == 0)
 
         self._model.update()
@@ -565,11 +589,11 @@ class MilpDivisionTrailModel():
         for sol in range(solCount):
             self._model.setParam(GRB.Param.SolutionNumber, sol)
             values = self._model.Xn
-            # print(values[:16])
-            # print(values[16:32])
-            # print(values[32:48])
-            # print(values[48:64])
-            # print(values[64:80])
+            # print(values[:64])
+            # print(values[64:128])
+            # print(values[128:192])
+            # print(values[192:256])
+            # print(values[256:320])
             # print("################")
 
             # Simon 1 round
@@ -614,13 +638,13 @@ class MilpDivisionTrailModel():
                             tmp.append(index)
             monomials.append(tmp)
 
-        print(monomials)
+        # print(monomials)
         monomials_with_occurences = [x+[monomials.count(x)] for x in monomials]
-        print(monomials_with_occurences)
+        # print(monomials_with_occurences)
         monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
-        print(monomials_duplicates_removed)
+        # print(monomials_duplicates_removed)
         monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
-        print(monomials_even_occurences_removed)
+        # print(monomials_even_occurences_removed)
         self.pretty_print(monomials_even_occurences_removed)
         return self._model
 
