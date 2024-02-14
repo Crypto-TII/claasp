@@ -1344,7 +1344,7 @@ class Cipher:
                                           testing_samples, num_epochs=number_of_epochs)
 
     def run_autond_pipeline(self, difference_positions=None, optimizer_samples=10 ** 4, optimizer_generations=50,
-                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False, neural_net = 'dbitnet'):
+                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False, neural_net = 'dbitnet', save_prefix=None):
         """
           Runs the AutoND pipeline ([BGHR2023]):
             - Find an input difference for the inputs set to True in difference_positions using an optimizer
@@ -1397,10 +1397,11 @@ class Cipher:
         input_difference = int_difference_to_input_differences(diff[-1], difference_positions, self.inputs_bit_size)
         input_size = self.output_bit_size * 2
         neural_network = get_neural_network(neural_net, input_size = input_size)
-        nr = max(1, highest_round-1)
+        nr = max(1, highest_round-3)
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.inputs}), from round {nr}...')
-        return neural_staged_training(self, data_generator, nr, neural_network, training_samples,
-                                      testing_samples, number_of_epochs)
+        return neural_staged_training(self, lambda nr, samples: get_differential_dataset(self, input_difference, number_of_rounds=nr,
+                                            samples=samples), nr, neural_network, training_samples,
+                                      testing_samples, number_of_epochs, save_prefix)
 
 
     def generate_bit_based_c_code(self, intermediate_output=False, verbosity=False):

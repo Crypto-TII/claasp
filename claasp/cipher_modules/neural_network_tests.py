@@ -280,12 +280,12 @@ def get_differential_dataset(cipher, input_differences, number_of_rounds, sample
         inputs_1.append(inputs_0[-1] ^ integer_to_np(input_differences[i], cipher.inputs_bit_size[i]))
         inputs_1[-1][:, y == 0] ^= np.frombuffer(urandom(num_rand_samples * cipher.inputs_bit_size[i] // 8),
                                                  dtype=np.uint8).reshape(-1, num_rand_samples)
-
     C0 = np.unpackbits(
         cipher.evaluate_vectorized(inputs_0, intermediate_outputs=True)['round_output'][number_of_rounds - 1], axis=1)
     C1 = np.unpackbits(
         cipher.evaluate_vectorized(inputs_1, intermediate_outputs=True)['round_output'][number_of_rounds - 1], axis=1)
     x = np.hstack([C0, C1])
+    print("Generating differential dataset for input difference ", input_differences)
     return x, y
 
 
@@ -307,18 +307,27 @@ def make_checkpoint(datei):
     return res
 
 def train_neural_distinguisher(cipher, data_generator, starting_round, neural_network, training_samples=10 ** 7,
-                               testing_samples=10 ** 6, num_epochs=1, batch_size = 5000):
+                               testing_samples=10 ** 6, num_epochs=1, batch_size = 5000, save_prefix=None):
     acc = 1
     x, y = data_generator(samples=training_samples, nr=starting_round)
     x_eval, y_eval = data_generator(samples=testing_samples, nr=starting_round)
-    h = neural_network.fit(x, y, epochs=int(num_epochs), batch_size=batch_size, validation_data=(x_eval, y_eval))
+    print("In train, save prefix is ", save_prefix, flush=True)
+    if save_prefix is None:
+        h = neural_network.fit(x, y, epochs=int(num_epochs), batch_size=batch_size, validation_data=(x_eval, y_eval))
+    else:
+        filename = save_prefix + "_" + str(starting_round) 
+        print("In train, filename is ", filename, flush=True)
+        check = make_checkpoint(filename+'.h5');
+        print("In train, check is ", check, flush=True)
+        h = neural_network.fit(x, y, epochs=int(num_epochs), batch_size=batch_size, validation_data=(x_eval, y_eval), callbacks = [check])
+        np.save(filename + '.npy', h.history['val_acc'])
     acc = np.max(h.history["val_acc"])
     print(f'Validation accuracy at {starting_round} rounds :{acc}')
     return acc
 
 
 def neural_staged_training(cipher, data_generator, starting_round, neural_network=None, training_samples=10 ** 7,
-                           testing_samples=10 ** 6, num_epochs=1):
+                           testing_samples=10 ** 6, num_epochs=1, save_prefix = None):
     acc = 1
     nr = starting_round
     # threshold at 10 sigma
@@ -326,7 +335,7 @@ def neural_staged_training(cipher, data_generator, starting_round, neural_networ
     accuracies = {}
     while acc >= threshold and nr < cipher.number_of_rounds:
         acc = train_neural_distinguisher(cipher, data_generator, nr, neural_network, training_samples, testing_samples,
-                                         num_epochs)
+                                         num_epochs, save_prefix = save_prefix)
         accuracies[nr] = acc
         nr += 1
     return accuracies
