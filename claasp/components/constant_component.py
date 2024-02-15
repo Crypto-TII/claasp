@@ -523,7 +523,7 @@ class Constant(Component):
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for CONSTANT in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        BITWISE DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
 
         .. SEEALSO::
 
@@ -548,6 +548,43 @@ class Constant(Component):
               '-constant_2_0_15_1'])
         """
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        constraints = [f'-{out_id}' for out_id in out_ids_0] + [f'-{out_id}' for out_id in out_ids_1]
+        return out_ids_0 + out_ids_1, constraints
+
+    def sat_wordwise_deterministic_truncated_xor_differential_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses for CONSTANT in SAT
+        WORDWISE DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.components.constant_component import Constant
+            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_wordwise_deterministic_truncated_xor_differential_model import SatWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: sat = SatWordwiseDeterministicTruncatedXorDifferentialModel(aes)
+            sage: constant_component = aes.get_component_from_id("constant_0_30")
+            sage: constant_component.sat_wordwise_deterministic_truncated_xor_differential_constraints(sat)
+            (['constant_0_30_0_0',
+              'constant_0_30_1_0',
+              'constant_0_30_2_0',
+              ...
+              '-constant_0_30_1_1',
+              '-constant_0_30_2_1',
+              '-constant_0_30_3_1'])
+        """
+        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        number_of_words = out_len // model._word_size
+        del out_ids_0[number_of_words:]
+        del out_ids_1[number_of_words:]
         constraints = [f'-{out_id}' for out_id in out_ids_0] + [f'-{out_id}' for out_id in out_ids_1]
         return out_ids_0 + out_ids_1, constraints
 

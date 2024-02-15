@@ -695,6 +695,15 @@ def modadd_truncated_msb(result, variable_0, variable_1, carry):
             f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
 
 
+def sbox_truncated_wordwise(input_variable, output_variable):
+    return [f"{input_variable[0]} -{output_variable[1]}",
+            f"{input_variable[1]} -{output_variable[1]}",
+            f"{output_variable[0]} -{input_variable[0]}",
+            f"{output_variable[0]} -{input_variable[1]}",
+            f"{input_variable[0]} {input_variable[1]} -{output_variable[0]}",
+            f"{output_variable[1]} -{input_variable[0]} -{input_variable[1]}"]
+
+
 # ---------------------------- #
 #    - Running SAT solver -    #
 # ---------------------------- #

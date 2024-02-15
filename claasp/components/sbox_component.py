@@ -34,6 +34,7 @@ from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constr
 from claasp.input import Input
 from claasp.component import Component, free_input
 from claasp.cipher_modules.models.sat.utils import constants
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import (
@@ -1409,7 +1410,8 @@ class SBOX(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for a generic S-BOX in SAT deterministic truncated XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses for a generic S-BOX in
+        bitwise SAT deterministic truncated XOR DIFFERENTIAL model.
 
         INPUT:
 
@@ -1455,6 +1457,42 @@ class SBOX(Component):
             constraints.append(' '.join(literals))
 
         return output_ids, constraints
+
+    def sat_wordwise_deterministic_truncated_xor_differential_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses for a generic S-BOX in
+        wordwise SAT deterministic truncated XOR DIFFERENTIAL model.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_wordwise_deterministic_truncated_xor_differential_model import SatWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: sat = SatWordwiseDeterministicTruncatedXorDifferentialModel(aes)
+            sage: sbox_component = aes.component_from(0, 1)
+            sage: sbox_component.sat_wordwise_deterministic_truncated_xor_differential_constraints(sat)
+            (['sbox_0_1_0_0', 'sbox_0_1_0_1'],
+             ['xor_0_0_0_0 -sbox_0_1_0_1',
+              'xor_0_0_0_1 -sbox_0_1_0_1',
+              'sbox_0_1_0_0 -xor_0_0_0_0',
+              'sbox_0_1_0_0 -xor_0_0_0_1',
+              'xor_0_0_0_0 xor_0_0_0_1 -sbox_0_1_0_0',
+              'sbox_0_1_0_1 -xor_0_0_0_0 -xor_0_0_0_1'])
+        """
+        input_ids_0, input_ids_1 = self._generate_input_double_ids()
+        out_len, output_ids_0, output_ids_1 = self._generate_output_double_ids()
+        number_of_words = out_len // model._word_size
+        del output_ids_0[number_of_words:]
+        del output_ids_1[number_of_words:]
+        constraints = []
+        for i in range(number_of_words):
+            constraints.extend(sat_utils.sbox_truncated_wordwise((input_ids_0[i], input_ids_1[i]), (output_ids_0[i], output_ids_1[i])))
+
+        return output_ids_0 + output_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model):
         """
