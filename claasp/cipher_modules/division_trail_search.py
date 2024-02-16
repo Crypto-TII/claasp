@@ -32,6 +32,13 @@ class MilpDivisionTrailModel():
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(0)
 
+        sage: from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
+        sage: cipher = GastonSboxPermutation(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
         sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
         sage: cipher = ToySPN1(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
@@ -40,6 +47,13 @@ class MilpDivisionTrailModel():
         sage: milp.find_anf_for_specific_output_bit(1)
 
         sage: from claasp.ciphers.toys.toyand import ToyAND
+        sage: cipher = ToyAND()
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.toys.toyand_v2 import ToyAND
         sage: cipher = ToyAND()
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
@@ -120,7 +134,7 @@ class MilpDivisionTrailModel():
     def build_gurobi_model(self):
         model = Model()
         model.Params.LogToConsole = 0
-        model.setParam("PoolSolutions", 30) # 200000000
+        model.setParam("PoolSolutions", 1000) # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -236,17 +250,6 @@ class MilpDivisionTrailModel():
 
         self._model.update()
 
-    # def set_cipher_input_output_vars(self):
-    #     for index, input_name in enumerate(self._cipher.inputs):
-    #         self._model.addVars(list(range(self._cipher.inputs_bit_size[index])), vtype=GRB.BINARY, name=input_name)
-
-    #     l = self.how_many_times_key_appear()
-    #     copy_key = []
-    #     for index, component in enumerate(l):
-    #         copy_key.append(self._model.addVars(list(range(6)), vtype=GRB.BINARY, name="copy_key_" + component.id))
-
-    #     self._model.update()
-
     def add_xor_constraints(self, component):
         output_vars = []
         for i in range(component.output_bit_size):
@@ -259,7 +262,8 @@ class MilpDivisionTrailModel():
             for pos in component.input_bit_positions[index]:
                 if input_name[:8] == "constant":
                     const_comp = self._cipher.get_component_from_id(input_name)
-                    constant_flag.append((int(const_comp.description[0], 16) & (1 << 63-pos)) >> 63-pos) # (const & (1 << 63-i)) >> 63-i)
+                    # constant_flag.append((int(const_comp.description[0], 16) & (1 << const_comp.output_bit_size-pos)) >> const_comp.output_bit_size-pos)
+                    constant_flag.append((int(const_comp.description[0], 16) >> (const_comp.output_bit_size - 1 - pos)) & 1)
                 else:
                     input_vars_concat.append(self._variables[input_name][current][pos])
             self._variables[input_name]["current"] += 1
@@ -292,7 +296,7 @@ class MilpDivisionTrailModel():
 
         rotate_offset = component.description[1]
         for i in range(component.output_bit_size):
-            self._model.addConstr(output_vars[i] == input_vars_concat[i-rotate_offset % component.output_bit_size])
+            self._model.addConstr(output_vars[i] == input_vars_concat[(i+rotate_offset) % component.output_bit_size])
         self._model.update()
 
     def add_and_constraints(self, component):
@@ -307,7 +311,6 @@ class MilpDivisionTrailModel():
             for pos in component.input_bit_positions[index]:
                 input_vars_concat.append(self._variables[input_name][current][pos])
             self._variables[input_name]["current"] += 1
-        input_vars_concat
 
         block_size = int(len(input_vars_concat)//component.description[1])
         for i in range(component.output_bit_size):
@@ -339,13 +342,15 @@ class MilpDivisionTrailModel():
 
         const = int(component.description[0], 16)
         for i in range(component.output_bit_size):
-            self._model.addConstr(output_vars[i] == (const & (1 << 63-i)) >> 63-i)
+            # self._model.addConstr(output_vars[i] == (const & (1 << component.output_bit_size-i)) >> component.output_bit_size-i)
+            self._model.addConstr(output_vars[i] == (const >> (component.output_bit_size - 1 - i)) & 1)
         self._model.update()
 
     def add_cipher_output_constraints(self, component):
         input_vars = {}
         for index, input_name in enumerate(component.input_id_links):
-            input_vars[input_name] = []
+            if input_name not in input_vars.keys():
+                input_vars[input_name] = []
             for i in component.input_bit_positions[index]:
                 input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
         output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
@@ -431,11 +436,10 @@ class MilpDivisionTrailModel():
 
     def get_where_component_is_used(self):
         occurences = {}
-        ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        ids = self._cipher.inputs + self._cipher.get_all_components_ids() # [:2]
         for name in ids:
-            for component in self._cipher.get_all_components():
+            for component in self._cipher.get_all_components(): # [:2]
                 if (name in component.input_id_links) and (component.type != "intermediate_output"):
-                    # index = component.input_id_links.index(name)
                     indexes = [i for i, j in enumerate(component.input_id_links) if j == name]
                     if name not in occurences.keys():
                         occurences[name] = []
@@ -501,7 +505,11 @@ class MilpDivisionTrailModel():
                                 self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][pos+1][i])
                             self._model.addConstr(sum(all_vars[component_id][pos+1][i] for pos in indexes) >= all_vars[component_id][0][i])
 
-        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="rot_0_67")
+        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_27")
+        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_30")
+        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_33")
+        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_36")
+        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="rot_0_37")
         self._model.update()
         self._variables = all_vars
 
@@ -526,42 +534,41 @@ class MilpDivisionTrailModel():
         for i in range(self._cipher.output_bit_size): # self._cipher.output_bit_size
             output_vars.append(self._model.getVarByName(f"{output_id}[{i}]")) # {output_id}
 
-        # self.build_gurobi_model()
-        # output_vars = self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_1")
-        # self.add_constraints()
-
         ks = self._model.addVar()
         self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size))) # self._cipher.output_bit_size
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[output_bit_index] == 1)
 
-        # for i in range(16): # self._cipher.output_bit_size
-        #     key_var = self._model.getVarByName(f"key[{i}]")
-        #     self._model.addConstr(key_var == 0)
-
-        # for i in range(16,32): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"copy_plaintext_3[{i}]")
+        # Before linear layer
+        # for i in range(64): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"xor_0_20[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(1, 64): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        # for i in range(64): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"xor_0_21[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(65, 128): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        # for i in range(64): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"xor_0_22[{i}]")
+        #     self._model.addConstr(c == 0)
+        ################
+
+        # for i in range(64): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"xor_0_27[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(129, 192): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        # for i in range(64): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"xor_0_30[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(193, 256): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        # for i in range(64): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"xor_0_33[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(257, 320): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        # for i in range(64): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"xor_0_36[{i}]")
         #     self._model.addConstr(c == 0)
+
 
         self._model.update()
         self._model.write("division_trail_model_toy_cipher.lp")
@@ -702,3 +709,8 @@ class MilpDivisionTrailModel():
         for i in range(self._cipher.output_bit_size):
             print(f"\nSearch of {s} in anf {i} :")
             self.check_presence_of_particular_monomial_in_specific_anf(monomial, i)
+
+
+
+
+
