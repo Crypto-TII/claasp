@@ -140,9 +140,18 @@ class MilpDivisionTrailModel():
 
     def get_anfs_from_sbox(self, component):
         anfs = []
+        B = BooleanPolynomialRing(5,'x')
+        C = BooleanPolynomialRing(5,'x')
+        var_names = [f"x{i}" for i in range(component.output_bit_size)]
+        d = {}
+        for i in range(component.output_bit_size):
+            d[B(var_names[i])] = C(var_names[component.output_bit_size-i-1])
+
         sbox = SBox(component.description)
         for i in range(component.input_bit_size):
-            anfs.append(sbox.component_function(1<<i).algebraic_normal_form())
+            anf = sbox.component_function(1<<i).algebraic_normal_form()
+            anf = anf.subs(d) # x0 was msb, now it is the lsb
+            anfs.append(anf)
         return anfs
 
     def get_monomial_occurences(self, component):
@@ -219,7 +228,8 @@ class MilpDivisionTrailModel():
         x = B.variable_names()
         anfs = self.get_anfs_from_sbox(component)
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
-        # anfs.reverse()
+        anfs.reverse()
+        # print(anfs)
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
 
@@ -296,7 +306,7 @@ class MilpDivisionTrailModel():
 
         rotate_offset = component.description[1]
         for i in range(component.output_bit_size):
-            self._model.addConstr(output_vars[i] == input_vars_concat[(i+rotate_offset) % component.output_bit_size])
+            self._model.addConstr(output_vars[i] == input_vars_concat[(i-rotate_offset) % component.output_bit_size])
         self._model.update()
 
     def add_and_constraints(self, component):
@@ -509,7 +519,7 @@ class MilpDivisionTrailModel():
         # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_30")
         # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_33")
         # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_36")
-        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="rot_0_37")
+        # self._model.addVars(list(range(5)), vtype=GRB.BINARY, name="sbox_0_2")
         self._model.update()
         self._variables = all_vars
 
@@ -553,22 +563,25 @@ class MilpDivisionTrailModel():
         #     self._model.addConstr(c == 0)
         ################
 
-        # for i in range(64): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"xor_0_27[{i}]")
+        # for i in range(1,64): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"plaintext[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(64): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"xor_0_30[{i}]")
+        # for i in range(65,128): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"plaintext[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(64): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"xor_0_33[{i}]")
+        # for i in range(129, 192): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"plaintext[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(64): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"xor_0_36[{i}]")
+        # for i in range(193, 256): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"plaintext[{i}]")
         #     self._model.addConstr(c == 0)
 
+        # for i in range(257, 320): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        #     self._model.addConstr(c == 0)
 
         self._model.update()
         self._model.write("division_trail_model_toy_cipher.lp")
@@ -709,6 +722,12 @@ class MilpDivisionTrailModel():
         for i in range(self._cipher.output_bit_size):
             print(f"\nSearch of {s} in anf {i} :")
             self.check_presence_of_particular_monomial_in_specific_anf(monomial, i)
+
+
+# Ascon circuit version, checked by hand for y0
+['p64p256', 'p45', 'p64p128', 'p36', 'p45p109', 'p0p64', 'p192', 'p128', 'p64', 'p100p164', 'p0', 'p100p292', 'p109p301', 'p109p173', 'p237', 'p173', 'p228', 'p164', 'p36p100', 'p109', 'p100']
+# Ascon circuit version, checked by hand for y256
+['p64p256', 'p215', 'p313', 'p64', 'p249', 'p279', 'p87p279', 'p256', 'p121p313', 'p87', 'p0p64', 'p121', 'p23p87', 'p192', 'p57p121']
 
 
 
