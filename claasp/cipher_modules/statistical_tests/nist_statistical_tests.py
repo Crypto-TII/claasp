@@ -286,8 +286,9 @@ class StatisticalTests:
         plt.ylabel('Passing Rate')
         if output_dir == '':
             output_dir = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
-        print(output_dir)
-        plt.savefig(output_dir+'/'+f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
+            plt.savefig(output_dir)
+        else:
+            plt.savefig(output_dir+'/'+f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
         print(f'Drawing round {report_dict["round"]} is finished.')
 
     @staticmethod
