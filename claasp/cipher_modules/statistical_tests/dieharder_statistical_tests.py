@@ -40,6 +40,27 @@ class DieharderTests:
     @staticmethod
     def dieharder_statistical_tests(input_file):
 
+        """
+        Run the run_dieharder_statistical_tests_tool_interactively function and process its output with the parse_output function
+        to standardize it for the Report class
+
+        INPUT:
+
+        - ``input_file`` -- **str**; file containing the bit streams
+
+        OUTPUT:
+
+        a python dictionary representing the parsed output of the run_dieharder_statistical_tests_tool_interactively function
+
+        EXAMPLES:
+
+        from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+
+        result = StatisticalTests.dieharder_statistical_test(f'claasp/cipher_modules/statistical_tests/input_data_example')
+
+        """
+
+
         DieharderTests.run_dieharder_statistical_tests_tool_interactively(input_file)
 
         report = DieharderTests.parse_report(f'dieharder_test_output.txt')

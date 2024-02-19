@@ -44,9 +44,39 @@ class StatisticalTests:
     def nist_statistical_tests(input_file, bit_stream_length=10000, number_of_bit_streams=10,
                                                       input_file_format=1,
                                                       statistical_test_option_list=15 * '1'):
+        """
+        Run the run_nist_statistical_tests_tool_interactively function and process its output with the parse_output function
+        to standardize it for the Report class
+
+        INPUT:
+
+        - ``input_file`` -- **str**; file containing the bit streams
+        - ``bit_stream_length`` -- **integer**; bit stream length
+        - ``number_of_bit_streams`` -- **integer**; number of bit streams in `input_file`
+        - ``input_file_format`` -- **integer**; `input_file` format. Set to 0 to indicate a file containing a binary
+          string in ASCII, or 1 to indicate a binary file
+        - ``test_type`` -- **str**; the type of the test to run
+        - ``statistical_test_option_list`` -- **str** (default: `15 * '1'`); a binary string of size 15. This string is
+          used to specify a set of statistical tests we want to run
+
+        OUTPUT:
+
+        a python dictionary representing the parsed output of the run_nist_statistical_tests_tool_interactively function
+
+        EXAMPLES:
+
+        from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+
+        result = StatisticalTests.nist_statistical_test(f'claasp/cipher_modules/statistical_tests/input_data_example')
+
+        """
+
+
         StatisticalTests.run_nist_statistical_tests_tool_interactively(input_file, bit_stream_length, number_of_bit_streams,
                                                       input_file_format,
                                                       statistical_test_option_list)
+
+
 
         report = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
 
