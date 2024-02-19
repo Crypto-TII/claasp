@@ -36,6 +36,17 @@ class DieharderTests:
         str_of_inputs_bit_size = list(map(str, cipher.inputs_bit_size))
         self._cipher_primitive = cipher.id + "_" + "_".join(str_of_inputs_bit_size)
 
+
+    @staticmethod
+    def dieharder_statistical_tests(input_file):
+
+        DieharderTests.run_dieharder_statistical_tests_tool_interactively(input_file)
+
+        report = DieharderTests.parse_report(f'dieharder_test_output.txt')
+
+        return report
+
+
     @staticmethod
     def run_dieharder_statistical_tests_tool_interactively(input_file):
         """
@@ -201,7 +212,7 @@ class DieharderTests:
         plt.yticks([-1, 0, 1], ['FAILED', 'WEAK', 'PASSED'])
         if output_dir =='':
             output_dir = f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
-        plt.savefig(output_dir)
+        plt.savefig(output_dir+'/'+f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
         print(f'Drawing round {report_dict["round"]} is finished. Please find the chart in file {output_dir}.')
 
     @staticmethod

@@ -39,6 +39,19 @@ class StatisticalTests:
         str_of_inputs_bit_size = list(map(str, cipher.inputs_bit_size))
         self._cipher_primitive = cipher.id + "_" + "_".join(str_of_inputs_bit_size)
 
+
+    @staticmethod
+    def nist_statistical_tests(input_file, bit_stream_length=10000, number_of_bit_streams=10,
+                                                      input_file_format=1,
+                                                      statistical_test_option_list=15 * '1'):
+        StatisticalTests.run_nist_statistical_tests_tool_interactively(input_file, bit_stream_length, number_of_bit_streams,
+                                                      input_file_format,
+                                                      statistical_test_option_list)
+
+        report = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
+
+        return report
+
     @staticmethod
     def run_nist_statistical_tests_tool_interactively(input_file, bit_stream_length=10000, number_of_bit_streams=10,
                                                       input_file_format=1,
@@ -273,7 +286,8 @@ class StatisticalTests:
         plt.ylabel('Passing Rate')
         if output_dir == '':
             output_dir = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
-        plt.savefig(output_dir)
+        print(output_dir)
+        plt.savefig(output_dir+'/'+f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
         print(f'Drawing round {report_dict["round"]} is finished.')
 
     @staticmethod

@@ -452,10 +452,10 @@ class Report:
             printable_dict['rounds'] = 1
             if 'dieharder' in self.test_name:
                 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-                DieharderTests.generate_chart_round(printable_dict)
+                DieharderTests.generate_chart_round(printable_dict, output_directory+'/'+self.cipher.id + '/' + self.test_name)
             elif 'nist' in self.test_name:
                 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-                StatisticalTests.generate_chart_round(printable_dict)
+                StatisticalTests.generate_chart_round(printable_dict, output_directory+'/'+self.cipher.id + '/' + self.test_name)
 
         elif 'algebraic' in self.test_name:
             print(self.test_report)
