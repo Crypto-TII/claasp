@@ -280,6 +280,7 @@ def branch_number(component, type, format):
     elif component.type == "mix_column":
         return min(calculate_weights_for_mix_column(component, format, type))
 
+
 def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, input_bit_size, output_bit_size):
     """
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
@@ -318,6 +319,7 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
     final_mtr = Matrix(F, mtr)
 
     return final_mtr, F
+
 
 def is_mds(component):
     """
@@ -364,6 +366,7 @@ def is_mds(component):
                     return False
     return True
 
+
 def field_element_matrix_to_integer_matrix(matrix):
     """
     Converts a matrix of field elements to the corresponding integer matrix representation
@@ -400,6 +403,7 @@ def field_element_matrix_to_integer_matrix(matrix):
 
     return Matrix(matrix.nrows(), matrix.ncols(), int_matrix)
 
+
 def get_inverse_matrix_in_integer_representation(component):
     """
     Returns the inverse matrix in its integer representation
@@ -435,6 +439,7 @@ def get_inverse_matrix_in_integer_representation(component):
     matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
                                                       component.input_bit_size, component.output_bit_size)
     return field_element_matrix_to_integer_matrix(matrix.inverse())
+
 
 def has_maximal_branch_number(component):
     """
@@ -478,6 +483,7 @@ def has_maximal_branch_number(component):
 
     if component.type == MIX_COLUMN:
         return branch_number(component, 'linear', 'word') == (output_word_size + 1)
+
 
 def calculate_weights_for_mix_column(component, format, type):
     if format == 'word':
@@ -569,6 +575,8 @@ def select_properties_function(boolean_polynomial_ring, operation):
         return word_operation_properties(operation, boolean_polynomial_ring)
     if (component.type == WORD_OPERATION) and (component.description[0] == "MODADD"):
         return word_operation_properties(operation, boolean_polynomial_ring)
+    if component.type == 'fsr':
+        return fsr_properties(operation)
 
     if component.type == WORD_OPERATION:
         print(f"TODO : {component.description[0]}")
@@ -632,17 +640,21 @@ def get_all_operations(cipher):
         collect_component_operations(component, tmp_cipher_operations)
 
     for operation in list(tmp_cipher_operations.keys()):
-        if operation not in [LINEAR_LAYER, MIX_COLUMN]:
+        if operation not in [LINEAR_LAYER, MIX_COLUMN, 'fsr']:
             tmp_cipher_operations[operation]["distinguisher"] = \
                 list(set(tmp_cipher_operations[operation]["distinguisher"]))
+        if operation == 'fsr':
+            tmp_list = []
+            for item in tmp_cipher_operations[operation]["distinguisher"]:
+                if item not in tmp_list:
+                    tmp_list.append(item)
+            tmp_cipher_operations[operation]["distinguisher"] = tmp_list
         tmp_cipher_operations[operation]["types"] = \
             [[] for _ in range(len(tmp_cipher_operations[operation]["distinguisher"]))]
         collect_components_with_the_same_operation(operation, tmp_cipher_operations)
-
     cipher_operations = {}
     for operation in list(tmp_cipher_operations.keys()):
         add_attributes_to_operation(cipher_operations, operation, tmp_cipher_operations)
-
     return cipher_operations
 
 
@@ -769,6 +781,110 @@ def order_of_linear_component(component):
         return binary_matrix.multiplicative_order()
     except Exception:
         return 0
+
+
+def fsr_properties(operation):
+    """
+        Return a dictionary containing some properties of fsr component.
+
+        INPUT:
+
+        - ``operation`` -- **list**; a list containing:
+
+          * a component with the operation under study
+          * number of occurrences of the operation
+          * list of ids of all the components with the same underlying operation
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.component_analysis_tests import fsr_properties
+            sage: from claasp.components.fsr_component import FSR
+            sage: fsr_component = FSR(0,0, ["input"],[[0,1,2,3]],4,[[[4, [[1,[0]],[3,[1]],[2,[2]]]]],4])
+            sage: operation= [fsr_component, 1, ['fsr_0_0']]
+            sage: dictionary = fsr_properties(operation)
+            sage: dictionary['fsr_word_size'] == 4
+            True
+            sage: dictionary['lfsr_connection_polynomials'] == ['x^4 + (z4 + 1)*x^3 + z4*x^2 + 1']
+            True
+
+            sage: from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
+            sage: from claasp.cipher_modules.component_analysis_tests import component_analysis_tests
+            sage: e0 = BluetoothStreamCipherE0(keystream_bit_len=2)
+            sage: dictionary = e0.component_analysis_tests()
+            sage: assert dictionary[8]["number_of_registers"] == 4
+            sage: dictionary[8]["lfsr_connection_polynomials"][0] == 'x^25 + x^20 + x^12 + x^8 + 1' # first lfsr
+            True
+            sage: dictionary[8]['lfsr_polynomials_are_primitive'] == [True, True, True, True]
+            True
+
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+            sage: triv = TriviumStreamCipher(keystream_bit_len=1)
+            sage: dictionary = triv.component_analysis_tests()
+            sage: dictionary[0]["type_of_registers"] == ['non-linear', 'non-linear', 'non-linear']
+            True
+        """
+    component = operation[0]
+    fsr_word_size = component.description[1]
+    component_dict = {
+        "type": component.type,
+        "input_bit_size": component.input_bit_size,
+        "output_bit_size": component.output_bit_size,
+        "fsr_word_size": fsr_word_size,
+        "description": component.description,
+        "number_of_occurrences": operation[1],
+        "component_id_list": operation[2]
+    }
+
+    desc = component.description
+    registers_len = []
+    registers_type = []
+    registers_feedback_relation_deg = []
+    lfsr_connection_polynomials = []
+    lin_flag = False
+
+    for r in desc[0]:
+        registers_len.append(r[0])
+        d = max(len(term) if fsr_word_size == 1 else len(term[1]) for term in r[1])
+        registers_feedback_relation_deg.append(d)
+        reg_type = 'non-linear' if d > 1 else 'linear'
+        registers_type.append(reg_type)
+        lin_flag = lin_flag or (reg_type == 'linear')
+
+    component_dict.update({
+        'number_of_registers': len(registers_len),
+        'length_of_registers': registers_len,
+        'type_of_registers': registers_type,
+        'degree_of_feedback_relation_of_registers': registers_feedback_relation_deg
+    })
+
+    if lin_flag:
+        lfsrs_primitive = []
+        exp = 0
+        R = GF(2)['x'] if fsr_word_size == 1 else GF(2 ** fsr_word_size)['x']
+        x = R.gens()
+        a = R.construction()[1].gen()
+
+        for index, r in enumerate(desc[0]):
+            exp = exp + registers_len[index]
+            if registers_type[index] == 'linear':
+                p = R(1)
+                for term in r[1]:
+                    if fsr_word_size == 1:
+                        p = p + x[0] ** (exp - term[0])
+                    else:  # case: word based LFSR
+                        m = 0
+                        cf = "{0:b}".format(term[0])
+                        for i in range(len(cf)):
+                            if cf[i] == '1':  m = m + pow(a, len(cf) - 1 - i)
+                        m = m * x[0] ** (exp - term[1][0])
+                        p += m
+                lfsr_connection_polynomials.append(str(p))
+                lfsrs_primitive.append(p.is_primitive())
+        component_dict.update({
+            "lfsr_connection_polynomials": lfsr_connection_polynomials,
+            "lfsr_polynomials_are_primitive": lfsrs_primitive
+        })
+    return component_dict
 
 
 def sbox_properties(operation):
