@@ -49,10 +49,12 @@ class ContinuousDiffusionAnalysis:
 
             return lst_input
 
-        sbox_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(self.cipher.as_python_dictionary(), 'sbox')
+        sbox_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(
+            self.cipher.as_python_dictionary(), 'sbox'
+        )
         sbox_precomputations = get_sbox_precomputations(sbox_components)
-        mix_column_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(self.cipher.as_python_dictionary(),
-                                                                             'mix_column')
+        mix_column_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(
+            self.cipher.as_python_dictionary(), 'mix_column')
         sbox_precomputations_mix_columns = get_mix_column_precomputations(mix_column_components)
         pool = Pool()
         results = []
@@ -131,10 +133,11 @@ class ContinuousDiffusionAnalysis:
 
         gf_samples = _create_gf_samples(number_of_samples, beta, input_bit)
 
-        sbox_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(self.cipher.as_python_dictionary(), 'sbox')
+        sbox_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(
+            self.cipher.as_python_dictionary(), 'sbox')
         sbox_precomputations = get_sbox_precomputations(sbox_components)
-        mix_column_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(self.cipher.as_python_dictionary(),
-                                                                             'mix_column')
+        mix_column_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(
+            self.cipher.as_python_dictionary(), 'mix_column')
         sbox_precomputations_mix_columns = get_mix_column_precomputations(mix_column_components)
 
         results = []
@@ -263,14 +266,16 @@ class ContinuousDiffusionAnalysis:
         input_tags = self.cipher.inputs
         final_dict = {}
         for input_tag in input_tags:
-            continuous_avalanche_factor_by_tag_input_dict = self._compute_conditional_expected_value_for_continuous_metric(
-                lambda_value, number_of_samples, input_tag)
+            continuous_avalanche_factor_by_tag_input_dict = \
+                self._compute_conditional_expected_value_for_continuous_metric(
+                    lambda_value, number_of_samples, input_tag)
             final_dict = {**final_dict, **continuous_avalanche_factor_by_tag_input_dict}
 
         return final_dict
 
     def continuous_diffusion_factor(self, beta_number_of_samples, gf_number_samples):
-        output_tags = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(self.cipher.as_python_dictionary()).keys()
+        output_tags = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(
+            self.cipher.as_python_dictionary()).keys()
         i = 0
         continuous_neutrality_measures = {}
         for cipher_input_size in self.cipher.inputs_bit_size:
@@ -281,8 +286,8 @@ class ContinuousDiffusionAnalysis:
                     beta_number_of_samples, gf_number_samples, input_bit={input_tag: input_bit})
                 for output_tag in output_tags:
                     continuous_neutrality_measures_values = \
-                    continuous_neutrality_measures_output[input_tag][output_tag][
-                        "continuous_neutrality_measure"]["values"]
+                        continuous_neutrality_measures_output[input_tag][output_tag][
+                            "continuous_neutrality_measure"]["values"]
                     if output_tag not in continuous_neutrality_measures[input_tag]:
                         continuous_neutrality_measures[input_tag][output_tag] = {}
                         continuous_neutrality_measures[input_tag][output_tag]["diffusion_factor"] = {}
@@ -290,9 +295,12 @@ class ContinuousDiffusionAnalysis:
                     if input_bit == 0:
                         continuous_neutrality_measures[input_tag][output_tag]["diffusion_factor"]["values"] = [
                             {} for _ in range(len(continuous_neutrality_measures_output_values))]
-                    ContinuousDiffusionAnalysis.incrementing_counters(continuous_neutrality_measures_output_values, continuous_neutrality_measures,
-                                          cipher_input_size, input_tag,
-                                          output_tag, input_bit)
+                    ContinuousDiffusionAnalysis.incrementing_counters(
+                        continuous_neutrality_measures_output_values,
+                        continuous_neutrality_measures,
+                        cipher_input_size, input_tag,
+                        output_tag, input_bit
+                    )
             i += 1
 
         for it in continuous_neutrality_measures.keys():
@@ -329,6 +337,7 @@ class ContinuousDiffusionAnalysis:
                                    is_continuous_neutrality_measure=True,
                                    is_diffusion_factor=True):
         continuous_diffusion_tests = {"input_parameters": {
+            'test_name': 'continuous_diffusion_tests',
             'continuous_avalanche_factor_number_of_samples': continuous_avalanche_factor_number_of_samples,
             'threshold_for_avalanche_factor': threshold_for_avalanche_factor,
             'continuous_neutral_measure_beta_number_of_samples': continuous_neutral_measure_beta_number_of_samples,
@@ -351,8 +360,8 @@ class ContinuousDiffusionAnalysis:
                 continuous_neutral_measure_gf_number_samples)
 
         if is_continuous_avalanche_factor:
-            continuous_avalanche_factor_output = self.continuous_avalanche_factor(threshold_for_avalanche_factor,
-                                                                             continuous_avalanche_factor_number_of_samples)
+            continuous_avalanche_factor_output = self.continuous_avalanche_factor(
+                threshold_for_avalanche_factor, continuous_avalanche_factor_number_of_samples)
 
         inputs_tags = list(continuous_neutrality_measure_output.keys())
         output_tags = list(continuous_neutrality_measure_output[inputs_tags[0]].keys())
@@ -380,17 +389,20 @@ class ContinuousDiffusionAnalysis:
     def continuous_neutrality_measure_for_bit_j(self, beta_number_of_samples, gf_number_samples,
                                                 input_bit=None, output_bits=None):
         if output_bits is None:
-            output_bits = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(self.cipher.as_python_dictionary())
+            output_bits = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(
+                self.cipher.as_python_dictionary())
         if input_bit is None:
             input_bit = self.init_input_bits()
 
         beta_sample_outputs = self.generate_beta_sample_output(beta_number_of_samples, gf_number_samples,
-                                                          input_bit, output_bits)
+                                                               input_bit, output_bits)
         inputs_tags = list(beta_sample_outputs[0].keys())
         output_tags = list(beta_sample_outputs[0][inputs_tags[0]].keys())
-        final_result = ContinuousDiffusionAnalysis.init_final_result_structure(input_bit, inputs_tags, output_bits, output_tags)
-        final_result = ContinuousDiffusionAnalysis.add_beta_samples_to_final_result_from(beta_sample_outputs, inputs_tags, output_tags,
-                                                             final_result)
+        final_result = ContinuousDiffusionAnalysis.init_final_result_structure(
+            input_bit, inputs_tags, output_bits, output_tags)
+        final_result = ContinuousDiffusionAnalysis.add_beta_samples_to_final_result_from(beta_sample_outputs,
+                                                                                         inputs_tags, output_tags,
+                                                                                         final_result)
 
         for inputs_tag in inputs_tags:
             for output_tag in output_tags:
@@ -458,8 +470,8 @@ class ContinuousDiffusionAnalysis:
         for input_tag in input_tags:
             continuous_avalanche_factor_by_tag_input_dict = \
                 self._compute_conditional_expected_value_for_continuous_neutrality_measure(input_bit,
-                                                                                      beta, number_of_samples,
-                                                                                      input_tag, output_bits)
+                                                                                           beta, number_of_samples,
+                                                                                           input_tag, output_bits)
             continuous_diffusion_tests = {
                 **continuous_diffusion_tests, **continuous_avalanche_factor_by_tag_input_dict
             }
