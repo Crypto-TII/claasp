@@ -383,6 +383,11 @@ class ContinuousDiffusionAnalysis:
                     **continuous_avalanche_factor_output[input_tag][output_tag],
                     **continuous_diffusion_factor_output[input_tag][output_tag],
                 }
+        for input_tag in inputs_tags:
+            for output_tag in output_tags:
+                for test in continuous_diffusion_tests["test_results"][input_tag][output_tag].keys():
+                    continuous_diffusion_tests["test_results"][input_tag][output_tag][test] = [
+                        continuous_diffusion_tests["test_results"][input_tag][output_tag][test]]
 
         return continuous_diffusion_tests
 
