@@ -20,7 +20,7 @@ import math
 import random
 import numpy as np
 from decimal import Decimal
-from multiprocessin:q!g import Pool
+from multiprocessing import Pool
 
 from claasp.cipher_modules import evaluator
 from claasp.cipher_modules.generic_functions_continuous_diffusion_analysis import (get_sbox_precomputations,
@@ -33,29 +33,31 @@ class ContinuousDiffusionAnalysis:
     def __init__(self, cipher):
         self.cipher = cipher
 
-    def _create_list_fixing_some_inputs(self, tag_input):
-        max_bias = [-1, 1]
-        index_of_tag_input = self.cipher.inputs.index(tag_input)
-        lst_input = []
-        for i in range(len(self.cipher.inputs)):
-            if i == index_of_tag_input:
-                lst_input.append([])
-            else:
-                lst_input.append(
-                    [Decimal(max_bias[random.randrange(0, 2)]) for _ in range(self.cipher.inputs_bit_size[i])])
-        return lst_input
-
     def _compute_conditional_expected_value_for_continuous_metric(self, lambda_value, number_of_samples, tag_input):
-        sbox_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(
-            self.cipher.as_python_dictionary(), 'sbox')
+        def _create_list_fixing_some_inputs(tag_input):
+            max_bias = [-1, 1]
+            index_of_tag_input = self.cipher.inputs.index(tag_input)
+            lst_input = []
+            i = 0
+            for _ in self.cipher.inputs:
+                if i == index_of_tag_input:
+                    lst_input.append([])
+                else:
+                    lst_input.append(
+                        [Decimal(max_bias[random.randrange(0, 2)]) for _ in range(self.cipher.inputs_bit_size[i])])
+                i += 1
+
+            return lst_input
+
+        sbox_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(self.cipher.as_python_dictionary(), 'sbox')
         sbox_precomputations = get_sbox_precomputations(sbox_components)
-        mix_column_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(
-            self.cipher.as_python_dictionary(), 'mix_column')
+        mix_column_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(self.cipher.as_python_dictionary(),
+                                                                             'mix_column')
         sbox_precomputations_mix_columns = get_mix_column_precomputations(mix_column_components)
         pool = Pool()
         results = []
         for _ in range(number_of_samples):
-            list_of_inputs = self._create_list_fixing_some_inputs(tag_input)
+            list_of_inputs = _create_list_fixing_some_inputs(tag_input)
             results.append(pool.apply_async(
                 self._compute_sample_for_continuous_avalanche_factor,
                 args=(lambda_value, list_of_inputs, sbox_precomputations, sbox_precomputations_mix_columns))
@@ -76,12 +78,94 @@ class ContinuousDiffusionAnalysis:
                 value_object = {"round": round_tag, "value": float(
                     sum(agg_by_round_and_tag_output[round_tag]) / Decimal(number_of_samples * 1.0)
                 )}
-                value_object["value"] = round(float(value_object["value"] / self.cipher.output_bit_size * 1.0), 3)
+                value_object["value"] = \
+                    round(float(value_object["value"] / self.cipher.output_bit_size * 1.0), 3)
                 values.append(value_object)
 
             continuous_diffusion_tests[tag_input][tag_output]["continuous_avalanche_factor"] = {}
             value_list = [X['value'] for X in values]
             continuous_diffusion_tests[tag_input][tag_output]["continuous_avalanche_factor"]["values"] = value_list
+
+        return continuous_diffusion_tests
+
+    def _compute_conditional_expected_value_for_continuous_neutrality_measure(self, input_bit, beta,
+                                                                              number_of_samples, tag_input,
+                                                                              output_dict):
+        def _create_list_fixing_tag_input(_tag_input):
+            max_bias = [-1, 1]
+            index_of_tag_input = self.cipher.inputs.index(_tag_input)
+            lst_input = []
+            ii = 0
+
+            for _ in self.cipher.inputs:
+                input_size = self.cipher.inputs_bit_size[ii]
+                if ii == index_of_tag_input:
+                    lst_input.append([])
+                else:
+                    lst_input.append([
+                        Decimal(max_bias[random.randrange(0, 2)]) for _ in range(input_size)
+                    ])
+                ii += 1
+
+            return lst_input
+
+        def compute_vectorized_bias(x):
+            return (2 * x - 1).astype('float16')
+
+        def compute_vectorized_psi(x, _input_bit, _beta):
+            x[:, _input_bit] *= _beta
+
+        def _create_gf_samples(_number_of_samples, _beta, input_bit):
+            _gf_samples = {}
+            for input_bit_key in input_bit.keys():
+                sample_of_gf_2_n = generate_sample_from_gf_2_n(
+                    self.cipher.inputs_bit_size[
+                        self.cipher.inputs.index(input_bit_key)],
+                    _number_of_samples
+                )
+                bias_of_sample_of_gf_2_n = compute_vectorized_bias(sample_of_gf_2_n)
+                compute_vectorized_psi(bias_of_sample_of_gf_2_n, input_bit[input_bit_key], _beta)
+                _gf_samples[input_bit_key] = bias_of_sample_of_gf_2_n
+
+            return _gf_samples
+
+        gf_samples = _create_gf_samples(number_of_samples, beta, input_bit)
+
+        sbox_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(self.cipher.as_python_dictionary(), 'sbox')
+        sbox_precomputations = get_sbox_precomputations(sbox_components)
+        mix_column_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(self.cipher.as_python_dictionary(),
+                                                                             'mix_column')
+        sbox_precomputations_mix_columns = get_mix_column_precomputations(mix_column_components)
+
+        results = []
+        for i in range(number_of_samples):
+            list_of_inputs = _create_list_fixing_tag_input(tag_input)
+            results.append(
+                self._compute_sample_for_continuous_neutrality_measure(
+                    list_of_inputs, sbox_precomputations,
+                    sbox_precomputations_mix_columns, output_dict,
+                    [Decimal(float(gf_sample)) for gf_sample in gf_samples[tag_input][i]]
+                )
+            )
+
+        continuous_diffusion_tests = {tag_input: {}}
+        flattened_results = merging_list_of_lists(results)
+        flattened_results_by_tag_output = group_list_by_key(flattened_results)
+        for tag_output in flattened_results_by_tag_output.keys():
+            agg_by_round_and_tag_output = group_list_by_key(
+                merging_list_of_lists(flattened_results_by_tag_output[tag_output])
+            )
+            values = []
+            continuous_diffusion_tests[tag_input][tag_output] = {}
+            for round_tag in agg_by_round_and_tag_output.keys():
+                value_object = {
+                    "round": round_tag, "value": float(sum(agg_by_round_and_tag_output[round_tag]))
+                }
+                value_object["value"] = round(float(value_object["value"]), 3)
+                values.append(value_object)
+            #
+            continuous_diffusion_tests[tag_input][tag_output]["continuous_neutrality_measure"] = {}
+            continuous_diffusion_tests[tag_input][tag_output]["continuous_neutrality_measure"]["values"] = values
 
         return continuous_diffusion_tests
 
@@ -119,94 +203,6 @@ class ContinuousDiffusionAnalysis:
 
         return sum_by_round
 
-    @staticmethod
-    def _get_graph_representation_components_by_type(graph_representation, type_name):
-        cipher_rounds = graph_representation["cipher_rounds"][0]
-        components_by_type = list(filter(lambda d: d['type'] in [type_name], cipher_rounds))
-        return components_by_type
-
-    def _compute_conditional_expected_value_for_continuous_neutrality_measure(self, input_bit, beta,
-                                                                              number_of_samples, tag_input,
-                                                                              output_dict):
-        def _create_list_fixing_tag_input(_tag_input):
-            max_bias = [-1, 1]
-            index_of_tag_input = self.cipher.inputs.index(_tag_input)
-            lst_input = []
-            ii = 0
-
-            for _ in self.cipher.inputs:
-                input_size = self.cipher.inputs_bit_size[ii]
-                if ii == index_of_tag_input:
-                    lst_input.append([])
-                else:
-                    lst_input.append([
-                        Decimal(max_bias[random.randrange(0, 2)]) for _ in range(input_size)
-                    ])
-                ii += 1
-
-            return lst_input
-
-        def compute_vectorized_bias(x):
-            return (2 * x - 1).astype('float16')
-
-        def compute_vectorized_psi(x, _input_bit, _beta):
-            x[:, _input_bit] *= _beta
-
-        def _create_gf_samples(_number_of_samples, _beta, input_bit_):
-            _gf_samples = {}
-            for input_bit_key in input_bit_.keys():
-                sample_of_gf_2_n = generate_sample_from_gf_2_n(
-                    self.cipher.inputs_bit_size[
-                        self.cipher.inputs.index(input_bit_key)],
-                    _number_of_samples
-                )
-                bias_of_sample_of_gf_2_n = compute_vectorized_bias(sample_of_gf_2_n)
-                compute_vectorized_psi(bias_of_sample_of_gf_2_n, input_bit_[input_bit_key], _beta)
-                _gf_samples[input_bit_key] = bias_of_sample_of_gf_2_n
-
-            return _gf_samples
-
-        gf_samples = _create_gf_samples(number_of_samples, beta, input_bit)
-
-        sbox_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(
-            self.cipher.as_python_dictionary(), 'sbox')
-        sbox_precomputations = get_sbox_precomputations(sbox_components)
-        mix_column_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(
-            self.cipher.as_python_dictionary(), 'mix_column')
-        sbox_precomputations_mix_columns = get_mix_column_precomputations(mix_column_components)
-
-        results = []
-        for i in range(number_of_samples):
-            list_of_inputs = _create_list_fixing_tag_input(tag_input)
-            results.append(
-                self._compute_sample_for_continuous_neutrality_measure(
-                    list_of_inputs, sbox_precomputations,
-                    sbox_precomputations_mix_columns, output_dict,
-                    [Decimal(float(gf_sample)) for gf_sample in gf_samples[tag_input][i]]
-                )
-            )
-
-        continuous_diffusion_tests = {tag_input: {}}
-        flattened_results = merging_list_of_lists(results)
-        flattened_results_by_tag_output = group_list_by_key(flattened_results)
-        for tag_output in flattened_results_by_tag_output.keys():
-            agg_by_round_and_tag_output = group_list_by_key(
-                merging_list_of_lists(flattened_results_by_tag_output[tag_output])
-            )
-            values = []
-            continuous_diffusion_tests[tag_input][tag_output] = {}
-            for round_tag in agg_by_round_and_tag_output.keys():
-                value_object = {
-                    "round": round_tag, "value": float(sum(agg_by_round_and_tag_output[round_tag]))
-                }
-                value_object["value"] = round(float(value_object["value"]), 3)
-                values.append(value_object)
-            #
-            continuous_diffusion_tests[tag_input][tag_output]["continuous_neutrality_measure"] = {}
-            continuous_diffusion_tests[tag_input][tag_output]["continuous_neutrality_measure"]["values"] = values
-
-        return continuous_diffusion_tests
-
     def _compute_sample_for_continuous_neutrality_measure(self, lst_input, sbox_precomputations,
                                                           sbox_precomputations_mix_columns, output_dict, x):
         def mag(xx):
@@ -242,6 +238,13 @@ class ContinuousDiffusionAnalysis:
         return sum_by_round
 
     @staticmethod
+    def _get_graph_representation_components_by_type(graph_representation, type_name):
+        cipher_rounds = graph_representation["cipher_rounds"][0]
+        components_by_type = list(filter(lambda d: d['type'] in [type_name], cipher_rounds))
+
+        return components_by_type
+
+    @staticmethod
     def _get_graph_representation_tag_output_sizes(graph_representation):
         temp_components = {}
         component_descriptions = []
@@ -260,41 +263,44 @@ class ContinuousDiffusionAnalysis:
         input_tags = self.cipher.inputs
         final_dict = {}
         for input_tag in input_tags:
-            continuous_avalanche_factor_by_tag_input_dict = \
-                self._compute_conditional_expected_value_for_continuous_metric(
-                    lambda_value, number_of_samples, input_tag)
+            continuous_avalanche_factor_by_tag_input_dict = self._compute_conditional_expected_value_for_continuous_metric(
+                lambda_value, number_of_samples, input_tag)
             final_dict = {**final_dict, **continuous_avalanche_factor_by_tag_input_dict}
 
         return final_dict
 
-    def process_output_tags(self, input_tag, cipher_input_size, beta_number_of_samples, gf_number_samples, output_tags,
-                            continuous_neutrality_measures):
-        for input_bit in range(cipher_input_size):
-            continuous_neutrality_measures_output = self.continuous_neutrality_measure_for_bit_j(beta_number_of_samples,
-                                                                                                 gf_number_samples,
-                                                                                                 input_bit, input_tag)
-            for output_tag in output_tags:
-                if output_tag not in continuous_neutrality_measures[input_tag]:
-                    continuous_neutrality_measures[input_tag][output_tag] = {"diffusion_factor": {"values": []}}
-                continuous_neutrality_measures[input_tag][output_tag]["diffusion_factor"]["values"].append(
-                    continuous_neutrality_measures_output[input_tag][output_tag]["continuous_neutrality_measure"][
-                        "values"]
-                )
-
     def continuous_diffusion_factor(self, beta_number_of_samples, gf_number_samples):
-        output_tags = self._get_graph_representation_tag_output_sizes(self.cipher.as_python_dictionary())['output_tags']
+        output_tags = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(self.cipher.as_python_dictionary()).keys()
+        i = 0
         continuous_neutrality_measures = {}
-        for i, cipher_input_size in enumerate(self.cipher.inputs_bit_size):
+        for cipher_input_size in self.cipher.inputs_bit_size:
             input_tag = self.cipher.inputs[i]
             continuous_neutrality_measures[input_tag] = {}
-            self.process_output_tags(input_tag, cipher_input_size, beta_number_of_samples, gf_number_samples,
-                                     output_tags, continuous_neutrality_measures)
+            for input_bit in range(cipher_input_size):
+                continuous_neutrality_measures_output = self.continuous_neutrality_measure_for_bit_j(
+                    beta_number_of_samples, gf_number_samples, input_bit={input_tag: input_bit})
+                for output_tag in output_tags:
+                    continuous_neutrality_measures_values = \
+                    continuous_neutrality_measures_output[input_tag][output_tag][
+                        "continuous_neutrality_measure"]["values"]
+                    if output_tag not in continuous_neutrality_measures[input_tag]:
+                        continuous_neutrality_measures[input_tag][output_tag] = {}
+                        continuous_neutrality_measures[input_tag][output_tag]["diffusion_factor"] = {}
+                    continuous_neutrality_measures_output_values = continuous_neutrality_measures_values
+                    if input_bit == 0:
+                        continuous_neutrality_measures[input_tag][output_tag]["diffusion_factor"]["values"] = [
+                            {} for _ in range(len(continuous_neutrality_measures_output_values))]
+                    ContinuousDiffusionAnalysis.incrementing_counters(continuous_neutrality_measures_output_values, continuous_neutrality_measures,
+                                          cipher_input_size, input_tag,
+                                          output_tag, input_bit)
+            i += 1
 
-        for input_tag, out_dict in continuous_neutrality_measures.items():
-            for output_tag, measures in out_dict.items():
-                diffusion_values = measures['diffusion_factor']['values']
-                flattened_values = [value for sublist in diffusion_values for value in sublist]
-                measures['diffusion_factor']['values'] = flattened_values
+        for it in continuous_neutrality_measures.keys():
+            for out in continuous_neutrality_measures[it].keys():
+                copy_values = [list(X.values()) for X in
+                               continuous_neutrality_measures[it][out]['diffusion_factor']['values']]
+                copy_values = [value for round in copy_values for value in round]
+                continuous_neutrality_measures[it][out]['diffusion_factor']['values'] = copy_values
 
         return continuous_neutrality_measures
 
@@ -345,8 +351,8 @@ class ContinuousDiffusionAnalysis:
                 continuous_neutral_measure_gf_number_samples)
 
         if is_continuous_avalanche_factor:
-            continuous_avalanche_factor_output = self.continuous_avalanche_factor(
-                threshold_for_avalanche_factor, continuous_avalanche_factor_number_of_samples)
+            continuous_avalanche_factor_output = self.continuous_avalanche_factor(threshold_for_avalanche_factor,
+                                                                             continuous_avalanche_factor_number_of_samples)
 
         inputs_tags = list(continuous_neutrality_measure_output.keys())
         output_tags = list(continuous_neutrality_measure_output[inputs_tags[0]].keys())
@@ -374,22 +380,17 @@ class ContinuousDiffusionAnalysis:
     def continuous_neutrality_measure_for_bit_j(self, beta_number_of_samples, gf_number_samples,
                                                 input_bit=None, output_bits=None):
         if output_bits is None:
-            output_bits = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(
-                self.cipher.as_python_dictionary()
-            )
+            output_bits = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(self.cipher.as_python_dictionary())
         if input_bit is None:
             input_bit = self.init_input_bits()
 
         beta_sample_outputs = self.generate_beta_sample_output(beta_number_of_samples, gf_number_samples,
-                                                               input_bit, output_bits)
+                                                          input_bit, output_bits)
         inputs_tags = list(beta_sample_outputs[0].keys())
         output_tags = list(beta_sample_outputs[0][inputs_tags[0]].keys())
-        final_result = ContinuousDiffusionAnalysis.init_final_result_structure(
-            input_bit, inputs_tags, output_bits, output_tags
-        )
-        final_result = ContinuousDiffusionAnalysis.add_beta_samples_to_final_result_from(
-            beta_sample_outputs, inputs_tags, output_tags, final_result
-        )
+        final_result = ContinuousDiffusionAnalysis.init_final_result_structure(input_bit, inputs_tags, output_bits, output_tags)
+        final_result = ContinuousDiffusionAnalysis.add_beta_samples_to_final_result_from(beta_sample_outputs, inputs_tags, output_tags,
+                                                             final_result)
 
         for inputs_tag in inputs_tags:
             for output_tag in output_tags:
@@ -431,8 +432,7 @@ class ContinuousDiffusionAnalysis:
         return final_result
 
     def generate_beta_sample_output(self, beta_number_of_samples, gf_number_samples, input_bit, output_bits):
-        rng = np.random.default_rng()  # Create a random generator instance
-        betas = rng.uniform(low=-1.0, high=1.0, size=beta_number_of_samples)
+        betas = np.random.uniform(low=-1.0, high=1.0, size=beta_number_of_samples)
         beta_sample_outputs_temp = []
         pool = Pool()
         for i in range(beta_number_of_samples):
@@ -458,8 +458,8 @@ class ContinuousDiffusionAnalysis:
         for input_tag in input_tags:
             continuous_avalanche_factor_by_tag_input_dict = \
                 self._compute_conditional_expected_value_for_continuous_neutrality_measure(input_bit,
-                                                                                           beta, number_of_samples,
-                                                                                           input_tag, output_bits)
+                                                                                      beta, number_of_samples,
+                                                                                      input_tag, output_bits)
             continuous_diffusion_tests = {
                 **continuous_diffusion_tests, **continuous_avalanche_factor_by_tag_input_dict
             }
