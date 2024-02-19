@@ -43,8 +43,9 @@ class ContinuousDiffusionAnalysis:
                 if i == index_of_tag_input:
                     lst_input.append([])
                 else:
+                    import secrets
                     lst_input.append(
-                        [Decimal(max_bias[random.choice([0, 1])]) for _ in range(self.cipher.inputs_bit_size[i])])
+                        [Decimal(max_bias[secrets.choice([0, 1])]) for _ in range(self.cipher.inputs_bit_size[i])])
                 i += 1
 
             return lst_input
