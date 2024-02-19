@@ -1347,7 +1347,7 @@ class Cipher:
                                           testing_samples, num_epochs=number_of_epochs)
 
     def run_autond_pipeline(self, difference_positions=None, optimizer_samples=10 ** 4, optimizer_generations=50,
-                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False):
+                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False, neural_net = 'dbitnet', save_prefix=None):
         """
           Runs the AutoND pipeline ([BGHR2023]):
             - Find an input difference for the inputs set to True in difference_positions using an optimizer
@@ -1368,6 +1368,7 @@ class Cipher:
           - ``testing_samples`` -- **integer**; (default: `10**6`) number samples used for testing
           - ``number_of_epochs`` -- **integer**; (default: `40`) number of training epochs
           - ``verbose`` -- **boolean**; (default: `False`) verbosity of the optimizer
+          - ``neural_net`` -- **string**; (default: `dbitnet`) the neural network architecture to use; supports 'dbitnet' and 'gohr_resnet'
 
 
           EXAMPLES::
