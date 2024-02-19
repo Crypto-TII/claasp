@@ -41,6 +41,7 @@ from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QAR
 from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
+from claasp.ciphers.toys.toyspn1 import ToySPN1
 from claasp.cipher_modules.algebraic_tests import AlgebraicTest
 
 EVALUATION_PY = 'evaluation.py'
@@ -51,6 +52,17 @@ FANCY_EVALUATE_C_FILE = 'claasp/cipher_modules/fancy_block_cipher_p24_k24_o24_r2
 
 
 def test_algebraic_tests():
+
+    toyspn = ToySPN1(number_of_rounds=2)
+    d = AlgebraicTest(toyspn).algebraic_tests(30)
+    assert d == {
+        'input_parameters': {'cipher.id': 'toyspn1_p6_k6_o6_r2', 'timeout': 30, 'test_name': 'algebraic_tests'},
+        'test_results': {'number_of_variables': [66, 126],
+                         'number_of_equations': [76, 158],
+                         'number_of_monomials': [96, 186],
+                         'max_degree_of_equations': [2, 2],
+                         'test_passed': [False, False]}}
+
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     d = AlgebraicTest(speck).algebraic_tests(5)
     assert d == {
