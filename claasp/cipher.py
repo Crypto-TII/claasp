@@ -22,6 +22,7 @@ import inspect
 
 import claasp
 from claasp import editor
+from claasp.cipher_modules.continuous_tests import ContinuousDiffusionAnalysis
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
 from claasp.rounds import Rounds
@@ -146,6 +147,7 @@ class Cipher:
         self._reference_code = cipher_reference_code
         self._id = self.make_cipher_id()
         self._file_name = self.make_file_name()
+        self._continuous_tests = ContinuousDiffusionAnalysis(self)
 
     def _are_there_not_forbidden_components(self, forbidden_types, forbidden_descriptions):
         return self._rounds.are_there_not_forbidden_components(forbidden_types, forbidden_descriptions)
@@ -461,7 +463,7 @@ class Cipher:
             sage: result['plaintext']['round_key_output']['continuous_avalanche_factor']['values'][0]['value']
             0.0
         """
-        return continuous_tests.continuous_avalanche_factor(self, lambda_value, number_of_samples)
+        return self._continuous_tests.continuous_avalanche_factor(lambda_value, number_of_samples)
 
     def continuous_diffusion_factor(self, beta_number_of_samples, gf_number_samples):
         """
@@ -480,7 +482,7 @@ class Cipher:
             sage: output['plaintext']['cipher_output']['diffusion_factor']['values'][0]['2'] > 0 # long time
             True
         """
-        return continuous_tests.continuous_diffusion_factor(self, beta_number_of_samples, gf_number_samples)
+        return self._continuous_tests.continuous_diffusion_factor(beta_number_of_samples, gf_number_samples)
 
     def continuous_diffusion_tests(self,
                                    continuous_avalanche_factor_number_of_samples=100,
@@ -529,16 +531,16 @@ class Cipher:
             sage: output['plaintext']['round_key_output']['continuous_neutrality_measure']['values'][0]['1'] == 0.0 # long time
             True
         """
-        return continuous_tests.continuous_diffusion_tests(self,
-                                                           continuous_avalanche_factor_number_of_samples,
-                                                           threshold_for_avalanche_factor,
-                                                           continuous_neutral_measure_beta_number_of_samples,
-                                                           continuous_neutral_measure_gf_number_samples,
-                                                           continuous_diffusion_factor_beta_number_of_samples,
-                                                           continuous_diffusion_factor_gf_number_samples,
-                                                           is_continuous_avalanche_factor,
-                                                           is_continuous_neutrality_measure,
-                                                           is_diffusion_factor)
+        return self._continuous_tests.continuous_diffusion_tests(
+            continuous_avalanche_factor_number_of_samples,
+            threshold_for_avalanche_factor,
+            continuous_neutral_measure_beta_number_of_samples,
+            continuous_neutral_measure_gf_number_samples,
+            continuous_diffusion_factor_beta_number_of_samples,
+            continuous_diffusion_factor_gf_number_samples,
+            is_continuous_avalanche_factor,
+            is_continuous_neutrality_measure,
+            is_diffusion_factor)
 
     def continuous_neutrality_measure_for_bit_j(self, beta_number_of_samples, gf_number_samples,
                                                 input_bit=None, output_bits=None):
@@ -559,12 +561,12 @@ class Cipher:
             sage: output['plaintext']['cipher_output']['continuous_neutrality_measure']['values'][0]['2'] > 0 # long time
             True
         """
-        return continuous_tests.continuous_neutrality_measure_for_bit_j(self, beta_number_of_samples,
+        return self._continuous_tests.continuous_neutrality_measure_for_bit_j(beta_number_of_samples,
                                                                         gf_number_samples, input_bit,
                                                                         output_bits)
 
     def continuous_neutrality_measure_for_bit_j_and_beta(self, input_bit, beta, number_of_samples, output_bits):
-        return continuous_tests.continuous_neutrality_measure_for_bit_j_and_beta(self, beta, input_bit,
+        return self._continuous_tests.continuous_neutrality_measure_for_bit_j_and_beta(beta, input_bit,
                                                                                  number_of_samples, output_bits)
 
     def delete_generated_evaluate_c_shared_library(self):
@@ -1145,7 +1147,8 @@ class Cipher:
         partial_cipher_inverse = partial_cipher.cipher_inverse()
 
         key_schedule_component_ids = get_key_schedule_component_ids(partial_cipher_inverse)
-        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in key_schedule_component_ids if
+        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in key_schedule_component_ids
+                                   if
                                    INPUT_KEY not in id]
 
         if not keep_key_schedule:
@@ -1257,12 +1260,12 @@ class Cipher:
         """
         from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
         return find_good_input_difference_for_neural_distinguisher(self,
-                                                                                        difference_positions,
-                                                                                        initial_population,
-                                                                                        number_of_generations,
-                                                                                        nb_samples,
-                                                                                        previous_generation,
-                                                                                        verbose)
+                                                                   difference_positions,
+                                                                   initial_population,
+                                                                   number_of_generations,
+                                                                   nb_samples,
+                                                                   previous_generation,
+                                                                   verbose)
 
     def train_neural_distinguisher(self, data_generator, starting_round, neural_network, training_samples=10 ** 7,
                                    testing_samples=10 ** 6, epochs=5, pipeline=True):
@@ -1339,7 +1342,7 @@ class Cipher:
         from claasp.cipher_modules.neural_network_tests import get_differential_dataset, \
             train_neural_distinguisher, get_neural_network
         input_size = self.output_bit_size * 2
-        neural_network = get_neural_network('gohr_resnet', input_size = input_size, depth=depth, word_size=word_size)
+        neural_network = get_neural_network('gohr_resnet', input_size=input_size, depth=depth, word_size=word_size)
         return train_neural_distinguisher(self, data_generator, number_of_rounds, neural_network, training_samples,
                                           testing_samples, num_epochs=number_of_epochs)
 
@@ -1395,12 +1398,11 @@ class Cipher:
                                                                                                verbose=verbose)
         input_difference = int_difference_to_input_differences(diff[-1], difference_positions, self.inputs_bit_size)
         input_size = self.output_bit_size * 2
-        neural_network = get_neural_network('dbitnet', input_size = input_size)
-        nr = max(1, highest_round-1)
-        print(f'Training DBitNet on input difference {[hex(x) for x in input_difference]}, from round {nr-1}...')
+        neural_network = get_neural_network('dbitnet', input_size=input_size)
+        nr = max(1, highest_round - 1)
+        print(f'Training DBitNet on input difference {[hex(x) for x in input_difference]}, from round {nr - 1}...')
         return neural_staged_training(self, data_generator, nr, neural_network, training_samples,
                                       testing_samples, number_of_epochs)
-
 
     def generate_bit_based_c_code(self, intermediate_output=False, verbosity=False):
         """
@@ -2390,5 +2392,3 @@ class Cipher:
     def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
         round_number = self.get_round_from_component_id(component_id)
         self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
-
-

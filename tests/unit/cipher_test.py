@@ -138,7 +138,6 @@ def test_compute_criterion_from_avalanche_probability_vectors():
 def test_continuous_avalanche_factor():
     aes = AESBlockCipher(number_of_rounds=5)
     result = aes.continuous_avalanche_factor(0.001, 300)
-    print(result)
     assert result['plaintext']['cipher_output']['continuous_avalanche_factor']['values'][0] > 0.1
 
 
@@ -155,8 +154,8 @@ def test_continuous_diffusion_tests():
 
 
 def test_continuous_neutrality_measure_for_bit_j():
-    output = SpeckBlockCipher(number_of_rounds=2).continuous_neutrality_measure_for_bit_j(50, 200)
-    print(output)
+    speck = SpeckBlockCipher(number_of_rounds=2)
+    output = speck.continuous_neutrality_measure_for_bit_j(50, 200)
     assert output['plaintext']['cipher_output']['continuous_neutrality_measure']["values"][0]['2'] > 0
 
 
