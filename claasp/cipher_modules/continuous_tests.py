@@ -44,7 +44,7 @@ class ContinuousDiffusionAnalysis:
                     lst_input.append([])
                 else:
                     lst_input.append(
-                        [Decimal(max_bias[random.randrange(0, 2)]) for _ in range(self.cipher.inputs_bit_size[i])])
+                        [Decimal(max_bias[random.choice([0, 1])]) for _ in range(self.cipher.inputs_bit_size[i])])
                 i += 1
 
             return lst_input
