@@ -562,12 +562,12 @@ class Cipher:
             True
         """
         return self._continuous_tests.continuous_neutrality_measure_for_bit_j(beta_number_of_samples,
-                                                                        gf_number_samples, input_bit,
-                                                                        output_bits)
+                                                                              gf_number_samples, input_bit,
+                                                                              output_bits)
 
     def continuous_neutrality_measure_for_bit_j_and_beta(self, input_bit, beta, number_of_samples, output_bits):
         return self._continuous_tests.continuous_neutrality_measure_for_bit_j_and_beta(beta, input_bit,
-                                                                                 number_of_samples, output_bits)
+                                                                                       number_of_samples, output_bits)
 
     def delete_generated_evaluate_c_shared_library(self):
         """
@@ -1347,7 +1347,8 @@ class Cipher:
                                           testing_samples, num_epochs=number_of_epochs)
 
     def run_autond_pipeline(self, difference_positions=None, optimizer_samples=10 ** 4, optimizer_generations=50,
-                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False, neural_net = 'dbitnet', save_prefix=None):
+                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False,
+                            neural_net='dbitnet', save_prefix=None):
         """
           Runs the AutoND pipeline ([BGHR2023]):
             - Find an input difference for the inputs set to True in difference_positions using an optimizer
@@ -1393,17 +1394,24 @@ class Cipher:
         assert True in difference_positions, "At least one position in difference_positions must be set to True. If " \
                                              "the default value was used, the primitive has no input named `plaintext`."
 
-        diff, scores, highest_round = self.find_good_input_difference_for_neural_distinguisher(difference_positions,
-                                                                                               number_of_generations=optimizer_generations,
-                                                                                               nb_samples=optimizer_samples,
-                                                                                               verbose=verbose)
+        diff, scores, highest_round = self.find_good_input_difference_for_neural_distinguisher(
+            difference_positions,
+            number_of_generations=optimizer_generations,
+            nb_samples=optimizer_samples,
+            verbose=verbose)
         input_difference = int_difference_to_input_differences(diff[-1], difference_positions, self.inputs_bit_size)
         input_size = self.output_bit_size * 2
-        neural_network = get_neural_network('dbitnet', input_size=input_size)
-        nr = max(1, highest_round - 1)
-        print(f'Training DBitNet on input difference {[hex(x) for x in input_difference]}, from round {nr - 1}...')
-        return neural_staged_training(self, data_generator, nr, neural_network, training_samples,
-                                      testing_samples, number_of_epochs)
+        neural_network = get_neural_network(neural_net, input_size=input_size)
+        nr = max(1, highest_round - 3)
+        input_difference_list = [hex(x) for x in input_difference]
+        print(
+            f'Training {neural_net} on input difference {input_difference_list} ({self.inputs}), from round {nr}...'
+        )
+        return neural_staged_training(self, lambda nr, samples: get_differential_dataset(self, input_difference,
+                                      number_of_rounds=nr,
+                                      samples=samples), nr,
+                                      neural_network, training_samples,
+                                      testing_samples, number_of_epochs, save_prefix)
 
     def generate_bit_based_c_code(self, intermediate_output=False, verbosity=False):
         """
