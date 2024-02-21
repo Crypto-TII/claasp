@@ -115,8 +115,8 @@ class AvalancheTests:
                                                          diffusion_tests, input_name, intermediate_output_name)
                         self.calculate_average_difference(all_output_vectors, criterion_name, parameters, diffusion_tests,
                                                      input_name, intermediate_output_name)
-                        self.calculate_worst_input_differences(criterion_name, largest_round_criterion_not_satisfied,
-                                                         diffusion_tests, input_name, intermediate_output_name)
+                        # self.calculate_worst_input_differences(criterion_name, largest_round_criterion_not_satisfied,
+                        #                                  diffusion_tests, input_name, intermediate_output_name)
 
         return diffusion_tests
 
