@@ -8,7 +8,7 @@ from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.report import Report
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-from claasp.cipher_modules.algebraic_tests import AlgebraicTest
+from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 
 
 def test_print_report():
@@ -36,7 +36,7 @@ def test_print_report():
     blackbox_report = Report(speck, blackbox_results)
     blackbox_report.print_report()
 
-    algebraic_results = AlgebraicTest(speck).algebraic_tests(timeout=1)
+    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout=1)
     algebraic_report = Report(speck, algebraic_results)
     algebraic_report.print_report()
 
@@ -90,7 +90,7 @@ def test_save_as_DataFrame():
         bit_values=(0,) * 64)
     trail = smt.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
 
-    algebraic_results = AlgebraicTest(speck).algebraic_tests(timeout=1)
+    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout=1)
     algebraic_report = Report(speck, algebraic_results)
     algebraic_report.save_as_DataFrame()
 
@@ -119,7 +119,7 @@ def test_save_as_json():
 
     trail_report = Report(simon, trail)
 
-    algebraic_results = AlgebraicTest(simon).algebraic_tests(timeout=1)
+    algebraic_results = AlgebraicTests(simon).algebraic_tests(timeout=1)
     algebraic_report = Report(simon, algebraic_results)
     algebraic_report.save_as_json()
 
