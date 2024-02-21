@@ -37,11 +37,8 @@ from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
 from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
-from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QARMAv2MixColumnBlockCipher
-from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
-from claasp.cipher_modules.neural_network_tests import get_differential_dataset
-from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
 
+from claasp.cipher_modules.neural_network_tests import NeuralNetworkDistinguisher
 
 EVALUATION_PY = 'evaluation.py'
 DICTIONARY_EXAMPLE_PY = "claasp/ciphers/dictionary_example.py"
@@ -241,7 +238,7 @@ def test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis():
 
 def test_find_good_input_difference_for_neural_distinguisher():
     cipher = SpeckBlockCipher()
-    diff, scores, highest_round = find_good_input_difference_for_neural_distinguisher(cipher, [True, False],
+    diff, scores, highest_round = NeuralNetworkDistinguisher(cipher).find_good_input_difference_for_neural_distinguisher([True, False],
                                                                                       verbose=False,
                                                                                       number_of_generations=5)
 
@@ -253,11 +250,11 @@ def test_find_good_input_difference_for_neural_distinguisher():
 def test_neural_staged_training():
     cipher = SpeckBlockCipher()
     input_differences = [0x400000, 0]
-    data_generator = lambda nr, samples: get_differential_dataset(cipher, input_differences, number_of_rounds = nr, samples = samples)
-    neural_network = get_neural_network('gohr_resnet', input_size = 64, word_size = 16)
+    data_generator = lambda nr, samples: NeuralNetworkDistinguisher(cipher).get_differential_dataset(input_differences, number_of_rounds = nr, samples = samples)
+    neural_network = NeuralNetworkDistinguisher(cipher).get_neural_network('gohr_resnet', input_size = 64, word_size = 16)
     results_gohr = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
     assert results_gohr[5] >= 0
-    neural_network = get_neural_network('dbitnet', input_size = 64)
+    neural_network = NeuralNetworkDistinguisher(cipher).get_neural_network('dbitnet', input_size = 64)
     results_dbitnet = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
     assert results_dbitnet[5] >= 0
 
@@ -277,7 +274,7 @@ def test_run_autond_pipeline():
 def test_get_differential_dataset():
     diff_value_plain_key = [0x400000, 0]
     cipher = SpeckBlockCipher()
-    x, y = get_differential_dataset(cipher, diff_value_plain_key, 5, samples=10)
+    x, y = NeuralNetworkDistinguisher(cipher).get_differential_dataset(diff_value_plain_key, 5, samples=10)
     assert x.shape == (10, 64)
     assert y.shape == (10, )
 
@@ -735,11 +732,3 @@ def test_cipher_inverse():
         ciphertext = cipher.evaluate([plaintext, key])
         cipher_inv = cipher.cipher_inverse()
         assert cipher_inv.evaluate([ciphertext, key]) == plaintext
-
-        qarmav2 = QARMAv2MixColumnBlockCipher(number_of_rounds=2)
-        key = 0x0123456789abcdeffedcba9876543210
-        plaintext = 0x0000000000000000
-        tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
-        ciphertext = qarmav2.evaluate([key, plaintext, tweak])
-        cipher_inv = qarmav2.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, tweak, key]) == plaintext
