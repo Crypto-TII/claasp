@@ -336,16 +336,23 @@ class Report:
                      show_shift, show_linear_layer, show_xor, show_modadd,
                      show_and,
                      show_or, show_not, show_plaintext, show_key,
-                     show_intermediate_output, show_cipher_output):
+                     show_intermediate_output, show_input, show_output, show_cipher_output):
 
         input_comps = list(locals().keys())
         component_types = []
+        show_key_flow = False
 
         for comp in list(self.test_report['components_values'].keys()):
+            if 'key' in comp:
+                print('comp found')
+                print(comp)
+                show_key_flow = True
             if (comp == 'key' or comp == 'plaintext') and comp not in component_types:
                 component_types.append(comp)
-            elif '_'.join(comp.split('_')[:-2]) not in component_types:
+            elif '_'.join(comp.split('_')[:-2]) not in component_types and comp[-2:] != "_i" and comp[-2:] != "_o":
                 component_types.append('_'.join(comp.split('_')[:-2]))
+            elif ('_'.join(comp.split('_')[:-3])) + '_'+ ('_'.join(comp.split('_')[-1])) not in component_types and (comp[-2:] == "_i" or comp[-2:] == "_o"):
+                component_types.append(('_'.join(comp.split('_')[:-3])) + '_' + ('_'.join(comp.split('_')[-1])))
 
         show_components = {}
 
@@ -353,10 +360,16 @@ class Report:
             for comp_choice in input_comps:
                 if 'show_' + comp == comp_choice:
                     show_components[comp] = locals()[comp_choice]
-
+                if 'show_' + comp == comp_choice + '_o' and show_output:
+                    show_components[comp] = locals()[comp_choice]
+                if 'show_' + comp == comp_choice + '_i' and show_input:
+                        show_components[comp] = locals()[comp_choice]
         out_list = {}
 
-        key_flow = ['key']
+        if show_key_flow:
+            key_flow = ['key']
+        else:
+            key_flow = []
 
         abs_prob = 0
 
@@ -371,14 +384,20 @@ class Report:
             # Check input links
 
             if 'plaintext' not in comp_id and 'key' not in comp_id:
-                input_links = self.cipher.get_component_from_id(comp_id).input_id_links
+                if comp_id[-2:] == "_i" or comp_id[-2:] =="_o":
+                    input_links = self.cipher.get_component_from_id(comp_id[:-2]).input_id_links
+                    comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
+                else:
+                    input_links = self.cipher.get_component_from_id(comp_id).input_id_links
+                    comp_value = '_'.join(comp_id.split('_')[:-2])
 
-                if all((id_link in key_flow or 'constant' in id_link) for id_link in input_links):
+                if all((id_link in key_flow or 'constant' in id_link) for id_link in input_links) and show_key_flow:
                     key_flow.append(comp_id)
                     key_flow = key_flow + [constant_id for constant_id in input_links if 'constant' in constant_id]
 
-            if show_components['_'.join(comp_id.split('_')[:-2]) if comp_id not in ['plaintext', 'key', 'cipher_output',
-                                                                                    'intermediate_output'] else comp_id]:
+
+            if show_components[comp_value if comp_id not in ['plaintext', 'key', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
+                                                                                    'intermediate_output', 'intermediate_output_o', 'intermediate_output_i'] else comp_id]:
 
                 value = self.test_report['components_values'][comp_id]['value']
 
@@ -420,27 +439,29 @@ class Report:
                     out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
                     out_list[comp_id][2]))
                 print()
-        print()
-        print("KEY FLOW")
-        print()
 
-        for comp_id in key_flow:
+        if key_flow:
+            print()
+            print("KEY FLOW")
+            print()
 
-            if show_components['_'.join(comp_id.split('_')[:-2]) if comp_id not in ['plaintext', 'key', 'cipher_output',
-                                                                                    'intermediate_output'] else comp_id]:
-                if comp_id == 'plaintext' or comp_id == 'key':
-                    print(f'\t{comp_id}\t')
-                else:
-                    if verbose:
-                        print(
-                            f' \t{comp_id}       Input Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
+            for comp_id in key_flow:
+
+                if show_components['_'.join(comp_id.split('_')[:-2]) if comp_id not in ['plaintext', 'key', 'cipher_output',
+                                                                                        'intermediate_output'] else comp_id]:
+                    if comp_id == 'plaintext' or comp_id == 'key':
+                        print(f'\t{comp_id}\t')
                     else:
-                        print(f' \t{comp_id}\t')
-                _print_colored_state(out_list[comp_id][0], verbose)
-                if verbose: print('  ' * len(out_list[comp_id][0][0]) + '\tlocal weight = ' + str(
-                    out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
-                    out_list[comp_id][2]))
-                print()
+                        if verbose:
+                            print(
+                                f' \t{comp_id}       Input Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
+                        else:
+                            print(f' \t{comp_id}\t')
+                    _print_colored_state(out_list[comp_id][0], verbose)
+                    if verbose: print('  ' * len(out_list[comp_id][0][0]) + '\tlocal weight = ' + str(
+                        out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
+                        out_list[comp_id][2]))
+                    print()
 
     def _produce_graph(self, output_directory):
 
@@ -563,7 +584,7 @@ class Report:
                      show_shift=False, show_linear_layer=False, show_xor=False, show_modadd=False,
                      show_and=False,
                      show_or=False, show_not=False, show_plaintext=True, show_key=True,
-                     show_intermediate_output=True, show_cipher_output=True):
+                     show_intermediate_output=True, show_input = True, show_output = True, show_cipher_output=True):
 
         """
             Prints the graphical representation of the Report.
@@ -599,7 +620,7 @@ class Report:
                               show_shift, show_linear_layer, show_xor, show_modadd,
                               show_and,
                               show_or, show_not, show_plaintext, show_key,
-                              show_intermediate_output, show_cipher_output)
+                              show_intermediate_output, show_input, show_output, show_cipher_output)
         else:
             if not os.path.exists(output_directory):
                 os.mkdir(output_directory)
