@@ -42,7 +42,7 @@ from claasp.cipher_modules.neural_network_tests import find_good_input_differenc
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
 from claasp.ciphers.toys.toyspn1 import ToySPN1
-from claasp.cipher_modules.algebraic_tests import AlgebraicTest
+from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 
 EVALUATION_PY = 'evaluation.py'
 DICTIONARY_EXAMPLE_PY = "claasp/ciphers/dictionary_example.py"
@@ -54,7 +54,7 @@ FANCY_EVALUATE_C_FILE = 'claasp/cipher_modules/fancy_block_cipher_p24_k24_o24_r2
 def test_algebraic_tests():
 
     toyspn = ToySPN1(number_of_rounds=2)
-    d = AlgebraicTest(toyspn).algebraic_tests(30)
+    d = AlgebraicTests(toyspn).algebraic_tests(30)
     assert d == {
         'input_parameters': {'cipher.id': 'toyspn1_p6_k6_o6_r2', 'timeout': 30, 'test_name': 'algebraic_tests'},
         'test_results': {'number_of_variables': [66, 126],
@@ -64,7 +64,7 @@ def test_algebraic_tests():
                          'test_passed': [False, False]}}
 
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    d = AlgebraicTest(speck).algebraic_tests(5)
+    d = AlgebraicTests(speck).algebraic_tests(5)
     assert d == {
         'input_parameters': {'cipher.id': 'speck_p32_k64_o32_r2', 'timeout': 5, 'test_name': 'algebraic_tests'},
         'test_results': {'number_of_variables': [304, 800],
@@ -74,7 +74,7 @@ def test_algebraic_tests():
                          'test_passed': [False, False]}}
 
     aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=2)
-    d = AlgebraicTest(aes).algebraic_tests(5)
+    d = AlgebraicTests(aes).algebraic_tests(5)
     compare_result = {'input_parameters': {'cipher.id': 'aes_block_cipher_k16_p16_o16_r2',
                                            'timeout': 5,
                                            'test_name': 'algebraic_tests'},

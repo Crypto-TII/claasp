@@ -29,9 +29,10 @@ from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules import continuous_tests, code_generator, \
-    component_analysis_tests, avalanche_tests, algebraic_tests
+    component_analysis_tests, avalanche_tests
 import importlib
 from claasp.cipher_modules.inverse_cipher import *
+from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -243,34 +244,6 @@ class Cipher:
     def add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size)
 
-    def algebraic_tests(self, timeout):
-        """
-        Return a dictionary explaining the result of the algebraic test.
-
-        INPUT:
-
-        - ``timeout`` -- **integer**; the timeout for the Grobner basis computation in seconds
-
-        OUTPUTS: a dictionary with the following keys:
-
-            - ``npolynomials`` -- number of polynomials
-            - ``nvariables`` -- number of variables
-            - ``timeout`` -- timeout in seconds
-            - ``pass`` -- whether the algebraic test pass w.r.t the given timeout
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: d = speck.algebraic_tests(5)  # long time
-            sage: d == {'input_parameters': {'timeout': 5}, 'test_results':
-            ....: {'number_of_variables': [304, 800],
-            ....: 'number_of_equations': [240, 688], 'number_of_monomials': [304, 800],
-            ....: 'max_degree_of_equations': [1, 1], 'test_passed': [False, False]}}  # long time
-            True
-        """
-        return algebraic_tests.algebraic_tests(self, timeout)
-
     def analyze_cipher(self, tests_configuration):
         """
         Generate a dictionary with the analysis of the cipher.
@@ -296,6 +269,9 @@ class Cipher:
             sage: analysis = sp.analyze_cipher(tests_configuration)
             sage: analysis["diffusion_tests"]["test_results"]["key"]["round_output"][ # random
             ....: "avalanche_dependence_vectors"]["differences"][31]["output_vectors"][0]["vector"] # random
+
+            sage: tests_configuration = {"algebraic_tests": {"run_tests": True, "timeout": 60}}
+            sage: analysis = sp.analyze_cipher(tests_configuration)
         """
         tmp_tests_configuration = deepcopy(tests_configuration)
         analysis_results = {}
@@ -308,7 +284,7 @@ class Cipher:
             analysis_results["component_analysis_tests"] = component_analysis_tests.component_analysis_tests(self)
         if "algebraic_tests" in tests_configuration and tests_configuration["algebraic_tests"]["run_tests"]:
             timeout = tests_configuration["algebraic_tests"]["timeout"]
-            analysis_results["algebraic_tests"] = algebraic_tests.algebraic_tests(self, timeout=timeout)
+            analysis_results["algebraic_tests"] = AlgebraicTests(self).algebraic_tests(timeout)
 
         return analysis_results
 

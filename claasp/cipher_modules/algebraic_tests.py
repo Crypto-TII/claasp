@@ -19,26 +19,26 @@
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
 
-class AlgebraicTest:
+class AlgebraicTests:
 
     """
         Construct an instance of Algebraic Tests of the cipher.
 
         EXAMPLES::
-            sage: from claasp.cipher_modules.algebraic_tests import AlgebraicTest
+            sage: from claasp.cipher_modules.algebraic_tests import AlgebraicTests
             sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
             sage: toyspn = ToySPN1(number_of_rounds=2)
-            sage: alg_test = AlgebraicTest(toyspn)
-            sage: alg_test.algebraic_tests(120) # timeout=120 seconds
+            sage: alg_test = AlgebraicTests(toyspn)
+            sage: alg_test.algebraic_tests(30) # timeout=30 seconds
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=1)
-            sage: alg_test = AlgebraicTest(speck)
-            sage: alg_test.algebraic_tests(120) # timeout=120 seconds
+            sage: alg_test = AlgebraicTests(speck)
+            sage: alg_test.algebraic_tests(60) # timeout=60 seconds
 
             sage: speck = SpeckBlockCipher(number_of_rounds=2)
-            sage: alg_test = AlgebraicTest(speck)
-            sage: alg_test.algebraic_tests(120) # timeout=120 seconds
+            sage: alg_test = AlgebraicTests(speck)
+            sage: alg_test.algebraic_tests(60)
     """
 
     def __init__(self, cipher):
