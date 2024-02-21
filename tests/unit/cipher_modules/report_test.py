@@ -8,6 +8,7 @@ from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.report import Report
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+from claasp.cipher_modules.avalanche_tests import AvalancheTests
 
 def test_print_report():
 
@@ -27,7 +28,7 @@ def test_print_report():
     trail_report = Report(speck, trail)
     trail_report.print_report()
 
-    avalanche_results = speck.diffusion_tests()
+    avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(speck, avalanche_results)
     avalanche_report.print_report()
 
@@ -64,7 +65,7 @@ def test_save_as_latex_table():
 
     trail = smt.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
 
-    avalanche_test_results = simon.diffusion_tests()
+    avalanche_test_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(simon, avalanche_test_results)
     avalanche_report.save_as_latex_table()
 

@@ -89,13 +89,6 @@ def test_analyze_cipher():
     assert analysis["diffusion_tests"]["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][31]["vectors"][0] == [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
 
 
-def test_avalanche_probability_vectors():
-    speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-    apvs = speck.avalanche_probability_vectors(100)
-    assert apvs["key"]["round_output"][31][0] == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                                  0.0, 1.0]
-
-
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_component_analysis():
     fancy = FancyBlockCipher(number_of_rounds=2)
@@ -125,15 +118,6 @@ def test_print_component_analysis_as_radar_charts():
     result = aes.component_analysis_tests()
     fig = aes.print_component_analysis_as_radar_charts(result)
     assert str(type(fig)) == "<class 'module'>"
-
-
-def test_compute_criterion_from_avalanche_probability_vectors():
-    speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-    apvs = speck.avalanche_probability_vectors(100)
-    d = speck.compute_criterion_from_avalanche_probability_vectors(apvs, 0.2)
-    assert d["key"]["round_output"][0][0]["avalanche_dependence_vectors"] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                              0, 0, 0]
-
 
 def test_continuous_avalanche_factor():
     aes = AESBlockCipher(number_of_rounds=5)
@@ -171,24 +155,6 @@ def test_delete_generated_evaluate_c_shared_library():
     assert os.path.exists(FANCY_EVALUATE_C_FILE) is False
     assert os.path.exists(FANCY_EVALUATE_O_FILE) is False
     assert os.path.exists(BIT_BASED_C_FUNCTIONS_O_FILE) is False
-
-
-def test_diffusion_tests():
-    speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-    d = speck.diffusion_tests(number_of_samples=100)
-    assert d["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][0]["vectors"][0] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-    aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=4)
-    d = aes.diffusion_tests(number_of_samples=1000)
-    assert d["input_parameters"]["round_key_output_avalanche_dependence_vectors_input_bit_size"] == 128
-
-    ascon = AsconPermutation(number_of_rounds=5)
-    d = ascon.diffusion_tests(number_of_samples=1000)
-    assert d["input_parameters"]["cipher_output_avalanche_weight_vectors_input_bit_size"] == 320
-
-    keccak = KeccakPermutation(number_of_rounds=5, word_size=8)
-    d = keccak.diffusion_tests(number_of_samples=1000)
-    assert d["input_parameters"]["round_output_avalanche_dependence_uniform_vectors_input_bit_size"] == 200
 
 
 def test_evaluate_using_c():
