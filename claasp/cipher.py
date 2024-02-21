@@ -29,9 +29,10 @@ from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules import continuous_tests, code_generator, \
-    component_analysis_tests, avalanche_tests, algebraic_tests
+    component_analysis_tests, algebraic_tests
 import importlib
 from claasp.cipher_modules.inverse_cipher import *
+from claasp.cipher_modules.avalanche_tests import AvalancheTests
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -302,7 +303,7 @@ class Cipher:
         if "diffusion_tests" in tests_configuration and tests_configuration["diffusion_tests"]["run_tests"]:
             tmp_tests_configuration["diffusion_tests"].pop("run_tests")
             analysis_results['diffusion_tests'] = \
-                avalanche_tests.avalanche_tests(self, **tmp_tests_configuration["diffusion_tests"])
+                AvalancheTests(self).avalanche_tests(**tmp_tests_configuration["diffusion_tests"])
         if "component_analysis_tests" in tests_configuration and tests_configuration[
             "component_analysis_tests"]["run_tests"]:
             analysis_results["component_analysis_tests"] = component_analysis_tests.component_analysis_tests(self)
@@ -323,33 +324,6 @@ class Cipher:
             'cipher_rounds': self._rounds.rounds_as_python_dictionary(),
             'cipher_reference_code': self._reference_code
         }
-
-    def avalanche_probability_vectors(self, nb_samples):
-        """
-        Return the avalanche probability vectors of each input bit difference for each round.
-
-        The inputs considered are plaintext, key, etc.
-
-        The i-th component of the vector is the probability that i-th bit of the output
-        flips due to the input bit difference.
-
-        .. NOTE::
-
-            apvs["key"]["round_output"][position][index_occurrence] = vector of round_output size with input diff
-            injected in key
-
-        INPUT:
-
-        - ``nb_samples`` -- **integer**; used to compute the estimated probability of flipping
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: speck = speck(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: apvs = speck.avalanche_probability_vectors(100)
-            sage: apvs["key"]["round_output"][31][0] # random
-        """
-        return avalanche_tests.avalanche_probability_vectors(self, nb_samples)
 
     def component_analysis_tests(self):
         """
@@ -389,60 +363,6 @@ class Cipher:
 
     def component_from(self, round_number, index):
         return self._rounds.component_from(round_number, index)
-
-    def compute_criterion_from_avalanche_probability_vectors(self, all_apvs, avalanche_dependence_uniform_bias):
-        r"""
-        Return a python dictionary that contains the dictionaries corresponding to each criterion.
-
-        ALGORITHM:
-
-        The avalanche dependence is the number of output bit that flip with respect to an input bit difference,
-        for a given round.
-        If the worst avalanche dependence for a certain round is close to the output bit size with respect to a certain
-        threshold, we say that the cipher satisfies the avalanche dependence criterion for this round.
-
-        The avalanche dependence uniform is the number of output bit that flip with a probability
-        $\in \left[\frac{1}{2} - \text{bias}; \frac{1}{2} + \text{bias}\right]$,
-        with respect to an input bit difference, for a given round. If the worst avalanche dependence uniform for a
-        certain round is close to the output bit size with respect to a certain threshold,
-        we say that the cipher satisfies the avalanche dependence uniform criterion for this round.
-
-        The avalanche weight is the expected Hamming weight of the output difference with respect to an input bit
-        difference, for a given round.
-        If the avalanche weights of all the input bit differences for a certain round is close to half of
-        the output bit size with respect to a certain threshold, we say that the cipher satisfies the
-        avalanche criterion for this round.
-
-        The avalanche entropy is defined as uncertainty about whether output bits flip with respect to an input
-        bit difference, for a given round.
-        If the strict avalanche entropy of all the input bit differences for a certain round is close to
-        the output bit size with respect to a certain threshold, we say that the cipher satisfies the
-        strict avalanche criterion for this round.
-
-        .. NOTE::
-
-            d["key"]["round_output"][position][index_occurrence]["avalanche_dependence"] = vector of round_output size
-            with input diff injected in key
-
-        INPUT:
-
-        - ``all_apvs`` -- **dictionary**; all avalanche probability vectors returned by avalanche_probability_vectors()
-        - ``avalanche_dependence_uniform_bias`` -- **float**; define the range where the probability of flipping should be
-
-        .. SEEALSO::
-
-            :py:meth:`~avalanche_probability_vectors` for the returning vectors.
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: speck = speck(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: apvs = speck.avalanche_probability_vectors(100)
-            sage: d = speck.compute_criterion_from_avalanche_probability_vectors(apvs, 0.2)
-            sage: d["key"]["round_output"][0][0]["avalanche_dependence_vectors"] # random
-        """
-        return avalanche_tests.compute_criterion_from_avalanche_probability_vectors(self, all_apvs,
-                                                                                    avalanche_dependence_uniform_bias)
 
     def continuous_avalanche_factor(self, lambda_value, number_of_samples):
         """
@@ -581,109 +501,6 @@ class Cipher:
             sage: fancy().delete_generated_evaluate_c_shared_library() # doctest: +SKIP
         """
         code_generator.delete_generated_evaluate_c_shared_library(self)
-
-    def diffusion_tests(self, number_of_samples=5,
-                        avalanche_dependence_uniform_bias=0.05,
-                        avalanche_dependence_criterion_threshold=0,
-                        avalanche_dependence_uniform_criterion_threshold=0,
-                        avalanche_weight_criterion_threshold=0.01,
-                        avalanche_entropy_criterion_threshold=0.01,
-                        run_avalanche_dependence=True,
-                        run_avalanche_dependence_uniform=True,
-                        run_avalanche_weight=True,
-                        run_avalanche_entropy=True):
-        """
-        Return a python dictionary that contains the dictionaries corresponding to each criterion and their analysis.
-
-        INPUT:
-
-        - ``number_of_samples`` -- **integer** (default: `5`); used to compute the estimated probability of flipping
-        - ``avalanche_dependence_uniform_bias`` -- **float** (default: `0.05`); define the range where the probability
-          of flipping should be
-        - ``avalanche_dependence_criterion_threshold`` --  **float** (default: `0`); It is a bias. The criterion is satisfied
-          for a given input bit difference if for all output bits of the round under analysis, the corresponding
-          avalanche dependence criterion d is such that block_bit_size - bias <= d <= block_bit_size + bias
-        - ``avalanche_dependence_uniform_criterion_threshold`` --  **float** (default: `0`); It is a bias. The criterion is
-          satisfied for a given input bit difference if for all output bits of the round under analysis, the
-          corresponding avalanche dependence uniform criterion d is such that
-          block_bit_size - bias <= d <= block_bit_size + bias
-        - ``avalanche_weight_criterion_threshold`` --  **float** (default: `0.01`); It is a bias. The criterion is
-          satisfied for a given input bit difference if for all output bits of the round under analysis, the
-          corresponding avalanche weight criterion is such that block_bit_size/2 - bias <= d <= block_bit_size/2 + bias
-        - ``avalanche_entropy_criterion_threshold`` --  **float** (default: `0.01`); It is a bias. The criterion is
-          satisfied for a given input bit difference if for all output bits of the round under analysis, the
-          corresponding avalanche entropy criterion d is such that block_bit_size - bias <= d <= block_bit_size + bias
-        - ``run_avalanche_dependence`` -- **boolean** (default: `True`); if True, add the avalanche dependence results
-          to the output dictionary
-        - ``run_avalanche_dependence_uniform`` -- **boolean** (default: `True`); if True, add the avalanche dependence
-          uniform results to the output dictionary
-        - ``run_avalanche_weight`` -- **boolean** (default: `True`); if True, add the avalanche weight results to the
-          output dictionary
-        - ``run_avalanche_entropy`` -- **boolean** (default: `True`); if True, add the avalanche entropy results to the
-          output dictionary
-
-        .. NOTE::
-
-            diff inserted in:
-            d["test_results"]["plaintext"]["round_output"]["avalanche_entropy"]["differences"][position][
-            "output_vectors"][round]
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: d = speck.diffusion_tests(number_of_samples=100)
-            sage: d["test_results"]["key"]["round_output"][ # random
-            ....: "avalanche_dependence_vectors"]["differences"][0]["output_vectors"][0]["vector"] # random
-        """
-        return avalanche_tests.avalanche_tests(self,
-                                               number_of_samples, avalanche_dependence_uniform_bias,
-                                               avalanche_dependence_criterion_threshold,
-                                               avalanche_dependence_uniform_criterion_threshold,
-                                               avalanche_weight_criterion_threshold,
-                                               avalanche_entropy_criterion_threshold, run_avalanche_dependence,
-                                               run_avalanche_dependence_uniform, run_avalanche_weight,
-                                               run_avalanche_entropy)
-
-    def generate_heatmap_graphs_for_avalanche_tests(self, avalanche_results, difference_positions=None,
-                                                    criterion_names=None):
-        """
-        Return a string containing latex instructions to generate heatmap graphs of the avalanche tests.
-        The string can then be printed on a terminal or on a file.
-
-        INPUT:
-
-        - ``avalanche_results`` -- **dictionary**; results of the avalanche tests
-        - ``difference_positions`` -- **list** (default: `None`); positions of the differences to inject.
-            The default value is equivalent to pick one of the worst position for a difference and the average value.
-        - ``criterion_names`` -- **list** (default: `None`); names of the criteria to observe
-            The default value is equivalent to to pick all of the 4 criteria:
-            - "avalanche_dependence_vectors"
-            - "avalanche_dependence_uniform_vectors"
-            - "avalanche_entropy_vectors"
-            - "avalanche_weight_vectors"
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: sp = SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=5)
-            sage: d = sp.diffusion_tests(number_of_samples=100)
-            sage: h = sp.generate_heatmap_graphs_for_avalanche_tests(d)
-            sage: h[:20]
-            '\\documentclass[12pt]'
-
-            sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-            sage: ascon = AsconPermutation(number_of_rounds=4)
-            sage: d = ascon.diffusion_tests(number_of_samples=100) # long
-            sage: h = ascon.generate_heatmap_graphs_for_avalanche_tests(d, [0], ["avalanche_weight_vectors"]) # long
-
-            sage: from claasp.ciphers.permutations.xoodoo_permutation import XoodooPermutation
-            sage: cipher = XoodooPermutation(number_of_rounds=4)
-            sage: d = cipher.diffusion_tests(number_of_samples=100) # long
-            sage: h = cipher.generate_heatmap_graphs_for_avalanche_tests(d, [1,193], ["avalanche_dependence_vectors", "avalanche_entropy_vectors"]) # long
-        """
-        return avalanche_tests.generate_heatmap_graphs_for_avalanche_tests(self, avalanche_results,
-                                                                           difference_positions, criterion_names)
 
     def evaluate(self, cipher_input, intermediate_output=False, verbosity=False):
         """
@@ -1423,66 +1240,6 @@ class Cipher:
             True
         """
         return code_generator.generate_bit_based_c_code(self, intermediate_output, verbosity)
-
-    # LM: TII team needs to update this method because the keys from diffusion_tests_results do not correspond
-    def generate_csv_report(self, nb_samples, output_absolute_path):
-        """
-        Generate a CSV report containing criteria to estimate the vulnerability of the cipher.
-
-        This method generate a CSV report containing the criteria presented in the paper
-        "The design of Xoodoo and Xoofff" [1].
-        [1] https://tosc.iacr.org/index.php/ToSC/article/view/7359
-
-        INPUT:
-
-        - ``nb_samples`` -- **integer**; number of samples
-        - ``output_absolute_path`` -- **string**; output of the absolute path
-
-        EXAMPLES::
-
-            sage: import inspect
-            sage: import claasp
-            sage: import os.path
-            sage: tii_path = inspect.getfile(claasp)
-            sage: tii_dir_path = os.path.dirname(tii_path)
-            sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
-            sage: identity = IdentityBlockCipher()
-            sage: identity.generate_csv_report(10, f"{tii_dir_path}/{identity.id}_report.csv")
-            sage: os.path.isfile(f"{tii_dir_path}/{identity.id}_report.csv")
-            True
-            sage: import os
-            sage: os.remove(f"{tii_dir_path}/{identity.id}_report.csv")
-        """
-
-        diffusion_tests_results = self.diffusion_tests(nb_samples)
-        first_input_tag = list(diffusion_tests_results['test_results'].keys())[0]
-        output_tags = diffusion_tests_results['test_results'][first_input_tag].keys()
-        property_values_array = []
-        for output_tag in output_tags:
-            property_values_array_temp = avalanche_tests.get_average_criteria_list_by_output_tag(
-                diffusion_tests_results, output_tag
-            )
-            property_values_array += property_values_array_temp
-
-        str_of_inputs_bit_size = list(map(str, self._inputs_bit_size))
-        cipher_primitive = self._id + "_" + "_".join(str_of_inputs_bit_size)
-        cipher_data = {
-            'type': self._type,
-            'scheme': self._id,
-            'cipher_inputs': self._inputs,
-            'cipher_inputs_bit_size': list(map(str, self._inputs_bit_size)),
-            'primitive': cipher_primitive,
-            'total_number_rounds': self.number_of_rounds,
-            'details': property_values_array
-        }
-        template_manager = TemplateManager()
-        excel_builder = CSVBuilder(cipher_data)
-        template_manager.set_builder(excel_builder)
-        template_information = {"template_path": "diffusion_test_template.csv"}
-        excel = template_manager.get_template().render_template(template_information)
-        text_file = open(output_absolute_path, "w")
-        text_file.write(excel)
-        text_file.close()
 
     def generate_evaluate_c_code_shared_library(self, intermediate_output=False, verbosity=False):
         """
