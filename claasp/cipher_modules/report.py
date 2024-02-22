@@ -27,7 +27,7 @@ def _dict_to_latex_table(data_dict, header_list):
 
     # Check if the values are dictionaries or lists
     is_nested = isinstance(next(iter(data_dict.values())), dict)
-
+    print(is_nested)
     num_columns = len(header_list)
     latex_code = "\\begin{longtable}{|" + "c|" * (num_columns) + "}\n"
     latex_code += "\\hline\n"
@@ -42,25 +42,34 @@ def _dict_to_latex_table(data_dict, header_list):
     latex_code += "\\hline\n"
 
     # Determine the maximum number of rows needed
-    max_rows = max(len(values) for values in data_dict.values()) if not is_nested else 1
+    max_rows = len(data_dict.keys()) if is_nested else 1
 
-    for row_index in range(max_rows):
-        row_values = []
-
+    if is_nested:
         for key, values in data_dict.items():
-            if is_nested:
-                # For nested dictionary
-                row_values.append(str(values.get(header_list[row_index], "")))
+            # For nested dictionary
+            if key == 'plaintext' or key == 'key':
+                row_values = [key] + list(values.values()) + ['']
             else:
+                values['weight'] = str(values['weight'])
+                row_values = [key] + list(values.values())
+            row = " & ".join(row_values) + " \\\\\n"
+            latex_code += row
+            latex_code += "\\hline\n"
+
+    else:
+        for row_index in range(max_rows):
+            row_values = []
+            for key, values in data_dict.items():
                 # For regular dictionary with lists as values
                 if row_index < len(values):
                     row_values.append(str(values[row_index]))
                 else:
                     row_values.append("")
 
-        row = " & ".join(row_values) + " \\\\\n"
-        latex_code += row
-        latex_code += "\\hline\n"
+
+            row = " & ".join(row_values) + " \\\\\n"
+            latex_code += row
+            latex_code += "\\hline\n"
 
     latex_code += "\\end{longtable}"
     return latex_code

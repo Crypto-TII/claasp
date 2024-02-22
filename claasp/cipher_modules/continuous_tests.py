@@ -326,6 +326,7 @@ def continuous_diffusion_tests(cipher,
                                is_continuous_neutrality_measure=True,
                                is_diffusion_factor=True):
     continuous_diffusion_tests = {"input_parameters": {
+        'test_name': 'continuous_diffusion_tests',
         'continuous_avalanche_factor_number_of_samples': continuous_avalanche_factor_number_of_samples,
         'threshold_for_avalanche_factor': threshold_for_avalanche_factor,
         'continuous_neutral_measure_beta_number_of_samples': continuous_neutral_measure_beta_number_of_samples,
@@ -373,6 +374,11 @@ def continuous_diffusion_tests(cipher,
                 **continuous_avalanche_factor_output[input_tag][output_tag],
                 **continuous_diffusion_factor_output[input_tag][output_tag],
             }
+
+    for input_tag in inputs_tags:
+        for output_tag in output_tags:
+            for test in continuous_diffusion_tests["test_results"][input_tag][output_tag].keys():
+                continuous_diffusion_tests["test_results"][input_tag][output_tag][test] = [continuous_diffusion_tests["test_results"][input_tag][output_tag][test]]
 
     return continuous_diffusion_tests
 
