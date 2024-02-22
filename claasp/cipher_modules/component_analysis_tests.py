@@ -32,6 +32,180 @@ import matplotlib.pyplot as plt
 from math import pi, log2
 
 
+class CipherComponentsAnalysis:
+    def __init__(self, cipher):
+        self.cipher = cipher
+
+    def component_analysis_tests(self):
+        """
+        Return a list of properties for all the operation used in a cipher
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: components_analysis = CipherComponentsAnalysis(fancy).component_analysis_tests()
+
+        """
+        all_variables_names = []
+        for cipher_round in self.cipher.rounds_as_list:
+            for component in cipher_round.components:
+                for id_link, bit_positions in zip(component.input_id_links, component.input_bit_positions):
+                    all_variables_names.extend([f'{id_link}_{i}' for i in bit_positions])
+        all_variables_names = list(set(all_variables_names))
+        boolean_polynomial_ring = BooleanPolynomialRing(len(all_variables_names), all_variables_names)
+
+        cipher_operations = self.get_all_operations()
+        components_analysis = []
+        if "concatenate" in cipher_operations:
+            cipher_operations.pop("concatenate")
+        for op in cipher_operations:
+            for same_op_different_param in cipher_operations[op]:
+                result = select_properties_function(boolean_polynomial_ring, same_op_different_param)
+                if result != {}:
+                    components_analysis.append(result)
+
+        return components_analysis
+
+    def get_all_operations(self):
+        """
+        Return a dictionary for which the keys are all the operations that are used in the cipher.
+
+        The attributes are a list containing:
+          - a component with the operation under study;
+          - number of occurrences of the operation;
+          - list of ids of all the components with the same underlying operation.
+
+        INPUT:
+
+        - ``cipher`` -- **Cipher object**; a cipher instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: cipher_operations = CipherComponentsAnalysis(fancy).get_all_operations()
+            sage: list(cipher_operations.keys())
+            ['sbox', 'linear_layer', 'XOR', 'AND', 'MODADD', 'ROTATE', 'SHIFT']
+        """
+        tmp_cipher_operations = {}
+        for component in self.cipher.get_all_components():
+            collect_component_operations(component, tmp_cipher_operations)
+
+        for operation in list(tmp_cipher_operations.keys()):
+            if operation not in [LINEAR_LAYER, MIX_COLUMN, 'fsr']:
+                tmp_cipher_operations[operation]["distinguisher"] = \
+                    list(set(tmp_cipher_operations[operation]["distinguisher"]))
+            if operation == 'fsr':
+                tmp_list = []
+                for item in tmp_cipher_operations[operation]["distinguisher"]:
+                    if item not in tmp_list:
+                        tmp_list.append(item)
+                tmp_cipher_operations[operation]["distinguisher"] = tmp_list
+            tmp_cipher_operations[operation]["types"] = \
+                [[] for _ in range(len(tmp_cipher_operations[operation]["distinguisher"]))]
+            collect_components_with_the_same_operation(operation, tmp_cipher_operations)
+        cipher_operations = {}
+        for operation in list(tmp_cipher_operations.keys()):
+            add_attributes_to_operation(cipher_operations, operation, tmp_cipher_operations)
+        return cipher_operations
+
+    def print_component_analysis_as_radar_charts(self):
+        """
+        Display the properties of all the operations of a cipher in a spider graph
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: CipherComponentsAnalysis(fancy).print_component_analysis_as_radar_charts()
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=3)
+            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: CipherComponentsAnalysis(speck).print_component_analysis_as_radar_charts()
+
+        """
+        results = self.component_analysis_tests()
+        SMALL_SIZE = 10
+        MEDIUM_SIZE = 11
+        BIG_SIZE = 12
+
+        plt.rc('font', size=SMALL_SIZE)  # controls default text sizes
+        plt.rc('axes', titlesize=SMALL_SIZE)  # fontsize of the axes title
+        plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
+        plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
+        plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
+        plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
+        plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
+
+        # remove XOR from results
+        results_without_xor = [results[i] for i in range(len(results)) if results[i]["description"][0] != "XOR"]
+        results = remove_components_with_strings_as_values(results_without_xor)
+
+        nb_plots = len(results)
+        col = 2
+        row = nb_plots // col
+        if nb_plots % col != 0:
+            row += nb_plots % col
+        positions = {8: -0.7, 3: -0.4}
+
+        for plot_number in range(nb_plots):
+            categories = list(results[plot_number]["properties"].keys())
+            values = plot_first_line_of_data_frame(categories, plot_number, results)
+            values += values[:1]  # necessary to fill the area
+
+            # What will be the angle of each axis in the plot? (we divide the plot / number of variable)
+            N = len(categories)
+            angles = [n / float(N) * 2 * pi for n in range(N)]
+            angles += angles[:1]
+
+            ax = plt.subplot(row, col, plot_number + 1, polar=True)
+            initialise_spider_plot(plot_number, results)
+
+            # Draw one axe per variable + add labels
+            plt.xticks(angles[:-1], categories, color='grey', size=8)
+
+            # Draw ylabels
+            ax.set_rlabel_position(30)
+            # Log version:
+            # plt.yticks(list(range(max_value)), [str(i) for i in range(max_value)], color="grey", size=7)
+            # plt.ylim(0, max_value)
+            # Uniform version:
+            plt.yticks([0, 1], ["0", "1"], color="grey", size=8)
+            plt.ylim(0, 1)
+
+            # Position of labels
+            for label, rot in zip(ax.get_xticklabels(), angles):
+                if 90 < (rot * 180. / pi) < 270:
+                    label.set_rotation(rot * 180. / pi)
+                    label.set_horizontalalignment("right")
+                    label.set_rotation_mode("anchor")
+                elif int(rot * 180. / pi) == 90 or int(rot * 180. / pi) == 270:
+                    label.set_rotation(rot * 180. / pi)
+                    label.set_horizontalalignment("center")
+                    label.set_rotation_mode("anchor")
+                else:
+                    label.set_rotation(rot * 180. / pi)
+                    label.set_horizontalalignment("left")
+                    label.set_rotation_mode("anchor")
+
+            # Plot data
+            ax.plot(angles, values, linewidth=1, linestyle='solid')
+
+            # Fill area
+            ax.fill(angles, values, 'b', alpha=0.1)
+            fill_area(ax, categories, plot_number, positions, results)
+
+        # Show the graph
+        plt.subplots_adjust(left=0.25, bottom=0.1, right=0.7, top=0.95, wspace=0, hspace=0.96)
+        # plt.show()
+        return plt
+
+
 def AND_as_boolean_function(component, boolean_polynomial_ring):
     """
     Return a list of boolean polynomials corresponding to the output bits of a AND component.
@@ -537,28 +711,6 @@ def int_to_poly(integer_value, word_size, variable):
     return z
 
 
-def component_analysis_tests(cipher):
-    all_variables_names = []
-    for cipher_round in cipher.rounds_as_list:
-        for component in cipher_round.components:
-            for id_link, bit_positions in zip(component.input_id_links, component.input_bit_positions):
-                all_variables_names.extend([f'{id_link}_{i}' for i in bit_positions])
-    all_variables_names = list(set(all_variables_names))
-    boolean_polynomial_ring = BooleanPolynomialRing(len(all_variables_names), all_variables_names)
-
-    cipher_operations = get_all_operations(cipher)
-    components_analysis = []
-    if "concatenate" in cipher_operations:
-        cipher_operations.pop("concatenate")
-    for op in cipher_operations:
-        for same_op_different_param in cipher_operations[op]:
-            result = select_properties_function(boolean_polynomial_ring, same_op_different_param)
-            if result != {}:
-                components_analysis.append(result)
-
-    return components_analysis
-
-
 def select_properties_function(boolean_polynomial_ring, operation):
     component = operation[0]
     if component.type == SBOX:
@@ -611,52 +763,6 @@ def generate_boolean_polynomial_ring_from_cipher(cipher):
     all_variables_names = list(set(all_variables_names))
 
     return BooleanPolynomialRing(len(all_variables_names), all_variables_names)
-
-
-def get_all_operations(cipher):
-    """
-    Return a dictionary for which the keys are all the operations that are used in the cipher.
-
-    The attributes are a list containing:
-      - a component with the operation under study;
-      - number of occurrences of the operation;
-      - list of ids of all the components with the same underlying operation.
-
-    INPUT:
-
-    - ``cipher`` -- **Cipher object**; a cipher instance
-
-    EXAMPLES::
-
-        sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-        sage: from claasp.cipher_modules.component_analysis_tests import get_all_operations
-        sage: fancy = FancyBlockCipher(number_of_rounds=3)
-        sage: cipher_operations = get_all_operations(fancy)
-        sage: list(cipher_operations.keys())
-        ['sbox', 'linear_layer', 'XOR', 'AND', 'MODADD', 'ROTATE', 'SHIFT']
-    """
-    tmp_cipher_operations = {}
-    for component in cipher.get_all_components():
-        collect_component_operations(component, tmp_cipher_operations)
-
-    for operation in list(tmp_cipher_operations.keys()):
-        if operation not in [LINEAR_LAYER, MIX_COLUMN, 'fsr']:
-            tmp_cipher_operations[operation]["distinguisher"] = \
-                list(set(tmp_cipher_operations[operation]["distinguisher"]))
-        if operation == 'fsr':
-            tmp_list = []
-            for item in tmp_cipher_operations[operation]["distinguisher"]:
-                if item not in tmp_list:
-                    tmp_list.append(item)
-            tmp_cipher_operations[operation]["distinguisher"] = tmp_list
-        tmp_cipher_operations[operation]["types"] = \
-            [[] for _ in range(len(tmp_cipher_operations[operation]["distinguisher"]))]
-        collect_components_with_the_same_operation(operation, tmp_cipher_operations)
-    cipher_operations = {}
-    for operation in list(tmp_cipher_operations.keys()):
-        add_attributes_to_operation(cipher_operations, operation, tmp_cipher_operations)
-    return cipher_operations
-
 
 def collect_components_with_the_same_operation(operation, tmp_cipher_operations):
     for component in tmp_cipher_operations[operation]["all"]:
@@ -1031,83 +1137,6 @@ def select_boolean_function(component, boolean_polynomial_ring):
         return MODADD_as_boolean_function(component, boolean_polynomial_ring)
     else:
         return "TODO(...)"
-
-
-def print_component_analysis_as_radar_charts(results):
-    SMALL_SIZE = 10
-    MEDIUM_SIZE = 11
-    BIG_SIZE = 12
-
-    plt.rc('font', size=SMALL_SIZE)  # controls default text sizes
-    plt.rc('axes', titlesize=SMALL_SIZE)  # fontsize of the axes title
-    plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
-    plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-    plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-    plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
-    plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
-
-    # remove XOR from results
-    results_without_xor = [results[i] for i in range(len(results)) if results[i]["description"][0] != "XOR"]
-    results = remove_components_with_strings_as_values(results_without_xor)
-
-    nb_plots = len(results)
-    col = 2
-    row = nb_plots // col
-    if nb_plots % col != 0:
-        row += nb_plots % col
-    positions = {8: -0.7, 3: -0.4}
-
-    for plot_number in range(nb_plots):
-        categories = list(results[plot_number]["properties"].keys())
-        values = plot_first_line_of_data_frame(categories, plot_number, results)
-        values += values[:1]  # necessary to fill the area
-
-        # What will be the angle of each axis in the plot? (we divide the plot / number of variable)
-        N = len(categories)
-        angles = [n / float(N) * 2 * pi for n in range(N)]
-        angles += angles[:1]
-
-        ax = plt.subplot(row, col, plot_number + 1, polar=True)
-        initialise_spider_plot(plot_number, results)
-
-        # Draw one axe per variable + add labels
-        plt.xticks(angles[:-1], categories, color='grey', size=8)
-
-        # Draw ylabels
-        ax.set_rlabel_position(30)
-        # Log version:
-        # plt.yticks(list(range(max_value)), [str(i) for i in range(max_value)], color="grey", size=7)
-        # plt.ylim(0, max_value)
-        # Uniform version:
-        plt.yticks([0, 1], ["0", "1"], color="grey", size=8)
-        plt.ylim(0, 1)
-
-        # Position of labels
-        for label, rot in zip(ax.get_xticklabels(), angles):
-            if 90 < (rot * 180. / pi) < 270:
-                label.set_rotation(rot * 180. / pi)
-                label.set_horizontalalignment("right")
-                label.set_rotation_mode("anchor")
-            elif int(rot * 180. / pi) == 90 or int(rot * 180. / pi) == 270:
-                label.set_rotation(rot * 180. / pi)
-                label.set_horizontalalignment("center")
-                label.set_rotation_mode("anchor")
-            else:
-                label.set_rotation(rot * 180. / pi)
-                label.set_horizontalalignment("left")
-                label.set_rotation_mode("anchor")
-
-        # Plot data
-        ax.plot(angles, values, linewidth=1, linestyle='solid')
-
-        # Fill area
-        ax.fill(angles, values, 'b', alpha=0.1)
-        fill_area(ax, categories, plot_number, positions, results)
-
-    # Show the graph
-    plt.subplots_adjust(left=0.25, bottom=0.1, right=0.7, top=0.95, wspace=0, hspace=0.96)
-    # plt.show()
-    return plt
 
 
 def fill_area(ax, categories, plot_number, positions, results):

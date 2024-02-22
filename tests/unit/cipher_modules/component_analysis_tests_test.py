@@ -1,5 +1,6 @@
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.cipher_modules.component_analysis_tests import generate_boolean_polynomial_ring_from_cipher
+from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.components.fsr_component import FSR
 from claasp.cipher_modules.component_analysis_tests import fsr_properties
 from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
@@ -10,6 +11,15 @@ def test_generate_boolean_polynomial_ring_from_cipher():
     fancy = FancyBlockCipher(number_of_rounds=3)
     generate_boolean_polynomial_ring_from_cipher(fancy)
 
+def test_get_all_operations():
+    fancy = FancyBlockCipher(number_of_rounds=3)
+    cipher_operations = CipherComponentsAnalysis(fancy).get_all_operations()
+    assert list(cipher_operations.keys()) == ['sbox', 'linear_layer', 'XOR', 'AND', 'MODADD', 'ROTATE', 'SHIFT']
+
+def test_component_analysis_tests():
+    fancy = FancyBlockCipher(number_of_rounds=3)
+    components_analysis = CipherComponentsAnalysis(fancy).component_analysis_tests()
+    assert len(components_analysis) == 9
 
 def test_fsr_properties():
     fsr_component = FSR(0, 0, ["input"], [[0, 1, 2, 3]], 4, [[[4, [[1, [0]], [3, [1]], [2, [2]]]]], 4])
