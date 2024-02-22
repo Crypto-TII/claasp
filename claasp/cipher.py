@@ -1400,7 +1400,7 @@ class Cipher:
         neural_network = NeuralNetworkDistinguisher(self).get_neural_network(neural_net, input_size = input_size)
         nr = max(1, highest_round-3)
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.inputs}), from round {nr}...')
-        return NeuralNetworkDistinguisher(self).neural_staged_training(samples: NeuralNetworkDistinguisher(self).get_differential_dataset(input_difference, number_of_rounds=nr,
+        return NeuralNetworkDistinguisher(self).neural_staged_training(NeuralNetworkDistinguisher(self).get_differential_dataset(input_difference, number_of_rounds=nr,
                                             samples=samples), nr, neural_network, training_samples,
                                       testing_samples, number_of_epochs, save_prefix)
 
