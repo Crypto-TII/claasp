@@ -28,10 +28,10 @@ from claasp.rounds import Rounds
 from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-from claasp.cipher_modules import continuous_tests, code_generator, \
-    component_analysis_tests, avalanche_tests, algebraic_tests
+from claasp.cipher_modules import continuous_tests, code_generator, avalanche_tests, algebraic_tests
 import importlib
 from claasp.cipher_modules.inverse_cipher import *
+from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -305,7 +305,7 @@ class Cipher:
                 avalanche_tests.avalanche_tests(self, **tmp_tests_configuration["diffusion_tests"])
         if "component_analysis_tests" in tests_configuration and tests_configuration[
             "component_analysis_tests"]["run_tests"]:
-            analysis_results["component_analysis_tests"] = component_analysis_tests.component_analysis_tests(self)
+            analysis_results["component_analysis_tests"] = CipherComponentsAnalysis(self).component_analysis_tests()
         if "algebraic_tests" in tests_configuration and tests_configuration["algebraic_tests"]["run_tests"]:
             timeout = tests_configuration["algebraic_tests"]["timeout"]
             analysis_results["algebraic_tests"] = algebraic_tests.algebraic_tests(self, timeout=timeout)
@@ -350,42 +350,6 @@ class Cipher:
             sage: apvs["key"]["round_output"][31][0] # random
         """
         return avalanche_tests.avalanche_probability_vectors(self, nb_samples)
-
-    def component_analysis_tests(self):
-        """
-        Return a list of dictionaries, each one giving some properties of the cipher's operations.
-
-        INPUT:
-
-        - None
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-            sage: result = aes.component_analysis_tests()
-            sage: len(result)
-            9
-        """
-        return component_analysis_tests.component_analysis_tests(self)
-
-    def print_component_analysis_as_radar_charts(self, component_analysis_results):
-        """
-        Return a matplotlib object containing the radar charts of the components analysis test
-
-        INPUT:
-
-        - ``component_analysis_results`` -- **list**; results of the component analysis method
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-            sage: result = aes.component_analysis_tests()
-            sage: fig = aes.print_component_analysis_as_radar_charts(result)
-            sage: fig.show() # doctest: +SKIP
-        """
-        return component_analysis_tests.print_component_analysis_as_radar_charts(component_analysis_results)
 
     def component_from(self, round_number, index):
         return self._rounds.component_from(round_number, index)

@@ -29,7 +29,7 @@ def test_fsr_properties():
     assert dictionary['lfsr_connection_polynomials'] == ['x^4 + (z4 + 1)*x^3 + z4*x^2 + 1']
 
     e0 = BluetoothStreamCipherE0(keystream_bit_len=2)
-    dictionary = e0.component_analysis_tests()
+    dictionary = CipherComponentsAnalysis(e0).component_analysis_tests()
     assert dictionary[8]["number_of_registers"] == 4
     assert dictionary[8]["lfsr_connection_polynomials"][0] == 'x^25 + x^20 + x^12 + x^8 + 1'
     assert dictionary[8]["lfsr_connection_polynomials"][1] == 'x^31 + x^24 + x^16 + x^12 + 1'
@@ -38,5 +38,5 @@ def test_fsr_properties():
     assert dictionary[8]['lfsr_polynomials_are_primitive'] == [True, True, True, True]
 
     triv = TriviumStreamCipher(keystream_bit_len=1)
-    dictionary = triv.component_analysis_tests()
+    dictionary = CipherComponentsAnalysis(triv).component_analysis_tests()
     assert dictionary[0]["type_of_registers"] == ['non-linear', 'non-linear', 'non-linear']

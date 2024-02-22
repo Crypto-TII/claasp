@@ -41,6 +41,7 @@ from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QAR
 from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
+from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
 
 EVALUATION_PY = 'evaluation.py'
@@ -99,31 +100,30 @@ def test_avalanche_probability_vectors():
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_component_analysis():
     fancy = FancyBlockCipher(number_of_rounds=2)
-    result = fancy.component_analysis_tests()
+    result = CipherComponentsAnalysis(fancy).component_analysis_tests()
     assert len(result) == 9
 
     aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
-    result = aes.component_analysis_tests()
+    result = CipherComponentsAnalysis(aes).component_analysis_tests()
     assert len(result) == 7
 
     present = PresentBlockCipher(number_of_rounds=2)
-    result = present.component_analysis_tests()
+    result = CipherComponentsAnalysis(present).component_analysis_tests()
     assert len(result) == 5
 
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-    result = speck.component_analysis_tests()
+    result = CipherComponentsAnalysis(speck).component_analysis_tests()
     assert len(result) == 4
 
     tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=32)
-    result = tea.component_analysis_tests()
+    result = CipherComponentsAnalysis(tea).component_analysis_tests()
     assert len(result) == 4
 
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_print_component_analysis_as_radar_charts():
     aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-    result = aes.component_analysis_tests()
-    fig = aes.print_component_analysis_as_radar_charts(result)
+    fig = CipherComponentsAnalysis(aes).print_component_analysis_as_radar_charts()
     assert str(type(fig)) == "<class 'module'>"
 
 
