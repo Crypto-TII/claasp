@@ -1417,7 +1417,8 @@ class Cipher:
                                                                                                number_of_generations=optimizer_generations,
                                                                                                nb_samples=optimizer_samples,
                                                                                                verbose=verbose)
-
+        print(diff)
+        print(scores)
 
         input_difference = int_difference_to_input_differences(diff[-1], difference_positions, self.inputs_bit_size)
 
@@ -1430,7 +1431,17 @@ class Cipher:
                               samples=samples), nr, neural_network, training_samples,
                               testing_samples, number_of_epochs, save_prefix)
 
-        neural_distinguisher_test_results['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'].append({'values': list(neural_results.values())})
+        neural_distinguisher_test_results['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'].append({'accuracies': list(neural_results.values())})
+
+        i=0
+        for it in self.inputs:
+            neural_distinguisher_test_results['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][it+'_diff'] = hex(input_difference[i])
+            i+=1
+
+        neural_distinguisher_test_results['test_results']['plaintext']['cipher_output']['differences_scores'] = []
+        for diff, scores in zip(diff,scores):
+            neural_distinguisher_test_results['test_results']['plaintext']['cipher_output']['differences_scores'].append({hex(diff): scores})
+
         return neural_distinguisher_test_results
 
 

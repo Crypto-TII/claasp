@@ -156,6 +156,20 @@ class Report:
         if not os.path.exists(output_dir + '/' + self.cipher.id):
             os.makedirs(output_dir + '/' + self.cipher.id)
 
+        if self.test_name == 'neural_distinguisher_test':
+
+            if file_format == '.csv':
+                df = pd.DataFrame.from_dict(self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher']['test']['differences_scores'])
+                df.to_csv(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format)
+
+            if file_format == '.json':
+                with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
+                    json.dump(self.test_report, fp, default=lambda x: float(x))
+
+            if file_format == '.tex':
+                with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
+                    fp.write(pd.DataFrame(self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher']['test']['differences_scores']).style.to_latex())
+
         if 'statistical' in self.test_name:
 
             if file_format == '.csv':
@@ -458,6 +472,8 @@ class Report:
                 StatisticalTests.generate_chart_round(printable_dict)
 
         elif 'algebraic' in self.test_name:
+            print(self.test_report)
+        elif self.test_name == 'neural_distinguisher_test':
             print(self.test_report)
         else:
 
