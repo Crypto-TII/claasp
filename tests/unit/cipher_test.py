@@ -151,7 +151,7 @@ def test_continuous_diffusion_factor():
 def test_continuous_diffusion_tests():
     speck_cipher = SpeckBlockCipher(number_of_rounds=1)
     output = speck_cipher.continuous_diffusion_tests()
-    assert output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure']["values"][0] == 0.0
+    assert output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure'][0]["values"][0] == 0.0
 
 
 def test_continuous_neutrality_measure_for_bit_j():
