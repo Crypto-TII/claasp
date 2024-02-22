@@ -353,8 +353,6 @@ class Report:
 
         for comp in list(self.test_report['components_values'].keys()):
             if 'key' in comp:
-                print('comp found')
-                print(comp)
                 show_key_flow = True
             if (comp == 'key' or comp == 'plaintext') and comp not in component_types:
                 component_types.append(comp)
@@ -374,6 +372,7 @@ class Report:
                 if 'show_' + comp == comp_choice + '_i' and show_input:
                         show_components[comp] = locals()[comp_choice]
         out_list = {}
+
 
         if show_key_flow:
             key_flow = ['key']
@@ -449,7 +448,16 @@ class Report:
                     out_list[comp_id][2]))
                 print()
 
-        if key_flow:
+        print()
+        print('total weight = ' + str(self.test_report['total_weight']))
+        show_key_flow = False
+
+        for key_comp in key_flow:
+            if key_comp != 'key' and self.test_report['components_values'][key_comp]['weight'] != 0:
+                show_key_flow = True
+                break
+
+        if show_key_flow:
             print()
             print("KEY FLOW")
             print()
