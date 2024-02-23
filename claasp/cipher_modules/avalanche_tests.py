@@ -66,20 +66,19 @@ class AvalancheTests:
 
         .. NOTE::
 
-            diff inserted in:
-            d["test_results"]["plaintext"]["round_output"]["avalanche_entropy"]["differences"][position][
-            "output_vectors"][round]
+            d["test_results"]["plaintext"]["round_output"]["avalanche_entropy"][i]["vectors"][j]
+            The vector returned by this command correspond to the avalanche entropy after j+1 rounds, when an input
+            difference has been injected in position i in the plaintext.
 
         EXAMPLES::
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: from claasp.cipher_modules.avalanche_tests import AvalancheTest
-            sage: test = AvalancheTest(speck)
+            sage: from claasp.cipher_modules.avalanche_tests import AvalancheTests
+            sage: test = AvalancheTests(speck)
             sage: d = test.avalanche_tests(number_of_samples=100)
             sage: d["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][0]["vectors"][1]
-            # difference injected in position 0 in the key, observation of round_output after 2 rounds (1 for 2 rounds)
-        """
 
+        """
 
         all_avalanche_probability_vectors = self.avalanche_probability_vectors(number_of_samples)
         criterion = self.compute_criterion_from_avalanche_probability_vectors(all_avalanche_probability_vectors,
@@ -259,8 +258,9 @@ class AvalancheTests:
 
         .. NOTE::
 
-            apvs["key"]["round_output"][position][index_occurrence] = vector of round_output size with input diff
-            injected in key
+            apvs["key"]["round_output"][i][j]
+            The vector returned corresponds to the probablity of flipping of each output bits after j+1 rounds when the
+            difference is injected in position i in the key.
 
         INPUT:
 
@@ -270,10 +270,10 @@ class AvalancheTests:
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
             sage: speck = speck(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: from claasp.cipher_modules.avalanche_tests import AvalancheTest
-            sage: test = AvalancheTest(speck)
+            sage: from claasp.cipher_modules.avalanche_tests import AvalancheTests
+            sage: test = AvalancheTests(speck)
             sage: apvs = test.avalanche_probability_vectors(100)
-            sage: apvs["key"]["round_output"][31][0]
+            sage: apvs["plaintext"]["round_output"][0][3]
         """
 
         intermediate_output_names = {}
@@ -401,8 +401,8 @@ class AvalancheTests:
         EXAMPLES::
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: from claasp.cipher_modules.avalanche_tests import AvalancheTest
-            sage: test = AvalancheTest(speck)
+            sage: from claasp.cipher_modules.avalanche_tests import AvalancheTests
+            sage: test = AvalancheTests(speck)
             sage: apvs = test.avalanche_probability_vectors(100)
             sage: d = test.compute_criterion_from_avalanche_probability_vectors(apvs, 0.2)
         """
