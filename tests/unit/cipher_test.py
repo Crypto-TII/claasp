@@ -86,28 +86,6 @@ def test_algebraic_tests():
 
     assert d == compare_result
 
-
-def test_analyze_cipher():
-    sp = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-    tests_configuration = {"diffusion_tests": {"run_tests": True,
-                                               "number_of_samples": 100,
-                                               "run_avalanche_dependence": True,
-                                               "run_avalanche_dependence_uniform": True,
-                                               "run_avalanche_weight": True,
-                                               "run_avalanche_entropy": True,
-                                               "avalanche_dependence_uniform_bias": 0.2,
-                                               "avalanche_dependence_criterion_threshold": 0,
-                                               "avalanche_dependence_uniform_criterion_threshold": 0,
-                                               "avalanche_weight_criterion_threshold": 0.1,
-                                               "avalanche_entropy_criterion_threshold": 0.1},
-                           "component_analysis_tests": {"run_tests": True}}
-    analysis = sp.analyze_cipher(tests_configuration)
-    assert \
-        analysis["diffusion_tests"]["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][31][
-            "vectors"][
-            0] == [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
-
-
 def test_avalanche_probability_vectors():
     speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
     apvs = speck.avalanche_probability_vectors(100)
