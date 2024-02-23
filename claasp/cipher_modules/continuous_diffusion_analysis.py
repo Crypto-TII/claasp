@@ -105,8 +105,9 @@ class ContinuousDiffusionAnalysis:
                 if ii == index_of_tag_input:
                     lst_input.append([])
                 else:
+                    import secrets
                     lst_input.append([
-                        Decimal(max_bias[random.randrange(0, 2)]) for _ in range(input_size)
+                        Decimal(max_bias[secrets.choice([0, 1])]) for _ in range(input_size)
                     ])
                 ii += 1
 
@@ -484,17 +485,17 @@ class ContinuousDiffusionAnalysis:
             output_bits = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(
                 self.cipher.as_python_dictionary())
         if input_bit is None:
-            input_bit = self.init_input_bits()
+            input_bit = self._init_input_bits()
 
-        beta_sample_outputs = self.generate_beta_sample_output(beta_number_of_samples, gf_number_samples,
-                                                               input_bit, output_bits)
+        beta_sample_outputs = self._generate_beta_sample_output(beta_number_of_samples, gf_number_samples,
+                                                                input_bit, output_bits)
         inputs_tags = list(beta_sample_outputs[0].keys())
         output_tags = list(beta_sample_outputs[0][inputs_tags[0]].keys())
-        final_result = ContinuousDiffusionAnalysis.init_final_result_structure(
+        final_result = ContinuousDiffusionAnalysis._init_final_result_structure(
             input_bit, inputs_tags, output_bits, output_tags)
-        final_result = ContinuousDiffusionAnalysis.add_beta_samples_to_final_result_from(beta_sample_outputs,
-                                                                                         inputs_tags, output_tags,
-                                                                                         final_result)
+        final_result = ContinuousDiffusionAnalysis._add_beta_samples_to_final_result_from(beta_sample_outputs,
+                                                                                          inputs_tags, output_tags,
+                                                                                          final_result)
 
         for inputs_tag in inputs_tags:
             for output_tag in output_tags:
@@ -511,7 +512,7 @@ class ContinuousDiffusionAnalysis:
         return final_result
 
     @staticmethod
-    def add_beta_samples_to_final_result_from(beta_sample_outputs, inputs_tags, output_tags, final_result):
+    def _add_beta_samples_to_final_result_from(beta_sample_outputs, inputs_tags, output_tags, final_result):
         for beta_sample_output in beta_sample_outputs:
             for inputs_tag in inputs_tags:
                 for output_tag in output_tags:
@@ -521,7 +522,7 @@ class ContinuousDiffusionAnalysis:
         return final_result
 
     @staticmethod
-    def init_final_result_structure(input_bit, inputs_tags, output_bits, output_tags):
+    def _init_final_result_structure(input_bit, inputs_tags, output_bits, output_tags):
         final_result = {}
         for inputs_tag in inputs_tags:
             final_result[inputs_tag] = {}
@@ -535,13 +536,13 @@ class ContinuousDiffusionAnalysis:
 
         return final_result
 
-    def generate_beta_sample_output(self, beta_number_of_samples, gf_number_samples, input_bit, output_bits):
+    def _generate_beta_sample_output(self, beta_number_of_samples, gf_number_samples, input_bit, output_bits):
         betas = np.random.uniform(low=-1.0, high=1.0, size=beta_number_of_samples)
         beta_sample_outputs_temp = []
         pool = Pool()
         for i in range(beta_number_of_samples):
             beta_sample_outputs_temp.append(
-                pool.apply_async(self.continuous_neutrality_measure_for_bit_j_and_beta,
+                pool.apply_async(self._continuous_neutrality_measure_for_bit_j_and_beta,
                                  args=(input_bit, float(betas[i]), gf_number_samples, output_bits)))
         pool.close()
         pool.join()
@@ -549,14 +550,14 @@ class ContinuousDiffusionAnalysis:
 
         return beta_sample_outputs
 
-    def init_input_bits(self):
+    def _init_input_bits(self):
         input_bit = {}
         for cipher_input in self.cipher.inputs:
             input_bit[cipher_input] = 0
 
         return input_bit
 
-    def continuous_neutrality_measure_for_bit_j_and_beta(self, input_bit, beta, number_of_samples, output_bits):
+    def _continuous_neutrality_measure_for_bit_j_and_beta(self, input_bit, beta, number_of_samples, output_bits):
         input_tags = input_bit.keys()
         continuous_diffusion_tests = {}
         for input_tag in input_tags:
