@@ -264,6 +264,22 @@ class ContinuousDiffusionAnalysis:
         return temp_components
 
     def continuous_avalanche_factor(self, lambda_value, number_of_samples):
+        """
+        Continuous generalization of the metric Avalanche Factor. This method implements Definition 14 of [MUR2020]_.
+
+        INPUT:
+
+        - ``lambda_value`` --  **float**; threshold value used to express the input difference
+        - ``number_of_samples`` --  **integer**; number of samples used to compute the continuous avalanche factor
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
+            sage: speck_cipher = speck(number_of_rounds=2)
+            sage: result = speck_cipher.continuous_avalanche_factor(0.001, 10)
+            sage: result['plaintext']['round_key_output']['continuous_avalanche_factor']['values'][0]['value']
+            0.0
+        """
         input_tags = self.cipher.inputs
         final_dict = {}
         for input_tag in input_tags:
@@ -275,6 +291,22 @@ class ContinuousDiffusionAnalysis:
         return final_dict
 
     def continuous_diffusion_factor(self, beta_number_of_samples, gf_number_samples):
+        """
+        Continuous Diffusion Factor. This method implements Definition 16 of [MUR2020]_.
+
+        INPUT:
+
+        - ``beta_number_of_samples`` -- **integer**; number of samples used to compute the continuous measure metric
+        - ``gf_number_samples`` -- **integer**;  number of vectors used to approximate gf_2
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
+            sage: speck_cipher = speck(number_of_rounds=2) # long time
+            sage: output = speck_cipher.continuous_diffusion_factor(5, 20) # long time
+            sage: output['plaintext']['cipher_output']['diffusion_factor']['values'][0]['2'] > 0 # long time
+            True
+        """
         output_tags = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(
             self.cipher.as_python_dictionary()).keys()
         i = 0
@@ -337,6 +369,43 @@ class ContinuousDiffusionAnalysis:
                                    is_continuous_avalanche_factor=True,
                                    is_continuous_neutrality_measure=True,
                                    is_diffusion_factor=True):
+        """
+        Return a python dictionary that contains the dictionaries corresponding to each metric in [MUR2020]_.
+
+        INPUT:
+
+        - ``continuous_avalanche_factor_number_of_samples`` -- **integer** (default: `100`); number of samples
+          used to obtain the metric continuous_avalanche_factor
+        - ``threshold_for_avalanche_factor`` -- **float** (default: `0.001`); threshold value used to compute the
+          input difference for the metric continuous_avalanche_factor
+        - ``continuous_neutral_measure_beta_number_of_samples`` -- **integer** (default: `10`); number of samples
+          used to compute the continuous measure metric
+        - ``continuous_neutral_measure_gf_number_samples`` -- **integer** (default: `10`);  number of vectors used
+          to approximate gf_2
+        - ``continuous_diffusion_factor_beta_number_of_samples`` -- **integer** (default: `10`); number of samples
+          used to compute the continuous measure metric
+        - ``continuous_diffusion_factor_gf_number_samples`` -- **integer** (default: `10`);  number of vectors
+          used to approximate gf_2
+        - ``is_continuous_avalanche_factor`` -- **boolean** (default: `True`); flag indicating if we want the
+          continuous_avalanche_factor or not
+        - ``is_continuous_neutrality_measure`` -- **boolean** (default: `True`); flag indicating if we want the
+          continuous_neutrality_measure or not
+        - ``is_diffusion_factor`` -- **boolean** (default: `True`); flag indicating if we want the
+          continuous_neutrality_measure, or not
+
+        OUTPUT:
+
+            - A python dictionary that contains the test result to each metric. E.g.: continuous_neutrality_measure,
+              continuous_avalanche_factor, diffusion_factor
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
+            sage: speck_cipher = speck(number_of_rounds=1) # long time
+            sage: output = speck_cipher.continuous_diffusion_tests() # long time
+            sage: output['plaintext']['round_key_output']['continuous_neutrality_measure']['values'][0]['1'] == 0.0 # long time
+            True
+        """
         continuous_diffusion_tests = {"input_parameters": {
             'test_name': 'continuous_diffusion_tests',
             'continuous_avalanche_factor_number_of_samples': continuous_avalanche_factor_number_of_samples,
@@ -394,6 +463,23 @@ class ContinuousDiffusionAnalysis:
 
     def continuous_neutrality_measure_for_bit_j(self, beta_number_of_samples, gf_number_samples,
                                                 input_bit=None, output_bits=None):
+        """
+        Continuous Neutrality Measure. This method implements Definition 15 of [MUR2020]_.
+
+        INPUT:
+
+        - ``beta_number_of_samples`` -- **integer**; number of samples used to compute the continuous measure metric
+        - ``gf_number_samples`` -- **integer**;  number of vectors used to approximate gf_2
+        - ``input_bit`` -- **integer** (default: `None`); input bit position to be analyzed
+        - ``output_bits`` -- **list** (default: `None`); output bit positions to be analyzed
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
+            sage: output = speck(number_of_rounds=2).continuous_neutrality_measure_for_bit_j(50, 200) # long time
+            sage: output['plaintext']['cipher_output']['continuous_neutrality_measure']['values'][0]['2'] > 0 # long time
+            True
+        """
         if output_bits is None:
             output_bits = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(
                 self.cipher.as_python_dictionary())
