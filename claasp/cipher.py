@@ -1402,11 +1402,6 @@ class Cipher:
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.inputs}), from round {nr}...')
         return NeuralNetworkDistinguisher(self).neural_staged_training(data_generator, nr, neural_network, training_samples,
                                       testing_samples, number_of_epochs) #save_prefix
-        # return NeuralNetworkDistinguisher(self).neural_staged_training((lambda nr, samples: NeuralNetworkDistinguisher(
-        #     self).get_differential_dataset(input_difference, number_of_rounds=nr,
-        #                                    samples=samples)), nr, neural_network, training_samples,
-        #                                                                testing_samples, number_of_epochs, save_prefix)
-
 
     def generate_bit_based_c_code(self, intermediate_output=False, verbosity=False):
         """
