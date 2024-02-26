@@ -38,8 +38,6 @@ from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
 
-from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
-
 EVALUATION_PY = 'evaluation.py'
 DICTIONARY_EXAMPLE_PY = "claasp/ciphers/dictionary_example.py"
 BIT_BASED_C_FUNCTIONS_O_FILE = 'claasp/cipher_modules/generic_bit_based_c_functions.o'
@@ -349,29 +347,6 @@ def test_is_shift_arx():
 def test_is_spn():
     aes = AESBlockCipher(number_of_rounds=2)
     assert aes.is_spn() is True
-
-
-@pytest.mark.filterwarnings("ignore::DeprecationWarning:")
-def test_neural_network_blackbox_distinguisher_tests():
-    results = SpeckBlockCipher(number_of_rounds=5).neural_network_blackbox_distinguisher_tests(nb_samples=10)
-    assert results['input_parameters'] == \
-           {'number_of_samples': 10, 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10, 'test_name': 'neural_network_blackbox_distinguisher_tests'}
-
-
-def test_neural_network_differential_distinguisher_tests():
-    results = SpeckBlockCipher(number_of_rounds=5).neural_network_differential_distinguisher_tests(nb_samples=10)
-    assert results['input_parameters'] == \
-           {'test_name': 'neural_network_differential_distinguisher_tests',
-            'number_of_samples': 10,
-            'input_differences': [1],
-            'hidden_layers': [32, 32, 32],
-            'min_accuracy_value': 0,
-            'max_accuracy_value': 1,
-            'output_bit_size': 32,
-            'number_of_epochs': 10,
-            'plaintext_input_bit_size': 32,
-            'key_input_bit_size': 64}
-
 
 def test_polynomial_system():
     assert str(IdentityBlockCipher().polynomial_system()) == 'Polynomial Sequence with 128 Polynomials in 256 Variables'
