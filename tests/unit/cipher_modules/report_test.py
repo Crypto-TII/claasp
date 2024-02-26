@@ -8,6 +8,7 @@ from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.report import Report
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 
 def test_print_report():
 
@@ -31,7 +32,7 @@ def test_print_report():
     avalanche_report = Report(speck, avalanche_results)
     avalanche_report.print_report()
 
-    blackbox_results = speck.neural_network_blackbox_distinguisher_tests()
+    blackbox_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(speck,blackbox_results)
     blackbox_report.print_report()
 
@@ -97,7 +98,7 @@ def test_save_as_DataFrame():
 def test_save_as_json():
 
     simon = SimonBlockCipher(number_of_rounds=3)
-    neural_network_blackbox_distinguisher_tests_results = simon.neural_network_blackbox_distinguisher_tests()
+    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(simon).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(simon,neural_network_blackbox_distinguisher_tests_results)
 
     milp = MilpXorDifferentialModel(simon)
@@ -127,7 +128,7 @@ def test_save_as_json():
 def test_clean_reports():
 
     simon = SimonBlockCipher(number_of_rounds=2)
-    neural_network_blackbox_distinguisher_tests_results = simon.neural_network_blackbox_distinguisher_tests()
+    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(simon).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(simon, neural_network_blackbox_distinguisher_tests_results)
 
     blackbox_report.save_as_json()
