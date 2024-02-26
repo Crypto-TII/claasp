@@ -451,7 +451,7 @@ class CipherComponentsAnalysis:
         """
 
         description = component.description
-        final_mtr, _ = self._instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+        final_mtr, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
                                                              component.input_bit_size, component.output_bit_size)
 
         num_rows, num_cols = final_mtr.dimensions()
@@ -462,81 +462,6 @@ class CipherComponentsAnalysis:
                     if submatrix.is_singular():
                         return False
         return True
-
-    def _instantiate_matrix_over_correct_field(self, matrix, polynomial_as_int, word_size, input_bit_size, output_bit_size):
-        """
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
-            sage: midori = MidoriBlockCipher(number_of_rounds=2)
-            sage: mix_column_component = midori.get_component_from_id('mix_column_0_20')
-            sage: description = mix_column_component.description
-            sage: mc_matrix, _ = CipherComponentsAnalysis(midori)._instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
-                                                             mix_column_component.input_bit_size, mix_column_component.output_bit_size)
-
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
-            sage: midori = MidoriBlockCipher(number_of_rounds=2)
-            sage: mix_column_component = midori.get_component_from_id('mix_column_0_21')
-            sage: description = mix_column_component.description
-            sage: mc_matrix, _ = CipherComponentsAnalysis(midori)._instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
-                                                             mix_column_component.input_bit_size, mix_column_component.output_bit_size)
-
-        """
-
-        G = PolynomialRing(GF(2), 'x')
-        x = G.gen()
-        irr_poly = int_to_poly(polynomial_as_int, word_size, x)
-        if irr_poly:
-            F = GF(2 ** word_size, name='a', modulus=irr_poly)
-        else:
-            F = GF(2 ** word_size)
-        a = F.gen()
-        input_word_size = input_bit_size // word_size
-        output_word_size = output_bit_size // word_size
-        mtr = [[0 for _ in range(input_word_size)] for _ in range(output_word_size)]
-
-        for i in range(output_word_size):
-            for j in range(input_word_size):
-                mtr[i][j] = int_to_poly(matrix[i][j], word_size, a)
-        final_mtr = Matrix(F, mtr)
-
-        return final_mtr, F
-
-    def _field_element_matrix_to_integer_matrix(self, matrix):
-        """
-        Converts a matrix of field elements to the corresponding integer matrix representation
-
-        INPUT:
-
-        - ``matrix`` -- **Matrix object**; a matrix whose entries are field elements
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
-            sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
-            sage: description = mix_column_component.description
-            sage: mc_matrix, _ = CipherComponentsAnalysis(aes)._instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
-                                                             mix_column_component.input_bit_size, mix_column_component.output_bit_size)
-            sage: mc_matrix
-            [    a a + 1     1     1]
-            [    1     a a + 1     1]
-            [    1     1     a a + 1]
-            [a + 1     1     1     a]
-            sage: CipherComponentsAnalysis(aes)._field_element_matrix_to_integer_matrix(mc_matrix)
-            [2 3 1 1]
-            [1 2 3 1]
-            [1 1 2 3]
-            [3 1 1 2]
-        """
-
-        int_matrix = []
-        for i in range(matrix.nrows()):
-            for j in range(matrix.ncols()):
-                int_matrix.append(matrix[i][j].integer_representation())
-
-        return Matrix(matrix.nrows(), matrix.ncols(), int_matrix)
 
     def _word_operation_properties(self, operation, boolean_polynomial_ring):
         """
@@ -1182,3 +1107,78 @@ def int_to_poly(integer_value, word_size, variable):
             z = z + pow(variable, i)
 
     return z
+
+def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, input_bit_size, output_bit_size):
+    """
+        sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import *
+        sage: midori = MidoriBlockCipher(number_of_rounds=2)
+        sage: mix_column_component = midori.get_component_from_id('mix_column_0_20')
+        sage: description = mix_column_component.description
+        sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+                                                         mix_column_component.input_bit_size, mix_column_component.output_bit_size)
+
+        sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import *
+        sage: midori = MidoriBlockCipher(number_of_rounds=2)
+        sage: mix_column_component = midori.get_component_from_id('mix_column_0_21')
+        sage: description = mix_column_component.description
+        sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+                                                         mix_column_component.input_bit_size, mix_column_component.output_bit_size)
+
+    """
+
+    G = PolynomialRing(GF(2), 'x')
+    x = G.gen()
+    irr_poly = int_to_poly(polynomial_as_int, word_size, x)
+    if irr_poly:
+        F = GF(2 ** word_size, name='a', modulus=irr_poly)
+    else:
+        F = GF(2 ** word_size)
+    a = F.gen()
+    input_word_size = input_bit_size // word_size
+    output_word_size = output_bit_size // word_size
+    mtr = [[0 for _ in range(input_word_size)] for _ in range(output_word_size)]
+
+    for i in range(output_word_size):
+        for j in range(input_word_size):
+            mtr[i][j] = int_to_poly(matrix[i][j], word_size, a)
+    final_mtr = Matrix(F, mtr)
+
+    return final_mtr, F
+
+def field_element_matrix_to_integer_matrix(matrix):
+    """
+    Converts a matrix of field elements to the corresponding integer matrix representation
+
+    INPUT:
+
+    - ``matrix`` -- **Matrix object**; a matrix whose entries are field elements
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import *
+        sage: aes = AESBlockCipher(number_of_rounds=3)
+        sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
+        sage: description = mix_column_component.description
+        sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+                                                         mix_column_component.input_bit_size, mix_column_component.output_bit_size)
+        sage: mc_matrix
+        [    a a + 1     1     1]
+        [    1     a a + 1     1]
+        [    1     1     a a + 1]
+        [a + 1     1     1     a]
+        sage: field_element_matrix_to_integer_matrix(mc_matrix)
+        [2 3 1 1]
+        [1 2 3 1]
+        [1 1 2 3]
+        [3 1 1 2]
+    """
+
+    int_matrix = []
+    for i in range(matrix.nrows()):
+        for j in range(matrix.ncols()):
+            int_matrix.append(matrix[i][j].integer_representation())
+
+    return Matrix(matrix.nrows(), matrix.ncols(), int_matrix)

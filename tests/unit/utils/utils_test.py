@@ -12,7 +12,7 @@ from claasp.utils.utils import pprint_dictionary
 from claasp.utils.utils import pprint_dictionary_to_file
 from claasp.utils.utils import bytes_positions_to_little_endian_for_32_bits
 from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
-
+from claasp.cipher_modules import avalanche_tests
 
 def test_bytes_positions_to_little_endian_for_32_bits():
     lst = list(range(32))
@@ -26,8 +26,7 @@ def test_get_k_th_bit():
 
 
 def test_pprint_dictionary():
-    tests_configuration = {"diffusion_tests": {"run_tests": True,
-                                               "number_of_samples": 100,
+    tests_configuration = {"diffusion_tests": {"number_of_samples": 100,
                                                "run_avalanche_dependence": True,
                                                "run_avalanche_dependence_uniform": True,
                                                "run_avalanche_weight": True, "run_avalanche_entropy": True,
@@ -35,10 +34,9 @@ def test_pprint_dictionary():
                                                "avalanche_dependence_criterion_threshold": 0,
                                                "avalanche_dependence_uniform_criterion_threshold": 0,
                                                "avalanche_weight_criterion_threshold": 0.1,
-                                               "avalanche_entropy_criterion_threshold": 0.1},
-                           "component_analysis_tests": {"run_tests": True}}
+                                               "avalanche_entropy_criterion_threshold": 0.1}}
     cipher = IdentityBlockCipher()
-    analysis = cipher.analyze_cipher(tests_configuration)
+    analysis= {'diffusion_tests': avalanche_tests.avalanche_tests(cipher, **tests_configuration["diffusion_tests"])}
     pprint_dictionary(analysis['diffusion_tests']['input_parameters'])
     result = analysis['diffusion_tests']['input_parameters']
     assert result == {'avalanche_dependence_criterion_threshold': 0,
@@ -100,7 +98,7 @@ def test_pprint_dictionary():
 
 def test_pprint_dictionary_to_file():
     identity = IdentityBlockCipher()
-    tests_configuration = {"diffusion_tests": {"run_tests": True, "number_of_samples": 100,
+    tests_configuration = {"diffusion_tests": {"number_of_samples": 100,
                                                "run_avalanche_dependence": True,
                                                "run_avalanche_dependence_uniform": True,
                                                "run_avalanche_weight": True,
@@ -109,11 +107,10 @@ def test_pprint_dictionary_to_file():
                                                "avalanche_dependence_criterion_threshold": 0,
                                                "avalanche_dependence_uniform_criterion_threshold": 0,
                                                "avalanche_weight_criterion_threshold": 0.1,
-                                               "avalanche_entropy_criterion_threshold": 0.1},
-                           "component_analysis_tests": {"run_tests": True}}
+                                               "avalanche_entropy_criterion_threshold": 0.1}}
     tii_path = inspect.getfile(claasp)
     tii_dir_path = os.path.dirname(tii_path)
-    analysis = identity.analyze_cipher(tests_configuration)
+    analysis = {'diffusion_tests': avalanche_tests.avalanche_tests(identity, **tests_configuration["diffusion_tests"])}
     pprint_dictionary_to_file(analysis['diffusion_tests']['input_parameters'], f"{tii_dir_path}/test_json")
     assert os.path.isfile(f"{tii_dir_path}/test_json") is True
     os.remove(f"{tii_dir_path}/test_json")
