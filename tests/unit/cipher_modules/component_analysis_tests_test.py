@@ -18,7 +18,6 @@ def test_component_analysis_tests():
     result = CipherComponentsAnalysis(aes).component_analysis_tests()
     assert len(result) == 7
 
-@pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_print_component_analysis_as_radar_charts():
     aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
     fig = CipherComponentsAnalysis(aes).print_component_analysis_as_radar_charts()
