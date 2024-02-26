@@ -114,8 +114,8 @@ class AvalancheTests:
                                                          diffusion_tests, input_name, intermediate_output_name)
                         self.calculate_average_difference(all_output_vectors, criterion_name, parameters, diffusion_tests,
                                                      input_name, intermediate_output_name)
-                        # self.calculate_worst_input_differences(criterion_name, largest_round_criterion_not_satisfied,
-                        #                                  diffusion_tests, input_name, intermediate_output_name)
+                        self.calculate_worst_input_differences(criterion_name, largest_round_criterion_not_satisfied,
+                                                         diffusion_tests, input_name, intermediate_output_name)
 
         return diffusion_tests
 
@@ -160,8 +160,6 @@ class AvalancheTests:
             self.cipher.inputs_bit_size[index]
         output_bit_size = dict_intermediate_output_names[intermediate_output_name][0]
         dict_test_results["input_parameters"][f'{intermediate_output_name}_{criterion_name}_output_bit_size'] = output_bit_size
-        #dict_test_results[input_name][intermediate_output_name][criterion_name]["max_possible_value_per_bit"] = 1
-        #dict_test_results[input_name][intermediate_output_name][criterion_name]["min_possible_value_per_bit"] = 0
         dict_test_results["input_parameters"][f'{intermediate_output_name}_{criterion_name}_expected_value_per_bit'] = \
             dict_parameters[criterion_name][1]
         dict_test_results["input_parameters"][f'{intermediate_output_name}_{criterion_name}_max_possible_value_per_output_block'] = \
@@ -245,7 +243,7 @@ class AvalancheTests:
         worst_input_diffs = [input_diff for input_diff, specific_round in
                              largest_round_criterion_not_satisfied.items()
                              if specific_round == max_round_criterion_not_satisfied]
-        dict_test_results["test_results"][input_name][intermediate_output_name][criterion_name].append(worst_input_diffs)
+        dict_test_results["test_results"][input_name][intermediate_output_name][criterion_name].append({'worst_input_differences': worst_input_diffs})
 
     def avalanche_probability_vectors(self, nb_samples):
         """

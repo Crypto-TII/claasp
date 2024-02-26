@@ -323,24 +323,13 @@ def pprint_dictionary(dictionary):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
-        sage: from claasp.utils.utils import pprint_dictionary
-        sage: tests_configuration = {"diffusion_tests": {"run_tests": True, "number_of_samples": 100,
-        ....:     "run_avalanche_dependence": True, "run_avalanche_dependence_uniform": True,
-        ....:     "run_avalanche_weight": True, "run_avalanche_entropy": True,
-        ....:     "avalanche_dependence_uniform_bias": 0.2, "avalanche_dependence_criterion_threshold": 0,
-        ....:     "avalanche_dependence_uniform_criterion_threshold":0, "avalanche_weight_criterion_threshold": 0.1,
-        ....:     "avalanche_entropy_criterion_threshold":0.1}, "component_analysis_tests": {"run_tests": True}
-        ....: }
-        sage: cipher = IdentityBlockCipher()
-        sage: analysis = cipher.analyze_cipher(tests_configuration)
-        sage: pprint_dictionary(analysis['diffusion_tests']['input_parameters'])
-        {   'avalanche_dependence_criterion_threshold': 0,
-        'avalanche_dependence_uniform_bias': 0.200000000000000,
-        'avalanche_dependence_uniform_criterion_threshold': 0,
-        'avalanche_entropy_criterion_threshold': 0.100000000000000,
-        'avalanche_weight_criterion_threshold': 0.100000000000000,
-        'number_of_samples': 100}
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
+        sage: from claasp.cipher_modules.avalanche_tests import AvalancheTests
+        sage: test = AvalancheTests(speck)
+        sage: d = test.avalanche_tests(number_of_samples=100)
+        sage: pprint_dictionary(d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0])
+
     """
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(dictionary)

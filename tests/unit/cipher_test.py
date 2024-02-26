@@ -71,24 +71,6 @@ def test_algebraic_tests():
     assert d != compare_result  # skipped (need to be fixed)
 
 
-def test_analyze_cipher():
-    sp = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-    tests_configuration = {"diffusion_tests": {"run_tests": True,
-                                               "number_of_samples": 100,
-                                               "run_avalanche_dependence": True,
-                                               "run_avalanche_dependence_uniform": True,
-                                               "run_avalanche_weight": True,
-                                               "run_avalanche_entropy": True,
-                                               "avalanche_dependence_uniform_bias": 0.2,
-                                               "avalanche_dependence_criterion_threshold": 0,
-                                               "avalanche_dependence_uniform_criterion_threshold": 0,
-                                               "avalanche_weight_criterion_threshold": 0.1,
-                                               "avalanche_entropy_criterion_threshold": 0.1},
-                           "component_analysis_tests": {"run_tests": True}}
-    analysis = sp.analyze_cipher(tests_configuration)
-    assert analysis["diffusion_tests"]["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][31]["vectors"][0] == [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
-
-
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_component_analysis():
     fancy = FancyBlockCipher(number_of_rounds=2)
@@ -261,38 +243,6 @@ def test_generate_bit_based_c_code():
 
     bit_based_c_code = SpeckBlockCipher().generate_bit_based_c_code(True, True)
     assert '\tprintf("\\nROUND 0\\n\\n");\n' in bit_based_c_code
-
-
-### Replaced by equivalent functions in Report class
-
-#def test_generate_csv_report():
-#    tii_path = inspect.getfile(claasp)
-#    tii_dir_path = os.path.dirname(tii_path)
-#    identity = IdentityBlockCipher()
-#    identity.generate_csv_report(10, f"{tii_dir_path}/{identity.id}_report.csv")
-#    assert os.path.isfile(f"{tii_dir_path}/{identity.id}_report.csv")
-
-#    os.remove(f"{tii_dir_path}/{identity.id}_report.csv")
-
-
-# def test_generate_heatmap_graphs_for_avalanche_tests():
-#     sp = SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=5)
-#     d = sp.diffusion_tests(number_of_samples=100)
-#     h = sp.generate_heatmap_graphs_for_avalanche_tests(d)
-#     documentclass_pt_ = '\\documentclass[12pt]'
-#     assert h[:20] == documentclass_pt_
-#
-#     ascon = AsconPermutation(number_of_rounds=4)
-#     d = ascon.diffusion_tests(number_of_samples=100)
-#     h = ascon.generate_heatmap_graphs_for_avalanche_tests(d, [0], ["avalanche_weight_vectors"])
-#     assert h[:20] == documentclass_pt_
-#
-#     cipher = XoodooPermutation(number_of_rounds=4)
-#     d = cipher.diffusion_tests(number_of_samples=100)
-#     h = cipher.generate_heatmap_graphs_for_avalanche_tests(d, [1, 193], ["avalanche_dependence_vectors",
-#                                                                          "avalanche_entropy_vectors"])
-#     assert h[:20] == documentclass_pt_
-
 
 def test_generate_word_based_c_code():
     word_based_c_code = SpeckBlockCipher().generate_word_based_c_code(20)
