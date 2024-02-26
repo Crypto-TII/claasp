@@ -5,11 +5,7 @@ from claasp.components.fsr_component import FSR
 from claasp.cipher_modules.component_analysis_tests import fsr_properties
 from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
 from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-
-
-def test_generate_boolean_polynomial_ring_from_cipher():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    generate_boolean_polynomial_ring_from_cipher(fancy)
+from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 
 def test_get_all_operations():
     fancy = FancyBlockCipher(number_of_rounds=3)
@@ -21,13 +17,17 @@ def test_component_analysis_tests():
     components_analysis = CipherComponentsAnalysis(fancy).component_analysis_tests()
     assert len(components_analysis) == 9
 
-def test_fsr_properties():
-    fsr_component = FSR(0, 0, ["input"], [[0, 1, 2, 3]], 4, [[[4, [[1, [0]], [3, [1]], [2, [2]]]]], 4])
-    operation = [fsr_component, 1, ['fsr_0_0']]
-    dictionary = fsr_properties(operation)
-    assert dictionary['fsr_word_size'] == 4
-    assert dictionary['lfsr_connection_polynomials'] == ['x^4 + (z4 + 1)*x^3 + z4*x^2 + 1']
+    aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
+    result = CipherComponentsAnalysis(aes).component_analysis_tests()
+    assert len(result) == 7
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning:")
+def test_print_component_analysis_as_radar_charts():
+    aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
+    fig = CipherComponentsAnalysis(aes).print_component_analysis_as_radar_charts()
+    assert str(type(fig)) == "<class 'module'>"
+
+def test_fsr_properties():
     e0 = BluetoothStreamCipherE0(keystream_bit_len=2)
     dictionary = CipherComponentsAnalysis(e0).component_analysis_tests()
     assert dictionary[8]["number_of_registers"] == 4

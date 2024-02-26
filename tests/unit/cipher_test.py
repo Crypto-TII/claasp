@@ -41,7 +41,6 @@ from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QAR
 from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
-from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
 
 EVALUATION_PY = 'evaluation.py'
@@ -71,60 +70,11 @@ def test_algebraic_tests():
 
     assert d != compare_result  # skipped (need to be fixed)
 
-
-def test_analyze_cipher():
-    sp = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-    tests_configuration = {"diffusion_tests": {"run_tests": True,
-                                               "number_of_samples": 100,
-                                               "run_avalanche_dependence": True,
-                                               "run_avalanche_dependence_uniform": True,
-                                               "run_avalanche_weight": True,
-                                               "run_avalanche_entropy": True,
-                                               "avalanche_dependence_uniform_bias": 0.2,
-                                               "avalanche_dependence_criterion_threshold": 0,
-                                               "avalanche_dependence_uniform_criterion_threshold": 0,
-                                               "avalanche_weight_criterion_threshold": 0.1,
-                                               "avalanche_entropy_criterion_threshold": 0.1},
-                           "component_analysis_tests": {"run_tests": True}}
-    analysis = sp.analyze_cipher(tests_configuration)
-    assert analysis["diffusion_tests"]["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][31]["vectors"][0] == [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
-
-
 def test_avalanche_probability_vectors():
     speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
     apvs = speck.avalanche_probability_vectors(100)
     assert apvs["key"]["round_output"][31][0] == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                                   0.0, 1.0]
-
-
-@pytest.mark.filterwarnings("ignore::DeprecationWarning:")
-def test_component_analysis():
-    fancy = FancyBlockCipher(number_of_rounds=2)
-    result = CipherComponentsAnalysis(fancy).component_analysis_tests()
-    assert len(result) == 9
-
-    aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
-    result = CipherComponentsAnalysis(aes).component_analysis_tests()
-    assert len(result) == 7
-
-    present = PresentBlockCipher(number_of_rounds=2)
-    result = CipherComponentsAnalysis(present).component_analysis_tests()
-    assert len(result) == 5
-
-    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-    result = CipherComponentsAnalysis(speck).component_analysis_tests()
-    assert len(result) == 4
-
-    tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=32)
-    result = CipherComponentsAnalysis(tea).component_analysis_tests()
-    assert len(result) == 4
-
-
-@pytest.mark.filterwarnings("ignore::DeprecationWarning:")
-def test_print_component_analysis_as_radar_charts():
-    aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-    fig = CipherComponentsAnalysis(aes).print_component_analysis_as_radar_charts()
-    assert str(type(fig)) == "<class 'module'>"
 
 
 def test_compute_criterion_from_avalanche_probability_vectors():

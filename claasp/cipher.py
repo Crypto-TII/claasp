@@ -31,7 +31,6 @@ from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicMode
 from claasp.cipher_modules import continuous_tests, code_generator, avalanche_tests, algebraic_tests
 import importlib
 from claasp.cipher_modules.inverse_cipher import *
-from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -271,46 +270,6 @@ class Cipher:
         """
         return algebraic_tests.algebraic_tests(self, timeout)
 
-    def analyze_cipher(self, tests_configuration):
-        """
-        Generate a dictionary with the analysis of the cipher.
-
-        The analysis is related to the following tests:
-
-        - Diffusion Tests
-
-        INPUT:
-
-        - ``tests_configuration`` -- **python dictionary**
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: sp = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: tests_configuration = {"diffusion_tests": {"run_tests": True, "number_of_samples": 100,
-            ....: "run_avalanche_dependence": True, "run_avalanche_dependence_uniform": True,
-            ....: "run_avalanche_weight": True, "run_avalanche_entropy": True,
-            ....: "avalanche_dependence_uniform_bias": 0.2, "avalanche_dependence_criterion_threshold": 0,
-            ....: "avalanche_dependence_uniform_criterion_threshold":0, "avalanche_weight_criterion_threshold": 0.1,
-            ....: "avalanche_entropy_criterion_threshold":0.1}, "component_analysis_tests": {"run_tests": True}}
-            sage: analysis = sp.analyze_cipher(tests_configuration)
-            sage: analysis["diffusion_tests"]["test_results"]["key"]["round_output"][ # random
-            ....: "avalanche_dependence_vectors"]["differences"][31]["output_vectors"][0]["vector"] # random
-        """
-        tmp_tests_configuration = deepcopy(tests_configuration)
-        analysis_results = {}
-        if "diffusion_tests" in tests_configuration and tests_configuration["diffusion_tests"]["run_tests"]:
-            tmp_tests_configuration["diffusion_tests"].pop("run_tests")
-            analysis_results['diffusion_tests'] = \
-                avalanche_tests.avalanche_tests(self, **tmp_tests_configuration["diffusion_tests"])
-        if "component_analysis_tests" in tests_configuration and tests_configuration[
-            "component_analysis_tests"]["run_tests"]:
-            analysis_results["component_analysis_tests"] = CipherComponentsAnalysis(self).component_analysis_tests()
-        if "algebraic_tests" in tests_configuration and tests_configuration["algebraic_tests"]["run_tests"]:
-            timeout = tests_configuration["algebraic_tests"]["timeout"]
-            analysis_results["algebraic_tests"] = algebraic_tests.algebraic_tests(self, timeout=timeout)
-
-        return analysis_results
 
     def as_python_dictionary(self):
         return {
