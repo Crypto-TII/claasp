@@ -1012,7 +1012,6 @@ def get_inverse_matrix_in_integer_representation(component):
                                                       component.input_bit_size, component.output_bit_size)
     return field_element_matrix_to_integer_matrix(matrix.inverse())
 
-
 def has_maximal_branch_number(component):
     """
     INPUT:
@@ -1127,7 +1126,6 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
                                                          mix_column_component.input_bit_size, mix_column_component.output_bit_size)
 
     """
-
     G = PolynomialRing(GF(2), 'x')
     x = G.gen()
     irr_poly = int_to_poly(polynomial_as_int, word_size, x)
