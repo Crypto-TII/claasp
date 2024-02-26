@@ -38,7 +38,7 @@ from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
 
-from claasp.cipher_modules.neural_network_tests import NeuralNetworkDistinguisher
+from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 
 EVALUATION_PY = 'evaluation.py'
 DICTIONARY_EXAMPLE_PY = "claasp/ciphers/dictionary_example.py"
@@ -235,48 +235,6 @@ def test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis():
         cipher_inputs, {}, {})
     assert output[0][0] == Decimal('-1.000000000')
 
-
-def test_find_good_input_difference_for_neural_distinguisher():
-    cipher = SpeckBlockCipher()
-    diff, scores, highest_round = NeuralNetworkDistinguisher(cipher).find_good_input_difference_for_neural_distinguisher([True, False],
-                                                                                      verbose=False,
-                                                                                      number_of_generations=5)
-
-    assert str(type(diff)) == "<class 'numpy.ndarray'>"
-    assert str(type(scores)) == "<class 'numpy.ndarray'>"
-
-
-
-def test_neural_staged_training():
-    cipher = SpeckBlockCipher()
-    input_differences = [0x400000, 0]
-    data_generator = lambda nr, samples: NeuralNetworkDistinguisher(cipher).get_differential_dataset(input_differences, number_of_rounds = nr, samples = samples)
-    neural_network = NeuralNetworkDistinguisher(cipher).get_neural_network('gohr_resnet', input_size = 64, word_size = 16)
-    results_gohr = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
-    assert results_gohr[5] >= 0
-    neural_network = NeuralNetworkDistinguisher(cipher).get_neural_network('dbitnet', input_size = 64)
-    results_dbitnet = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
-    assert results_dbitnet[5] >= 0
-
-def test_train_gohr_neural_distinguisher():
-    cipher = SpeckBlockCipher()
-    input_differences = [0x400000, 0]
-    number_of_rounds = 5
-    result = cipher.train_gohr_neural_distinguisher(input_differences, number_of_rounds, word_size=16, number_of_epochs=1, training_samples = 10**3, testing_samples = 10**3)
-    assert result > 0
-
-def test_run_autond_pipeline():
-    cipher = SpeckBlockCipher()
-    result = cipher.run_autond_pipeline(optimizer_samples=10 ** 3, optimizer_generations=1,
-                            training_samples=10 ** 2, testing_samples=10 ** 2, number_of_epochs=1, verbose=False)
-    assert not result is {}
-
-def test_get_differential_dataset():
-    diff_value_plain_key = [0x400000, 0]
-    cipher = SpeckBlockCipher()
-    x, y = NeuralNetworkDistinguisher(cipher).get_differential_dataset(diff_value_plain_key, 5, samples=10)
-    assert x.shape == (10, 64)
-    assert y.shape == (10, )
 
 def test_get_model():
     speck = SpeckBlockCipher(number_of_rounds=1)
