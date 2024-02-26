@@ -1376,6 +1376,29 @@ class Cipher:
         from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network, \
             int_difference_to_input_differences, neural_staged_training
 
+        neural_distinguisher_test_results = {
+            'input_parameters': {
+                'test_name': 'neural_distinguisher_test',
+                'optimizer_samples': optimizer_samples,
+                'optimizer_generations': optimizer_generations,
+                'training_samples': training_samples,
+                'testing_samples': testing_samples,
+                'number_of_epochs': number_of_epochs,
+                'neural_net': neural_net
+            },
+
+            'test_results': {
+                'plaintext': {
+                    'cipher_output':{
+                        'neural_distinguisher_test':[]
+                    }
+                }
+            }
+
+
+
+        }
+
         def data_generator(nr, samples):
             return get_differential_dataset(self, input_difference, number_of_rounds=nr,
                                             samples=samples)
@@ -1394,14 +1417,31 @@ class Cipher:
                                                                                                number_of_generations=optimizer_generations,
                                                                                                nb_samples=optimizer_samples,
                                                                                                verbose=verbose)
+
+
         input_difference = int_difference_to_input_differences(diff[-1], difference_positions, self.inputs_bit_size)
+
         input_size = self.output_bit_size * 2
         neural_network = get_neural_network(neural_net, input_size = input_size)
         nr = max(1, highest_round-3)
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.inputs}), from round {nr}...')
-        return neural_staged_training(self, lambda nr, samples: get_differential_dataset(self, input_difference, number_of_rounds=nr,
-                                            samples=samples), nr, neural_network, training_samples,
-                                      testing_samples, number_of_epochs, save_prefix)
+
+        neural_results = neural_staged_training(self, lambda nr, samples: get_differential_dataset(self, input_difference, number_of_rounds=nr,
+                              samples=samples), nr, neural_network, training_samples,
+                              testing_samples, number_of_epochs, save_prefix)
+
+        neural_distinguisher_test_results['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'].append({'accuracies': list(neural_results.values())})
+
+        i=0
+        for it in self.inputs:
+            neural_distinguisher_test_results['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][it+'_diff'] = hex(input_difference[i])
+            i+=1
+
+        neural_distinguisher_test_results['test_results']['plaintext']['cipher_output']['differences_scores'] = {}
+        for diff, score in zip(diff,scores):
+            neural_distinguisher_test_results['test_results']['plaintext']['cipher_output']['differences_scores'][hex(diff)] = score
+
+        return neural_distinguisher_test_results
 
 
     def generate_bit_based_c_code(self, intermediate_output=False, verbosity=False):

@@ -656,5 +656,3 @@ class Report:
         else:
             print("Directory " + output_dir + " not found")
             return
-
-
