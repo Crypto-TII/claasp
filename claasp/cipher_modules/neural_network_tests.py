@@ -105,8 +105,6 @@ class NeuralNetworkTests:
                 m.add(Dense(1, activation='sigmoid'))
                 m.compile(loss='binary_crossentropy', optimizer="adam", metrics=['binary_accuracy'])
 
-                #m = self.make_resnet(input_lengths[index] + ds[k][0] if blackbox else 2 * ds[k][0])
-                m.compile(loss='binary_crossentropy', optimizer="adam", metrics=['binary_accuracy'])
                 history = m.fit(np.array(ds[k][1][i]), labels, validation_split=0.1, shuffle=1, verbose=0) if blackbox \
                     else m.fit(np.array(ds[k][1][i]), labels, epochs=number_of_epochs,
                                validation_split=0.1, shuffle=1, verbose=0)
@@ -177,7 +175,7 @@ class NeuralNetworkTests:
         return partial_result, ds, component_output_ids
 
     def neural_network_differential_distinguisher_tests(self, nb_samples=10000, hidden_layers=[32, 32, 32],
-                                                        number_of_epochs=10, diff=[0x01, 0x0a], rounds_to_train=[]):
+                                                        number_of_epochs=10, diff=[[0x400000], [0xa]], rounds_to_train=[]):
         """
         Runs the test defined in [BHPR2021].
         Return a python dictionary that contains the accuracies corresponding to each round.
@@ -188,7 +186,8 @@ class NeuralNetworkTests:
         - ``hidden_layers`` -- **list** (default: `[32, 32, 32]`); a list containing the number of neurons in each
          hidden layer of the neural network
         - ``number_of_epochs`` -- **integer** (default: `10`); how long is the training of the neural network
-        - ``diff`` -- **list** (default: `[0x01]`); list of input differences
+        - ``diff`` -- **list** (default: `[[0x01, 0x0a, 0x400000], [0, 0, 0]]`); list of input differences, containing
+        one list of values per input to the cipher.
 
         EXAMPLES::
 
@@ -218,7 +217,7 @@ class NeuralNetworkTests:
             base_inputs = [secrets.randbits(i) for i in self.cipher.inputs_bit_size]
             base_output = evaluator.evaluate(self.cipher, base_inputs, intermediate_output=True)[1]
             partial_result = {}
-            for d in diff:
+            for d in diff[index]:
                 partial_result, ds, component_output_ids = self.create_structure(base_output, test_name, partial_result)
                 self.update_component_output_ids(component_output_ids)
                 self.update_distinguisher_vectorized_tests_ds(base_inputs, d, ds, index, labels, nb_samples)
@@ -226,10 +225,6 @@ class NeuralNetworkTests:
                                            number_of_epochs, partial_result, d, blackbox=False,
                                            rounds_to_train=rounds_to_train, hidden_layers=hidden_layers)
             results["test_results"][it] = partial_result
-            # self.update_partial_result(ds, index, test_name, labels, number_of_epochs, partial_result, 0, blackbox=True,
-            #                   rounds_to_train=rounds_to_train)
-            # def update_partial_result(self, ds, index, test_name, labels, number_of_epochs,
-            #               partial_result, diff, blackbox=True, rounds_to_train=[]):
         return results
 
     def update_distinguisher_tests_ds(self, base_inputs, d, ds, index, labels, nb_samples):
