@@ -76,7 +76,6 @@ RUN sage -pip install bitstring==4.0.1 \
   progress==1.6 \
   pycosat==0.6.3 \
   pygments==2.12.0 \
-  sage-numerical-backends-gurobi==9.3.1 \
   sage-package==0.0.7 \
   setuptools==59.6.0 \
   sphinx==4.5.0 \
@@ -301,6 +300,8 @@ RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libsystemd.so.0
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libcrypt.so.1
 
 RUN sage -pip install plotly -U kaleido
+COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
+RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
 
 
 WORKDIR /home/sage/tii-claasp
