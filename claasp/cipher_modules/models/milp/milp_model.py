@@ -43,7 +43,8 @@ import tracemalloc
 
 from sage.numerical.mip import MixedIntegerLinearProgram, MIPSolverException
 
-from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT, EXTERNAL_MILP_SOLVERS
+from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT, EXTERNAL_MILP_SOLVERS, \
+    SOLUTION_FILE_DEFAULT_NAME, MODEL_DEFAULT_PATH
 from claasp.cipher_modules.models.milp.utils.utils import _get_data, _parse_external_solver_output, _write_model_to_lp_file
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 
@@ -337,6 +338,7 @@ class MilpModel:
             status, objective_value, components_values, milp_time, milp_memory = self._solve_with_external_solver(
                 model_type, model_path, external_solver_name)
             os.remove(model_path)
+            os.remove(f"{MODEL_DEFAULT_PATH}/{SOLUTION_FILE_DEFAULT_NAME}")
         else:
             solver_name_in_solution = solver_name
             status, milp_time, milp_memory = self._solve_with_internal_solver()

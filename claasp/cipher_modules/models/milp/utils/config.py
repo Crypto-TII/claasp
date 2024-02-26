@@ -18,7 +18,7 @@
 
 
 SOLVER_DEFAULT = "GLPK"
-MODEL_DEFAULT_PATH = "./claasp/cipher_modules/models/milp/tmp"
+MODEL_DEFAULT_PATH = "."
 SOLUTION_FILE_DEFAULT_NAME = "milp_model.sol"
 
 EXTERNAL_MILP_SOLVERS = {
