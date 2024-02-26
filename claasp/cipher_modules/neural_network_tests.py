@@ -22,6 +22,7 @@ class NeuralNetworkTests:
                                                     hidden_layers=[32, 32, 32], number_of_epochs=10,
                                                     rounds_to_train=[]):
         """
+        Runs the test defined in [BR2021].
         Return a python dictionary that contains the accuracies corresponding to each round.
 
         INPUT:
@@ -34,7 +35,7 @@ class NeuralNetworkTests:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: #speck(number_of_rounds=22).neural_network_blackbox_distinguisher_tests(nb_samples = 10) # random
+            sage: speck(number_of_rounds=22).neural_network_blackbox_distinguisher_tests(nb_samples = 10) # random
 
         """
         results = {"input_parameters": {
@@ -161,6 +162,7 @@ class NeuralNetworkTests:
     def neural_network_differential_distinguisher_tests(self, nb_samples=10000, hidden_layers=[32, 32, 32],
                                                         number_of_epochs=10, diff=[0x01, 0x0a], rounds_to_train=[]):
         """
+        Runs the test defined in [BHPR2021].
         Return a python dictionary that contains the accuracies corresponding to each round.
 
         INPUT:
