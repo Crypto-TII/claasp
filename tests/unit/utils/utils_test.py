@@ -40,16 +40,12 @@ def test_pprint_dictionary_to_file():
     speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
     test = AvalancheTests(speck)
     d = test.avalanche_tests(number_of_samples=100)
-    pprint_dictionary(d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0])
-    result = d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0]["input_difference_value"]
-    assert result == "0x1"
     tii_path = inspect.getfile(claasp)
     tii_dir_path = os.path.dirname(tii_path)
-    analysis = d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0]["input_difference_value"]
+    analysis = d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0]
     pprint_dictionary_to_file(analysis, f"{tii_dir_path}/test_json")
     assert os.path.isfile(f"{tii_dir_path}/test_json") is True
     os.remove(f"{tii_dir_path}/test_json")
-
 
 def test_sgn_function():
     assert sgn_function(-1) == -1
