@@ -42,8 +42,7 @@ def test_pprint_dictionary_to_file():
     d = test.avalanche_tests(number_of_samples=100)
     tii_path = inspect.getfile(claasp)
     tii_dir_path = os.path.dirname(tii_path)
-    analysis = d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0]
-    pprint_dictionary_to_file(analysis, f"{tii_dir_path}/test_json")
+    pprint_dictionary_to_file(d["input_parameters"], f"{tii_dir_path}/test_json")
     assert os.path.isfile(f"{tii_dir_path}/test_json") is True
     os.remove(f"{tii_dir_path}/test_json")
 
