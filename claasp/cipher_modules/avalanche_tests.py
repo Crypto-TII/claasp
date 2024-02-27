@@ -24,6 +24,8 @@ from math import log
 
 from claasp.cipher_modules import evaluator
 from claasp.name_mappings import INTERMEDIATE_OUTPUT, CIPHER_OUTPUT
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 class AvalancheTests:
     def __init__(self, cipher):
@@ -466,4 +468,6 @@ class AvalancheTests:
                     dict_intermediate_output_names[component.description[0]][rounds_id_position].append(cipher_round.id)
 
         return dict_intermediate_output_names
+
+
 
