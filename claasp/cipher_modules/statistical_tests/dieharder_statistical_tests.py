@@ -38,7 +38,7 @@ class DieharderTests:
 
 
     @staticmethod
-    def dieharder_statistical_tests(input_file):
+    def dieharder_statistical_tests():
 
         """
         Run the run_dieharder_statistical_tests_tool_interactively function and process its output with the parse_output function

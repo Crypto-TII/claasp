@@ -232,7 +232,10 @@ class Report:
                             path = output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                                 "test_name"] + '_tables/' + it + '/' + out + '/' + test
 
-                            res_key = [x for x in result.keys() if x in ['values', 'vectors', 'accuracies']][0]
+                            try:
+                                res_key = [x for x in result.keys() if x in ['values', 'vectors', 'accuracies']][0]
+                            except IndexError:
+                                continue
 
                             if file_format == '.csv':
 
@@ -488,8 +491,11 @@ class Report:
                         data = self.test_report['test_results'][it][out][res]
 
                         for case in list(data):
-                            res_key = [x for x in case.keys() if x in ['values', 'vectors', 'accuracies']][0]
 
+                            try:
+                                res_key = [x for x in case.keys() if x in ['values', 'vectors', 'accuracies']][0]
+                            except IndexError:
+                                continue
                             if out == 'round_output':
                                 output_res = self.test_report['test_results'][it]['cipher_output'][res]
                                 if "input_difference_value" in case.keys():
