@@ -487,9 +487,9 @@ class ContinuousDiffusionAnalysis:
 
         continuous_diffusion_tests["test_results"] = self._merge_dictionaries(
             continuous_diffusion_factor_output, continuous_avalanche_factor_output,
-            continuous_neutrality_measure_output, is_continuous_avalanche_factor=is_continuous_avalanche_factor,
-            is_continuous_neutrality_measure=is_continuous_neutrality_measure,
-            is_diffusion_factor=is_diffusion_factor)
+            continuous_neutrality_measure_output, is_continuous_avalanche_factor,
+            is_continuous_neutrality_measure,
+            is_diffusion_factor)
         for input_tag in inputs_tags:
             for output_tag in output_tags:
                 for test in continuous_diffusion_tests["test_results"][input_tag][output_tag].keys():
