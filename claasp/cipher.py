@@ -1417,8 +1417,6 @@ class Cipher:
                                                                                                number_of_generations=optimizer_generations,
                                                                                                nb_samples=optimizer_samples,
                                                                                                verbose=verbose)
-        print(diff)
-        print(scores)
 
         input_difference = int_difference_to_input_differences(diff[-1], difference_positions, self.inputs_bit_size)
 
