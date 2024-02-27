@@ -21,7 +21,6 @@ import sys
 import math
 import numpy as np
 from math import log
-
 from claasp.cipher_modules import evaluator
 from claasp.name_mappings import INTERMEDIATE_OUTPUT, CIPHER_OUTPUT
 import matplotlib.pyplot as plt
