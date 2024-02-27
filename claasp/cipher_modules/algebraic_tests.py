@@ -25,6 +25,7 @@ class AlgebraicTests:
         Construct an instance of Algebraic Tests of the cipher.
 
         EXAMPLES::
+
             sage: from claasp.cipher_modules.algebraic_tests import AlgebraicTests
             sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
             sage: toyspn = ToySPN1(number_of_rounds=2)
@@ -42,7 +43,7 @@ class AlgebraicTests:
     """
 
     def __init__(self, cipher):
-        self.cipher = cipher
+        self._cipher = cipher
 
     def algebraic_tests(self, timeout=60):
         from sage.structure.sequence import Sequence
@@ -55,8 +56,8 @@ class AlgebraicTests:
 
         F = []
 
-        algebraic_model = AlgebraicModel(self.cipher)
-        for round_number in range(self.cipher.number_of_rounds):
+        algebraic_model = AlgebraicModel(self._cipher)
+        for round_number in range(self._cipher.number_of_rounds):
             F += algebraic_model.polynomial_system_at_round(round_number) + \
                  algebraic_model.connection_polynomials_at_round(round_number)
             Fseq = Sequence(F)
@@ -80,7 +81,7 @@ class AlgebraicTests:
                 tests_up_to_round.append(result)
 
         input_parameters = {
-            "cipher.id": self.cipher.id,
+            "cipher.id": self._cipher.id,
             "timeout": timeout,
             "test_name": "algebraic_tests"
         }
