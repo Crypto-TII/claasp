@@ -275,9 +275,11 @@ class ContinuousDiffusionAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
+            sage: from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
             sage: speck_cipher = speck(number_of_rounds=2)
-            sage: result = speck_cipher.continuous_avalanche_factor(0.001, 10)
-            sage: result['plaintext']['round_key_output']['continuous_avalanche_factor']['values'][0]['value']
+            sage: cda = ContinuousDiffusionAnalysis(speck_cipher)
+            sage: result = cda.continuous_avalanche_factor(0.001, 10)
+            sage: result['plaintext']['round_key_output']['continuous_avalanche_factor']['values'][0]
             0.0
         """
         input_tags = self.cipher.inputs
@@ -302,9 +304,11 @@ class ContinuousDiffusionAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
+            sage: from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
             sage: speck_cipher = speck(number_of_rounds=2) # long time
-            sage: output = speck_cipher.continuous_diffusion_factor(5, 20) # long time
-            sage: output['plaintext']['cipher_output']['diffusion_factor']['values'][0]['2'] > 0 # long time
+            sage: cda = ContinuousDiffusionAnalysis(speck_cipher)
+            sage: output = cda.continuous_diffusion_factor(5, 20) # long time
+            sage: output['plaintext']['cipher_output']['diffusion_factor']['values'][0] > 0 # long time
             True
         """
         output_tags = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(
@@ -442,9 +446,11 @@ class ContinuousDiffusionAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
+            sage: from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
             sage: speck_cipher = speck(number_of_rounds=1) # long time
-            sage: output = speck_cipher.continuous_diffusion_tests() # long time
-            sage: output['plaintext']['round_key_output']['continuous_neutrality_measure']['values'][0]['1'] == 0.0 # long time
+            sage: cda = ContinuousDiffusionAnalysis(speck_cipher)
+            sage: output = cda.continuous_diffusion_tests() # long time
+            sage: output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure'][0]['values'][0] == 0.0  # long time
             True
         """
         continuous_diffusion_tests = {"input_parameters": {
@@ -518,7 +524,10 @@ class ContinuousDiffusionAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: output = speck(number_of_rounds=2).continuous_neutrality_measure_for_bit_j(50, 200) # long time
+            sage: from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
+            sage: speck_cipher = speck(number_of_rounds=2)
+            sage: cda = ContinuousDiffusionAnalysis(speck_cipher)
+            sage: output = cda.continuous_neutrality_measure_for_bit_j(50, 200) # long time
             sage: output['plaintext']['cipher_output']['continuous_neutrality_measure']['values'][0]['2'] > 0 # long time
             True
         """
