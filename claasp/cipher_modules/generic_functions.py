@@ -994,7 +994,7 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
         end += registers_info[i][0]
         registers_update_bit[i] = end - 1
         registers_polynomial[i] = get_polynomail(registers_info[i][1], R)
-        if len(registers_info[i]) > 2:
+        if len(registers_info[i]) > 2 and registers_info[i][2] != None:
             clock_polynomials[i] = get_polynomail(registers_info[i][2], R)
 
     for r in range(number_of_clocks):
