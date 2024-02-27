@@ -152,13 +152,9 @@ class SatXorLinearModel(SatModel):
             literals = []
             for component in self._cipher.get_all_components():
                 bit_len = component.output_bit_size
-                if component.type == SBOX or \
-                    (component.type == WORD_OPERATION and
-                     component.description[0] in ('AND', 'MODADD', 'MODSUB', 'OR', 'SHIFT_BY_VARIABLE_AMOUNT')):
-                    value_to_avoid = int(solution['components_values'][f'{component.id}{out_suffix}']['value'],
-                                         base=16)
-                    minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                    literals.extend([f'{minus[i]}{component.id}_{i}{out_suffix}' for i in range(bit_len)])
+                value_to_avoid = int(solution['components_values'][f'{component.id}{out_suffix}']['value'], base=16)
+                minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
+                literals.extend([f'{minus[i]}{component.id}_{i}{out_suffix}' for i in range(bit_len)])
             self._model_constraints.append(' '.join(literals))
             solution = self.solve(XOR_LINEAR, solver_name=solver_name)
             solution['building_time_seconds'] = end_building_time - start_building_time
