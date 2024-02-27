@@ -31,9 +31,9 @@ class ContinuousDiffusionAnalysis:
         self.cipher = cipher
 
     def _compute_conditional_expected_value_for_continuous_metric(self, lambda_value, number_of_samples, tag_input):
-        def _create_list_fixing_some_inputs(tag_input):
+        def _create_list_fixing_some_inputs(_tag_input):
             max_bias = [-1, 1]
-            index_of_tag_input = self.cipher.inputs.index(tag_input)
+            index_of_tag_input = self.cipher.inputs.index(_tag_input)
             lst_input = []
             i = 0
             for _ in self.cipher.inputs:
@@ -311,13 +311,13 @@ class ContinuousDiffusionAnalysis:
             sage: output['plaintext']['cipher_output']['diffusion_factor']['values'][0] > 0 # long time
             True
         """
-        output_tags = ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(
-            self.cipher.as_python_dictionary()).keys()
-        i = 0
-        continuous_neutrality_measures = {}
-        for cipher_input_size in self.cipher.inputs_bit_size:
+        output_tags = list(ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(
+            self.cipher.as_python_dictionary()).keys())
+        continuous_neutrality_measures = {input_tag: {ot: {"diffusion_factor": {"values": []}} for ot in output_tags}
+                                          for input_tag in self.cipher.inputs}
+
+        for i, cipher_input_size in enumerate(self.cipher.inputs_bit_size):
             input_tag = self.cipher.inputs[i]
-            continuous_neutrality_measures[input_tag] = {}
             for input_bit in range(cipher_input_size):
                 continuous_neutrality_measures_output = self.continuous_neutrality_measure_for_bit_j(
                     beta_number_of_samples, gf_number_samples, input_bit={input_tag: input_bit})
@@ -325,33 +325,29 @@ class ContinuousDiffusionAnalysis:
                     continuous_neutrality_measures_values = \
                         continuous_neutrality_measures_output[input_tag][output_tag][
                             "continuous_neutrality_measure"]["values"]
-                    if output_tag not in continuous_neutrality_measures[input_tag]:
-                        continuous_neutrality_measures[input_tag][output_tag] = {}
-                        continuous_neutrality_measures[input_tag][output_tag]["diffusion_factor"] = {}
-                    continuous_neutrality_measures_output_values = continuous_neutrality_measures_values
-                    if input_bit == 0:
-                        continuous_neutrality_measures[input_tag][output_tag]["diffusion_factor"]["values"] = [
-                            {} for _ in range(len(continuous_neutrality_measures_output_values))]
-                    ContinuousDiffusionAnalysis.incrementing_counters(
-                        continuous_neutrality_measures_output_values,
+                    if not continuous_neutrality_measures[input_tag][output_tag]["diffusion_factor"]["values"]:
+                        continuous_neutrality_measures[input_tag][output_tag]["diffusion_factor"]["values"] = [{} for _
+                                                                                                               in
+                                                                                                               continuous_neutrality_measures_values]
+                    ContinuousDiffusionAnalysis._incrementing_counters(
+                        continuous_neutrality_measures_values,
                         continuous_neutrality_measures,
                         cipher_input_size, input_tag,
                         output_tag, input_bit
                     )
-            i += 1
 
-        for it in continuous_neutrality_measures.keys():
-            for out in continuous_neutrality_measures[it].keys():
-                copy_values = [list(X.values()) for X in
-                               continuous_neutrality_measures[it][out]['diffusion_factor']['values']]
-                copy_values = [value for round in copy_values for value in round]
-                continuous_neutrality_measures[it][out]['diffusion_factor']['values'] = copy_values
+        # Simplify the aggregation of values
+        for it, outs in continuous_neutrality_measures.items():
+            for out, data in outs.items():
+                values = data['diffusion_factor']['values']
+                flattened_values = [value for sublist in values for value in sublist.values()]
+                continuous_neutrality_measures[it][out]['diffusion_factor']['values'] = flattened_values
 
         return continuous_neutrality_measures
 
     @staticmethod
-    def incrementing_counters(continuous_neutrality_measures_output_values_, continuous_neutrality_measures_,
-                              cipher_input_size_, input_tag_, output_tag_, input_bit):
+    def _incrementing_counters(continuous_neutrality_measures_output_values_, continuous_neutrality_measures_,
+                               cipher_input_size_, input_tag_, output_tag_, input_bit):
         df_values = continuous_neutrality_measures_[input_tag_][output_tag_]["diffusion_factor"]["values"]
         for index in range(len(continuous_neutrality_measures_output_values_)):
             for key in continuous_neutrality_measures_output_values_[index]:
@@ -363,45 +359,34 @@ class ContinuousDiffusionAnalysis:
                 else:
                     df_values[index][key] = 0.0
 
-    def _merge_dictionaries(
-            self, continuous_diffusion_factor_output, continuous_avalanche_factor_output,
-            continuous_neutrality_measure_output, is_continuous_avalanche_factor=True,
-            is_continuous_neutrality_measure=True, is_diffusion_factor=True
-    ):
-        dict_of_outputs = [continuous_diffusion_factor_output, continuous_avalanche_factor_output,
-                           continuous_neutrality_measure_output]
+    @staticmethod
+    def _merge_dictionaries(continuous_diffusion_factor_output, continuous_avalanche_factor_output,
+                            continuous_neutrality_measure_output, is_continuous_avalanche_factor,
+                            is_continuous_neutrality_measure,
+                            is_diffusion_factor):
         merged_dict = {}
 
-        def merge_recursive(target, source):
-            for key, value in source.items():
-                if isinstance(value, dict):
-                    node = target.setdefault(key, {})
-                    merge_recursive(node, value)
+        def merge_two_dicts(target, source):
+            for k, v in source.items():
+                if isinstance(v, dict):
+                    target[k] = merge_two_dicts(target.get(k, {}), v)
                 else:
-                    if target.get(key) is None:
-                        target[key] = value
+                    if k in target and isinstance(target[k], list) and isinstance(v, list):
+                        target[k] += v  # Extend if both are lists
                     else:
-                        # Merge or update the values list, depending on the metric
-                        if isinstance(value, list) and isinstance(target[key], list):
-                            target[key].extend(value)
-                        else:
-                            target[key] = value
+                        target[k] = v
+            return target
 
-        def filter_metrics(data):
-            if not is_continuous_avalanche_factor:
-                data.pop("continuous_avalanche_factor", None)
-            if not is_continuous_neutrality_measure:
-                data.pop("continuous_neutrality_measure", None)
-            if not is_diffusion_factor:
-                data.pop("diffusion_factor", None)
-            for key, value in data.items():
-                if isinstance(value, dict):
-                    filter_metrics(value)
+        dict_of_outputs = [
+            (continuous_diffusion_factor_output, is_diffusion_factor),
+            (continuous_avalanche_factor_output, is_continuous_avalanche_factor),
+            (continuous_neutrality_measure_output, is_continuous_neutrality_measure)
+        ]
 
-        for dictionary in dict_of_outputs:
-            merge_recursive(merged_dict, dictionary)
+        for dict_output, flag in dict_of_outputs:
+            if flag:
+                merged_dict = merge_two_dicts(merged_dict, dict_output)
 
-        filter_metrics(merged_dict)
         return merged_dict
 
     def continuous_diffusion_tests(self,
@@ -497,7 +482,7 @@ class ContinuousDiffusionAnalysis:
             inputs_tags = list(continuous_avalanche_factor_output.keys())
             output_tags = list(continuous_avalanche_factor_output[inputs_tags[0]].keys())
 
-        continuous_diffusion_tests["test_results"] = self._merge_dictionaries(
+        continuous_diffusion_tests["test_results"] = ContinuousDiffusionAnalysis._merge_dictionaries(
             continuous_diffusion_factor_output, continuous_avalanche_factor_output,
             continuous_neutrality_measure_output, is_continuous_avalanche_factor,
             is_continuous_neutrality_measure,
