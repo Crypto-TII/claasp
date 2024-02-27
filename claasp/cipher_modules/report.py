@@ -498,6 +498,8 @@ class Report:
                                 continue
                             if out == 'round_output':
                                 output_res = self.test_report['test_results'][it]['cipher_output'][res]
+                                if 'worst_input_differences' in output_res[-1].keys():
+                                    output_res = output_res[:-1]
                                 if "input_difference_value" in case.keys():
                                     diff_key = case["input_difference_value"]
                                     output = [out for out in output_res if out["input_difference_value"] == diff_key][0]
