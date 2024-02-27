@@ -359,9 +359,15 @@ class ContinuousDiffusionAnalysis:
                 else:
                     df_values[index][key] = 0.0
 
-    def _merge_dictionaries(*dicts, is_continuous_avalanche_factor=True, is_continuous_neutrality_measure=True,
-                            is_diffusion_factor=True):
+    def _merge_dictionaries(
+            self, continuous_diffusion_factor_output, continuous_avalanche_factor_output,
+            continuous_neutrality_measure_output, is_continuous_avalanche_factor=True,
+            is_continuous_neutrality_measure=True, is_diffusion_factor=True
+    ):
+        dict_of_outputs = [continuous_diffusion_factor_output, continuous_avalanche_factor_output,
+                           continuous_neutrality_measure_output]
         merged_dict = {}
+
         def merge_recursive(target, source):
             for key, value in source.items():
                 if isinstance(value, dict):
@@ -388,7 +394,7 @@ class ContinuousDiffusionAnalysis:
                 if isinstance(value, dict):
                     filter_metrics(value)
 
-        for dictionary in dicts[1:]:
+        for dictionary in dict_of_outputs:
             merge_recursive(merged_dict, dictionary)
 
         filter_metrics(merged_dict)
