@@ -17,7 +17,6 @@
 
 from sage.crypto.sbox import SBox
 from sage.matrix.special import identity_matrix
-from sage.rings.quotient_ring import QuotientRing
 from sage.matrix.constructor import matrix, Matrix
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
@@ -43,9 +42,11 @@ class CipherComponentsAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: components_analysis = CipherComponentsAnalysis(fancy).component_analysis_tests()
+            sage: len(components_analysis)
+            9
 
         """
         all_variables_names = []
@@ -84,11 +85,12 @@ class CipherComponentsAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: cipher_operations = CipherComponentsAnalysis(fancy).get_all_operations()
             sage: list(cipher_operations.keys())
             ['sbox', 'linear_layer', 'XOR', 'AND', 'MODADD', 'ROTATE', 'SHIFT']
+
         """
         tmp_cipher_operations = {}
         for component in self._cipher.get_all_components():
@@ -114,19 +116,23 @@ class CipherComponentsAnalysis:
 
     def print_component_analysis_as_radar_charts(self):
         """
-        Display the properties of all the operations of a cipher in a spider graph
+        Return a graph that can be plot to visualize the properties of all the operations of a cipher in a spider graph
 
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: CipherComponentsAnalysis(fancy).print_component_analysis_as_radar_charts()
+            sage: plot = CipherComponentsAnalysis(fancy).print_component_analysis_as_radar_charts()
+            sage: type(plot)
+            <class 'module'>
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=3)
-            sage: from claasp.cipher_modules.component_analysis_tests import *
-            sage: CipherComponentsAnalysis(speck).print_component_analysis_as_radar_charts()
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
+            sage: plot = CipherComponentsAnalysis(speck).print_component_analysis_as_radar_charts()
+            sage: type(plot)
+            <class 'module'>
 
         """
         results = self.component_analysis_tests()
@@ -219,13 +225,14 @@ class CipherComponentsAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: and_component = fancy.get_component_from_id('and_0_8')
             sage: boolean_polynomial_ring = CipherComponentsAnalysis(fancy)._generate_boolean_polynomial_ring_from_cipher()
             sage: boolean_polynomials = CipherComponentsAnalysis(fancy)._AND_as_boolean_function(and_component, boolean_polynomial_ring)
             sage: len(boolean_polynomials)
             12
+
         """
         number_of_inputs = len(component.input_id_links)
         number_of_blocks = component.description[1]
@@ -277,13 +284,14 @@ class CipherComponentsAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: modadd_component = fancy.get_component_from_id('modadd_1_9')
             sage: boolean_polynomial_ring = CipherComponentsAnalysis(fancy)._generate_boolean_polynomial_ring_from_cipher()
             sage: boolean_polynomials = CipherComponentsAnalysis(fancy)._MODADD_as_boolean_function(modadd_component, boolean_polynomial_ring)
             sage: len(boolean_polynomials)
             6
+
         """
         number_of_inputs = len(component.input_id_links)
         output_bit_size = component.output_bit_size
@@ -360,13 +368,14 @@ class CipherComponentsAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: xor_component = fancy.get_component_from_id('xor_2_7')
             sage: boolean_polynomial_ring = CipherComponentsAnalysis(fancy)._generate_boolean_polynomial_ring_from_cipher()
             sage: boolean_polynomials = CipherComponentsAnalysis(fancy)._XOR_as_boolean_function(xor_component, boolean_polynomial_ring)
             sage: len(boolean_polynomials)
             12
+
         """
         number_of_inputs = len(component.input_id_links)
         number_of_blocks = component.description[1]
@@ -429,25 +438,26 @@ class CipherComponentsAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: twofish = TwofishBlockCipher(number_of_rounds=2)
             sage: mix_column_component = twofish.get_component_from_id('mix_column_0_19')
             sage: CipherComponentsAnalysis(twofish)._is_mds(mix_column_component)
             True
 
             sage: from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: skinny = SkinnyBlockCipher(block_bit_size=128, key_bit_size=384, number_of_rounds=40)
             sage: mix_column_component = skinny.get_component_from_id('mix_column_0_31')
             sage: CipherComponentsAnalysis(skinny)._is_mds(mix_column_component)
             False
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: aes = AESBlockCipher(number_of_rounds=3)
             sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
             sage: CipherComponentsAnalysis(aes)._is_mds(mix_column_component)
             True
+
         """
 
         description = component.description
@@ -479,7 +489,7 @@ class CipherComponentsAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: modadd_component = fancy.component_from(1, 9)
             sage: operation = [modadd_component, 2, ['modadd_1_9', 'modadd_1_10']]
@@ -487,6 +497,7 @@ class CipherComponentsAnalysis:
             sage: d = CipherComponentsAnalysis(fancy)._word_operation_properties(operation, boolean_polynomial_ring)
             sage: d["properties"]["degree"]["value"]
             4.5
+
         """
         component = operation[0]
         component_as_dictionary = {"type": component.type, "input_bit_size": component.input_bit_size,
@@ -531,9 +542,12 @@ class CipherComponentsAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: boolean_polynomial_ring = CipherComponentsAnalysis(fancy)._generate_boolean_polynomial_ring_from_cipher()
+            sage: boolean_polynomial_ring.n_variables()
+            372
+
         """
         all_variables_names = []
         for cipher_round in self._cipher.rounds_as_list:
@@ -600,7 +614,7 @@ class CipherComponentsAnalysis:
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: from claasp.components.rotate_component import Rotate
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
@@ -609,6 +623,7 @@ class CipherComponentsAnalysis:
             sage: d = CipherComponentsAnalysis(fancy)._linear_layer_properties(operation)
             sage: d["properties"]["differential_branch_number"]["value"]
             2
+
         """
         component = operation[0]
         dictio = {"type": component.type, "input_bit_size": component.input_bit_size,
@@ -654,11 +669,12 @@ class CipherComponentsAnalysis:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: rot_component = fancy.get_component_from_id('rot_1_11')
             sage: CipherComponentsAnalysis(fancy)._order_of_linear_component(rot_component)
             2
+
         """
         binary_matrix = binary_matrix_of_linear_component(component)
         if not binary_matrix:
@@ -682,7 +698,7 @@ class CipherComponentsAnalysis:
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.component_analysis_tests import *
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: from claasp.components.sbox_component import SBOX
@@ -747,46 +763,47 @@ class CipherComponentsAnalysis:
 
     def _fsr_properties(self, operation):
         """
-            Return a dictionary containing some properties of fsr component.
+        Return a dictionary containing some properties of fsr component.
 
-            INPUT:
+        INPUT:
 
-            - ``operation`` -- **list**; a list containing:
+        - ``operation`` -- **list**; a list containing:
 
-              * a component with the operation under study
-              * number of occurrences of the operation
-              * list of ids of all the components with the same underlying operation
+          * a component with the operation under study
+          * number of occurrences of the operation
+          * list of ids of all the components with the same underlying operation
 
-            EXAMPLES::
+        EXAMPLES::
 
-                sage: from claasp.cipher_modules.component_analysis_tests import *
-                sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-                sage: fancy = FancyBlockCipher(number_of_rounds=3)
-                sage: from claasp.components.fsr_component import FSR
-                sage: fsr_component = FSR(0,0, ["input"],[[0,1,2,3]],4,[[[4, [[1,[0]],[3,[1]],[2,[2]]]]],4])
-                sage: operation= [fsr_component, 1, ['fsr_0_0']]
-                sage: dictionary = CipherComponentsAnalysis(fancy)._fsr_properties(operation)
-                sage: dictionary['fsr_word_size'] == 4
-                True
-                sage: dictionary['lfsr_connection_polynomials'] == ['x^4 + (z4 + 1)*x^3 + z4*x^2 + 1']
-                True
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: from claasp.components.fsr_component import FSR
+            sage: fsr_component = FSR(0,0, ["input"],[[0,1,2,3]],4,[[[4, [[1,[0]],[3,[1]],[2,[2]]]]],4])
+            sage: operation= [fsr_component, 1, ['fsr_0_0']]
+            sage: dictionary = CipherComponentsAnalysis(fancy)._fsr_properties(operation)
+            sage: dictionary['fsr_word_size'] == 4
+            True
+            sage: dictionary['lfsr_connection_polynomials'] == ['x^4 + (z4 + 1)*x^3 + z4*x^2 + 1']
+            True
 
-                sage: from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
-                sage: from claasp.cipher_modules.component_analysis_tests import *
-                sage: e0 = BluetoothStreamCipherE0(keystream_bit_len=2)
-                sage: dictionary = CipherComponentsAnalysis(e0).component_analysis_tests()
-                sage: assert dictionary[8]["number_of_registers"] == 4
-                sage: dictionary[8]["lfsr_connection_polynomials"][0] == 'x^25 + x^20 + x^12 + x^8 + 1' # first lfsr
-                True
-                sage: dictionary[8]['lfsr_polynomials_are_primitive'] == [True, True, True, True]
-                True
+            sage: from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
+            sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
+            sage: e0 = BluetoothStreamCipherE0(keystream_bit_len=2)
+            sage: dictionary = CipherComponentsAnalysis(e0).component_analysis_tests()
+            sage: assert dictionary[8]["number_of_registers"] == 4
+            sage: dictionary[8]["lfsr_connection_polynomials"][0] == 'x^25 + x^20 + x^12 + x^8 + 1' # first lfsr
+            True
+            sage: dictionary[8]['lfsr_polynomials_are_primitive'] == [True, True, True, True]
+            True
 
-                sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-                sage: triv = TriviumStreamCipher(keystream_bit_len=1)
-                sage: dictionary = CipherComponentsAnalysis(triv).component_analysis_tests()
-                sage: dictionary[0]["type_of_registers"] == ['non-linear', 'non-linear', 'non-linear']
-                True
-            """
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+            sage: triv = TriviumStreamCipher(keystream_bit_len=1)
+            sage: dictionary = CipherComponentsAnalysis(triv).component_analysis_tests()
+            sage: dictionary[0]["type_of_registers"] == ['non-linear', 'non-linear', 'non-linear']
+            True
+
+        """
         component = operation[0]
         fsr_word_size = component.description[1]
         component_dict = {
@@ -927,6 +944,7 @@ def binary_matrix_of_linear_component(component):
         [1 0 0 0 0 0]
         [0 1 0 0 0 0]
         [0 0 1 0 0 0]
+
     """
     input_bit_size = component.input_bit_size
     output_bit_size = component.output_bit_size
@@ -965,6 +983,7 @@ def branch_number(component, type, format):
         sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
         sage: branch_number(mix_column_component, 'differential', 'word')
         5
+
     """
     if (component.type == "word_operation") and (component.description[0] == "ROTATE"):
         return 2
@@ -1000,8 +1019,9 @@ def get_inverse_matrix_in_integer_representation(component):
         sage: from claasp.cipher_modules.component_analysis_tests import get_inverse_matrix_in_integer_representation
         sage: midori = MidoriBlockCipher(number_of_rounds=3)
         sage: mix_column_component = midori.get_component_from_id('mix_column_0_20')
-        sage: get_inverse_matrix_in_integer_representation(mix_column_component)
-
+        sage: m = get_inverse_matrix_in_integer_representation(mix_column_component)
+        sage: m.dimensions()
+        (16,16)
 
     """
     if component.type != MIX_COLUMN:
@@ -1047,6 +1067,7 @@ def has_maximal_branch_number(component):
         sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
         sage: has_maximal_branch_number(mix_column_component)
         True
+
     """
     description = component.description
     word_size = int(description[2])
@@ -1109,8 +1130,12 @@ def int_to_poly(integer_value, word_size, variable):
 
 def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, input_bit_size, output_bit_size):
     """
+    Return a binary matrix based on the description of a component.
+
+    EXAMPLES::
+
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-        sage: from claasp.cipher_modules.component_analysis_tests import *
+        sage: from claasp.cipher_modules.component_analysis_tests import instantiate_matrix_over_correct_field
         sage: midori = MidoriBlockCipher(number_of_rounds=2)
         sage: mix_column_component = midori.get_component_from_id('mix_column_0_20')
         sage: description = mix_column_component.description
@@ -1118,7 +1143,7 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
                                                          mix_column_component.input_bit_size, mix_column_component.output_bit_size)
 
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-        sage: from claasp.cipher_modules.component_analysis_tests import *
+        sage: from claasp.cipher_modules.component_analysis_tests import instantiate_matrix_over_correct_field
         sage: midori = MidoriBlockCipher(number_of_rounds=2)
         sage: mix_column_component = midori.get_component_from_id('mix_column_0_21')
         sage: description = mix_column_component.description
@@ -1156,7 +1181,7 @@ def field_element_matrix_to_integer_matrix(matrix):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-        sage: from claasp.cipher_modules.component_analysis_tests import *
+        sage: from claasp.cipher_modules.component_analysis_tests import instantiate_matrix_over_correct_field, field_element_matrix_to_integer_matrix
         sage: aes = AESBlockCipher(number_of_rounds=3)
         sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
         sage: description = mix_column_component.description
@@ -1172,6 +1197,7 @@ def field_element_matrix_to_integer_matrix(matrix):
         [1 2 3 1]
         [1 1 2 3]
         [3 1 1 2]
+
     """
 
     int_matrix = []
