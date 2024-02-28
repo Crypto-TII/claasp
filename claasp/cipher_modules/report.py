@@ -683,7 +683,7 @@ class Report:
                 sage: speck = SpeckBlockCipher(number_of_rounds=5)
                 sage: avalanche_test_results = speck.diffusion_tests()
                 sage: report = Report(speck, avalanche_test_results)
-                sage: report.print_report()
+                sage: report.save_as_image()
 
         """
 
