@@ -526,13 +526,17 @@ class AvalancheTests:
 
         # Add a color bar to show the mapping of z values to colors
         cbar = fig.colorbar(scatter)
-        cbar.set_label('Avalanche Weight')
+        # cbar.set_label('Avalanche Weight')
 
+        s = ""
+        for w in criterion.split("_")[:-1]:
+            s += w
+            s += " "
         # Customize the plot as needed
-        ax.set_xlabel('Bit Position')
+        ax.set_xlabel('Output Bit Position')
         ax.set_ylabel('Round')
-        ax.set_zlabel('Total Avalanche Weight')
-        ax.set_title('3D Avalanche Weight Plot')
+        ax.set_zlabel(f"Average value of {s}")
+        ax.set_title(f"3D {s}plot")
 
         # Show the plot
         # plt.show()
