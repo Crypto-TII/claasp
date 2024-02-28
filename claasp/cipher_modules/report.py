@@ -8,17 +8,17 @@ import json
 import shutil
 
 
-def _print_colored_state(state, verbose):
+def _print_colored_state(state, verbose, file):
     for line in state:
-        print('', end='')
+        print('', end='', file = file)
         for x in line:
-            print(f'{x} ', end='')
+            print(f'{x} ', end='', file = file)
 
         occ = [i for i in range(len(line)) if line[i] != '_']
         if verbose:
-            print(f'\tactive words positions = {occ}')
+            print(f'\tactive words positions = {occ}', file = file)
         else:
-            print()
+            print('', file = file)
 
 
 def _dict_to_latex_table(data_dict, header_list):
@@ -146,6 +146,36 @@ class Report:
         except KeyError:
             self.input_parameters = {}
             self.test_name = test_report['test_name'] if type(test_report) is dict else test_report[0]['test_name']
+
+    def show(self, test_name='trail_search', fixed_input='plaintext', fixed_output='round_output', word_size=1, state_size=1, key_state_size=1,
+                     verbose=False, show_word_permutation=False,
+                     show_var_shift=False, show_var_rotate=False, show_theta_xoodoo=False,
+                     show_theta_keccak=False, show_shift_rows=False, show_sigma=False, show_reverse=False,
+                     show_permuation=False, show_multi_input_non_linear_logical_operator=False,
+                     show_modular=False, show_modsub=False,
+                     show_constant=False, show_rot=False, show_sbox=False, show_mix_column=False,
+                     show_shift=False, show_linear_layer=False, show_xor=False, show_modadd=False,
+                     show_and=False,
+                     show_or=False, show_not=False, show_plaintext=True, show_key=True,
+                     show_intermediate_output=True, show_cipher_output=True, show_input=True, show_output=True):
+
+        if 'trail' in self.test_name:
+            self._print_trail(word_size, state_size, key_state_size, verbose, show_word_permutation,
+                              show_var_shift, show_var_rotate, show_theta_xoodoo,
+                              show_theta_keccak, show_shift_rows, show_sigma, show_reverse,
+                              show_permuation, show_multi_input_non_linear_logical_operator,
+                              show_modular, show_modsub,
+                              show_constant, show_rot, show_sbox, show_mix_column,
+                              show_shift, show_linear_layer, show_xor, show_modadd,
+                              show_and,
+                              show_or, show_not, show_plaintext, show_key,
+                              show_intermediate_output, show_cipher_output, show_input, show_output, save_fig=False)
+
+        else:
+            if test_name == 'trail_search':
+                print('Error! Invalid test name. Please choose a valid test name')
+                return
+            self._produce_graph(show_graph=True,fixed_input=fixed_input,fixed_output=fixed_output, test_name=test_name).show()
 
     def _export(self, file_format, output_dir):
 
@@ -339,16 +369,34 @@ class Report:
                      show_shift, show_linear_layer, show_xor, show_modadd,
                      show_and,
                      show_or, show_not, show_plaintext, show_key,
-                     show_intermediate_output, show_cipher_output):
+                     show_intermediate_output, show_cipher_output, show_input, show_output, save_fig):
+
+        if save_fig == True:
+            if not os.path.exists(os.getcwd() + '/test_reports/'):
+                os.makedirs(os.getcwd() + '/test_reports/')
+                if not os.path.exists(os.getcwd() + '/test_reports/' + self.cipher.id):
+                    os.makedirs(os.getcwd() + '/test_reports/' + self.cipher.id)
+            filename = os.getcwd() + '/test_reports/' + self.cipher.id + '/'+ self.test_report['solver_name'] + '_' + self.test_name + '.txt'
+            if os.path.exists(filename):
+                os.remove(filename)
+            file = open(filename,'a')
+        else:
+            file=None
 
         input_comps = list(locals().keys())
         component_types = []
+        show_key_flow = False
 
         for comp in list(self.test_report['components_values'].keys()):
+            if 'key' in comp:
+                show_key_flow = True
             if (comp == 'key' or comp == 'plaintext') and comp not in component_types:
                 component_types.append(comp)
-            elif '_'.join(comp.split('_')[:-2]) not in component_types:
+            elif '_'.join(comp.split('_')[:-2]) not in component_types and comp[-2:] != "_i" and comp[-2:] != "_o":
                 component_types.append('_'.join(comp.split('_')[:-2]))
+            elif ('_'.join(comp.split('_')[:-3])) + '_' + ('_'.join(comp.split('_')[-1])) not in component_types and (
+                    comp[-2:] == "_i" or comp[-2:] == "_o"):
+                component_types.append(('_'.join(comp.split('_')[:-3])) + '_' + ('_'.join(comp.split('_')[-1])))
 
         show_components = {}
 
@@ -356,10 +404,16 @@ class Report:
             for comp_choice in input_comps:
                 if 'show_' + comp == comp_choice:
                     show_components[comp] = locals()[comp_choice]
-
+                if 'show_' + comp == comp_choice + '_o' and show_output:
+                    show_components[comp] = locals()[comp_choice]
+                if 'show_' + comp == comp_choice + '_i' and show_input:
+                    show_components[comp] = locals()[comp_choice]
         out_list = {}
 
-        key_flow = ['key']
+        if show_key_flow:
+            key_flow = ['key']
+        else:
+            key_flow = []
 
         abs_prob = 0
 
@@ -374,14 +428,21 @@ class Report:
             # Check input links
 
             if 'plaintext' not in comp_id and 'key' not in comp_id:
-                input_links = self.cipher.get_component_from_id(comp_id).input_id_links
+                if comp_id[-2:] == "_i" or comp_id[-2:] == "_o":
+                    input_links = self.cipher.get_component_from_id(comp_id[:-2]).input_id_links
+                    comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
+                else:
+                    input_links = self.cipher.get_component_from_id(comp_id).input_id_links
+                    comp_value = '_'.join(comp_id.split('_')[:-2])
 
-                if all((id_link in key_flow or 'constant' in id_link) for id_link in input_links):
+                if all((id_link in key_flow or 'constant' in id_link) for id_link in input_links) and show_key_flow:
                     key_flow.append(comp_id)
                     key_flow = key_flow + [constant_id for constant_id in input_links if 'constant' in constant_id]
 
-            if show_components['_'.join(comp_id.split('_')[:-2]) if comp_id not in ['plaintext', 'key', 'cipher_output',
-                                                                                    'intermediate_output'] else comp_id]:
+            if show_components[
+                comp_value if comp_id not in ['plaintext', 'key', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
+                                              'intermediate_output', 'intermediate_output_o',
+                                              'intermediate_output_i'] else comp_id]:
 
                 value = self.test_report['components_values'][comp_id]['value']
 
@@ -406,46 +467,59 @@ class Report:
                         else:
                             out_format[i].append(word_list[j + i * size[1]])
 
-                out_list[comp_id] = (out_format, rel_prob, abs_prob) if comp_id not in ["plaintext", "key"] else (out_format, 0, 0)
+                out_list[comp_id] = (out_format, rel_prob, abs_prob) if comp_id not in ["plaintext", "key"] else (
+                out_format, 0, 0)
 
         for comp_id in out_list.keys():
             if comp_id not in key_flow:
                 if comp_id == 'plaintext' or comp_id == 'key':
-                    print(f'\t{comp_id}\t')
+                    print(f'\t{comp_id}\t', file=file)
                 else:
                     if verbose:
                         print(
-                            f' \t{comp_id}        Input Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
+                            f' \t{comp_id}        Input Links : {self.cipher.get_component_from_id(comp_id).input_id_links}', file=filename if save_fig else None)
                     else:
-                        print(f' \t{comp_id}\t')
-                _print_colored_state(out_list[comp_id][0], verbose)
+                        print(f' \t{comp_id}\t', file=file)
+                _print_colored_state(out_list[comp_id][0], verbose, file)
                 if verbose: print('  ' * len(out_list[comp_id][0][0]) + '\tlocal weight = ' + str(
                     out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
-                    out_list[comp_id][2]))
-                print()
-        print()
-        print("KEY FLOW")
-        print()
+                    out_list[comp_id][2]), file=file)
+                print('', file=file)
 
-        for comp_id in key_flow:
+        print('', file=file)
+        print('total weight = ' + str(self.test_report['total_weight']), file=file)
+        show_key_flow = False
 
-            if show_components['_'.join(comp_id.split('_')[:-2]) if comp_id not in ['plaintext', 'key', 'cipher_output',
-                                                                                    'intermediate_output'] else comp_id]:
-                if comp_id == 'plaintext' or comp_id == 'key':
-                    print(f'\t{comp_id}\t')
-                else:
-                    if verbose:
-                        print(
-                            f' \t{comp_id}       Input Links : {self.cipher.get_component_from_id(comp_id).input_id_links}')
+        for key_comp in key_flow:
+            if key_comp != 'key' and self.test_report['components_values'][key_comp]['weight'] != 0:
+                show_key_flow = True
+                break
+
+        if show_key_flow:
+            print('', file=file)
+            print("KEY FLOW", file=file)
+            print('', file=file)
+
+            for comp_id in key_flow:
+
+                if show_components[
+                    '_'.join(comp_id.split('_')[:-2]) if comp_id not in ['plaintext', 'key', 'cipher_output',
+                                                                         'intermediate_output'] else comp_id]:
+                    if comp_id == 'plaintext' or comp_id == 'key':
+                        print(f'\t{comp_id}\t', file=file)
                     else:
-                        print(f' \t{comp_id}\t')
-                _print_colored_state(out_list[comp_id][0], verbose)
-                if verbose: print('  ' * len(out_list[comp_id][0][0]) + '\tlocal weight = ' + str(
-                    out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
-                    out_list[comp_id][2]))
-                print()
+                        if verbose:
+                            print(
+                                f' \t{comp_id}       Input Links : {self.cipher.get_component_from_id(comp_id).input_id_links}', file=filename)
+                        else:
+                            print(f' \t{comp_id}\t', file=file)
+                    _print_colored_state(out_list[comp_id][0], verbose, file)
+                    if verbose: print('  ' * len(out_list[comp_id][0][0]) + '\tlocal weight = ' + str(
+                        out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
+                        out_list[comp_id][2]), file=file)
+                    print('', file=file)
 
-    def _produce_graph(self, output_directory):
+    def _produce_graph(self, output_directory=os.getcwd(), show_graph=False, fixed_input=None, fixed_output=None, test_name=None):
 
         if 'statistical' in self.test_name:
 
@@ -464,24 +538,24 @@ class Report:
         else:
 
             inputs = list(self.test_report['test_results'].keys())
-            for it in inputs:
+            for it in inputs if fixed_input==None else [fixed_input]:
                 if not os.path.exists(
-                        output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it):
+                        output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it) and show_graph == False:
                     os.mkdir(output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it)
                 outputs = list(self.test_report['test_results'][it].keys())
-                for out in outputs:
+                for out in outputs if fixed_input==None else [fixed_output]:
                     if out == 'cipher_output':
                         continue
                     if not os.path.exists(
-                            output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it + '/' + out):
+                            output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it + '/' + out) and show_graph == False:
                         os.mkdir(
                             output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it + '/' + out)
 
                     results = list(self.test_report['test_results'][it][out].keys())
 
-                    for res in results:
+                    for res in results if test_name==None else [test_name]:
                         if not os.path.exists(output_directory + '/' +
-                                              self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res):
+                                              self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res) and show_graph == False:
                             os.mkdir(
                                 output_directory + '/' + self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res)
 
@@ -538,9 +612,11 @@ class Report:
                                         'yaxis' + str(i + 1): {'tick0': 0, 'dtick': 1,
                                                                'tickfont': {'size': 8}, 'autorange': 'reversed'}
                                     })
-                                fig.write_image(output_directory + '/' +
-                                                self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res + '/' + str(
-                                    res) + '_' + str(case['input_difference_value']) + '.png', scale=4)
+
+                                if show_graph == False:
+                                    fig.write_image(output_directory + '/' +
+                                                    self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res + '/' + str(
+                                        res) + '_' + str(case['input_difference_value']) + '.png', scale=4)
                                 fig.data = []
                                 fig.layout = {}
 
@@ -550,13 +626,19 @@ class Report:
                                               range_y=[min(df[0]) - 1, max(df[0]) + 1])
                                 fig.update_layout(xaxis_title="round", yaxis_title=res_key,
                                                   showlegend=False)
-                                fig.write_image(output_directory + '/' +
+
+                                if show_graph == False:
+                                    fig.write_image(output_directory + '/' +
                                                 self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res +
                                                 '/' + str(res) + '.png',
                                                 scale=4)
 
                                 fig.data = []
                                 fig.layout = {}
+
+                            if show_graph==True:
+                                return fig
+
 
         print("Results saved in " + output_directory)
 
@@ -570,7 +652,7 @@ class Report:
                      show_shift=False, show_linear_layer=False, show_xor=False, show_modadd=False,
                      show_and=False,
                      show_or=False, show_not=False, show_plaintext=True, show_key=True,
-                     show_intermediate_output=True, show_cipher_output=True):
+                     show_intermediate_output=True, show_cipher_output=True, show_input=True, show_output=True):
 
         """
             Prints the graphical representation of the Report.
@@ -606,7 +688,7 @@ class Report:
                               show_shift, show_linear_layer, show_xor, show_modadd,
                               show_and,
                               show_or, show_not, show_plaintext, show_key,
-                              show_intermediate_output, show_cipher_output)
+                              show_intermediate_output, show_cipher_output, show_input, show_output, save_fig=True)
         else:
             if not os.path.exists(output_directory):
                 os.mkdir(output_directory)
