@@ -172,6 +172,7 @@ class Report:
                               show_intermediate_output, show_cipher_output, show_input, show_output, save_fig=False)
 
         else:
+
             if test_name == 'trail_search':
                 print('Error! Invalid test name. Please choose a valid test name')
                 return
