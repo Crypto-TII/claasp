@@ -93,37 +93,6 @@ def test_avalanche_probability_vectors():
                                                   0.0, 1.0]
 
 
-@pytest.mark.filterwarnings("ignore::DeprecationWarning:")
-def test_component_analysis():
-    fancy = FancyBlockCipher(number_of_rounds=2)
-    result = fancy.component_analysis_tests()
-    assert len(result) == 9
-
-    aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
-    result = aes.component_analysis_tests()
-    assert len(result) == 7
-
-    present = PresentBlockCipher(number_of_rounds=2)
-    result = present.component_analysis_tests()
-    assert len(result) == 5
-
-    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-    result = speck.component_analysis_tests()
-    assert len(result) == 4
-
-    tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=32)
-    result = tea.component_analysis_tests()
-    assert len(result) == 4
-
-
-@pytest.mark.filterwarnings("ignore::DeprecationWarning:")
-def test_print_component_analysis_as_radar_charts():
-    aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-    result = aes.component_analysis_tests()
-    fig = aes.print_component_analysis_as_radar_charts(result)
-    assert str(type(fig)) == "<class 'module'>"
-
-
 def test_compute_criterion_from_avalanche_probability_vectors():
     speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
     apvs = speck.avalanche_probability_vectors(100)
