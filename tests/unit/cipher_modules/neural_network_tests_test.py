@@ -26,8 +26,9 @@ def test_train_gohr_neural_distinguisher():
     cipher = SpeckBlockCipher()
     input_differences = [0x400000, 0]
     number_of_rounds = 5
-    result = NeuralNetworkTests(cipher).train_gohr_neural_distinguisher(input_differences, number_of_rounds, word_size=16, number_of_epochs=1, training_samples = 10**3, testing_samples = 10**3)
-    assert result > 0
+    result = NeuralNetworkTests(cipher).train_gohr_neural_distinguisher(input_differences, number_of_rounds,
+            word_size=16, number_of_epochs=1, training_samples = 10**3, testing_samples = 10**3)
+    assert result[5] > 0
 
 def test_run_autond_pipeline():
     cipher = SpeckBlockCipher()
@@ -46,8 +47,7 @@ def test_get_differential_dataset():
 def test_neural_network_blackbox_distinguisher_tests():
     cipher = SpeckBlockCipher(number_of_rounds=5)
     results = NeuralNetworkTests(cipher).neural_network_blackbox_distinguisher_tests(nb_samples=10)
-    assert results['input_parameters'] == \
-           {'number_of_samples': 10, 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10, 'test_name': 'neural_network_blackbox_distinguisher_tests'}
+    assert results['input_parameters'] == {'number_of_samples': 10, 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10, 'test_name': 'neural_network_blackbox_distinguisher_tests'}
 
 
 def test_neural_network_differential_distinguisher_tests():
