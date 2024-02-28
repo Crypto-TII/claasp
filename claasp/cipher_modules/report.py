@@ -27,7 +27,6 @@ def _dict_to_latex_table(data_dict, header_list):
 
     # Check if the values are dictionaries or lists
     is_nested = isinstance(next(iter(data_dict.values())), dict)
-    print(is_nested)
     num_columns = len(header_list)
     latex_code = "\\begin{longtable}{|" + "c|" * (num_columns) + "}\n"
     latex_code += "\\hline\n"
