@@ -37,39 +37,116 @@ class DieharderTests:
         self._cipher_primitive = cipher.id + "_" + "_".join(str_of_inputs_bit_size)
 
 
+
+    def dieharder_statistical_tests(self, test_type, seq_size='default', seq_lines='default', number_of_samples_in_one_line='default', round_start=0, round_end=1):
+
+        dieharder_test = {
+
+            'input_parameters': {
+                'test_name': 'dierharder_statistical_tests',
+                'test_type': test_type
+            },
+            'test_results':{}
+        }
+        if test_type == 'avalanche':
+
+            if seq_size == 'default':
+                seq_size = 1048576
+            if seq_lines == 'default':
+                seq_lines = 384
+
+            for i in range(len(self.cipher.inputs)):
+
+                sample_size = self.cipher.inputs_bit_size[i] * self.cipher.output_bit_size
+                number_of_samples_in_one_line = math.ceil(seq_size / sample_size)
+
+                dieharder_test['test_results'][self.cipher.inputs[i]] = self.run_avalanche_dieharder_statistics_test(input_index=i,
+                                                          number_of_samples_in_one_line=number_of_samples_in_one_line,
+                                                          number_of_lines=seq_lines, round_start=round_start, round_end=round_end)
+        elif test_type == 'cbc':
+
+            if seq_size == 'default':
+                seq_size = 1048576
+            if seq_lines == 'default':
+                seq_lines = 384
+
+            if self.cipher.output_bit_size > 128:
+                number_of_blocks_in_one_sample = math.ceil(seq_size / self.cipher.output_bit_size)
+            else:
+                number_of_blocks_in_one_sample = 8128
+            # sample_size = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+            number_of_samples_in_one_line = 1
+
+            for i in range(len(self.cipher.inputs)):
+                dieharder_test['test_results'][self.cipher.inputs[i]] = self.run_correlation_dieharder_statistics_test(input_index=i,
+                                                        number_of_samples_in_one_line=number_of_samples_in_one_line,
+                                                        number_of_lines=seq_lines,
+                                                        number_of_blocks_in_one_sample=number_of_blocks_in_one_sample,
+                                                        round_start=round_start, round_end=round_end)
+
+        elif test_type == 'random':
+
+            if seq_size == 'default':
+                seq_size = 1040384
+            if seq_lines == 'default':
+                seq_lines = 128
+            if number_of_samples_in_one_line == 'default':
+                number_of_samples_in_one_line = 1
+            number_of_blocks_in_one_sample = math.ceil(seq_size / self.cipher.output_bit_size)
+            # sample_size = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            for i in range(len(self.cipher.inputs)):
+                dieharder_test['test_results'][self.cipher.inputs[i]] = self.run_random_dieharder_statistics_test(input_index=i,
+                                                   number_of_samples_in_one_line=number_of_samples_in_one_line,
+                                                   number_of_lines=seq_lines,
+                                                   number_of_blocks_in_one_sample=number_of_blocks_in_one_sample,
+                                                   round_start=round_start, round_end=round_end)
+
+        elif test_type == 'low_density':
+
+            if number_of_samples_in_one_line == 'default':
+                number_of_samples_in_one_line = 1
+            if seq_size == 'default':
+                seq_size = 1056896
+            if seq_lines == 'default':
+                seq_lines = 1
+            number_of_blocks_in_one_sample = math.ceil(seq_size / self.cipher.output_bit_size)
+
+            for i in range(len(self.cipher.inputs)):
+                n = self.cipher.inputs_bit_size[i]
+                ratio = min(1,(number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
+                dieharder_test['test_results'][self.cipher.inputs[i]] = self.run_low_density_dieharder_statistics_test(input_index=i,
+                                                            number_of_samples_in_one_line=number_of_samples_in_one_line,
+                                                            number_of_lines=seq_lines,
+                                                            ratio=ratio, round_start=round_start, round_end=round_end)
+
+        elif test_type == 'high_density':
+
+            if number_of_samples_in_one_line == 'default':
+                number_of_samples_in_one_line = 1
+            if seq_size == 'default':
+                seq_size = 1056896
+            if seq_lines == 'default':
+                seq_lines = 1
+            number_of_blocks_in_one_sample = math.ceil(seq_size / self.cipher.output_bit_size)
+
+            for i in range(len(self.cipher.inputs)):
+                n = self.cipher.inputs_bit_size[i]
+                ratio = min(1,(number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
+                dieharder_test['test_results'][self.cipher.inputs[i]] = self.run_high_density_dieharder_statistics_test(input_index=i,
+                                                            number_of_samples_in_one_line=number_of_samples_in_one_line,
+                                                            number_of_lines=seq_lines,
+                                                            ratio=ratio, round_start=round_start, round_end=round_end)
+
+        else:
+            print('Invalid test_type choice. Choose among the following: avalanche, cbc, random, low_density, high_density')
+
+
+        return dieharder_test
+
+
     @staticmethod
-    def dieharder_statistical_tests():
-
-        """
-        Run the run_dieharder_statistical_tests_tool_interactively function and process its output with the parse_output function
-        to standardize it for the Report class
-
-        INPUT:
-
-        - ``input_file`` -- **str**; file containing the bit streams
-
-        OUTPUT:
-
-        a python dictionary representing the parsed output of the run_dieharder_statistical_tests_tool_interactively function
-
-        EXAMPLES:
-
-        from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-
-        result = StatisticalTests.dieharder_statistical_test(f'claasp/cipher_modules/statistical_tests/input_data_example')
-
-        """
-
-
-        DieharderTests.run_dieharder_statistical_tests_tool_interactively(input_file)
-
-        report = DieharderTests.parse_report(f'dieharder_test_output.txt')
-
-        return report
-
-
-    @staticmethod
-    def run_dieharder_statistical_tests_tool_interactively(input_file):
+    def _run_dieharder_statistical_tests_tool(input_file):
         """
         Run dieharder tests using the Dieharder library [1]. The result will be in dieharder_test_output.txt.
 
@@ -86,7 +163,7 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool_interactively( # doctest: +SKIP
+            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
             ...
@@ -112,7 +189,7 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool_interactively( # doctest: +SKIP
+            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
             ...
@@ -172,7 +249,6 @@ class DieharderTests:
         report_dict["failed_tests"] = failed_tests
         report_dict["passed_tests_proportion"] = passed_tests / total_tests
         report_dict["total_tests"] = total_tests
-        report_dict["test_name"] = "dieharder_statistical_tests"
         f.close()
         print(f'Parsing {report_filename} is finished.')
         return report_dict
@@ -194,7 +270,7 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool_interactively( # doctest: +SKIP
+            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
             ...
@@ -239,7 +315,7 @@ class DieharderTests:
         print(f'Drawing round {report_dict["round"]} is finished. Please find the chart in file {output_dir}.')
 
     @staticmethod
-    def generate_chart_all(report_dict_list):
+    def generate_chart_all(report_dict_list, output_dir=''):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -255,7 +331,7 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool_interactively( # doctest: +SKIP
+            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
             ...
@@ -291,6 +367,13 @@ class DieharderTests:
                    [i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2 + 1))])
         # plt.grid(True)
         chart_filename = f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
+
+        if output_dir =='':
+            output_dir = f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
+            plt.savefig(output_dir)
+        else:
+            plt.savefig(output_dir+'/'+f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png')
+
         plt.savefig(chart_filename)
         print(f'Drawing chart for all rounds is in finished. Please find the chart in file {chart_filename}.')
 
@@ -311,7 +394,7 @@ class DieharderTests:
             print(f'Error: {e.strerror}')
 
     def _generate_dieharder_dicts(self, dataset, round_start, round_end, FLAG_CHART=False):
-        dataset_folder = 'dataset'
+        dataset_folder = os.getcwd() + '/dataset'
         dataset_filename = 'dieharder_input_' + self._cipher_primitive
         dataset_filename = os.path.join(dataset_folder, dataset_filename)
         dieharder_report_dicts = []
@@ -328,7 +411,7 @@ class DieharderTests:
             dataset[round_number].tofile(dataset_filename)
 
             dieharder_execution_time = time.time()
-            self.run_dieharder_statistical_tests_tool_interactively(dataset_filename)
+            self.run_dieharder_statistical_tests_tool(dataset_filename)
             dieharder_execution_time = time.time() - dieharder_execution_time
             try:
                 os.rename(self._DIEHARDER_OUTPUT, report_round)
@@ -414,7 +497,7 @@ class DieharderTests:
         self.number_of_samples_in_one_line = number_of_samples_in_one_line
         self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
         self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
+        self.folder_prefix = os.getcwd()+'/test_reports/'+dieharder_report_folder_prefix
 
         self._create_report_folder()
 
@@ -479,7 +562,7 @@ class DieharderTests:
         self.number_of_samples_in_one_line = number_of_samples_in_one_line
         self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
         self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
+        self.folder_prefix = os.getcwd()+'/test_reports/'+dieharder_report_folder_prefix
 
         self._create_report_folder()
 
@@ -545,7 +628,7 @@ class DieharderTests:
         self.number_of_samples_in_one_line = number_of_samples_in_one_line
         self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
         self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
+        self.folder_prefix = os.getcwd()+'/test_reports/'+dieharder_report_folder_prefix
 
         self._create_report_folder()
 
@@ -611,7 +694,7 @@ class DieharderTests:
         self.number_of_samples_in_one_line = number_of_samples_in_one_line
         self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
         self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
+        self.folder_prefix = os.getcwd()+'/test_reports/'+dieharder_report_folder_prefix
 
         self._create_report_folder()
 
@@ -681,7 +764,7 @@ class DieharderTests:
         self.number_of_samples_in_one_line = number_of_samples_in_one_line
         self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
         self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
+        self.folder_prefix = os.getcwd()+'/test_reports/'+dieharder_report_folder_prefix
 
         self._create_report_folder()
 
@@ -751,7 +834,7 @@ class DieharderTests:
         self.number_of_samples_in_one_line = number_of_samples_in_one_line
         self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
         self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
+        self.folder_prefix = os.getcwd()+'/test_reports/'+dieharder_report_folder_prefix
 
         self._create_report_folder()
 
