@@ -375,8 +375,8 @@ class Report:
         if save_fig == True:
             if not os.path.exists(os.getcwd() + '/test_reports/'):
                 os.makedirs(os.getcwd() + '/test_reports/')
-                if not os.path.exists(os.getcwd() + '/test_reports/' + self.cipher.id):
-                    os.makedirs(os.getcwd() + '/test_reports/' + self.cipher.id)
+            if not os.path.exists(os.getcwd() + '/test_reports/' + self.cipher.id):
+                os.makedirs(os.getcwd() + '/test_reports/' + self.cipher.id)
             filename = os.getcwd() + '/test_reports/' + self.cipher.id + '/'+ self.test_report['solver_name'] + '_' + self.test_name + '.txt'
             if os.path.exists(filename):
                 os.remove(filename)
@@ -535,7 +535,16 @@ class Report:
                     StatisticalTests.generate_chart_all(self.test_report['test_results'][it], output_directory+'/'+self.cipher.id + '/' + self.test_name)
 
         elif 'algebraic' in self.test_name:
-            print(self.test_report)
+            x = [n+1 for n in list(range(self.cipher.number_of_rounds))]
+
+            for test_key in self.test_report['test_results'].keys() if test_name==None else [test_name]:
+                y = self.test_report['test_results'][test_key]
+                df = pd.DataFrame([x,y]).T
+                df.columns = ['round', test_key]
+                fig = px.line(df, x='round', y=test_key)
+                fig.write_image(output_directory+'/'+test_key+'.png')
+                if show_graph:
+                    return fig
         else:
 
             inputs = list(self.test_report['test_results'].keys())
@@ -643,7 +652,7 @@ class Report:
 
         print("Results saved in " + output_directory)
 
-    def print_report(self, word_size=1, state_size=1, key_state_size=1, output_directory=os.getcwd() + '/test_reports',
+    def save_as_image(self, word_size=1, state_size=1, key_state_size=1, output_directory=os.getcwd() + '/test_reports',
                      verbose=False, show_word_permutation=False,
                      show_var_shift=False, show_var_rotate=False, show_theta_xoodoo=False,
                      show_theta_keccak=False, show_shift_rows=False, show_sigma=False, show_reverse=False,
