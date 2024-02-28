@@ -38,7 +38,7 @@ class DieharderTests:
 
 
 
-    def dieharder_statistical_tests(self, test_type, seq_size='default', seq_lines='default', number_of_samples_in_one_line='default', round_start=0, round_end=1):
+    def dieharder_statistical_tests(self, test_type, seq_size='default', seq_lines='default', number_of_samples_in_one_line='default', round_start=0, round_end=2):
 
         dieharder_test = {
 
@@ -146,7 +146,7 @@ class DieharderTests:
 
 
     @staticmethod
-    def _run_dieharder_statistical_tests_tool(input_file):
+    def run_dieharder_statistical_tests_tool(input_file):
         """
         Run dieharder tests using the Dieharder library [1]. The result will be in dieharder_test_output.txt.
 
