@@ -23,8 +23,11 @@ class NeuralNetworkTests:
                                                     hidden_layers=[32, 32, 32], number_of_epochs=10,
                                                     rounds_to_train=[]):
         """
-        Runs the test defined in [BR2021].
-        Return a python dictionary that contains the accuracies corresponding to each round.
+        Runs the test defined in [BR2021]; trains a MLP to distinguish samples of the form
+        input || output from random. The test is run once for each setting, defined by the types of inputs and outputs.
+        The input is taken among the inputs defined by the cipher, and output is chosen between cipher output,
+        round output (one setting for each round output), or round key output (one setting per round key).
+        Return a python dictionary that contains the accuracies corresponding to each setting.
 
         INPUT:
 
@@ -35,9 +38,29 @@ class NeuralNetworkTests:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: speck(number_of_rounds=22).neural_network_blackbox_distinguisher_tests(nb_samples = 10) # random
-
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+            sage: NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2)).neural_network_blackbox_distinguisher_tests(nb_samples=10)
+                    {'input_parameters': {'test_name': 'neural_network_blackbox_distinguisher_tests',
+          'number_of_samples': 10,
+          'hidden_layers': [32, 32, 32],
+          'number_of_epochs': 10},
+         'test_results': {'plaintext': {'round_key_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0,
+               0.0],
+              'component_ids': ['intermediate_output_0_5',
+               'intermediate_output_1_11']}]},
+           'round_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [0.0],
+              'component_ids': ['intermediate_output_0_6']}]},
+           'cipher_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0],
+              'component_ids': ['cipher_output_1_12']}]}},
+          'key': {'round_key_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [0.0,
+               0.0],
+              'component_ids': ['intermediate_output_0_5',
+               'intermediate_output_1_11']}]},
+           'round_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [0.0],
+              'component_ids': ['intermediate_output_0_6']}]},
+           'cipher_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0],
+              'component_ids': ['cipher_output_1_12']}]}}}}
         """
         results = {"input_parameters": {
             "test_name": "neural_network_blackbox_distinguisher_tests",
@@ -57,20 +80,20 @@ class NeuralNetworkTests:
             base_inputs = [secrets.randbits(i) for i in self.cipher.inputs_bit_size]
             base_output = evaluator.evaluate(self.cipher, base_inputs, intermediate_output=True)[1]
 
-            partial_result, ds, component_output_ids = self.create_structure(base_output, test_name, partial_result)
-            self.update_component_output_ids(component_output_ids)
-            self.update_blackbox_distinguisher_vectorized_tests_ds(base_inputs, base_output, ds, index, labels,
-                                                                   nb_samples)
-            self.update_partial_result(component_output_ids, ds, index, test_name,
-                                       labels, number_of_epochs, partial_result, 0, blackbox=True,
-                                       rounds_to_train=rounds_to_train, hidden_layers=hidden_layers)
+            partial_result, ds, component_output_ids = self._create_structure(base_output, test_name, partial_result)
+            self._update_component_output_ids(component_output_ids)
+            self._update_blackbox_distinguisher_vectorized_tests_ds(base_inputs, base_output, ds, index, labels,
+                                                                    nb_samples)
+            self._update_partial_result(component_output_ids, ds, index, test_name,
+                                        labels, number_of_epochs, partial_result, 0, blackbox=True,
+                                        rounds_to_train=rounds_to_train, hidden_layers=hidden_layers)
 
             results["test_results"][input_tag].update(partial_result)
 
         return results
 
-    def update_partial_result(self, component_output_ids, ds, index, test_name, labels, number_of_epochs,
-                              partial_result, diff, blackbox=True, rounds_to_train=[], hidden_layers = [32,32,32]):
+    def _update_partial_result(self, component_output_ids, ds, index, test_name, labels, number_of_epochs,
+                               partial_result, diff, blackbox=True, rounds_to_train=[], hidden_layers = [32,32,32]):
         # noinspection PyUnresolvedReferences
         input_lengths = self.cipher.inputs_bit_size
 
@@ -116,8 +139,8 @@ class NeuralNetworkTests:
                 tmp_dict["input_difference_value"] = hex(diff)
             partial_result[k][test_name].append(tmp_dict)
 
-    def update_blackbox_distinguisher_vectorized_tests_ds(self, base_inputs, base_output, ds, index, labels,
-                                                          nb_samples):
+    def _update_blackbox_distinguisher_vectorized_tests_ds(self, base_inputs, base_output, ds, index, labels,
+                                                           nb_samples):
         input_lengths = self.cipher.inputs_bit_size
         random_labels_size = nb_samples - np.count_nonzero(np.array(labels))
         # cipher_output = base_output
@@ -145,13 +168,13 @@ class NeuralNetworkTests:
                 full_output = np.append(base_input_index_unpacked, cipher_output_unpacked, axis=1)
                 ds[k][1][j].extend(list(full_output))
 
-    def update_component_output_ids(self, component_output_ids):
+    def _update_component_output_ids(self, component_output_ids):
         for k in component_output_ids:
             for component in self.cipher.get_all_components():
                 if k in component.description:
                     component_output_ids[k].append(component.id)
 
-    def create_structure(self, base_output, test_name, partial_result):
+    def _create_structure(self, base_output, test_name, partial_result):
         ds = {}
         component_output_ids = {}
 
@@ -177,7 +200,13 @@ class NeuralNetworkTests:
     def neural_network_differential_distinguisher_tests(self, nb_samples=10000, hidden_layers=[32, 32, 32],
                                                         number_of_epochs=10, diff=[[0x400000], [0xa]], rounds_to_train=[]):
         """
-        Runs the test defined in [BHPR2021].
+        Runs the test defined in [BHPR2021]; for each input i to the cipher and difference delta in diff[i], a dataset
+        of pairs X0, X1 is created, such that the input i in X1 is equal to the input i in X0 XORed with delta. The
+        pairs are then encrypted to C0, C1, and a simple MLP is trained to distinguish C0, C1 pairs from pairs of
+        random values R0, R1.
+        The test is run once for each setting, defined by the difference, and the types of inputs and outputs.
+        The input is taken among the inputs defined by the cipher, and output is chosen between cipher output,
+        round output (one setting for each round output), or round key output (one setting per round key).
         Return a python dictionary that contains the accuracies corresponding to each round.
 
         INPUT:
@@ -191,8 +220,40 @@ class NeuralNetworkTests:
 
         EXAMPLES::
 
-           sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-           sage: #speck(number_of_rounds=22).neural_network_differential_distinguisher_tests(nb_samples = 10) # random
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+            sage: NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2)).neural_network_differential_distinguisher_tests(nb_samples=10)
+                {'input_parameters': {'test_name': 'neural_network_differential_distinguisher_tests',
+      'number_of_samples': 10,
+      'input_differences': [[4194304], [10]],
+      'hidden_layers': [32, 32, 32],
+      'min_accuracy_value': 0,
+      'max_accuracy_value': 1,
+      'output_bit_size': 32,
+      'number_of_epochs': 10,
+      'plaintext_input_bit_size': 32,
+      'key_input_bit_size': 64},
+     'test_results': {'plaintext': {'round_key_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0,
+           1.0],
+          'component_ids': ['intermediate_output_0_5', 'intermediate_output_1_11'],
+          'input_difference_value': '0x400000'}]},
+       'round_output': {'neural_network_differential_distinguisher': [{'accuracies': [0.0],
+          'component_ids': ['intermediate_output_0_6'],
+          'input_difference_value': '0x400000'}]},
+       'cipher_output': {'neural_network_differential_distinguisher': [{'accuracies': [0.0],
+          'component_ids': ['cipher_output_1_12'],
+          'input_difference_value': '0x400000'}]}},
+      'key': {'round_key_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0,
+           1.0],
+          'component_ids': ['intermediate_output_0_5', 'intermediate_output_1_11'],
+          'input_difference_value': '0xa'}]},
+       'round_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0],
+          'component_ids': ['intermediate_output_0_6'],
+          'input_difference_value': '0xa'}]},
+       'cipher_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0],
+          'component_ids': ['cipher_output_1_12'],
+          'input_difference_value': '0xa'}]}}}}
+
         """
         results = {"input_parameters": {
             "test_name": "neural_network_differential_distinguisher_tests",
@@ -218,16 +279,16 @@ class NeuralNetworkTests:
             base_output = evaluator.evaluate(self.cipher, base_inputs, intermediate_output=True)[1]
             partial_result = {}
             for d in diff[index]:
-                partial_result, ds, component_output_ids = self.create_structure(base_output, test_name, partial_result)
-                self.update_component_output_ids(component_output_ids)
-                self.update_distinguisher_vectorized_tests_ds(base_inputs, d, ds, index, labels, nb_samples)
-                self.update_partial_result(component_output_ids, ds, index, test_name, labels,
-                                           number_of_epochs, partial_result, d, blackbox=False,
-                                           rounds_to_train=rounds_to_train, hidden_layers=hidden_layers)
+                partial_result, ds, component_output_ids = self._create_structure(base_output, test_name, partial_result)
+                self._update_component_output_ids(component_output_ids)
+                self._update_distinguisher_vectorized_tests_ds(base_inputs, d, ds, index, labels, nb_samples)
+                self._update_partial_result(component_output_ids, ds, index, test_name, labels,
+                                            number_of_epochs, partial_result, d, blackbox=False,
+                                            rounds_to_train=rounds_to_train, hidden_layers=hidden_layers)
             results["test_results"][it] = partial_result
         return results
 
-    def update_distinguisher_tests_ds(self, base_inputs, d, ds, index, labels, nb_samples):
+    def _update_distinguisher_tests_ds(self, base_inputs, d, ds, index, labels, nb_samples):
         input_lengths = self.cipher.inputs_bit_size
         for i in range(nb_samples):
             base_inputs[index] = secrets.randbits(input_lengths[index])
@@ -249,7 +310,7 @@ class NeuralNetworkTests:
                                                       list(bin(secrets.randbits(ds[k][0]))[2:].rjust(ds[k][0], '0')))),
                                              dtype=np.float32))
 
-    def update_distinguisher_vectorized_tests_ds(self, base_inputs, d, ds, index, labels, nb_samples):
+    def _update_distinguisher_vectorized_tests_ds(self, base_inputs, d, ds, index, labels, nb_samples):
         input_lengths = self.cipher.inputs_bit_size
         random_labels_size = nb_samples - np.count_nonzero(np.array(labels))
 
@@ -282,11 +343,13 @@ class NeuralNetworkTests:
                 full_output = np.append(cipher_output_unpacked, other_output_unpacked, axis=1)
                 ds[k][1][j].extend(list(full_output))
 
-    def integer_to_np(self, val, number_of_bits):
+    def _integer_to_np(self, val, number_of_bits):
         return np.frombuffer(int(val).to_bytes(length=number_of_bits // 8, byteorder='big'), dtype=np.uint8).reshape(-1,
                                                                                                                      1)
 
     def get_differential_dataset(self, input_differences, number_of_rounds, samples=10 ** 7):
+        class RoundNumberTooHigh(Exception):
+            pass
         from os import urandom
         inputs_0 = []
         inputs_1 = []
@@ -296,16 +359,27 @@ class NeuralNetworkTests:
             inputs_0.append(np.frombuffer(urandom(samples * (self.cipher.inputs_bit_size[i] // 8)),
                                           dtype=np.uint8).reshape(-1,
                                                                   samples))  # requires input size to be a multiple of 8
-            inputs_1.append(inputs_0[-1] ^ self.integer_to_np(input_differences[i], self.cipher.inputs_bit_size[i]))
+            inputs_1.append(inputs_0[-1] ^ self._integer_to_np(input_differences[i], self.cipher.inputs_bit_size[i]))
             inputs_1[-1][:, y == 0] ^= np.frombuffer(urandom(num_rand_samples * self.cipher.inputs_bit_size[i] // 8),
                                                      dtype=np.uint8).reshape(-1, num_rand_samples)
 
-        C0 = np.unpackbits(
-            self.cipher.evaluate_vectorized(inputs_0, intermediate_outputs=True)['round_output'][number_of_rounds - 1],
-            axis=1)
-        C1 = np.unpackbits(
-            self.cipher.evaluate_vectorized(inputs_1, intermediate_outputs=True)['round_output'][number_of_rounds - 1],
-            axis=1)
+        if number_of_rounds < self.cipher.number_of_rounds:
+            C0 = np.unpackbits(
+                self.cipher.evaluate_vectorized(inputs_0, intermediate_outputs=True)['round_output'][number_of_rounds - 1],
+                axis=1)
+            C1 = np.unpackbits(
+                self.cipher.evaluate_vectorized(inputs_1, intermediate_outputs=True)['round_output'][number_of_rounds - 1],
+                axis=1)
+        elif number_of_rounds == self.cipher.number_of_rounds:
+            C0 = np.unpackbits(
+                self.cipher.evaluate_vectorized(inputs_0, intermediate_outputs=True)['cipher_output'][0],
+                axis=1)
+            C1 = np.unpackbits(
+                self.cipher.evaluate_vectorized(inputs_1, intermediate_outputs=True)['cipher_output'][0],
+                axis=1)
+        else:
+            raise RoundNumberTooHigh("The number of rounds required for the differential dataset is larger than the number of rounds of the"
+                  "cipher instance.")
         x = np.hstack([C0, C1])
         return x, y
 
@@ -315,44 +389,19 @@ class NeuralNetworkTests:
             if word_size is None or word_size == 0:
                 print("Word size not specified for ", network_name, ", defaulting to ciphertext size...")
                 word_size = self.cipher.output_bit_size
-            neural_network = self.make_resnet(word_size=word_size, input_size=input_size, depth=depth)
+            neural_network = self._make_resnet(word_size=word_size, input_size=input_size, depth=depth)
         elif network_name == 'dbitnet':
-            neural_network = self.make_dbitnet(input_size=input_size)
+            neural_network = self._make_dbitnet(input_size=input_size)
         neural_network.compile(optimizer=Adam(amsgrad=True), loss='mse', metrics=['acc'])
         return neural_network
 
-    def make_checkpoint(self, datei):
+    def _make_checkpoint(self, datei):
         res = ModelCheckpoint(datei, monitor='val_loss', save_best_only=True)
         return res
 
-    def train_neural_distinguisher_(self, data_generator, starting_round, neural_network, training_samples=10 ** 7,
-                                   testing_samples=10 ** 6, num_epochs=1):
-        acc = 1
-        bs = 5000
-        x, y = data_generator(samples=training_samples, nr=starting_round)
-        x_eval, y_eval = data_generator(samples=testing_samples, nr=starting_round)
-        h = neural_network.fit(x, y, epochs=int(num_epochs), batch_size=bs, validation_data=(x_eval, y_eval))
-        acc = np.max(h.history["val_acc"])
-        print(f'Validation accuracy at {starting_round} rounds :{acc}')
-        return acc
 
-    def neural_staged_training(self, data_generator, starting_round, neural_network=None, training_samples=10 ** 7,
-                               testing_samples=10 ** 6, num_epochs=1):
-        acc = 1
-        nr = starting_round
-        # threshold at 10 sigma
-        threshold = 0.5 + 10 * sqrt(testing_samples // 4) / testing_samples
-        accuracies = {}
-        while acc >= threshold and nr < self.cipher.number_of_rounds:
-            # acc = train_neural_distinguisher(cipher, data_generator, nr, neural_network, training_samples, testing_samples,
-            #                                  num_epochs)
-            acc = self.train_neural_distinguisher_(data_generator, nr, neural_network, training_samples, testing_samples,
-                                                  num_epochs)
-            accuracies[nr] = acc
-            nr += 1
-        return accuracies
     def train_neural_distinguisher(self, data_generator, starting_round, neural_network, training_samples=10 ** 7,
-                                   testing_samples=10 ** 6, epochs=5, pipeline=True):
+                                   testing_samples=10 ** 6, epochs=5, pipeline=True, save_prefix=None):
         """
         Trains a neural distinguisher for the data generated by the data_generator function, using the provided neural network, at round starting_rounds.
         If pipeline is set to True, retrains the distinguisher for one more round, as long as the validation accuracy remains significant.
@@ -370,26 +419,85 @@ class NeuralNetworkTests:
         - ``pipeline`` -- **boolean**; (default: `True`) If False, only trains for starting_round. If True, increments starting_round and retrain
         the model as long as the accuracy is statistically significant.
         - ``verbose`` -- **boolean** (default: `False`); verbosity
+        - ``save_prefix`` -- **string** (default: `None`); the folder and file name to store the trained neural distinguishers; they will be saved
+        under f'save_prefix{nr}.h5', where nr is the number of rounds; if None, then the trained neural networks are not saved.
 
         EXAMPLES::
+
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
-        sage: cipher = SpeckBlockCipher()
+        sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+        sage: speck = SpeckBlockCipher()
+        sage: tester = NeuralNetworkTests(speck)
         sage: input_differences = [0x400000, 0]
-        sage: data_generator = lambda nr, samples: get_differential_dataset(cipher, input_differences, number_of_rounds = nr, samples = samples)
-        sage: neural_network = get_neural_network('gohr_resnet', input_size = 64)
-        sage: cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network)
+        sage: data_generator = lambda nr, samples: tester.get_differential_dataset(input_differences, number_of_rounds = nr, samples = samples)
+        sage: neural_network = tester.get_neural_network('gohr_resnet', input_size = 64)
+        sage: tester.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network,
+        training_samples = 1000, testing_samples=1000)
+            Epoch 1/5
+            1/1 [==============================] - 2s 2s/step - loss: 0.3249 - acc: 0.4930 - val_loss: 0.2640 - val_acc: 0.4950
+            Epoch 2/5
+            1/1 [==============================] - 0s 102ms/step - loss: 0.2797 - acc: 0.5570 - val_loss: 0.2624 - val_acc: 0.4950
+            Epoch 3/5
+            1/1 [==============================] - 0s 102ms/step - loss: 0.2435 - acc: 0.6080 - val_loss: 0.2609 - val_acc: 0.4950
+            Epoch 4/5
+            1/1 [==============================] - 0s 105ms/step - loss: 0.2142 - acc: 0.6640 - val_loss: 0.2595 - val_acc: 0.4930
+            Epoch 5/5
+            1/1 [==============================] - 0s 102ms/step - loss: 0.1896 - acc: 0.7090 - val_loss: 0.2583 - val_acc: 0.4930
+            Validation accuracy at 5 rounds :0.4950000047683716
+            {5: 0.4950000047683716}
+            sage:         sage: tester.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples=10**4)
+            Epoch 1/5
+            20/20 [==============================] - 7s 337ms/step - loss: 0.1979 - acc: 0.7259 - val_loss: 0.2284 - val_acc: 0.7019
+            Epoch 2/5
+            20/20 [==============================] - 7s 338ms/step - loss: 0.1586 - acc: 0.7936 - val_loss: 0.2274 - val_acc: 0.7083
+            Epoch 3/5
+            20/20 [==============================] - 7s 361ms/step - loss: 0.1260 - acc: 0.8389 - val_loss: 0.2298 - val_acc: 0.5813
+            Epoch 4/5
+            20/20 [==============================] - 7s 349ms/step - loss: 0.1089 - acc: 0.8560 - val_loss: 0.2334 - val_acc: 0.5309
+            Epoch 5/5
+            20/20 [==============================] - 7s 364ms/step - loss: 0.1040 - acc: 0.8633 - val_loss: 0.2320 - val_acc: 0.5244
+            Validation accuracy at 5 rounds :0.708299994468689
+            Epoch 1/5
+            20/20 [==============================] - 7s 363ms/step - loss: 0.2627 - acc: 0.6160 - val_loss: 0.2529 - val_acc: 0.5367
+            Epoch 2/5
+            20/20 [==============================] - 7s 362ms/step - loss: 0.2214 - acc: 0.6630 - val_loss: 0.2410 - val_acc: 0.6018
+            Epoch 3/5
+            20/20 [==============================] - 7s 360ms/step - loss: 0.2123 - acc: 0.6765 - val_loss: 0.2378 - val_acc: 0.6105
+            Epoch 4/5
+            20/20 [==============================] - 7s 331ms/step - loss: 0.2079 - acc: 0.6857 - val_loss: 0.2351 - val_acc: 0.6217
+            Epoch 5/5
+            20/20 [==============================] - 7s 331ms/step - loss: 0.2050 - acc: 0.6894 - val_loss: 0.2334 - val_acc: 0.6277
+            Validation accuracy at 6 rounds :0.6276999711990356
+            Epoch 1/5
+            20/20 [==============================] - 7s 337ms/step - loss: 0.2678 - acc: 0.4966 - val_loss: 0.2616 - val_acc: 0.4959
+            Epoch 2/5
+            20/20 [==============================] - 7s 335ms/step - loss: 0.2537 - acc: 0.5215 - val_loss: 0.2614 - val_acc: 0.4962
+            Epoch 3/5
+            20/20 [==============================] - 7s 342ms/step - loss: 0.2505 - acc: 0.5366 - val_loss: 0.2588 - val_acc: 0.4978
+            Epoch 4/5
+            20/20 [==============================] - 7s 357ms/step - loss: 0.2487 - acc: 0.5496 - val_loss: 0.2567 - val_acc: 0.4963
+            Epoch 5/5
+            20/20 [==============================] - 7s 354ms/step - loss: 0.2473 - acc: 0.5592 - val_loss: 0.2562 - val_acc: 0.4981
+            Validation accuracy at 7 rounds :0.49810001254081726
+            {5: 0.708299994468689, 6: 0.6276999711990356, 7: 0.49810001254081726}
         """
-        if pipeline:
-            # from claasp.cipher_modules.neural_network_tests import neural_staged_training
-            acc = self.neural_staged_training(data_generator, starting_round, neural_network,
-                                                                  training_samples,
-                                                                  testing_samples, epochs)
-        else:
-            # from claasp.cipher_modules.neural_network_tests import train_neural_distinguisher
-            acc = self.train_neural_distinguisher_(data_generator, starting_round,
-                                                                      neural_network, training_samples,
-                                                                      testing_samples, epochs)
+        acc = {}
+        bs = 5000
+        nr = starting_round
+        threshold = 0.5 + 10 * sqrt(testing_samples // 4) / testing_samples
+        while ((nr == starting_round) or (pipeline and (acc[nr-1]  >= threshold))) and (nr < self.cipher.number_of_rounds):
+            x, y = data_generator(samples=training_samples, nr=nr)
+            x_eval, y_eval = data_generator(samples=testing_samples, nr=nr)
+            if save_prefix is None:
+                h = neural_network.fit(x, y, epochs=int(epochs), batch_size=bs,
+                                       validation_data=(x_eval, y_eval))
+            else:
+                h = neural_network.fit(x, y, epochs=int(epochs), batch_size=bs,
+                                               validation_data=(x_eval, y_eval),
+                                               callbacks=[self.make_checkpoint(save_prefix + str(nr)+'.h5')])
+            acc[nr] = np.max(h.history["val_acc"])
+            print(f'Validation accuracy at {nr} rounds :{acc[nr]}')
+            nr +=1
         return acc
 
     def train_gohr_neural_distinguisher(self, input_difference, number_of_rounds, depth=1, word_size=0,
@@ -412,25 +520,26 @@ class NeuralNetworkTests:
 
         EXAMPLES::
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: cipher = SpeckBlockCipher()
+        sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+        sage: speck = SpeckBlockCipher()
+        sage: tester = NeuralNetworkTests(speck)
         sage: input_differences = [0x400000, 0]
         sage: number_of_rounds = 5
-        sage: cipher.train_gohr_neural_distinguisher(input_differences, number_of_rounds, word_size = 16, number_of_epochs = 1)
-        2000/2000 [==============================] - 294s 146ms/step - loss: 0.0890 - acc: 0.8876 - val_loss: 0.0734 - val_acc: 0.9101
-        Validation accuracy at 5 rounds :0.9101160168647766
-        0.9101160168647766
+        sage: tester.train_gohr_neural_distinguisher(input_differences, number_of_rounds, training_samples = 10**5, testing_samples = 10**4, number_of_epochs = 1)
+            Word size not specified for  gohr_resnet , defaulting to ciphertext size...
+            20/20 [==============================] - 8s 335ms/step - loss: 0.2041 - acc: 0.6909 - val_loss: 0.2476 - val_acc: 0.5528
+            Validation accuracy at 5 rounds :0.5527999997138977
+            {5: 0.5527999997138977}
         """
 
         def data_generator(nr, samples):
             return self.get_differential_dataset(input_difference, number_of_rounds=nr,
-                                            samples=samples)
+                                                 samples=samples)
 
-        # from claasp.cipher_modules.neural_network_tests import get_differential_dataset, \
-            # train_neural_distinguisher, get_neural_network
         input_size = self.cipher.output_bit_size * 2
         neural_network = self.get_neural_network('gohr_resnet', input_size = input_size, depth=depth, word_size=word_size)
-        return self.train_neural_distinguisher_(data_generator, number_of_rounds, neural_network, training_samples,
-                                          testing_samples, num_epochs=number_of_epochs)
+        return self.train_neural_distinguisher(data_generator, number_of_rounds, neural_network, training_samples,
+                                          testing_samples, epochs=number_of_epochs, pipeline = False)
 
     def run_autond_pipeline(self, difference_positions=None, optimizer_samples=10 ** 4, optimizer_generations=50,
                             training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False, neural_net = 'dbitnet', save_prefix=None):
@@ -459,15 +568,38 @@ class NeuralNetworkTests:
 
         EXAMPLES::
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: cipher = SpeckBlockCipher()
-        sage: cipher.run_autond_pipeline()
+        sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+        sage: speck = SpeckBlockCipher()
+        sage: tester = NeuralNetworkTests(speck)
+        sage: tester.run_autond_pipeline(difference_positions=[True, False], optimizer_samples=10 ** 3, optimizer_generations=5,
+                            training_samples=10 ** 5, testing_samples=10 ** 5, number_of_epochs=1, verbose=True,
+                            neural_net = 'dbitnet', save_prefix=None)
+                                Generation 0/5, 1625 nodes explored, 32 current, best is ['0x305ed470', '0x305e5470', '0x3e020058', '0x80fbf20'] with [0.42265625 0.468875   0.47771875 0.5191875 ]
+                                Generation 1/5, 2169 nodes explored, 32 current, best is ['0x100', '0x20000000', '0x2000000', '0x8000'] with [1.69571875 2.09790625 2.1274375  2.4663125 ]
+                                Generation 2/5, 2728 nodes explored, 32 current, best is ['0x40000000', '0x20000000', '0x2000000', '0x8000'] with [2.01571875 2.09790625 2.1274375  2.4663125 ]
+                                Generation 3/5, 3137 nodes explored, 32 current, best is ['0x2000000', '0x40000', '0x2000004', '0x8000'] with [2.1274375  2.12903125 2.22596875 2.4663125 ]
+                                Generation 4/5, 3383 nodes explored, 32 current, best is ['0x40000', '0x2000004', '0x8000', '0x200000'] with [2.12903125 2.22596875 2.4663125  2.54446875]
+                                The highest reached round was 5
+                                The best differences found by the optimizer are...
+                                0x200000 , with score 2.54446875
+                                0x8000 , with score 2.4663125000000004
+                                0x2000004 , with score 2.22596875
+                                0x40000 , with score 2.12903125
+                                0x2000000 , with score 2.1274375
+                                0x4000000 , with score 2.09978125
+                                0x20000000 , with score 2.0979062500000003
+                                0x10000 , with score 2.03634375
+                                0x40000000 , with score 2.0157187499999996
+                                0x40200000 , with score 1.75265625
+                                Training dbitnet on input difference ['0x200000', '0x0'] (['plaintext', 'key']), from round 2...
+                                20/20 [==============================] - 31s 1s/step - loss: 0.0884 - acc: 0.8838 - val_loss: 0.2889 - val_acc: 0.4993
+                                Validation accuracy at 2 rounds :0.49932000041007996
+                                {2: 0.49932000041007996}
         """
-        # from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network, \
-        #     int_difference_to_input_differences, neural_staged_training
 
         def data_generator(nr, samples):
             return self.get_differential_dataset(input_difference, number_of_rounds=nr,
-                                            samples=samples)
+                                                 samples=samples)
 
         if difference_positions is None:
             difference_positions = []
@@ -483,33 +615,26 @@ class NeuralNetworkTests:
                                                                                                number_of_generations=optimizer_generations,
                                                                                                nb_samples=optimizer_samples,
                                                                                                verbose=verbose)
-        input_difference = self.int_difference_to_input_differences(diff[-1], difference_positions, self.cipher.inputs_bit_size)
+        input_difference = self._int_difference_to_input_differences(diff[-1], difference_positions, self.cipher.inputs_bit_size)
         input_size = self.cipher.output_bit_size * 2
         neural_network = self.get_neural_network(neural_net, input_size = input_size)
         nr = max(1, highest_round-3)
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.cipher.inputs}), from round {nr}...')
-        return self.neural_staged_training(data_generator, nr, neural_network, training_samples,
-                                      testing_samples, number_of_epochs) #save_prefix
+        return self.train_neural_distinguisher(data_generator, nr, neural_network, training_samples,
+                                   testing_samples, number_of_epochs)
 
-
-    def make_resnet(self, input_size, num_filters=32, num_outputs=1, d1=64, d2=64, word_size=16, ks=3,
-                    reg_param=10 ** -5,
-                    final_activation='sigmoid', depth=1):
+    def _make_resnet(self, input_size, num_filters=32, num_outputs=1, d1=64, d2=64, word_size=16, ks=3,
+                     reg_param=10 ** -5,
+                     final_activation='sigmoid', depth=1):
         from keras.models import Model
         from keras.layers import Dense, Conv1D, Input, Reshape, Permute, Add, Flatten, BatchNormalization, Activation
-        from keras import backend as K
         from keras.regularizers import l2
-        # Input and preprocessing layers
         inp = Input(shape=(input_size,))
         rs = Reshape((input_size // word_size, word_size))(inp)
         perm = Permute((2, 1))(rs)
-        # add a single residual layer that will expand the data to num_filters channels
-        # this is a bit-sliced layer
         conv0 = Conv1D(num_filters, kernel_size=1, padding='same', kernel_regularizer=l2(reg_param))(perm)
         conv0 = BatchNormalization()(conv0)
         conv0 = Activation('relu')(conv0)
-
-        # add residual blocks
         shortcut = conv0
         for i in range(depth):
             conv1 = Conv1D(num_filters, kernel_size=ks, padding='same', kernel_regularizer=l2(reg_param))(shortcut)
@@ -519,8 +644,6 @@ class NeuralNetworkTests:
             conv2 = BatchNormalization()(conv2)
             conv2 = Activation('relu')(conv2)
             shortcut = Add()([shortcut, conv2])
-
-        # add prediction head
         flat1 = Flatten()(shortcut)
         dense = Dense(d1, kernel_regularizer=l2(reg_param))(flat1)
         dense = BatchNormalization()(dense)
@@ -532,7 +655,7 @@ class NeuralNetworkTests:
         model = Model(inputs=inp, outputs=out)
         return model
 
-    def make_dbitnet(self, input_size=64, n_filters=32, n_add_filters=16):
+    def _make_dbitnet(self, input_size=64, n_filters=32, n_add_filters=16):
         """Create a DBITNet model.
 
         :param input_size: e.g. for SPECK32/64 and 2 ciphertexts, the input_size is 64 bit.
@@ -604,7 +727,7 @@ class NeuralNetworkTests:
                                                             nb_samples=10 ** 3, previous_generation=None,
                                                             verbose=False):
         """
-        Return good neural distinguisher input differences for a cipher.
+        Return good neural distinguisher input differences for a cipher, based on the AutoND pipeline ([BGHR2023]).
 
         INPUT:
 
@@ -619,8 +742,10 @@ class NeuralNetworkTests:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: cipher = SpeckBlockCipher()
-            sage: diff, scores, highest_round = find_good_input_difference_for_neural_distinguisher(cipher, [True, False], verbose = False, number_of_generations=5)
+            sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+            sage: speck = SpeckBlockCipher()
+            sage: tester = NeuralNetworkTests(speck)
+            sage: diff, scores, highest_round = tester.find_good_input_difference_for_neural_distinguisher([True, False], verbose = True, number_of_generations=5)
         """
 
         # Initialisation
@@ -636,15 +761,15 @@ class NeuralNetworkTests:
             if difference_positions[i]:
                 num_input_bits += input_lengths[i]
         C0 = evaluate(inputs0)['round_output']
-        diffs, scores, highest_round = self.evolutionary_algorithm(previous_generation, initial_population,
-                                                                   number_of_generations, verbose,
-                                                                   difference_evaluation_function=lambda
-                                                                       x: self.evaluate_multiple_differences(
+        diffs, scores, highest_round = self._evolutionary_algorithm(previous_generation, initial_population,
+                                                                    number_of_generations, verbose,
+                                                                    difference_evaluation_function=lambda
+                                                                       x: self._evaluate_multiple_differences(
                                                                        input_lengths,
                                                                        difference_positions,
                                                                        evaluate, x, inputs0, C0,
                                                                        threshold),
-                                                                   difference_bits=num_input_bits)
+                                                                    difference_bits=num_input_bits)
         if verbose:
             print("The highest reached round was", highest_round)
             print("The best differences found by the optimizer are...")
@@ -652,8 +777,8 @@ class NeuralNetworkTests:
                 print(hex(diffs[-i]), ", with score", scores[-i])
         return diffs, scores, highest_round
 
-    def evolutionary_algorithm(self, previous_generation, initial_population, number_of_generations, verbose,
-                               difference_evaluation_function, difference_bits):
+    def _evolutionary_algorithm(self, previous_generation, initial_population, number_of_generations, verbose,
+                                difference_evaluation_function, difference_bits):
         mut_prob = 0.1
         if previous_generation is None:
             generation = np.array([random.randint(1, 1 << difference_bits)
@@ -708,13 +833,13 @@ class NeuralNetworkTests:
 
         return generation, scores, highest_round
 
-    def evaluate_multiple_differences(self, input_lengths, difference_positions, encrypt, candidate_differences,
-                                      inputs0, c0,
-                                      threshold):
+    def _evaluate_multiple_differences(self, input_lengths, difference_positions, encrypt, candidate_differences,
+                                       inputs0, c0,
+                                       threshold):
         inputs1 = [None for _ in inputs0]
-        formatted_differences, number_of_differences = self.int_difference_to_np_uint8(input_lengths,
-                                                                                       difference_positions,
-                                                                                       candidate_differences)
+        formatted_differences, number_of_differences = self._int_difference_to_np_uint8(input_lengths,
+                                                                                        difference_positions,
+                                                                                        candidate_differences)
         for input_index in range(len(difference_positions)):
             difference_in_input = formatted_differences[input_index]
             if difference_positions[input_index]:
@@ -737,7 +862,7 @@ class NeuralNetworkTests:
 
         return scores, i
 
-    def int_difference_to_input_differences(self, diff, difference_positions, input_bit_sizes):
+    def _int_difference_to_input_differences(self, diff, difference_positions, input_bit_sizes):
         formated = []
         """
             Splits a difference received as an integer into differences for each input that needs one, in integer format.
@@ -750,7 +875,7 @@ class NeuralNetworkTests:
                 formated.append(0)
         return formated
 
-    def int_difference_to_np_uint8(self, input_lengths, difference_positions, differences=None):
+    def _int_difference_to_np_uint8(self, input_lengths, difference_positions, differences=None):
         """
             Splits a difference received as an integer into differences for each input that needs one, in np.uint8 format.
         """
@@ -775,8 +900,3 @@ class NeuralNetworkTests:
 
         return formatted_differences, number_of_differences
 
-# # Example usage:
-
-# from class_neural_network_tests import Neural_Network_Distinguisher
-# results1 = Neural_Network_Distinguisher(SpeckBlockCipher(number_of_rounds=2)).neural_network_blackbox_distinguisher_tests(nb_samples=10)
-# results2 = Neural_Network_Distinguisher(SpeckBlockCipher(number_of_rounds=2)).neural_network_differential_distinguisher_tests(nb_samples=10)
