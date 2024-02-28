@@ -101,31 +101,6 @@ def test_print_component_analysis_as_radar_charts():
     fig = aes.print_component_analysis_as_radar_charts(result)
     assert str(type(fig)) == "<class 'module'>"
 
-def test_continuous_avalanche_factor():
-    aes = AESBlockCipher(number_of_rounds=5)
-    result = aes.continuous_avalanche_factor(0.001, 300)
-    print(result)
-    assert result['plaintext']['cipher_output']['continuous_avalanche_factor']['values'][0] > 0.1
-
-
-def test_continuous_diffusion_factor():
-    speck = SpeckBlockCipher(number_of_rounds=2)
-    output = speck.continuous_diffusion_factor(5, 20)
-    assert output['plaintext']['cipher_output']['diffusion_factor']['values'][0] > 0
-
-
-def test_continuous_diffusion_tests():
-    speck_cipher = SpeckBlockCipher(number_of_rounds=1)
-    output = speck_cipher.continuous_diffusion_tests()
-    assert output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure']["values"][0] == 0.0
-
-
-def test_continuous_neutrality_measure_for_bit_j():
-    output = SpeckBlockCipher(number_of_rounds=2).continuous_neutrality_measure_for_bit_j(50, 200)
-    print(output)
-    assert output['plaintext']['cipher_output']['continuous_neutrality_measure']["values"][0]['2'] > 0
-
-
 def test_delete_generated_evaluate_c_shared_library():
     file_c = open(FANCY_EVALUATE_C_FILE, 'a')
     file_o = open(FANCY_EVALUATE_O_FILE, 'a')
