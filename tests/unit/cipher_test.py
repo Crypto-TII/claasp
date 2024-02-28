@@ -41,7 +41,8 @@ from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QAR
 from claasp.cipher_modules.neural_network_tests import find_good_input_difference_for_neural_distinguisher
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset
 from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
-
+from claasp.ciphers.toys.toyspn1 import ToySPN1
+from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 
 EVALUATION_PY = 'evaluation.py'
 DICTIONARY_EXAMPLE_PY = "claasp/ciphers/dictionary_example.py"
@@ -51,24 +52,39 @@ FANCY_EVALUATE_C_FILE = 'claasp/cipher_modules/fancy_block_cipher_p24_k24_o24_r2
 
 
 def test_algebraic_tests():
+
+    toyspn = ToySPN1(number_of_rounds=2)
+    d = AlgebraicTests(toyspn).algebraic_tests(30)
+    assert d == {
+        'input_parameters': {'cipher.id': 'toyspn1_p6_k6_o6_r2', 'timeout': 30, 'test_name': 'algebraic_tests'},
+        'test_results': {'number_of_variables': [66, 126],
+                         'number_of_equations': [76, 158],
+                         'number_of_monomials': [96, 186],
+                         'max_degree_of_equations': [2, 2],
+                         'test_passed': [False, False]}}
+
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    d = speck.algebraic_tests(5)
-    assert d == {'input_parameters': {'timeout': 5, 'test_name': 'algebraic_tests'}, 'test_results': {'number_of_variables': [304, 800],
-                                                                      'number_of_equations': [240, 688],
-                                                                      'number_of_monomials': [304, 800],
-                                                                      'max_degree_of_equations': [1, 1],
-                                                                      'test_passed': [False, False]}}
+    d = AlgebraicTests(speck).algebraic_tests(5)
+    assert d == {
+        'input_parameters': {'cipher.id': 'speck_p32_k64_o32_r2', 'timeout': 5, 'test_name': 'algebraic_tests'},
+        'test_results': {'number_of_variables': [304, 800],
+                         'number_of_equations': [240, 688],
+                         'number_of_monomials': [304, 800],
+                         'max_degree_of_equations': [1, 1],
+                         'test_passed': [False, False]}}
 
     aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=2)
-    d = aes.algebraic_tests(5)
-    compare_result = {'input_parameters': {'timeout': 5},
+    d = AlgebraicTests(aes).algebraic_tests(5)
+    compare_result = {'input_parameters': {'cipher.id': 'aes_block_cipher_k16_p16_o16_r2',
+                                           'timeout': 5,
+                                           'test_name': 'algebraic_tests'},
                       'test_results': {'number_of_variables': [352, 592],
-                                       'number_of_equations': [406, 748],
+                                       'number_of_equations': [454, 796],
                                        'number_of_monomials': [520, 928],
                                        'max_degree_of_equations': [2, 2],
-                                       'test_passed': [False, True]}}
+                                       'test_passed': [False, False]}}
 
-    assert d != compare_result  # skipped (need to be fixed)
+    assert d == compare_result
 
 def test_avalanche_probability_vectors():
     speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
@@ -100,7 +116,10 @@ def test_delete_generated_evaluate_c_shared_library():
 def test_diffusion_tests():
     speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
     d = speck.diffusion_tests(number_of_samples=100)
-    assert d["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][0]["vectors"][0] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    assert d["test_results"]["key"]["round_output"]["avalanche_dependence_vectors"][0]["vectors"][0] == [0, 0, 0, 0, 0,
+                                                                                                         0, 0, 0, 0, 0,
+                                                                                                         0, 0, 0, 0, 0,
+                                                                                                         0]
 
     aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=4)
     d = aes.diffusion_tests(number_of_samples=1000)
@@ -173,37 +192,46 @@ def test_find_good_input_difference_for_neural_distinguisher():
     assert str(type(scores)) == "<class 'numpy.ndarray'>"
 
 
-
 def test_neural_staged_training():
     cipher = SpeckBlockCipher()
     input_differences = [0x400000, 0]
-    data_generator = lambda nr, samples: get_differential_dataset(cipher, input_differences, number_of_rounds = nr, samples = samples)
-    neural_network = get_neural_network('gohr_resnet', input_size = 64, word_size = 16)
-    results_gohr = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
+    data_generator = lambda nr, samples: get_differential_dataset(cipher, input_differences, number_of_rounds=nr,
+                                                                  samples=samples)
+    neural_network = get_neural_network('gohr_resnet', input_size=64, word_size=16)
+    results_gohr = cipher.train_neural_distinguisher(data_generator, starting_round=5, neural_network=neural_network,
+                                                     training_samples=10 ** 5, testing_samples=10 ** 5, epochs=1)
     assert results_gohr[5] >= 0
-    neural_network = get_neural_network('dbitnet', input_size = 64)
-    results_dbitnet = cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples = 10**5, epochs = 1)
+    neural_network = get_neural_network('dbitnet', input_size=64)
+    results_dbitnet = cipher.train_neural_distinguisher(data_generator, starting_round=5, neural_network=neural_network,
+                                                        training_samples=10 ** 5, testing_samples=10 ** 5, epochs=1)
     assert results_dbitnet[5] >= 0
+
 
 def test_train_gohr_neural_distinguisher():
     cipher = SpeckBlockCipher()
     input_differences = [0x400000, 0]
     number_of_rounds = 5
-    result = cipher.train_gohr_neural_distinguisher(input_differences, number_of_rounds, word_size=16, number_of_epochs=1, training_samples = 10**3, testing_samples = 10**3)
+    result = cipher.train_gohr_neural_distinguisher(input_differences, number_of_rounds, word_size=16,
+                                                    number_of_epochs=1, training_samples=10 ** 3,
+                                                    testing_samples=10 ** 3)
     assert result > 0
+
 
 def test_run_autond_pipeline():
     cipher = SpeckBlockCipher()
     result = cipher.run_autond_pipeline(optimizer_samples=10 ** 3, optimizer_generations=1,
-                            training_samples=10 ** 2, testing_samples=10 ** 2, number_of_epochs=1, verbose=False)
+                                        training_samples=10 ** 2, testing_samples=10 ** 2, number_of_epochs=1,
+                                        verbose=False)
     assert not result is {}
+
 
 def test_get_differential_dataset():
     diff_value_plain_key = [0x400000, 0]
     cipher = SpeckBlockCipher()
     x, y = get_differential_dataset(cipher, diff_value_plain_key, 5, samples=10)
     assert x.shape == (10, 64)
-    assert y.shape == (10, )
+    assert y.shape == (10,)
+
 
 def test_get_model():
     speck = SpeckBlockCipher(number_of_rounds=1)
@@ -211,6 +239,7 @@ def test_get_model():
     assert speck.get_model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
     assert speck.get_model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
     assert speck.get_model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
+
 
 def test_generate_bit_based_c_code():
     bit_based_c_code = FancyBlockCipher().generate_bit_based_c_code()
@@ -223,7 +252,7 @@ def test_generate_bit_based_c_code():
 
 ### Replaced by equivalent functions in Report class
 
-#def test_generate_csv_report():
+# def test_generate_csv_report():
 #    tii_path = inspect.getfile(claasp)
 #    tii_dir_path = os.path.dirname(tii_path)
 #    identity = IdentityBlockCipher()
@@ -284,10 +313,12 @@ def test_get_round_from_component_id():
 
 def test_impossible_differential_search():
     speck6 = SpeckBlockCipher(number_of_rounds=6)
-    #impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
+    # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
     impossible_differentials = speck6.impossible_differential_search("cp", "chuffed")
 
-    assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and ((0x400000, 0x8000) in impossible_differentials)
+    assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
+            (0x400000, 0x8000) in impossible_differentials)
+
 
 def test_is_algebraically_secure():
     identity = IdentityBlockCipher()
@@ -324,7 +355,8 @@ def test_is_spn():
 def test_neural_network_blackbox_distinguisher_tests():
     results = SpeckBlockCipher(number_of_rounds=5).neural_network_blackbox_distinguisher_tests(nb_samples=10)
     assert results['input_parameters'] == \
-           {'number_of_samples': 10, 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10, 'test_name': 'neural_network_blackbox_distinguisher_tests'}
+           {'number_of_samples': 10, 'hidden_layers': [32, 32, 32], 'number_of_epochs': 10,
+            'test_name': 'neural_network_blackbox_distinguisher_tests'}
 
 
 def test_neural_network_differential_distinguisher_tests():
@@ -478,11 +510,13 @@ def test_print_as_python_dictionary():
 }
 """
 
+
 def test_inputs_size_to_dict():
     speck = SpeckBlockCipher(number_of_rounds=1, key_bit_size=64, block_bit_size=32)
     input_sizes = speck.inputs_size_to_dict()
     assert input_sizes['key'] == 64
     assert input_sizes['plaintext'] == 32
+
 
 def test_vector_check():
     speck = SpeckBlockCipher(number_of_rounds=22)
@@ -500,6 +534,7 @@ def test_vector_check():
     output_list.append(0xFFFFFFFF)
     assert speck.test_vector_check(input_list, output_list) is False
 
+
 def test_zero_correlation_linear_search():
     speck6 = SpeckBlockCipher(number_of_rounds=6)
     zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "yices-smt2")
@@ -507,163 +542,163 @@ def test_zero_correlation_linear_search():
 
 
 def test_cipher_inverse():
-        key = 0xabcdef01abcdef01
-        plaintext = 0x01234567
-        cipher = SpeckBlockCipher(number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0xabcdef01abcdef01
+    plaintext = 0x01234567
+    cipher = SpeckBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        key = 0x2b7e151628aed2a6abf7158809cf4f3c
-        plaintext = 0x6bc1bee22e409f96e93d7e117393172a
-        cipher = AESBlockCipher(number_of_rounds=2)
-        ciphertext = cipher.evaluate([key, plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0x2b7e151628aed2a6abf7158809cf4f3c
+    plaintext = 0x6bc1bee22e409f96e93d7e117393172a
+    cipher = AESBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([key, plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        key = 0x0e2ddd5c5b4ca9d4
-        plaintext = 0xb779ee0a
-        cipher = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0x0e2ddd5c5b4ca9d4
+    plaintext = 0xb779ee0a
+    cipher = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        key = 0x98edeafc899338c45fad
-        plaintext = 0x42c20fd3b586879e
-        cipher = PresentBlockCipher(number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0x98edeafc899338c45fad
+    plaintext = 0x42c20fd3b586879e
+    cipher = PresentBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        plaintext = 0
-        cipher = AsconSboxSigmaPermutation(number_of_rounds=1)
-        ciphertext = cipher.evaluate([plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext]) == plaintext
+    plaintext = 0
+    cipher = AsconSboxSigmaPermutation(number_of_rounds=1)
+    ciphertext = cipher.evaluate([plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-        key = 0x1211100a09080201
-        plaintext = 0x6120676e
-        cipher = SimonBlockCipher(number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0x1211100a09080201
+    plaintext = 0x6120676e
+    cipher = SimonBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        key = 0x687ded3b3c85b3f35b1009863e2a8cbf
-        plaintext = 0x42c20fd3b586879e
-        cipher = MidoriBlockCipher(number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0x687ded3b3c85b3f35b1009863e2a8cbf
+    plaintext = 0x42c20fd3b586879e
+    cipher = MidoriBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        key = 0xffffeeee
-        plaintext = 0x5778
-        cipher = SkinnyBlockCipher(number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0xffffeeee
+    plaintext = 0x5778
+    cipher = SkinnyBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        plaintext = 0x1234
-        cipher = SpongentPiPermutation(number_of_rounds=1)
-        ciphertext = cipher.evaluate([plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext]) == plaintext
+    plaintext = 0x1234
+    cipher = SpongentPiPermutation(number_of_rounds=1)
+    ciphertext = cipher.evaluate([plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-        key = 0x1de1c3c2c65880074c32dce537b22ab3
-        plaintext = 0xbd7d764dff0ada1e
-        cipher = XTeaBlockCipher(number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0x1de1c3c2c65880074c32dce537b22ab3
+    plaintext = 0xbd7d764dff0ada1e
+    cipher = XTeaBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        plaintext = 0x1234
-        cipher = PhotonPermutation(number_of_rounds=1)
-        ciphertext = cipher.evaluate([plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext]) == plaintext
+    plaintext = 0x1234
+    cipher = PhotonPermutation(number_of_rounds=1)
+    ciphertext = cipher.evaluate([plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-        key = 0x0f1e2d3c4b5a69788796a5b4c3d2e1f0
-        plaintext = 0x101112131415161718191a1b1c1d1e1f
-        cipher = LeaBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0x0f1e2d3c4b5a69788796a5b4c3d2e1f0
+    plaintext = 0x101112131415161718191a1b1c1d1e1f
+    cipher = LeaBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        plaintext = 0x1234
-        cipher = SparklePermutation(number_of_steps=1)
-        ciphertext = cipher.evaluate([plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext]) == plaintext
+    plaintext = 0x1234
+    cipher = SparklePermutation(number_of_steps=1)
+    ciphertext = cipher.evaluate([plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-        plaintext = 0x1234
-        cipher = XoodooInvertiblePermutation(number_of_rounds=1)
-        ciphertext = cipher.evaluate([plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext]) == plaintext
+    plaintext = 0x1234
+    cipher = XoodooInvertiblePermutation(number_of_rounds=1)
+    ciphertext = cipher.evaluate([plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-        key = 0x000102030405060708090A0B0C0D0E0F
-        plaintext = 0x000102030405060708090A0B0C0D0E0F
-        cipher = GiftSboxPermutation(number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0x000102030405060708090A0B0C0D0E0F
+    plaintext = 0x000102030405060708090A0B0C0D0E0F
+    cipher = GiftSboxPermutation(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        key = 0x1de1c3c2c65880074c32dce537b22ab3
-        plaintext = 0xbd7d764dff0ada1e
-        cipher = RaidenBlockCipher(number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0x1de1c3c2c65880074c32dce537b22ab3
+    plaintext = 0xbd7d764dff0ada1e
+    cipher = RaidenBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        key = 0x000000066770000000a0000000000001
-        plaintext = 0x0011223344556677
-        cipher = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    key = 0x000000066770000000a0000000000001
+    plaintext = 0x0011223344556677
+    cipher = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        cipher = DESBlockCipher(number_of_rounds=4)
-        key = 0x133457799BBCDFF1
-        plaintext = 0x0123456789ABCDEF
-        ciphertext = cipher.evaluate([key, plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    cipher = DESBlockCipher(number_of_rounds=4)
+    key = 0x133457799BBCDFF1
+    plaintext = 0x0123456789ABCDEF
+    ciphertext = cipher.evaluate([key, plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        cipher = SalsaPermutation(number_of_rounds=2)
-        plaintext = 0xffff
-        ciphertext = cipher.evaluate([plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext]) == plaintext
+    cipher = SalsaPermutation(number_of_rounds=2)
+    plaintext = 0xffff
+    ciphertext = cipher.evaluate([plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-        cipher = BEA1BlockCipher(number_of_rounds=2)
-        key = 0x8cdd0f3459fb721e798655298d5c1
-        plaintext = 0x47a57eff5d6475a68916
-        ciphertext = cipher.evaluate([key, plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    cipher = BEA1BlockCipher(number_of_rounds=2)
+    key = 0x8cdd0f3459fb721e798655298d5c1
+    plaintext = 0x47a57eff5d6475a68916
+    ciphertext = cipher.evaluate([key, plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        plaintext = 0x1234
-        cipher = KeccakInvertiblePermutation(number_of_rounds=2, word_size=8)
-        ciphertext = cipher.evaluate([plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext]) == plaintext
+    plaintext = 0x1234
+    cipher = KeccakInvertiblePermutation(number_of_rounds=2, word_size=8)
+    ciphertext = cipher.evaluate([plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-        cipher = ChachaPermutation(number_of_rounds=3)
-        plaintext = 0x0001
-        ciphertext = cipher.evaluate([plaintext])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext]) == plaintext
+    cipher = ChachaPermutation(number_of_rounds=3)
+    plaintext = 0x0001
+    ciphertext = cipher.evaluate([plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-        cipher = LBlockBlockCipher(number_of_rounds=2)
-        key = 0x012345689abcdeffedc
-        plaintext = 0x012345689abcdef
-        ciphertext = cipher.evaluate([plaintext, key])
-        cipher_inv = cipher.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    cipher = LBlockBlockCipher(number_of_rounds=2)
+    key = 0x012345689abcdeffedc
+    plaintext = 0x012345689abcdef
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
-        qarmav2 = QARMAv2MixColumnBlockCipher(number_of_rounds=2)
-        key = 0x0123456789abcdeffedcba9876543210
-        plaintext = 0x0000000000000000
-        tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
-        ciphertext = qarmav2.evaluate([key, plaintext, tweak])
-        cipher_inv = qarmav2.cipher_inverse()
-        assert cipher_inv.evaluate([ciphertext, tweak, key]) == plaintext
+    qarmav2 = QARMAv2MixColumnBlockCipher(number_of_rounds=2)
+    key = 0x0123456789abcdeffedcba9876543210
+    plaintext = 0x0000000000000000
+    tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
+    ciphertext = qarmav2.evaluate([key, plaintext, tweak])
+    cipher_inv = qarmav2.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, tweak, key]) == plaintext

@@ -343,7 +343,7 @@ class MilpXorLinearModel(MilpModel):
 
         self._number_of_trails_found = 0
 
-        return list_trails
+        return [trail for trail in list_trails if trail['status'] == 'SATISFIABLE']
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
                                                        solver_name=SOLVER_DEFAULT, external_solver_name=None):
@@ -420,7 +420,7 @@ class MilpXorLinearModel(MilpModel):
             mip.remove_constraints(range(number_constraints - number_new_constraints, number_constraints))
         self._number_of_trails_found = 0
 
-        return list_trails
+        return [trail for trail in list_trails if trail['status'] == 'SATISFIABLE']
 
     def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """

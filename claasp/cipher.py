@@ -28,7 +28,7 @@ from claasp.rounds import Rounds
 from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-from claasp.cipher_modules import code_generator, avalanche_tests, algebraic_tests
+from claasp.cipher_modules import code_generator, avalanche_tests
 import importlib
 from claasp.cipher_modules.inverse_cipher import *
 
@@ -241,35 +241,6 @@ class Cipher:
 
     def add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size)
-
-    def algebraic_tests(self, timeout):
-        """
-        Return a dictionary explaining the result of the algebraic test.
-
-        INPUT:
-
-        - ``timeout`` -- **integer**; the timeout for the Grobner basis computation in seconds
-
-        OUTPUTS: a dictionary with the following keys:
-
-            - ``npolynomials`` -- number of polynomials
-            - ``nvariables`` -- number of variables
-            - ``timeout`` -- timeout in seconds
-            - ``pass`` -- whether the algebraic test pass w.r.t the given timeout
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: d = speck.algebraic_tests(5)  # long time
-            sage: d == {'input_parameters': {'timeout': 5}, 'test_results':
-            ....: {'number_of_variables': [304, 800],
-            ....: 'number_of_equations': [240, 688], 'number_of_monomials': [304, 800],
-            ....: 'max_degree_of_equations': [1, 1], 'test_passed': [False, False]}}  # long time
-            True
-        """
-        return algebraic_tests.algebraic_tests(self, timeout)
-
 
     def as_python_dictionary(self):
         return {
