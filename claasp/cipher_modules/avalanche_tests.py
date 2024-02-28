@@ -109,8 +109,8 @@ class AvalancheTests:
                 for intermediate_output_name in list(intermediate_output_names.keys()):
                     if parameters[criterion_name][0]:
                         self._add_intermediate_output_values_to_dictionary(criterion_name, intermediate_output_names,
-                                                                     parameters,diffusion_tests, index, input_name,
-                                                                     intermediate_output_name)
+                                                                        parameters,diffusion_tests, index, input_name,
+                                                                        intermediate_output_name)
                         all_output_vectors, largest_round_criterion_not_satisfied = \
                             self._calculate_regular_difference(criterion_name, criterion, intermediate_output_names, parameters,
                                                          diffusion_tests, input_name, intermediate_output_name)
