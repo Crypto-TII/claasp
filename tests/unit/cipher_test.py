@@ -86,36 +86,6 @@ def test_algebraic_tests():
 
     assert d == compare_result
 
-@pytest.mark.filterwarnings("ignore::DeprecationWarning:")
-def test_component_analysis():
-    fancy = FancyBlockCipher(number_of_rounds=2)
-    result = fancy.component_analysis_tests()
-    assert len(result) == 9
-
-    aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
-    result = aes.component_analysis_tests()
-    assert len(result) == 7
-
-    present = PresentBlockCipher(number_of_rounds=2)
-    result = present.component_analysis_tests()
-    assert len(result) == 5
-
-    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-    result = speck.component_analysis_tests()
-    assert len(result) == 4
-
-    tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=32)
-    result = tea.component_analysis_tests()
-    assert len(result) == 4
-
-
-@pytest.mark.filterwarnings("ignore::DeprecationWarning:")
-def test_print_component_analysis_as_radar_charts():
-    aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-    result = aes.component_analysis_tests()
-    fig = aes.print_component_analysis_as_radar_charts(result)
-    assert str(type(fig)) == "<class 'module'>"
-
 def test_delete_generated_evaluate_c_shared_library():
     file_c = open(FANCY_EVALUATE_C_FILE, 'a')
     file_o = open(FANCY_EVALUATE_O_FILE, 'a')

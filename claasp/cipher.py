@@ -28,7 +28,7 @@ from claasp.rounds import Rounds
 from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-from claasp.cipher_modules import code_generator, component_analysis_tests
+from claasp.cipher_modules import code_generator
 import importlib
 from claasp.cipher_modules.inverse_cipher import *
 
@@ -253,42 +253,6 @@ class Cipher:
             'cipher_rounds': self._rounds.rounds_as_python_dictionary(),
             'cipher_reference_code': self._reference_code
         }
-
-    def component_analysis_tests(self):
-        """
-        Return a list of dictionaries, each one giving some properties of the cipher's operations.
-
-        INPUT:
-
-        - None
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-            sage: result = aes.component_analysis_tests()
-            sage: len(result)
-            9
-        """
-        return component_analysis_tests.component_analysis_tests(self)
-
-    def print_component_analysis_as_radar_charts(self, component_analysis_results):
-        """
-        Return a matplotlib object containing the radar charts of the components analysis test
-
-        INPUT:
-
-        - ``component_analysis_results`` -- **list**; results of the component analysis method
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-            sage: result = aes.component_analysis_tests()
-            sage: fig = aes.print_component_analysis_as_radar_charts(result)
-            sage: fig.show() # doctest: +SKIP
-        """
-        return component_analysis_tests.print_component_analysis_as_radar_charts(component_analysis_results)
 
     def component_from(self, round_number, index):
         return self._rounds.component_from(round_number, index)
