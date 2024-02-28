@@ -574,7 +574,6 @@ class Report:
                         data = self.test_report['test_results'][it][out][res]
 
                         for case in list(data):
-
                             try:
                                 res_key = [x for x in case.keys() if x in ['values', 'vectors', 'accuracies']][0]
                             except IndexError:
