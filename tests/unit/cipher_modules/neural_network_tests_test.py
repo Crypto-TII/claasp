@@ -53,8 +53,7 @@ def test_neural_network_blackbox_distinguisher_tests():
 def test_neural_network_differential_distinguisher_tests():
     cipher = SpeckBlockCipher(number_of_rounds=5)
     results = NeuralNetworkTests(cipher).neural_network_differential_distinguisher_tests(nb_samples=10)
-    assert results['input_parameters'] == \
-           {'test_name': 'neural_network_differential_distinguisher_tests',
+    assert results['input_parameters'] == {'test_name': 'neural_network_differential_distinguisher_tests',
             'number_of_samples': 10,
             'input_differences':  [[4194304], [10]],
             'hidden_layers': [32, 32, 32],
