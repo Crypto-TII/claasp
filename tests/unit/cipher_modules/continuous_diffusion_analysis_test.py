@@ -17,7 +17,7 @@ def test_continuous_tests_report():
     cda = ContinuousDiffusionAnalysis(speck)
     cda_for_repo = cda.continuous_diffusion_tests()
     cda_repo = Report(speck, cda_for_repo)
-    cda_repo.print_report()
+    cda_repo.save_as_image()
 
 
 def test_continuous_avalanche_factor():
