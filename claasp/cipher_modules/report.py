@@ -6,6 +6,8 @@ import plotly.graph_objects as go
 import pandas as pd
 import json
 import shutil
+from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
 
 
 def _print_colored_state(state, verbose, file):
@@ -523,16 +525,15 @@ class Report:
     def _produce_graph(self, output_directory=os.getcwd(), show_graph=False, fixed_input=None, fixed_output=None, test_name=None):
 
         if 'statistical' in self.test_name:
+            if 'dieharder' in self.test_name:
+                for dict in self.test_report['test_results']:
+                    DieharderTests.generate_chart_round(dict,output_directory+'/'+self.cipher.id + '/' + self.test_name)
+                DieharderTests.generate_chart_all(self.test_report['test_results'], output_directory+'/'+self.cipher.id + '/' + self.test_name)
 
-            for it in self.cipher.inputs:
-
-                if 'dieharder' in self.test_name:
-                    from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-                    DieharderTests.generate_chart_all(self.test_report['test_results'][it], output_directory+'/'+self.cipher.id + '/' + self.test_name)
-
-                elif 'nist' in self.test_name:
-                    from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-                    StatisticalTests.generate_chart_all(self.test_report['test_results'][it], output_directory+'/'+self.cipher.id + '/' + self.test_name)
+            elif 'nist' in self.test_name:
+                for dict in self.test_report['test_results']:
+                    StatisticalTests.generate_chart_round(dict,output_directory+'/'+self.cipher.id + '/' + self.test_name)
+                StatisticalTests.generate_chart_all(self.test_report['test_results'], output_directory+'/'+self.cipher.id + '/' + self.test_name)
 
         elif 'algebraic' in self.test_name:
             x = [n+1 for n in list(range(self.cipher.number_of_rounds))]
@@ -683,7 +684,7 @@ class Report:
                 sage: speck = SpeckBlockCipher(number_of_rounds=5)
                 sage: avalanche_test_results = speck.diffusion_tests()
                 sage: report = Report(speck, avalanche_test_results)
-                sage: report.print_report()
+                sage: report.save_as_image()
 
         """
 

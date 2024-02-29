@@ -40,50 +40,178 @@ class StatisticalTests:
         self._cipher_primitive = cipher.id + "_" + "_".join(str_of_inputs_bit_size)
 
 
+
+    def nist_statistical_tests(self, test_type,
+                                    bits_in_one_line='default',
+                                    number_of_lines='default',
+                                    input_index=0,
+                                    round_start=0,
+                                    round_end=0,
+                                    nist_report_folder_prefix="nist_statistics_report",
+                                    ):
+
+        nist_test = {
+
+            'input_parameters': {
+                'test_name': 'nist_statistical_tests',
+                'test_type': test_type,
+                'round_start': round_start,
+                'round_end': round_end,
+                'input': self.cipher.inputs[input_index]
+            },
+            'test_results': None
+        }
+
+        self.folder_prefix = os.getcwd() + '/test_reports/' + nist_report_folder_prefix
+
+        if round_end == 0:
+            round_end = self.cipher.number_of_rounds
+
+        if test_type == 'avalanche':
+
+            self.dataset_type = DatasetType.avalanche
+            self.input_index = input_index
+
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1048576
+            if number_of_lines == 'default':
+                number_of_lines = 384
+
+            sample_size = self.cipher.inputs_bit_size[input_index] * self.cipher.output_bit_size
+            number_of_samples_in_one_line = math.ceil(bits_in_one_line / sample_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples_in_one_line = number_of_samples_in_one_line
+            self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
+            self.bits_in_one_line = sample_size * self.number_of_samples_in_one_line
+
+            self._create_report_folder()
+            dataset_generate_time = time.time()
+            dataset = self.data_generator.generate_avalanche_dataset(input_index=self.input_index,
+                                                                     number_of_samples=self.number_of_samples)
+
+        elif test_type == 'correlation':
+
+            self.dataset_type = DatasetType.correlation
+            self.input_index = input_index
+
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1048576
+            if number_of_lines == 'default':
+                number_of_lines = 384
+
+            number_of_blocks_in_one_sample = math.ceil(bits_in_one_line / self.cipher.output_bit_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples = self.number_of_lines + 1
+            self.bits_in_one_line = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            self._create_report_folder()
+
+            dataset_generate_time = time.time()
+            dataset = self.data_generator.generate_correlation_dataset(input_index=self.input_index,
+                                                                       number_of_samples=self.number_of_samples,
+                                                                       number_of_blocks_in_one_sample=number_of_blocks_in_one_sample)
+
+        elif test_type == 'cbc':
+
+            self.dataset_type = DatasetType.cbc
+            self.input_index = input_index
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1048576
+            if number_of_lines == 'default':
+                number_of_lines = 384
+
+            number_of_blocks_in_one_sample = math.ceil(bits_in_one_line / self.cipher.output_bit_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples = self.number_of_lines + 1
+            self.bits_in_one_line = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            self._create_report_folder()
+
+            dataset_generate_time = time.time()
+            dataset = self.data_generator.generate_cbc_dataset(input_index=self.input_index,
+                                                               number_of_samples=self.number_of_samples,
+                                                               number_of_blocks_in_one_sample=number_of_blocks_in_one_sample)
+
+        elif test_type == 'random':
+            self.dataset_type = DatasetType.random
+            self.input_index = input_index
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1040384
+            if number_of_lines == 'default':
+                number_of_lines = 128
+
+            number_of_blocks_in_one_sample = math.ceil(bits_in_one_line / self.cipher.output_bit_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples = self.number_of_lines + 1
+            self.bits_in_one_line = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            self._create_report_folder()
+
+            dataset = self.data_generator.generate_random_dataset(input_index=self.input_index,
+                                                                  number_of_samples=self.number_of_samples,
+                                                                  number_of_blocks_in_one_sample=self.number_of_blocks_in_one_sample)
+
+        elif test_type == 'low_density':
+            self.dataset_type = DatasetType.low_density
+            self.input_index = input_index
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1056896
+            if number_of_lines == 'default':
+                number_of_lines = 1
+
+            number_of_blocks_in_one_sample = math.ceil(bits_in_one_line / self.cipher.output_bit_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples = self.number_of_lines + 1
+            n = self.cipher.inputs_bit_size[self.input_index]
+            ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
+            self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
+            self.bits_in_one_line = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            self._create_report_folder()
+
+            dataset = self.data_generator.generate_low_density_dataset(input_index=self.input_index,
+                                                                       number_of_samples=self.number_of_samples,
+                                                                       ratio=ratio)
+        elif test_type == 'high_density':
+            self.dataset_type = DatasetType.high_density
+            self.input_index = input_index
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1056896
+            if number_of_lines == 'default':
+                number_of_lines = 1
+
+            number_of_blocks_in_one_sample = math.ceil(bits_in_one_line / self.cipher.output_bit_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples = self.number_of_lines + 1
+            n = self.cipher.inputs_bit_size[self.input_index]
+            ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
+            self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
+            self.bits_in_one_line = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            self._create_report_folder()
+
+            dataset = self.data_generator.generate_high_density_dataset(input_index=self.input_index,
+                                                                        number_of_samples=self.number_of_samples,
+                                                                        ratio=ratio)
+        else:
+            # maybe print the enum value of Dataset.type
+            print(
+                'Invalid test_type choice. Choose among the following: avalanche, correlation, cbc, random, low_density, high_density')
+            return
+
+        dataset_generate_time = time.time() - dataset_generate_time
+        if not dataset:
+            return
+        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
+        nist_test['test_results'] = self._generate_nist_dicts(dataset, round_start, round_end,
+                                                                        flag_chart=False)
+        nist_test['input_parameters']['bits_in_one_line'] = bits_in_one_line
+        nist_test['input_parameters']['number_of_lines'] = number_of_lines
+
+        return nist_test
+
     @staticmethod
-    def nist_statistical_tests(input_file, bit_stream_length=10000, number_of_bit_streams=10,
-                                                      input_file_format=1,
-                                                      statistical_test_option_list=15 * '1'):
-        """
-        Run the run_nist_statistical_tests_tool_interactively function and process its output with the parse_output function
-        to standardize it for the Report class
-
-        INPUT:
-
-        - ``input_file`` -- **str**; file containing the bit streams
-        - ``bit_stream_length`` -- **integer**; bit stream length
-        - ``number_of_bit_streams`` -- **integer**; number of bit streams in `input_file`
-        - ``input_file_format`` -- **integer**; `input_file` format. Set to 0 to indicate a file containing a binary
-          string in ASCII, or 1 to indicate a binary file
-        - ``test_type`` -- **str**; the type of the test to run
-        - ``statistical_test_option_list`` -- **str** (default: `15 * '1'`); a binary string of size 15. This string is
-          used to specify a set of statistical tests we want to run
-
-        OUTPUT:
-
-        a python dictionary representing the parsed output of the run_nist_statistical_tests_tool_interactively function
-
-        EXAMPLES:
-
-        from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-
-        result = StatisticalTests.nist_statistical_test(f'claasp/cipher_modules/statistical_tests/input_data_example')
-
-        """
-
-
-        StatisticalTests.run_nist_statistical_tests_tool_interactively(input_file, bit_stream_length, number_of_bit_streams,
-                                                      input_file_format,
-                                                      statistical_test_option_list)
-
-
-
-        report = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
-
-        return report
-
-    @staticmethod
-    def run_nist_statistical_tests_tool_interactively(input_file, bit_stream_length=10000, number_of_bit_streams=10,
+    def _run_nist_statistical_tests_tool(input_file, bit_stream_length=10000, number_of_bit_streams=10,
                                                       input_file_format=1,
                                                       statistical_test_option_list=15 * '1'):
         """
@@ -113,7 +241,7 @@ class StatisticalTests:
             sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
             sage: if not os.path.exists(f'test_reports/statistical_tests/experiments'):
             ....:     os.makedirs(f'test_reports/statistical_tests/experiments')
-            sage: result = StatisticalTests.run_nist_statistical_tests_tool_interactively(
+            sage: result = StatisticalTests._run_nist_statistical_tests_tool(
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example',
             ....:     10000, 10, 1)
                  Statistical Testing In Progress.........
@@ -122,7 +250,7 @@ class StatisticalTests:
             sage: result
             True
         """
-        def mkdir_folder_experiment(path_prefix, folder_experiment):
+        def _mkdir_folder_experiment(path_prefix, folder_experiment):
             path_folder_experiment = os.path.join(path_prefix, folder_experiment)
             if not os.path.exists(path_folder_experiment):
                 pathlib.Path(path_folder_experiment).mkdir(parents=True, exist_ok=False, mode=0o777)
@@ -149,7 +277,7 @@ class StatisticalTests:
         for directory in ["AlgorithmTesting", "BBS", "CCG", "G-SHA1", "LCG", "MODEXP", "MS", "QCG1", "QCG2", "XOR"]:
             path_prefix = os.path.join(nist_local_experiment_folder, directory)
             for experiment_name in folder_experiments:
-                mkdir_folder_experiment(path_prefix, experiment_name)
+                _mkdir_folder_experiment(path_prefix, experiment_name)
         os.system(f'chmod -R 777 {nist_local_experiment_folder}')
 
         input_file = os.path.abspath(input_file)
@@ -162,7 +290,7 @@ class StatisticalTests:
             return True
 
     @staticmethod
-    def parse_report(report_filename):
+    def _parse_report(report_filename):
         """
         Parse the nist statistical tests report. It will return the parsed result in a dictionary format.
 
@@ -396,7 +524,7 @@ class StatisticalTests:
         except Exception as e:
             print(f'Error: {e.strerror}')
 
-    def _generate_sts_dicts(self, dataset, round_start, round_end, test_type, flag_chart=False):
+    def _generate_nist_dicts(self, dataset, round_start, round_end, flag_chart=False):
         # seems that the statistical tools cannot change the default folder 'experiments'
         nist_local_experiment_folder = f"/usr/local/bin/sts-2.1.2/experiments/"
         dataset_folder = 'dataset'
@@ -424,7 +552,7 @@ class StatisticalTests:
             dataset[round_number].tofile(dataset_filename)
 
             sts_execution_time = time.time()
-            self.run_nist_statistical_tests_tool_interactively(dataset_filename, self.bits_in_one_line,
+            self._run_nist_statistical_tests_tool(dataset_filename, self.bits_in_one_line,
                                                                self.number_of_lines, 1)
             sts_execution_time = time.time() - sts_execution_time
             try:
@@ -439,20 +567,15 @@ class StatisticalTests:
 
             try:
                 # generate report
-                sts_report_dict = self.parse_report(
+                sts_report_dict = self._parse_report(
                     os.path.join(report_folder_round, "AlgorithmTesting/finalAnalysisReport.txt"))
                 sts_report_dict['data_type'] = f'{self.cipher.inputs[self.input_index]}_{self.dataset_type.value}'
                 sts_report_dict["cipher_name"] = self.cipher.id
                 sts_report_dict["round"] = round_number
                 sts_report_dict["rounds"] = self.cipher.number_of_rounds
                 sts_report_dicts.append(sts_report_dict)
-                # generate round chart
-                if flag_chart:
-                    self.generate_chart_round(sts_report_dict, self.report_folder)
             except OSError:
                 print(f"Error in parsing report for round {round_number}.")
-
-        self.generate_chart_for_all_rounds(flag_chart, sts_report_dicts)
 
         print("Finished.")
         return sts_report_dicts
@@ -463,405 +586,3 @@ class StatisticalTests:
                 self.generate_chart_all(sts_report_dicts, self.report_folder)
             except OSError:
                 print("Error in generating all round chart.")
-
-    def run_avalanche_nist_statistics_test(
-            self, input_index, number_of_samples_in_one_line, number_of_lines, round_start=0, round_end=0,
-            nist_sts_report_folder_prefix=reports_path, flag_chart=False):
-        r"""
-        Run the avalanche test using NIST statistical tools.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example,
-          inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
-          means it will generate the plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should
-          be passed to the statistical test tool
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
-          from 0), if set to 0, means run to the last round
-        - ``nist_sts_report_folder_prefix`` -- **string**
-          (default: `test_reports/statistical_tests/nist_statistics_report`); the folder to save the generated
-          statistics report from NIST STS
-        - ``flag_chart`` -- **boolean** (default: `False`); draw the chart from nist statistical test if set to True
-
-
-        OUTPUT:
-
-        - ``nist_sts_report_dicts`` -- Dictionary-structure result parsed from nist statistical report. One could also
-          see the corresponding report generated under the folder nist_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: F = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
-            sage: result = F.run_avalanche_nist_statistics_test(0, 10, 10, round_end=2)
-                 Statistical Testing In Progress.........
-            ...
-            Finished.
-        """
-        self.dataset_type = DatasetType.avalanche
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = self.cipher.inputs_bit_size[self.input_index]
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = nist_sts_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_avalanche_dataset(input_index=self.input_index,
-                                                                 number_of_samples=self.number_of_samples)
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_sts_dicts(dataset, round_start, round_end, "avalanche", flag_chart)
-
-    def run_correlation_nist_statistics_test(
-            self, input_index, number_of_samples_in_one_line, number_of_lines,
-            number_of_blocks_in_one_sample=8128, round_start=0, round_end=0,
-            nist_sts_report_folder_prefix=reports_path, flag_chart=False):
-        r"""
-        Run the correlation test using NIST statistical tools.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example,
-          inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
-          means it will generate the plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should
-          be passed to the statistical test tool
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``number_of_blocks_in_one_sample`` -- **integer** (default: `8128`); how many blocks should be generated in
-          one test sequence
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` -- the round that the statistical test ends (excludes, index starts from 0), if set to 0, means
-          run to the last round.
-        - ``nist_sts_report_folder_prefix`` -- **string**
-          (default: `test_reports/statistical_tests/nist_statistics_report`); the folder to save the generated
-          statistics report from NIST STS
-        - ``flag_chart`` -- **boolean** (default: `False`); draw the chart from nist statistical test if set to True
-
-        OUTPUT:
-
-        - ``nist_sts_report_dicts`` -- Dictionary-structure result parsed from nist statistical report. One could also
-          see the corresponding report generated under the folder nist_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: F = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
-            sage: result = F.run_correlation_nist_statistics_test(0, 10, 10, round_end=2)
-                 Statistical Testing In Progress.........
-            ...
-            Finished.
-        """
-        self.dataset_type = DatasetType.correlation
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = number_of_blocks_in_one_sample
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = nist_sts_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_correlation_dataset(
-            input_index=self.input_index, number_of_samples=self.number_of_samples,
-            number_of_blocks_in_one_sample=self.number_of_blocks_in_one_sample)
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_sts_dicts(dataset, round_start, round_end, "correlation", flag_chart)
-
-    def run_CBC_nist_statistics_test(
-            self, input_index, number_of_samples_in_one_line, number_of_lines,
-            number_of_blocks_in_one_sample=8192, round_start=0, round_end=0,
-            nist_sts_report_folder_prefix=reports_path, flag_chart=False):
-        r"""
-        Run the CBC test using NIST statistical tools.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example,
-          inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
-          means it will generate the plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should
-          be passed to the statistical test tool
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``number_of_blocks_in_one_sample`` -- **integer** (default: `8192`); how many blocks should be generated in
-          one test sequence
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
-          from 0), if set to 0, means run to the last round
-        - ``nist_sts_report_folder_prefix`` -- **string**
-          (default: `test_reports/statistical_tests/nist_statistics_report`); the folder to save the generated
-          statistics report from NIST STS
-        - ``flag_chart`` -- **boolean** (default: `False`); draw the chart from nist statistical test if set to True
-
-        OUTPUT:
-
-        - ``nist_sts_report_dicts`` -- Dictionary-structure result parsed from nist statistical report. One could also
-          see the corresponding report generated under the folder nist_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: F = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
-            sage: result = F.run_CBC_nist_statistics_test(0, 2, 2, round_end=2) # long time
-                 Statistical Testing In Progress.........
-            ...
-            Finished.
-        """
-        self.dataset_type = DatasetType.cbc
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = number_of_blocks_in_one_sample
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = nist_sts_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_cbc_dataset(
-            input_index=input_index, number_of_samples=self.number_of_samples,
-            number_of_blocks_in_one_sample=self.number_of_blocks_in_one_sample)
-
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_sts_dicts(dataset, round_start, round_end, "CBC", flag_chart)
-
-    def run_random_nist_statistics_test(
-            self, input_index, number_of_samples_in_one_line, number_of_lines,
-            number_of_blocks_in_one_sample=8128, round_start=0, round_end=0,
-            nist_sts_report_folder_prefix=reports_path, flag_chart=False):
-        r"""
-        Run the random test using NIST statistical tools.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example,
-          inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
-          means it will generate the plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should
-          be passed to the statistical test tool
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``number_of_blocks_in_one_sample`` -- **integer** (default: `8128`); how many blocks should be generated in
-          one test sequence
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
-          from 0), if set to 0, means run to the last round
-        - ``nist_sts_report_folder_prefix`` -- **string**
-          (default: `test_reports/statistical_tests/nist_statistics_report`); The folder to save the generated
-          statistics report from NIST STS
-        - ``flag_chart`` -- **boolean** (default: `False`); draw the chart from nist statistical test if set to True
-
-        OUTPUT:
-
-        - ``nist_sts_report_dicts`` -- Dictionary-structure result parsed from nist statistical report. One could also
-          see the corresponding report generated under the folder nist_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: F = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
-            sage: result = F.run_random_nist_statistics_test(0, 10, 10, round_end=2)
-                 Statistical Testing In Progress.........
-            ...
-            Finished.
-        """
-        self.dataset_type = DatasetType.random
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = number_of_blocks_in_one_sample
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = nist_sts_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_random_dataset(
-            input_index=input_index, number_of_samples=self.number_of_samples,
-            number_of_blocks_in_one_sample=self.number_of_blocks_in_one_sample)
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_sts_dicts(dataset, round_start, round_end, "random", flag_chart)
-
-    def run_low_density_nist_statistics_test(
-            self, input_index, number_of_samples_in_one_line,
-            number_of_lines, ratio=1, round_start=0, round_end=0,
-            nist_sts_report_folder_prefix=reports_path, flag_chart=False):
-        r"""
-        Run the low density test using NIST statistical tools.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example,
-          inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
-          means it will generate the plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should
-          be passed to the statistical test tool
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``ratio`` -- **integer** (default: `1`); the ratio of weight 2 (that is, two 1 in the input) as low density
-          inputs, range in [0, 1]. For example, if ratio = 0.5, means half of the weight 2 low density inputs will be
-          taken as inputs
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
-          from 0), if set to 0, means run to the last round
-        - ``nist_sts_report_folder_prefix`` -- **string**
-          (default: `test_reports/statistical_tests/nist_statistics_report`); the folder to save the generated
-          statistics report from NIST STS
-        - ``flag_chart`` -- **boolean** (default: `False`); draw the chart from nist statistical test if set to True
-
-        OUTPUT:
-
-        - ``nist_sts_report_dicts`` -- Dictionary-structure result parsed from nist statistical report. One could also
-          see the corresponding report generated under the folder nist_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: F = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
-            sage: result = F.run_low_density_nist_statistics_test(0, 10, 10, round_end=2)
-                 Statistical Testing In Progress.........
-            ...
-            Finished.
-        """
-        self.dataset_type = DatasetType.low_density
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = int(
-            1 + self.cipher.inputs_bit_size[input_index] + math.ceil(
-                self.cipher.inputs_bit_size[input_index] * (
-                            self.cipher.inputs_bit_size[input_index] - 1) * ratio / 2))
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = nist_sts_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_low_density_dataset(input_index=input_index,
-                                                                   number_of_samples=self.number_of_samples,
-                                                                   ratio=ratio)
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_sts_dicts(dataset, round_start, round_end, "low_density", flag_chart)
-
-    def run_high_density_nist_statistics_test(
-            self, input_index, number_of_samples_in_one_line, number_of_lines,
-            ratio=1, round_start=0, round_end=0,
-            nist_sts_report_folder_prefix=reports_path, flag_chart=False):
-        r"""
-        Run the high density test using NIST statistical tools.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example,
-          inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
-          means it will generate the plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should
-          be passed to the statistical test tool
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``ratio`` -- **integer** (default: `1`); the ratio of weight 2 (that is, two 1 in the input) as high density
-          inputs, range in [0, 1]. For example, if ratio = 0.5, means half of the weight 2 high density inputs will be
-          taken as inputs
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
-          from 0), if set to 0, means run to the last round
-        - ``nist_sts_report_folder_prefix`` -- **string**
-          (default: `test_reports/statistical_tests/nist_statistics_report`); the folder to save the
-          generated statistics report from NIST STS
-        - ``flag_chart`` -- **boolean** (default: `False`); draw the chart from nist statistical test if set to True
-
-        OUTPUT:
-
-        - ``nist_sts_report_dicts`` -- Dictionary-structure result parsed from nist statistical report. One could also
-          see the corresponding report generated under the folder nist_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: F = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
-            sage: result = F.run_high_density_nist_statistics_test(0, 10, 10, round_end=2)
-                 Statistical Testing In Progress.........
-            ...
-            Finished.
-        """
-        self.dataset_type = DatasetType.high_density
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = int(
-            1 + self.cipher.inputs_bit_size[input_index] + math.ceil(
-                self.cipher.inputs_bit_size[input_index] * (
-                        self.cipher.inputs_bit_size[input_index] - 1) * ratio / 2))
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = nist_sts_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_high_density_dataset(input_index=input_index,
-                                                                    number_of_samples=self.number_of_samples,
-                                                                    ratio=ratio)
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_sts_dicts(dataset, round_start, round_end, "high_density", flag_chart)

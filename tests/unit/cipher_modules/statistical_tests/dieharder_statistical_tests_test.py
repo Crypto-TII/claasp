@@ -12,29 +12,29 @@ OUTPUT_TXT_IS_FINISHED = "Parsing dieharder_test_output.txt is in progress.\n" \
 
 @pytest.mark.skip("Takes to long")
 def test_run_dieharder_statistical_tests_tool_interactively():
-    result = DieharderTests.run_dieharder_statistical_tests_tool_interactively(INPUT_DATA_EXAMPLE)
+    result = DieharderTests._run_dieharder_statistical_tests_tool(INPUT_DATA_EXAMPLE)
 
     assert result == TESTS_FINISHED
 
 
 @pytest.mark.skip("Takes to long")
 def test_parse_report():
-    result = DieharderTests.run_dieharder_statistical_tests_tool_interactively(INPUT_DATA_EXAMPLE)
+    result = DieharderTests._run_dieharder_statistical_tests_tool(INPUT_DATA_EXAMPLE)
 
     assert result == TESTS_FINISHED
 
-    dictio = DieharderTests.parse_report(OUTPUT_TXT)
+    dictio = DieharderTests._parse_report(OUTPUT_TXT)
 
     assert dictio == OUTPUT_TXT_IS_FINISHED
 
 
 @pytest.mark.skip("Takes to long")
 def test_generate_chart_round():
-    result = DieharderTests.run_dieharder_statistical_tests_tool_interactively(INPUT_DATA_EXAMPLE)
+    result = DieharderTests._run_dieharder_statistical_tests_tool(INPUT_DATA_EXAMPLE)
 
     assert result == TESTS_FINISHED
 
-    dictio = DieharderTests.parse_report(OUTPUT_TXT)
+    dictio = DieharderTests._parse_report(OUTPUT_TXT)
 
     assert dictio == OUTPUT_TXT_IS_FINISHED
 
@@ -51,11 +51,11 @@ def test_generate_chart_round():
 
 @pytest.mark.skip("Takes to long")
 def test_generate_chart_all():
-    result = DieharderTests.run_dieharder_statistical_tests_tool_interactively(INPUT_DATA_EXAMPLE)
+    result = DieharderTests._run_dieharder_statistical_tests_tool(INPUT_DATA_EXAMPLE)
 
     assert result == TESTS_FINISHED
 
-    dictio = DieharderTests.parse_report(OUTPUT_TXT)
+    dictio = DieharderTests._parse_report(OUTPUT_TXT)
 
     assert dictio == OUTPUT_TXT_IS_FINISHED
 
@@ -72,9 +72,9 @@ def test_generate_chart_all():
 
 
 @pytest.mark.skip("Takes to long")
-def test_run_avalanche_dieharder_statistics_test():
+def test_run_avalanche_dieharder_statistical_tests():
     dieharder = DieharderTests(SpeckBlockCipher(number_of_rounds=3))
-    result = dieharder.run_avalanche_dieharder_statistics_test(0, 5, 5, round_end=1)
+    result = dieharder.dieharder_statistical_tests(test_type='avalanche', round_end=1)
 
     assert result == TESTS_FINISHED
 
@@ -82,7 +82,7 @@ def test_run_avalanche_dieharder_statistics_test():
 @pytest.mark.skip("Takes to long")
 def test_run_correlation_dieharder_statistics_test():
     dieharder = DieharderTests(SpeckBlockCipher(number_of_rounds=3))
-    result = dieharder.run_correlation_dieharder_statistics_test(0, 5, 5, round_end=1)
+    result = dieharder.dieharder_statistical_tests(test_type='correlation', round_end=1)
 
     assert result == TESTS_FINISHED
 
@@ -90,7 +90,7 @@ def test_run_correlation_dieharder_statistics_test():
 @pytest.mark.skip("Takes to long")
 def test_run_CBC_dieharder_statistics_test():
     dieharder = DieharderTests(SpeckBlockCipher(number_of_rounds=3))
-    result = dieharder.run_CBC_dieharder_statistics_test(0, 5, 5, round_end=1)
+    result = dieharder.dieharder_statistical_tests(test_type='cbc', round_end=1)
 
     assert result == TESTS_FINISHED
 
@@ -98,7 +98,7 @@ def test_run_CBC_dieharder_statistics_test():
 @pytest.mark.skip("Takes to long")
 def test_run_random_dieharder_statistics_test():
     dieharder = DieharderTests(SpeckBlockCipher(number_of_rounds=3))
-    result = dieharder.run_random_dieharder_statistics_test(0, 5, 5, round_end=1)
+    result = dieharder.dieharder_statistical_tests(test_type='random', round_end=1)
 
     assert result == TESTS_FINISHED
 
@@ -106,7 +106,7 @@ def test_run_random_dieharder_statistics_test():
 @pytest.mark.skip("Takes to long")
 def test_run_low_density_dieharder_statistics_test():
     dieharder = DieharderTests(SpeckBlockCipher(number_of_rounds=3))
-    result = dieharder.run_low_density_dieharder_statistics_test(0, 5, 5, round_end=1)
+    result = dieharder.dieharder_statistical_tests(test_type='low_density', round_end=1)
 
     assert result == TESTS_FINISHED
 
@@ -114,6 +114,6 @@ def test_run_low_density_dieharder_statistics_test():
 @pytest.mark.skip("Takes to long")
 def test_run_high_density_dieharder_statistics_test():
     dieharder = DieharderTests(SpeckBlockCipher(number_of_rounds=3))
-    result = dieharder.run_high_density_dieharder_statistics_test(0, 5, 5, round_end=1)
+    result = dieharder.dieharder_statistical_tests(test_type='high_density', round_end=1)
 
     assert result == TESTS_FINISHED
