@@ -395,7 +395,7 @@ class StatisticalTests:
         return report_dict
 
     @staticmethod
-    def generate_chart_round(report_dict, output_dir=''):
+    def generate_chart_round(report_dict, output_dir='',show_graph=False):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -442,15 +442,21 @@ class StatisticalTests:
         plt.title(f'{report_dict["cipher_name"]}:{report_dict["data_type"]}, Round " {report_dict["round"]}|{report_dict["rounds"]}')
         plt.xlabel('Test ID')
         plt.ylabel('Passing Rate')
-        if output_dir == '':
-            output_dir = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
-            plt.savefig(output_dir)
+
+        if show_graph==False:
+            if output_dir == '':
+                output_dir = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
+                plt.savefig(output_dir)
+            else:
+                plt.savefig(output_dir+'/'+f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
         else:
-            plt.savefig(output_dir+'/'+f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
+            plt.show()
+            plt.clf()
+            plt.close()
         print(f'Drawing round {report_dict["round"]} is finished.')
 
     @staticmethod
-    def generate_chart_all(report_dict_list, report_folder=""):
+    def generate_chart_all(report_dict_list, report_folder="",show_graph=False):
         """
         Generate the corresponding chart based on the list of parsed report dictionary for all rounds.
 
@@ -505,7 +511,13 @@ class StatisticalTests:
                    [i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2 + 1))])
         plt.yticks([i * 20 for i in range(1, 11)], [i * 20 for i in range(1, 11)])
         chart_filename = f'nist_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
-        plt.savefig(os.path.join(report_folder, chart_filename))
+
+        if show_graph==False:
+            plt.savefig(os.path.join(report_folder, chart_filename))
+        else:
+            plt.show()
+            plt.clf()
+            plt.close()
         print(f'Drawing chart for all rounds is in finished.')
 
     def _create_report_folder(self):

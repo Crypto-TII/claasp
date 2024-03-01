@@ -314,7 +314,7 @@ class DieharderTests:
         return report_dict
 
     @staticmethod
-    def generate_chart_round(report_dict, output_dir=''):
+    def generate_chart_round(report_dict, output_dir='', show_graph=False):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -367,15 +367,21 @@ class DieharderTests:
             f'{report_dict["cipher_name"]}: {report_dict["data_type"]}, Round {report_dict["round"]}|{report_dict["rounds"]}')
         plt.xlabel('Tests')
         plt.yticks([-1, 0, 1], ['FAILED', 'WEAK', 'PASSED'])
-        if output_dir =='':
-            output_dir = f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
-            plt.savefig(output_dir)
+
+        if show_graph==False:
+            if output_dir =='':
+                output_dir = f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
+                plt.savefig(output_dir)
+            else:
+                plt.savefig(output_dir+'/'+f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
         else:
-            plt.savefig(output_dir+'/'+f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
+            plt.show()
+            plt.clf()
+            plt.close()
         print(f'Drawing round {report_dict["round"]} is finished. Please find the chart in file {output_dir}.')
 
     @staticmethod
-    def generate_chart_all(report_dict_list, output_dir=''):
+    def generate_chart_all(report_dict_list, output_dir='', show_graph=False):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -428,13 +434,16 @@ class DieharderTests:
         # plt.grid(True)
         chart_filename = f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
 
-        if output_dir =='':
-            output_dir = f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
-            plt.savefig(output_dir)
+        if show_graph==False:
+            if output_dir =='':
+                output_dir = f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
+                plt.savefig(output_dir)
+            else:
+                plt.savefig(output_dir+'/'+f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png')
         else:
-            plt.savefig(output_dir+'/'+f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png')
-
-        plt.savefig(chart_filename)
+            plt.show()
+            plt.clf()
+            plt.close()
         print(f'Drawing chart for all rounds is in finished. Please find the chart in file {chart_filename}.')
 
     def _create_report_folder(self):

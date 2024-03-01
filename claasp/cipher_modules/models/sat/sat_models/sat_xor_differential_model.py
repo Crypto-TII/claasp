@@ -175,7 +175,6 @@ class SatXorDifferentialModel(SatModel):
             solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
             solution['building_time_seconds'] = end_building_time - start_building_time
             solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
-
         return solutions_list
 
     def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
@@ -223,8 +222,9 @@ class SatXorDifferentialModel(SatModel):
             solutions = self.find_all_xor_differential_trails_with_fixed_weight(weight,
                                                                                 fixed_values=fixed_values,
                                                                                 solver_name=solver_name)
-            for solution in solutions_list:
-                solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
+
+            for solution in solutions:
+                    solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
             solutions_list.extend(solutions)
 
         return solutions_list
