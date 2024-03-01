@@ -22,16 +22,16 @@ The target of this module is to generate MILP inequalities for small and large s
 
 The logic minimizer espresso is required for this module. It is already installed in the docker.
 """
-import pickle, os, pathlib
+import pickle, os
 import subprocess
-
+from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 from sage.rings.integer_ring import ZZ
 
 large_sbox_file_name = "dictionary_that_contains_inequalities_for_large_sboxes.obj"
 large_sbox_xor_linear_file_name = "dictionary_that_contains_inequalities_for_large_sboxes_xor_linear.obj"
 
-large_sboxes_inequalities_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), large_sbox_file_name)
-large_sboxes_xor_linear_inequalities_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
+large_sboxes_inequalities_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH, large_sbox_file_name)
+large_sboxes_xor_linear_inequalities_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH,
                                                              large_sbox_xor_linear_file_name)
 
 
