@@ -561,10 +561,12 @@ class Report:
 
         if self.test_name == 'neural_distinguisher_test':
             df_scores = pd.DataFrame(self.test_report['test_results']['plaintext']['cipher_output']['differences_scores'], index=['scores']).T
-            df_result = pd.DataFrame(self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'], index=['results']).T
+            df_result = pd.DataFrame([self.test_report['test_results']['plaintext']['cipher_output'][0]['accuracies']], index=['accuracy']).T
 
             if show_graph:
                 print('RESULTS')
+                print('plaintext_input_diff : ' + str(self.test_report['test_results']['plaintext']['cipher_output'][0]['plaintext_diff']))
+                print('key_input_diff : ' + str(self.test_report['test_results']['plaintext']['cipher_output'][0]['key_diff']))
                 print(df_result)
                 print()
                 print()
