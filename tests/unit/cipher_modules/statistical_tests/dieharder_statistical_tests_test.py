@@ -42,7 +42,7 @@ def test_generate_chart_round():
     dictio['cipher_name'] = 'toy_cipher'
     dictio['round'] = 1
     dictio['rounds'] = 1
-    chart = DieharderTests.generate_chart_round(dictio)
+    chart = DieharderTests._generate_chart_round(dictio)
 
     assert chart == "Drawing round 1 is in progress.\n" \
                     "Drawing round 1 is finished. Please find the chart in file " \
@@ -64,7 +64,7 @@ def test_generate_chart_all():
     dictio['round'] = 1
     dictio['rounds'] = 1
     dict_list = [dictio]
-    chart = DieharderTests.generate_chart_all(dict_list)
+    chart = DieharderTests._generate_chart_all(dict_list)
 
     assert chart == "Drawing chart for all rounds is in progress.\n" \
                     "Drawing chart for all rounds is in finished. Please find the chart in file " \

@@ -223,6 +223,11 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator
+            sage: dataset_generator = DatasetGenerator(SpeckBlockCipher(number_of_rounds=3))
+            sage: dataset = dataset_generator.generate_random_dataset(input_index=0, number_of_samples=100, number_of_blocks_in_one_sample=30000)
+            sage: dataset[0].tofile(f'claasp/cipher_modules/statistical_tests/input_data_example')
             sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
@@ -246,18 +251,6 @@ class DieharderTests:
 
         - ``report_dict`` -- return the parsed result in a dictionary format
 
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
-            ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
-            ....: ) # long time # doctest: +SKIP
-            ...
-            Dieharder Tests Finished!!!
-
-            sage: dict = DieharderTests.parse_report(f'dieharder_test_output.txt') # doctest: +SKIP
-            Parsing dieharder_test_output.txt is in progress.
-            Parsing dieharder_test_output.txt is finished.
         """
         print(f'Parsing {report_filename} is in progress.')
         report_dict = {}
@@ -314,7 +307,7 @@ class DieharderTests:
         return report_dict
 
     @staticmethod
-    def generate_chart_round(report_dict, output_dir='', show_graph=False):
+    def _generate_chart_round(report_dict, output_dir='', show_graph=False):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -327,28 +320,6 @@ class DieharderTests:
         - save the chart with filename
           f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
 
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
-            ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
-            ....: ) # long time # doctest: +SKIP
-            ...
-            Dieharder Tests Finished!!!
-
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: dict = DieharderTests.parse_report(f'dieharder_test_output.txt') # doctest: +SKIP
-            Parsing dieharder_test_output.txt is in progress.
-            Parsing dieharder_test_output.txt is finished.
-
-            sage: dict['data_type'] = 'random' # doctest: +SKIP
-            sage: dict['data_type'] = 'random' # doctest: +SKIP
-            sage: dict['cipher_name'] = 'toy_cipher' # doctest: +SKIP
-            sage: dict['round'] = 1 # doctest: +SKIP
-            sage: dict['rounds'] = 1 # doctest: +SKIP
-            sage: DieharderTests.generate_chart_round(dict) # doctest: +SKIP
-            Drawing round 1 is in progress.
-            Drawing round 1 is finished. Please find the chart in file dieharder_random_toy_cipher_round_1.png.
         """
         print(f'Drawing round {report_dict["round"]} is in progress.')
         x = [i for i in range(len(report_dict['randomness_test']))]
@@ -381,7 +352,7 @@ class DieharderTests:
         print(f'Drawing round {report_dict["round"]} is finished. Please find the chart in file {output_dir}.')
 
     @staticmethod
-    def generate_chart_all(report_dict_list, output_dir='', show_graph=False):
+    def _generate_chart_all(report_dict_list, output_dir='', show_graph=False):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -394,28 +365,6 @@ class DieharderTests:
         - save the chart with filename
           f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
 
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
-            ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
-            ....: ) # long time # doctest: +SKIP
-            ...
-            Dieharder Tests Finished!!!
-
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: dict = DieharderTests.parse_report(f'dieharder_test_output.txt') # doctest: +SKIP
-            Parsing dieharder_test_output.txt is in progress.
-            Parsing dieharder_test_output.txt is finished.
-
-            sage: dict['data_type'] = 'random' # doctest: +SKIP
-            sage: dict['cipher_name'] = 'toy_cipher' # doctest: +SKIP
-            sage: dict['round'] = 1 # doctest: +SKIP
-            sage: dict['rounds'] = 1 # doctest: +SKIP
-            sage: dict_list = [dict] # doctest: +SKIP
-            sage: DieharderTests.generate_chart_all(dict_list) # doctest: +SKIP
-            Drawing chart for all rounds is in progress.
-            Drawing chart for all rounds is in finished. Please find the chart in file dieharder_random_toy_cipher.png.
         """
         print("Drawing chart for all rounds is in progress.")
         x = [i + 1 for i in range(report_dict_list[0]["rounds"])]
@@ -504,14 +453,14 @@ class DieharderTests:
                 dieharder_report_dicts.append(dieharder_report_dict)
                 # generate round chart
                 if FLAG_CHART:
-                    self.generate_chart_round(dieharder_report_dict)
+                    self._generate_chart_round(dieharder_report_dict)
             except OSError:
                 print(f'Error in parsing report for round {round_number}.')
 
         # generate chart for all rounds
         if FLAG_CHART:
             try:
-                self.generate_chart_all(dieharder_report_dicts)
+                self._generate_chart_all(dieharder_report_dicts)
             except OSError:
                 print(f'Error in generating all round chart.')
 

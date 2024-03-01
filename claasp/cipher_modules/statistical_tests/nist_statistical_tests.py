@@ -241,6 +241,11 @@ class StatisticalTests:
             sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
             sage: if not os.path.exists(f'test_reports/statistical_tests/experiments'):
             ....:     os.makedirs(f'test_reports/statistical_tests/experiments')
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator
+            sage: dataset_generator = DatasetGenerator(SpeckBlockCipher(number_of_rounds=3))
+            sage: dataset = dataset_generator.generate_random_dataset(input_index=0, number_of_samples=100, number_of_blocks_in_one_sample=30000)
+            sage: dataset[0].tofile(f'claasp/cipher_modules/statistical_tests/input_data_example')
             sage: result = StatisticalTests._run_nist_statistical_tests_tool(
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example',
             ....:     10000, 10, 1)
@@ -302,12 +307,6 @@ class StatisticalTests:
 
         - ``report_dict`` -- return the parsed result in a dictionary format
 
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: dict = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is in progress.
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is finished.
         """
         print(f'Parsing {report_filename} is in progress.')
         with open(report_filename, 'r') as f:
@@ -395,7 +394,7 @@ class StatisticalTests:
         return report_dict
 
     @staticmethod
-    def generate_chart_round(report_dict, output_dir='',show_graph=False):
+    def _generate_chart_round(report_dict, output_dir='', show_graph=False):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -407,21 +406,6 @@ class StatisticalTests:
 
         - save the chart with filename
           f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: dict = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is in progress.
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is finished.
-
-            sage: dict['data_type'] = 'random'
-            sage: dict['cipher_name'] = 'toy_cipher'
-            sage: dict['round'] = 1
-            sage: dict['rounds'] = 1
-            sage: StatisticalTests.generate_chart_round(dict)
-            Drawing round 1 is in progress.
-            Drawing round 1 is finished.
         """
         print(f'Drawing round {report_dict["round"]} is in progress.')
         x = [i for i in range(1, 189)]
@@ -456,7 +440,7 @@ class StatisticalTests:
         print(f'Drawing round {report_dict["round"]} is finished.')
 
     @staticmethod
-    def generate_chart_all(report_dict_list, report_folder="",show_graph=False):
+    def _generate_chart_all(report_dict_list, report_folder="", show_graph=False):
         """
         Generate the corresponding chart based on the list of parsed report dictionary for all rounds.
 
@@ -467,22 +451,6 @@ class StatisticalTests:
         OUTPUT:
 
         - save the chart with filename f'nist_{data_type}_{cipher_name}.png'
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: dict = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is in progress.
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is finished.
-
-            sage: dict['data_type'] = 'random'
-            sage: dict['cipher_name'] = 'toy_cipher'
-            sage: dict['round'] = 1
-            sage: dict['rounds'] = 1
-            sage: dict_list = [dict]
-            sage: StatisticalTests.generate_chart_all(dict_list)
-            Drawing chart for all rounds is in progress.
-            Drawing chart for all rounds is in finished.
         """
         print("Drawing chart for all rounds is in progress.")
         x = [i + 1 for i in range(report_dict_list[0]["rounds"])]
@@ -595,6 +563,6 @@ class StatisticalTests:
     def generate_chart_for_all_rounds(self, flag_chart, sts_report_dicts):
         if flag_chart:
             try:
-                self.generate_chart_all(sts_report_dicts, self.report_folder)
+                self._generate_chart_all(sts_report_dicts, self.report_folder)
             except OSError:
                 print("Error in generating all round chart.")
