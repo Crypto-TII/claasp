@@ -26,6 +26,7 @@ def test_save_as_image():
         constraint_type='equal',
         bit_positions=range(64),
         bit_values=(0,) * 64)
+
     trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
     trail_report = Report(speck, trail)
     trail_report.save_as_image()

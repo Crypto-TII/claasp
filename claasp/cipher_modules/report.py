@@ -457,9 +457,13 @@ class Report:
 
                 if (all((id_link in key_flow or 'constant' in id_link or id_link+'_o' in key_flow or id_link+'_i' in key_flow) for id_link in input_links) or ('key' in comp_id and 'comp_id' != 'key')):
                     key_flow.append(comp_id)
-                    constants_i = [constant_id+'_i' for constant_id in input_links if 'constant' in constant_id]
-                    constants_o = [constant_id+'_o' for constant_id in input_links if 'constant' in constant_id]
-                    key_flow = key_flow + constants_i + constants_o
+                    if 'linear' in self.test_name:
+                        constants_i = [constant_id+'_i' for constant_id in input_links if 'constant' in constant_id]
+                        constants_o = [constant_id+'_o' for constant_id in input_links if 'constant' in constant_id]
+                        key_flow = key_flow + constants_i + constants_o
+                    else:
+                        constants = [constant_id for constant_id in input_links if 'constant' in constant_id]
+                        key_flow = key_flow + constants
 
             if show_components[
                 comp_value if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
@@ -516,6 +520,7 @@ class Report:
         show_key_flow = False
 
 
+
         for key_comp in key_flow:
             if key_comp != 'key' and self.test_report['components_values'][key_comp]['weight'] != 0:
                 show_key_flow = True
@@ -538,7 +543,6 @@ class Report:
                     identifier = comp_id.split('_')[0] + '_o'
                 else:
                     identifier = comp_id
-
                 if show_components[identifier]:
                     if comp_id == 'plaintext' or 'key' in comp_id:
                         print(f'\t{comp_id}\t', file=file)
@@ -601,7 +605,7 @@ class Report:
                 z = [[1]*num_rounds]*len(self.test_report['test_results'].keys())
                 z_text = []
                 for test in self.test_report['test_results'].keys():
-                    z_text.append([str(x) for x in repo.test_report['test_results'][test]])
+                    z_text.append([str(x) for x in self.test_report['test_results'][test]])
                 fig = px.imshow(z, x=x, y=y, color_continuous_scale='Viridis', aspect="auto")
                 fig.update_traces(text=z_text, texttemplate="%{text}")
                 fig.update_xaxes(side="top")
@@ -718,7 +722,6 @@ class Report:
                                 fig.data = []
                                 fig.layout = {}
 
-        print("Results saved in " + output_directory)
 
     def save_as_image(self, word_size=1, state_size=1, key_state_size=1, output_directory=os.getcwd() + '/test_reports',
                       verbose=False, show_word_permutation=False,
@@ -776,6 +779,7 @@ class Report:
             if not os.path.exists(output_directory + '/' + self.cipher.id + '/' + self.test_name):
                 os.mkdir(output_directory + '/' + self.cipher.id + '/' + self.test_name)
             self._produce_graph(output_directory)
+        print('Report saved in ' + output_directory)
 
     def clean_reports(self, output_dir=os.getcwd() + '/test_reports/reports'):
 
