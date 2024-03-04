@@ -72,3 +72,4 @@ jobs:
         git add claasp-dev.log
         git commit -m "Updating deployment-staging-repo from github"
         git push origin develop
+    needs: build-image
