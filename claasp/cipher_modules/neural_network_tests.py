@@ -23,7 +23,7 @@ class NeuralNetworkTests:
                                                     hidden_layers=[32, 32, 32], number_of_epochs=10,
                                                     rounds_to_train=[]):
         """
-        Runs the test defined in [BR2021]; trains a MLP to distinguish samples of the form
+        Runs a test inspired by [BHPR2021]; trains a MLP to distinguish samples of the form
         input || output from random. The test is run once for each setting, defined by the types of inputs and outputs.
         The input is taken among the inputs defined by the cipher, and output is chosen between cipher output,
         round output (one setting for each round output), or round key output (one setting per round key).
@@ -200,7 +200,7 @@ class NeuralNetworkTests:
     def neural_network_differential_distinguisher_tests(self, nb_samples=10000, hidden_layers=[32, 32, 32],
                                                         number_of_epochs=10, diff=[[0x400000], [0xa]], rounds_to_train=[]):
         """
-        Runs the test defined in [BHPR2021]; for each input i to the cipher and difference delta in diff[i], a dataset
+        Runs a test inspired by [BR2021]; for each input i to the cipher and difference delta in diff[i], a dataset
         of pairs X0, X1 is created, such that the input i in X1 is equal to the input i in X0 XORed with delta. The
         pairs are then encrypted to C0, C1, and a simple MLP is trained to distinguish C0, C1 pairs from pairs of
         random values R0, R1.
