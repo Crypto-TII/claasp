@@ -146,15 +146,21 @@ class SatXorLinearModel(SatModel):
         solution = self.solve(XOR_LINEAR, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
         solutions_list = []
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         while solution['total_weight'] is not None:
             solutions_list.append(solution)
             literals = []
-            for component in self._cipher.get_all_components():
-                bit_len = component.output_bit_size
-                value_to_avoid = int(solution['components_values'][f'{component.id}{out_suffix}']['value'], base=16)
+            for component in solution['components_values']:
+                value_as_hex_string = solution['components_values'][component]['value']
+                value_to_avoid = int(value_as_hex_string, base=16)
+                bit_len = len(value_as_hex_string) * 4
                 minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                literals.extend([f'{minus[i]}{component.id}_{i}{out_suffix}' for i in range(bit_len)])
+                if component.endswith('_i') or component.endswith('_o'):
+                    component_id = component[:-2]
+                    suffix = component[-2:]
+                else:
+                    component_id = component
+                    suffix = '_o'
+                literals.extend([f'{minus[i]}{component_id}_{i}{suffix}' for i in range(bit_len)])
             self._model_constraints.append(' '.join(literals))
             solution = self.solve(XOR_LINEAR, solver_name=solver_name)
             solution['building_time_seconds'] = end_building_time - start_building_time
