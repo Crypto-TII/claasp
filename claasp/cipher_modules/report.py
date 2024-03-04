@@ -571,11 +571,6 @@ class Report:
                 print('RESULTS')
                 print('plaintext_input_diff : ' + str(self.test_report['test_results']['plaintext']['cipher_output'][0]['plaintext_diff']))
                 print('key_input_diff : ' + str(self.test_report['test_results']['plaintext']['cipher_output'][0]['key_diff']))
-                print(df_result)
-                print()
-                print()
-                print('SCORES')
-                print(df_scores)
 
             else:
                 df_result.to_csv(output_directory + '/neural_distinguisher_test_results.csv')

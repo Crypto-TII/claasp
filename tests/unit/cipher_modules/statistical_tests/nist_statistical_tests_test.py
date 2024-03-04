@@ -2,7 +2,7 @@ import os
 import sys
 from io import StringIO
 import pytest
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
 
 REPORT_EXAMPLE_TXT = 'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt'
@@ -64,66 +64,66 @@ def test_generate_chart_all():
 
 @pytest.mark.skip("Takes too long")
 def test_run_avalanche_nist_statistics_test():
-    tests = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
+    tests = StatisticalTests(SimonBlockCipher(number_of_rounds=1))
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('avalanche', round_end=2)
+    tests.nist_statistical_tests('avalanche')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
 
 @pytest.mark.skip("Takes too long")
 def test_run_correlation_nist_statistics_test():
-    tests = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
+    tests = StatisticalTests(SimonBlockCipher(number_of_rounds=1))
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('correlation', round_end=2)
+    tests.nist_statistical_tests('correlation')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
 
 @pytest.mark.skip("Takes too long")
 def test_run_CBC_nist_statistics_test():
-    tests = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
+    tests = StatisticalTests(SimonBlockCipher(number_of_rounds=1))
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('cbc', round_end=2)
+    tests.nist_statistical_tests('cbc')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
 
 @pytest.mark.skip("Takes too long")
 def test_run_random_nist_statistics_test():
-    tests = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
+    tests = StatisticalTests(SimonBlockCipher(number_of_rounds=1))
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('random', round_end=2)
+    tests.nist_statistical_tests('random')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
 
 @pytest.mark.skip("Takes too long")
 def test_run_low_density_nist_statistics_test():
-    tests = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
+    tests = StatisticalTests(SimonBlockCipher(number_of_rounds=1))
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('low_density', round_end=2)
+    tests.nist_statistical_tests('low_density')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
 
 @pytest.mark.skip("Takes too long")
 def test_run_high_density_nist_statistics_test():
-    tests = StatisticalTests(SpeckBlockCipher(number_of_rounds=3))
+    tests = StatisticalTests(SimonBlockCipher(number_of_rounds=1))
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('high_density', round_end=2)
+    tests.nist_statistical_tests('high_density')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10

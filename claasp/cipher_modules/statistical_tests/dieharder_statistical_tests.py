@@ -45,6 +45,33 @@ class DieharderTests:
                                     dieharder_report_folder_prefix="dieharder_statistics_report",
                                     ):
 
+        """
+
+        Run the Dieharder statistical tests.
+
+        INPUT:
+
+            - ``test_type`` -- string describing which test to run
+            - ``bits_in_one_line`` -- integer parameter used to run the dieharder tests
+            - ``number_of_lines`` -- integer parameter used to run the dieharder tests
+            - ``input_index`` -- cipher input index
+            - ``round_start`` -- first round to be considered in the cipher
+            - ``round_end`` -- last round to be considered in the cipher
+            - ``dieharder_report_folder_prefix`` - prefix for the unparsed dieharder tests output folder
+
+        OUTPUT:
+
+            - The results are going to be saved in a dictionary format compatible with the Report class
+
+        EXAMPLE:
+
+            from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+            from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            speck = SpeckBlockCipher(number_of_rounds=5)
+            dieharder_tests = DieharderTests(speck)
+            dieharder_avalanche_test_results = dieharder_tests.dieharder_statistical_tests('avalanche')
+
+        """
         dieharder_test = {
 
             'input_parameters': {
@@ -223,6 +250,11 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator
+            sage: dataset_generator = DatasetGenerator(SpeckBlockCipher(number_of_rounds=3))
+            sage: dataset = dataset_generator.generate_random_dataset(input_index=0, number_of_samples=100, number_of_blocks_in_one_sample=30000)
+            sage: dataset[0].tofile(f'claasp/cipher_modules/statistical_tests/input_data_example')
             sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
@@ -255,7 +287,7 @@ class DieharderTests:
             ...
             Dieharder Tests Finished!!!
 
-            sage: dict = DieharderTests.parse_report(f'dieharder_test_output.txt') # doctest: +SKIP
+            sage: dict = DieharderTests._parse_report(f'dieharder_test_output.txt') # doctest: +SKIP
             Parsing dieharder_test_output.txt is in progress.
             Parsing dieharder_test_output.txt is finished.
         """

@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -25,10 +24,10 @@ import pathlib
 from datetime import timedelta
 import matplotlib.pyplot as plt
 
-
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType
 
 reports_path = "test_reports/statistical_tests/nist_statistics_report"
+
 
 class StatisticalTests:
 
@@ -39,16 +38,41 @@ class StatisticalTests:
         str_of_inputs_bit_size = list(map(str, cipher.inputs_bit_size))
         self._cipher_primitive = cipher.id + "_" + "_".join(str_of_inputs_bit_size)
 
-
-
     def nist_statistical_tests(self, test_type,
-                                    bits_in_one_line='default',
-                                    number_of_lines='default',
-                                    input_index=0,
-                                    round_start=0,
-                                    round_end=0,
-                                    nist_report_folder_prefix="nist_statistics_report",
-                                    ):
+                               bits_in_one_line='default',
+                               number_of_lines='default',
+                               input_index=0,
+                               round_start=0,
+                               round_end=0,
+                               nist_report_folder_prefix="nist_statistics_report",
+                               ):
+        """
+
+         Run the nist statistical tests.
+
+         INPUT:
+
+             - ``test_type`` -- string describing which test to run
+             - ``bits_in_one_line`` -- integer parameter used to run the nist tests
+             - ``number_of_lines`` -- integer parameter used to run the nist tests
+             - ``input_index`` -- cipher input index
+             - ``round_start`` -- first round to be considered in the cipher
+             - ``round_end`` -- last round to be considered in the cipher
+             - ``nist_report_folder_prefix`` - prefix for the unparsed nist tests output folder
+
+         OUTPUT:
+
+             - The results are going to be saved in a dictionary format compatible with the Report class
+
+         EXAMPLE:
+
+             from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+             from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+             speck = SpeckBlockCipher(number_of_rounds=5)
+             nist_tests = StatisticalTests(speck)
+             nist_avalanche_test_results = nist_tests.nist_statistical_tests('avalanche')
+
+         """
 
         nist_test = {
 
@@ -204,7 +228,7 @@ class StatisticalTests:
             return
         self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
         nist_test['test_results'] = self._generate_nist_dicts(dataset, round_start, round_end,
-                                                                        flag_chart=False)
+                                                              flag_chart=False)
         nist_test['input_parameters']['bits_in_one_line'] = bits_in_one_line
         nist_test['input_parameters']['number_of_lines'] = number_of_lines
 
@@ -212,8 +236,8 @@ class StatisticalTests:
 
     @staticmethod
     def _run_nist_statistical_tests_tool(input_file, bit_stream_length=10000, number_of_bit_streams=10,
-                                                      input_file_format=1,
-                                                      statistical_test_option_list=15 * '1'):
+                                         input_file_format=1,
+                                         statistical_test_option_list=15 * '1'):
         """
         Run statistical tests using the NIST test suite [1]. The result will be in experiments folder.
         Be aware that the NIST STS suits needed to be installed in /usr/local/bin in the docker image.
@@ -250,6 +274,7 @@ class StatisticalTests:
             sage: result
             True
         """
+
         def _mkdir_folder_experiment(path_prefix, folder_experiment):
             path_folder_experiment = os.path.join(path_prefix, folder_experiment)
             if not os.path.exists(path_folder_experiment):
@@ -305,7 +330,7 @@ class StatisticalTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: dict = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
+            sage: dict = StatisticalTests._parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
             Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is in progress.
             Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is finished.
         """
@@ -395,7 +420,7 @@ class StatisticalTests:
         return report_dict
 
     @staticmethod
-    def generate_chart_round(report_dict, output_dir='',show_graph=False):
+    def generate_chart_round(report_dict, output_dir='', show_graph=False):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -439,16 +464,18 @@ class StatisticalTests:
             elif i == 1:
                 plt.hlines(rate, 160, 185, color="olive", linestyle="dashed")
         plt.scatter(x, y, color="cadetblue")
-        plt.title(f'{report_dict["cipher_name"]}:{report_dict["data_type"]}, Round " {report_dict["round"]}|{report_dict["rounds"]}')
+        plt.title(
+            f'{report_dict["cipher_name"]}:{report_dict["data_type"]}, Round " {report_dict["round"]}|{report_dict["rounds"]}')
         plt.xlabel('Test ID')
         plt.ylabel('Passing Rate')
 
-        if show_graph==False:
+        if show_graph == False:
             if output_dir == '':
                 output_dir = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
                 plt.savefig(output_dir)
             else:
-                plt.savefig(output_dir+'/'+f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
+                plt.savefig(
+                    output_dir + '/' + f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
         else:
             plt.show()
             plt.clf()
@@ -456,7 +483,7 @@ class StatisticalTests:
         print(f'Drawing round {report_dict["round"]} is finished.')
 
     @staticmethod
-    def generate_chart_all(report_dict_list, report_folder="",show_graph=False):
+    def generate_chart_all(report_dict_list, report_folder="", show_graph=False):
         """
         Generate the corresponding chart based on the list of parsed report dictionary for all rounds.
 
@@ -502,7 +529,8 @@ class StatisticalTests:
                    label="186")
         plt.plot(x, y, 'o--', color='olive', alpha=0.4)
         if random_round > -1:
-            plt.title(f'{report_dict_list[0]["cipher_name"]}: {report_dict_list[0]["data_type"]}, Random at {random_round}|{report_dict_list[0]["rounds"]}')
+            plt.title(
+                f'{report_dict_list[0]["cipher_name"]}: {report_dict_list[0]["data_type"]}, Random at {random_round}|{report_dict_list[0]["rounds"]}')
         else:
             plt.title(f'{report_dict_list[0]["cipher_name"]}: {report_dict_list[0]["data_type"]}')
         plt.xlabel('Round')
@@ -512,7 +540,7 @@ class StatisticalTests:
         plt.yticks([i * 20 for i in range(1, 11)], [i * 20 for i in range(1, 11)])
         chart_filename = f'nist_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
 
-        if show_graph==False:
+        if show_graph == False:
             plt.savefig(os.path.join(report_folder, chart_filename))
         else:
             plt.show()
@@ -565,7 +593,7 @@ class StatisticalTests:
 
             sts_execution_time = time.time()
             self._run_nist_statistical_tests_tool(dataset_filename, self.bits_in_one_line,
-                                                               self.number_of_lines, 1)
+                                                  self.number_of_lines, 1)
             sts_execution_time = time.time() - sts_execution_time
             try:
                 shutil.move(nist_local_experiment_folder, report_folder_round)
