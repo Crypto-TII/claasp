@@ -36,7 +36,7 @@ def test_generate_chart_round():
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    StatisticalTests.generate_chart_round(dictio)
+    StatisticalTests._generate_chart_round(dictio)
     sys.stdout = old_stdout
 
     assert result.getvalue() == \
@@ -55,7 +55,7 @@ def test_generate_chart_all():
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    StatisticalTests.generate_chart_all(dict_list)
+    StatisticalTests._generate_chart_all(dict_list)
     sys.stdout = old_stdout
 
     assert result.getvalue() == \

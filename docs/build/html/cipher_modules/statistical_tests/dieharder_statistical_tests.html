@@ -63,7 +63,7 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.generate_chart_all">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_chart_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.generate_chart_all" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_generate_chart_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.generate_chart_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the corresponding chart based on the parsed report dictionary.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -92,7 +92,7 @@ f’dieharder_{report_dict[“data_type”]}_{report_dict[“cipher_name”]}_ro
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;round&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># doctest: +SKIP</span>
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;rounds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># doctest: +SKIP</span>
 <span class="gp">sage: </span><span class="n">dict_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">DieharderTests</span><span class="o">.</span><span class="n">generate_chart_all</span><span class="p">(</span><span class="n">dict_list</span><span class="p">)</span> <span class="c1"># doctest: +SKIP</span>
+<span class="gp">sage: </span><span class="n">DieharderTests</span><span class="o">.</span><span class="n">_generate_chart_all</span><span class="p">(</span><span class="n">dict_list</span><span class="p">)</span> <span class="c1"># doctest: +SKIP</span>
 <span class="go">Drawing chart for all rounds is in progress.</span>
 <span class="go">Drawing chart for all rounds is in finished. Please find the chart in file dieharder_random_toy_cipher.png.</span>
 </pre></div>
@@ -101,7 +101,7 @@ f’dieharder_{report_dict[“data_type”]}_{report_dict[“cipher_name”]}_ro
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.generate_chart_round">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_chart_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.generate_chart_round" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_generate_chart_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.generate_chart_round" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the corresponding chart based on the parsed report dictionary.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -130,7 +130,7 @@ f’dieharder_{report_dict[“data_type”]}_{report_dict[“cipher_name”]}_ro
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;cipher_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;toy_cipher&#39;</span> <span class="c1"># doctest: +SKIP</span>
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;round&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># doctest: +SKIP</span>
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;rounds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">DieharderTests</span><span class="o">.</span><span class="n">generate_chart_round</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span> <span class="c1"># doctest: +SKIP</span>
+<span class="gp">sage: </span><span class="n">DieharderTests</span><span class="o">.</span><span class="n">_generate_chart_round</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span> <span class="c1"># doctest: +SKIP</span>
 <span class="go">Drawing round 1 is in progress.</span>
 <span class="go">Drawing round 1 is finished. Please find the chart in file dieharder_random_toy_cipher_round_1.png.</span>
 </pre></div>
