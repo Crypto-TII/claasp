@@ -16,8 +16,8 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Concatenate component" href="concatenate_component.html" />
-    <link rel="prev" title="Modular component" href="modular_component.html" />
+    <link rel="next" title="Sigma component" href="sigma_component.html" />
+    <link rel="prev" title="Variable rotate component" href="variable_rotate_component.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
     <script src="../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +33,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="concatenate_component.html" title="Concatenate component"
+          <a href="sigma_component.html" title="Sigma component"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="modular_component.html" title="Modular component"
+          <a href="variable_rotate_component.html" title="Variable rotate component"
              accesskey="P">previous</a> |</li>
   
     
@@ -336,6 +336,39 @@
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.not_component.NOT.milp_bitwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">milp_bitwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.not_component.NOT.milp_bitwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of variables and a list of constraints for NOT component
+in deterministic truncated XOR differential model.</p>
+<p>INPUTS:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <em>dict</em>, the NOT component in Graph Representation</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.gift_permutation</span> <span class="kn">import</span> <span class="n">GiftPermutation</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">GiftPermutation</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">cipher</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">not_component</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">not_component</span><span class="o">.</span><span class="n">milp_bitwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x_class[xor_0_6_0]&#39;, x_0),</span>
+<span class="go"> (&#39;x_class[xor_0_6_1]&#39;, x_1),</span>
+<span class="go"> ...</span>
+<span class="go"> (&#39;x_class[not_0_8_30]&#39;, x_62),</span>
+<span class="go"> (&#39;x_class[not_0_8_31]&#39;, x_63)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_32 == x_0,</span>
+<span class="go"> x_33 == x_1,</span>
+<span class="go"> ...</span>
+<span class="go"> x_62 == x_30,</span>
+<span class="go"> x_63 == x_31]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.not_component.NOT.milp_constraints">
 <span class="sig-name descname"><span class="pre">milp_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.not_component.NOT.milp_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return lists of variables and constraints for the NOT component for MILP CIPHER model.</p>
@@ -561,6 +594,11 @@
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.not_component.NOT.set_id">
+<span class="sig-name descname"><span class="pre">set_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.not_component.NOT.set_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.not_component.NOT.set_input_bit_positions">
 <span class="sig-name descname"><span class="pre">set_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.not_component.NOT.set_input_bit_positions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -674,13 +712,13 @@
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="modular_component.html"
-                          title="previous chapter">Modular component</a></p>
+    <p class="topless"><a href="variable_rotate_component.html"
+                          title="previous chapter">Variable rotate component</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="concatenate_component.html"
-                          title="next chapter">Concatenate component</a></p>
+    <p class="topless"><a href="sigma_component.html"
+                          title="next chapter">Sigma component</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -713,10 +751,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="concatenate_component.html" title="Concatenate component"
+          <a href="sigma_component.html" title="Sigma component"
              >next</a> |</li>
         <li class="right" >
-          <a href="modular_component.html" title="Modular component"
+          <a href="variable_rotate_component.html" title="Variable rotate component"
              >previous</a> |</li>
   
     

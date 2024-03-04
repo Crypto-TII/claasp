@@ -45,10 +45,8 @@ def test_find_one_xor_differential_trail():
     assert solution['solver_name'] == 'z3'
     assert eval('0x' + solution['components_values']['intermediate_output_0_6']['value']) >= 0
     assert solution['components_values']['intermediate_output_0_6']['weight'] == 0
-    assert solution['components_values']['intermediate_output_0_6']['sign'] == 1
     assert eval('0x' + solution['components_values']['cipher_output_4_12']['value']) >= 0
     assert solution['components_values']['cipher_output_4_12']['weight'] == 0
-    assert solution['components_values']['cipher_output_4_12']['sign'] == 1
 
 
 def test_find_one_xor_differential_trail_with_fixed_weight():

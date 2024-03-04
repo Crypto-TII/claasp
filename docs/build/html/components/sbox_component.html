@@ -16,8 +16,8 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Intermediate output component" href="intermediate_output_component.html" />
-    <link rel="prev" title="Rotate component" href="rotate_component.html" />
+    <link rel="next" title="Modsub component" href="modsub_component.html" />
+    <link rel="prev" title="Permutation component" href="permutation_component.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
     <script src="../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +33,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="intermediate_output_component.html" title="Intermediate output component"
+          <a href="modsub_component.html" title="Modsub component"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="rotate_component.html" title="Rotate component"
+          <a href="permutation_component.html" title="Permutation component"
              accesskey="P">previous</a> |</li>
   
     
@@ -289,6 +289,33 @@
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.get_ddt_with_undisturbed_transitions">
+<span class="sig-name descname"><span class="pre">get_ddt_with_undisturbed_transitions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.get_ddt_with_undisturbed_transitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all truncated input/outputs tuples that have undisturbed differential bits
+(see <a class="reference external" href="https://link.springer.com/chapter/10.1007/978-3-031-26553-2_3">https://link.springer.com/chapter/10.1007/978-3-031-26553-2_3</a>)</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">valid_transitions</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">get_ddt_with_undisturbed_transitions</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">valid_transitions</span><span class="p">)</span>
+<span class="go">81</span>
+
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation</span> <span class="kn">import</span> <span class="n">AsconSboxSigmaNoMatrixPermutation</span>
+<span class="gp">sage: </span><span class="n">ascon</span> <span class="o">=</span> <span class="n">AsconSboxSigmaNoMatrixPermutation</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">ascon</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">valid_transitions</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">get_ddt_with_undisturbed_transitions</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">valid_transitions</span><span class="p">)</span>
+<span class="go">243</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.sbox_component.SBOX.get_graph_representation">
 <span class="sig-name descname"><span class="pre">get_graph_representation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.get_graph_representation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -332,6 +359,41 @@
 <dt class="sig sig-object py" id="components.sbox_component.SBOX.is_power_of_2_word_based">
 <span class="sig-name descname"><span class="pre">is_power_of_2_word_based</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dto</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.is_power_of_2_word_based" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_bitwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">milp_bitwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.milp_bitwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Models the wordwise Sbox component.</p>
+</div></blockquote>
+<p>INPUTS:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <em>dict</em>, the sbox component in Graph Representation
+of an SPN cipher</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_bitwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x_class[xor_0_0_0]&#39;, x_0),</span>
+<span class="go"> (&#39;x_class[xor_0_0_1]&#39;, x_1),</span>
+<span class="go"> ...</span>
+<span class="go"> (&#39;x_class[sbox_0_1_2]&#39;, x_6),</span>
+<span class="go"> (&#39;x_class[sbox_0_1_3]&#39;, x_7)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 + x_1 + x_2 + x_3 &lt;= 8 - 8*x_8,</span>
+<span class="go"> 1 - 8*x_8 &lt;= x_0 + x_1 + x_2 + x_3,</span>
+<span class="go"> ...</span>
+<span class="go"> x_7 &lt;= 2 + 2*x_8,</span>
+<span class="go"> 2 &lt;= x_7 + 2*x_8]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_large_xor_differential_probability_constraints">
@@ -499,6 +561,130 @@
 <span class="go">...</span>
 <span class="go">x_9 + x_10 + x_11 + x_12 == x_8,</span>
 <span class="go">x_13 == 20*x_9 + 10*x_10 + 10*x_11 + 20*x_12]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Models the wordwise Sbox component, with added undisturbed bits information, as mentioned in
+<a class="reference external" href="https://link.springer.com/chapter/10.1007/978-3-031-26553-2_3">https://link.springer.com/chapter/10.1007/978-3-031-26553-2_3</a></p>
+</div></blockquote>
+<p>INPUTS:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <em>dict</em>, the sbox component in Graph Representation
+of an SPN cipher</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[xor_0_0_0_class_bit_0]&#39;, x_0),</span>
+<span class="go"> (&#39;x[xor_0_0_0_class_bit_1]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go"> (&#39;x[sbox_0_1_3_class_bit_0]&#39;, x_14),</span>
+<span class="go"> (&#39;x[sbox_0_1_3_class_bit_1]&#39;, x_15)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_16 == 2*x_0 + x_1,</span>
+<span class="go"> x_17 == 2*x_2 + x_3,</span>
+<span class="go"> ...</span>
+<span class="go">1 &lt;= 2 - x_2 - x_15,</span>
+<span class="go">1 &lt;= 2 - x_0 - x_15]</span>
+
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation</span> <span class="kn">import</span> <span class="n">AsconSboxSigmaNoMatrixPermutation</span>
+<span class="gp">sage: </span><span class="n">ascon</span> <span class="o">=</span> <span class="n">AsconSboxSigmaNoMatrixPermutation</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">ascon</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">ascon</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_wordwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">milp_wordwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.milp_wordwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Models the wordwise Sbox component according to Model 4 from
+<a class="reference external" href="https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294">https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294</a>
+The valid set for the input output pair (x, y) is {(0, 0), (1, 2), (2, 2), (3, 3)}</p>
+<p>6 inequalities can enforce these transitions. They can either be computer using
+Sage with the Polyhedron class</p>
+<p>sage: valid_points = [[0,0,0,0], [0,1,1,0],[1,0,1,0],[1,1,1,1]]
+sage: from sage.geometry.polyhedron.constructor import Polyhedron
+sage: Polyhedron(vertices=valid_points)
+sage: for inequality in poly.Hrepresentation():
+….:    print(f’{inequality.repr_pretty()}’)</p>
+<p>or using espresso</p>
+<p>INPUTS:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <em>dict</em>, the sbox component in Graph Representation
+of an SPN cipher</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_wordwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[xor_0_0_word_0_class_bit_0]&#39;, x_0),</span>
+<span class="go"> (&#39;x[xor_0_0_word_0_class_bit_1]&#39;, x_1),</span>
+<span class="go"> (&#39;x[sbox_0_1_word_0_class_bit_0]&#39;, x_2),</span>
+<span class="go"> (&#39;x[sbox_0_1_word_0_class_bit_1]&#39;, x_3)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 + x_1 &lt;= 1 + x_3,</span>
+<span class="go"> x_2 &lt;= x_0 + x_1,</span>
+<span class="go">...</span>
+<span class="go"> x_1 &lt;= x_2,</span>
+<span class="go"> x_0 &lt;= x_2]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints">
+<span class="sig-name descname"><span class="pre">milp_wordwise_deterministic_truncated_xor_differential_simple_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Models the wordwise Sbox component according to a simplified version of Model 4 from
+<a class="reference external" href="https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294">https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294</a>
+The valid set for the input output pair (x, y) is {(0, 0), (1, 2), (2, 2), (3, 3)}</p>
+<dl class="simple">
+<dt>if dX = 1</dt><dd><p>then dY = 2</p>
+</dd>
+<dt>else</dt><dd><p>dY = dX</p>
+</dd>
+</dl>
+<p>INPUTS:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <em>dict</em>, the sbox component in Graph Representation
+of an SPN cipher</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sbox_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">sbox_component</span><span class="o">.</span><span class="n">milp_wordwise_deterministic_truncated_xor_differential_simple_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x_class[xor_0_0_word_0_class]&#39;, x_0),</span>
+<span class="go"> (&#39;x_class[sbox_0_1_word_0_class]&#39;, x_1)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_0 &lt;= 5 - 4*x_2,</span>
+<span class="go"> 2 - 4*x_2 &lt;= x_0,</span>
+<span class="go"> ...</span>
+<span class="go"> x_0 &lt;= x_1 + 4*x_4,</span>
+<span class="go"> x_1 &lt;= x_0 + 4*x_4]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -699,6 +885,11 @@
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.sbox_component.SBOX.set_id">
+<span class="sig-name descname"><span class="pre">set_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.set_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.sbox_component.SBOX.set_input_bit_positions">
 <span class="sig-name descname"><span class="pre">set_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.sbox_component.SBOX.set_input_bit_positions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -848,13 +1039,13 @@
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="rotate_component.html"
-                          title="previous chapter">Rotate component</a></p>
+    <p class="topless"><a href="permutation_component.html"
+                          title="previous chapter">Permutation component</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="intermediate_output_component.html"
-                          title="next chapter">Intermediate output component</a></p>
+    <p class="topless"><a href="modsub_component.html"
+                          title="next chapter">Modsub component</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -887,10 +1078,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="intermediate_output_component.html" title="Intermediate output component"
+          <a href="modsub_component.html" title="Modsub component"
              >next</a> |</li>
         <li class="right" >
-          <a href="rotate_component.html" title="Rotate component"
+          <a href="permutation_component.html" title="Permutation component"
              >previous</a> |</li>
   
     

@@ -35,9 +35,9 @@ def cp_twoterms(input_1, input_2, out, component_name, input_length, cp_constrai
 
 class MODSUB(Modular):
     def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
+                 input_id_links, input_bit_positions, output_bit_size, modulus):
         super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, 'modsub')
+                         input_id_links, input_bit_positions, output_bit_size, 'modsub', modulus)
 
     def cms_constraints(self):
         """
@@ -139,7 +139,7 @@ class MODSUB(Modular):
 
         return cp_declarations, cp_constraints
 
-    def get_bit_based_vectorized_python_code(self, params,convert_output_to_bytes):
+    def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         return [f'  {self.id} = bit_vector_MODSUB([{",".join(params)} ], '
                 f'{self.description[1]}, {self.output_bit_size})']
 

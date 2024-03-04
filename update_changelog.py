@@ -186,7 +186,7 @@ def get_headers_from_two_latest_releases(changelog_content: str) -> Tuple[str, s
 
 
 def update_changelog_version() -> None:
-    with open('./CHANGELOG.md', 'r+') as changelog_file:
+    with open('./docs/CHANGELOG.md', 'r+') as changelog_file:
         current_changelog = copy.deepcopy(changelog_file.read())
         new_version, previous_version = find_versions_from(current_changelog, commits)
         current_changelog = update_changelog(current_changelog, new_version, previous_version)

@@ -447,6 +447,49 @@ class NOT(Component):
         result = variables, constraints
         return result
 
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for NOT component
+        in deterministic truncated XOR differential model.
+
+        INPUTS:
+
+        - ``component`` -- *dict*, the NOT component in Graph Representation
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+            sage: cipher = GiftPermutation()
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: not_component = cipher.component_from(0,8)
+            sage: variables, constraints = not_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[xor_0_6_0]', x_0),
+             ('x_class[xor_0_6_1]', x_1),
+             ...
+             ('x_class[not_0_8_30]', x_62),
+             ('x_class[not_0_8_31]', x_63)]
+            sage: constraints
+            [x_32 == x_0,
+             x_33 == x_1,
+             ...
+             x_62 == x_30,
+             x_63 == x_31]
+
+        """
+        x_class = model.trunc_binvar
+        input_bit_size = self.input_bit_size
+        input_vars, output_vars = self._get_input_output_variables()
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+        constraints = []
+
+        for i in range(input_bit_size):
+            constraints.append(x_class[output_vars[i]] == x_class[input_vars[i]])
+
+        return variables, constraints
+
     def sat_constraints(self):
         """
         Return a list of variables and a list of clauses for NOT operation in SAT CIPHER model.
@@ -480,6 +523,44 @@ class NOT(Component):
             constraints.extend(sat_utils.cnf_inequality(output_bit_ids[i], input_bit_ids[i]))
 
         return output_bit_ids, constraints
+
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for NOT in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+            sage: gift = GiftPermutation(number_of_rounds=3)
+            sage: not_component = gift.component_from(0, 8)
+            sage: not_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            (['not_0_8_0_0',
+              'not_0_8_1_0',
+              'not_0_8_2_0',
+              ...
+              'xor_0_6_30_0 -xor_0_6_30_1 -not_0_8_30_1',
+              'xor_0_6_31_0 xor_0_6_31_1 not_0_8_31_1',
+              'xor_0_6_31_0 -xor_0_6_31_1 -not_0_8_31_1'])
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        constraints = []
+        for out_id, in_id in zip(out_ids_0, in_ids_0):
+            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
+        for out_id, in_id_0, in_id_1 in zip(out_ids_1, in_ids_0, in_ids_1):
+            constraints.append(f'{in_id_0} {in_id_1} {out_id}')
+            constraints.append(f'{in_id_0} -{in_id_1} -{out_id}')
+
+        return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """

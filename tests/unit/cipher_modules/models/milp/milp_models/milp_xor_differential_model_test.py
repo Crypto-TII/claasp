@@ -19,10 +19,8 @@ def test_find_all_xor_differential_trails_with_fixed_weight():
         assert eval(trail[i]['components_values']['key']['value']) == 0
         assert eval(trail[i]['components_values']['modadd_0_1']['value']) >= 0
         assert trail[i]['components_values']['modadd_0_1']['weight'] >= 0.0
-        assert trail[i]['components_values']['modadd_0_1']['sign'] == 1
         assert eval(trail[i]['components_values']['intermediate_output_0_6']['value']) >= 0
         assert trail[i]['components_values']['intermediate_output_0_6']['weight'] == 0
-        assert trail[i]['components_values']['intermediate_output_0_6']['sign'] == 1
 
 
 def test_find_all_xor_differential_trails_with_weight_at_most():

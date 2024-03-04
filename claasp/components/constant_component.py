@@ -21,6 +21,7 @@ from claasp.input import Input
 from claasp.component import Component
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.code_generator import constant_to_bitstring
 
 
@@ -129,9 +130,6 @@ class Constant(Component):
               'constant_2_0_15'])
         """
         return self.sat_constraints()
-
-    def cms_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.sat_xor_differential_propagation_constraints()
 
     def cms_xor_differential_propagation_constraints(self, model):
         return self.sat_xor_differential_propagation_constraints()
@@ -319,8 +317,73 @@ class Constant(Component):
 
         return constant_code
 
-    def milp_deterministic_truncated_xor_differential_trail_constraints(self, model):
-        return self.milp_xor_differential_propagation_constraints(model)
+    def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints modeling a component of type Constant for wordwise models.
+
+        EXAMPLE::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.components.constant_component import Constant
+            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: constant_component = aes.get_component_from_id("constant_0_30")
+            sage: variables, constraints = constant_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[constant_0_30_word_0_class]', x_0),
+             ('x_class[constant_0_30_word_1_class]', x_1),
+             ('x_class[constant_0_30_word_2_class]', x_2),
+             ('x_class[constant_0_30_word_3_class]', x_3)]
+            sage: constraints
+            [x_0 == 0, x_1 == 0, x_2 == 0, x_3 == 0]
+
+        """
+        x_class = model.trunc_wordvar
+
+        input_vars, output_vars = self._get_wordwise_input_output_linked_class(model)
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+        constraints = []
+        for i in range(len(output_vars)):
+            constraints.append(x_class[output_vars[i]] == 0)
+        return variables, constraints
+
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints modeling a component of type Constant.
+
+        EXAMPLE::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(speck)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: constant_component = speck.get_component_from_id("constant_1_0")
+            sage: variables, constraints = constant_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[constant_1_0_0]', x_0),
+            ('x_class[constant_1_0_1]', x_1),
+            ...
+            ('x_class[constant_1_0_14]', x_14),
+            ('x_class[constant_1_0_15]', x_15)]
+            sage: constraints
+            [x_0 == 0,
+            x_1 == 0,
+            ...
+            x_14 == 0,
+            x_15 == 0]
+
+        """
+        x_class = model.trunc_binvar
+
+        input_vars, output_vars = self._get_input_output_variables()
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+        constraints = []
+        for i in range(self.output_bit_size):
+            constraints.append(x_class[output_vars[i]] == 0)
+        return variables, constraints
 
     def milp_xor_differential_propagation_constraints(self, model):
         """
@@ -457,8 +520,36 @@ class Constant(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.sat_xor_differential_propagation_constraints()
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for CONSTANT in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: constant_component = speck.component_from(2, 0)
+            sage: constant_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            (['constant_2_0_0_0',
+              'constant_2_0_1_0',
+              'constant_2_0_2_0',
+              ...
+              '-constant_2_0_13_1',
+              '-constant_2_0_14_1',
+              '-constant_2_0_15_1'])
+        """
+        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        constraints = [f'-{out_id}' for out_id in out_ids_0] + [f'-{out_id}' for out_id in out_ids_1]
+        return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
@@ -486,8 +577,8 @@ class Constant(Component):
               '-constant_2_0_14',
               '-constant_2_0_15'])
         """
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        constraints = [f'-{output_bit_ids[i]}' for i in range(output_bit_len)]
+        _, output_bit_ids = self._generate_output_ids()
+        constraints = [f'-{output_bit_id}' for output_bit_id in output_bit_ids]
         result = output_bit_ids, constraints
         return result
 
@@ -554,9 +645,6 @@ class Constant(Component):
                        for i in range(output_bit_len)]
 
         return output_bit_ids, constraints
-
-    def smt_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.smt_xor_differential_propagation_constraints()
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """

@@ -67,9 +67,6 @@ class CipherOutput(Component):
         """
         return self.sat_constraints()
 
-    def cms_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.cms_constraints()
-
     def cms_xor_differential_propagation_constraints(self, model):
         return self.cms_constraints()
 
@@ -291,8 +288,87 @@ class CipherOutput(Component):
 
         return variables, constraints
 
-    def milp_deterministic_truncated_xor_differential_trail_constraints(self, model):
-        return self.milp_constraints(model)
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints modeling a component of type
+        Intermediate_output or Cipher_output for the bitwise deterministic truncated xor differential model.
+
+        EXAMPLE::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(simon)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: output_component = simon.component_from(1,8)
+            sage: variables, constraints = output_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[xor_1_6_0]', x_0),
+            ('x_class[xor_1_6_1]', x_1),
+            ...
+            ('x_class[cipher_output_1_8_30]', x_62),
+            ('x_class[cipher_output_1_8_31]', x_63)]
+            sage: constraints
+            [x_32 == x_0,
+            ...
+             x_63 == x_31]
+
+
+        """
+        x_class = model.trunc_binvar
+
+        input_vars, output_vars = self._get_input_output_variables()
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+        constraints = []
+        output_bit_size = self.output_bit_size
+        model.intermediate_output_names.append([self.id, output_bit_size])
+        for i in range(output_bit_size):
+            constraints.append(x_class[output_vars[i]] == x_class[input_vars[i]])
+
+        return variables, constraints
+
+    def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constrains modeling a component of type
+        Intermediate_output or Cipher_output for the wordwise deterministic truncated xor differential model.
+
+        EXAMPLE::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: output_component = aes.component_from(1, 32)
+            sage: variables, constraints = output_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[xor_1_31_word_0_class]', x_0),
+             ('x_class[xor_1_31_word_1_class]', x_1),
+             ...
+             ('x[cipher_output_1_32_126]', x_286),
+             ('x[cipher_output_1_32_127]', x_287)]
+            sage: constraints
+            [x_16 == x_0,
+             x_17 == x_1,
+             ...
+             x_286 == x_158,
+             x_287 == x_159]
+
+
+        """
+        x_class = model.trunc_wordvar
+
+        input_vars, output_vars = self._get_wordwise_input_output_linked_class(model)
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+        constraints = []
+        output_word_size = self.output_bit_size // model.word_size
+        model.intermediate_output_names.append([self.id, output_word_size])
+        for i in range(output_word_size):
+            constraints.append(x_class[output_vars[i]] == x_class[input_vars[i]])
+
+        bit_variables, bit_constraints = self.milp_constraints(model)
+
+        return variables + bit_variables, constraints + bit_constraints
 
     def milp_xor_differential_propagation_constraints(self, model):
         return self.milp_constraints(model)
@@ -405,8 +481,42 @@ class CipherOutput(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.sat_constraints()
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for OUTPUT in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: output_component = speck.component_from(2, 12)
+            sage: output_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            (['cipher_output_2_12_0_0',
+              'cipher_output_2_12_1_0',
+              'cipher_output_2_12_2_0',
+              ...
+              'xor_2_10_14_1 -cipher_output_2_12_30_1',
+              'cipher_output_2_12_31_1 -xor_2_10_15_1',
+              'xor_2_10_15_1 -cipher_output_2_12_31_1'])
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        constraints = []
+        for out_id, in_id in zip(out_ids_0, in_ids_0):
+            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
+        for out_id, in_id in zip(out_ids_1, in_ids_1):
+            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
+
+        return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model):
         return self.sat_constraints()
@@ -479,9 +589,6 @@ class CipherOutput(Component):
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
-
-    def smt_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.smt_constraints()
 
     def smt_xor_differential_propagation_constraints(self, model):
         return self.smt_constraints()

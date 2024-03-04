@@ -11,8 +11,8 @@ To contribute to this project, please, follow the following conventions.
   - [Contributing to the documentation](#contributing-to-the-documentation)
 - [Project structure](#project-structure)
 - [GIT Conventions](#git-conventions)
-  - [Branches](#branches)
-  - [Pull Requests](#pull-requests)
+  - [Branches conventions](#branches-conventions)
+  - [Pull Requests conventions](#pull-requests-conventions)
 - [Best practices for development](#best-practices-for-development)
   - [Linter/Formatter](#linterformatter)
   - [Imports](#imports)
@@ -41,13 +41,12 @@ To contribute to this project, please, follow the following conventions.
 
 # GitHub collaboration
 
-In order to collaborate with the project, you need to fill this [Google form](https://forms.gle/rYMKW76fCF15Lnxm6) to 
-be added as a collaboratior in [CLAASP GitHub repository](https://github.com/Crypto-TII/claasp).
+In order to collaborate with the project, you need to fork this projects.
 
 ## Pull requests
 
-Pull requests are the way to contribute to the project. Only collaborators can create pull requests, so pull requests 
-coming from forks will be rejected.
+Pull requests are the way to contribute to the project. Pull requests coming from forks will be reviewed and need to 
+have all the checks passing green.
 
 # Development environment
 
@@ -472,7 +471,7 @@ This is the current project structure.
 ```
 
 # GIT Conventions
-## Branches
+## Branches Conventions
 - `main` is the main branch.
 - `develop` is the branch where the latest changes are merged into.
 - `<fix|feature|breaking>/<task-name>` is the branch where a new feature is developed.
@@ -480,7 +479,7 @@ This is the current project structure.
 > ⚠️ We encourage you to follow this convention when creating new branches even though branches with the naming 
 > convention `<task-name>` are allowed. ⚠️ 
 
-## Pull Requests
+## Pull Requests Conventions
 - Pull Requests should be made from a `feature-branch` to `develop` and it should be reviewed by at least one person.
 - New branches to development tasks will have `develop` branch as origin. 
 - The only allowed Pull Requests to `main` branch must come from `develop` branch. All other Pull Requests will be 

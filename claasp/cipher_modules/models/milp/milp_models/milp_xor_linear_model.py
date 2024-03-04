@@ -26,7 +26,11 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits, \
     output_dictionary_that_contains_xor_inequalities
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX, \
+    MILP_BUILDING_MESSAGE, MILP_XOR_LINEAR_OBJECTIVE
+from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, _string_to_hex
+from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list, \
+    set_component_solution
 from claasp.name_mappings import (INTERMEDIATE_OUTPUT, CONSTANT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION)
 
@@ -65,13 +69,13 @@ class MilpXorLinearModel(MilpModel):
             sage: mip.number_of_variables()
             1018
         """
-        verbose_print("Building model in progress ...")
+        verbose_print(MILP_BUILDING_MESSAGE)
         self.build_xor_linear_trail_model(weight, fixed_variables)
         mip = self._model
         p = self._integer_variable
-        for index, constraint in enumerate(self._model_constraints):
+        for constraint in self._model_constraints:
             mip.add_constraint(constraint)
-        mip.add_constraint(p["probability"] == sum(
+        mip.add_constraint(p[MILP_XOR_LINEAR_OBJECTIVE] == sum(
             p[self._non_linear_component_id[i] + "_probability"] for i in range(len(self._non_linear_component_id))))
 
     def branch_xor_linear_constraints(self):
@@ -299,8 +303,9 @@ class MilpXorLinearModel(MilpModel):
         looking_for_other_solutions = 1
         while looking_for_other_solutions:
             try:
-                solution = self.solve("xor_linear", solver_name, external_solver_name)
+                solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
                 solution['building_time'] = building_time
+                solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
                 self._number_of_trails_found += 1
                 verbose_print(f"trails found : {self._number_of_trails_found}")
                 list_trails.append(solution)
@@ -338,7 +343,7 @@ class MilpXorLinearModel(MilpModel):
 
         self._number_of_trails_found = 0
 
-        return list_trails
+        return [trail for trail in list_trails if trail['status'] == 'SATISFIABLE']
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
                                                        solver_name=SOLVER_DEFAULT, external_solver_name=None):
@@ -396,8 +401,9 @@ class MilpXorLinearModel(MilpModel):
             number_new_constraints = len(weight_constraints)
             while looking_for_other_solutions:
                 try:
-                    solution = self.solve("xor_linear", solver_name, external_solver_name)
+                    solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
                     solution['building_time'] = building_time
+                    solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
                     self._number_of_trails_found += 1
                     verbose_print(f"trails found : {self._number_of_trails_found}")
                     list_trails.append(solution)
@@ -414,7 +420,7 @@ class MilpXorLinearModel(MilpModel):
             mip.remove_constraints(range(number_constraints - number_new_constraints, number_constraints))
         self._number_of_trails_found = 0
 
-        return list_trails
+        return [trail for trail in list_trails if trail['status'] == 'SATISFIABLE']
 
     def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
@@ -465,12 +471,13 @@ class MilpXorLinearModel(MilpModel):
         verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         p = self._integer_variable
-        mip.set_objective(p["probability"])
+        mip.set_objective(p[MILP_XOR_LINEAR_OBJECTIVE])
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_linear", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
@@ -507,8 +514,9 @@ class MilpXorLinearModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_linear", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
@@ -549,8 +557,9 @@ class MilpXorLinearModel(MilpModel):
             mip.add_constraint(constraint)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_linear", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_one_xor_linear_trail_with_fixed_weight"
 
         return solution
 
@@ -691,3 +700,55 @@ class MilpXorLinearModel(MilpModel):
             [x_0 == 100]
         """
         return self.weight_constraints(weight)
+
+    def _get_component_values(self, objective_variables, components_variables):
+        components_values = {}
+        list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        for component_id in list_component_ids:
+            dict_tmp = self._get_component_value_weight(component_id,
+                                                        objective_variables, components_variables)
+            if component_id in self._cipher.inputs:
+                components_values[component_id] = dict_tmp[1]
+            elif 'cipher_output' not in component_id:
+                components_values[component_id + '_i'] = dict_tmp[0]
+                components_values[component_id + '_o'] = dict_tmp[1]
+            else:
+                components_values[component_id + '_o'] = dict_tmp[1]
+        return components_values
+
+    def _parse_solver_output(self):
+        mip = self._model
+        objective_variables = mip.get_values(self._integer_variable)
+        objective_value = objective_variables[MILP_XOR_LINEAR_OBJECTIVE] / 10.
+        components_variables = mip.get_values(self._binary_variable)
+        components_values = self._get_component_values(objective_variables, components_variables)
+
+        return objective_value, components_values
+
+    def _get_component_value_weight(self, component_id, probability_variables, components_variables):
+
+        if component_id in self._cipher.inputs:
+            output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
+            input_size = output_size
+        else:
+            component = self._cipher.get_component_from_id(component_id)
+            input_size = component.input_bit_size
+            output_size = component.output_bit_size
+        suffix_dict = {"_i": input_size, "_o": output_size}
+        final_output = self._get_final_output(component_id, components_variables, probability_variables, suffix_dict)
+        if len(final_output) == 1:
+            final_output = final_output[0]
+
+        return final_output
+
+    def _get_final_output(self, component_id, components_variables, probability_variables,
+                         suffix_dict):
+        final_output = []
+        for suffix in suffix_dict.keys():
+            mask_str = _get_variables_values_as_string(component_id, components_variables, suffix, suffix_dict[suffix])
+            mask = _string_to_hex(mask_str)
+            bias = 0
+            if component_id + MILP_PROBABILITY_SUFFIX in probability_variables:
+                bias = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / 10.
+            final_output.append(set_component_solution(mask, bias, sign=1))
+        return final_output

@@ -5,7 +5,8 @@ from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.permutations.gift_permutation import GiftPermutation
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel
 
 def test_algebraic_polynomials():
     ascon = AsconPermutation(number_of_rounds=2)
@@ -170,6 +171,20 @@ def test_sat_constraints():
     assert constraints[-1] == '-not_0_8_31 -xor_0_6_31'
 
 
+def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
+    gift = GiftPermutation(number_of_rounds=3)
+    not_component = gift.component_from(0, 8)
+    output_bit_ids, constraints = not_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+
+    assert output_bit_ids[0] == 'not_0_8_0_0'
+    assert output_bit_ids[1] == 'not_0_8_1_0'
+    assert output_bit_ids[2] == 'not_0_8_2_0'
+
+    assert constraints[-3] == 'xor_0_6_30_0 -xor_0_6_30_1 -not_0_8_30_1'
+    assert constraints[-2] == 'xor_0_6_31_0 xor_0_6_31_1 not_0_8_31_1'
+    assert constraints[-1] == 'xor_0_6_31_0 -xor_0_6_31_1 -not_0_8_31_1'
+
+
 def test_sat_xor_differential_propagation_constraints():
     gift = GiftPermutation(number_of_rounds=3)
     not_component = gift.component_from(0, 8)
@@ -244,3 +259,20 @@ def test_smt_xor_linear_mask_propagation_constraints():
     assert constraints[1] == '(assert (= not_0_5_1_i not_0_5_1_o))'
     assert constraints[-2] == '(assert (= not_0_5_62_i not_0_5_62_o))'
     assert constraints[-1] == '(assert (= not_0_5_63_i not_0_5_63_o))'
+
+def test_milp_deterministic_truncated_xor_differential_constraints():
+    cipher = GiftPermutation()
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+    milp.init_model_in_sage_milp_class()
+    not_component = cipher.component_from(0,8)
+    variables, constraints = not_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+
+    assert str(variables[0]) == "('x_class[xor_0_6_0]', x_0)"
+    assert str(variables[1]) == "('x_class[xor_0_6_1]', x_1)"
+    assert str(variables[-2]) == "('x_class[not_0_8_30]', x_62)"
+    assert str(variables[-1]) == "('x_class[not_0_8_31]', x_63)"
+
+    assert str(constraints[0]) == 'x_32 == x_0'
+    assert str(constraints[1]) == 'x_33 == x_1'
+    assert str(constraints[-2]) == 'x_62 == x_30'
+    assert str(constraints[-1]) == 'x_63 == x_31'

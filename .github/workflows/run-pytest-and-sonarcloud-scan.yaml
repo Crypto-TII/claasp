@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - '**'
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened, edited]
     branches:
       - develop
@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   run-pytest:
+    if: ${{ !github.event.repository.fork }}
     runs-on: self-hosted
     steps:
     - name: Checkout
@@ -46,6 +47,7 @@ jobs:
         path: /home/runner/_work/claasp/coverage.xml
 
   run-code-coverage:
+    if: ${{ !github.event.repository.fork }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout

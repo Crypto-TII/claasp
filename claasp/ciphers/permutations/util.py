@@ -18,6 +18,17 @@ from claasp.DTOs.component_state import ComponentState
 from claasp.utils.utils import get_2d_array_element_from_1d_array_index, set_2d_array_element_from_1d_array_index
 
 
+def print_state_ids(state):
+    str_state = ""
+    for i in range(4):
+        str_temp = ""
+        for j in range(4):
+            str_temp += state[i][j].id + " "
+        print(str_temp + "\n")
+    str_state += str_temp
+    print(str_state)
+
+
 def add_intermediate_output_component_latin_dances_permutations(permutation, round_i, number_of_rounds):
     lst_ids = []
     lst_input_input_positions = []
@@ -34,6 +45,7 @@ def add_intermediate_output_component_latin_dances_permutations(permutation, rou
 
 def half_like_round_function_latin_dances(permutation, round_number, columns, diagonals):
     state = permutation.state_of_components
+
 
     def top_half_quarter_round(a, b, c, d):
         permutation.top_half_quarter_round(*a, state)
@@ -135,10 +147,12 @@ def init_latin_dances_cipher(
                          cipher_output_bit_size=permutation.block_bit_size)
 
     for i in range(number_of_rounds):
-        if start_round == 'even':
+        if start_round[0] == 'even':
             j = i + 2
         else:
             j = i
+        if start_round[1] == 'bottom':
+            j += 1
         permutation.add_round()
         half_like_round_function_latin_dances(permutation, j, columns, diagonals)
         add_intermediate_output_component_latin_dances_permutations(permutation, i, number_of_rounds)

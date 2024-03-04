@@ -40,14 +40,13 @@ import os
 import subprocess
 import time
 import tracemalloc
-from bitstring import BitArray
 
 from sage.numerical.mip import MixedIntegerLinearProgram, MIPSolverException
 
-from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT, EXTERNAL_MILP_SOLVERS
+from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT, EXTERNAL_MILP_SOLVERS, \
+    SOLUTION_FILE_DEFAULT_NAME
 from claasp.cipher_modules.models.milp.utils.utils import _get_data, _parse_external_solver_output, _write_model_to_lp_file
-from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dictionary,
-                                                set_component_value_weight_sign)
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 
 verbose = 0
 verbose_print = print if verbose else lambda *a, **k: None
@@ -238,8 +237,7 @@ class MilpModel:
             constraints.append(p["probability"] == 10 * weight)
             variables = [("p[probability]", p["probability"])]
         elif weight != -1:
-            # constraints.append(p["probability"] <= -weight)
-            self._model.get_max(p["probability"], - 10 * weight)
+            self._model.set_max(p["probability"], - 10 * weight)
             variables = [("p[probability]", p["probability"])]
 
         return variables, constraints
@@ -267,7 +265,7 @@ class MilpModel:
         self._integer_variable = self._model.new_variable(integer=True)
         self._non_linear_component_id = []
 
-    def _solve_with_external_solver(self, model_path, solver_name=SOLVER_DEFAULT):
+    def _solve_with_external_solver(self, model_type, model_path, solver_name=SOLVER_DEFAULT):
 
         if solver_name not in EXTERNAL_MILP_SOLVERS:
             raise ValueError(f"Invalid solver name: {solver_name}."
@@ -283,19 +281,17 @@ class MilpModel:
         milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
         tracemalloc.stop()
 
-        if(solver_process.stderr):
+        if solver_process.stderr:
             raise MIPSolverException("Make sure that the solver is correctly installed.")
 
         if 'memory' in solver_specs:
             milp_memory = _get_data(solver_specs['memory'], str(solver_process))
 
-        return _parse_external_solver_output(self, solver_name, solver_process) + (milp_memory,)
+        return _parse_external_solver_output(self, model_type, solver_name, solver_process) + (milp_memory,)
 
     def _solve_with_internal_solver(self):
 
         mip = self._model
-        x = self._binary_variable
-        p = self._integer_variable
 
         verbose_print("Solving model in progress ...")
         time_start = time.time()
@@ -307,17 +303,13 @@ class MilpModel:
             time_end = time.time()
             milp_time = time_end - time_start
             verbose_print(f"Time for solving the model = {milp_time}")
-
             status = 'SATISFIABLE'
-            probability_variables = mip.get_values(p)
-            total_weight = probability_variables["probability"] / 10.
-            components_variables = mip.get_values(x)
 
         except MIPSolverException as milp_exception:
             status = 'UNSATISFIABLE'
             print(milp_exception)
 
-        return status, total_weight, probability_variables, components_variables, milp_time, milp_memory
+        return status, milp_time, milp_memory
 
     def solve(self, model_type, solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
@@ -343,80 +335,19 @@ class MilpModel:
         if external_solver_name:
             solver_name_in_solution = external_solver_name
             model_path = _write_model_to_lp_file(self, model_type)
-            status, total_weight, probability_variables, components_variables, milp_time, milp_memory = self._solve_with_external_solver(
-                model_path, external_solver_name)
+            status, objective_value, components_values, milp_time, milp_memory = self._solve_with_external_solver(
+                model_type, model_path, external_solver_name)
             os.remove(model_path)
+            os.remove(f"{SOLUTION_FILE_DEFAULT_NAME}")
         else:
             solver_name_in_solution = solver_name
-            status, total_weight, probability_variables, components_variables, milp_time, milp_memory = self._solve_with_internal_solver()
-
-        components_values = {}
-        list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
-        for component_id in list_component_ids:
-            dict_tmp = self.get_component_value_weight(model_type, component_id,
-                                                       probability_variables, components_variables)
-            if model_type == "xor_linear":
-                if component_id in self._cipher.inputs:
-                    components_values[component_id] = dict_tmp[1]
-                elif 'cipher_output' not in component_id:
-                    components_values[component_id + '_i'] = dict_tmp[0]
-                    components_values[component_id + '_o'] = dict_tmp[1]
-                else:
-                    components_values[component_id + '_o'] = dict_tmp[1]
-            else:
-                components_values[component_id] = dict_tmp
+            status, milp_time, milp_memory = self._solve_with_internal_solver()
+            objective_value, components_values = self._parse_solver_output()
 
         solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name_in_solution, milp_time,
-                                                         milp_memory, components_values, total_weight)
+                                                         milp_memory, components_values, objective_value)
         solution['status'] = status
         return solution
-
-    def get_component_value_weight(self, model_type, component_id, probability_variables, components_variables):
-
-        if component_id in self._cipher.inputs:
-            output_bit_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
-            input_bit_size = output_bit_size
-        else:
-            component = self._cipher.get_component_from_id(component_id)
-            input_bit_size = component.input_bit_size
-            output_bit_size = component.output_bit_size
-        diff_str = {}
-        if model_type == "xor_differential":
-            suffix_dict = {"": output_bit_size}
-        elif model_type == "xor_linear":
-            suffix_dict = {"_i": input_bit_size, "_o": output_bit_size}
-        final_output = self.get_final_output(component_id, components_variables, diff_str,
-                                             probability_variables, suffix_dict)
-        if len(final_output) == 1:
-            final_output = final_output[0]
-
-        return final_output
-
-    def get_final_output(self, component_id, components_variables, diff_str, probability_variables, suffix_dict):
-        final_output = []
-        for suffix in suffix_dict.keys():
-            diff_str[suffix] = ""
-            for i in range(suffix_dict[suffix]):
-                if component_id + "_" + str(i) + suffix in components_variables:
-                    bit = components_variables[component_id + "_" + str(i) + suffix]
-                    diff_str[suffix] += f"{bit}".split(".")[0]
-                else:
-                    diff_str[suffix] += "*"
-            diff_str[suffix] = "0b" + diff_str[suffix]
-            try:
-                difference = BitArray(diff_str[suffix])
-                try:
-                    difference = "0x" + difference.hex
-                except Exception:
-                    difference = "0b" + difference.bin
-            except Exception:
-                difference = diff_str[suffix]
-            weight = 0
-            if component_id + "_probability" in probability_variables:
-                weight = probability_variables[component_id + "_probability"] / 10.
-            final_output.append(set_component_value_weight_sign(difference, weight))
-
-        return final_output
 
     @property
     def binary_variable(self):

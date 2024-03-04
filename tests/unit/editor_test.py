@@ -65,3 +65,25 @@ def test_remove_rotations():
     ciphertext = speck.evaluate([plaintext, key])
     ciphertext_no_rotations = speck_no_rotations.evaluate([plaintext, key])
     assert ciphertext == ciphertext_no_rotations
+
+
+def test_add_FSR_component():
+    cipher = Cipher("cipher_name", "fsr", ["input"], [12], 12)
+    cipher.add_round()
+    cipher.add_FSR_component(["input", "input"], [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5, 6]], 12,
+                             [
+                                 [
+                                     [5, [[4], [5], [6, 7]]],  # Register_len:5,  feedback poly: x4 + x5 + x6*x7
+                                     [7, [[0], [8], [1, 2]]]  # Register_len:7, feedback poly: x0 + x1*x2 + x8
+                                 ],
+                                 1])
+    assert cipher.rounds.rounds_as_python_dictionary() == [[{'id': 'fsr_0_0',
+                                                             'type': 'fsr',
+                                                             'input_bit_size': 12,
+                                                             'input_id_link': ['input', 'input'],
+                                                             'input_bit_positions': [[0, 1, 2, 3, 4],
+                                                                                     [0, 1, 2, 3, 4, 5, 6]],
+                                                             'output_bit_size': 12,
+                                                             'description': [
+                                                                 [[5, [[4], [5], [6, 7]]], [7, [[0], [8], [1, 2]]]],
+                                                                 1]}]]

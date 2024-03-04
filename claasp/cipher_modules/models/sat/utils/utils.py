@@ -563,6 +563,138 @@ def cnf_and_linear(mask_in_0, mask_in_1, mask_out, hw):
             f'-{mask_out} {hw}',
             f'{mask_out} -{hw}')
 
+
+def cnf_xor_truncated(result, variable_0, variable_1):
+    """
+    Return a list of strings representing the CNF of the Boolean XOR when
+    searching for DETERMINISTIC TRUNCATED XOR DIFFERENTIAL. I.e., an XOR
+    behaving as in the following table:
+
+    ==========  ==========  ==========
+    variable_0  variable_1  result
+    ==========  ==========  ==========
+    0           0           0
+    ----------  ----------  ----------
+    0           1           1
+    ----------  ----------  ----------
+    0           2           2
+    ----------  ----------  ----------
+    1           0           1
+    ----------  ----------  ----------
+    1           1           0
+    ----------  ----------  ----------
+    1           2           2
+    ----------  ----------  ----------
+    2           0           2
+    ----------  ----------  ----------
+    2           1           2
+    ----------  ----------  ----------
+    2           2           2
+    ==========  ==========  ==========
+
+    INPUT:
+
+    - ``result`` -- **tuple of two strings**; the result variable
+    - ``variable_0`` -- **tuple of two string**; the first variable
+    - ``variable_1`` -- **tuple of two string**; the second variable
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.sat.utils.utils import cnf_xor_truncated
+        sage: cnf_xor_truncated(('r0', 'r1'), ('a0', 'a1'), ('b0', 'b1'))
+        ['r0 -a0',
+         'r0 -b0',
+         'a0 b0 -r0',
+         'a1 b1 r0 -r1',
+         'a1 r0 r1 -b1',
+         'b1 r0 r1 -a1',
+         'r0 -a1 -b1 -r1']
+    """
+    return [f'{result[0]} -{variable_0[0]}',
+            f'{result[0]} -{variable_1[0]}',
+            f'{variable_0[0]} {variable_1[0]} -{result[0]}',
+            f'{variable_0[1]} {variable_1[1]} {result[0]} -{result[1]}',
+            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
+            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
+            f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
+
+
+def cnf_xor_truncated_seq(results, variables):
+    """
+    Return a list of strings representing the CNF of the Boolean XOR performed
+    between more than 2 inputs when searching for DETERMINISTIC TRUNCATED XOR
+    DIFFERENTIAL.
+
+    .. SEEALSO::
+
+        :py:meth:`~cipher_modules.models.sat.utils.cnf_xor_truncated`
+
+    INPUT:
+
+    - ``results`` -- **list**; intermediate results + final result
+    - ``variables`` -- **list**; the variables
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.sat.utils.utils import cnf_xor_truncated_seq
+        sage: cnf_xor_truncated_seq([('i0', 'i1'), ('r0', 'r1')], [('a0', 'a1'), ('b0', 'b1'), ('c0', 'c1')])
+        ['i0 -a0',
+         'i0 -b0',
+         'a0 b0 -i0',
+         ...
+         'i1 r0 r1 -c1',
+         'c1 r0 r1 -i1',
+         'r0 -i1 -c1 -r1']
+    """
+    model = cnf_xor_truncated(results[0], variables[0], variables[1])
+    for i in range(1, len(results)):
+        model.extend(cnf_xor_truncated(results[i], results[i - 1], variables[i + 1]))
+
+    return model
+
+
+def modadd_truncated_lsb(result, variable_0, variable_1, next_carry):
+    return [f'{next_carry[0]} -{next_carry[1]}',
+            f'{next_carry[0]} -{variable_1[1]}',
+            f'{next_carry[0]} -{result[0]}',
+            f'{next_carry[0]} -{result[1]}',
+            f'{result[0]} -{variable_0[0]}',
+            f'{result[0]} -{variable_1[0]}',
+            f'{variable_0[0]} {variable_1[0]} -{result[0]}',
+            f'{variable_0[1]} {variable_1[1]} {result[0]} -{next_carry[0]}',
+            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
+            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
+            f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
+
+
+def modadd_truncated(result, variable_0, variable_1, carry, next_carry):
+    return [f'{next_carry[0]} -{next_carry[1]}',
+            f'{next_carry[0]} -{variable_1[1]}',
+            f'{next_carry[0]} -{result[0]}',
+            f'{next_carry[0]} -{result[1]}',
+            f'{result[0]} -{carry[0]}',
+            f'{result[0]} -{carry[1]}',
+            f'{result[0]} -{variable_0[0]}',
+            f'{result[0]} -{variable_1[0]}',
+            f'{variable_0[1]} {variable_1[1]} {result[0]} -{next_carry[0]}',
+            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
+            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
+            f'{carry[0]} {carry[1]} {variable_0[0]} {variable_1[0]} -{result[0]}',
+            f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
+
+
+def modadd_truncated_msb(result, variable_0, variable_1, carry):
+    return [f'{result[0]} -{carry[0]}',
+            f'{result[0]} -{carry[1]}',
+            f'{result[0]} -{variable_0[0]}',
+            f'{result[0]} -{variable_1[0]}',
+            f'{variable_0[1]} {variable_1[1]} {result[0]} -{result[1]}',
+            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
+            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
+            f'{carry[0]} {carry[1]} {variable_0[0]} {variable_1[0]} -{result[0]}',
+            f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
+
+
 # ---------------------------- #
 #    - Running SAT solver -    #
 # ---------------------------- #
@@ -579,7 +711,7 @@ def run_sat_solver(solver_name, options, dimacs_input, host=None, env_vars_strin
     solver_specs = constants.SAT_SOLVERS[solver_name]
     command = solver_specs['command'][:] + options
     if host:
-        command = [env_vars_string] + ['ssh', f'{host}'] + command
+        command = ['ssh', f'{host}'] + [env_vars_string] + command
     solver_process = subprocess.run(command, input=dimacs_input, capture_output=True, text=True)
     solver_output = solver_process.stdout.splitlines()
     status = [line for line in solver_output if line.startswith('s')][0].split()[1]

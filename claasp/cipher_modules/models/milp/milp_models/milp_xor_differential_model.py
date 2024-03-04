@@ -22,7 +22,10 @@ from bitstring import BitArray
 
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.utils import integer_to_bit_list
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_DIFFERENTIAL, MILP_PROBABILITY_SUFFIX, \
+    MILP_BUILDING_MESSAGE, MILP_XOR_DIFFERENTIAL_OBJECTIVE
+from claasp.cipher_modules.models.milp.utils.utils import _string_to_hex, _get_variables_values_as_string
+from claasp.cipher_modules.models.utils import integer_to_bit_list, set_component_solution
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
 
@@ -61,13 +64,13 @@ class MilpXorDifferentialModel(MilpModel):
             sage: mip.number_of_variables()
             468
         """
-        verbose_print("Building model in progress ...")
+        verbose_print(MILP_BUILDING_MESSAGE)
         self.build_xor_differential_trail_model(weight, fixed_variables)
         mip = self._model
         p = self._integer_variable
         for index, constraint in enumerate(self._model_constraints):
             mip.add_constraint(constraint)
-        mip.add_constraint(p["probability"] == sum(
+        mip.add_constraint(p[MILP_XOR_DIFFERENTIAL_OBJECTIVE] == sum(
             p[self._non_linear_component_id[i] + "_probability"] for i in range(len(self._non_linear_component_id))))
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
@@ -173,8 +176,9 @@ class MilpXorDifferentialModel(MilpModel):
         looking_for_other_solutions = 1
         while looking_for_other_solutions:
             try:
-                solution = self.solve("xor_differential", solver_name, external_solver_name)
+                solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
                 solution['building_time'] = building_time
+                solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
                 self._number_of_trails_found += 1
                 verbose_print(f"trails found : {self._number_of_trails_found}")
                 list_trails.append(solution)
@@ -212,7 +216,7 @@ class MilpXorDifferentialModel(MilpModel):
 
         self._number_of_trails_found = 0
 
-        return list_trails
+        return [trail for trail in list_trails if trail['status'] == 'SATISFIABLE']
 
     def exclude_variables_value_constraints(self, fixed_variables=[]):
         """
@@ -339,6 +343,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need to
           be fixed
         - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
 
@@ -373,8 +378,9 @@ class MilpXorDifferentialModel(MilpModel):
             number_new_constraints = len(weight_constraints)
             while looking_for_other_solutions:
                 try:
-                    solution = self.solve("xor_differential", solver_name, external_solver_name)
+                    solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
                     solution['building_time'] = building_time
+                    solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
                     self._number_of_trails_found += 1
                     verbose_print(f"trails found : {self._number_of_trails_found}")
                     list_trails.append(solution)
@@ -391,7 +397,7 @@ class MilpXorDifferentialModel(MilpModel):
             mip.remove_constraints(range(number_constraints - number_new_constraints, number_constraints))
         self._number_of_trails_found = 0
 
-        return list_trails
+        return [trail for trail in list_trails if trail['status'] == 'SATISFIABLE']
 
     def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT,
                                                   external_solver_name=False):
@@ -425,25 +431,27 @@ class MilpXorDifferentialModel(MilpModel):
         verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         p = self._integer_variable
-        mip.set_objective(p["probability"])
+        mip.set_objective(p[MILP_XOR_DIFFERENTIAL_OBJECTIVE])
 
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_differential", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_lowest_weight_xor_differential_trail"
 
         return solution
 
     def find_one_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
-        Return a XOR differential trail, not necessary the one with the lowest weight.
+        Return a XOR differential trail, not necessarily the one with the lowest weight.
 
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
             format
         - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         .. SEEALSO::
 
@@ -466,8 +474,9 @@ class MilpXorDifferentialModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_differential", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_one_xor_differential_trail"
 
         return solution
 
@@ -482,6 +491,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
             format
         - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         .. SEEALSO::
 
@@ -508,8 +518,9 @@ class MilpXorDifferentialModel(MilpModel):
             mip.add_constraint(constraint)
         end = time.time()
         building_time = end - start
-        solution = self.solve("xor_differential", solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = "find_one_xor_differential_trail_with_fixed_weight"
 
         return solution
 
@@ -540,3 +551,48 @@ class MilpXorDifferentialModel(MilpModel):
                 fixed_variables.append(fixed_variable)
 
         return fixed_variables
+
+    def _get_component_values(self, objective_variables, components_variables):
+        components_values = {}
+        list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        for component_id in list_component_ids:
+            dict_tmp = self._get_component_value_weight(component_id,
+                                                        objective_variables, components_variables)
+            components_values[component_id] = dict_tmp
+        return components_values
+
+    def _parse_solver_output(self):
+        mip = self._model
+        objective_variables = mip.get_values(self._integer_variable)
+        objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / 10.
+        components_variables = mip.get_values(self._binary_variable)
+        components_values = self._get_component_values(objective_variables, components_variables)
+
+        return objective_value, components_values
+
+    def _get_component_value_weight(self, component_id, probability_variables, components_variables):
+
+        if component_id in self._cipher.inputs:
+            output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
+        else:
+            component = self._cipher.get_component_from_id(component_id)
+            output_size = component.output_bit_size
+        suffix_dict = {"": output_size}
+        final_output = self._get_final_output(component_id, components_variables, probability_variables, suffix_dict)
+        if len(final_output) == 1:
+            final_output = final_output[0]
+
+        return final_output
+
+    def _get_final_output(self, component_id, components_variables, probability_variables,
+                         suffix_dict):
+        final_output = []
+        for suffix in suffix_dict.keys():
+            diff_str = _get_variables_values_as_string(component_id, components_variables, suffix, suffix_dict[suffix])
+            difference = _string_to_hex(diff_str)
+            weight = 0
+            if component_id + MILP_PROBABILITY_SUFFIX in probability_variables:
+                weight = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / 10.
+            final_output.append(set_component_solution(value=difference, weight=weight))
+        return final_output
+
