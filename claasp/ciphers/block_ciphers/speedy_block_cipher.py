@@ -82,6 +82,8 @@ class SpeedyBlockCipher(Cipher):
     """
     Construct an instance of the SpeedyBlockCipher class.
 
+    The implementation follows the specifics in [LMM+2021]_.
+
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
 
     Note that the ``l`` parameter of the cipher is automatically determined by ``block_bit_size`` and

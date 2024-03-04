@@ -2,6 +2,11 @@ from claasp.ciphers.block_ciphers.speedy_block_cipher import SpeedyBlockCipher
 
 
 def test_speedy_block_cipher():
+    """
+    Pytests for SPEEDY cipher
+
+    Test vectors used are those reported in [LMM+2021]_.
+    """
     speedy = SpeedyBlockCipher(number_of_rounds=5)
     assert speedy.type == 'block_cipher'
     assert speedy.family_name == 'speedy'
