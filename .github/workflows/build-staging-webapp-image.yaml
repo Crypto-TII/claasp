@@ -1,9 +1,12 @@
 name: Build and push image from develop
 on:
-  pull_request:
-    types: [ closed ]
+  push:
     branches:
-      - main
+      - feat/add-develop-to-claasp-webapp
+#  pull_request:
+#    types: [ closed ]
+#    branches:
+#      - develop
 
 jobs:
   build-image:
@@ -40,7 +43,7 @@ jobs:
         context: .
         file: ./docker/Dockerfile
         push: true
-        tags: tiicrc/claasp-lib:latest
+        tags: tiicrc/claasp-lib-staging:latest
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
@@ -51,10 +54,12 @@ jobs:
 
     - name: Get current commit information
       run: |
-        git clone ${{ secrets.DEPLOYMENT_REPOSITORY }} deployment-repo
+        git clone ${{ secrets.DEPLOYMENT_REPOSITORY }} deployment-staging-repo
         git config --global user.name 'Github'
         git config --global user.email ${{ secrets.DEPLOYMENT_REPOSITORY_EMAIL }}
-        cd deployment-repo && echo "Date: $(date) Commit: $(git rev-parse HEAD)" >> claasp-dev.log
+        cd deployment-staging-repo
+        git checkout develop
+        echo "Date: $(date) Commit: $(git rev-parse HEAD)" >> claasp-dev.log
         git add claasp-dev.log
-        git commit -m "Updating deployment-repo from github"
-        git push origin master
+        git commit -m "Updating deployment-staging-repo from github"
+        git push origin develop
