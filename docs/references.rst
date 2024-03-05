@@ -79,6 +79,19 @@
         \Bos, J.W., Ducas, L., Kiltz, E., Lepoint, T., Lyubashevsky, V., Schanck, J.M., Schwabe, P.,
         Seiler, G., Stehlé, D.: CRYSTALS-Kyber: A CCA-Secure Module-Lattice-Based KEM. EuroS&P 2018: 353-367.
 
+.. [BHPR2021]
+        Bellini E., Hambitzer A., Protopapa M., Rossi M. : *Limitations
+        of the Use of Neural Networks in Black Box Cryptanalysis* :
+        In Innovative Security Solutions for Information Technology
+        and Communications: 14th International Conference, SecITC 2021,
+        Virtual Event, November 25–26, 2021, Revised Selected Papers.
+        Springer-Verlag, Berlin, Heidelberg, 100–124
+
+.. [BR2021]
+        Bellini, E., Rossi, M. : *Performance Comparison Between Deep Learning-Based
+        and Conventional Cryptographic Distinguishers* : In: Arai, K. (eds) Intelligent Computing.
+        Lecture Notes in Networks and Systems, vol 285. Springer
+
 .. [BKLPPRSV2007]
         Bogdanov A., Knudsen L., Leander G., Paar C., Poschmann A., Robshaw M.,
         Seurin Y., Vikkelsoe C. : *PRESENT: An Ultra-Lightweight Block Cipher*
