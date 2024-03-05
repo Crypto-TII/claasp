@@ -1,3 +1,4 @@
+import os
 
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
@@ -18,33 +19,41 @@
 
 
 SOLVER_DEFAULT = "GLPK"
+MODEL_DEFAULT_PATH = os.getcwd()
 SOLUTION_FILE_DEFAULT_NAME = "milp_model.sol"
 
-EXTERNAL_MILP_SOLVERS = {
-    'Gurobi': {
-        'command': f'gurobi_cl ResultFile={SOLUTION_FILE_DEFAULT_NAME} ',
-        'options': "",
-        'time': r"Explored \d+ nodes \(\d+ simplex iterations\) in ([0-9]*[.]?[0-9]+) seconds",
-        'unsat_condition': "Model is infeasible"
-    },
-    'scip': {
-        'file_path': [],
-        'command': 'scip -c \"read ',
-        'options': f' opt write solution {SOLUTION_FILE_DEFAULT_NAME} quit\"',
-        'time': r"Solving Time \(sec\)[\s]+:[\s]+([0-9]*[.]?[0-9]+)",
-        'unsat_condition': "problem is solved [infeasible]"
-    },
-    'glpk': {
-        'command': 'glpsol --lp ',
-        'options': f' --output {SOLUTION_FILE_DEFAULT_NAME}',
-        'time': r"Time used:[\s]+([0-9]*[.]?[0-9]+) secs",
-        'memory': r"Memory used:[\s]+([0-9]*[.]?[0-9]+) Mb",
-        'unsat_condition': 'PROBLEM HAS NO PRIMAL FEASIBLE SOLUTION'
-    },
-    'cplex': {
-        'command': 'cplex -c \"read ',
-        'options': f'\" \"optimize\" \"display solution variables *\" | tee {SOLUTION_FILE_DEFAULT_NAME}',
-        'time': r"Solution time =[\s]+([0-9]*[.]?[0-9]+) sec.",
-        'unsat_condition': "MIP - Integer infeasible."
+def get_external_milp_solver_configuration(solution_name=SOLUTION_FILE_DEFAULT_NAME):
+
+    external_milp_solvers_configuration = {
+        'Gurobi': {
+            'command': f'gurobi_cl ResultFile={MODEL_DEFAULT_PATH}/{solution_name} ',
+            'options': "",
+            'time': r"Explored \d+ nodes \(\d+ simplex iterations\) in ([0-9]*[.]?[0-9]+) seconds",
+            'unsat_condition': "Model is infeasible"
+        },
+        'scip': {
+            'file_path': [],
+            'command': 'scip -c \"read ',
+            'options': f' opt write solution {MODEL_DEFAULT_PATH}/{solution_name} quit\"',
+            'time': r"Solving Time \(sec\)[\s]+:[\s]+([0-9]*[.]?[0-9]+)",
+            'unsat_condition': "problem is solved [infeasible]"
+        },
+        'glpk': {
+            'command': 'glpsol --lp ',
+            'options': f' --output {MODEL_DEFAULT_PATH}/{solution_name}',
+            'time': r"Time used:[\s]+([0-9]*[.]?[0-9]+) secs",
+            'memory': r"Memory used:[\s]+([0-9]*[.]?[0-9]+) Mb",
+            'unsat_condition': 'PROBLEM HAS NO PRIMAL FEASIBLE SOLUTION'
+        },
+        'cplex': {
+            'command': 'cplex -c \"read ',
+            'options': f'\" \"optimize\" \"display solution variables *\" | tee {MODEL_DEFAULT_PATH}/{solution_name}',
+            'time': r"Solution time =[\s]+([0-9]*[.]?[0-9]+) sec.",
+            'unsat_condition': "MIP - Integer infeasible."
+        }
     }
-}
+
+    for solver in external_milp_solvers_configuration:
+        external_milp_solvers_configuration[solver]['solution_path'] = f'{MODEL_DEFAULT_PATH}/{solution_name}'
+
+    return external_milp_solvers_configuration
