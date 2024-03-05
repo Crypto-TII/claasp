@@ -714,6 +714,7 @@ class Report:
                                                     self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res + '/' + str(
                                         res) + '_' + str(case['input_difference_value']) + '.png', scale=4)
                                 else:
+
                                     fig.show(renderer='png')
                                     return
                                 fig.data = []
