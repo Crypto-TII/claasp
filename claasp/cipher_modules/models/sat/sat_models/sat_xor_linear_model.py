@@ -128,14 +128,14 @@ class SatXorLinearModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorLinearModel(speck)
+            sage: sat = SatXorLinearModel(speck.remove_key_schedule())
             sage: plaintext = set_fixed_variables(
             ....:         component_id='plaintext',
             ....:         constraint_type='not_equal',
             ....:         bit_positions=range(32),
             ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: trails = sat.find_all_xor_linear_trails_with_fixed_weight(2, fixed_values=[plaintext])
-            sage: len(trails) == 2
+            sage: trails = sat.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values=[plaintext])
+            sage: len(trails) == 4
             True
         """
         start_building_time = time.time()
@@ -192,14 +192,14 @@ class SatXorLinearModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorLinearModel(speck)
+            sage: sat = SatXorLinearModel(speck.remove_key_schedule())
             sage: plaintext = set_fixed_variables(
             ....:         component_id='plaintext',
             ....:         constraint_type='not_equal',
             ....:         bit_positions=range(32),
             ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: trails = sat.find_all_xor_linear_trails_with_weight_at_most(2, 3, fixed_values=[plaintext])
-            sage: len(trails) == 11
+            sage: trails = sat.find_all_xor_linear_trails_with_weight_at_most(0, 2, fixed_values=[plaintext])
+            sage: len(trails) == 187
             True
         """
         solutions_list = []
