@@ -478,7 +478,7 @@ class Report:
 
                 value = self.test_report['components_values'][comp_id]['value']
 
-                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value))) if '*' not in value else list(
+                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value)) if value[:2] != '0x' else 4 * len(value[2:])) if '*' not in value else list(
                     value[2:])
 
                 word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
@@ -568,20 +568,34 @@ class Report:
     def _produce_graph(self, output_directory=os.getcwd(), show_graph=False, fixed_input=None, fixed_output=None,
                        fixed_input_difference=None, test_name=None):
 
-
         if self.test_name == 'neural_distinguisher_test':
-            df_scores = pd.DataFrame(self.test_report['test_results']['plaintext']['cipher_output']['differences_scores'], index=['scores']).T
-            df_result = pd.DataFrame([self.test_report['test_results']['plaintext']['cipher_output'][0]['accuracies']], index=['accuracy']).T
+            df_scores = pd.DataFrame(
+                self.test_report['test_results']['plaintext']['cipher_output']['differences_scores'],
+                index=['scores']).T
+            df_result = pd.DataFrame(
+                self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
+                    'accuracies'], index=['accuracy_round' + str(i) for i in range(len(
+                    self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
+                        'accuracies']))])
 
             if show_graph:
                 print('RESULTS')
-                print('plaintext_input_diff : ' + str(self.test_report['test_results']['plaintext']['cipher_output'][0]['plaintext_diff']))
-                print('key_input_diff : ' + str(self.test_report['test_results']['plaintext']['cipher_output'][0]['key_diff']))
+                print('plaintext_input_diff : ' + str(
+                    self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
+                        'plaintext_diff']))
+                print('key_input_diff : ' + str(
+                    self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
+                        'key_diff']))
+                print(df_result)
+                print()
+                print('//////')
+                print()
+                print('SCORES')
+                print(df_scores)
 
             else:
                 df_result.to_csv(output_directory + '/neural_distinguisher_test_results.csv')
                 df_scores.to_csv(output_directory + '/neural_distinguisher_test_scores.csv')
-
 
         elif 'statistical' in self.test_name:
             if 'dieharder' in self.test_name:
