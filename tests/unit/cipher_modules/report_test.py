@@ -12,8 +12,8 @@ from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
 
+
 def test_save_as_image():
-  
     speck = SpeckBlockCipher(number_of_rounds=2)
     sat = SatXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
@@ -26,6 +26,7 @@ def test_save_as_image():
         constraint_type='equal',
         bit_positions=range(64),
         bit_values=(0,) * 64)
+
     trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
     trail_report = Report(speck, trail)
     trail_report.save_as_image()
@@ -35,7 +36,7 @@ def test_save_as_image():
     avalanche_report.save_as_image()
 
     blackbox_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests()
-    blackbox_report = Report(speck,blackbox_results)
+    blackbox_report = Report(speck, blackbox_results)
     blackbox_report.save_as_image()
 
     algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout=1)
@@ -93,8 +94,9 @@ def test_save_as_DataFrame():
 
 def test_save_as_json():
     simon = SimonBlockCipher(number_of_rounds=3)
-    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(simon).neural_network_blackbox_distinguisher_tests()
-    blackbox_report = Report(simon,neural_network_blackbox_distinguisher_tests_results)
+    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(
+        simon).neural_network_blackbox_distinguisher_tests()
+    blackbox_report = Report(simon, neural_network_blackbox_distinguisher_tests_results)
 
     milp = MilpXorDifferentialModel(simon)
     plaintext = set_fixed_variables(
@@ -122,7 +124,8 @@ def test_save_as_json():
 
 def test_clean_reports():
     simon = SimonBlockCipher(number_of_rounds=2)
-    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(simon).neural_network_blackbox_distinguisher_tests()
+    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(
+        simon).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(simon, neural_network_blackbox_distinguisher_tests_results)
 
     blackbox_report.save_as_json()
