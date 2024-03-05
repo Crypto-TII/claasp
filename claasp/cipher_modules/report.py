@@ -213,6 +213,9 @@ class Report:
                 with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
                     fp.write(pd.DataFrame(self.test_report["randomness_test"]).style.to_latex())
 
+        elif 'component_analysis' in self.test_name:
+            print('This method is not implemented yet for the component analysis test.')
+            return
         elif 'trail' in self.test_name or 'algebraic' in self.test_name:
 
             if 'trail' in self.test_name:
@@ -756,7 +759,10 @@ class Report:
 
         """
 
-        if 'trail' in self.test_name:
+        if 'component_analysis' in self.test_name:
+            print('This method is not implemented yet for the component analysis test')
+            return
+        elif 'trail' in self.test_name:
             self._print_trail(word_size, state_size, key_state_size, verbose, show_word_permutation,
                               show_var_shift, show_var_rotate, show_theta_xoodoo,
                               show_theta_keccak, show_shift_rows, show_sigma, show_reverse,
