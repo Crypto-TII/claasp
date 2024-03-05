@@ -317,6 +317,13 @@
 
         **L**
 
+.. [LMM+2021]
+        Leander G., Moos T., Moradi A., Rasoolzadeh S. (2021). *The SPEEDY
+        Family of Block Ciphers: Engineering an Ultra Low-Latency Cipher from
+        Gate Level for Secure Processor Architectures*. IACR Transactions on
+        Cryptographic Hardware and Embedded Systems, 2021(4), 510–545.
+        https://doi.org/10.46586/tches.v2021.i4.510-545
+
 .. [Lin1999]
         van Lint J. : *Introduction to coding theory* : 3rd ed. Springer-Verlag
         GTM, 86, 1999
