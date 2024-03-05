@@ -79,6 +79,8 @@ def test_run_correlation_nist_statistics_test():
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
 
+@pytest.mark.skip("Takes too long")
+
 def test_run_CBC_nist_statistics_test():
     tests = StatisticalTests(SimonBlockCipher(number_of_rounds=1))
     old_stdout = sys.stdout

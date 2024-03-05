@@ -627,7 +627,7 @@ class Report:
                 if show_graph==False:
                     fig.write_image(output_directory + '/test_results.png')
                 if show_graph:
-                    fig.show(renderer='notebook_connected')
+                    fig.show(renderer='png')
                     return
         else:
 
@@ -714,7 +714,7 @@ class Report:
                                                     self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res + '/' + str(
                                         res) + '_' + str(case['input_difference_value']) + '.png', scale=4)
                                 else:
-                                    fig.show(renderer='notebook_connected')
+                                    fig.show(renderer='png')
                                     return
                                 fig.data = []
                                 fig.layout = {}
@@ -732,7 +732,7 @@ class Report:
                                                     '/' + str(res) + '.png',
                                                     scale=4)
                                 else:
-                                    fig.show(renderer='notebook_connected')
+                                    fig.show(renderer='png')
                                     return
                                 fig.data = []
                                 fig.layout = {}
