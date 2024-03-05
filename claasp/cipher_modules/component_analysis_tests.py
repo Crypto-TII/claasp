@@ -138,7 +138,7 @@ class CipherComponentsAnalysis:
 
         """
         if results==None:
-            results = self.component_analysis_tests()
+            results = self.component_analysis_tests()['test_results']
         SMALL_SIZE = 10
         MEDIUM_SIZE = 11
         BIG_SIZE = 12

@@ -381,17 +381,17 @@ class StatisticalTests:
 
         # retrieve pass standard
         threshold_rate = []
-        total_line_1 = [line for line in lines if 'random excursion (variant) test is approximately' in line][0]
-        total_1 = int([x for x in total_line_1.split(' ') if x.isnumeric()][0])
-        passed_line_1 = [line for line in lines if 'sample size' in line and 'binary sequences.' in line][0]
+        passed_line_1 = [line for line in lines if 'random excursion (variant) test is approximately' in line][0]
         passed_1 = int([x for x in passed_line_1.split(' ') if x.isnumeric()][0])
+        total_line_1 = [line for line in lines if 'sample size' in line and 'binary sequences.' in line][0]
+        total_1 = int([x for x in total_line_1.split(' ') if x.isnumeric()][0])
         threshold_rate.append({
             "total": total_1,
             "passed": passed_1})
         try:
             total_passed_line_2 = \
                 [line for line in lines if 'is approximately =' in line and 'for a sample size' in line][0]
-            total_passed = [x for x in total_passed_line_2 if x.isdigit()]
+            total_passed = [int(x) for x in total_passed_line_2 if x.isdigit()]
             if len(total_passed) != 1:
                 total_2 = total_passed[1]
                 passed_2 = total_passed[0]
@@ -547,7 +547,10 @@ class StatisticalTests:
         x = [i + 1 for i in range(report_dict_list[0]["rounds"])]
         y = [0 for _ in range(report_dict_list[0]["rounds"])]
         for i in range(len(report_dict_list)):
-            y[report_dict_list[i]["round"]] = report_dict_list[i]["passed_tests"]
+            print(report_dict_list[i]["round"])
+            print(len(y))
+            print()
+            y[report_dict_list[i]["round"]-1] = report_dict_list[i]["passed_tests"]
 
         random_round = -1
         for r in range(report_dict_list[0]["rounds"]):

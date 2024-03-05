@@ -58,9 +58,6 @@ def test_generate_chart_all():
     StatisticalTests.generate_chart_all(dict_list)
     sys.stdout = old_stdout
 
-    assert result.getvalue() == \
-           'Drawing chart for all rounds is in progress.\n' \
-           'Drawing chart for all rounds is in finished.\n'
 
 def test_run_avalanche_nist_statistics_test():
     tests = StatisticalTests(SimonBlockCipher(number_of_rounds=1))

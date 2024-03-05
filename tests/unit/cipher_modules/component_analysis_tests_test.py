@@ -12,11 +12,11 @@ def test_get_all_operations():
 def test_component_analysis_tests():
     fancy = FancyBlockCipher(number_of_rounds=3)
     components_analysis = CipherComponentsAnalysis(fancy).component_analysis_tests()
-    assert len(components_analysis) == 9
+    assert len(components_analysis['test_results']) == 9
 
     aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
     result = CipherComponentsAnalysis(aes).component_analysis_tests()
-    assert len(result) == 7
+    assert len(result['test_results']) == 7
 
 def test_print_component_analysis_as_radar_charts():
     aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
@@ -24,7 +24,7 @@ def test_print_component_analysis_as_radar_charts():
 
 def test_fsr_properties():
     e0 = BluetoothStreamCipherE0(keystream_bit_len=2)
-    dictionary = CipherComponentsAnalysis(e0).component_analysis_tests()
+    dictionary = CipherComponentsAnalysis(e0).component_analysis_tests()['test_results']
     assert dictionary[8]["number_of_registers"] == 4
     assert dictionary[8]["lfsr_connection_polynomials"][0] == 'x^25 + x^20 + x^12 + x^8 + 1'
     assert dictionary[8]["lfsr_connection_polynomials"][1] == 'x^31 + x^24 + x^16 + x^12 + 1'
@@ -33,5 +33,5 @@ def test_fsr_properties():
     assert dictionary[8]['lfsr_polynomials_are_primitive'] == [True, True, True, True]
 
     triv = TriviumStreamCipher(keystream_bit_len=1)
-    dictionary = CipherComponentsAnalysis(triv).component_analysis_tests()
+    dictionary = CipherComponentsAnalysis(triv).component_analysis_tests()['test_results']
     assert dictionary[0]["type_of_registers"] == ['non-linear', 'non-linear', 'non-linear']
