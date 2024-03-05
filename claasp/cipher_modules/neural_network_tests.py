@@ -597,6 +597,25 @@ class NeuralNetworkTests:
                                 {2: 0.49932000041007996}
         """
 
+        neural_distinguisher_test_results = {
+            'input_parameters': {
+                'test_name': 'neural_distinguisher_test',
+                'optimizer_samples': optimizer_samples,
+                'optimizer_generations': optimizer_generations,
+                'training_samples': training_samples,
+                'testing_samples': testing_samples,
+                'number_of_epochs': number_of_epochs,
+                'neural_net': neural_net
+            },
+            'test_results': {
+                'plaintext': {
+                    'cipher_output': {
+                        'neural_distinguisher_test': []
+                    }
+                }
+            }
+        }
+
         def data_generator(nr, samples):
             return self.get_differential_dataset(input_difference, number_of_rounds=nr,
                                                  samples=samples)
@@ -620,8 +639,21 @@ class NeuralNetworkTests:
         neural_network = self.get_neural_network(neural_net, input_size = input_size)
         nr = max(1, highest_round-3)
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.cipher.inputs}), from round {nr}...')
-        return self.train_neural_distinguisher(data_generator, nr, neural_network, training_samples,
+        neural_results = self.train_neural_distinguisher(data_generator, nr, neural_network, training_samples,
                                    testing_samples, number_of_epochs)
+
+        neural_distinguisher_test_results['test_results']['plaintext']['cipher_output'][
+            'neural_distinguisher_test'].append({'accuracies': list(neural_results.values())})
+        i = 0
+        for it in self.cipher.inputs:
+            neural_distinguisher_test_results['test_results']['plaintext']['cipher_output'][
+                'neural_distinguisher_test'][0][it + '_diff'] = hex(input_difference[i])
+            i += 1
+        neural_distinguisher_test_results['test_results']['plaintext']['cipher_output']['differences_scores'] = {}
+        for diff, scores in zip(diff, scores):
+            neural_distinguisher_test_results['test_results']['plaintext']['cipher_output'][
+                'differences_scores'][hex(diff)] = scores
+        return neural_distinguisher_test_results
 
     def _make_resnet(self, input_size, num_filters=32, num_outputs=1, d1=64, d2=64, word_size=16, ks=3,
                      reg_param=10 ** -5,

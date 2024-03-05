@@ -59,7 +59,7 @@ class CpModel:
         self.component_and_probability = {}
         self._model_prefix = [
             'include "globals.mzn";',
-            'include "claasp/cipher_modules/models/cp/Minizinc_functions/Usefulfunctions.mzn";']
+            f"include \"{os.path.join(os.path.dirname(__file__), 'Minizinc_functions', 'Usefulfunctions.mzn')}\";"]
 
     def add_solutions_from_components_values(self, components_values, memory, model_type, solutions, solve_time,
                                              solver_name, solver_output, total_weight):
