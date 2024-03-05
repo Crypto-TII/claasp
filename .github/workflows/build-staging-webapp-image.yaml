@@ -1,12 +1,9 @@
 name: Build and push image from develop
 on:
-  push:
+  pull_request:
+    types: [ closed ]
     branches:
-      - feat/add-develop-to-claasp-webapp
-#  pull_request:
-#    types: [ closed ]
-#    branches:
-#      - develop
+      - develop
 
 jobs:
   build-image:
