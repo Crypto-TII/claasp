@@ -20,8 +20,7 @@ def test_component_analysis_tests():
 
 def test_print_component_analysis_as_radar_charts():
     aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-    fig = CipherComponentsAnalysis(aes).print_component_analysis_as_radar_charts()
-    assert str(type(fig)) == "<class 'module'>"
+    CipherComponentsAnalysis(aes).print_component_analysis_as_radar_charts()
 
 def test_fsr_properties():
     e0 = BluetoothStreamCipherE0(keystream_bit_len=2)

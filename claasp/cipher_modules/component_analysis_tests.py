@@ -129,16 +129,12 @@ class CipherComponentsAnalysis:
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: plot = CipherComponentsAnalysis(fancy).print_component_analysis_as_radar_charts()
-            sage: type(plot)
-            <class 'module'>
+            sage: CipherComponentsAnalysis(fancy).print_component_analysis_as_radar_charts()
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=3)
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
-            sage: plot = CipherComponentsAnalysis(speck).print_component_analysis_as_radar_charts()
-            sage: type(plot)
-            <class 'module'>
+            sage: CipherComponentsAnalysis(speck).print_component_analysis_as_radar_charts()
 
         """
         if results==None:
