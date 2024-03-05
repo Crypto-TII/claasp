@@ -534,27 +534,28 @@ def bit_vector_fsr_binary(input, registers_info, clocks, verbosity=False):
     for _ in range(clocks):
         output_bits = [np.zeros_like(output[0, :]) for __ in range(number_of_registers)]
         clock_bits = [np.zeros_like(output[0, :]) for __ in range(number_of_registers)]
+        result = np.ones_like(output[0, :])
 
         for i in range(number_of_registers):
             for m in registers_info[i][1]:
-                result = np.ones_like(output[0, :])
+                result.fill(1)
                 for index in m:
-                    result &= output[index, :]
+                    result *= output[index, :]
                 output_bits[i] = xor(result, output_bits[i])
 
             if len(registers_info[i]) > 2:
                 for m in registers_info[i][2]:
-                    result = np.ones_like(output[0, :])
+                    result.fill(1)
                     for index in m:
-                        result &= output[index, :]
+                        result *= output[index, :]
                     clock_bits[i] = xor(result, clock_bits[i])
             else:
                 clock_bits[i].fill(1)
 
         for i in range(number_of_registers):
             for k in range(registers_start[i], registers_update_bit[i]):
-                output[k, :] = xor((clock_bits[i] & output[k+1, :]), (xor(clock_bits[i], 1) & output[k, :]))
-            output[registers_update_bit[i], :] = xor((clock_bits[i] & output_bits[i]), (xor(clock_bits[i], 1) & output[registers_update_bit[i], :]))
+                output[k, :] = xor((clock_bits[i] * output[k+1, :]), (xor(clock_bits[i], 1) * output[k, :]))
+            output[registers_update_bit[i], :] = xor((clock_bits[i] * output_bits[i]), (xor(clock_bits[i], 1) * output[registers_update_bit[i], :]))
 
     if verbosity:
         print("FSR")

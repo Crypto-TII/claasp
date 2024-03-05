@@ -70,7 +70,7 @@ class A51StreamCipher(Cipher):
         'fsr_1_0'
 
         sage: key = 0x48c4a2e691d5b3f7
-        sage: frame = 0b0010110010000000000000
+        sage: frame = 0b001011001000000000000000
         sage: keystream = 0x534eaa582fe8151ab6e1855a728c093f4d68d757ed949b4cbe41b7c6b
         sage: a51.evaluate([key, frame]) == keystream
         True
