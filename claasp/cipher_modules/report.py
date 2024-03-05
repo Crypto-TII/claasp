@@ -8,7 +8,7 @@ import json
 import shutil
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-
+from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
 def _print_colored_state(state, verbose, file):
 
@@ -178,6 +178,9 @@ class Report:
             test_list = []
             if 'statistical' in self.test_name:
                 test_list.append(self.test_name)
+            elif 'component_analysis' in self.test_name:
+                Component_Analysis=CipherComponentsAnalysis(self.cipher)
+                Component_Analysis.print_component_analysis_as_radar_charts(results=self.test_report['test_results'])
             elif 'algebraic' not in self.test_name and self.test_name !='neural_distinguisher_test':
                 test_list = list(self.test_report['test_results'][fixed_input][fixed_output].keys())
             if test_name not in test_list and 'algebraic' not in self.test_name and self.test_name !='neural_distinguisher_test':
