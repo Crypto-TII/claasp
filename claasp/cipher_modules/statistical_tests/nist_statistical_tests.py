@@ -28,6 +28,26 @@ from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGen
 
 reports_path = "test_reports/statistical_tests/nist_statistics_report"
 
+TEST_ID_TABLE = {
+
+    'Frequency': 1,
+    'BlockFrequency': 2,
+    'CumulativeSums': 3,
+    'Runs': 5,
+    'LongestRun': 6,
+    'Rank': 7,
+    'FFT': 8,
+    'NonOverlappingTemplate': 9,
+    'OverlappingTemplate': 157,
+    'Universal': 158,
+    'ApproximateEntropy': 159,
+    'RandomExcursions': 160,
+    'RandomExcursionsVariant': 168,
+    'Serial': 186,
+    'LinearComplexity': 188
+
+}
+
 
 class StatisticalTests:
 
@@ -45,6 +65,7 @@ class StatisticalTests:
                                round_start=0,
                                round_end=0,
                                nist_report_folder_prefix="nist_statistics_report",
+                               statistical_test_option_list='1' + 14 * '0'
                                ):
         """
 
@@ -227,8 +248,9 @@ class StatisticalTests:
         if not dataset:
             return
         self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-        nist_test['test_results'] = self._generate_nist_dicts(dataset, round_start, round_end,
-                                                              flag_chart=False)
+        nist_test['test_results'] = self._generate_nist_dicts(dataset=dataset, round_start=round_start,
+                                                              round_end=round_end,
+                                                              statistical_test_option_list=statistical_test_option_list)
         nist_test['input_parameters']['bits_in_one_line'] = bits_in_one_line
         nist_test['input_parameters']['number_of_lines'] = number_of_lines
 
@@ -315,7 +337,7 @@ class StatisticalTests:
             return True
 
     @staticmethod
-    def _parse_report(report_filename):
+    def _parse_report(report_filename, statistical_test_option_list='1' + 14 * '0'):
         """
         Parse the nist statistical tests report. It will return the parsed result in a dictionary format.
 
@@ -359,28 +381,34 @@ class StatisticalTests:
 
         # retrieve pass standard
         threshold_rate = []
-        seqs = lines[199].split("=")
-        seqs_1 = seqs[1].split()
-        seqs = lines[200].split("=")
-        seqs_2 = seqs[1].split()
+        total_line_1 = [line for line in lines if 'random excursion (variant) test is approximately' in line][0]
+        total_1 = int([x for x in total_line_1.split(' ') if x.isnumeric()][0])
+        passed_line_1 = [line for line in lines if 'sample size' in line and 'binary sequences.' in line][0]
+        passed_1 = int([x for x in passed_line_1.split(' ') if x.isnumeric()][0])
         threshold_rate.append({
-            "total": int(seqs_2[0]),
-            "passed": int(seqs_1[0])})
-        seqs = lines[203].split("=")
-        if len(seqs) != 1:
-            seqs_1 = seqs[1].split()
-            seqs_2 = seqs[2].split()
-            threshold_rate.append({
-                "total": int(seqs_2[0]),
-                "passed": int(seqs_1[0])})
-        report_dict["number_of_sequences_threshold"] = threshold_rate
+            "total": total_1,
+            "passed": passed_1})
+        try:
+            total_passed_line_2 = \
+                [line for line in lines if 'is approximately =' in line and 'for a sample size' in line][0]
+            total_passed = [x for x in total_passed_line_2 if x.isdigit()]
+            if len(total_passed) != 1:
+                total_2 = total_passed[1]
+                passed_2 = total_passed[0]
+                threshold_rate.append({
+                    "total": total_2,
+                    "passed": passed_2})
+        except IndexError:
+            pass
 
+        report_dict["number_of_sequences_threshold"] = threshold_rate
+        test_line_index = lines.index(
+            '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n') - 2
         # retrieve test
-        lines_test = lines[7:195]
+        lines_test = lines[7:test_line_index]
         test_list = []
-        for i in range(188):
+        for i in range(test_line_index - 7):
             test_dict = {}
-            test_dict["test_id"] = i + 1
 
             # check passed
             if lines_test[i].find('*') != -1 or lines_test[i].find('-') != -1:
@@ -412,9 +440,12 @@ class StatisticalTests:
                     test_dict["total_seqs"] = int(nums[1])
                     test_dict["passed_proportion"] = test_dict["passed_seqs"] / test_dict["total_seqs"]
             test_dict["test_name"] = seqs[12]
+
+            test_dict['test_id'] = TEST_ID_TABLE[seqs[12]] + len(
+                [test for test in test_list if test['test_name'] == test_dict['test_name']])
+
             test_list.append(test_dict)
         report_dict["randomness_test"] = test_list
-        report_dict["test_name"] = "nist_statistical_tests"
         f.close()
         print(f'Parsing {report_filename} is finished.')
         return report_dict
@@ -449,10 +480,10 @@ class StatisticalTests:
             Drawing round 1 is finished.
         """
         print(f'Drawing round {report_dict["round"]} is in progress.')
-        x = [i for i in range(1, 189)]
-        y = [0 for _ in range(188)]
-        for item in report_dict["randomness_test"]:
-            y[item["test_id"] - 1] = item["passed_proportion"]
+        x = [test['test_id'] for test in report_dict['randomness_test']]
+        y = [0 for _ in range(len(x))]
+        for i in range(len(y)):
+            y[i] = [test['passed_proportion'] for test in report_dict['randomness_test'] if test['test_id'] == x[i]][0]
 
         plt.clf()
         for i in range(len(report_dict["number_of_sequences_threshold"])):
@@ -463,6 +494,7 @@ class StatisticalTests:
                 plt.hlines(rate, 186, 188, color="olive", linestyle="dashed")
             elif i == 1:
                 plt.hlines(rate, 160, 185, color="olive", linestyle="dashed")
+
         plt.scatter(x, y, color="cadetblue")
         plt.title(
             f'{report_dict["cipher_name"]}:{report_dict["data_type"]}, Round " {report_dict["round"]}|{report_dict["rounds"]}')
@@ -515,11 +547,11 @@ class StatisticalTests:
         x = [i + 1 for i in range(report_dict_list[0]["rounds"])]
         y = [0 for _ in range(report_dict_list[0]["rounds"])]
         for i in range(len(report_dict_list)):
-            y[report_dict_list[i]["round"] - 1] = report_dict_list[i]["passed_tests"]
+            y[report_dict_list[i]["round"]] = report_dict_list[i]["passed_tests"]
 
         random_round = -1
         for r in range(report_dict_list[0]["rounds"]):
-            if report_dict_list[r]["passed_tests"] > 185:
+            if report_dict_list[r]["passed_tests"] > 188*0.98:
                 random_round = report_dict_list[r]["round"]
                 break
 
@@ -564,7 +596,7 @@ class StatisticalTests:
         except Exception as e:
             print(f'Error: {e.strerror}')
 
-    def _generate_nist_dicts(self, dataset, round_start, round_end, flag_chart=False):
+    def _generate_nist_dicts(self, dataset, round_start, round_end, statistical_test_option_list='1' + 14 * '0'):
         # seems that the statistical tools cannot change the default folder 'experiments'
         nist_local_experiment_folder = f"/usr/local/bin/sts-2.1.2/experiments/"
         dataset_folder = 'dataset'
@@ -593,7 +625,8 @@ class StatisticalTests:
 
             sts_execution_time = time.time()
             self._run_nist_statistical_tests_tool(dataset_filename, self.bits_in_one_line,
-                                                  self.number_of_lines, 1)
+                                                  self.number_of_lines, 1,
+                                                  statistical_test_option_list=statistical_test_option_list)
             sts_execution_time = time.time() - sts_execution_time
             try:
                 shutil.move(nist_local_experiment_folder, report_folder_round)

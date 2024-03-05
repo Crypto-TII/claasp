@@ -26,6 +26,27 @@ import matplotlib.pyplot as plt
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType
 
 
+TEST_ID_TABLE = {
+
+    'Frequency': 1,
+    'BlockFrequency': 2,
+    'CumulativeSums': 3,
+    'Runs': 5,
+    'LongestRun': 6,
+    'Rank': 7,
+    'FFT': 8,
+    'NonOverlappingTemplate': 9,
+    'OverlappingTemplate': 157,
+    'Universal': 158,
+    'ApproximateEntropy': 159,
+    'RandomExcursions': 160,
+    'RandomExcursionsVariant': 168,
+    'Serial': 186,
+    'LinearComplexity': 188
+
+}
+
+
 class DieharderTests:
     _DIEHARDER_OUTPUT = "dieharder_test_output.txt"
 
@@ -84,6 +105,7 @@ class DieharderTests:
             'test_results': None
         }
 
+        dataset_generate_time = time.time()
         self.folder_prefix = os.getcwd() + '/test_reports/' + dieharder_report_folder_prefix
 
         if round_end == 0:
@@ -107,7 +129,6 @@ class DieharderTests:
             self.bits_in_one_line = sample_size * self.number_of_samples_in_one_line
 
             self._create_report_folder()
-            dataset_generate_time = time.time()
             dataset = self.data_generator.generate_avalanche_dataset(input_index=self.input_index,
                                                                      number_of_samples=self.number_of_samples)
 
@@ -128,7 +149,6 @@ class DieharderTests:
 
             self._create_report_folder()
 
-            dataset_generate_time = time.time()
             dataset = self.data_generator.generate_correlation_dataset(input_index=self.input_index,
                                                                        number_of_samples=self.number_of_samples,
                                                                        number_of_blocks_in_one_sample=number_of_blocks_in_one_sample)
@@ -149,7 +169,6 @@ class DieharderTests:
 
             self._create_report_folder()
 
-            dataset_generate_time = time.time()
             dataset = self.data_generator.generate_cbc_dataset(input_index=self.input_index,
                                                                number_of_samples=self.number_of_samples,
                                                                number_of_blocks_in_one_sample=number_of_blocks_in_one_sample)
@@ -362,7 +381,7 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
+            sage: result = DieharderTests._run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
             ...
