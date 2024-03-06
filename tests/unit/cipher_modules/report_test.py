@@ -146,6 +146,13 @@ def test_show():
     report_cca = Report(speck,component_analysis)
     report_cca.show()
 
-    neural_distinguisher_test = NeuralNetworkTests(speck).run_autond_pipeline()
-    report_autond = Report(speck,neural_distinguisher_test)
+
+    result = NeuralNetworkTests(speck).run_autond_pipeline(optimizer_samples=10 ** 3, optimizer_generations=1,
+                                                            training_samples=10 ** 2, testing_samples=10 ** 2,
+                                                            number_of_epochs=1, verbose=False)
+    report_autond = Report(speck,result)
     report_autond.show()
+
+    avalanche_results = AvalancheTests(speck).avalanche_tests()
+    avalanche_report = Report(speck,avalanche_results)
+    avalanche_report.show()
