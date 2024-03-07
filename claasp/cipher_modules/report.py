@@ -211,16 +211,16 @@ class Report:
         if 'statistical' in self.test_name:
 
             if file_format == '.csv':
-                df = pd.DataFrame.from_dict(self.test_report["randomness_test"])
+                df = pd.DataFrame.from_dict(self.test_report['test_results'][0]["randomness_test"])
                 df.to_csv(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format)
 
             if file_format == '.json':
                 with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
-                    json.dump(self.test_report["randomness_test"], fp, default=lambda x: float(x))
+                    json.dump(self.test_report['test_results'][0]["randomness_test"], fp, default=lambda x: float(x))
 
             if file_format == '.tex':
                 with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
-                    fp.write(pd.DataFrame(self.test_report["randomness_test"]).style.to_latex())
+                    fp.write(pd.DataFrame(self.test_report['test_results'][0]["randomness_test"]).style.to_latex())
 
         elif 'component_analysis' in self.test_name:
             print('This method is not implemented yet for the component analysis test.')
