@@ -180,20 +180,20 @@ class Report:
         elif 'avalanche_tests' == self.test_name:
             test_list = self.test_report['test_results']['plaintext']['round_output'].keys()
             if test_name not in test_list:
-                print('Error! Invalid test name. Please choose a valid test name')
-                print('The test name has to be one of the following : ', end='')
+                print('Error! Invalid test name. The report.show function requires a test_name input')
+                print('test_name has to be one of the following : ', end='')
                 print(test_list)
                 return
             input_diff_values = [x['input_difference_value'] for x in self.test_report['test_results']['plaintext']['round_output'][test_name] if 'input_difference_value' in x.keys()]
             if fixed_input_difference not in input_diff_values:
-                print('Error! Invalid input difference value. Please choose a valid input difference value')
-                print('The input difference value has to be one of the following :', end='')
+                print('Error! Invalid input difference value. The report.show() function requires an input_difference_value input')
+                print('input_difference_value has to be one of the following :', end='')
                 print(input_diff_values)
                 return
         elif 'neural_network_differential_distinguisher' in self.test_name:
             input_diff_values = [x['input_difference_value'] for x in self.test_report['test_results']['plaintext']['round_output']['neural_network_differential_distinguisher']]
             if fixed_input_difference not in input_diff_values:
-                print('Error! Invalid input difference value. Please choose a valid input difference value')
+                print('Error! Invalid input difference value. The report.show() function requires an input_difference_value input')
                 print('The input difference value has to be one of the following :', end='')
                 print(input_diff_values)
                 return
