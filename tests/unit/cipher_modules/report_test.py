@@ -71,7 +71,7 @@ def test_save_as_latex_table():
 
 def test_save_as_DataFrame():
     speck = SpeckBlockCipher(number_of_rounds=2)
-    smt = CpXorDifferentialModel(speck)
+    cp = CpXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
         component_id='plaintext',
         constraint_type='not_equal',
@@ -82,7 +82,7 @@ def test_save_as_DataFrame():
         constraint_type='equal',
         bit_positions=range(64),
         bit_values=(0,) * 64)
-    trail = smt.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
+    trail = cp.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
 
     algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout=1)
     algebraic_report = Report(speck, algebraic_results)
@@ -156,3 +156,19 @@ def test_show():
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(speck,avalanche_results)
     avalanche_report.show()
+
+    milp = MilpXorDifferentialModel(speck)
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='not_equal',
+        bit_positions=range(32),
+        bit_values=(0,) * 32)
+    key = set_fixed_variables(
+        component_id='key',
+        constraint_type='equal',
+        bit_positions=range(64),
+        bit_values=(0,) * 64)
+
+    trail = milp.find_one_xor_differential_trail(fixed_values=[plaintext, key])
+    trail_report = Report(speck, trail)
+    trail_report.show()

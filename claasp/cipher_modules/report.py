@@ -148,7 +148,7 @@ class Report:
             self.input_parameters = {}
             self.test_name = test_report['test_name'] if type(test_report) is dict else test_report[0]['test_name']
 
-    def show(self, test_name='trail_search', fixed_input='plaintext', fixed_output='round_output',
+    def show(self, test_name=None, fixed_input='plaintext', fixed_output='round_output',
              fixed_input_difference='average', word_size=1, state_size=1, key_state_size=1,
              verbose=False, show_word_permutation=False,
              show_var_shift=False, show_var_rotate=False, show_theta_xoodoo=False,
@@ -173,22 +173,32 @@ class Report:
                               show_or, show_not, show_plaintext, show_key,
                               show_intermediate_output, show_cipher_output, show_input, show_output, save_fig=False)
 
-        else:
 
-            test_list = []
-            if 'statistical' in self.test_name:
-                test_list.append(self.test_name)
-            elif 'component_analysis' in self.test_name:
-                Component_Analysis=CipherComponentsAnalysis(self.cipher)
-                Component_Analysis.print_component_analysis_as_radar_charts(results=self.test_report['test_results'])
-            elif 'algebraic' not in self.test_name and self.test_name !='neural_distinguisher_test':
-                test_list = list(self.test_report['test_results'][fixed_input][fixed_output].keys())
-            if test_name not in test_list and 'algebraic' not in self.test_name and self.test_name !='neural_distinguisher_test':
+        elif 'component_analysis' in self.test_name:
+            Component_Analysis=CipherComponentsAnalysis(self.cipher)
+            Component_Analysis.print_component_analysis_as_radar_charts(results=self.test_report['test_results'])
+            return
+        elif 'avalanche' in self.test_name:
+            test_list = self.test_report['test_results']['plaintext']['round_output'].keys()
+            if test_name not in test_list:
                 print('Error! Invalid test name. Please choose a valid test name')
-                print('The test name has to be one of the following : ',end='')
+                print('The test name has to be one of the following : ', end='')
                 print(test_list)
                 return
-            self._produce_graph(show_graph=True, fixed_input=fixed_input, fixed_output=fixed_output,
+            input_diff_values = [x['input_difference_value'] for x in self.test_report['test_results']['plaintext']['round_output'][test_name] if 'input_difference_value' in x.keys()]
+            if fixed_input_difference not in input_diff_values:
+                print('Error! Invalid input difference value. Please choose a valid input difference value')
+                print('The input difference value has to be one of the following :', end='')
+                print(input_diff_values)
+                return
+        elif 'differential_distinguisher' in self.test_name:
+            input_diff_values = [x['input_difference_value'] for x in self.test_report['test_results']['plaintext']['round_output']['neural_network_differential_distinguisher']]
+            if fixed_input_difference not in input_diff_values:
+                print('Error! Invalid input difference value. Please choose a valid input difference value')
+                print('The input difference value has to be one of the following :', end='')
+                print(input_diff_values)
+                return
+        self._produce_graph(show_graph=True, fixed_input=fixed_input, fixed_output=fixed_output,
                                 fixed_input_difference=fixed_input_difference, test_name=test_name)
 
     def _export(self, file_format, output_dir):
@@ -478,7 +488,7 @@ class Report:
 
                 value = self.test_report['components_values'][comp_id]['value']
 
-                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value)) if value[:2] != '0x' else 4 * len(value[2:])) if '*' not in value else list(
+                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value) if value[:2] != '0x' else 4 * len(value[2:]))) if '*' not in value else list(
                     value[2:])
 
                 word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
@@ -579,6 +589,9 @@ class Report:
                         'accuracies']))])
 
             if show_graph:
+                print()
+                print()
+                print()
                 print('RESULTS')
                 print('plaintext_input_diff : ' + str(
                     self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][

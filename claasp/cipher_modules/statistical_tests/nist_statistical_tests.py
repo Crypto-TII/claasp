@@ -546,9 +546,6 @@ class StatisticalTests:
         x = [i + 1 for i in range(report_dict_list[0]["rounds"])]
         y = [0 for _ in range(report_dict_list[0]["rounds"])]
         for i in range(len(report_dict_list)):
-            print(report_dict_list[i]["round"])
-            print(len(y))
-            print()
             y[report_dict_list[i]["round"]-1] = report_dict_list[i]["passed_tests"]
 
         random_round = -1
