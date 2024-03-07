@@ -68,6 +68,10 @@ def test_save_as_latex_table():
     trail_report = Report(simon, trail)
     trail_report.save_as_latex_table()
 
+    nist = StatisticalTests(simon)
+    report_sts = Report(simon, nist.nist_statistical_tests('avalanche'))
+    report_sts.save_as_latex_table()
+
 
 def test_save_as_DataFrame():
     speck = SpeckBlockCipher(number_of_rounds=2)
@@ -95,12 +99,19 @@ def test_save_as_DataFrame():
     trail_report = Report(speck, trail)
     trail_report.save_as_DataFrame()
 
+    nist = StatisticalTests(speck)
+    report_sts = Report(speck, nist.nist_statistical_tests('avalanche'))
+    report_sts.save_as_DataFrame()
 
 def test_save_as_json():
     simon = SimonBlockCipher(number_of_rounds=3)
     neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(
         simon).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(simon, neural_network_blackbox_distinguisher_tests_results)
+
+    nist = StatisticalTests(simon)
+    report_sts = Report(simon, nist.nist_statistical_tests('avalanche'))
+    report_sts.save_as_json()
 
     milp = MilpXorDifferentialModel(simon)
     plaintext = set_fixed_variables(
@@ -155,8 +166,9 @@ def test_show():
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(speck,avalanche_results)
-    avalanche_report.show('avalanche_weight_vectors')
-
+    avalanche_report.show(test_name='avalanche_weight_vectors')
+    avalanche_report.show()
+    avalanche_report.show(fixed_input_difference='a')
     milp = MilpXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
         component_id='plaintext',
@@ -172,3 +184,7 @@ def test_show():
     trail = milp.find_one_xor_differential_trail(fixed_values=[plaintext, key])
     trail_report = Report(speck, trail)
     trail_report.show()
+
+    nist = StatisticalTests(speck)
+    report_sts = Report(speck, nist.nist_statistical_tests('avalanche'))
+    report_sts.show()
