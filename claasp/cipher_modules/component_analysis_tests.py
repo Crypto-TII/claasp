@@ -67,7 +67,13 @@ class CipherComponentsAnalysis:
                 if result != {}:
                     components_analysis.append(result)
 
-        return components_analysis
+        output_dictionary = {
+            'input_parameters': {
+                'test_name': 'component_analysis'
+            },
+            'test_results': components_analysis
+        }
+        return output_dictionary
 
     def get_all_operations(self):
         """
@@ -114,7 +120,7 @@ class CipherComponentsAnalysis:
             self._add_attributes_to_operation(cipher_operations, operation, tmp_cipher_operations)
         return cipher_operations
 
-    def print_component_analysis_as_radar_charts(self):
+    def print_component_analysis_as_radar_charts(self, results=None):
         """
         Return a graph that can be plot to visualize the properties of all the operations of a cipher in a spider graph
 
@@ -123,30 +129,28 @@ class CipherComponentsAnalysis:
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: plot = CipherComponentsAnalysis(fancy).print_component_analysis_as_radar_charts()
-            sage: type(plot)
-            <class 'module'>
+            sage: CipherComponentsAnalysis(fancy).print_component_analysis_as_radar_charts()
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=3)
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
-            sage: plot = CipherComponentsAnalysis(speck).print_component_analysis_as_radar_charts()
-            sage: type(plot)
-            <class 'module'>
+            sage: CipherComponentsAnalysis(speck).print_component_analysis_as_radar_charts()
 
         """
-        results = self.component_analysis_tests()
+        if results==None:
+            results = self.component_analysis_tests()['test_results']
         SMALL_SIZE = 10
         MEDIUM_SIZE = 11
         BIG_SIZE = 12
 
-        plt.rc('font', size=SMALL_SIZE)  # controls default text sizes
+        plt.rc('font', size=BIG_SIZE)  # controls default text sizes
         plt.rc('axes', titlesize=SMALL_SIZE)  # fontsize of the axes title
         plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
         plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
         plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-        plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
+        plt.rc('legend', fontsize=BIG_SIZE)  # legend fontsize
         plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
+        plt.rcParams['figure.figsize'] = [20, 20]
 
         # remove XOR from results
         results_without_xor = [results[i] for i in range(len(results)) if results[i]["description"][0] != "XOR"]
@@ -208,9 +212,10 @@ class CipherComponentsAnalysis:
 
         # Show the graph
         plt.subplots_adjust(left=0.25, bottom=0.1, right=0.7, top=0.95, wspace=0, hspace=0.96)
-        # plt.show()
-        print("The radar chart can be plot with the build-in method plt.show()")
-        return plt
+        plt.show()
+        #print("The radar chart can be plot with the build-in method plt.show()")
+
+        #return plt
 
 
     def _AND_as_boolean_function(self, component, boolean_polynomial_ring):

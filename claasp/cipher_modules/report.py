@@ -8,7 +8,7 @@ import json
 import shutil
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-
+from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
 def _print_colored_state(state, verbose, file):
 
@@ -178,6 +178,9 @@ class Report:
             test_list = []
             if 'statistical' in self.test_name:
                 test_list.append(self.test_name)
+            elif 'component_analysis' in self.test_name:
+                Component_Analysis=CipherComponentsAnalysis(self.cipher)
+                Component_Analysis.print_component_analysis_as_radar_charts(results=self.test_report['test_results'])
             elif 'algebraic' not in self.test_name and self.test_name !='neural_distinguisher_test':
                 test_list = list(self.test_report['test_results'][fixed_input][fixed_output].keys())
             if test_name not in test_list and 'algebraic' not in self.test_name and self.test_name !='neural_distinguisher_test':
@@ -210,6 +213,9 @@ class Report:
                 with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
                     fp.write(pd.DataFrame(self.test_report["randomness_test"]).style.to_latex())
 
+        elif 'component_analysis' in self.test_name:
+            print('This method is not implemented yet for the component analysis test.')
+            return
         elif 'trail' in self.test_name or 'algebraic' in self.test_name:
 
             if 'trail' in self.test_name:
@@ -472,7 +478,7 @@ class Report:
 
                 value = self.test_report['components_values'][comp_id]['value']
 
-                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value))) if '*' not in value else list(
+                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value)) if value[:2] != '0x' else 4 * len(value[2:])) if '*' not in value else list(
                     value[2:])
 
                 word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
@@ -562,20 +568,34 @@ class Report:
     def _produce_graph(self, output_directory=os.getcwd(), show_graph=False, fixed_input=None, fixed_output=None,
                        fixed_input_difference=None, test_name=None):
 
-
         if self.test_name == 'neural_distinguisher_test':
-            df_scores = pd.DataFrame(self.test_report['test_results']['plaintext']['cipher_output']['differences_scores'], index=['scores']).T
-            df_result = pd.DataFrame([self.test_report['test_results']['plaintext']['cipher_output'][0]['accuracies']], index=['accuracy']).T
+            df_scores = pd.DataFrame(
+                self.test_report['test_results']['plaintext']['cipher_output']['differences_scores'],
+                index=['scores']).T
+            df_result = pd.DataFrame(
+                self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
+                    'accuracies'], index=['accuracy_round' + str(i) for i in range(len(
+                    self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
+                        'accuracies']))])
 
             if show_graph:
                 print('RESULTS')
-                print('plaintext_input_diff : ' + str(self.test_report['test_results']['plaintext']['cipher_output'][0]['plaintext_diff']))
-                print('key_input_diff : ' + str(self.test_report['test_results']['plaintext']['cipher_output'][0]['key_diff']))
+                print('plaintext_input_diff : ' + str(
+                    self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
+                        'plaintext_diff']))
+                print('key_input_diff : ' + str(
+                    self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
+                        'key_diff']))
+                print(df_result)
+                print()
+                print('//////')
+                print()
+                print('SCORES')
+                print(df_scores)
 
             else:
                 df_result.to_csv(output_directory + '/neural_distinguisher_test_results.csv')
                 df_scores.to_csv(output_directory + '/neural_distinguisher_test_scores.csv')
-
 
         elif 'statistical' in self.test_name:
             if 'dieharder' in self.test_name:
@@ -607,7 +627,7 @@ class Report:
                 if show_graph==False:
                     fig.write_image(output_directory + '/test_results.png')
                 if show_graph:
-                    fig.show(renderer='gif')
+                    fig.show(renderer='png')
                     return
         else:
 
@@ -694,7 +714,8 @@ class Report:
                                                     self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res + '/' + str(
                                         res) + '_' + str(case['input_difference_value']) + '.png', scale=4)
                                 else:
-                                    fig.show(renderer='gif')
+
+                                    fig.show(renderer='png')
                                     return
                                 fig.data = []
                                 fig.layout = {}
@@ -712,7 +733,7 @@ class Report:
                                                     '/' + str(res) + '.png',
                                                     scale=4)
                                 else:
-                                    fig.show(renderer='gif')
+                                    fig.show(renderer='png')
                                     return
                                 fig.data = []
                                 fig.layout = {}
@@ -753,7 +774,10 @@ class Report:
 
         """
 
-        if 'trail' in self.test_name:
+        if 'component_analysis' in self.test_name:
+            print('This method is not implemented yet for the component analysis test')
+            return
+        elif 'trail' in self.test_name:
             self._print_trail(word_size, state_size, key_state_size, verbose, show_word_permutation,
                               show_var_shift, show_var_rotate, show_theta_xoodoo,
                               show_theta_keccak, show_shift_rows, show_sigma, show_reverse,
