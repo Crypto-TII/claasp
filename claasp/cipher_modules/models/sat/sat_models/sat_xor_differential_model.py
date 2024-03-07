@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -175,7 +174,6 @@ class SatXorDifferentialModel(SatModel):
             solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
             solution['building_time_seconds'] = end_building_time - start_building_time
             solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
-
         return solutions_list
 
     def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
@@ -223,8 +221,9 @@ class SatXorDifferentialModel(SatModel):
             solutions = self.find_all_xor_differential_trails_with_fixed_weight(weight,
                                                                                 fixed_values=fixed_values,
                                                                                 solver_name=solver_name)
-            for solution in solutions_list:
-                solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
+
+            for solution in solutions:
+                    solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
             solutions_list.extend(solutions)
 
         return solutions_list

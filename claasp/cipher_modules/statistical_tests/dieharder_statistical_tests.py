@@ -26,6 +26,27 @@ import matplotlib.pyplot as plt
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType
 
 
+TEST_ID_TABLE = {
+
+    'Frequency': 1,
+    'BlockFrequency': 2,
+    'CumulativeSums': 3,
+    'Runs': 5,
+    'LongestRun': 6,
+    'Rank': 7,
+    'FFT': 8,
+    'NonOverlappingTemplate': 9,
+    'OverlappingTemplate': 157,
+    'Universal': 158,
+    'ApproximateEntropy': 159,
+    'RandomExcursions': 160,
+    'RandomExcursionsVariant': 168,
+    'Serial': 186,
+    'LinearComplexity': 188
+
+}
+
+
 class DieharderTests:
     _DIEHARDER_OUTPUT = "dieharder_test_output.txt"
 
@@ -36,8 +57,202 @@ class DieharderTests:
         str_of_inputs_bit_size = list(map(str, cipher.inputs_bit_size))
         self._cipher_primitive = cipher.id + "_" + "_".join(str_of_inputs_bit_size)
 
+    def dieharder_statistical_tests(self, test_type,
+                                    bits_in_one_line='default',
+                                    number_of_lines='default',
+                                    input_index=0,
+                                    round_start=0,
+                                    round_end=0,
+                                    dieharder_report_folder_prefix="dieharder_statistics_report",
+                                    ):
+
+        """
+
+        Run the Dieharder statistical tests.
+
+        INPUT:
+
+            - ``test_type`` -- string describing which test to run
+            - ``bits_in_one_line`` -- integer parameter used to run the dieharder tests
+            - ``number_of_lines`` -- integer parameter used to run the dieharder tests
+            - ``input_index`` -- cipher input index
+            - ``round_start`` -- first round to be considered in the cipher
+            - ``round_end`` -- last round to be considered in the cipher
+            - ``dieharder_report_folder_prefix`` - prefix for the unparsed dieharder tests output folder
+
+        OUTPUT:
+
+            - The results are going to be saved in a dictionary format compatible with the Report class
+
+        EXAMPLE:
+
+            from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+            from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            speck = SpeckBlockCipher(number_of_rounds=5)
+            dieharder_tests = DieharderTests(speck)
+            dieharder_avalanche_test_results = dieharder_tests.dieharder_statistical_tests('avalanche')
+
+        """
+        dieharder_test = {
+
+            'input_parameters': {
+                'test_name': 'dieharder_statistical_tests',
+                'test_type': test_type,
+                'round_start': round_start,
+                'round_end': round_end,
+                'input': self.cipher.inputs[input_index]
+            },
+            'test_results': None
+        }
+
+        dataset_generate_time = time.time()
+        self.folder_prefix = os.getcwd() + '/test_reports/' + dieharder_report_folder_prefix
+
+        if round_end == 0:
+            round_end = self.cipher.number_of_rounds
+
+        if test_type == 'avalanche':
+
+            self.dataset_type = DatasetType.avalanche
+            self.input_index = input_index
+
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1048576
+            if number_of_lines == 'default':
+                number_of_lines = 384
+
+            sample_size = self.cipher.inputs_bit_size[input_index] * self.cipher.output_bit_size
+            number_of_samples_in_one_line = math.ceil(bits_in_one_line / sample_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples_in_one_line = number_of_samples_in_one_line
+            self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
+            self.bits_in_one_line = sample_size * self.number_of_samples_in_one_line
+
+            self._create_report_folder()
+            dataset = self.data_generator.generate_avalanche_dataset(input_index=self.input_index,
+                                                                     number_of_samples=self.number_of_samples)
+
+        elif test_type == 'correlation':
+
+            self.dataset_type = DatasetType.correlation
+            self.input_index = input_index
+
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1048576
+            if number_of_lines == 'default':
+                number_of_lines = 384
+
+            number_of_blocks_in_one_sample = math.ceil(bits_in_one_line / self.cipher.output_bit_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples = self.number_of_lines + 1
+            self.bits_in_one_line = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            self._create_report_folder()
+
+            dataset = self.data_generator.generate_correlation_dataset(input_index=self.input_index,
+                                                                       number_of_samples=self.number_of_samples,
+                                                                       number_of_blocks_in_one_sample=number_of_blocks_in_one_sample)
+
+        elif test_type == 'cbc':
+
+            self.dataset_type = DatasetType.cbc
+            self.input_index = input_index
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1048576
+            if number_of_lines == 'default':
+                number_of_lines = 384
+
+            number_of_blocks_in_one_sample = math.ceil(bits_in_one_line / self.cipher.output_bit_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples = self.number_of_lines + 1
+            self.bits_in_one_line = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            self._create_report_folder()
+
+            dataset = self.data_generator.generate_cbc_dataset(input_index=self.input_index,
+                                                               number_of_samples=self.number_of_samples,
+                                                               number_of_blocks_in_one_sample=number_of_blocks_in_one_sample)
+
+        elif test_type == 'random':
+            self.dataset_type = DatasetType.random
+            self.input_index = input_index
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1040384
+            if number_of_lines == 'default':
+                number_of_lines = 128
+
+            number_of_blocks_in_one_sample = math.ceil(bits_in_one_line / self.cipher.output_bit_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples = self.number_of_lines + 1
+            self.bits_in_one_line = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            self._create_report_folder()
+
+            dataset = self.data_generator.generate_random_dataset(input_index=self.input_index,
+                                                                  number_of_samples=self.number_of_samples,
+                                                                  number_of_blocks_in_one_sample=self.number_of_blocks_in_one_sample)
+
+        elif test_type == 'low_density':
+            self.dataset_type = DatasetType.low_density
+            self.input_index = input_index
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1056896
+            if number_of_lines == 'default':
+                number_of_lines = 1
+
+            number_of_blocks_in_one_sample = math.ceil(bits_in_one_line / self.cipher.output_bit_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples = self.number_of_lines + 1
+            n = self.cipher.inputs_bit_size[self.input_index]
+            ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
+            self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
+            self.bits_in_one_line = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            self._create_report_folder()
+
+            dataset = self.data_generator.generate_low_density_dataset(input_index=self.input_index,
+                                                                       number_of_samples=self.number_of_samples,
+                                                                       ratio=ratio)
+        elif test_type == 'high_density':
+            self.dataset_type = DatasetType.high_density
+            self.input_index = input_index
+            if bits_in_one_line == 'default':
+                bits_in_one_line = 1056896
+            if number_of_lines == 'default':
+                number_of_lines = 1
+
+            number_of_blocks_in_one_sample = math.ceil(bits_in_one_line / self.cipher.output_bit_size)
+            self.number_of_lines = number_of_lines
+            self.number_of_samples = self.number_of_lines + 1
+            n = self.cipher.inputs_bit_size[self.input_index]
+            ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
+            self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
+            self.bits_in_one_line = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
+
+            self._create_report_folder()
+
+            dataset = self.data_generator.generate_high_density_dataset(input_index=self.input_index,
+                                                                        number_of_samples=self.number_of_samples,
+                                                                        ratio=ratio)
+        else:
+            # maybe print the enum value of Dataset.type
+            print(
+                'Invalid test_type choice. Choose among the following: avalanche, correlation, cbc, random, low_density, high_density')
+            return
+
+        dataset_generate_time = time.time() - dataset_generate_time
+        if not dataset:
+            return
+        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
+        dieharder_test['test_results'] = self._generate_dieharder_dicts(dataset, round_start, round_end, FLAG_CHART=False)
+        dieharder_test['input_parameters']['bits_in_one_line'] = bits_in_one_line
+        dieharder_test['input_parameters']['number_of_lines'] = number_of_lines
+
+        return dieharder_test
+
+
     @staticmethod
-    def run_dieharder_statistical_tests_tool_interactively(input_file):
+    def _run_dieharder_statistical_tests_tool(input_file):
         """
         Run dieharder tests using the Dieharder library [1]. The result will be in dieharder_test_output.txt.
 
@@ -54,7 +269,12 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool_interactively( # doctest: +SKIP
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator
+            sage: dataset_generator = DatasetGenerator(SpeckBlockCipher(number_of_rounds=3))
+            sage: dataset = dataset_generator.generate_random_dataset(input_index=0, number_of_samples=100, number_of_blocks_in_one_sample=30000)
+            sage: dataset[0].tofile(f'claasp/cipher_modules/statistical_tests/input_data_example')
+            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
             ...
@@ -65,7 +285,7 @@ class DieharderTests:
         print(f'Dieharder Tests Finished!!!')
 
     @staticmethod
-    def parse_report(report_filename):
+    def _parse_report(report_filename):
         """
         Parse the dieharder statistical tests report. It will return the parsed result in a dictionary format.
 
@@ -80,13 +300,13 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool_interactively( # doctest: +SKIP
+            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
             ...
             Dieharder Tests Finished!!!
 
-            sage: dict = DieharderTests.parse_report(f'dieharder_test_output.txt') # doctest: +SKIP
+            sage: dict = DieharderTests._parse_report(f'dieharder_test_output.txt') # doctest: +SKIP
             Parsing dieharder_test_output.txt is in progress.
             Parsing dieharder_test_output.txt is finished.
         """
@@ -140,13 +360,12 @@ class DieharderTests:
         report_dict["failed_tests"] = failed_tests
         report_dict["passed_tests_proportion"] = passed_tests / total_tests
         report_dict["total_tests"] = total_tests
-        report_dict["test_name"] = "dieharder_statistical_tests"
         f.close()
         print(f'Parsing {report_filename} is finished.')
         return report_dict
 
     @staticmethod
-    def generate_chart_round(report_dict, output_dir=''):
+    def generate_chart_round(report_dict, output_dir='', show_graph=False):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -162,7 +381,7 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool_interactively( # doctest: +SKIP
+            sage: result = DieharderTests._run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
             ...
@@ -199,13 +418,21 @@ class DieharderTests:
             f'{report_dict["cipher_name"]}: {report_dict["data_type"]}, Round {report_dict["round"]}|{report_dict["rounds"]}')
         plt.xlabel('Tests')
         plt.yticks([-1, 0, 1], ['FAILED', 'WEAK', 'PASSED'])
-        if output_dir =='':
-            output_dir = f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
-        plt.savefig(output_dir)
+
+        if show_graph==False:
+            if output_dir =='':
+                output_dir = f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
+                plt.savefig(output_dir)
+            else:
+                plt.savefig(output_dir+'/'+f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
+        else:
+            plt.show()
+            plt.clf()
+            plt.close()
         print(f'Drawing round {report_dict["round"]} is finished. Please find the chart in file {output_dir}.')
 
     @staticmethod
-    def generate_chart_all(report_dict_list):
+    def generate_chart_all(report_dict_list, output_dir='', show_graph=False):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -221,7 +448,7 @@ class DieharderTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: result = DieharderTests.run_dieharder_statistical_tests_tool_interactively( # doctest: +SKIP
+            sage: result = DieharderTests.run_dieharder_statistical_tests_tool( # doctest: +SKIP
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example', # doctest: +SKIP
             ....: ) # long time # doctest: +SKIP
             ...
@@ -257,7 +484,17 @@ class DieharderTests:
                    [i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2 + 1))])
         # plt.grid(True)
         chart_filename = f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
-        plt.savefig(chart_filename)
+
+        if show_graph==False:
+            if output_dir =='':
+                output_dir = f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
+                plt.savefig(output_dir)
+            else:
+                plt.savefig(output_dir+'/'+f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png')
+        else:
+            plt.show()
+            plt.clf()
+            plt.close()
         print(f'Drawing chart for all rounds is in finished. Please find the chart in file {chart_filename}.')
 
     def _create_report_folder(self):
@@ -277,7 +514,7 @@ class DieharderTests:
             print(f'Error: {e.strerror}')
 
     def _generate_dieharder_dicts(self, dataset, round_start, round_end, FLAG_CHART=False):
-        dataset_folder = 'dataset'
+        dataset_folder = os.getcwd() + '/dataset'
         dataset_filename = 'dieharder_input_' + self._cipher_primitive
         dataset_filename = os.path.join(dataset_folder, dataset_filename)
         dieharder_report_dicts = []
@@ -294,7 +531,7 @@ class DieharderTests:
             dataset[round_number].tofile(dataset_filename)
 
             dieharder_execution_time = time.time()
-            self.run_dieharder_statistical_tests_tool_interactively(dataset_filename)
+            self._run_dieharder_statistical_tests_tool(dataset_filename)
             dieharder_execution_time = time.time() - dieharder_execution_time
             try:
                 os.rename(self._DIEHARDER_OUTPUT, report_round)
@@ -309,7 +546,7 @@ class DieharderTests:
 
             try:
                 # generate report
-                dieharder_report_dict = self.parse_report(report_round)
+                dieharder_report_dict = self._parse_report(report_round)
                 dieharder_report_dict[
                     'data_type'] = f'{self.cipher.inputs[self.input_index]}_{self.dataset_type.value}'
                 dieharder_report_dict["cipher_name"] = self.cipher.id
@@ -330,404 +567,3 @@ class DieharderTests:
                 print(f'Error in generating all round chart.')
 
         return dieharder_report_dicts
-
-    def run_avalanche_dieharder_statistics_test(self, input_index, number_of_samples_in_one_line, number_of_lines,
-                                                round_start=0, round_end=0,
-                                                dieharder_report_folder_prefix="dieharder_statistics_report",
-                                                FLAG_CHART=False):
-        r"""
-        Run the avalanche test.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example,
-          inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
-          means it will generate the plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should
-          be passed to the statistical test tool
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
-          from 0). If set to 0, means run to the last round
-        - ``dieharder_report_folder_prefix`` -- **string** (default: `dieharder_statistics_report`); the folder to save
-          the generated statistics report from NIST STS
-        - ``FLAG_CHART`` -- **boolean** (default: `False`); draw the chart from dieharder statistical test if set to
-          True
-
-        OUTPUT:
-
-        - ``dieharder_report_dicts`` -- Dictionary-structure result parsed from dieharder statistical report. One could
-          also see the corresponding report under the dieharder_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: F = DieharderTests(SpeckBlockCipher(number_of_rounds=3)) # doctest: +SKIP
-            sage: result = F.run_avalanche_dieharder_statistics_test(0, 5, 5, round_end=1) # long time # doctest: +SKIP
-            ...
-            Dieharder Tests Finished!!!
-            ...
-        """
-        self.dataset_type = DatasetType.avalanche
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = self.cipher.inputs_bit_size[self.input_index]
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_avalanche_dataset(input_index=self.input_index,
-                                                                 number_of_samples=self.number_of_samples)
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_dieharder_dicts(dataset, round_start, round_end, FLAG_CHART)
-
-    def run_correlation_dieharder_statistics_test(self, input_index, number_of_samples_in_one_line, number_of_lines,
-                                                  number_of_blocks_in_one_sample=8128, round_start=0, round_end=0,
-                                                  dieharder_report_folder_prefix="dieharder_statistics_report",
-                                                  FLAG_CHART=False):
-        r"""
-        Run the correlation test.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example, inputs=[key, plaintext],
-          input_index=0 means it will generate the key avalanche dataset. if input_index=1 means it will generate the
-          plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should be
-          passed to the statistical test tool
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``number_of_blocks_in_one_sample`` -- **integer** (default: ``8128); how many blocks should be generated in
-          one test sequence
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` --  **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
-          from 0), if set to 0, means run to the last round
-        - ``dieharder_report_folder_prefix`` -- **string** (default: `dieharder_statistics_report`); the folder to save
-          the generated statistics report from NIST STS
-        - ``FLAG_CHART`` -- **boolean** (default: `False`); draw the chart from dieharder statistical test if set to
-          True
-
-        OUTPUT:
-
-        - ``dieharder_report_dicts`` -- Dictionary-structure result parsed from dieharder statistical report. One could
-          also see the corresponding report generated under the folder dieharder_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: F = DieharderTests(SpeckBlockCipher(number_of_rounds=3)) # doctest: +SKIP
-            sage: result = F.run_correlation_dieharder_statistics_test(0, 5, 5, round_end=1) # long time # doctest: +SKIP
-            ...
-            Dieharder Tests Finished!!!
-            ...
-        """
-        self.dataset_type = DatasetType.correlation
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = number_of_blocks_in_one_sample
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_correlation_dataset(input_index=self.input_index,
-                                                                   number_of_samples=self.number_of_samples,
-                                                                   number_of_blocks_in_one_sample=self.number_of_blocks_in_one_sample)
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_dieharder_dicts(dataset, round_start, round_end, FLAG_CHART)
-
-    def run_CBC_dieharder_statistics_test(self, input_index, number_of_samples_in_one_line, number_of_lines,
-                                          number_of_blocks_in_one_sample=8192, round_start=0, round_end=0,
-                                          dieharder_report_folder_prefix="dieharder_statistics_report",
-                                          FLAG_CHART=False):
-        r"""
-        Run the CBC test.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example, inputs=[key, plaintext],
-          input_index=0 means it will generate the key avalanche dataset. if input_index=1 means it will generate the
-          plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should be
-          passed to the statistical test tool.
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``number_of_blocks_in_one_sample`` -- **integer** (default: `8192`); how many blocks should be generated in
-          one test sequence
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
-          from 0), if set to 0, means run to the last round
-        - ``dieharder_report_folder_prefix`` -- **string** (default: `dieharder_statistics_report`); the folder to save
-          the generated statistics report from NIST STS
-        - ``FLAG_CHART`` -- **boolean** (default: `False`); draw the chart from dieharder statistical test if set to
-          True
-
-        OUTPUT:
-
-        - ``dieharder_report_dicts`` -- Dictionary-structure result parsed from dieharder statistical report. One could
-          also see the corresponding report generated under the folder dieharder_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: F = DieharderTests(SpeckBlockCipher(number_of_rounds=3)) # doctest: +SKIP
-            sage: result = F.run_CBC_dieharder_statistics_test(0, 5, 5, round_end=1) # long time # doctest: +SKIP
-            ...
-            Dieharder Tests Finished!!!
-            ...
-        """
-        self.dataset_type = DatasetType.cbc
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = number_of_blocks_in_one_sample
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_cbc_dataset(input_index=input_index,
-                                                           number_of_samples=self.number_of_samples,
-                                                           number_of_blocks_in_one_sample=self.number_of_blocks_in_one_sample)
-
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_dieharder_dicts(dataset, round_start, round_end, FLAG_CHART)
-
-    def run_random_dieharder_statistics_test(self, input_index, number_of_samples_in_one_line, number_of_lines,
-                                             number_of_blocks_in_one_sample=8128, round_start=0, round_end=0,
-                                             dieharder_report_folder_prefix="dieharder_statistics_report",
-                                             FLAG_CHART=False):
-        r"""
-        Run the random test.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example, inputs=[key, plaintext],
-          input_index=0 means it will generate the key avalanche dataset. if input_index=1 means it will generate the
-          plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should be
-          passed to the statistical test tool
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``number_of_blocks_in_one_sample`` -- how many blocks should be generated in one test sequence
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
-          from 0), if set to 0, means run to the last round
-        - ``dieharder_report_folder_prefix`` -- **string** (default: `dieharder_statistics_report`); the folder to save
-          the generated statistics report from NIST STS
-        - ``FLAG_CHART`` -- **boolean** (default: `False`); draw the chart from dieharder statistical test if set to
-          True
-
-        OUTPUT:
-
-        - ``dieharder_report_dicts`` -- Dictionary-structure result parsed from dieharder statistical report. One could
-          also see the corresponding report generated under the folder dieharder_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: F = DieharderTests(SpeckBlockCipher(number_of_rounds=3)) # doctest: +SKIP
-            sage: result = F.run_random_dieharder_statistics_test(0, 5, 5, round_end=1) # long time # doctest: +SKIP
-            ...
-            Dieharder Tests Finished!!!
-            ...
-        """
-        self.dataset_type = DatasetType.random
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = number_of_blocks_in_one_sample
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_random_dataset(input_index=input_index,
-                                                              number_of_samples=self.number_of_samples,
-                                                              number_of_blocks_in_one_sample=self.number_of_blocks_in_one_sample)
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_dieharder_dicts(dataset, round_start, round_end, FLAG_CHART)
-
-    def run_low_density_dieharder_statistics_test(self, input_index, number_of_samples_in_one_line, number_of_lines,
-                                                  ratio=1, round_start=0, round_end=0,
-                                                  dieharder_report_folder_prefix="dieharder_statistics_report",
-                                                  FLAG_CHART=False):
-        r"""
-        Run the low density test.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example, inputs=[key, plaintext],
-          input_index=0 means it will generate the key avalanche dataset. if input_index=1 means it will generate the
-          plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should be
-            passed to the statistical test tool
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``ratio`` -- **number** (default: `1`); the ratio of weight 2 (that is, two 1 in the input) as low density
-          inputs, range in [0, 1]. For example, if ratio = 0.5, means half of the weight 2 low density inputs will be
-          taken as inputs
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts (includes, index
-          starts from 0)
-        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends (excludes, index starts
-          from 0), if set to 0, means run to the last round
-        - ``dieharder_report_folder_prefix`` -- **string** (default: `dieharder_statistics_report`); the folder to save
-          the generated statistics report from NIST STS
-        - ``FLAG_CHART`` -- **boolean** (default: `False`); draw the chart from dieharder statistical test if set to
-          True
-
-        OUTPUT:
-
-        - ``dieharder_report_dicts`` -- Dictionary-structure result parsed from dieharder statistical report. One could
-          also see the corresponding report generated under the folder dieharder_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: F = DieharderTests(SpeckBlockCipher(number_of_rounds=3)) # doctest: +SKIP
-            sage: result = F.run_low_density_dieharder_statistics_test(0, 5, 5, round_end=1) # long time # doctest: +SKIP
-            ...
-            Dieharder Tests Finished!!!
-            ...
-        """
-        self.dataset_type = DatasetType.low_density
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = int(
-            1 + self.cipher.inputs_bit_size[input_index] + math.ceil(
-                self.cipher.inputs_bit_size[input_index] * (
-                        self.cipher.inputs_bit_size[input_index] - 1) * ratio / 2))
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_low_density_dataset(input_index=input_index,
-                                                                   number_of_samples=self.number_of_samples,
-                                                                   ratio=ratio)
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_dieharder_dicts(dataset, round_start, round_end, FLAG_CHART)
-
-    def run_high_density_dieharder_statistics_test(self, input_index, number_of_samples_in_one_line, number_of_lines,
-                                                   ratio=1, round_start=0, round_end=0,
-                                                   dieharder_report_folder_prefix="dieharder_statistics_report",
-                                                   FLAG_CHART=False):
-        r"""
-        Run the high density test.
-
-        INPUT:
-
-        - ``input_index`` -- **integer**; the index of inputs to generate testing data. For example,
-          inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
-          means it will generate the plaintext avalanche dataset
-        - ``number_of_samples_in_one_line`` -- **integer**; how many testing data should be generated in one line should
-          be passed to the statistical test tool.
-        - ``number_of_lines`` -- **integer**; how many lines should be passed to the statistical test tool
-        - ``ratio`` -- the ratio of weight 2 (that is, two 1 in the input) as high density inputs, range in [0, 1].
-            For example, if ratio = 0.5, means half of the weight 2 high density inputs will be taken as inputs.
-        - ``round_start`` -- **integer** (default: `0`); the round that the statistical test starts
-          (includes, index starts from 0)
-        - ``round_end`` -- **integer** (default: `0`); the round that the statistical test ends
-          (excludes, index starts from 0), if set to 0,
-          means run to the last round.
-        - ``dieharder_report_folder_prefix`` -- **string** (default: `dieharder_statistics_report`); The folder to save
-          the generated statistics report from NIST STS
-        - ``FLAG_CHART`` -- **boolean** (default: `False`); draw the chart from dieharder statistical test if set to
-          True
-
-        OUTPUT:
-
-        - ``dieharder_report_dicts`` -- Dictionary-structure result parsed from dieharder statistical report. One could
-          also see the corresponding report generated under the folder dieharder_statistics_report folder
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-            sage: F = DieharderTests(SpeckBlockCipher(number_of_rounds=3)) # doctest: +SKIP
-            sage: result = F.run_high_density_dieharder_statistics_test(0, 5, 5, round_end=1) # long time # doctest: +SKIP
-            ...
-            Dieharder Tests Finished!!!
-            ...
-        """
-        self.dataset_type = DatasetType.high_density
-        self.input_index = input_index
-        if round_end == 0:
-            round_end = self.cipher.number_of_rounds
-        self.number_of_lines = number_of_lines
-        block_size = self.cipher.output_bit_size
-        self.number_of_blocks_in_one_sample = int(
-            1 + self.cipher.inputs_bit_size[input_index] + math.ceil(
-                self.cipher.inputs_bit_size[input_index] * (
-                        self.cipher.inputs_bit_size[input_index] - 1) * ratio / 2))
-        self.number_of_samples_in_one_line = number_of_samples_in_one_line
-        self.number_of_samples = self.number_of_samples_in_one_line * (self.number_of_lines + 1)
-        self.bits_in_one_line = self.number_of_blocks_in_one_sample * block_size * self.number_of_samples_in_one_line
-        self.folder_prefix = dieharder_report_folder_prefix
-
-        self._create_report_folder()
-
-        dataset_generate_time = time.time()
-        dataset = self.data_generator.generate_high_density_dataset(input_index=input_index,
-                                                                    number_of_samples=self.number_of_samples,
-                                                                    ratio=ratio)
-        dataset_generate_time = time.time() - dataset_generate_time
-        if not dataset:
-            return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-
-        return self._generate_dieharder_dicts(dataset, round_start, round_end, FLAG_CHART)

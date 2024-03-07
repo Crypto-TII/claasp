@@ -46,6 +46,9 @@ remote-pytest:
 pytest:
 	pytest -v -n=auto --dist loadfile tests/unit/
 
+github-pytest:
+	pytest -v tests/unit/
+
 pytest-coverage:
 	pytest -v -n=2 --dist loadfile --cov-report term-missing --cov=$(PACKAGE) tests/unit/
 

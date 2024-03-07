@@ -98,8 +98,6 @@ class A51StreamCipher(Cipher):
                                         number_of_normal_clocks_at_initialization=number_of_normal_clocks_at_initialization,
                                         regs_size=regs_size)
 
-        # self.add_cipher_output_component(regs.id, [[i for i in range(regs_size)]], regs_size)
-
         fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS],
                              REGISTERS[i][CLOCK_POLYNOMIAL]] for i in range(len(REGISTERS))], 1, 1]
         cipher_output=[]
