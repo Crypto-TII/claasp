@@ -162,6 +162,7 @@ class CipherComponentsAnalysis:
         if nb_plots % col != 0:
             row += nb_plots % col
         positions = {8: -0.7, 3: -0.4}
+        # positions = {8: 1, 3: -3}
 
         for plot_number in range(nb_plots):
             categories = list(results[plot_number]["properties"].keys())
@@ -211,7 +212,7 @@ class CipherComponentsAnalysis:
             self._fill_area(ax, categories, plot_number, positions, results)
 
         # Show the graph
-        plt.subplots_adjust(left=0.25, bottom=0.1, right=0.7, top=0.95, wspace=0, hspace=0.96)
+        plt.subplots_adjust(left=0.02, bottom=0.1, right=0.7, top=0.95, wspace=1, hspace=0.96)
         plt.show()
         #print("The radar chart can be plot with the build-in method plt.show()")
 
@@ -274,7 +275,7 @@ class CipherComponentsAnalysis:
         elif component.description[0] == "MODADD":
             return self._MODADD_as_boolean_function(component, boolean_polynomial_ring)
         else:
-            return "TODO(...)"
+            return f"TODO: {component.id} not implemented yet"
 
 
     def _MODADD_as_boolean_function(self, component, boolean_polynomial_ring):
@@ -426,10 +427,10 @@ class CipherComponentsAnalysis:
             return self._fsr_properties(operation)
 
         if component.type == WORD_OPERATION:
-            print(f"TODO : {component.description[0]}")
+            print(f"TODO: {component.description[0]} not implemented yet")
             return {}
         else:
-            print(f"TODO : {component.type}")
+            print(f"TODO: {component.type} not implemented yet")
             return {}
 
     def _is_mds(self, component):
@@ -642,7 +643,7 @@ class CipherComponentsAnalysis:
             "min_possible_value": 1,
             "max_possible_value": pow(2, component.input_bit_size) - 1
         }
-        if component.input_bit_size <= 32:
+        if component.input_bit_size <= 64:
             dictio["properties"]["differential_branch_number"] = {"value": branch_number(component, 'differential', 'bit'),
                                                                   "min_possible_value": 0,
                                                                   "max_possible_value": component.input_bit_size}
@@ -883,7 +884,8 @@ class CipherComponentsAnalysis:
                 text += f"{category} = {int(results[plot_number]['properties'][category]['value'])} " \
                         f"(best is {results[plot_number]['properties'][category]['max_possible_value']}, " \
                         f"worst is {results[plot_number]['properties'][category]['min_possible_value']})\n"
-        plt.text(0, positions[len(categories)], text, transform=ax.transAxes, size="small")
+        # plt.text(0, positions[len(categories)], text, transform=ax.transAxes, size="small")
+        plt.text(1.7, 0, text, transform=ax.transAxes, size="small")
 
     def _initialise_spider_plot(self, plot_number, results):
         is_component_word_operation = results[plot_number]["type"] == "word_operation"
