@@ -172,13 +172,12 @@ class Report:
                               show_and,
                               show_or, show_not, show_plaintext, show_key,
                               show_intermediate_output, show_cipher_output, show_input, show_output, save_fig=False)
-
-
+            return
         elif 'component_analysis' in self.test_name:
             Component_Analysis=CipherComponentsAnalysis(self.cipher)
             Component_Analysis.print_component_analysis_as_radar_charts(results=self.test_report['test_results'])
             return
-        elif 'avalanche' in self.test_name:
+        elif 'avalanche_tests' == self.test_name:
             test_list = self.test_report['test_results']['plaintext']['round_output'].keys()
             if test_name not in test_list:
                 print('Error! Invalid test name. Please choose a valid test name')
@@ -191,7 +190,7 @@ class Report:
                 print('The input difference value has to be one of the following :', end='')
                 print(input_diff_values)
                 return
-        elif 'differential_distinguisher' in self.test_name:
+        elif 'neural_network_differential_distinguisher' in self.test_name:
             input_diff_values = [x['input_difference_value'] for x in self.test_report['test_results']['plaintext']['round_output']['neural_network_differential_distinguisher']]
             if fixed_input_difference not in input_diff_values:
                 print('Error! Invalid input difference value. Please choose a valid input difference value')

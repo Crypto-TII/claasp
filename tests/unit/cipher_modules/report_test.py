@@ -155,7 +155,7 @@ def test_show():
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(speck,avalanche_results)
-    avalanche_report.show()
+    avalanche_report.show('avalanche_weight_vectors')
 
     milp = MilpXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
