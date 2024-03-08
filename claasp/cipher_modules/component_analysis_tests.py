@@ -488,7 +488,6 @@ class CipherComponentsAnalysis:
         INPUT:
 
         - ``operation`` -- **list**; a list containing:
-
           * a component with the operation under study
           * number of occurrences of the operation
           * list of ids of all the components with the same underlying operation
