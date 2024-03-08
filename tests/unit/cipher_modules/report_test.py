@@ -13,6 +13,7 @@ from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
+
 def test_save_as_image():
     speck = SpeckBlockCipher(number_of_rounds=2)
     sat = SatXorDifferentialModel(speck)
@@ -93,7 +94,7 @@ def test_save_as_DataFrame():
     algebraic_report.save_as_DataFrame()
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
-    avalanche_report = Report(speck,avalanche_results)
+    avalanche_report = Report(speck, avalanche_results)
     avalanche_report.save_as_DataFrame()
 
     trail_report = Report(speck, trail)
@@ -102,6 +103,7 @@ def test_save_as_DataFrame():
     nist = StatisticalTests(speck)
     report_sts = Report(speck, nist.nist_statistical_tests('avalanche'))
     report_sts.save_as_DataFrame()
+
 
 def test_save_as_json():
     simon = SimonBlockCipher(number_of_rounds=3)
@@ -134,7 +136,7 @@ def test_save_as_json():
     algebraic_report.save_as_json()
 
     avalanche_results = AvalancheTests(simon).avalanche_tests()
-    avalanche_report = Report(simon,avalanche_results)
+    avalanche_report = Report(simon, avalanche_results)
     avalanche_report.save_as_json()
 
     trail_report.save_as_json()
@@ -150,25 +152,25 @@ def test_clean_reports():
     blackbox_report.save_as_json()
     blackbox_report.clean_reports()
 
-def test_show():
 
+def test_show():
     speck = SpeckBlockCipher(number_of_rounds=3)
     component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
-    report_cca = Report(speck,component_analysis)
+    report_cca = Report(speck, component_analysis)
     report_cca.show()
 
-
     result = NeuralNetworkTests(speck).run_autond_pipeline(optimizer_samples=10 ** 3, optimizer_generations=1,
-                                                            training_samples=10 ** 2, testing_samples=10 ** 2,
-                                                            number_of_epochs=1, verbose=False)
-    report_autond = Report(speck,result)
+                                                           training_samples=10 ** 2, testing_samples=10 ** 2,
+                                                           number_of_epochs=1, verbose=False)
+    report_autond = Report(speck, result)
     report_autond.show()
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
-    avalanche_report = Report(speck,avalanche_results)
-    avalanche_report.show(test_name='avalanche_weight_vectors')
-    avalanche_report.show()
-    avalanche_report.show(fixed_input_difference='a')
+    avalanche_report = Report(speck, avalanche_results)
+    avalanche_report.show(test_name=None)
+    avalanche_report.show(test_name='avalanche_weight_vectors', fixed_input_difference=None)
+    avalanche_report.show(test_name='avalanche_weight_vectors', fixed_input_difference='average')
+
     milp = MilpXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
         component_id='plaintext',
@@ -188,3 +190,8 @@ def test_show():
     nist = StatisticalTests(speck)
     report_sts = Report(speck, nist.nist_statistical_tests('avalanche'))
     report_sts.show()
+
+    neural_network_tests = NeuralNetworkTests(speck).neural_network_differential_distinguisher_tests()
+    neural_network_tests_report = Report(speck, neural_network_tests)
+    neural_network_tests_report.show(fixed_input_difference=None)
+    neural_network_tests_report.show(fixed_input_difference='0xa')

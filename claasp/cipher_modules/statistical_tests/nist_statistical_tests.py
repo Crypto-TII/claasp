@@ -629,12 +629,10 @@ class StatisticalTests:
             sts_execution_time = time.time() - sts_execution_time
             try:
                 shutil.move(nist_local_experiment_folder, report_folder_round)
-            except OSError as e:
-                print(f'Error: {e.strerror}')
-                print(
-                    f'Please remove the existed folder {report_folder_round} '
-                    f'or indicate another folder for saving the NIST STS reports.')
-                continue
+            except OSError:
+                shutil.rmtree(report_folder_round)
+                shutil.move(nist_local_experiment_folder, report_folder_round)
+
             self._write_execution_time(f'Compute round {round_number}', sts_execution_time)
 
             try:
