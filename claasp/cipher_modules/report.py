@@ -612,9 +612,9 @@ class Report:
         elif 'statistical' in self.test_name:
             if 'dieharder' in self.test_name:
                 for dict in self.test_report['test_results']:
-                    DieharderTests.generate_chart_round(dict,
+                    DieharderTests._generate_chart_round(dict,
                                                          output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
-                DieharderTests.generate_chart_all(self.test_report['test_results'],
+                DieharderTests._generate_chart_all(self.test_report['test_results'],
                                                    output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
 
             elif 'nist' in self.test_name:
