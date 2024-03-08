@@ -69,14 +69,19 @@ class AlgebraicTests:
             if tests_up_to_round and tests_up_to_round[-1] is True:
                 tests_up_to_round.append(True)
             else:
-                from cysignals.alarm import alarm, cancel_alarm
+                from cysignals.alarm import alarm, cancel_alarm, AlarmInterrupt
 
                 try:
                     alarm(timeout)
+                    Fseq.groebner_basis()
                     cancel_alarm()
                     result = False
-                except InterruptedError:
+                except AlarmInterrupt:
                     result = True
+                except Exception as e:  # Handles other exceptions if required
+                    print(f"An error occurred: {e}")
+                    result = False
+
 
                 tests_up_to_round.append(result)
 
