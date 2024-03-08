@@ -146,7 +146,7 @@ class NeuralNetworkTests:
         # cipher_output = base_output
 
         base_inputs_np = [np.broadcast_to(
-            np.array([b for b in x.to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
+            np.array([b for b in int(x).to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
             (nb_samples, input_lengths[i] // 8)
         ).transpose().copy() for i, x in enumerate(base_inputs)]
         random_inputs_for_index = np.frombuffer(os.urandom(nb_samples * input_lengths[index] // 8),
@@ -313,7 +313,7 @@ class NeuralNetworkTests:
         random_labels_size = nb_samples - np.count_nonzero(np.array(labels))
 
         base_inputs_np = [np.broadcast_to(
-            np.array([b for b in x.to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
+            np.array([b for b in int(x).to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
             (nb_samples, input_lengths[i] // 8)
         ).transpose().copy() for i, x in enumerate(base_inputs)]
         random_inputs_for_index = np.frombuffer(os.urandom(nb_samples * input_lengths[index] // 8),
@@ -323,7 +323,7 @@ class NeuralNetworkTests:
 
         other_inputs_np = list(base_inputs_np)
 
-        d_array = np.array([b for b in d.to_bytes(input_lengths[index] // 8, byteorder='big')])
+        d_array = np.array([b for b in int(d).to_bytes(input_lengths[index] // 8, byteorder='big')])
         other_inputs_np[index] = other_inputs_np[index] ^ np.broadcast_to(d_array, (
             nb_samples, input_lengths[index] // 8)).transpose()
 
