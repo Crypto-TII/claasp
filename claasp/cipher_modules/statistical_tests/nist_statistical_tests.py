@@ -131,7 +131,8 @@ class StatisticalTests:
             self.number_of_samples = self.number_of_samples_in_one_sequence * (self.number_of_sequences + 1)
             self.bits_in_one_sequence = sample_size * self.number_of_samples_in_one_sequence
 
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
+
             dataset = self.data_generator.generate_avalanche_dataset(input_index=self.input_index,
                                                                      number_of_samples=self.number_of_samples)
 
@@ -149,8 +150,7 @@ class StatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
 
             dataset = self.data_generator.generate_correlation_dataset(input_index=self.input_index,
                                                                        number_of_samples=self.number_of_samples,
@@ -169,8 +169,7 @@ class StatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
 
             dataset = self.data_generator.generate_cbc_dataset(input_index=self.input_index,
                                                                number_of_samples=self.number_of_samples,
@@ -188,8 +187,7 @@ class StatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
 
             dataset = self.data_generator.generate_random_dataset(input_index=self.input_index,
                                                                   number_of_samples=self.number_of_samples,
@@ -210,8 +208,7 @@ class StatisticalTests:
             ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
             self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
 
             dataset = self.data_generator.generate_low_density_dataset(input_index=self.input_index,
                                                                        number_of_samples=self.number_of_samples,
@@ -231,8 +228,7 @@ class StatisticalTests:
             ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
             self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
 
             dataset = self.data_generator.generate_high_density_dataset(input_index=self.input_index,
                                                                         number_of_samples=self.number_of_samples,
@@ -546,9 +542,6 @@ class StatisticalTests:
         x = [i + 1 for i in range(report_dict_list[0]["rounds"])]
         y = [0 for _ in range(report_dict_list[0]["rounds"])]
         for i in range(len(report_dict_list)):
-            print(report_dict_list[i]["round"])
-            print(len(y))
-            print()
             y[report_dict_list[i]["round"]-1] = report_dict_list[i]["passed_tests"]
 
         random_round = -1
@@ -582,9 +575,9 @@ class StatisticalTests:
             plt.close()
         print(f'Drawing chart for all rounds is in finished.')
 
-    def _create_report_folder(self):
+    def _create_report_folder(self,statistical_test_option_list):
         self.report_folder = os.path.join(self.folder_prefix,
-                                          f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences}lines_{self.bits_in_one_sequence}bits')
+                                          f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences}lines_{self.bits_in_one_sequence}bits_{statistical_test_option_list}test_option_list')
         try:
             os.makedirs(self.report_folder)
         except OSError:
@@ -632,12 +625,10 @@ class StatisticalTests:
             sts_execution_time = time.time() - sts_execution_time
             try:
                 shutil.move(nist_local_experiment_folder, report_folder_round)
-            except OSError as e:
-                print(f'Error: {e.strerror}')
-                print(
-                    f'Please remove the existed folder {report_folder_round} '
-                    f'or indicate another folder for saving the NIST STS reports.')
-                continue
+            except OSError:
+                shutil.rmtree(report_folder_round)
+                shutil.move(nist_local_experiment_folder, report_folder_round)
+
             self._write_execution_time(f'Compute round {round_number}', sts_execution_time)
 
             try:
