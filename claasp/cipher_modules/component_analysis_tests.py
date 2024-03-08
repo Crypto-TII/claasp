@@ -153,16 +153,19 @@ class CipherComponentsAnalysis:
         plt.rcParams['figure.figsize'] = [20, 20]
 
         # remove XOR from results
-        results_without_xor = [results[i] for i in range(len(results)) if results[i]["description"][0] != "XOR"]
-        results = self._remove_components_with_strings_as_values(results_without_xor)
+        # results_without_xor = [results[i] for i in range(len(results)) if results[i]["description"][0] != "XOR"]
+        results_without_fsr = [results[i] for i in range(len(results)) if results[i]["type"] != "fsr"]
+        # removed for now because the fsr dictionary does not follow the standard structure as the other components:
+        # the keys properties, values, etc are not present.
+        # results = self._remove_components_with_strings_as_values(results_without_xor)
+        results = self._remove_components_with_strings_as_values(results_without_fsr)
 
         nb_plots = len(results)
         col = 2
         row = nb_plots // col
         if nb_plots % col != 0:
             row += nb_plots % col
-        positions = {8: -0.7, 3: -0.4}
-        # positions = {8: 1, 3: -3}
+        positions = {8: -0.7, 3: -0.4} # positions of the text according to the numbers of properties
 
         for plot_number in range(nb_plots):
             categories = list(results[plot_number]["properties"].keys())
@@ -212,10 +215,12 @@ class CipherComponentsAnalysis:
             self._fill_area(ax, categories, plot_number, positions, results)
 
         # Show the graph
-        plt.subplots_adjust(left=0.02, bottom=0.1, right=0.7, top=0.95, wspace=1, hspace=0.96)
+        if nb_plots >= 5:
+            plt.subplots_adjust(left=0.02, bottom=0.1, right=0.7, top=0.95, wspace=1, hspace=0.96)
+        else:
+            plt.subplots_adjust(left=0.09, bottom=0.3, right=0.7, top=0.7, wspace=1, hspace=0.96)
         plt.show()
         #print("The radar chart can be plot with the build-in method plt.show()")
-
         #return plt
 
 
@@ -426,11 +431,8 @@ class CipherComponentsAnalysis:
         if component.type == 'fsr':
             return self._fsr_properties(operation)
 
-        if component.type == WORD_OPERATION:
-            print(f"TODO: {component.description[0]} not implemented yet")
-            return {}
         else:
-            print(f"TODO: {component.type} not implemented yet")
+            # print(f"TODO: not implemented yet")
             return {}
 
     def _is_mds(self, component):
@@ -885,7 +887,7 @@ class CipherComponentsAnalysis:
                         f"(best is {results[plot_number]['properties'][category]['max_possible_value']}, " \
                         f"worst is {results[plot_number]['properties'][category]['min_possible_value']})\n"
         # plt.text(0, positions[len(categories)], text, transform=ax.transAxes, size="small")
-        plt.text(1.7, 0, text, transform=ax.transAxes, size="small")
+        plt.text(2, 0, text, transform=ax.transAxes, size="small")
 
     def _initialise_spider_plot(self, plot_number, results):
         is_component_word_operation = results[plot_number]["type"] == "word_operation"
