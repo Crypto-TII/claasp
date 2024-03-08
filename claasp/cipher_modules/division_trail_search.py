@@ -12,21 +12,21 @@ class MilpDivisionTrailModel():
     EXAMPLES::
 
         sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-        sage: cipher = AsconPermutation(number_of_rounds=1)
+        sage: cipher = AsconPermutation(number_of_rounds=2)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation import AsconSboxSigmaNoMatrixPermutation
-        sage: cipher = AsconSboxSigmaNoMatrixPermutation(number_of_rounds=1)
+        sage: cipher = AsconSboxSigmaNoMatrixPermutation(number_of_rounds=2)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
-        sage: cipher = GastonPermutation(number_of_rounds=1)
+        sage: cipher = GastonPermutation(number_of_rounds=2)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
@@ -117,11 +117,18 @@ class MilpDivisionTrailModel():
         sage: milp.find_anf_for_specific_output_bit(1)
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-        sage: cipher = SimonBlockCipher(number_of_rounds=1)
+        sage: cipher = SimonBlockCipher(number_of_rounds=2)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
+        sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=1)
+        sage: modadd_component = cipher.get_component_from_id('modadd_0_1')
+        sage: boolean_polynomial_ring = CipherComponentsAnalysis(cipher)._generate_boolean_polynomial_ring_from_cipher()
+        sage: boolean_polynomials = CipherComponentsAnalysis(cipher)._MODADD_as_boolean_function(modadd_component, boolean_polynomial_ring)
 
     """
 
@@ -134,6 +141,7 @@ class MilpDivisionTrailModel():
     def build_gurobi_model(self):
         model = Model()
         model.Params.LogToConsole = 0
+        model.Params.Threads = 32 # best found experimentaly on ascon_sbox_2rounds
         model.setParam("PoolSolutions", 200000000) # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
@@ -605,67 +613,67 @@ class MilpDivisionTrailModel():
         print(f"solving_time : {solving_time}")
         solCount = self._model.SolCount
         print('Number of solutions (might cancel each other) found: ' + str(solCount))
-        monomials = []
-        for sol in range(solCount):
-            self._model.setParam(GRB.Param.SolutionNumber, sol)
-            values = self._model.Xn
-            # print(values[:64])
-            # print(values[64:128])
-            # print(values[128:192])
-            # print(values[192:256])
-            # print(values[256:320])
-            # print("################")
+        # monomials = []
+        # for sol in range(solCount):
+        #     self._model.setParam(GRB.Param.SolutionNumber, sol)
+        #     values = self._model.Xn
+        #     # print(values[:64])
+        #     # print(values[64:128])
+        #     # print(values[128:192])
+        #     # print(values[192:256])
+        #     # print(values[256:320])
+        #     # print("################")
 
-            # Simon 1 round
-            # print("plaintext")
-            # print(values[:32])
-            # print("copy plaintext")
-            # print(values[32:48])
-            # print(values[48:64])
-            # print(values[64:80])
-            # print(values[80:96])
-            # print(values[96:112])
-            # print("key")
-            # print(values[112:176])
-            # print("rots")
-            # print(values[224:240])
-            # print(values[240:256])
-            # print(values[256:272])
-            # print("and")
-            # print(values[272:288])
-            # print("xors")
-            # print(values[288:304])
-            # print(values[304:320])
-            # print("################")
-            # print(len(values))
+        #     # Simon 1 round
+        #     # print("plaintext")
+        #     # print(values[:32])
+        #     # print("copy plaintext")
+        #     # print(values[32:48])
+        #     # print(values[48:64])
+        #     # print(values[64:80])
+        #     # print(values[80:96])
+        #     # print(values[96:112])
+        #     # print("key")
+        #     # print(values[112:176])
+        #     # print("rots")
+        #     # print(values[224:240])
+        #     # print(values[240:256])
+        #     # print(values[256:272])
+        #     # print("and")
+        #     # print(values[272:288])
+        #     # print("xors")
+        #     # print(values[288:304])
+        #     # print(values[304:320])
+        #     # print("################")
+        #     # print(len(values))
 
-            # tmp = []
-            # for index, v in enumerate(values[:max_input_bit_pos]):
-            #     if v == 1:
-            #         tmp.append(index)
-            # monomials.append(tmp)
+        #     # tmp = []
+        #     # for index, v in enumerate(values[:max_input_bit_pos]):
+        #     #     if v == 1:
+        #     #         tmp.append(index)
+        #     # monomials.append(tmp)
 
-            tmp = []
-            for index, v in enumerate(values[:max_input_bit_pos]):
-                if v == 1:
-                    if len(self._cipher.inputs_bit_size) > 1:
-                        if index < self._cipher.inputs_bit_size[0]:
-                            tmp.append(index)
-                        elif index_second_input <= index < index_second_input + self._cipher.inputs_bit_size[1]:
-                            tmp.append(index)
-                    else:
-                        if index < self._cipher.inputs_bit_size[0]:
-                            tmp.append(index)
-            monomials.append(tmp)
+        #     tmp = []
+        #     for index, v in enumerate(values[:max_input_bit_pos]):
+        #         if v == 1:
+        #             if len(self._cipher.inputs_bit_size) > 1:
+        #                 if index < self._cipher.inputs_bit_size[0]:
+        #                     tmp.append(index)
+        #                 elif index_second_input <= index < index_second_input + self._cipher.inputs_bit_size[1]:
+        #                     tmp.append(index)
+        #             else:
+        #                 if index < self._cipher.inputs_bit_size[0]:
+        #                     tmp.append(index)
+        #     monomials.append(tmp)
 
-        # print(monomials)
-        monomials_with_occurences = [x+[monomials.count(x)] for x in monomials]
-        # print(monomials_with_occurences)
-        monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
-        # print(monomials_duplicates_removed)
-        monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
-        # print(monomials_even_occurences_removed)
-        self.pretty_print(monomials_even_occurences_removed)
+        # # print(monomials)
+        # monomials_with_occurences = [x+[monomials.count(x)] for x in monomials]
+        # # print(monomials_with_occurences)
+        # monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
+        # # print(monomials_duplicates_removed)
+        # monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
+        # # print(monomials_even_occurences_removed)
+        # self.pretty_print(monomials_even_occurences_removed)
         return self._model
 
     def check_presence_of_particular_monomial_in_specific_anf(self, monomial, output_bit_index):
@@ -780,51 +788,4 @@ def test():
             print("######## different")
             return 0
     print("######## equal")
-
-
-# ###### Script 1: Component analysis on AES ######
-# # The dictionary returned containts several information on the mixcolumn component of AES, like the order of the matrix,
-# # as well as its differential and linear branch number, and others.
-
-# from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-# from claasp.cipher_modules.component_analysis_tests import *
-# aes = AESBlockCipher(number_of_rounds=2)
-# components_analysis = CipherComponentsAnalysis(aes).component_analysis_tests()
-# print(components_analysis[-1])
-
-# ###### Script 2: Component analysis on Midori ######
-# # The dictionary returned containts several information on the sbox component of Midori, like the differential uniformity,
-# # as well as its differential uniformity, max degree and others.
-
-# from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-# cipher = MidoriBlockCipher(number_of_rounds=2)
-# components_analysis = CipherComponentsAnalysis(cipher).component_analysis_tests()
-# print(components_analysis[1])
-
-# ###### Script 1: Avalanche probability vectors ######
-# # The vector returned by the following commands corresponds to the probablity of flipping of each output bits after j+1 rounds
-# # when the difference is injected in position i in the key.
-
-# from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-# speck = speck(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-# from claasp.cipher_modules.avalanche_tests import AvalancheTests
-# test = AvalancheTests(speck)
-# apvs = test.avalanche_probability_vectors(100)
-# print(apvs["plaintext"]["round_output"][0][3])
-
-# ###### Script 2: Avalanche tests: Avalanche dependence uniform ######
-# # The vector returned by the following commands correspond to the avalanche dependence uniform after j+1 rounds, when an input
-# # difference has been injected in position i in the plaintext. It outputs 1 when the probabiliy of flipping is close to 0.5
-# # relatively to a certain bias (0.05 by default), 0 otherwise.
-
-# from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-# speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-# from claasp.cipher_modules.avalanche_tests import AvalancheTests
-# test = AvalancheTests(speck)
-# d = test.avalanche_tests(number_of_samples=100)
-# print(d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_uniform_vectors"][0]["vectors"][2])
-
-
-
-
 
