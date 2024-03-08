@@ -478,7 +478,7 @@ class Report:
 
                 value = self.test_report['components_values'][comp_id]['value']
 
-                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value)) if value[:2] != '0x' else 4 * len(value[2:])) if '*' not in value else list(
+                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value) if value[:2] != '0x' else 4 * len(value[2:]))) if '*' not in value else list(
                     value[2:])
 
                 word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
