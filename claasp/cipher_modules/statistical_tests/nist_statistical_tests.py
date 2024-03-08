@@ -110,6 +110,7 @@ class StatisticalTests:
         dataset_generate_time = time.time()
 
         self.folder_prefix = os.getcwd() + '/test_reports/' + nist_report_folder_prefix
+        self._create_report_folder(statistical_test_option_list)
 
         if round_end == 0:
             round_end = self.cipher.number_of_rounds
@@ -131,7 +132,6 @@ class StatisticalTests:
             self.number_of_samples = self.number_of_samples_in_one_sequence * (self.number_of_sequences + 1)
             self.bits_in_one_sequence = sample_size * self.number_of_samples_in_one_sequence
 
-            self._create_report_folder()
             dataset = self.data_generator.generate_avalanche_dataset(input_index=self.input_index,
                                                                      number_of_samples=self.number_of_samples)
 
@@ -149,8 +149,6 @@ class StatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
 
             dataset = self.data_generator.generate_correlation_dataset(input_index=self.input_index,
                                                                        number_of_samples=self.number_of_samples,
@@ -170,8 +168,6 @@ class StatisticalTests:
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = number_of_blocks_in_one_sample * self.cipher.output_bit_size
 
-            self._create_report_folder()
-
             dataset = self.data_generator.generate_cbc_dataset(input_index=self.input_index,
                                                                number_of_samples=self.number_of_samples,
                                                                number_of_blocks_in_one_sample=number_of_blocks_in_one_sample)
@@ -188,8 +184,6 @@ class StatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
 
             dataset = self.data_generator.generate_random_dataset(input_index=self.input_index,
                                                                   number_of_samples=self.number_of_samples,
@@ -211,8 +205,6 @@ class StatisticalTests:
             self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
 
-            self._create_report_folder()
-
             dataset = self.data_generator.generate_low_density_dataset(input_index=self.input_index,
                                                                        number_of_samples=self.number_of_samples,
                                                                        ratio=ratio)
@@ -231,8 +223,6 @@ class StatisticalTests:
             ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
             self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
 
             dataset = self.data_generator.generate_high_density_dataset(input_index=self.input_index,
                                                                         number_of_samples=self.number_of_samples,
@@ -579,9 +569,9 @@ class StatisticalTests:
             plt.close()
         print(f'Drawing chart for all rounds is in finished.')
 
-    def _create_report_folder(self):
+    def _create_report_folder(self,statistical_test_option_list):
         self.report_folder = os.path.join(self.folder_prefix,
-                                          f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences}lines_{self.bits_in_one_sequence}bits')
+                                          f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences}lines_{self.bits_in_one_sequence}bits_{statistical_test_option_list}test_option_list')
         try:
             os.makedirs(self.report_folder)
         except OSError:
