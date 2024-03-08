@@ -7,7 +7,7 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.report import Report
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
 from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
@@ -69,7 +69,7 @@ def test_save_as_latex_table():
     trail_report = Report(simon, trail)
     trail_report.save_as_latex_table()
 
-    nist = StatisticalTests(simon)
+    nist = NISTStatisticalTests(simon)
     report_sts = Report(simon, nist.nist_statistical_tests('avalanche'))
     report_sts.save_as_latex_table()
 
@@ -100,7 +100,7 @@ def test_save_as_DataFrame():
     trail_report = Report(speck, trail)
     trail_report.save_as_DataFrame()
 
-    nist = StatisticalTests(speck)
+    nist = NISTStatisticalTests(speck)
     report_sts = Report(speck, nist.nist_statistical_tests('avalanche'))
     report_sts.save_as_DataFrame()
 
@@ -111,7 +111,7 @@ def test_save_as_json():
         simon).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(simon, neural_network_blackbox_distinguisher_tests_results)
 
-    nist = StatisticalTests(simon)
+    nist = NISTStatisticalTests(simon)
     report_sts = Report(simon, nist.nist_statistical_tests('avalanche'))
     report_sts.save_as_json()
 
@@ -187,7 +187,7 @@ def test_show():
     trail_report = Report(speck, trail)
     trail_report.show()
 
-    nist = StatisticalTests(speck)
+    nist = NISTStatisticalTests(speck)
     report_sts = Report(speck, nist.nist_statistical_tests('avalanche'))
     report_sts.show()
 

@@ -7,7 +7,7 @@ import pandas as pd
 import json
 import shutil
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
 def _print_colored_state(state, verbose, file):
@@ -612,17 +612,17 @@ class Report:
         elif 'statistical' in self.test_name:
             if 'dieharder' in self.test_name:
                 for dict in self.test_report['test_results']:
-                    DieharderTests.generate_chart_round(dict,
+                    DieharderTests._generate_chart_round(dict,
                                                          output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
-                DieharderTests.generate_chart_all(self.test_report['test_results'],
+                DieharderTests._generate_chart_all(self.test_report['test_results'],
                                                    output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
 
             elif 'nist' in self.test_name:
                 for dict in self.test_report['test_results']:
-                    StatisticalTests.generate_chart_round(dict,
-                                                           output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
-                StatisticalTests.generate_chart_all(self.test_report['test_results'],
-                                                     output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
+                    NISTStatisticalTests._generate_chart_round(dict,
+                                                               output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
+                NISTStatisticalTests._generate_chart_all(self.test_report['test_results'],
+                                                         output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
 
         elif 'algebraic' in self.test_name:
 
