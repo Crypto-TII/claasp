@@ -66,24 +66,19 @@ class AlgebraicTests:
             nmonomials_up_to_round.append(Fseq.nmonomials())
             max_deg_of_equations_up_to_round.append(Fseq.maximal_degree())
 
-            if tests_up_to_round and tests_up_to_round[-1] is True:
-                tests_up_to_round.append(True)
-            else:
-                from cysignals.alarm import alarm, cancel_alarm, AlarmInterrupt
+            from cysignals.alarm import alarm, cancel_alarm, AlarmInterrupt
+            try:
+                alarm(timeout)
+                Fseq.groebner_basis()
+                cancel_alarm()
+                result = False
+            except AlarmInterrupt:
+                result = True
+            except Exception as e:  # handles other exceptions
+                print(f"An error occurred: {e}")
+                result = False
 
-                try:
-                    alarm(timeout)
-                    Fseq.groebner_basis()
-                    cancel_alarm()
-                    result = False
-                except AlarmInterrupt:
-                    result = True
-                except Exception as e:  # handles other exceptions
-                    print(f"An error occurred: {e}")
-                    result = False
-
-
-                tests_up_to_round.append(result)
+            tests_up_to_round.append(result)
 
         input_parameters = {
             "cipher.id": self._cipher.id,
