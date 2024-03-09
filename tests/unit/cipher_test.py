@@ -72,9 +72,9 @@ def test_algebraic_tests():
                   'test_passed': [True]}}
 
     aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
-    d = AlgebraicTests(aes).algebraic_tests(1)
+    d = AlgebraicTests(aes).algebraic_tests(5)
     compare_result = {'input_parameters': {'cipher.id': 'aes_block_cipher_k16_p16_o16_r1',
-                      'timeout': 1,
+                      'timeout': 5,
                       'test_name': 'algebraic_tests'},
                      'test_results': {'number_of_variables': [320],
                       'number_of_equations': [390],
