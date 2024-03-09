@@ -78,7 +78,7 @@ class AlgebraicTests:
                     result = False
                 except AlarmInterrupt:
                     result = True
-                except Exception as e:  # Handles other exceptions if required
+                except Exception as e:  # handles other exceptions
                     print(f"An error occurred: {e}")
                     result = False
 

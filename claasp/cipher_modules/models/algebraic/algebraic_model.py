@@ -205,6 +205,10 @@ class AlgebraicModel:
             if component_type in component_types or (component_type == "word_operation" and operation in operations):
                 polynomials += component.algebraic_polynomials(self)
 
+            elif component_type == "word_operation" and \
+                    operation in ['ROTATE_BY_VARIABLE_AMOUNT', 'SHIFT_BY_VARIABLE_AMOUNT', 'MODSUB']:
+                raise ValueError(f"polynomial generation of {operation} operation is not supported at present")
+
         return Sequence(polynomials)
 
     def ring(self):
