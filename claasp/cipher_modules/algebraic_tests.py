@@ -74,9 +74,6 @@ class AlgebraicTests:
                 result = False
             except AlarmInterrupt:
                 result = True
-            except Exception as e:  # handles other exceptions
-                print(f"An error occurred: {e}")
-                result = False
 
             tests_up_to_round.append(result)
 
