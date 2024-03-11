@@ -25,7 +25,8 @@ from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_prin
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_DIFFERENTIAL, MILP_PROBABILITY_SUFFIX, \
     MILP_BUILDING_MESSAGE, MILP_XOR_DIFFERENTIAL_OBJECTIVE
 from claasp.cipher_modules.models.milp.utils.utils import _string_to_hex, _get_variables_values_as_string
-from claasp.cipher_modules.models.utils import integer_to_bit_list, set_component_solution
+from claasp.cipher_modules.models.utils import integer_to_bit_list, set_component_solution, \
+    get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
 
@@ -99,6 +100,8 @@ class MilpXorDifferentialModel(MilpModel):
         """
         variables = []
         self._variables_list = []
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_constraints(fixed_variables)
         component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION]
         operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
@@ -124,6 +127,7 @@ class MilpXorDifferentialModel(MilpModel):
                                                            solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return all the XOR differential trails with weight equal to ``fixed_weight`` as a list in standard format.
+        By default, the search is set in the single key setting.
 
         .. SEEALSO::
 
@@ -324,7 +328,7 @@ class MilpXorDifferentialModel(MilpModel):
                                                              fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return all XOR differential trails with weight greater than ``min_weight`` and lower/equal to ``max_weight``.
-
+        By default, the search is set in the single key setting.
         The value returned is a list of solutions in standard format.
 
         .. SEEALSO::
@@ -365,6 +369,9 @@ class MilpXorDifferentialModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         end = time.time()
         building_time = end - start
+
+        if fixed_values == []:
+            fixed_values = get_single_key_scenario_format_for_fixed_values(self._cipher)
         inputs_ids = self._cipher.inputs
         if self.is_single_key(fixed_values):
             inputs_ids = [i for i in self._cipher.inputs if "key" not in i]
@@ -403,6 +410,7 @@ class MilpXorDifferentialModel(MilpModel):
                                                   external_solver_name=False):
         """
         Return a XOR differential trail with the lowest weight in standard format, i.e. the solver solution.
+        By default, the search is set in the single key setting.
 
         .. SEEALSO::
 
@@ -445,6 +453,7 @@ class MilpXorDifferentialModel(MilpModel):
     def find_one_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return a XOR differential trail, not necessarily the one with the lowest weight.
+        By default, the search is set in the single key setting.
 
         INPUT:
 
@@ -484,6 +493,7 @@ class MilpXorDifferentialModel(MilpModel):
                                                           solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return one XOR differential trail with weight equal to ``fixed_weight`` as a list in standard format.
+        By default, the search is set in the single key setting.
 
         INPUT:
 

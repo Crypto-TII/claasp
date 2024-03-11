@@ -30,9 +30,9 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_
     MILP_BUILDING_MESSAGE, MILP_XOR_LINEAR_OBJECTIVE
 from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, _string_to_hex
 from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list, \
-    set_component_solution
+    set_component_solution, get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (INTERMEDIATE_OUTPUT, CONSTANT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
-                                  WORD_OPERATION)
+                                  WORD_OPERATION, INPUT_KEY)
 
 
 class MilpXorLinearModel(MilpModel):
@@ -156,6 +156,11 @@ class MilpXorLinearModel(MilpModel):
         """
         self._variables_list = []
         variables = []
+        if INPUT_KEY not in [variable["component_id"] for variable in fixed_variables]:
+            self._cipher = self._cipher.remove_key_schedule()
+            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self.cipher, '_'.join)
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
 
@@ -245,9 +250,10 @@ class MilpXorLinearModel(MilpModel):
 
         return constraints
 
-    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=None, solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return all the XOR linear trails with weight equal to ``fixed_weight`` as a solutions list in standard format.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         .. SEEALSO::
@@ -262,7 +268,7 @@ class MilpXorLinearModel(MilpModel):
         INPUT:
 
         - ``fixed_weight`` -- **integer**; the weight found using :py:meth:`~find_lowest_weight_xor_linear_trail`
-        - ``fixed_values`` -- **list** (default: `None`); each dictionary contains variables values whose output need
+        - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need
           to be fixed
         - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
 
@@ -286,10 +292,7 @@ class MilpXorLinearModel(MilpModel):
         verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
-        if not fixed_values:
-            input_size = self._cipher.inputs_bit_size[self._cipher.inputs.index("plaintext")]
-            list_of_0s = [0] * input_size
-            fixed_values.append(set_fixed_variables("plaintext", "not_equal", list(range(input_size)), list_of_0s))
+
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
         _, constraints = self.weight_xor_linear_constraints(fixed_weight)
         for constraint in constraints:
@@ -349,6 +352,7 @@ class MilpXorLinearModel(MilpModel):
                                                        solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return all XOR linear trails with weight greater than ``min_weight`` and lower than or equal to ``max_weight``.
+        By default, the search removes the key schedule, if any.
 
         The value returned is a list of solutions in standard format.
 
@@ -391,6 +395,8 @@ class MilpXorLinearModel(MilpModel):
         end = time.time()
         building_time = end - start
 
+        if fixed_values == []:
+            fixed_values = get_single_key_scenario_format_for_fixed_values(self._cipher)
         inputs_ids = self._cipher.inputs
         list_trails = []
         for weight in range(min_weight, max_weight + 1):
@@ -425,6 +431,7 @@ class MilpXorLinearModel(MilpModel):
     def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return a XOR linear trail with the lowest weight in standard format, i.e. the solver solution.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         .. SEEALSO::
@@ -484,6 +491,7 @@ class MilpXorLinearModel(MilpModel):
     def find_one_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return a XOR linear trail, not necessarily the one with the lowest weight.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         INPUT:
@@ -524,6 +532,7 @@ class MilpXorLinearModel(MilpModel):
                                                     solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return one XOR linear trail with weight equal to ``fixed_weight`` as a list in standard format.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         INPUT:

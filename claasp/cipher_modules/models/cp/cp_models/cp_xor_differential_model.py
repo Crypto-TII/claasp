@@ -22,6 +22,7 @@ import time as tm
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.models.cp.cp_model import CpModel, solve_satisfy
+from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, MIX_COLUMN, WORD_OPERATION,
                                   XOR_DIFFERENTIAL, LINEAR_LAYER)
 
@@ -138,6 +139,8 @@ class CpXorDifferentialModel(CpModel):
     def build_xor_differential_trail_model_template(self, weight, fixed_variables):
         variables = []
         self._variables_list = []
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_constraints(fixed_variables)
         component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION]
         operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
@@ -210,6 +213,7 @@ class CpXorDifferentialModel(CpModel):
     def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='Chuffed'):
         """
         Return a list of solutions containing all the differential trails having the ``fixed_weight`` weight.
+        By default, the search is set in the single key setting.
 
         INPUT:
 
@@ -253,7 +257,7 @@ class CpXorDifferentialModel(CpModel):
                                                              solver_name='Chuffed'):
         """
         Return a list of solutions containing all the differential trails.
-
+        By default, the search is set in the single key setting.
         The differential trails having the weight of correlation lying in the interval ``[min_weight, max_weight]``.
 
         INPUT:
@@ -311,8 +315,9 @@ class CpXorDifferentialModel(CpModel):
 
     def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name='Chuffed'):
         """
-        Return the solution representing a differential trail with the lowest weight of correlation.
-
+        Return the solution representing a differential trail with the lowest probability weight.
+        By default, the search is set in the single key setting.
+        
         .. NOTE::
 
             There could be more than one trail with the lowest weight. In order to find all the lowest weight
@@ -361,6 +366,7 @@ class CpXorDifferentialModel(CpModel):
     def find_one_xor_differential_trail(self, fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a differential trail with any weight.
+        By default, the search is set in the single key setting.
 
         INPUT:
 
@@ -403,7 +409,8 @@ class CpXorDifferentialModel(CpModel):
     def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[],
                                                           solver_name='Chuffed'):
         """
-        Return the solution representing a differential trail with the weight of correlation equal to ``fixed_weight``.
+        Return the solution representing a differential trail with the weight of probability equal to ``fixed_weight``.
+        By default, the search is set in the single key setting.
 
         INPUT:
 

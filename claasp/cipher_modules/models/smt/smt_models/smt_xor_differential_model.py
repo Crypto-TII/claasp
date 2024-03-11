@@ -21,7 +21,7 @@ import time
 
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.cipher_modules.models.smt.utils import constants, utils
-from claasp.cipher_modules.models.utils import set_component_solution
+from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX, WORD_OPERATION, XOR_DIFFERENTIAL)
 
@@ -59,6 +59,8 @@ class SmtXorDifferentialModel(SmtModel):
         """
         variables = []
         self._variables_list = []
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_constraints(fixed_variables)
         component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
         operation_types = ('AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR')
@@ -88,6 +90,7 @@ class SmtXorDifferentialModel(SmtModel):
     def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='z3'):
         """
         Return a list of solutions  containing all the XOR differential trails having the ``fixed_weight`` weight.
+        By default, the search is set in the single key setting.
 
         INPUT:
 
@@ -153,6 +156,7 @@ class SmtXorDifferentialModel(SmtModel):
                                                              solver_name='z3'):
         """
         Return a list of solutions.
+        By default, the search is set in the single key setting.
 
         The list contains all the XOR differential trails having the weight lying in the interval
         ``[min_weight, max_weight]``.
@@ -203,6 +207,7 @@ class SmtXorDifferentialModel(SmtModel):
     def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name='z3'):
         """
         Return the solution representing a trail with the lowest weight.
+        By default, the search is set in the single key setting.
 
         .. NOTE::
 
@@ -265,7 +270,7 @@ class SmtXorDifferentialModel(SmtModel):
     def find_one_xor_differential_trail(self, fixed_values=[], solver_name='z3'):
         """
         Return the solution representing a XOR differential trail.
-
+        By default, the search is set in the single key setting.
         The solution probability is almost always lower than the one of a random guess of the longest input.
 
         INPUT:
@@ -311,6 +316,7 @@ class SmtXorDifferentialModel(SmtModel):
     def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='z3'):
         """
         Return the solution representing a XOR differential trail whose probability is ``2 ** fixed_weight``.
+        By default, the search is set in the single key setting.
 
         INPUT:
 

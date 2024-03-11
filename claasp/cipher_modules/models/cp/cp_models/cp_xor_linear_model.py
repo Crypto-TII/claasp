@@ -23,9 +23,10 @@ import time as tm
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.models.cp.cp_model import CpModel, solve_satisfy, constraint_type_error
-from claasp.cipher_modules.models.utils import get_bit_bindings
+from claasp.cipher_modules.models.utils import get_bit_bindings, \
+    get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import INTERMEDIATE_OUTPUT, XOR_LINEAR, CONSTANT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, \
-    MIX_COLUMN, WORD_OPERATION
+    MIX_COLUMN, WORD_OPERATION, INPUT_KEY
 
 
 class CpXorLinearModel(CpModel):
@@ -131,6 +132,13 @@ class CpXorLinearModel(CpModel):
         self.component_and_probability = {}
         self._variables_list = []
         variables = []
+        if INPUT_KEY not in [variable["component_id"] for variable in fixed_variables]:
+            cipher_without_key_schedule = self._cipher.remove_key_schedule()
+            self._cipher = cipher_without_key_schedule
+            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(
+                self._cipher, lambda record: f'{record[0]}_{record[2]}[{record[1]}]')
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
 
@@ -210,6 +218,7 @@ class CpXorLinearModel(CpModel):
     def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='Chuffed'):
         """
         Return a list of solutions containing all the linear trails having the ``fixed_weight`` weight of correlation.
+        By default, the search removes the key schedule, if any.
 
         INPUT:
 
@@ -248,6 +257,7 @@ class CpXorLinearModel(CpModel):
                                                        fixed_values=[], solver_name='Chuffed'):
         """
         Return a list of solutions containing all the linear trails having the weight of correlation lying in the interval ``[min_weight, max_weight]``.
+        By default, the search removes the key schedule, if any.
 
         INPUT:
 
@@ -288,6 +298,7 @@ class CpXorLinearModel(CpModel):
     def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a linear trail with the lowest weight of correlation.
+        By default, the search removes the key schedule, if any.
 
         .. NOTE::
 
@@ -334,6 +345,7 @@ class CpXorLinearModel(CpModel):
     def find_one_xor_linear_trail(self, fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a linear trail with any weight of correlation.
+        By default, the search removes the key schedule, if any.
 
         INPUT:
 
@@ -376,6 +388,7 @@ class CpXorLinearModel(CpModel):
     def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a linear trail with the weight of correlation equal to ``fixed_weight``.
+        By default, the search removes the key schedule, if any.
 
         INPUT:
 
