@@ -5,34 +5,22 @@ from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import Smt
 
 def test_find_all_xor_linear_trails_with_weight_at_most():
     speck = SpeckBlockCipher(number_of_rounds=3)
-    smt = SmtXorLinearModel(speck.remove_key_schedule())
-    plaintext = set_fixed_variables(component_id='plaintext',
-                                    constraint_type='not_equal',
-                                    bit_positions=range(32),
-                                    bit_values=integer_to_bit_list(0, 32, 'big'))
-    trails = smt.find_all_xor_linear_trails_with_weight_at_most(0, 2, fixed_values=[plaintext])
+    smt = SmtXorLinearModel(speck)
+    trails = smt.find_all_xor_linear_trails_with_weight_at_most(0, 2)
     assert len(trails) == 187
 
 
 def test_find_lowest_weight_xor_linear_trail():
     speck = SpeckBlockCipher(number_of_rounds=3)
     smt = SmtXorLinearModel(speck)
-    plaintext = set_fixed_variables(component_id='plaintext',
-                                    constraint_type='not_equal',
-                                    bit_positions=range(32),
-                                    bit_values=integer_to_bit_list(0, 32, 'big'))
-    trail = smt.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])
-    assert trail['total_weight'] == 2.0
+    trail = smt.find_lowest_weight_xor_linear_trail()
+    assert trail['total_weight'] == 1.0
 
 
 def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(number_of_rounds=4)
     smt = SmtXorLinearModel(speck)
-    plaintext = set_fixed_variables(component_id='plaintext',
-                                    constraint_type='not_equal',
-                                    bit_positions=range(32),
-                                    bit_values=integer_to_bit_list(0, 32, 'big'))
-    solution = smt.find_one_xor_linear_trail(fixed_values=[plaintext])
+    solution = smt.find_one_xor_linear_trail()
     assert solution['cipher_id'] == 'speck_p32_k64_o32_r4'
     assert solution['solver_name'] == 'z3'
     assert eval('0x' + solution['components_values']['modadd_0_1_i']['value']) >= 0
@@ -46,11 +34,7 @@ def test_find_one_xor_linear_trail():
 def test_find_one_xor_linear_trail_with_fixed_weight():
     speck = SpeckBlockCipher(number_of_rounds=3)
     smt = SmtXorLinearModel(speck)
-    plaintext = set_fixed_variables(component_id='plaintext',
-                                    constraint_type='not_equal',
-                                    bit_positions=range(32),
-                                    bit_values=(0,) * 32)
-    result = smt.find_one_xor_linear_trail_with_fixed_weight(7, fixed_values=[plaintext])
+    result = smt.find_one_xor_linear_trail_with_fixed_weight(7)
     assert result['total_weight'] == 7.0
 
 

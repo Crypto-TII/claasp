@@ -21,9 +21,11 @@ import time
 
 from claasp.cipher_modules.models.sat.utils import constants, utils
 from claasp.cipher_modules.models.sat.sat_model import SatModel
-from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
+from claasp.cipher_modules.models.sat.utils.constants import OUTPUT_BIT_ID_SUFFIX, INPUT_BIT_ID_SUFFIX
+from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution, \
+    get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
-                                  MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR)
+                                  MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR, INPUT_KEY)
 
 
 class SatXorLinearModel(SatModel):
@@ -84,6 +86,11 @@ class SatXorLinearModel(SatModel):
         """
         self._variables_list = []
         variables = []
+        if INPUT_KEY not in [variable["component_id"] for variable in fixed_variables]:
+            self._cipher = self._cipher.remove_key_schedule()
+            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self._cipher, '_'.join)
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
         component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
@@ -110,6 +117,7 @@ class SatXorLinearModel(SatModel):
     def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='cryptominisat'):
         """
         Return a list of solutions containing all the XOR linear trails having weight equal to ``fixed_weight``.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail
 
         INPUT:
@@ -154,12 +162,12 @@ class SatXorLinearModel(SatModel):
                 value_to_avoid = int(value_as_hex_string, base=16)
                 bit_len = len(value_as_hex_string) * 4
                 minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                if component.endswith('_i') or component.endswith('_o'):
+                if component.endswith(INPUT_BIT_ID_SUFFIX) or component.endswith(OUTPUT_BIT_ID_SUFFIX):
                     component_id = component[:-2]
                     suffix = component[-2:]
                 else:
                     component_id = component
-                    suffix = '_o'
+                    suffix = OUTPUT_BIT_ID_SUFFIX
                 literals.extend([f'{minus[i]}{component_id}_{i}{suffix}' for i in range(bit_len)])
             self._model_constraints.append(' '.join(literals))
             solution = self.solve(XOR_LINEAR, solver_name=solver_name)
@@ -171,6 +179,7 @@ class SatXorLinearModel(SatModel):
                                                        solver_name='cryptominisat'):
         """
         Return a list of solutions.
+        By default, the search removes the key schedule, if any.
 
         The list contains all the XOR linear trails having the weight lying in the interval
         ``[min_weight, max_weight]``.
@@ -216,6 +225,7 @@ class SatXorLinearModel(SatModel):
     def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name='cryptominisat'):
         """
         Return the solution representing a XOR LINEAR trail with the lowest possible weight.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         .. NOTE::
@@ -274,6 +284,7 @@ class SatXorLinearModel(SatModel):
     def find_one_xor_linear_trail(self, fixed_values=[], solver_name='cryptominisat'):
         """
         Return the solution representing a XOR linear trail.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         The solution probability is almost always lower than the one of a random guess of the longest input.
@@ -322,6 +333,7 @@ class SatXorLinearModel(SatModel):
                                                     solver_name='cryptominisat'):
         """
         Return the solution representing a XOR linear trail whose weight is ``fixed_weight``.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         INPUT:

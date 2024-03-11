@@ -22,9 +22,10 @@ import time
 from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.cipher_modules.models.smt.utils.constants import INPUT_BIT_ID_SUFFIX, OUTPUT_BIT_ID_SUFFIX
-from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
+from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution, \
+    get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
-                                  MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR)
+                                  MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR, INPUT_KEY)
 
 
 class SmtXorLinearModel(SmtModel):
@@ -85,6 +86,11 @@ class SmtXorLinearModel(SmtModel):
         """
         self._variables_list = []
         variables = []
+        if INPUT_KEY not in [variable["component_id"] for variable in fixed_variables]:
+            self._cipher = self._cipher.remove_key_schedule()
+            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self._cipher, '_'.join)
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
 
@@ -145,6 +151,7 @@ class SmtXorLinearModel(SmtModel):
     def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='z3'):
         """
         Return a list of solutions containing all the XOR linear trails having weight equal to ``fixed_weight``.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         INPUT:
@@ -210,6 +217,7 @@ class SmtXorLinearModel(SmtModel):
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[], solver_name='z3'):
         """
         Return a list of solutions.
+        By default, the search removes the key schedule, if any.
 
         The list contains all the XOR linear trails having the weight lying in the interval
         ``[min_weight, max_weight]``.
@@ -255,6 +263,7 @@ class SmtXorLinearModel(SmtModel):
     def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name='z3'):
         """
         Return the solution representing a XOR LINEAR trail with the lowest possible weight.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         .. NOTE::
@@ -313,6 +322,7 @@ class SmtXorLinearModel(SmtModel):
     def find_one_xor_linear_trail(self, fixed_values=[], solver_name='z3'):
         """
         Return the solution representing a XOR linear trail.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         The solution probability is almost always lower than the one of a random guess of the longest input.
@@ -361,6 +371,7 @@ class SmtXorLinearModel(SmtModel):
                                                     solver_name='z3'):
         """
         Return the solution representing a XOR linear trail whose weight is ``fixed_weight``.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         INPUT:
