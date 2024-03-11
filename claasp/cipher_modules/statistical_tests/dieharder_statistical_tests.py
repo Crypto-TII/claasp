@@ -471,8 +471,8 @@ class DieharderTests:
 
     def _generate_dieharder_dicts(self, dataset, round_start, round_end, FLAG_CHART=False):
         dataset_folder = os.getcwd() + '/dataset'
-        dataset_filename = 'dieharder_input_' + self._cipher_primitive
-        dataset_filename = os.path.join(dataset_folder, dataset_filename, ".txt")
+        dataset_filename = 'dieharder_input_' + self._cipher_primitive +'.txt'
+        dataset_filename = os.path.join(dataset_folder, dataset_filename)
         dieharder_report_dicts = []
 
         if not os.path.exists(dataset_folder):
