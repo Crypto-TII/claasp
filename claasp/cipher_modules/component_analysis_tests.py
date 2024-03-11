@@ -67,7 +67,13 @@ class CipherComponentsAnalysis:
                 if result != {}:
                     components_analysis.append(result)
 
-        return components_analysis
+        output_dictionary = {
+            'input_parameters': {
+                'test_name': 'component_analysis'
+            },
+            'test_results': components_analysis
+        }
+        return output_dictionary
 
     def get_all_operations(self):
         """
@@ -114,7 +120,7 @@ class CipherComponentsAnalysis:
             self._add_attributes_to_operation(cipher_operations, operation, tmp_cipher_operations)
         return cipher_operations
 
-    def print_component_analysis_as_radar_charts(self):
+    def print_component_analysis_as_radar_charts(self, results=None):
         """
         Return a graph that can be plot to visualize the properties of all the operations of a cipher in a spider graph
 
@@ -123,41 +129,43 @@ class CipherComponentsAnalysis:
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: plot = CipherComponentsAnalysis(fancy).print_component_analysis_as_radar_charts()
-            sage: type(plot)
-            <class 'module'>
+            sage: CipherComponentsAnalysis(fancy).print_component_analysis_as_radar_charts()
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=3)
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
-            sage: plot = CipherComponentsAnalysis(speck).print_component_analysis_as_radar_charts()
-            sage: type(plot)
-            <class 'module'>
+            sage: CipherComponentsAnalysis(speck).print_component_analysis_as_radar_charts()
 
         """
-        results = self.component_analysis_tests()
+        if results==None:
+            results = self.component_analysis_tests()['test_results']
         SMALL_SIZE = 10
         MEDIUM_SIZE = 11
         BIG_SIZE = 12
 
-        plt.rc('font', size=SMALL_SIZE)  # controls default text sizes
+        plt.rc('font', size=BIG_SIZE)  # controls default text sizes
         plt.rc('axes', titlesize=SMALL_SIZE)  # fontsize of the axes title
         plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
         plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
         plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-        plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
+        plt.rc('legend', fontsize=BIG_SIZE)  # legend fontsize
         plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
+        plt.rcParams['figure.figsize'] = [20, 20]
 
         # remove XOR from results
-        results_without_xor = [results[i] for i in range(len(results)) if results[i]["description"][0] != "XOR"]
-        results = self._remove_components_with_strings_as_values(results_without_xor)
+        # results_without_xor = [results[i] for i in range(len(results)) if results[i]["description"][0] != "XOR"]
+        results_without_fsr = [results[i] for i in range(len(results)) if results[i]["type"] != "fsr"]
+        # removed for now because the fsr dictionary does not follow the standard structure as the other components:
+        # the keys properties, values, etc are not present.
+        # results = self._remove_components_with_strings_as_values(results_without_xor)
+        results = self._remove_components_with_strings_as_values(results_without_fsr)
 
         nb_plots = len(results)
         col = 2
         row = nb_plots // col
         if nb_plots % col != 0:
             row += nb_plots % col
-        positions = {8: -0.7, 3: -0.4}
+        positions = {8: -0.7, 3: -0.4} # positions of the text according to the numbers of properties
 
         for plot_number in range(nb_plots):
             categories = list(results[plot_number]["properties"].keys())
@@ -207,10 +215,13 @@ class CipherComponentsAnalysis:
             self._fill_area(ax, categories, plot_number, positions, results)
 
         # Show the graph
-        plt.subplots_adjust(left=0.25, bottom=0.1, right=0.7, top=0.95, wspace=0, hspace=0.96)
-        # plt.show()
-        print("The radar chart can be plot with the build-in method plt.show()")
-        return plt
+        if nb_plots >= 5:
+            plt.subplots_adjust(left=0.02, bottom=0.1, right=0.7, top=0.95, wspace=1, hspace=0.96)
+        else:
+            plt.subplots_adjust(left=0.09, bottom=0.3, right=0.7, top=0.7, wspace=1, hspace=0.96)
+        plt.show()
+        #print("The radar chart can be plot with the build-in method plt.show()")
+        #return plt
 
 
     def _AND_as_boolean_function(self, component, boolean_polynomial_ring):
@@ -269,7 +280,7 @@ class CipherComponentsAnalysis:
         elif component.description[0] == "MODADD":
             return self._MODADD_as_boolean_function(component, boolean_polynomial_ring)
         else:
-            return "TODO(...)"
+            return f"TODO: {component.id} not implemented yet"
 
 
     def _MODADD_as_boolean_function(self, component, boolean_polynomial_ring):
@@ -420,11 +431,8 @@ class CipherComponentsAnalysis:
         if component.type == 'fsr':
             return self._fsr_properties(operation)
 
-        if component.type == WORD_OPERATION:
-            print(f"TODO : {component.description[0]}")
-            return {}
         else:
-            print(f"TODO : {component.type}")
+            # print(f"TODO: not implemented yet")
             return {}
 
     def _is_mds(self, component):
@@ -480,7 +488,6 @@ class CipherComponentsAnalysis:
         INPUT:
 
         - ``operation`` -- **list**; a list containing:
-
           * a component with the operation under study
           * number of occurrences of the operation
           * list of ids of all the components with the same underlying operation
@@ -637,7 +644,7 @@ class CipherComponentsAnalysis:
             "min_possible_value": 1,
             "max_possible_value": pow(2, component.input_bit_size) - 1
         }
-        if component.input_bit_size <= 32:
+        if component.input_bit_size <= 64:
             dictio["properties"]["differential_branch_number"] = {"value": branch_number(component, 'differential', 'bit'),
                                                                   "min_possible_value": 0,
                                                                   "max_possible_value": component.input_bit_size}
@@ -878,7 +885,8 @@ class CipherComponentsAnalysis:
                 text += f"{category} = {int(results[plot_number]['properties'][category]['value'])} " \
                         f"(best is {results[plot_number]['properties'][category]['max_possible_value']}, " \
                         f"worst is {results[plot_number]['properties'][category]['min_possible_value']})\n"
-        plt.text(0, positions[len(categories)], text, transform=ax.transAxes, size="small")
+        # plt.text(0, positions[len(categories)], text, transform=ax.transAxes, size="small")
+        plt.text(2, 0, text, transform=ax.transAxes, size="small")
 
     def _initialise_spider_plot(self, plot_number, results):
         is_component_word_operation = results[plot_number]["type"] == "word_operation"

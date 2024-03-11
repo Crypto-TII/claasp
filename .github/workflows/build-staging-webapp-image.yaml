@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [ closed ]
     branches:
-      - main
+      - develop
 
 jobs:
   build-image:
@@ -40,7 +40,7 @@ jobs:
         context: .
         file: ./docker/Dockerfile
         push: true
-        tags: tiicrc/claasp-lib:latest
+        tags: tiicrc/claasp-lib-staging:latest
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
@@ -49,12 +49,24 @@ jobs:
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
+  commit-deployment-repo:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
     - name: Get current commit information
       run: |
-        git clone ${{ secrets.DEPLOYMENT_REPOSITORY }} deployment-repo
+        git clone ${{ secrets.DEPLOYMENT_REPOSITORY }} deployment-staging-repo
         git config --global user.name 'Github'
         git config --global user.email ${{ secrets.DEPLOYMENT_REPOSITORY_EMAIL }}
-        cd deployment-repo && echo "Date: $(date) Commit: $(git rev-parse HEAD)" >> claasp-dev.log
+        cd deployment-staging-repo
+        git checkout develop
+        echo "Date: $(date) Commit: $(git rev-parse HEAD)" >> claasp-dev.log
         git add claasp-dev.log
-        git commit -m "Updating deployment-repo from github"
-        git push origin master
+        git commit -m "Updating deployment-staging-repo from github"
+        git push origin develop
+    needs: build-image

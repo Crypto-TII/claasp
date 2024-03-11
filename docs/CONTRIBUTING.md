@@ -115,6 +115,8 @@ Build #PY-212.4746.96, built on July 27, 2021
 
 ## Python interpreter
 
+### Configuring PyCharm with a Local Interpreter
+
 We will now set up PyCharm to use the Python 3 interpreter of SageMath
    1. Click `PyCharm` menu in the top-left toolbar and select `Preferences...`
    2. Click the drop-down menu of `Project: claasp` and select `Python Interpreter`
@@ -130,7 +132,43 @@ After the steps above, you should now be able to:
 1. Click on `Add Configuration...`.
 2. Click on `Add new run configuration...`.
 3. Select "Python".
-4. Add the file to be run/debugged in the field "Script Path".
+4. Add the file to be run/debugged in the field "Script Path"
+
+### Configuring PyCharm with Docker as a Remote Interpreter
+```angular2html
+PyCharm 2023.3.3 (Professional Edition)
+Build #PY-233.13763.11, built on January 25, 2024
+```
+Configuring PyCharm to use Python from within a container involves setting up a remote interpreter. PyCharm supports Docker as a remote interpreter, allowing you to develop inside a Docker container which can encapsulate the project's environment, dependencies, and settings that CLAASP need. Here's how to set it up:
+
+#### Requirements
+- **Docker**: Ensure Docker is installed and running on your system.
+- **PyCharm 2023.3.3 (Professional Edition)**: The Docker integration feature is available in the Professional edition of PyCharm.
+
+#### Steps to Configure Docker as a Remote Interpreter in PyCharm
+
+1. **Open Your Project in PyCharm**: Start PyCharm and open the project you want to configure.
+
+2. **Install the Docker Plugin (if not already installed)**:
+    - Go to **Preferences** > **Plugins**.
+    - Search for "Docker" in the Marketplace tab and install the plugin.
+    - Restart PyCharm if necessary.
+
+3. **Configure Docker Connection**:
+    - Go to **Preferences** > **Build, Execution, Deployment** > **Docker**.
+    - Click the **+** button to add a new Docker configuration.
+    - PyCharm should automatically detect the Docker installation. Adjust settings if necessary.
+
+4. **Configure Project Interpreter**:
+    - Go to **Preferences** > **Project: [Your Project Name]** > **Python Interpreter**.
+    - Click on the gear icon and select **Add**.
+    - In the left-hand pane of the Add Python Interpreter dialog, select **On Docker**.
+    - Specify the docker image. You can choose your local image CLAASP or the public one from `hub.docker.com` called `tiicrc/claasp-lib`
+    - PyCharm will attempt to find the Python interpreter in the created image. You may need to specify the path to the Python executable if PyCharm cannot locate it automatically (commonly `/usr/bin/python3` or similar).
+
+5. **Apply and Save Changes**: Click **OK** to save your new interpreter settings.
+
+After completing these steps, PyCharm will use the Python interpreter from the specified Docker container for your CLAASP project. 
 
 ### Makefile configuration
 

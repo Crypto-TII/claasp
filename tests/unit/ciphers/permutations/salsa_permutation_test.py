@@ -1,5 +1,8 @@
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
-
+from claasp.ciphers.permutations.util import print_state_ids
+def test_print_state_ids():
+    salsa = SalsaPermutation(number_of_rounds=2)
+    print_state_ids(salsa.state_of_components)
 
 def test_salsa_permutation():
     salsa = SalsaPermutation()
