@@ -10,19 +10,17 @@ def test_build_xor_linear_trail_model():
     milp.init_model_in_sage_milp_class()
     milp.build_xor_linear_trail_model()
 
-    assert str(milp.model_constraints[0]) == 'x_16 == x_9'
-    assert str(milp.model_constraints[1]) == 'x_17 == x_10'
-    assert str(milp.model_constraints[2]) == 'x_18 == x_11'
-    assert str(milp.model_constraints[23759]) == 'x_12127 == x_12191'
-    assert str(milp.model_constraints[23760]) == 'x_12128 == x_12192'
+    assert str(milp.model_constraints[0]) == 'x_0 == x_1'
+    assert str(milp.model_constraints[1]) == 'x_2 == x_3'
+    assert str(milp.model_constraints[2]) == 'x_4 == x_5'
+    assert str(milp.model_constraints[12369]) == 'x_6400 == x_6432'
+    assert str(milp.model_constraints[12370]) == 'x_6401 == x_6433'
 
 
 def test_find_all_xor_linear_trails_with_fixed_weight():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=3)
-    milp = MilpXorLinearModel(speck.remove_key_schedule())
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not equal',
-                                    bit_positions=range(8), bit_values=integer_to_bit_list(0x0, 8, 'big'))
-    trails = milp.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values=[plaintext])
+    milp = MilpXorLinearModel(speck)
+    trails = milp.find_all_xor_linear_trails_with_fixed_weight(1)
 
     assert len(trails) == 12
     for i in range(len(trails)):
@@ -39,10 +37,8 @@ def test_find_all_xor_linear_trails_with_fixed_weight():
 
 def test_find_all_xor_linear_trails_with_weight_at_most():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=3)
-    milp = MilpXorLinearModel(speck.remove_key_schedule())
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not equal',
-                                    bit_positions=range(8), bit_values=integer_to_bit_list(0x0, 8, 'big'))
-    trails = milp.find_all_xor_linear_trails_with_weight_at_most(0, 1, [plaintext])
+    milp = MilpXorLinearModel(speck)
+    trails = milp.find_all_xor_linear_trails_with_weight_at_most(0, 1)
 
     assert len(trails) == 13
     for i in range(len(trails)):
@@ -60,28 +56,26 @@ def test_find_all_xor_linear_trails_with_weight_at_most():
 
 def test_find_lowest_weight_xor_linear_trail():
     # speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=9)
-    # milp = MilpXorLinearModel(speck.remove_key_schedule())
+    # milp = MilpXorLinearModel(speck)
     # plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
     #                                 bit_values=integer_to_bit_list(0x03805224, 32, 'big'))
     # trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])
     # assert trail["total_weight"] == 14.0
 
     # simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=13)
-    # milp = MilpXorLinearModel(simon.remove_key_schedule())
+    # milp = MilpXorLinearModel(simon)
     # plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
     #                                 bit_values=integer_to_bit_list(0x00200000, 32, 'big'))
     # trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])
     # assert trail["total_weight"] == 18.0
     #
-    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
-    milp = MilpXorLinearModel(speck.remove_key_schedule())
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not equal', bit_positions=range(32),
-                                    bit_values=integer_to_bit_list(0x0, 32, 'big'))
-    trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])
-    assert trail["total_weight"] == 1.0
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    milp = MilpXorLinearModel(speck)
+    trail = milp.find_lowest_weight_xor_linear_trail()
+    assert trail["total_weight"] == 3.0
     #
     # present = PresentBlockCipher(number_of_rounds=3)
-    # milp = MilpXorLinearModel(present.remove_key_schedule())
+    # milp = MilpXorLinearModel(present)
     # plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(64),
     #                                 bit_values=integer_to_bit_list(0x0d00000000000000, 64, 'big'))
     # trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])
@@ -90,7 +84,7 @@ def test_find_lowest_weight_xor_linear_trail():
 
 def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpXorLinearModel(speck.remove_key_schedule())
+    milp = MilpXorLinearModel(speck)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
                                     bit_values=integer_to_bit_list(0x03805224, 32, 'big'))
     trail = milp.find_one_xor_linear_trail(fixed_values=[plaintext])
@@ -99,19 +93,19 @@ def test_find_one_xor_linear_trail():
 
 def test_find_one_xor_linear_trail_with_fixed_weight():
     # speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    # milp = MilpXorLinearModel(speck.remove_key_schedule())
+    # milp = MilpXorLinearModel(speck)
     # trail = milp.find_one_xor_linear_trail_with_fixed_weight(6)
     # assert len(trail) == 9
     # assert trail["total_weight"] == 6.0
 
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpXorLinearModel(speck.remove_key_schedule())
+    milp = MilpXorLinearModel(speck)
     trail = milp.find_one_xor_linear_trail_with_fixed_weight(1)
     assert len(trail) == 10
     assert trail["total_weight"] == 1.0
     #
     # speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-    # milp = MilpXorLinearModel(speck.remove_key_schedule())
+    # milp = MilpXorLinearModel(speck)
     # trail = milp.find_one_xor_linear_trail_with_fixed_weight(10)
     # assert len(trail) == 9
     # assert trail["total_weight"] == 10.0
@@ -119,7 +113,7 @@ def test_find_one_xor_linear_trail_with_fixed_weight():
 
 def test_find_one_xor_linear_trail_with_fixed_weight_with_external_solver():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpXorLinearModel(speck.remove_key_schedule())
+    milp = MilpXorLinearModel(speck)
     trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="glpk")
     assert len(trail) == 10
     assert trail["total_weight"] == 1.0
@@ -128,20 +122,20 @@ def test_find_one_xor_linear_trail_with_fixed_weight_with_external_solver():
 def test_find_one_xor_linear_trail_with_fixed_weight_with_supported_but_not_installed_external_solver():
     with pytest.raises(Exception) as e_info:
         speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-        milp = MilpXorLinearModel(speck.remove_key_schedule())
+        milp = MilpXorLinearModel(speck)
         trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="cplex")
 
 
 def test_find_one_xor_linear_trail_with_fixed_weight_with_installed_external_solver_but_missing_license():
     with pytest.raises(Exception) as e_info:
         speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-        milp = MilpXorLinearModel(speck.remove_key_schedule())
+        milp = MilpXorLinearModel(speck)
         trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="Gurobi")
 
 def test_find_one_xor_linear_trail_with_fixed_weight_with_unsupported_external_solver():
     with pytest.raises(Exception) as e_info:
         speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-        milp = MilpXorLinearModel(speck.remove_key_schedule())
+        milp = MilpXorLinearModel(speck)
         trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="unsupported_solver")
 
 
