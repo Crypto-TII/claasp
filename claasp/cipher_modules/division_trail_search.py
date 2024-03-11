@@ -12,7 +12,7 @@ class MilpDivisionTrailModel():
     EXAMPLES::
 
         sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-        sage: cipher = AsconPermutation(number_of_rounds=2)
+        sage: cipher = AsconPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
@@ -543,7 +543,7 @@ class MilpDivisionTrailModel():
             # index += self._cipher.inputs_bit_size[0]
         return index
 
-    def find_anf_for_specific_output_bit(self, output_bit_index):
+    def find_anf_for_specific_output_bit(self, output_bit_index, fixed_degree=None):
         start = time.time()
 
         self.add_constraints()
@@ -556,6 +556,12 @@ class MilpDivisionTrailModel():
         self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size))) # self._cipher.output_bit_size
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[output_bit_index] == 1)
+
+        if fixed_degree != None:
+            plaintext_vars = []
+            for i in range(self._cipher.inputs_bit_size[0]):
+                plaintext_vars.append(self._model.getVarByName(f"plaintext[{i}]"))
+            self._model.addConstr(sum(plaintext_vars[i] for i in range(self._cipher.inputs_bit_size[0])) == fixed_degree)
 
         # Before linear layer
         # for i in range(64): # self._cipher.output_bit_size
@@ -613,67 +619,67 @@ class MilpDivisionTrailModel():
         print(f"solving_time : {solving_time}")
         solCount = self._model.SolCount
         print('Number of solutions (might cancel each other) found: ' + str(solCount))
-        # monomials = []
-        # for sol in range(solCount):
-        #     self._model.setParam(GRB.Param.SolutionNumber, sol)
-        #     values = self._model.Xn
-        #     # print(values[:64])
-        #     # print(values[64:128])
-        #     # print(values[128:192])
-        #     # print(values[192:256])
-        #     # print(values[256:320])
-        #     # print("################")
+        monomials = []
+        for sol in range(solCount):
+            self._model.setParam(GRB.Param.SolutionNumber, sol)
+            values = self._model.Xn
+            # print(values[:64])
+            # print(values[64:128])
+            # print(values[128:192])
+            # print(values[192:256])
+            # print(values[256:320])
+            # print("################")
 
-        #     # Simon 1 round
-        #     # print("plaintext")
-        #     # print(values[:32])
-        #     # print("copy plaintext")
-        #     # print(values[32:48])
-        #     # print(values[48:64])
-        #     # print(values[64:80])
-        #     # print(values[80:96])
-        #     # print(values[96:112])
-        #     # print("key")
-        #     # print(values[112:176])
-        #     # print("rots")
-        #     # print(values[224:240])
-        #     # print(values[240:256])
-        #     # print(values[256:272])
-        #     # print("and")
-        #     # print(values[272:288])
-        #     # print("xors")
-        #     # print(values[288:304])
-        #     # print(values[304:320])
-        #     # print("################")
-        #     # print(len(values))
+            # Simon 1 round
+            # print("plaintext")
+            # print(values[:32])
+            # print("copy plaintext")
+            # print(values[32:48])
+            # print(values[48:64])
+            # print(values[64:80])
+            # print(values[80:96])
+            # print(values[96:112])
+            # print("key")
+            # print(values[112:176])
+            # print("rots")
+            # print(values[224:240])
+            # print(values[240:256])
+            # print(values[256:272])
+            # print("and")
+            # print(values[272:288])
+            # print("xors")
+            # print(values[288:304])
+            # print(values[304:320])
+            # print("################")
+            # print(len(values))
 
-        #     # tmp = []
-        #     # for index, v in enumerate(values[:max_input_bit_pos]):
-        #     #     if v == 1:
-        #     #         tmp.append(index)
-        #     # monomials.append(tmp)
+            # tmp = []
+            # for index, v in enumerate(values[:max_input_bit_pos]):
+            #     if v == 1:
+            #         tmp.append(index)
+            # monomials.append(tmp)
 
-        #     tmp = []
-        #     for index, v in enumerate(values[:max_input_bit_pos]):
-        #         if v == 1:
-        #             if len(self._cipher.inputs_bit_size) > 1:
-        #                 if index < self._cipher.inputs_bit_size[0]:
-        #                     tmp.append(index)
-        #                 elif index_second_input <= index < index_second_input + self._cipher.inputs_bit_size[1]:
-        #                     tmp.append(index)
-        #             else:
-        #                 if index < self._cipher.inputs_bit_size[0]:
-        #                     tmp.append(index)
-        #     monomials.append(tmp)
+            tmp = []
+            for index, v in enumerate(values[:max_input_bit_pos]):
+                if v == 1:
+                    if len(self._cipher.inputs_bit_size) > 1:
+                        if index < self._cipher.inputs_bit_size[0]:
+                            tmp.append(index)
+                        elif index_second_input <= index < index_second_input + self._cipher.inputs_bit_size[1]:
+                            tmp.append(index)
+                    else:
+                        if index < self._cipher.inputs_bit_size[0]:
+                            tmp.append(index)
+            monomials.append(tmp)
 
-        # # print(monomials)
-        # monomials_with_occurences = [x+[monomials.count(x)] for x in monomials]
-        # # print(monomials_with_occurences)
-        # monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
-        # # print(monomials_duplicates_removed)
-        # monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
-        # # print(monomials_even_occurences_removed)
-        # self.pretty_print(monomials_even_occurences_removed)
+        # print(monomials)
+        monomials_with_occurences = [x+[monomials.count(x)] for x in monomials]
+        # print(monomials_with_occurences)
+        monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
+        # print(monomials_duplicates_removed)
+        monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
+        # print(monomials_even_occurences_removed)
+        self.pretty_print(monomials_even_occurences_removed)
         return self._model
 
     def check_presence_of_particular_monomial_in_specific_anf(self, monomial, output_bit_index):
