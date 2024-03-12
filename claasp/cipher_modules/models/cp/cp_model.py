@@ -432,6 +432,8 @@ class CpModel:
           * ``'Chuffed'``
           * ``'Gecode'``
           * ``'COIN-BC'``
+        - ``num_of_processors`` -- **integer**; the number of processors to be used
+        - ``timelimit`` -- **integer**; time limit to output a result
 
         EXAMPLES::
 
