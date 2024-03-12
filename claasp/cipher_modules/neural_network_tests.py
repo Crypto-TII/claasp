@@ -64,6 +64,7 @@ class NeuralNetworkTests:
         """
         results = {"input_parameters": {
             "test_name": "neural_network_blackbox_distinguisher_tests",
+            "cipher": self.cipher,
             "number_of_samples": nb_samples,
             "hidden_layers": hidden_layers,
             "number_of_epochs": number_of_epochs}, "test_results": {}}
@@ -255,6 +256,7 @@ class NeuralNetworkTests:
         """
         results = {"input_parameters": {
             "test_name": "neural_network_differential_distinguisher_tests",
+            "cipher":self.cipher,
             "number_of_samples": nb_samples,
             "input_differences": diff,
             "hidden_layers": hidden_layers,
@@ -598,6 +600,7 @@ class NeuralNetworkTests:
         neural_distinguisher_test_results = {
             'input_parameters': {
                 'test_name': 'neural_distinguisher_test',
+                'cipher': self.cipher,
                 'optimizer_samples': optimizer_samples,
                 'optimizer_generations': optimizer_generations,
                 'training_samples': training_samples,

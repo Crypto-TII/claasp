@@ -344,7 +344,7 @@ class MilpModel:
             status, milp_time, milp_memory = self._solve_with_internal_solver()
             objective_value, components_values = self._parse_solver_output()
 
-        solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name_in_solution, milp_time,
+        solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name_in_solution, milp_time,
                                                          milp_memory, components_values, objective_value)
         solution['status'] = status
         return solution

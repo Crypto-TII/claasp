@@ -78,9 +78,9 @@ class AlgebraicTests:
             tests_up_to_round.append(result)
 
         input_parameters = {
-            "cipher.id": self._cipher.id,
             "timeout": timeout,
-            "test_name": "algebraic_tests"
+            "test_name": "algebraic_tests",
+            "cipher": self._cipher
         }
         test_results = {
             "number_of_variables": nvars_up_to_round,

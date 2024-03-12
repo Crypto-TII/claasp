@@ -39,6 +39,8 @@ TII_C_LIB_PATH = f'{tii_dir_path}/cipher/'
 
 
 class Cipher:
+
+
     def __init__(self, family_name, cipher_type, cipher_inputs,
                  cipher_inputs_bit_size, cipher_output_bit_size,
                  cipher_reference_code=None):
@@ -146,6 +148,8 @@ class Cipher:
         self._id = self.make_cipher_id()
         self._file_name = self.make_file_name()
 
+    def __str__(self):
+        return self.id
     def _are_there_not_forbidden_components(self, forbidden_types, forbidden_descriptions):
         return self._rounds.are_there_not_forbidden_components(forbidden_types, forbidden_descriptions)
 

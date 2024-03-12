@@ -99,6 +99,7 @@ class NISTStatisticalTests:
 
             'input_parameters': {
                 'test_name': 'nist_statistical_tests',
+                'cipher': self.cipher,
                 'test_type': test_type,
                 'round_start': round_start,
                 'round_end': round_end,

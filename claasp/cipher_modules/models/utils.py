@@ -37,7 +37,7 @@ def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_o
             arcs[previous_output_bit_ids[i]].append(curr_input_bit_ids[i])
 
 
-def convert_solver_solution_to_dictionary(cipher_id, model_type, solver_name, solve_time, memory,
+def convert_solver_solution_to_dictionary(cipher, model_type, solver_name, solve_time, memory,
                                           components_values, total_weight):
     """
     Return a dictionary that represents the solution obtained from the solver.
@@ -72,7 +72,7 @@ def convert_solver_solution_to_dictionary(cipher_id, model_type, solver_name, so
          'total_weight': 0}
     """
     return {
-        'cipher_id': cipher_id,
+        'cipher_id': cipher,
         'model_type': model_type,
         'solver_name': solver_name,
         'solving_time_seconds': solve_time,

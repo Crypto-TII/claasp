@@ -65,7 +65,7 @@ class CpModel:
                                              solver_name, solver_output, total_weight):
         for i in range(len(total_weight)):
             solution = convert_solver_solution_to_dictionary(
-                self.cipher_id,
+                self._cipher,
                 model_type,
                 solver_name,
                 solve_time,
@@ -458,7 +458,7 @@ class CpModel:
             solver_output = solver_process.stdout.splitlines()
             solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output)
             if components_values == {}:
-                solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name,
+                solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name,
                                                                  solve_time, memory,
                                                                  components_values, total_weight)
                 if 'UNSATISFIABLE' in solver_output[0]:

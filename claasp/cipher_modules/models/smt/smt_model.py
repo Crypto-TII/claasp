@@ -434,7 +434,7 @@ class SmtModel:
         if total_weight is not None:
             total_weight = float(total_weight)
 
-        solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name, solve_time,
+        solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, solve_time,
                                                          memory, component2attributes, total_weight)
         solution['status'] = status
 
