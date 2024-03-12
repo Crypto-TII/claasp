@@ -58,7 +58,7 @@ class CpModel:
         self.list_of_xor_components = []
         self.list_of_xor_all_inputs = []
         self.component_and_probability = {}
-        self._model_prefix = [f'{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}']
+        self._model_prefix = ['include "globals.mzn";', f'{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}']
 
     def add_solutions_from_components_values(self, components_values, memory, model_type, solutions, solve_time,
                                              solver_name, solver_output, total_weight):
