@@ -250,7 +250,7 @@ def test_print():
     sys.stdout = result
     cipher.print()
     sys.stdout = old_stdout
-    assert result.getvalue() == """cipher = cipher_name_i32_o32_r1
+    assert result.getvalue() == """cipher_id = cipher_name_i32_o32_r1
 cipher_type = permutation
 cipher_inputs = ['input']
 cipher_inputs_bit_size = [32]
@@ -332,7 +332,7 @@ def test_print_as_python_dictionary():
     cipher.print_as_python_dictionary()
     sys.stdout = old_stdout
     assert result.getvalue() == """cipher = {
-'cipher': 'cipher_name_k32_p32_o32_r1',
+'cipher_id': 'cipher_name_k32_p32_o32_r1',
 'cipher_type': 'block_cipher',
 'cipher_inputs': ['key', 'plaintext'],
 'cipher_inputs_bit_size': [32, 32],

@@ -369,6 +369,9 @@ def pprint_dictionary_to_file(dictionary, name_file):
         sage: import os
         sage: os.remove(f"{tii_dir_path}/test_json")
     """
+
+    if 'cipher' in dictionary.keys():
+        dictionary['cipher'] = dictionary['cipher'].id
     dictionary_json = json.loads(str(dictionary).replace("'", '"'))
     source_file = open(name_file, 'w')
     print(json.dumps(dictionary_json, indent=4), file=source_file)
