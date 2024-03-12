@@ -40,7 +40,7 @@ def test_find_all_deterministic_truncated_xor_differential_trail():
 
     assert len(trail) == 4
     for i in range(len(trail)):
-        assert trail[i]['cipher_id'] == 'speck_p32_k64_o32_r3'
+        assert str(trail[i]['cipher']) == 'speck_p32_k64_o32_r3'
         assert trail[i]['model_type'] == 'deterministic_truncated_xor_differential'
         assert trail[i]['model_type'] == 'deterministic_truncated_xor_differential'
         assert trail[i]['solver_name'] == 'Chuffed'
@@ -54,7 +54,7 @@ def test_find_one_deterministic_truncated_xor_differential_trail():
     key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
     trail = cp.find_one_deterministic_truncated_xor_differential_trail(1, [plaintext, key], 'Chuffed')
 
-    assert trail[0]['cipher_id'] == 'speck_p32_k64_o32_r1'
+    assert str(trail[0]['cipher']) == 'speck_p32_k64_o32_r1'
 
     assert trail[0]['components_values']['key']['value'] == '000000000000000000000000000000000000000000000000000000' \
                                                             '0000000000'

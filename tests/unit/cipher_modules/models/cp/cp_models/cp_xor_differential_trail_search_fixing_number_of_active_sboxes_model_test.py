@@ -24,7 +24,7 @@ def test_find_lowest_weight_xor_differential_trail():
                        set_fixed_variables('plaintext', 'not_equal', range(128), integer_to_bit_list(0, 128, 'little'))]
     solution = cp.find_lowest_weight_xor_differential_trail(fixed_variables, 'Chuffed', 'Chuffed')
 
-    assert solution['cipher_id'] == 'aes_block_cipher_k128_p128_o128_r2'
+    assert str(solution['cipher']) == 'aes_block_cipher_k128_p128_o128_r2'
     assert solution['model_type'] == 'xor_differential'
     assert solution['solver_name'] == 'Chuffed'
     assert solution['total_weight'] == '30.0'
@@ -42,7 +42,7 @@ def test_find_one_xor_differential_trail():
                        set_fixed_variables('plaintext', 'not_equal', range(128), integer_to_bit_list(0, 128, 'little'))]
     solution = cp.find_one_xor_differential_trail(fixed_variables, 'Chuffed', 'Chuffed')
 
-    assert solution['cipher_id'] == 'aes_block_cipher_k128_p128_o128_r2'
+    assert str(solution['cipher']) == 'aes_block_cipher_k128_p128_o128_r2'
     assert solution['model_type'] == 'xor_differential'
     assert solution['solver_name'] == 'Chuffed'
     assert eval(solution['total_weight']) >= 0.0
@@ -57,7 +57,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
                        set_fixed_variables('plaintext', 'not_equal', range(128), integer_to_bit_list(0, 128, 'little'))]
     solution = cp.find_one_xor_differential_trail_with_fixed_weight(224, fixed_variables, 'Chuffed', 'Chuffed')
 
-    assert solution['cipher_id'] == 'aes_block_cipher_k128_p128_o128_r2'
+    assert str(solution['cipher']) == 'aes_block_cipher_k128_p128_o128_r2'
     assert solution['model_type'] == 'xor_differential'
     assert solution['solver_name'] == 'Chuffed'
     assert eval(solution['total_weight']) == 224.0
@@ -74,7 +74,7 @@ def test_solve_full_two_steps_xor_differential_model():
         set_fixed_variables('key', 'not_equal', list(range(128)), integer_to_bit_list(0, 128, 'little'))]
     constraints = cp.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', -1, fixed_variables, 'Chuffed', 'Chuffed')
 
-    assert constraints['cipher_id'] == 'aes_block_cipher_k128_p128_o128_r2'
+    assert str(constraints['cipher']) == 'aes_block_cipher_k128_p128_o128_r2'
     assert eval('0x' + constraints['components_values']['intermediate_output_0_35']['value']) >= 0
     assert constraints['components_values']['intermediate_output_0_35']['weight'] == 0
     assert eval('0x' + constraints['components_values']['xor_0_36']['value']) >= 0
