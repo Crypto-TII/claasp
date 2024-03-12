@@ -134,7 +134,10 @@ class Report:
 
         """
 
-        self.cipher = test_report['input_parameters']['cipher']
+        try:
+            self.cipher = test_report['input_parameters']['cipher']
+        except KeyError:
+            self.cipher = test_report['cipher']
         self.test_report = test_report
 
         if 'test_name' in test_report.keys():
@@ -636,6 +639,7 @@ class Report:
                     z_text.append([str(x) for x in self.test_report['test_results'][test]])
                 fig = px.imshow(z, x=x, y=y, color_continuous_scale='Viridis', aspect="auto")
                 fig.update_traces(text=z_text, texttemplate="%{text}")
+                fig.update(layout_coloraxis_showscale=False)
                 fig.update_xaxes(side="top")
                 if show_graph==False:
                     fig.write_image(output_directory + '/test_results.png')
@@ -736,7 +740,7 @@ class Report:
                             else:
 
                                 fig = px.line(df, range_x=[1, self.cipher.number_of_rounds],
-                                              range_y=[min(df[0]) - 1, max(df[0]) + 1])
+                                              range_y=[0, 1])
                                 fig.update_layout(xaxis_title="round", yaxis_title=res_key,
                                                   showlegend=False)
 

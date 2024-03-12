@@ -72,7 +72,7 @@ def convert_solver_solution_to_dictionary(cipher, model_type, solver_name, solve
          'total_weight': 0}
     """
     return {
-        'cipher_id': cipher,
+        'cipher': cipher,
         'model_type': model_type,
         'solver_name': solver_name,
         'solving_time_seconds': solve_time,
