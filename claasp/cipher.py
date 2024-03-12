@@ -148,7 +148,7 @@ class Cipher:
         self._id = self.make_cipher_id()
         self._file_name = self.make_file_name()
 
-    def __str__(self):
+    def __repr__(self):
         return self.id
     def _are_there_not_forbidden_components(self, forbidden_types, forbidden_descriptions):
         return self._rounds.are_there_not_forbidden_components(forbidden_types, forbidden_descriptions)

@@ -639,6 +639,9 @@ class NeuralNetworkTests:
         input_size = self.cipher.output_bit_size * 2
         neural_network = self.get_neural_network(neural_net, input_size = input_size)
         nr = max(1, highest_round-3)
+
+        neural_distinguisher_test_results['test_results']['round_start']=nr
+
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.cipher.inputs}), from round {nr}...')
         neural_results = self.train_neural_distinguisher(data_generator, nr, neural_network, training_samples,
                                    testing_samples, number_of_epochs)

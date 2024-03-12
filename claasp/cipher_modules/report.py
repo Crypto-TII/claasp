@@ -100,7 +100,7 @@ def _latex_heatmap(table, table_string, bit_count):
 
 class Report:
 
-    def __init__(self, cipher, test_report):
+    def __init__(self, test_report):
         """
                 Construct an instance of the Report class.
 
@@ -134,7 +134,7 @@ class Report:
 
         """
 
-        self.cipher = cipher
+        self.cipher = test_report['input_parameters']['cipher']
         self.test_report = test_report
 
         if 'test_name' in test_report.keys():
@@ -581,9 +581,10 @@ class Report:
             df_scores = pd.DataFrame(
                 self.test_report['test_results']['plaintext']['cipher_output']['differences_scores'],
                 index=['scores']).T
+            nr = self.test_report['test_results']['round_start']
             df_result = pd.DataFrame(
                 self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
-                    'accuracies'], index=['accuracy_round' + str(i) for i in range(len(
+                    'accuracies'], index=['accuracy_round' + str(i) for i in range(nr, nr+len(
                     self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
                         'accuracies']))])
 
