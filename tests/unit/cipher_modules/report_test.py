@@ -44,6 +44,9 @@ def test_save_as_image():
     algebraic_report = Report(algebraic_results)
     algebraic_report.save_as_image()
 
+    component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
+    report_cca = Report(component_analysis)
+    report_cca.save_as_image()
 
 def test_save_as_latex_table():
     simon = SimonBlockCipher(number_of_rounds=2)
@@ -92,6 +95,10 @@ def test_save_as_DataFrame():
     algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout=1)
     algebraic_report = Report(algebraic_results)
     algebraic_report.save_as_DataFrame()
+
+    component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
+    report_cca = Report(component_analysis)
+    report_cca.save_as_DataFrame()
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
@@ -186,6 +193,10 @@ def test_show():
     trail = milp.find_one_xor_differential_trail(fixed_values=[plaintext, key])
     trail_report = Report(trail)
     trail_report.show()
+
+    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout=1)
+    algebraic_report = Report(algebraic_results)
+    algebraic_report.show()
 
     nist = NISTStatisticalTests(speck)
     report_sts = Report(nist.nist_statistical_tests('avalanche'))
