@@ -1,4 +1,5 @@
-
+import os
+import sys
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -275,14 +276,10 @@ class MilpXorLinearModel(MilpModel):
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
-            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=3)
-            sage: milp = MilpXorLinearModel(speck.remove_key_schedule())
-            sage: plaintext = set_fixed_variables(
-            ....: component_id='plaintext', constraint_type='not equal',
-            ....: bit_positions=range(8), bit_values=integer_to_bit_list(0x0, 8, 'big'))
-            sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values = [plaintext])  # long
+            sage: milp = MilpXorLinearModel(speck)
+            sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(1)
             ...
             sage: len(trails) # long
             12
@@ -306,7 +303,10 @@ class MilpXorLinearModel(MilpModel):
         looking_for_other_solutions = 1
         while looking_for_other_solutions:
             try:
+                f = open(os.devnull, 'w')
+                sys.stdout = f
                 solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
+                sys.stdout = sys.__stdout__
                 solution['building_time'] = building_time
                 solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
                 self._number_of_trails_found += 1
@@ -377,13 +377,11 @@ class MilpXorLinearModel(MilpModel):
 
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
             sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=3)
-            sage: milp = MilpXorLinearModel(speck.remove_key_schedule())
-            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not equal', bit_positions=range(8), bit_values=integer_to_bit_list(0x0, 8, 'big'))
-            sage: trails = milp.find_all_xor_linear_trails_with_weight_at_most(0,1,[plaintext]) # long
+            sage: milp = MilpXorLinearModel(speck)
+            sage: trails = milp.find_all_xor_linear_trails_with_weight_at_most(0,1)
             ...
-            sage: len(trails) # long
+            sage: len(trails)
             13
         """
         start = time.time()
@@ -407,7 +405,10 @@ class MilpXorLinearModel(MilpModel):
             number_new_constraints = len(weight_constraints)
             while looking_for_other_solutions:
                 try:
+                    f = open(os.devnull, 'w')
+                    sys.stdout = f
                     solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
+                    sys.stdout = sys.__stdout__
                     solution['building_time'] = building_time
                     solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
                     self._number_of_trails_found += 1
@@ -454,7 +455,7 @@ class MilpXorLinearModel(MilpModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=9)
-            sage: milp = MilpXorLinearModel(speck.remove_key_schedule())
+            sage: milp = MilpXorLinearModel(speck)
             sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=integer_to_bit_list(0x03805224, 32, 'big'))
             sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])  # doctest: +SKIP
             ...
@@ -466,7 +467,7 @@ class MilpXorLinearModel(MilpModel):
             sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
             sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
             sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=13)
-            sage: milp = MilpXorLinearModel(simon.remove_key_schedule())
+            sage: milp = MilpXorLinearModel(simon)
             sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=integer_to_bit_list(0x00200000, 32, 'big'))
             sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])  # doctest: +SKIP
             ...
@@ -508,11 +509,9 @@ class MilpXorLinearModel(MilpModel):
 
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpXorLinearModel(speck.remove_key_schedule())
-            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=integer_to_bit_list(0x03805224, 32, 'big'))
-            sage: trail = milp.find_one_xor_linear_trail(fixed_values=[plaintext]) # random
+            sage: milp = MilpXorLinearModel(speck)
+            sage: trail = milp.find_one_xor_linear_trail() # random
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
@@ -551,9 +550,11 @@ class MilpXorLinearModel(MilpModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpXorLinearModel(speck.remove_key_schedule())
-            sage: trail = milp.find_one_xor_linear_trail_with_fixed_weight(6)
+            sage: milp = MilpXorLinearModel(speck)
+            sage: trail = milp.find_one_xor_linear_trail_with_fixed_weight(6) # random
             ...
+            sage: trail['total_weight']
+            6.0
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)

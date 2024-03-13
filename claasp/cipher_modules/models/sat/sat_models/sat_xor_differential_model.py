@@ -117,7 +117,7 @@ class SatXorDifferentialModel(SatModel):
                                                            solver_name='cryptominisat'):
         """
         Return a list of solutions containing all the XOR differential trails having the ``fixed_weight`` weight.
-        By default, the search is set in the single key setting.
+        By default, the search is set in the single-key setting.
 
         INPUT:
 
@@ -131,22 +131,27 @@ class SatXorDifferentialModel(SatModel):
 
         EXAMPLES::
 
+            # single-key setting
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: sat = SatXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:     component_id='plaintext',
-            ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(32),
-            ....:     bit_values=integer_to_bit_list(0, 32, 'big'))
+            sage: trails = sat.find_all_xor_differential_trails_with_fixed_weight(9)
+            sage: len(trails) == 2
+            True
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: sat = SatXorDifferentialModel(speck)
             sage: key = set_fixed_variables(
             ....:     component_id='key',
-            ....:     constraint_type='equal',
+            ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
-            ....:     bit_values=integer_to_bit_list(0, 64, 'big'))
-            sage: trails = sat.find_all_xor_differential_trails_with_fixed_weight(9, fixed_values=[plaintext, key])
+            ....:     bit_values=[0]*64)
+            sage: trails = sat.find_all_xor_differential_trails_with_fixed_weight(2, fixed_values=[key])
             sage: len(trails) == 2
             True
         """
@@ -183,7 +188,7 @@ class SatXorDifferentialModel(SatModel):
                                                              solver_name='cryptominisat'):
         """
         Return a list of solutions.
-        By default, the search is set in the single key setting.
+        By default, the search is set in the single-key setting.
 
         The list contain all the XOR differential trails having the weight lying in the interval
         ``[min_weight, max_weight]``.
@@ -201,23 +206,28 @@ class SatXorDifferentialModel(SatModel):
 
         EXAMPLES::
 
+            # single-key setting
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: sat = SatXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:     component_id='plaintext',
-            ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(32),
-            ....:     bit_values=integer_to_bit_list(0, 32, 'big'))
+            sage: trails = sat.find_all_xor_differential_trails_with_weight_at_most(9, 10)
+            sage: len(trails) == 28
+            True
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: sat = SatXorDifferentialModel(speck)
             sage: key = set_fixed_variables(
             ....:     component_id='key',
-            ....:     constraint_type='equal',
+            ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
-            ....:     bit_values=integer_to_bit_list(0, 64, 'big'))
-            sage: trails = sat.find_all_xor_differential_trails_with_weight_at_most(9, 10, fixed_values=[plaintext, key])
-            sage: len(trails) == 28
+            ....:     bit_values=[0]*64)
+            sage: trails = sat.find_all_xor_differential_trails_with_weight_at_most(2, 3, fixed_values=[key])
+            sage: len(trails) == 9
             True
         """
         solutions_list = []
@@ -235,7 +245,7 @@ class SatXorDifferentialModel(SatModel):
     def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name='cryptominisat'):
         """
         Return the solution representing a trail with the lowest weight.
-        By default, the search is set in the single key setting.
+        By default, the search is set in the single-key setting.
 
         .. NOTE::
 
@@ -253,24 +263,29 @@ class SatXorDifferentialModel(SatModel):
 
         EXAMPLES::
 
+            # single-key setting
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: trail = sat.find_lowest_weight_xor_differential_trail()
+            sage: trail['total_weight']
+            9.0
+
+            # related-key setting
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: sat = SatXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=(0,)*32)
             sage: key = set_fixed_variables(
             ....:         component_id='key',
-            ....:         constraint_type='equal',
+            ....:         constraint_type='not_equal',
             ....:         bit_positions=range(64),
             ....:         bit_values=(0,)*64)
-            sage: trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
+            sage: trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[key])
             sage: trail['total_weight']
-            9.0
+            1.0
         """
         current_weight = 0
         start_building_time = time.time()
@@ -298,7 +313,7 @@ class SatXorDifferentialModel(SatModel):
     def find_one_xor_differential_trail(self, fixed_values=[], solver_name='cryptominisat'):
         """
         Return the solution representing a XOR differential trail.
-        By default, the search is set in the single key setting.
+        By default, the search is set in the single-key setting.
         The solution probability is almost always lower than the one of a random guess of the longest input.
 
         INPUT:
@@ -312,25 +327,26 @@ class SatXorDifferentialModel(SatModel):
 
         EXAMPLES::
 
+            # single-key setting
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: sat = SatXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:     component_id='plaintext',
+            sage: sat.find_one_xor_differential_trail() # random
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: key = set_fixed_variables(
+            ....:     component_id='key',
             ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(32),
-            ....:     bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: sat.find_one_xor_differential_trail(fixed_values=[plaintext]) # random
-            {'cipher_id': 'speck_p32_k64_o32_r5',
-             'model_type': 'xor_differential',
-             'solver_name': 'cryptominisat',
-             'solving_time_seconds': 0.0,
-             'memory_megabytes': 7.09,
-             ...
-             'status': 'SATISFIABLE',
-             'building_time_seconds': 0.004874706268310547}
+            ....:     bit_positions=range(64),
+            ....:     bit_values=[0]*64)
+            sage: sat.find_one_xor_differential_trail(fixed_values=[key])
         """
         start_building_time = time.time()
         self.build_xor_differential_trail_model(fixed_variables=fixed_values)
@@ -345,7 +361,7 @@ class SatXorDifferentialModel(SatModel):
                                                           solver_name='cryptominisat'):
         """
         Return the solution representing a XOR differential trail whose probability is ``2 ** fixed_weight``.
-        By default, the search is set in the single key setting.
+        By default, the search is set in the single-key setting.
         INPUT:
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
@@ -358,23 +374,28 @@ class SatXorDifferentialModel(SatModel):
 
         EXAMPLES::
 
+            # single-key setting
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: sat = SatXorDifferentialModel(speck, window_size_by_round=[0, 0, 0])
-            sage: plaintext = set_fixed_variables(
-            ....:     component_id='plaintext',
-            ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(32),
-            ....:     bit_values=(0,)*32)
+            sage: trail = sat.find_one_xor_differential_trail_with_fixed_weight(3)
+            sage: trail['total_weight']
+            3.0
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: sat = SatXorDifferentialModel(speck)
             sage: key = set_fixed_variables(
             ....:     component_id='key',
-            ....:     constraint_type='equal',
+            ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
-            ....:     bit_values=(0,)*64)
-            sage: result = sat.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[plaintext, key])
-            sage: result['total_weight']
+            ....:     bit_values=[0]*64)
+            sage: trail = sat.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[key])
+            sage: trail['total_weight']
             3.0
         """
         start_building_time = time.time()

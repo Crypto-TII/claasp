@@ -37,7 +37,7 @@ def and_xor_differential_probability_ddt(numadd):
 
     EXAMPLES::
 
-        sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
+        sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (
         ....:     and_xor_differential_probability_ddt)
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
         sage: simon = SimonBlockCipher()
@@ -111,16 +111,10 @@ class CpXorDifferentialModel(CpModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
-            ....:     CpXorDifferentialTrailSearchModel)
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = CpXorDifferentialTrailSearchModel(speck)
-            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64),
-            ....: integer_to_bit_list(0, 64, 'little'))]
-            sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(32),
-            ....: integer_to_bit_list(0, 32, 'little')))
+            sage: cp = CpXorDifferentialModel(speck)
             sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
         """
         self.initialise_model()
@@ -172,17 +166,11 @@ class CpXorDifferentialModel(CpModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
-            ....:     CpXorDifferentialTrailSearchModel)
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = CpXorDifferentialTrailSearchModel(speck)
-            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64),
-            ....: integer_to_bit_list(0, 64, 'little'))]
-            sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(32),
-            ....: integer_to_bit_list(0, 32, 'little')))
-            sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: cp.build_xor_differential_trail_model(-1)
             sage: cp.final_xor_differential_constraints(-1)[:-1]
             ['solve:: int_search(p, smallest, indomain_min, complete) minimize weight;']
         """
@@ -213,7 +201,7 @@ class CpXorDifferentialModel(CpModel):
     def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='Chuffed'):
         """
         Return a list of solutions containing all the differential trails having the ``fixed_weight`` weight.
-        By default, the search is set in the single key setting.
+        By default, the search is set in the single-key setting.
 
         INPUT:
 
@@ -227,21 +215,25 @@ class CpXorDifferentialModel(CpModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
-            ....:     CpXorDifferentialTrailSearchModel)
+            # single-key setting
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchModel(speck)
-            sage: fixed_values = []
-            sage: fixed_values.append(set_fixed_variables('key', 'equal', list(range(16)),
-            ....: integer_to_bit_list(0, 16, 'big')))
-            sage: fixed_values.append(set_fixed_variables('plaintext', 'not_equal', list(range(8)),
-            ....: integer_to_bit_list(0, 8, 'big')))
-            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(1, fixed_values, 'Chuffed') # long
-            ...
-            sage: len(trails) # long
-            6
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(9, solver_name='Chuffed')
+            sage: len(trails)
+            2
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher( number_of_rounds=5)
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
+            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(2, fixed_values=[key], solver_name='Chuffed')
+            sage: len(trails)
+            2
         """
         start = tm.time()
         self.build_xor_differential_trail_model(fixed_weight, fixed_values)
@@ -257,7 +249,7 @@ class CpXorDifferentialModel(CpModel):
                                                              solver_name='Chuffed'):
         """
         Return a list of solutions containing all the differential trails.
-        By default, the search is set in the single key setting.
+        By default, the search is set in the single-key setting.
         The differential trails having the weight of correlation lying in the interval ``[min_weight, max_weight]``.
 
         INPUT:
@@ -273,21 +265,26 @@ class CpXorDifferentialModel(CpModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
-            ....:     CpXorDifferentialTrailSearchModel)
+            # single-key setting
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchModel(speck)
-            sage: fixed_values = []
-            sage: fixed_values.append(set_fixed_variables('key', 'equal', list(range(16)),
-            ....: integer_to_bit_list(0, 16, 'big')))
-            sage: fixed_values.append(set_fixed_variables('plaintext', 'not_equal', list(range(8)),
-            ....: integer_to_bit_list(0, 8, 'big')))
-            sage: trails = cp.find_all_xor_differential_trails_with_weight_at_most(0,1, fixed_values, 'Chuffed')
-            ...
-            sage: len(trails) # long
-            7
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: trails = cp.find_all_xor_differential_trails_with_weight_at_most(9,10, solver_name='Chuffed')
+            sage: len(trails)
+            28
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
+            sage: trails = cp.find_all_xor_differential_trails_with_weight_at_most(2,3, fixed_values=[key], solver_name='Chuffed') # long
+            sage: len(trails)
+            9
+
         """
         start = tm.time()
         self.build_xor_differential_trail_model(0, fixed_values)
@@ -316,7 +313,7 @@ class CpXorDifferentialModel(CpModel):
     def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a differential trail with the lowest probability weight.
-        By default, the search is set in the single key setting.
+        By default, the search is set in the single-key setting.
         
         .. NOTE::
 
@@ -334,24 +331,29 @@ class CpXorDifferentialModel(CpModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
-            ....:     CpXorDifferentialTrailSearchModel)
+            # single-key setting
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: cp = CpXorDifferentialTrailSearchModel(speck)
-            sage: fixed_values = []
-            sage: fixed_values.append(set_fixed_variables('key', 'equal', list(range(64)),
-            ....: integer_to_bit_list(0, 64, 'big')))
-            sage: fixed_values.append(set_fixed_variables('plaintext', 'not_equal', list(range(32)),
-            ....: integer_to_bit_list(0, 32, 'big')))
-            sage: cp.find_lowest_weight_xor_differential_trail(fixed_values,'Chuffed') # random
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: cp.find_lowest_weight_xor_differential_trail(solver_name='Chuffed') # random
             {'building_time': 0.007165431976318359,
              'cipher_id': 'speck_p32_k64_o32_r4',
              'components_values': {'cipher_output_4_12': {'value': '850a9520',
              'weight': 0},
               ...
              'total_weight': '9.0'}
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
+            sage: trail = cp.find_lowest_weight_xor_differential_trail(fixed_values=[key], solver_name='Chuffed')
+            sage: trail['total_weight']
+            '1.0'
         """
         start = tm.time()
         self.build_xor_differential_trail_model(-1, fixed_values)
@@ -366,7 +368,7 @@ class CpXorDifferentialModel(CpModel):
     def find_one_xor_differential_trail(self, fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a differential trail with any weight.
-        By default, the search is set in the single key setting.
+        By default, the search is set in the single-key setting.
 
         INPUT:
 
@@ -379,23 +381,27 @@ class CpXorDifferentialModel(CpModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
-            ....:     CpXorDifferentialTrailSearchModel)
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            # single-key setting
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=[0]*32)
-            sage: cp.find_one_xor_differential_trail([plaintext], 'Chuffed') # random
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: cp.find_one_xor_differential_trail(solver_name=Chuffed') # random
             {'cipher_id': 'speck_p32_k64_o32_r2',
              'model_type': 'xor_differential_one_solution',
               ...
              'cipher_output_1_12': {'value': 'ffff0000', 'weight': 0}},
              'total_weight': '18.0'}
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=2)
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
+            sage: trail = cp.find_one_xor_differential_trail(fixed_values=[key], solver_name='Chuffed') # random
+
         """
         start = tm.time()
         self.build_xor_differential_trail_model(0, fixed_values)
@@ -410,7 +416,7 @@ class CpXorDifferentialModel(CpModel):
                                                           solver_name='Chuffed'):
         """
         Return the solution representing a differential trail with the weight of probability equal to ``fixed_weight``.
-        By default, the search is set in the single key setting.
+        By default, the search is set in the single-key setting.
 
         INPUT:
 
@@ -424,23 +430,25 @@ class CpXorDifferentialModel(CpModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
-            ....:     CpXorDifferentialTrailSearchModel)
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            # single-key setting
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: cp = CpXorDifferentialTrailSearchModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=[0]*32)
-            sage: cp.find_one_xor_differential_trail_with_fixed_weight(9, [plaintext], 'Chuffed') # random
-            {'cipher_id': 'speck_p32_k64_o32_r5',
-             'model_type': 'xor_differential_one_solution',
-             ...
-             'total_weight': '9.0',
-             'building_time_seconds': 0.0013153553009033203}
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: trail = cp.find_one_xor_differential_trail_with_fixed_weight(3, solver_name='Chuffed') # random
+            sage: trail['total_weight']
+            '3.0'
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: cp = CpXorDifferentialModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
+            sage: trail = cp.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[key], solver_name='Chuffed')
+            sage: trail['total_weight']
+            '3.0'
         """
         start = tm.time()
         self.build_xor_differential_trail_model(fixed_weight, fixed_values)
@@ -475,10 +483,9 @@ class CpXorDifferentialModel(CpModel):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import (
-            ....:     CpXorDifferentialTrailSearchModel)
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = CpXorDifferentialTrailSearchModel(speck)
+            sage: cp = CpXorDifferentialModel(speck)
             sage: cp.input_xor_differential_constraints()
             (['array[0..31] of var 0..1: plaintext;',
               'array[0..63] of var 0..1: key;',

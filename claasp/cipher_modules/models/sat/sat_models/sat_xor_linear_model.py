@@ -134,15 +134,9 @@ class SatXorLinearModel(SatModel):
 
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorLinearModel(speck.remove_key_schedule())
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: trails = sat.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values=[plaintext])
+            sage: sat = SatXorLinearModel(speck)
+            sage: trails = sat.find_all_xor_linear_trails_with_fixed_weight(1)
             sage: len(trails) == 4
             True
         """
@@ -197,17 +191,12 @@ class SatXorLinearModel(SatModel):
 
         EXAMPLES::
 
+            # without key schedule
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorLinearModel(speck.remove_key_schedule())
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: trails = sat.find_all_xor_linear_trails_with_weight_at_most(0, 2, fixed_values=[plaintext])
+            sage: sat = SatXorLinearModel(speck)
+            sage: trails = sat.find_all_xor_linear_trails_with_weight_at_most(0, 2) # long
             sage: len(trails) == 187
             True
         """
@@ -246,17 +235,11 @@ class SatXorLinearModel(SatModel):
 
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: sat = SatXorLinearModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: trail = sat.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])
+            sage: trail = sat.find_lowest_weight_xor_linear_trail()
             sage: trail['total_weight']
-            2.0
+            1.0
         """
         current_weight = 0
         start_building_time = time.time()
@@ -302,15 +285,9 @@ class SatXorLinearModel(SatModel):
 
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=4)
             sage: sat = SatXorLinearModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: sat.find_one_xor_linear_trail(fixed_values=[plaintext]) # random
+            sage: sat.find_one_xor_linear_trail() # random
             {'cipher_id': 'speck_p32_k64_o32_r4',
              'model_type': 'xor_linear',
              'solver_name': 'cryptominisat',
@@ -349,17 +326,11 @@ class SatXorLinearModel(SatModel):
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: sat = SatXorLinearModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=(0,)*32)
-            sage: result = sat.find_one_xor_linear_trail_with_fixed_weight(7, fixed_values=[plaintext])
-            sage: result['total_weight']
+            sage: trail = sat.find_one_xor_linear_trail_with_fixed_weight(7)
+            sage: trail['total_weight']
             7.0
         """
         start_building_time = time.time()
