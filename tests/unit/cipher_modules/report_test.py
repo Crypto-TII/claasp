@@ -162,6 +162,8 @@ def test_clean_reports():
 
 def test_show():
     speck = SpeckBlockCipher(number_of_rounds=3)
+    simon = SimonBlockCipher(number_of_rounds=2)
+
     component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
     report_cca = Report(component_analysis)
     report_cca.show()
@@ -190,13 +192,13 @@ def test_show():
         bit_positions=range(64),
         bit_values=(0,) * 64)
 
+    algebraic_results = AlgebraicTests(simon).algebraic_tests(timeout=1)
+    algebraic_report = Report(algebraic_results)
+    algebraic_report.show()
+
     trail = milp.find_one_xor_differential_trail(fixed_values=[plaintext, key])
     trail_report = Report(trail)
     trail_report.show()
-
-    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout=1)
-    algebraic_report = Report(algebraic_results)
-    algebraic_report.show()
 
     nist = NISTStatisticalTests(speck)
     report_sts = Report(nist.nist_statistical_tests('avalanche'))
