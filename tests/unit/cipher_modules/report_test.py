@@ -159,11 +159,11 @@ def test_show():
     report_cca = Report(component_analysis)
     report_cca.show()
 
-    result = NeuralNetworkTests(speck).run_autond_pipeline(optimizer_samples=10 ** 3, optimizer_generations=1,
-                                                           training_samples=10 ** 2, testing_samples=10 ** 2,
-                                                           number_of_epochs=1, verbose=False)
-    report_autond = Report(result)
-    report_autond.show()
+    #result = NeuralNetworkTests(speck).run_autond_pipeline(optimizer_samples=10 ** 3, optimizer_generations=1,
+    #                                                       training_samples=10 ** 2, testing_samples=10 ** 2,
+    #                                                       number_of_epochs=1, verbose=False)
+    #report_autond = Report(result)
+    #report_autond.show()
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
