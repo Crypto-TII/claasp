@@ -408,7 +408,7 @@ class DieharderTests:
             plt.show()
             plt.clf()
             plt.close()
-        print(f'Drawing round {report_dict["round"]} is finished. Please find the chart in file {output_dir}.')
+        print(f'Drawing round {report_dict["round"]} is finished')
 
     @staticmethod
     def _generate_chart_all(report_dict_list, output_dir='', show_graph=False):
@@ -452,7 +452,7 @@ class DieharderTests:
             plt.show()
             plt.clf()
             plt.close()
-        print(f'Drawing chart for all rounds is in finished. Please find the chart in file {chart_filename}.')
+        print(f'Drawing chart for all rounds is in finished.')
 
     def _create_report_folder(self):
         self.report_folder = os.path.join(self.folder_prefix,
