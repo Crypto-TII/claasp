@@ -314,7 +314,7 @@ class CpXorDifferentialModel(CpModel):
         """
         Return the solution representing a differential trail with the lowest probability weight.
         By default, the search is set in the single-key setting.
-        
+
         .. NOTE::
 
             There could be more than one trail with the lowest weight. In order to find all the lowest weight

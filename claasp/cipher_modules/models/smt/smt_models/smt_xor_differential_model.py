@@ -112,7 +112,7 @@ class SmtXorDifferentialModel(SmtModel):
             sage: trails = smt.find_all_xor_differential_trails_with_fixed_weight(9)
             sage: len(trails)
             2
-                        
+
             # related-key setting
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher

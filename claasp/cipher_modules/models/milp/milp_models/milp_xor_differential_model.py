@@ -154,7 +154,7 @@ class MilpXorDifferentialModel(MilpModel):
             sage: milp = MilpXorDifferentialModel(speck)
             sage: trails = milp.find_all_xor_differential_trails_with_fixed_weight(9) # long
             ...
-            sage: len(trails) 
+            sage: len(trails)
             2
 
             # related-key setting
@@ -373,7 +373,7 @@ class MilpXorDifferentialModel(MilpModel):
             sage: milp = MilpXorDifferentialModel(speck)
             sage: trails = milp.find_all_xor_differential_trails_with_weight_at_most(9, 10) # long
             ...
-            sage: len(trails) 
+            sage: len(trails)
             28
 
             # related-key setting
@@ -463,7 +463,7 @@ class MilpXorDifferentialModel(MilpModel):
             ...
             sage: trail["total_weight"]
             9.0
-            
+
             # related-key setting
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
