@@ -21,6 +21,7 @@ import time
 
 from claasp.cipher_modules.models.sat.utils import constants, utils
 from claasp.cipher_modules.models.sat.sat_model import SatModel
+from claasp.cipher_modules.models.sat.utils.constants import INPUT_BIT_ID_SUFFIX, OUTPUT_BIT_ID_SUFFIX
 from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR)
@@ -154,7 +155,7 @@ class SatXorLinearModel(SatModel):
                 value_to_avoid = int(value_as_hex_string, base=16)
                 bit_len = len(value_as_hex_string) * 4
                 minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                if component.endswith('_i') or component.endswith('_o'):
+                if component.endswith(INPUT_BIT_ID_SUFFIX) or component.endswith(OUTPUT_BIT_ID_SUFFIX):
                     component_id = component[:-2]
                     suffix = component[-2:]
                 else:
