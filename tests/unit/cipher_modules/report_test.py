@@ -162,7 +162,7 @@ def test_clean_reports():
 
 def test_show():
     speck = SpeckBlockCipher(number_of_rounds=3)
-    simon = SimonBlockCipher(number_of_rounds=2)
+    simon = SimonBlockCipher(number_of_rounds=1)
 
     component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
     report_cca = Report(component_analysis)
