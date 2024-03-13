@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -38,6 +37,72 @@ class MODSUB(Modular):
                  input_id_links, input_bit_positions, output_bit_size, modulus):
         super().__init__(current_round_number, current_round_number_of_components,
                          input_id_links, input_bit_positions, output_bit_size, 'modsub', modulus)
+
+    def algebraic_polynomials(self, model):
+        """
+        Return a list of polynomials representing Modular subtraction operation
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+            sage: from claasp.cipher import Cipher
+            sage: cipher = Cipher("cipher_name", "permutation", ["input"], [8], 8)
+            sage: cipher.add_round()
+            sage: modsub_0_0 = cipher.add_MODSUB_component(["input","input"], [[0,1,2,3],[4,5,6,7]], 4)
+            sage: modsub_component = cipher.get_component_from_id('modsub_0_0')
+            sage: algebraic = AlgebraicModel(cipher)
+            sage: modsub_component.algebraic_polynomials(algebraic)
+
+        """
+        component_id = self.id
+        ninput_words = self.description[1]
+        nsubtractions = ninput_words - 1
+        ninput_bits = self.input_bit_size
+        noutput_bits = word_size = self.output_bit_size
+
+        input_vars = [component_id + "_" + model.input_postfix + str(i) for i in range(ninput_bits)]
+        output_vars = [component_id + "_" + model.output_postfix + str(i) for i in range(noutput_bits)]
+        borrows_vars = [[component_id + "_" + "b" + str(n) + "_" + str(i) for i in range(word_size)] for n in
+                        range(nsubtractions)]
+        aux_outputs_vars = [[component_id + "_" + "o" + str(n) + "_" + str(i) for i in range(word_size)] for n in
+                            range(nsubtractions - 1)]
+
+        ring_R = model.ring()
+        input_vars = list(map(ring_R, input_vars))
+        output_vars = list(map(ring_R, output_vars))
+        borrows_vars = [list(map(ring_R, borrow_vars)) for borrow_vars in borrows_vars]
+        aux_outputs_vars = [list(map(ring_R, aux_output_vars)) for aux_output_vars in aux_outputs_vars]
+
+        def borrow_polynomial(xi, yi, bi):
+            return xi * yi + yi + bi * (xi + yi + 1)
+
+        polynomials = []
+        for n in range(nsubtractions):  # z = (x - y) % 2^word_size
+            if n == 0:
+                x = input_vars[:word_size]
+            else:
+                x = aux_outputs_vars[n - 1]
+
+            if n == nsubtractions - 1:
+                z = output_vars
+            else:
+                z = aux_outputs_vars[n]
+
+            y = input_vars[(n + 1) * word_size: (n + 2) * word_size]
+            b = borrows_vars[n]
+
+            polynomials += [b[0] + 0]
+            polynomials += [x[0] + y[0] + z[0] + b[0]]
+
+            for i in range(1, word_size):
+                polynomials += [b[i] + borrow_polynomial(x[i - 1], y[i - 1], b[i - 1])]
+                polynomials += [x[i] + y[i] + z[i] + b[i]]
+
+        return polynomials
 
     def cms_constraints(self):
         """
@@ -197,7 +262,7 @@ class MODSUB(Modular):
                                                           input_bit_ids[output_bit_len + i],
                                                           temp_carry_bit_ids[i]))
         constraints.extend(sat_utils.cnf_equivalent([temp_input_bit_ids[output_bit_len - 1],
-                                                    input_bit_ids[2 * output_bit_len - 1]]))
+                                                     input_bit_ids[2 * output_bit_len - 1]]))
         # carries
         for i in range(output_bit_len - 2):
             constraints.extend(sat_utils.cnf_carry(carry_bit_ids[i],
@@ -260,7 +325,7 @@ class MODSUB(Modular):
         # carries complement 2
         for i in range(output_bit_len - 2):
             operation = smt_utils.smt_and((smt_utils.smt_not(input_bit_ids[output_bit_len + i + 1]),
-                                          temp_carry_bit_ids[i + 1]))
+                                           temp_carry_bit_ids[i + 1]))
             equation = smt_utils.smt_equivalent((temp_carry_bit_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
         distinction = smt_utils.smt_distinct(temp_carry_bit_ids[output_bit_len - 2],
@@ -270,11 +335,11 @@ class MODSUB(Modular):
         # results complement 2
         for i in range(output_bit_len - 1):
             operation = smt_utils.smt_xor((smt_utils.smt_not(input_bit_ids[output_bit_len + i]),
-                                          temp_carry_bit_ids[i]))
+                                           temp_carry_bit_ids[i]))
             equation = smt_utils.smt_equivalent((temp_input_bit_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
         equation = smt_utils.smt_equivalent((temp_input_bit_ids[output_bit_len - 1],
-                                            input_bit_ids[2 * output_bit_len - 1]))
+                                             input_bit_ids[2 * output_bit_len - 1]))
         constraints.append(smt_utils.smt_assert(equation))
 
         # carries
@@ -285,7 +350,7 @@ class MODSUB(Modular):
             equation = smt_utils.smt_equivalent((carry_bit_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
         operation = smt_utils.smt_and((input_bit_ids[output_bit_len - 1],
-                                      temp_input_bit_ids[output_bit_len - 1]))
+                                       temp_input_bit_ids[output_bit_len - 1]))
         equation = smt_utils.smt_equivalent((carry_bit_ids[output_bit_len - 2], operation))
         constraints.append(smt_utils.smt_assert(equation))
 
@@ -295,7 +360,7 @@ class MODSUB(Modular):
             equation = smt_utils.smt_equivalent((output_bit_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
         operation = smt_utils.smt_xor((input_bit_ids[output_bit_len - 1],
-                                      temp_input_bit_ids[output_bit_len - 1]))
+                                       temp_input_bit_ids[output_bit_len - 1]))
         equation = smt_utils.smt_equivalent((output_bit_ids[output_bit_len - 1], operation))
         constraints.append(smt_utils.smt_assert(equation))
 
