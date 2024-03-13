@@ -64,6 +64,7 @@ class DieharderTests:
                                     round_start=0,
                                     round_end=0,
                                     dieharder_report_folder_prefix="dieharder_statistics_report",
+                                    dieharder_test_option=None
                                     ):
 
         """
@@ -93,6 +94,7 @@ class DieharderTests:
             dieharder_avalanche_test_results = dieharder_tests.dieharder_statistical_tests('avalanche')
 
         """
+
         dieharder_test = {
 
             'input_parameters': {
@@ -245,7 +247,7 @@ class DieharderTests:
         if not dataset:
             return
         self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-        dieharder_test['test_results'] = self._generate_dieharder_dicts(dataset, round_start, round_end, FLAG_CHART=False)
+        dieharder_test['test_results'] = self._generate_dieharder_dicts(dataset, round_start, round_end, FLAG_CHART=False, dieharder_test_option=dieharder_test_option)
         dieharder_test['input_parameters']['bits_in_one_line'] = bits_in_one_line
         dieharder_test['input_parameters']['number_of_lines'] = number_of_lines
 
@@ -253,7 +255,7 @@ class DieharderTests:
 
 
     @staticmethod
-    def _run_dieharder_statistical_tests_tool(input_file):
+    def _run_dieharder_statistical_tests_tool(input_file, dieharder_test_option):
         """
         Run dieharder tests using the Dieharder library [1]. The result will be in dieharder_test_output.txt.
 
@@ -282,7 +284,10 @@ class DieharderTests:
             Dieharder Tests Finished!!!
         """
         print("Dieharder Tests Started...")
-        os.system(f'dieharder -g 201 -f {input_file}  -a > {__class__._DIEHARDER_OUTPUT}')
+        if dieharder_test_option == None:
+            os.system(f'dieharder -g 201 -f {input_file} -a > {__class__._DIEHARDER_OUTPUT}')
+        else:
+            os.system(f'dieharder -g 201 -f {input_file} -d {dieharder_test_option} > {__class__._DIEHARDER_OUTPUT}')
         print(f'Dieharder Tests Finished!!!')
 
     @staticmethod
@@ -470,9 +475,9 @@ class DieharderTests:
         except Exception as e:
             print(f'Error: {e.strerror}')
 
-    def _generate_dieharder_dicts(self, dataset, round_start, round_end, FLAG_CHART=False):
+    def _generate_dieharder_dicts(self, dataset, round_start, round_end,  dieharder_test_option, FLAG_CHART=False):
         dataset_folder = os.getcwd() + '/dataset'
-        dataset_filename = 'dieharder_input_' + self._cipher_primitive +'.txt'
+        dataset_filename = 'dieharder_input_' + self._cipher_primitive
         dataset_filename = os.path.join(dataset_folder, dataset_filename)
         dieharder_report_dicts = []
 
@@ -488,7 +493,7 @@ class DieharderTests:
             dataset[round_number].tofile(dataset_filename)
 
             dieharder_execution_time = time.time()
-            self._run_dieharder_statistical_tests_tool(dataset_filename)
+            self._run_dieharder_statistical_tests_tool(dataset_filename, dieharder_test_option)
             dieharder_execution_time = time.time() - dieharder_execution_time
             try:
                 os.rename(self._DIEHARDER_OUTPUT, report_round)

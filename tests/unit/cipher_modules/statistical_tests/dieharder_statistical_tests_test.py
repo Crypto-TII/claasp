@@ -16,19 +16,17 @@ def test_run_dieharder_statistical_tests_tool():
 
     assert result == TESTS_FINISHED
 
-@pytest.mark.skip("Takes to long")
 def test_dieharder_statistical_tests():
-    speck = SimonBlockCipher(number_of_rounds=1)
+    speck = SimonBlockCipher(number_of_rounds=3)
     dieharder_tests = DieharderTests(speck)
-    dieharder_avalanche_test_results = dieharder_tests.dieharder_statistical_tests('avalanche')
-    dieharder_correlation_test_results = dieharder_tests.dieharder_statistical_tests('correlation')
-    dieharder_random_test_results = dieharder_tests.dieharder_statistical_tests('random')
-    dieharder_high_density_test_results = dieharder_tests.dieharder_statistical_tests('high_density')
-    dieharder_low_density_test_results = dieharder_tests.dieharder_statistical_tests('low_density')
+    dieharder_avalanche_test_results = dieharder_tests.dieharder_statistical_tests('avalanche', dieharder_test_option='100')
+    dieharder_correlation_test_results = dieharder_tests.dieharder_statistical_tests('correlation', dieharder_test_option='100')
+    dieharder_random_test_results = dieharder_tests.dieharder_statistical_tests('random', dieharder_test_option='100')
+    dieharder_high_density_test_results = dieharder_tests.dieharder_statistical_tests('high_density', dieharder_test_option='100')
+    dieharder_low_density_test_results = dieharder_tests.dieharder_statistical_tests('low_density', dieharder_test_option='100')
 
 
 
-@pytest.mark.skip("Takes too long")
 def test_parse_report():
     result = DieharderTests._run_dieharder_statistical_tests_tool(INPUT_DATA_EXAMPLE)
 
@@ -39,7 +37,6 @@ def test_parse_report():
     assert dictio == OUTPUT_TXT_IS_FINISHED
 
 
-@pytest.mark.skip("Takes too long")
 def test_generate_chart_round():
     result = DieharderTests._run_dieharder_statistical_tests_tool(INPUT_DATA_EXAMPLE)
 
@@ -60,7 +57,6 @@ def test_generate_chart_round():
                     "dieharder_random_toy_cipher_round_1.png."
 
 
-@pytest.mark.skip("Takes too long")
 def test_generate_chart_all():
     result = DieharderTests._run_dieharder_statistical_tests_tool(INPUT_DATA_EXAMPLE)
 
