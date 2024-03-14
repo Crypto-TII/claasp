@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -24,7 +23,6 @@ from datetime import timedelta
 import matplotlib.pyplot as plt
 
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType
-
 
 TEST_ID_TABLE = {
 
@@ -116,7 +114,7 @@ class DieharderTests:
 
         if test_type == 'avalanche':
 
-            self.dataset_type = DatasetType.avalanche
+            self.dataset_type_dieharder = DatasetType.avalanche
             self.input_index = input_index
 
             if bits_in_one_sequence_dieharder == 'default':
@@ -128,7 +126,8 @@ class DieharderTests:
             number_of_samples_dieharder = math.ceil(bits_in_one_sequence_dieharder / sample_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = number_of_samples_dieharder
-            self.number_of_samples_dieharder = self.number_of_samples_dieharder * (self.number_of_sequences_dieharder + 1)
+            self.number_of_samples_dieharder = self.number_of_samples_dieharder * (
+                        self.number_of_sequences_dieharder + 1)
             self.bits_in_one_sequence_dieharder = sample_size * self.number_of_samples_dieharder
 
             self._create_report_folder()
@@ -137,7 +136,7 @@ class DieharderTests:
 
         elif test_type == 'correlation':
 
-            self.dataset_type = DatasetType.correlation
+            self.dataset_type_dieharder = DatasetType.correlation
             self.input_index = input_index
 
             if bits_in_one_sequence_dieharder == 'default':
@@ -145,7 +144,8 @@ class DieharderTests:
             if number_of_sequences_dieharder == 'default':
                 number_of_sequences_dieharder = 384
 
-            number_of_blocks_in_one_sample_dieharder = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
+            number_of_blocks_in_one_sample_dieharder = math.ceil(
+                bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = self.number_of_sequences_dieharder + 1
             self.bits_in_one_sequence_dieharder = number_of_blocks_in_one_sample_dieharder * self.cipher.output_bit_size
@@ -158,14 +158,15 @@ class DieharderTests:
 
         elif test_type == 'cbc':
 
-            self.dataset_type = DatasetType.cbc
+            self.dataset_type_dieharder = DatasetType.cbc
             self.input_index = input_index
             if bits_in_one_sequence_dieharder == 'default':
                 bits_in_one_sequence_dieharder = 1048576
             if number_of_sequences_dieharder == 'default':
                 number_of_sequences_dieharder = 384
 
-            number_of_blocks_in_one_sample_dieharder = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
+            number_of_blocks_in_one_sample_dieharder = math.ceil(
+                bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = self.number_of_sequences_dieharder + 1
             self.bits_in_one_sequence_dieharder = number_of_blocks_in_one_sample_dieharder * self.cipher.output_bit_size
@@ -177,14 +178,15 @@ class DieharderTests:
                                                                number_of_blocks_in_one_sample=number_of_blocks_in_one_sample_dieharder)
 
         elif test_type == 'random':
-            self.dataset_type = DatasetType.random
+            self.dataset_type_dieharder = DatasetType.random
             self.input_index = input_index
             if bits_in_one_sequence_dieharder == 'default':
                 bits_in_one_sequence_dieharder = 1040384
             if number_of_sequences_dieharder == 'default':
                 number_of_sequences_dieharder = 128
 
-            number_of_blocks_in_one_sample_dieharder = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
+            number_of_blocks_in_one_sample_dieharder = math.ceil(
+                bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = self.number_of_sequences_dieharder + 1
             self.bits_in_one_sequence_dieharder = number_of_blocks_in_one_sample_dieharder * self.cipher.output_bit_size
@@ -196,14 +198,15 @@ class DieharderTests:
                                                                   number_of_blocks_in_one_sample=number_of_blocks_in_one_sample_dieharder)
 
         elif test_type == 'low_density':
-            self.dataset_type = DatasetType.low_density
+            self.dataset_type_dieharder = DatasetType.low_density
             self.input_index = input_index
             if bits_in_one_sequence_dieharder == 'default':
                 bits_in_one_sequence_dieharder = 1056896
             if number_of_sequences_dieharder == 'default':
                 number_of_sequences_dieharder = 1
 
-            number_of_blocks_in_one_sample_dieharder = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
+            number_of_blocks_in_one_sample_dieharder = math.ceil(
+                bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = self.number_of_sequences_dieharder + 1
             n = self.cipher.inputs_bit_size[self.input_index]
@@ -217,14 +220,15 @@ class DieharderTests:
                                                                        number_of_samples=self.number_of_samples_dieharder,
                                                                        ratio=ratio)
         elif test_type == 'high_density':
-            self.dataset_type = DatasetType.high_density
+            self.dataset_type_dieharder = DatasetType.high_density
             self.input_index = input_index
             if bits_in_one_sequence_dieharder == 'default':
                 bits_in_one_sequence_dieharder = 1056896
             if number_of_sequences_dieharder == 'default':
                 number_of_sequences_dieharder = 1
 
-            number_of_blocks_in_one_sample_dieharder = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
+            number_of_blocks_in_one_sample_dieharder = math.ceil(
+                bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = self.number_of_sequences_dieharder + 1
             n = self.cipher.inputs_bit_size[self.input_index]
@@ -240,19 +244,21 @@ class DieharderTests:
         else:
             # maybe print the enum value of Dataset.type
             print(
-                'Invalid test_type choice. Choose among the following: avalanche, correlation, cbc, random, low_density, high_density')
+                'Invalid test_type choice. Choose among the following: avalanche, correlation, cbc, random, '
+                'low_density, high_density')
             return
 
         dataset_generate_time = time.time() - dataset_generate_time
         if not dataset:
             return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-        dieharder_test['test_results'] = self._generate_dieharder_dicts(dataset, round_start, round_end, FLAG_CHART=False, dieharder_test_option=dieharder_test_option)
+        self._write_execution_time(f'Compute {self.dataset_type_dieharder.value}', dataset_generate_time)
+        dieharder_test['test_results'] = self._generate_dieharder_dicts(dataset, round_start, round_end,
+                                                                        FLAG_CHART=False,
+                                                                        dieharder_test_option=dieharder_test_option)
         dieharder_test['input_parameters']['bits_in_one_sequence_dieharder'] = bits_in_one_sequence_dieharder
         dieharder_test['input_parameters']['number_of_sequences_dieharder'] = number_of_sequences_dieharder
 
         return dieharder_test
-
 
     @staticmethod
     def _run_dieharder_statistical_tests_tool(input_file, dieharder_test_option):
@@ -284,7 +290,7 @@ class DieharderTests:
             Dieharder Tests Finished!!!
         """
         print("Dieharder Tests Started...")
-        if dieharder_test_option == None:
+        if dieharder_test_option is None:
             os.system(f'dieharder -g 201 -f {input_file} -a > {__class__._DIEHARDER_OUTPUT}')
         else:
             os.system(f'dieharder -g 201 -f {input_file} -d {dieharder_test_option} > {__class__._DIEHARDER_OUTPUT}')
@@ -385,7 +391,7 @@ class DieharderTests:
           f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
 
         """
-        print(f'Drawing round {report_dict["round"]} is in progress.')
+        print(f'Drawing round {report_dict["round"]} is in progress')
         x = [i for i in range(len(report_dict['randomness_test']))]
         y = [0 for _ in range(len(report_dict['randomness_test']))]
         label_y = {
@@ -403,12 +409,13 @@ class DieharderTests:
         plt.xlabel('Tests')
         plt.yticks([-1, 0, 1], ['FAILED', 'WEAK', 'PASSED'])
 
-        if show_graph==False:
-            if output_dir =='':
+        if show_graph == False:
+            if output_dir == '':
                 output_dir = f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
                 plt.savefig(output_dir)
             else:
-                plt.savefig(output_dir+'/'+f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
+                plt.savefig(
+                    output_dir + '/' + f'dieharder_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
         else:
             plt.show()
             plt.clf()
@@ -447,12 +454,13 @@ class DieharderTests:
         # plt.grid(True)
         chart_filename = f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
 
-        if show_graph==False:
-            if output_dir =='':
+        if show_graph == False:
+            if output_dir == '':
                 output_dir = f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
                 plt.savefig(output_dir)
             else:
-                plt.savefig(output_dir+'/'+f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png')
+                plt.savefig(
+                    output_dir + '/' + f'dieharder_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png')
         else:
             plt.show()
             plt.clf()
@@ -461,7 +469,7 @@ class DieharderTests:
 
     def _create_report_folder(self):
         self.report_folder = os.path.join(self.folder_prefix,
-                                          f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences_dieharder}lines_{self.bits_in_one_sequence_dieharder}bits')
+                                          f'{self._cipher_primitive}_{self.dataset_type_dieharder.name}_index{self.input_index}_{self.number_of_sequences_dieharder}lines_{self.bits_in_one_sequence_dieharder}bits')
         try:
             os.makedirs(self.report_folder)
         except OSError:
@@ -475,7 +483,7 @@ class DieharderTests:
         except Exception as e:
             print(f'Error: {e.strerror}')
 
-    def _generate_dieharder_dicts(self, dataset, round_start, round_end,  dieharder_test_option, FLAG_CHART=False):
+    def _generate_dieharder_dicts(self, dataset, round_start, round_end, dieharder_test_option, FLAG_CHART=False):
         dataset_folder = os.getcwd() + '/dataset'
         dataset_filename = 'dieharder_input_' + self._cipher_primitive
         dataset_filename = os.path.join(dataset_folder, dataset_filename)
@@ -510,7 +518,7 @@ class DieharderTests:
                 # generate report
                 dieharder_report_dict = self._parse_report(report_round)
                 dieharder_report_dict[
-                    'data_type'] = f'{self.cipher.inputs[self.input_index]}_{self.dataset_type.value}'
+                    'data_type'] = f'{self.cipher.inputs[self.input_index]}_{self.dataset_type_dieharder.value}'
                 dieharder_report_dict["cipher_name"] = self.cipher.id
                 dieharder_report_dict["round"] = round_number
                 dieharder_report_dict["rounds"] = self.cipher.number_of_rounds
