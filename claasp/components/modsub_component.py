@@ -56,6 +56,14 @@ class MODSUB(Modular):
             sage: modsub_component = cipher.get_component_from_id('modsub_0_0')
             sage: algebraic = AlgebraicModel(cipher)
             sage: modsub_component.algebraic_polynomials(algebraic)
+            [modsub_0_0_b0_0,
+             modsub_0_0_b0_0 + modsub_0_0_y0 + modsub_0_0_x4 + modsub_0_0_x0,
+             modsub_0_0_x4*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_x4 + modsub_0_0_b0_1 + modsub_0_0_b0_0 + modsub_0_0_x4,
+             modsub_0_0_b0_1 + modsub_0_0_y1 + modsub_0_0_x5 + modsub_0_0_x1,
+             modsub_0_0_x5*modsub_0_0_b0_1 + modsub_0_0_x1*modsub_0_0_b0_1 + modsub_0_0_x1*modsub_0_0_x5 + modsub_0_0_b0_2 + modsub_0_0_b0_1 + modsub_0_0_x5,
+             modsub_0_0_b0_2 + modsub_0_0_y2 + modsub_0_0_x6 + modsub_0_0_x2,
+             modsub_0_0_x6*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_x6 + modsub_0_0_b0_3 + modsub_0_0_b0_2 + modsub_0_0_x6,
+             modsub_0_0_b0_3 + modsub_0_0_y3 + modsub_0_0_x7 + modsub_0_0_x3]
 
         """
         component_id = self.id
