@@ -161,9 +161,11 @@ Configuring PyCharm to use Python from within a container involves setting up a 
 
 4. **Configure Project Interpreter**:
     - Go to **Preferences** > **Project: [Your Project Name]** > **Python Interpreter**.
-    - Click on the gear icon and select **Add**.
+    - In the right corner click **Add Interpreter**.
     - In the left-hand pane of the Add Python Interpreter dialog, select **On Docker**.
-    - Specify the docker image. You can choose your local image CLAASP or the public one from `hub.docker.com` called `tiicrc/claasp-lib`
+    - Specify the docker image. You can choose one of "build" or "Pull or use existing":
+      - If your option is "build" then you need to fill the field "Dockerfile" with `docker/Dockerfile`
+      - If your option is "Pull or use existing" then you need to fill the field "image tag" with `claasp:latest`
     - PyCharm will attempt to find the Python interpreter in the created image. You may need to specify the path to the Python executable if PyCharm cannot locate it automatically (commonly `/usr/bin/python3` or similar).
 
 5. **Apply and Save Changes**: Click **OK** to save your new interpreter settings.
