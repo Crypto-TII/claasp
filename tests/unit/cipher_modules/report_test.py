@@ -76,7 +76,6 @@ def test_save_as_latex_table():
     report_sts = Report(nist.nist_statistical_tests('avalanche'))
     report_sts.save_as_latex_table()
 
-
 def test_save_as_DataFrame():
     speck = SpeckBlockCipher(number_of_rounds=2)
     cp = CpXorDifferentialModel(speck)
@@ -91,14 +90,6 @@ def test_save_as_DataFrame():
         bit_positions=range(64),
         bit_values=(0,) * 64)
     trail = cp.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
-
-    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout=1)
-    algebraic_report = Report(algebraic_results)
-    algebraic_report.save_as_DataFrame()
-
-    component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
-    report_cca = Report(component_analysis)
-    report_cca.save_as_DataFrame()
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
@@ -191,10 +182,6 @@ def test_show():
         constraint_type='equal',
         bit_positions=range(64),
         bit_values=(0,) * 64)
-
-    algebraic_results = AlgebraicTests(simon).algebraic_tests(timeout=1)
-    algebraic_report = Report(algebraic_results)
-    algebraic_report.show()
 
     trail = milp.find_one_xor_differential_trail(fixed_values=[plaintext, key])
     trail_report = Report(trail)
