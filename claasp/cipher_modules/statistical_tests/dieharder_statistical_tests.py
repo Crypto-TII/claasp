@@ -125,15 +125,15 @@ class DieharderTests:
                 number_of_sequences_dieharder = 384
 
             sample_size = self.cipher.inputs_bit_size[input_index] * self.cipher.output_bit_size
-            number_of_samples_dieharder_dieharder = math.ceil(bits_in_one_sequence_dieharder / sample_size)
+            number_of_samples_dieharder = math.ceil(bits_in_one_sequence_dieharder / sample_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
-            self.number_of_samples_dieharder_dieharder = number_of_samples_dieharder_dieharder
-            self.number_of_samples_dieharder = self.number_of_samples_dieharder_dieharder * (self.number_of_sequences_dieharder + 1)
-            self.bits_in_one_sequence_dieharder = sample_size * self.number_of_samples_dieharder_dieharder
+            self.number_of_samples_dieharder = number_of_samples_dieharder
+            self.number_of_samples_dieharder = self.number_of_samples_dieharder * (self.number_of_sequences_dieharder + 1)
+            self.bits_in_one_sequence_dieharder = sample_size * self.number_of_samples_dieharder
 
             self._create_report_folder()
             dataset = self.data_generator.generate_avalanche_dataset(input_index=self.input_index,
-                                                                     number_of_samples=self.number_of_samples)
+                                                                     number_of_samples=self.number_of_samples_dieharder)
 
         elif test_type == 'correlation':
 
@@ -145,16 +145,16 @@ class DieharderTests:
             if number_of_sequences_dieharder == 'default':
                 number_of_sequences_dieharder = 384
 
-            number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
+            number_of_blocks_in_one_sample_dieharder = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = self.number_of_sequences_dieharder + 1
-            self.bits_in_one_sequence_dieharder = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+            self.bits_in_one_sequence_dieharder = number_of_blocks_in_one_sample_dieharder * self.cipher.output_bit_size
 
             self._create_report_folder()
 
             dataset = self.data_generator.generate_correlation_dataset(input_index=self.input_index,
-                                                                       number_of_samples=self.number_of_samples,
-                                                                       number_of_blocks_in_one_sample=number_of_blocks_in_one_sample)
+                                                                       number_of_samples=self.number_of_samples_dieharder,
+                                                                       number_of_blocks_in_one_sample=number_of_blocks_in_one_sample_dieharder)
 
         elif test_type == 'cbc':
 
@@ -165,16 +165,16 @@ class DieharderTests:
             if number_of_sequences_dieharder == 'default':
                 number_of_sequences_dieharder = 384
 
-            number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
+            number_of_blocks_in_one_sample_dieharder = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = self.number_of_sequences_dieharder + 1
-            self.bits_in_one_sequence_dieharder = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+            self.bits_in_one_sequence_dieharder = number_of_blocks_in_one_sample_dieharder * self.cipher.output_bit_size
 
             self._create_report_folder()
 
             dataset = self.data_generator.generate_cbc_dataset(input_index=self.input_index,
-                                                               number_of_samples=self.number_of_samples,
-                                                               number_of_blocks_in_one_sample=number_of_blocks_in_one_sample)
+                                                               number_of_samples=self.number_of_samples_dieharder,
+                                                               number_of_blocks_in_one_sample=number_of_blocks_in_one_sample_dieharder)
 
         elif test_type == 'random':
             self.dataset_type = DatasetType.random
@@ -184,16 +184,16 @@ class DieharderTests:
             if number_of_sequences_dieharder == 'default':
                 number_of_sequences_dieharder = 128
 
-            number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
+            number_of_blocks_in_one_sample_dieharder = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = self.number_of_sequences_dieharder + 1
-            self.bits_in_one_sequence_dieharder = number_of_blocks_in_one_sample * self.cipher.output_bit_size
+            self.bits_in_one_sequence_dieharder = number_of_blocks_in_one_sample_dieharder * self.cipher.output_bit_size
 
             self._create_report_folder()
 
             dataset = self.data_generator.generate_random_dataset(input_index=self.input_index,
-                                                                  number_of_samples=self.number_of_samples,
-                                                                  number_of_blocks_in_one_sample=number_of_blocks_in_one_sample)
+                                                                  number_of_samples=self.number_of_samples_dieharder,
+                                                                  number_of_blocks_in_one_sample=number_of_blocks_in_one_sample_dieharder)
 
         elif test_type == 'low_density':
             self.dataset_type = DatasetType.low_density
@@ -203,18 +203,18 @@ class DieharderTests:
             if number_of_sequences_dieharder == 'default':
                 number_of_sequences_dieharder = 1
 
-            number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
+            number_of_blocks_in_one_sample_dieharder = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = self.number_of_sequences_dieharder + 1
             n = self.cipher.inputs_bit_size[self.input_index]
-            ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
-            self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
-            self.bits_in_one_sequence_dieharder = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
+            ratio = min(1, (number_of_blocks_in_one_sample_dieharder - 1 - n) / math.comb(n, 2))
+            self.number_of_blocks_in_one_sample_dieharder = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
+            self.bits_in_one_sequence_dieharder = self.number_of_blocks_in_one_sample_dieharder * self.cipher.output_bit_size
 
             self._create_report_folder()
 
             dataset = self.data_generator.generate_low_density_dataset(input_index=self.input_index,
-                                                                       number_of_samples=self.number_of_samples,
+                                                                       number_of_samples=self.number_of_samples_dieharder,
                                                                        ratio=ratio)
         elif test_type == 'high_density':
             self.dataset_type = DatasetType.high_density
@@ -224,18 +224,18 @@ class DieharderTests:
             if number_of_sequences_dieharder == 'default':
                 number_of_sequences_dieharder = 1
 
-            number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
+            number_of_blocks_in_one_sample_dieharder = math.ceil(bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
             self.number_of_sequences_dieharder = number_of_sequences_dieharder
             self.number_of_samples_dieharder = self.number_of_sequences_dieharder + 1
             n = self.cipher.inputs_bit_size[self.input_index]
-            ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
-            self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
-            self.bits_in_one_sequence_dieharder = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
+            ratio = min(1, (number_of_blocks_in_one_sample_dieharder - 1 - n) / math.comb(n, 2))
+            self.number_of_blocks_in_one_sample_dieharder = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
+            self.bits_in_one_sequence_dieharder = self.number_of_blocks_in_one_sample_dieharder * self.cipher.output_bit_size
 
             self._create_report_folder()
 
             dataset = self.data_generator.generate_high_density_dataset(input_index=self.input_index,
-                                                                        number_of_samples=self.number_of_samples,
+                                                                        number_of_samples=self.number_of_samples_dieharder,
                                                                         ratio=ratio)
         else:
             # maybe print the enum value of Dataset.type
