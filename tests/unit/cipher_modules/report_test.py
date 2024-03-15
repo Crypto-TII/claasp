@@ -40,7 +40,7 @@ def test_save_as_image():
     blackbox_report = Report(speck, blackbox_results)
     blackbox_report.save_as_image()
 
-    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout=1)
+    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout_in_seconds=1)
     algebraic_report = Report(speck, algebraic_results)
     algebraic_report.save_as_image()
 
@@ -89,7 +89,7 @@ def test_save_as_DataFrame():
         bit_values=(0,) * 64)
     trail = cp.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
 
-    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout=1)
+    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout_in_seconds=1)
     algebraic_report = Report(speck, algebraic_results)
     algebraic_report.save_as_DataFrame()
 
@@ -131,7 +131,7 @@ def test_save_as_json():
 
     trail_report = Report(simon, trail)
 
-    algebraic_results = AlgebraicTests(simon).algebraic_tests(timeout=1)
+    algebraic_results = AlgebraicTests(simon).algebraic_tests(timeout_in_seconds=1)
     algebraic_report = Report(simon, algebraic_results)
     algebraic_report.save_as_json()
 
