@@ -68,7 +68,7 @@ def test_save_as_latex_table():
 
     avalanche_test_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_test_results)
-    avalanche_report.save_as_latex_table()
+    avalanche_report.save_as_latex_table(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
 
     trail_report = Report(trail)
     trail_report.save_as_latex_table()
@@ -97,7 +97,7 @@ def test_save_as_DataFrame():
     algebraic_report.save_as_DataFrame()
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_DataFrame()
+    avalanche_report.save_as_DataFrame(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
 
     trail_report = Report(trail)
     trail_report.save_as_DataFrame()
@@ -108,15 +108,15 @@ def test_save_as_DataFrame():
 
 
 def test_save_as_json():
-    simon = SimonBlockCipher(number_of_rounds=3)
+    simon = SimonBlockCipher(number_of_rounds=2)
+
     neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(
         simon).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
-
+    blackbox_report.save_as_json(fixed_input='plaintext',fixed_output='round_output')
     nist = NISTStatisticalTests(simon)
     report_sts = Report(nist.nist_statistical_tests('avalanche'))
     report_sts.save_as_json()
-
     milp = MilpXorDifferentialModel(simon)
     plaintext = set_fixed_variables(
         component_id='plaintext',
@@ -130,20 +130,14 @@ def test_save_as_json():
         bit_values=(0,) * 64)
 
     trail = milp.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
-
     trail_report = Report(trail)
-
+    trail_report.save_as_json()
     algebraic_results = AlgebraicTests(simon).algebraic_tests(timeout_in_seconds=1)
     algebraic_report = Report(algebraic_results)
     algebraic_report.save_as_json()
-
     avalanche_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_json()
-
-    trail_report.save_as_json()
-    blackbox_report.save_as_json()
-
+    avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
 
 def test_clean_reports():
     simon = SimonBlockCipher(number_of_rounds=2)
@@ -157,17 +151,10 @@ def test_clean_reports():
 
 def test_show():
     speck = SpeckBlockCipher(number_of_rounds=3)
-    simon = SimonBlockCipher(number_of_rounds=1)
 
     component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
     report_cca = Report(component_analysis)
     report_cca.show()
-
-    #result = NeuralNetworkTests(speck).run_autond_pipeline(optimizer_samples=10 ** 3, optimizer_generations=1,
-    #                                                       training_samples=10 ** 2, testing_samples=10 ** 2,
-    #                                                       number_of_epochs=1, verbose=False)
-    #report_autond = Report(result)
-    #report_autond.show()
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
