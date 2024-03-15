@@ -34,7 +34,8 @@ def test_save_as_image():
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_image()
+    avalanche_report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output',
+             fixed_input_difference='average')
 
     blackbox_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(blackbox_results)
