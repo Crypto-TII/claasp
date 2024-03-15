@@ -62,7 +62,7 @@ def test_algebraic_tests():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
     d = AlgebraicTests(speck).algebraic_tests(1)
     assert d == {'input_parameters': {'cipher.id': 'speck_p32_k64_o32_r1',
-                                      'timeout': 1,
+                                      'timeout_in_seconds': 1,
                                       'test_name': 'algebraic_tests'},
                  'test_results': {'number_of_variables': [320],
                                   'number_of_equations': [272],
@@ -73,7 +73,7 @@ def test_algebraic_tests():
     aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
     d = AlgebraicTests(aes).algebraic_tests(5)
     compare_result = {'input_parameters': {'cipher.id': 'aes_block_cipher_k16_p16_o16_r1',
-                                           'timeout': 5,
+                                           'timeout_in_seconds': 5,
                                            'test_name': 'algebraic_tests'},
                       'test_results': {'number_of_variables': [320],
                                        'number_of_equations': [390],
