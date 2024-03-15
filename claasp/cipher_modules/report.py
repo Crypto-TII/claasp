@@ -209,7 +209,7 @@ class Report:
         self._produce_graph(show_graph=True, fixed_input=fixed_input, fixed_output=fixed_output,
                             fixed_input_difference=fixed_input_difference, test_name=test_name)
 
-    def _export(self, file_format, output_dir):
+    def _export(self, file_format, output_dir, fixed_input = None, fixed_output=None, fixed_test = None):
 
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -220,16 +220,16 @@ class Report:
         if 'statistical' in self.test_name:
 
             if file_format == '.csv':
-                df = pd.DataFrame.from_dict(self.test_report['test_results'][0]["randomness_test"])
+                df = pd.DataFrame.from_dict(self.test_report['test_results'])
                 df.to_csv(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format)
 
             if file_format == '.json':
                 with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
-                    json.dump(self.test_report['test_results'][0]["randomness_test"], fp, default=lambda x: float(x))
+                    json.dump(self.test_report['test_results'], fp, default=lambda x: float(x))
 
             if file_format == '.tex':
                 with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
-                    fp.write(pd.DataFrame(self.test_report['test_results'][0]["randomness_test"]).style.to_latex())
+                    fp.write(pd.DataFrame(self.test_report['test_results']).style.to_latex())
 
         elif 'component_analysis' in self.test_name:
             print('This method is not implemented yet for the component analysis test.')
@@ -277,22 +277,20 @@ class Report:
             if not os.path.exists(output_dir + '/' + self.cipher.id):
                 os.makedirs(output_dir + '/' + self.cipher.id)
 
-            for it in self.test_report["test_results"].keys():
+            for it in self.test_report["test_results"].keys() if fixed_input == None else [fixed_input]:
                 if not os.path.exists(output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                     "test_name"] + '_tables/' + it):
                     os.makedirs(output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                         "test_name"] + '_tables/' + it)
 
-                for out in self.test_report["test_results"][it].keys():
-
+                for out in self.test_report["test_results"][it].keys() if fixed_output == None else [fixed_output]:
                     if not os.path.exists(
                             output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                                 "test_name"] + '_tables/' + it + '/' + out):
                         os.makedirs(output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                             "test_name"] + '_tables/' + it + '/' + out)
 
-                    for test in self.test_report["test_results"][it][out].keys():
-
+                    for test in self.test_report["test_results"][it][out].keys() if fixed_test == None else [fixed_test]:
                         if not os.path.exists(
                                 output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                                     "test_name"] + '_tables/' + it + '/' + out + '/' + test):
@@ -397,14 +395,14 @@ class Report:
 
         print("Report saved in " + output_dir + '/' + self.cipher.id)
 
-    def save_as_DataFrame(self, output_dir=os.getcwd() + '/test_reports'):
-        self._export(file_format='.csv', output_dir=output_dir)
+    def save_as_DataFrame(self, output_dir=os.getcwd() + '/test_reports', fixed_input = None, fixed_output=None, fixed_test=None):
+        self._export(file_format='.csv', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output, fixed_test = fixed_test)
 
-    def save_as_latex_table(self, output_dir=os.getcwd() + '/test_reports'):
-        self._export(file_format='.tex', output_dir=output_dir)
+    def save_as_latex_table(self, output_dir=os.getcwd() + '/test_reports', fixed_input = None, fixed_output=None, fixed_test=None):
+        self._export(file_format='.tex', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output, fixed_test = fixed_test)
 
-    def save_as_json(self, output_dir=os.getcwd() + '/test_reports'):
-        self._export(file_format='.json', output_dir=output_dir)
+    def save_as_json(self, output_dir=os.getcwd() + '/test_reports', fixed_input = None, fixed_output=None, fixed_test=None):
+        self._export(file_format='.json', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output, fixed_test = fixed_test)
 
     def _print_trail(self, word_size, state_size, key_state_size, verbose, show_word_permutation,
                      show_var_shift, show_var_rotate, show_theta_xoodoo,
@@ -833,7 +831,7 @@ class Report:
             self._produce_graph(output_directory, test_name=test_name, fixed_output=fixed_output, fixed_input_difference=fixed_input_difference, fixed_input=fixed_input)
         print('Report saved in ' + output_directory)
 
-    def clean_reports(self, output_dir=os.getcwd() + '/test_reports/reports'):
+    def clean_reports(self, output_dir=os.getcwd() + '/test_reports'):
 
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
