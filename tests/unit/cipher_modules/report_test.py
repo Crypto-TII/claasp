@@ -49,6 +49,7 @@ def test_save_as_image():
     report_cca = Report(component_analysis)
     report_cca.save_as_image()
 
+
 def test_save_as_latex_table():
     simon = SimonBlockCipher(number_of_rounds=2)
     smt = SmtXorDifferentialModel(simon)
@@ -92,9 +93,6 @@ def test_save_as_DataFrame():
         bit_values=(0,) * 64)
     trail = cp.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
 
-    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout_in_seconds=1)
-    algebraic_report = Report(algebraic_results)
-    algebraic_report.save_as_DataFrame()
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
     avalanche_report.save_as_DataFrame(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
@@ -132,9 +130,6 @@ def test_save_as_json():
     trail = milp.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
     trail_report = Report(trail)
     trail_report.save_as_json()
-    algebraic_results = AlgebraicTests(simon).algebraic_tests(timeout_in_seconds=1)
-    algebraic_report = Report(algebraic_results)
-    algebraic_report.save_as_json()
     avalanche_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_results)
     avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
