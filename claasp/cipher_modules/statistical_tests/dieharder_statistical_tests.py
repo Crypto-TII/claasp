@@ -387,8 +387,12 @@ class DieharderTests:
 
         plt.clf()
         plt.scatter(x, y, color="cadetblue")
-        plt.title(
-            f'{report_dict["cipher_name"]}: {report_dict["data_type"]}, Round {report_dict["round"]}|{report_dict["rounds"]}')
+        if len(report_dict['randomness_test'])==1:
+            plt.title(
+            f'{report_dict["cipher_name"]}: {report_dict["data_type"]}, Round {report_dict["round"]}|{report_dict["rounds"]}|{report_dict["randomness_test"][0]["test_name"]}')
+        else:
+            plt.title(
+                f'{report_dict["cipher_name"]}: {report_dict["data_type"]}, Round {report_dict["round"]}|{report_dict["rounds"]}')
         plt.xlabel('Tests')
         plt.yticks([-1, 0, 1], ['FAILED', 'WEAK', 'PASSED'])
 
@@ -421,10 +425,10 @@ class DieharderTests:
 
         """
         print("Drawing chart for all rounds is in progress.")
-        x = [i + 1 for i in range(report_dict_list[0]["rounds"])]
-        y = [0 for _ in range(report_dict_list[0]["rounds"])]
+        x = [i + 1 for i in range(report_dict_list[0]["round"], report_dict_list[-1]["round"]+1)]
+        y = [0 for _ in range(len(x))]
         for i in range(len(report_dict_list)):
-            y[report_dict_list[i]["round"] - 1] = report_dict_list[i]["passed_tests_proportion"]
+            y[i] = report_dict_list[i]["passed_tests_proportion"]
 
         plt.clf()
         plt.scatter(x, y, color="cadetblue")
