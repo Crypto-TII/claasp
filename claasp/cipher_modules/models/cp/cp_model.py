@@ -25,6 +25,7 @@ import subprocess
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
+from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import SBOX
 
@@ -57,9 +58,7 @@ class CpModel:
         self.list_of_xor_components = []
         self.list_of_xor_all_inputs = []
         self.component_and_probability = {}
-        self._model_prefix = [
-            'include "globals.mzn";',
-            f"include \"{os.path.join(os.path.dirname(__file__), 'Minizinc_functions', 'Usefulfunctions.mzn')}\";"]
+        self._model_prefix = ['include "globals.mzn";', f'{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}']
 
     def add_solutions_from_components_values(self, components_values, memory, model_type, solutions, solve_time,
                                              solver_name, solver_output, total_weight):
