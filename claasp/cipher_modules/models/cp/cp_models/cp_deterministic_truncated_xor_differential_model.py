@@ -610,7 +610,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
 
         return time, memory, components_values
             
-    def solve(self, model_type, solver_name=None):
+    def solve(self, model_type, solver_name=None, num_of_processors=1, timelimit=60000):
         """
         Return the solution of the model.
 
@@ -632,6 +632,9 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
           * ``'Gecode'``
           * ``'COIN-BC'``
 
+        - ``num_of_processors`` -- **integer**; the number of processors to be used
+        - ``timelimit`` -- **integer**; time limit to output a result
+
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import CpXorDifferentialTrailSearchModel
@@ -652,7 +655,9 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         
         cipher_name = self.cipher_id
         input_file_path = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
-        command = self.get_command_for_solver_process(input_file_path, model_type, solver_name)
+        command = self.get_command_for_solver_process(
+            input_file_path, model_type, solver_name, num_of_processors, timelimit
+        )
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
         os.remove(input_file_path)
         if solver_process.returncode >= 0:
