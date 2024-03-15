@@ -92,7 +92,7 @@ class AlgebraicTests:
             tests_up_to_round.append(result)
 
         input_parameters = {
-            "cipher.id": self._cipher.id,
+            "cipher": self._cipher,
             "timeout_in_seconds": timeout_in_seconds,
             "test_name": "algebraic_tests"
         }

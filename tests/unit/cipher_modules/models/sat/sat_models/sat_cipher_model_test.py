@@ -14,7 +14,7 @@ def test_find_missing_bits():
 
     missing_bits = sat.find_missing_bits(fixed_values=[ciphertext])
 
-    assert missing_bits['cipher_id'] == 'speck_p32_k64_o32_r22'
+    assert str(missing_bits['cipher']) == 'speck_p32_k64_o32_r22'
     assert missing_bits['model_type'] == 'cipher'
     assert missing_bits['solver_name'] == 'cryptominisat'
     assert missing_bits['components_values'][cipher_output_id] == {'value': '1234abcd'}

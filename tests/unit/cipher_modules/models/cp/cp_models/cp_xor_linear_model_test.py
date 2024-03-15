@@ -54,7 +54,7 @@ def test_find_lowest_weight_xor_linear_trail():
         set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
     trail = cp.find_lowest_weight_xor_linear_trail(fixed_variables)
 
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert eval('0x' + trail['components_values']['cipher_output_3_12_o']['value']) >= 0
     assert trail['components_values']['cipher_output_3_12_o']['weight'] == 0
     assert trail['total_weight'] == '3.0'
@@ -68,7 +68,7 @@ def test_find_one_xor_linear_trail():
         set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
     trail = cp.find_one_xor_linear_trail(fixed_variables)
 
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['components_values']['plaintext']['weight'] == 0
     assert eval('0x' + trail['components_values']['plaintext']['value']) > 0
     assert trail['components_values']['cipher_output_3_12_o']['weight'] == 0
@@ -83,7 +83,7 @@ def test_find_one_xor_linear_trail_with_fixed_weight():
     fixed_variables = [
         set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
     trail = cp.find_one_xor_linear_trail_with_fixed_weight(3, fixed_variables)
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['model_type'] == 'xor_linear_one_solution'
     assert trail['total_weight'] == '3.0'
 
