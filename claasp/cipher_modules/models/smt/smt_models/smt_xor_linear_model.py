@@ -21,6 +21,7 @@ import time
 
 from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
+from claasp.cipher_modules.models.smt.utils.constants import INPUT_BIT_ID_SUFFIX, OUTPUT_BIT_ID_SUFFIX
 from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR)
@@ -180,19 +181,22 @@ class SmtXorLinearModel(SmtModel):
         solution = self.solve(XOR_LINEAR, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
         solutions_list = []
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         while solution['total_weight'] is not None:
             solutions_list.append(solution)
             operands = []
-            for component in self._cipher.get_all_components():
-                bit_len = component.output_bit_size
-                if component.type == SBOX or \
-                        (component.type == WORD_OPERATION and
-                         component.description[0] in ('AND', 'MODADD', 'MODSUB', 'OR', 'SHIFT_BY_VARIABLE_AMOUNT')):
-                    value_to_avoid = int(solution['components_values'][f'{component.id}{out_suffix}']['value'], base=16)
-                    operands.extend([utils.smt_not(f'{component.id}_{j}{out_suffix}')
+            for component in solution['components_values']:
+                value_as_hex_string = solution['components_values'][component]['value']
+                value_to_avoid = int(value_as_hex_string, base=16)
+                bit_len = len(value_as_hex_string) * 4
+                if component.endswith(INPUT_BIT_ID_SUFFIX) or component.endswith(OUTPUT_BIT_ID_SUFFIX):
+                    component_id = component[:-2]
+                    suffix = component[-2:]
+                else:
+                    component_id = component
+                    suffix = OUTPUT_BIT_ID_SUFFIX
+                operands.extend([utils.smt_not(f'{component_id}_{j}{suffix}')
                                      if value_to_avoid >> (bit_len - 1 - j) & 1
-                                     else f'{component.id}_{j}{out_suffix}'
+                                     else f'{component_id}_{j}{suffix}'
                                      for j in range(bit_len)])
             clause = utils.smt_or(operands)
             self._model_constraints = self._model_constraints[:-len(constants.MODEL_SUFFIX)] \

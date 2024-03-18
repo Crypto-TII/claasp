@@ -18,12 +18,12 @@ def test_branch_xor_linear_constraints():
 
 def test_find_all_xor_linear_trails_with_weight_at_most():
     speck = SpeckBlockCipher(number_of_rounds=3)
-    sat = SatXorLinearModel(speck)
+    sat = SatXorLinearModel(speck.remove_key_schedule())
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=integer_to_bit_list(0, 32, 'big'))
-    trails = sat.find_all_xor_linear_trails_with_weight_at_most(2, 3, fixed_values=[plaintext])
+    trails = sat.find_all_xor_linear_trails_with_weight_at_most(0, 2, fixed_values=[plaintext])
 
-    assert len(trails) == 11
+    assert len(trails) == 187
 
 
 def test_find_lowest_weight_xor_linear_trail():
@@ -43,7 +43,7 @@ def test_find_one_xor_linear_trail():
                                     bit_positions=range(32), bit_values=integer_to_bit_list(0, 32, 'big'))
     trail = sat.find_one_xor_linear_trail(fixed_values=[plaintext])
 
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['model_type'] == 'xor_linear'
     assert trail['solver_name'] == 'cryptominisat'
     assert trail['status'] == 'SATISFIABLE'

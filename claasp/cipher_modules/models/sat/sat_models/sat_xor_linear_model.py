@@ -21,6 +21,7 @@ import time
 
 from claasp.cipher_modules.models.sat.utils import constants, utils
 from claasp.cipher_modules.models.sat.sat_model import SatModel
+from claasp.cipher_modules.models.sat.utils.constants import INPUT_BIT_ID_SUFFIX, OUTPUT_BIT_ID_SUFFIX
 from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR)
@@ -128,14 +129,14 @@ class SatXorLinearModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorLinearModel(speck)
+            sage: sat = SatXorLinearModel(speck.remove_key_schedule())
             sage: plaintext = set_fixed_variables(
             ....:         component_id='plaintext',
             ....:         constraint_type='not_equal',
             ....:         bit_positions=range(32),
             ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: trails = sat.find_all_xor_linear_trails_with_fixed_weight(2, fixed_values=[plaintext])
-            sage: len(trails) == 2
+            sage: trails = sat.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values=[plaintext])
+            sage: len(trails) == 4
             True
         """
         start_building_time = time.time()
@@ -146,19 +147,21 @@ class SatXorLinearModel(SatModel):
         solution = self.solve(XOR_LINEAR, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
         solutions_list = []
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         while solution['total_weight'] is not None:
             solutions_list.append(solution)
             literals = []
-            for component in self._cipher.get_all_components():
-                bit_len = component.output_bit_size
-                if component.type == SBOX or \
-                    (component.type == WORD_OPERATION and
-                     component.description[0] in ('AND', 'MODADD', 'MODSUB', 'OR', 'SHIFT_BY_VARIABLE_AMOUNT')):
-                    value_to_avoid = int(solution['components_values'][f'{component.id}{out_suffix}']['value'],
-                                         base=16)
-                    minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                    literals.extend([f'{minus[i]}{component.id}_{i}{out_suffix}' for i in range(bit_len)])
+            for component in solution['components_values']:
+                value_as_hex_string = solution['components_values'][component]['value']
+                value_to_avoid = int(value_as_hex_string, base=16)
+                bit_len = len(value_as_hex_string) * 4
+                minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
+                if component.endswith(INPUT_BIT_ID_SUFFIX) or component.endswith(OUTPUT_BIT_ID_SUFFIX):
+                    component_id = component[:-2]
+                    suffix = component[-2:]
+                else:
+                    component_id = component
+                    suffix = '_o'
+                literals.extend([f'{minus[i]}{component_id}_{i}{suffix}' for i in range(bit_len)])
             self._model_constraints.append(' '.join(literals))
             solution = self.solve(XOR_LINEAR, solver_name=solver_name)
             solution['building_time_seconds'] = end_building_time - start_building_time
@@ -190,14 +193,14 @@ class SatXorLinearModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorLinearModel(speck)
+            sage: sat = SatXorLinearModel(speck.remove_key_schedule())
             sage: plaintext = set_fixed_variables(
             ....:         component_id='plaintext',
             ....:         constraint_type='not_equal',
             ....:         bit_positions=range(32),
             ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: trails = sat.find_all_xor_linear_trails_with_weight_at_most(2, 3, fixed_values=[plaintext])
-            sage: len(trails) == 11
+            sage: trails = sat.find_all_xor_linear_trails_with_weight_at_most(0, 2, fixed_values=[plaintext])
+            sage: len(trails) == 187
             True
         """
         solutions_list = []

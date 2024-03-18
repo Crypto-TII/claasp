@@ -41,7 +41,7 @@ def find_one_impossible_xor_differential_trail():
                                     bit_positions=range(64), bit_values=[0] * 64)
     trail = cp.find_one_impossible_xor_differential_trail(6, [plaintext, ciphertext, key], 'Chuffed', 3)
 
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r6'
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r6'
     assert trail['model_type'] == 'impossible_xor_differential_one_solution'
     assert trail['solver_name'] == 'Chuffed'
 

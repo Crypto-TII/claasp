@@ -41,7 +41,7 @@ def test_find_one_xor_differential_trail():
                                     bit_positions=range(32),
                                     bit_values=integer_to_bit_list(0, 32, 'big'))
     solution = smt.find_one_xor_differential_trail(fixed_values=[plaintext])
-    assert solution['cipher_id'] == 'speck_p32_k64_o32_r5'
+    assert str(solution['cipher']) == 'speck_p32_k64_o32_r5'
     assert solution['solver_name'] == 'z3'
     assert eval('0x' + solution['components_values']['intermediate_output_0_6']['value']) >= 0
     assert solution['components_values']['intermediate_output_0_6']['weight'] == 0

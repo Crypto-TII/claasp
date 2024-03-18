@@ -26,7 +26,7 @@ def test_find_all_xor_linear_trails_with_fixed_weight():
 
     assert len(trails) == 12
     for i in range(len(trails)):
-        assert trails[i]['cipher_id'] == 'speck_p8_k16_o8_r3'
+        assert str(trails[i]['cipher']) == 'speck_p8_k16_o8_r3'
         assert trails[i]['total_weight'] == 1.0
         assert eval(trails[i]['components_values']['plaintext']['value']) > 0
         assert eval(trails[i]['components_values']['key_0_2']['value']) >= 0
@@ -46,7 +46,7 @@ def test_find_all_xor_linear_trails_with_weight_at_most():
 
     assert len(trails) == 13
     for i in range(len(trails)):
-        assert trails[i]['cipher_id'] == 'speck_p8_k16_o8_r3'
+        assert str(trails[i]['cipher']) == 'speck_p8_k16_o8_r3'
         assert trails[i]['total_weight'] <= 1.0
         assert trails[i]['total_weight'] >= 0.0
         assert eval(trails[i]['components_values']['plaintext']['value']) > 0

@@ -200,10 +200,14 @@ class AlgebraicModel:
             component_type = component.type
             operation = component.description[0]
             component_types = ["sbox", "linear_layer", "mix_column", "constant"]
-            operations = ["XOR", "AND", "OR", "SHIFT", "ROTATE", "NOT"]
+            operations = ["XOR", "AND", "OR", "SHIFT", "ROTATE", "NOT", "MODADD", "MODSUB"]
 
             if component_type in component_types or (component_type == "word_operation" and operation in operations):
                 polynomials += component.algebraic_polynomials(self)
+
+            elif component_type == "word_operation" and \
+                    operation in ['ROTATE_BY_VARIABLE_AMOUNT', 'SHIFT_BY_VARIABLE_AMOUNT']:
+                raise ValueError(f"polynomial generation of {operation} operation is not supported at present")
 
         return Sequence(polynomials)
 
@@ -271,6 +275,17 @@ class AlgebraicModel:
                 for n in range(nadditions):
                     # carry variables
                     var_names += [component_id + "_" + "c" + str(n) + "_" + str(i) for i in range(output_size)]
+                    if n < nadditions - 1:
+                        # aux output variables
+                        var_names += \
+                            [component_id + "_" + "o" + str(n) + "_" + str(i) for i in range(output_size)]
+            elif component.type == "word_operation" and component.description[0].lower() == "modsub":
+                ninput_words = component.description[1]
+                nadditions = ninput_words - 1
+
+                for n in range(nadditions):
+                    # borrow variables
+                    var_names += [component_id + "_" + "b" + str(n) + "_" + str(i) for i in range(output_size)]
                     if n < nadditions - 1:
                         # aux output variables
                         var_names += \

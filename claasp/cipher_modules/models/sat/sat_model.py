@@ -335,7 +335,7 @@ class SatModel:
             component2fields, total_weight = {}, None
         if total_weight is not None:
             total_weight = float(total_weight)
-        solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name, sat_time,
+        solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, sat_time,
                                                          sat_memory, component2fields, total_weight)
         solution['status'] = status
 
@@ -361,7 +361,7 @@ class SatModel:
             status = 'UNSATISFIABLE'
         if total_weight is not None:
             total_weight = float(total_weight)
-        solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name, sat_time,
+        solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, sat_time,
                                                          sat_memory, component2fields, total_weight)
         solution['status'] = status
 
