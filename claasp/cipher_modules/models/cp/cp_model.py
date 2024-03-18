@@ -42,11 +42,11 @@ class CpModel:
         self._variables_list = []
         self._model_constraints = []
         self.c = 0
-        if self._cipher.is_spn():
-            for component in self._cipher.get_all_components():
-                if SBOX in component.type:
-                    self.word_size = int(component.output_bit_size)
-                    break
+        #if self._cipher.is_spn():
+        #    for component in self._cipher.get_all_components():
+        #        if SBOX in component.type:
+        #            self.word_size = int(component.output_bit_size)
+        #            break
         self._float_and_lat_values = []
         self._probability = False
         self.sbox_mant = []
@@ -499,7 +499,7 @@ class CpModel:
         if weight == 0 or weight == -1:
             cp_declarations = []
         else:
-            cp_declarations = [f'constraint weight = {100 * weight};']
+            cp_declarations = [f'constraint weight < {100 * weight};']
 
         return cp_declarations, cp_constraints
 

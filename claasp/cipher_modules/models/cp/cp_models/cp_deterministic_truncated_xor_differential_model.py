@@ -109,62 +109,8 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         self._model_prefix.extend(variables)
         self._variables_list.extend(constraints)
         deterministic_truncated_xor_differential.extend(
-            self.final_deterministic_truncated_xor_differential_constraints())
+            self.final_deterministic_truncated_xor_differential_constraints(minimize))
         self._model_constraints = self._model_prefix + self._variables_list + deterministic_truncated_xor_differential
-
-    def build_inverse_deterministic_truncated_xor_differential_trail_model(self, number_of_rounds=None, fixed_variables=[]):
-        """
-        Build CP model for search of deterministic truncated XOR differential trails for the inverted cipher.
-
-        INPUT:
-
-        - ``number_of_rounds`` -- **integer** (default: `[]`); number of rounds
-        - ``fixed_variables`` -- **list**; dictionaries containing the variables to be fixed in standard format
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: cp = CpDeterministicTruncatedXorDifferentialModel(speck)
-            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
-            sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: cp.build_inverse_deterministic_truncated_xor_differential_trail_model(2, fixed_variables)
-        """
-        self._model_prefix = []
-        self._variables_list = []
-        constraints = self.fix_variables_value_constraints(fixed_variables)
-        self._model_constraints = constraints
-        cipher = self._cipher
-        if number_of_rounds is None:
-            number_of_rounds = self._cipher.number_of_rounds
-
-
-        for cipher_round in range(number_of_rounds + 1):
-            for component in cipher.get_all_components():
-                component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER,
-                                   SBOX, MIX_COLUMN, WORD_OPERATION]
-                operation = component.description[0]
-                operation_types = ['AND', 'OR', 'MODADD', 'MODSUB', 'NOT', 'ROTATE', 'SHIFT', 'XOR']
-                variables, constraints = \
-                    component.cp_deterministic_truncated_xor_differential_trail_constraints()
-                if component.type not in component_types or \
-                        (component.type == WORD_OPERATION and operation not in operation_types):
-                    print(f'{component.id} not yet implemented')
-                elif INTERMEDIATE_OUTPUT in component.type or CIPHER_OUTPUT in component.type:
-                    if cipher_round == number_of_rounds:
-                        variables, constraints = self.output_inverse_constraints(component)
-                    else:
-                        variables, constraints = self.output_constraints(component)
-                self._variables_list.extend(variables)
-                self._model_constraints.extend(constraints)
-
-        variables, constraints = self.input_deterministic_truncated_xor_differential_constraints()
-        self._model_prefix.extend(variables)
-        self._variables_list.extend(constraints)
-        self._model_constraints.extend(
-            self.final_impossible_constraints(number_of_rounds))
 
     def final_deterministic_truncated_xor_differential_constraints(self, minimize=False):
         """
@@ -193,58 +139,10 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
             new_constraint = new_constraint + \
                 f'\"{component_id} = \"++ show({component_id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
             if 'cipher_output' in component_id and minimize:
-                cp_constraints.append(f'solve minimize count({component_id}, 2);')
+                cp_constraints.append(f'solve maximize count({self._cipher.get_all_components_ids()[-1]}, 0);')
         new_constraint = new_constraint[:-2] + '];'
         if cp_constraints == []:
             cp_constraints.append(solve_satisfy)
-        cp_constraints.append(new_constraint)
-
-        return cp_constraints
-
-    def final_impossible_constraints(self, number_of_rounds=None):
-        """
-        Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
-
-        INPUT:
-
-        - ``number_of_rounds`` -- **integer**; number of rounds
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=2)
-            sage: cp = CpDeterministicTruncatedXorDifferentialModel(speck)
-            sage: cp.final_impossible_constraints(2)[:-2]
-            ['solve satisfy;']
-        """
-        cipher_inputs = self._cipher.inputs
-        cipher = self._cipher
-        if number_of_rounds is None:
-            number_of_rounds = self._cipher.number_of_rounds
-
-        cp_constraints = [solve_satisfy]
-        new_constraint = 'output['
-        incompatibility_constraint = 'constraint'
-        for element in cipher_inputs:
-            new_constraint = f'{new_constraint}\"{element} = \"++ show({element}) ++ \"\\n\" ++'
-        for cipher_round in range(self._cipher.number_of_rounds):
-            for component in cipher.get_components_in_round(cipher_round):
-                component_id = component.id
-                if 'output' in component.type and cipher_round == number_of_rounds - 1:
-                    output_bit_size = component.output_bit_size
-                    new_constraint = new_constraint + \
-                        f'\"{component_id} = \"++ show({component_id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                    new_constraint = new_constraint + \
-                        f'\"{component_id}_inverse = \"++ show({component_id}_inverse)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                    for i in range(output_bit_size):
-                        incompatibility_constraint += f'({component_id}[{i}]+{component_id}_inverse[{i}]=1) \\/ '
-                else:
-                    new_constraint = new_constraint + \
-                        f'\"{component_id}_inverse = \"++ show({component_id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-        incompatibility_constraint = incompatibility_constraint[:-4] + ';'
-        new_constraint = new_constraint[:-2] + '];'
-        cp_constraints.append(incompatibility_constraint)
         cp_constraints.append(new_constraint)
 
         return cp_constraints
