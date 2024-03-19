@@ -239,6 +239,17 @@ class CpXorLinearModel(CpModel):
             sage: trails = cp.find_all_xor_linear_trails_with_fixed_weight(1) # long
             sage: len(trails)
             12
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
+            sage: cp = CpXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+            sage: trails = cp.find_all_xor_linear_trails_with_fixed_weight(2, fixed_values=[key])
+            sage: len(trails)
+            8
         """
         start = tm.time()
         self.build_xor_linear_trail_model(fixed_weight, fixed_values)
@@ -276,6 +287,17 @@ class CpXorLinearModel(CpModel):
             sage: trails = cp.find_all_xor_linear_trails_with_weight_at_most(0, 1)
             sage: len(trails)
             13
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
+            sage: cp = CpXorLinearModel(speck)
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+            sage: trails = cp.find_all_xor_linear_trails_with_weight_at_most(0, 3, fixed_values=[key])
+            sage: len(trails)
+            73
         """
         start = tm.time()
         self.build_xor_linear_trail_model(0, fixed_values)
@@ -316,7 +338,18 @@ class CpXorLinearModel(CpModel):
             sage: cp= CpXorLinearModel(speck)
             sage: trail = cp.find_lowest_weight_xor_linear_trail()
             sage: trail['total_weight']
-            3.0
+            '3.0'
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=4)
+            sage: cp = CpXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
+            sage: trail = cp.find_lowest_weight_xor_linear_trail(fixed_values=[key])
+            sage: trail['total_weight']
+            '3.0'
         """
         start = tm.time()
         self.build_xor_linear_trail_model(-1, fixed_values)
@@ -349,6 +382,15 @@ class CpXorLinearModel(CpModel):
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
             sage: cp = CpXorLinearModel(speck)
             sage: cp.find_one_xor_linear_trail() # random
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: cp = CpXorLinearModel(speck)
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
+            sage: cp.find_one_xor_linear_trail(fixed_values=[key]) # random
         """
         start = tm.time()
         self.build_xor_linear_trail_model(0, fixed_values)
@@ -381,7 +423,18 @@ class CpXorLinearModel(CpModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
             sage: cp = CpXorLinearModel(speck)
-            sage: trail = cp.find_one_xor_linear_trail_with_fixed_weight(3) # random
+            sage: trail = cp.find_one_xor_linear_trail_with_fixed_weight(3)
+            sage: trail['total_weight']
+            '3.0'
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
+            sage: cp = CpXorLinearModel(speck)
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+            sage: trail = cp.find_one_xor_linear_trail_with_fixed_weight(3, fixed_values=[key])
             sage: trail['total_weight']
             '3.0'
         """

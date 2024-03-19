@@ -4,10 +4,12 @@ from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import Smt
 
 
 def test_find_all_xor_linear_trails_with_weight_at_most():
-    speck = SpeckBlockCipher(number_of_rounds=3)
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
     smt = SmtXorLinearModel(speck)
-    trails = smt.find_all_xor_linear_trails_with_weight_at_most(0, 2)
-    assert len(trails) == 187
+    key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+    trails = smt.find_all_xor_linear_trails_with_weight_at_most(0, 3, fixed_values=[key])
+
+    assert len(trails) == 73
 
 
 def test_find_lowest_weight_xor_linear_trail():
