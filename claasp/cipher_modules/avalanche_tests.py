@@ -87,6 +87,7 @@ class AvalancheTests:
                                                                          avalanche_dependence_uniform_bias)
         intermediate_output_names = self._add_intermediate_output_components_id_to_dictionary(self._cipher.get_all_components())
         diffusion_tests = {"input_parameters": {
+            "cipher": self._cipher,
             "test_name": "avalanche_tests",
             "number_of_samples": number_of_samples,
             "avalanche_dependence_uniform_bias": avalanche_dependence_uniform_bias,

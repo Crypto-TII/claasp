@@ -87,7 +87,7 @@ def test_solve():
     milp.add_constraints_to_build_in_sage_milp_class()
     differential_solution = milp.solve("xor_differential")
 
-    assert differential_solution['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(differential_solution['cipher']) == 'speck_p32_k64_o32_r4'
     assert differential_solution['model_type'] == 'xor_differential'
     assert differential_solution['components_values']['key']['weight'] == 0
     assert differential_solution['components_values']['modadd_0_1']['weight'] >= 0
@@ -99,7 +99,7 @@ def test_solve():
     milp.add_constraints_to_build_in_sage_milp_class()
     linear_solution = milp.solve("xor_linear")
 
-    assert linear_solution['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(linear_solution['cipher']) == 'speck_p32_k64_o32_r4'
     assert linear_solution['model_type'] == 'xor_linear'
     assert differential_solution['components_values']['key']['weight'] == 0
     assert linear_solution['components_values']['modadd_1_7_i']['weight'] >= 0

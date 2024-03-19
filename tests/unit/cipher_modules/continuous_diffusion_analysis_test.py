@@ -16,7 +16,7 @@ def test_continuous_tests_report():
     speck = SpeckBlockCipher(number_of_rounds=2)
     cda = ContinuousDiffusionAnalysis(speck)
     cda_for_repo = cda.continuous_diffusion_tests()
-    cda_repo = Report(speck, cda_for_repo)
+    cda_repo = Report(cda_for_repo)
     cda_repo.save_as_image()
 
 

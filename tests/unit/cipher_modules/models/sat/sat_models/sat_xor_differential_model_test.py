@@ -36,7 +36,7 @@ def test_find_one_xor_differential_trail():
                                     bit_positions=range(32), bit_values=integer_to_bit_list(0, 32, 'big'))
     trail = sat.find_one_xor_differential_trail(fixed_values=[plaintext])
 
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r5'
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r5'
     assert trail['model_type'] == 'xor_differential'
     assert trail['solver_name'] == 'cryptominisat'
     assert trail['status'] == 'SATISFIABLE'

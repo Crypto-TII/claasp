@@ -362,7 +362,6 @@ class CpXorDifferentialModel(CpModel):
         solution = self.solve('xor_differential_one_solution', solver_name)
         solution['building_time_seconds'] = build_time
         solution['test_name'] = "find_lowest_weight_xor_differential_trail"
-
         return solution
 
     def find_one_xor_differential_trail(self, fixed_values=[], solver_name='Chuffed'):

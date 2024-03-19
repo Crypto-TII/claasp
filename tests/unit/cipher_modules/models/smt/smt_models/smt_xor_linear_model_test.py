@@ -21,7 +21,7 @@ def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(number_of_rounds=4)
     smt = SmtXorLinearModel(speck)
     solution = smt.find_one_xor_linear_trail()
-    assert solution['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert solution['cipher'] == 'speck_p32_k64_o32_r4'
     assert solution['solver_name'] == 'z3'
     assert eval('0x' + solution['components_values']['modadd_0_1_i']['value']) >= 0
     assert solution['components_values']['modadd_0_1_i']['weight'] == 0
