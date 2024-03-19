@@ -23,9 +23,10 @@ import time as tm
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.models.cp.cp_model import CpModel, solve_satisfy, constraint_type_error
-from claasp.cipher_modules.models.utils import get_bit_bindings
+from claasp.cipher_modules.models.utils import get_bit_bindings, \
+    get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import INTERMEDIATE_OUTPUT, XOR_LINEAR, CONSTANT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, \
-    MIX_COLUMN, WORD_OPERATION
+    MIX_COLUMN, WORD_OPERATION, INPUT_KEY
 
 
 class CpXorLinearModel(CpModel):
@@ -131,6 +132,13 @@ class CpXorLinearModel(CpModel):
         self.component_and_probability = {}
         self._variables_list = []
         variables = []
+        if INPUT_KEY not in [variable["component_id"] for variable in fixed_variables]:
+            cipher_without_key_schedule = self._cipher.remove_key_schedule()
+            self._cipher = cipher_without_key_schedule
+            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(
+                self._cipher, lambda record: f'{record[0]}_{record[2]}[{record[1]}]')
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
 
@@ -210,6 +218,7 @@ class CpXorLinearModel(CpModel):
     def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='Chuffed'):
         """
         Return a list of solutions containing all the linear trails having the ``fixed_weight`` weight of correlation.
+        By default, the search removes the key schedule, if any.
 
         INPUT:
 
@@ -225,13 +234,10 @@ class CpXorLinearModel(CpModel):
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=3)
-            sage: speck = speck.remove_key_schedule()
             sage: cp = CpXorLinearModel(speck)
-            sage: fixed_variables = [set_fixed_variables('plaintext', 'not_equal', list(range(8)), integer_to_bit_list(0, 8, 'little'))]
-            sage: trails = cp.find_all_xor_linear_trails_with_fixed_weight(1, fixed_variables) # long
-            sage: len(trails) # long
+            sage: trails = cp.find_all_xor_linear_trails_with_fixed_weight(1) # long
+            sage: len(trails)
             12
         """
         start = tm.time()
@@ -248,6 +254,7 @@ class CpXorLinearModel(CpModel):
                                                        fixed_values=[], solver_name='Chuffed'):
         """
         Return a list of solutions containing all the linear trails having the weight of correlation lying in the interval ``[min_weight, max_weight]``.
+        By default, the search removes the key schedule, if any.
 
         INPUT:
 
@@ -264,13 +271,10 @@ class CpXorLinearModel(CpModel):
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=3)
-            sage: speck = speck.remove_key_schedule()
             sage: cp = CpXorLinearModel(speck)
-            sage: fixed_variables = [set_fixed_variables('plaintext', 'not_equal', list(range(8)), integer_to_bit_list(0, 8, 'little'))]
-            sage: trails = cp.find_all_xor_linear_trails_with_weight_at_most(0, 1, fixed_variables) # long time
-            sage: len(trails) # long time
+            sage: trails = cp.find_all_xor_linear_trails_with_weight_at_most(0, 1)
+            sage: len(trails)
             13
         """
         start = tm.time()
@@ -288,6 +292,7 @@ class CpXorLinearModel(CpModel):
     def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a linear trail with the lowest weight of correlation.
+        By default, the search removes the key schedule, if any.
 
         .. NOTE::
 
@@ -307,19 +312,11 @@ class CpXorLinearModel(CpModel):
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: speck = speck.remove_key_schedule()
+            sage: speck = SpeckBlockCipher(number_of_rounds=4)
             sage: cp= CpXorLinearModel(speck)
-            sage: fixed_variables = [set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
-            sage: cp.find_lowest_weight_xor_linear_trail(fixed_variables) # random
-            {'building_time': 0.007994651794433594,
-             'cipher_id': 'speck_p32_k64_o32_r4',
-              'components_values': {'cipher_output_3_12_o': {'value': '38103010',
-              'weight': 0},
-               ...
-              'total_weight': 3.0
-              'building_time_seconds': 0.009123563766479492}
+            sage: trail = cp.find_lowest_weight_xor_linear_trail()
+            sage: trail['total_weight']
+            3.0
         """
         start = tm.time()
         self.build_xor_linear_trail_model(-1, fixed_values)
@@ -334,6 +331,7 @@ class CpXorLinearModel(CpModel):
     def find_one_xor_linear_trail(self, fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a linear trail with any weight of correlation.
+        By default, the search removes the key schedule, if any.
 
         INPUT:
 
@@ -348,20 +346,9 @@ class CpXorLinearModel(CpModel):
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: speck = speck.remove_key_schedule()
             sage: cp = CpXorLinearModel(speck)
-            sage: fixed_variables = [set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
-            sage: cp.find_one_xor_linear_trail(fixed_variables) # random
-            {'cipher_id': 'speck_p32_k64_o32_r4',
-             ...
-             'memory': '0.0MB',
-             'components_values': {'plaintext': {'weight': 0, 'value': '0xffff'},
-              ...
-             'cipher_output_3_12': {'weight': 0, 'value': '0xffffffff'}},
-             'total_weight': 16.0
-             'building_time_seconds': 0.00975656509399414}
+            sage: cp.find_one_xor_linear_trail() # random
         """
         start = tm.time()
         self.build_xor_linear_trail_model(0, fixed_values)
@@ -376,6 +363,7 @@ class CpXorLinearModel(CpModel):
     def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], solver_name='Chuffed'):
         """
         Return the solution representing a linear trail with the weight of correlation equal to ``fixed_weight``.
+        By default, the search removes the key schedule, if any.
 
         INPUT:
 
@@ -391,18 +379,11 @@ class CpXorLinearModel(CpModel):
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: speck = speck.remove_key_schedule()
             sage: cp = CpXorLinearModel(speck)
-            sage: fixed_variables = [set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
-            sage: cp.find_one_xor_linear_trail_with_fixed_weight(3, fixed_variables) # random
-            {'cipher_id': 'speck_p32_k64_o32_r4',
-             'model_type': 'xor_linear_one_solution',
-             ...
-             'total_weight': 3.0,
-             'building_time_seconds': 0.005683183670043945}
-
+            sage: trail = cp.find_one_xor_linear_trail_with_fixed_weight(3) # random
+            sage: trail['total_weight']
+            '3.0'
         """
         start = tm.time()
         self.build_xor_linear_trail_model(fixed_weight, fixed_values)
