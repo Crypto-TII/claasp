@@ -29,7 +29,8 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
 from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX, \
     MILP_BUILDING_MESSAGE, MILP_XOR_LINEAR_OBJECTIVE
-from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, _string_to_hex
+from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, _string_to_hex, \
+    _filter_fixed_variables
 from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list, \
     set_component_solution, get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (INTERMEDIATE_OUTPUT, CONSTANT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
@@ -281,8 +282,20 @@ class MilpXorLinearModel(MilpModel):
             sage: milp = MilpXorLinearModel(speck)
             sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(1)
             ...
-            sage: len(trails) # long
+            sage: len(trails)
             12
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
+            sage: milp = MilpXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+            sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(2, fixed_values=[key]) # long
+            ...
+            sage: len(trails)
+            8
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
@@ -312,26 +325,7 @@ class MilpXorLinearModel(MilpModel):
                 self._number_of_trails_found += 1
                 verbose_print(f"trails found : {self._number_of_trails_found}")
                 list_trails.append(solution)
-                fixed_variables = []
-                for index, input in enumerate(inputs_ids):
-                    fixed_variable = {"component_id": input}
-                    input_bit_size = self._cipher.inputs_bit_size[index]
-                    fixed_variable["bit_positions"] = list(range(input_bit_size))
-                    fixed_variable["constraint_type"] = "not_equal"
-                    fixed_variable["bit_values"] = integer_to_bit_list(
-                        BitArray(solution["components_values"][input]["value"]).int, input_bit_size, 'big')
-                    fixed_variables.append(fixed_variable)
-
-                for cipher_round in self._cipher.rounds_as_list:
-                    for component in cipher_round.components:
-                        fixed_variable = {"component_id": component.id}
-                        output_bit_size = component.output_bit_size
-                        fixed_variable["bit_positions"] = list(range(output_bit_size))
-                        fixed_variable["constraint_type"] = "not_equal"
-                        fixed_variable["bit_values"] = integer_to_bit_list(
-                            BitArray(solution["components_values"][component.id + "_o"]["value"]).int,
-                            output_bit_size, 'big')
-                        fixed_variables.append(fixed_variable)
+                fixed_variables = self._get_fixed_variables_from_solution(fixed_values, inputs_ids, solution)
 
                 fix_var_constraints = self.exclude_variables_value_xor_linear_constraints(fixed_variables)
 
@@ -340,6 +334,8 @@ class MilpXorLinearModel(MilpModel):
                     mip.add_constraint(constraint)
             except Exception:
                 looking_for_other_solutions = 0
+            finally:
+                sys.stdout = sys.__stdout__
 
         number_constraints = mip.number_of_constraints()
         mip.remove_constraints(range(number_constraints - number_new_constraints, number_constraints))
@@ -383,6 +379,18 @@ class MilpXorLinearModel(MilpModel):
             ...
             sage: len(trails)
             13
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
+            sage: milp = MilpXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+            sage: trails = milp.find_all_xor_linear_trails_with_weight_at_most(0, 3, fixed_values=[key]) # long
+            ...
+            sage: len(trails)
+            73
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
@@ -393,8 +401,6 @@ class MilpXorLinearModel(MilpModel):
         end = time.time()
         building_time = end - start
 
-        if fixed_values == []:
-            fixed_values = get_single_key_scenario_format_for_fixed_values(self._cipher)
         inputs_ids = self._cipher.inputs
         list_trails = []
         for weight in range(min_weight, max_weight + 1):
@@ -414,8 +420,7 @@ class MilpXorLinearModel(MilpModel):
                     self._number_of_trails_found += 1
                     verbose_print(f"trails found : {self._number_of_trails_found}")
                     list_trails.append(solution)
-                    fixed_variables = self.get_fixed_variables_for_all_xor_linear_trails_with_weight_at_most(
-                        fixed_values, inputs_ids, solution)
+                    fixed_variables = self._get_fixed_variables_from_solution(fixed_values, inputs_ids, solution)
 
                     fix_var_constraints = self.exclude_variables_value_xor_linear_constraints(fixed_variables)
                     for constraint in fix_var_constraints:
@@ -423,6 +428,8 @@ class MilpXorLinearModel(MilpModel):
                     number_new_constraints += len(fix_var_constraints)
                 except Exception:
                     looking_for_other_solutions = 0
+                finally:
+                    sys.stdout = sys.__stdout__
             number_constraints = mip.number_of_constraints()
             mip.remove_constraints(range(number_constraints - number_new_constraints, number_constraints))
         self._number_of_trails_found = 0
@@ -473,6 +480,17 @@ class MilpXorLinearModel(MilpModel):
             ...
             sage: trail["total_weight"] # doctest: +SKIP
             18.0
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=4)
+            sage: milp = MilpXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
+            sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[key])
+            sage: trail["total_weight"]
+            3.0
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
@@ -512,6 +530,15 @@ class MilpXorLinearModel(MilpModel):
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: milp = MilpXorLinearModel(speck)
             sage: trail = milp.find_one_xor_linear_trail() # random
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: milp = MilpXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
+            sage: trail = milp.find_one_xor_linear_trail(fixed_values=[key]) # random
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
@@ -555,6 +582,16 @@ class MilpXorLinearModel(MilpModel):
             ...
             sage: trail['total_weight']
             6.0
+
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
+            sage: milp = MilpXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+            sage: trail = milp.find_one_xor_linear_trail_with_fixed_weight(3, fixed_values=[key]) # random
+            sage: trail["total_weight"]
+            3.0
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
@@ -637,20 +674,18 @@ class MilpXorLinearModel(MilpModel):
 
         return constraints
 
-    def get_fixed_variables_for_all_xor_linear_trails_with_weight_at_most(self, fixed_values, inputs_ids, solution):
+    def _get_fixed_variables_from_solution(self, fixed_values, inputs_ids, solution):
         fixed_variables = []
-        for index, input in enumerate(inputs_ids):
-            input_bit_size = self._cipher.inputs_bit_size[index]
+        for input in inputs_ids:
+            input_bit_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(input)]
             fixed_variable = {"component_id": input,
                               "bit_positions": list(range(input_bit_size)),
                               "constraint_type": "not_equal",
                               "bit_values": integer_to_bit_list(
                                   BitArray(solution["components_values"][input]["value"]).int,
                                   input_bit_size, 'big')}
-
-            fixed_variables += [fixed_variable for dictio in fixed_values
-                                if dictio["component_id"] == input and
-                                dictio["bit_values"] != fixed_variable["bit_values"]]
+            _filter_fixed_variables(fixed_values, fixed_variable, input)
+            fixed_variables.append(fixed_variable)
         for component in self._cipher.get_all_components():
             output_bit_size = component.output_bit_size
             fixed_variable = {"component_id": component.id,
@@ -659,6 +694,7 @@ class MilpXorLinearModel(MilpModel):
                               "bit_values": integer_to_bit_list(
                                   BitArray(solution["components_values"][component.id + "_o"]["value"]).int,
                                   output_bit_size, 'big')}
+            _filter_fixed_variables(fixed_values, fixed_variable, component.id)
             fixed_variables.append(fixed_variable)
 
         return fixed_variables

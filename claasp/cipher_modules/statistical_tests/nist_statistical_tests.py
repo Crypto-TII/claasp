@@ -99,6 +99,7 @@ class NISTStatisticalTests:
 
             'input_parameters': {
                 'test_name': 'nist_statistical_tests',
+                'cipher': self.cipher,
                 'test_type': test_type,
                 'round_start': round_start,
                 'round_end': round_end,
@@ -460,6 +461,9 @@ class NISTStatisticalTests:
           f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
 
         """
+
+        if len(report_dict['randomness_test']) == 1:
+            return
         print(f'Drawing round {report_dict["round"]} is in progress.')
         x = [test['test_id'] for test in report_dict['randomness_test']]
         y = [0 for _ in range(len(x))]
@@ -510,21 +514,22 @@ class NISTStatisticalTests:
 
         """
         print("Drawing chart for all rounds is in progress.")
-        x = [i + 1 for i in range(report_dict_list[0]["rounds"])]
-        y = [0 for _ in range(report_dict_list[0]["rounds"])]
+        x = [i + 1 for i in range(report_dict_list[0]["round"], report_dict_list[-1]["round"]+1)]
+        y = [0 for _ in range(len(x))]
         for i in range(len(report_dict_list)):
-            y[report_dict_list[i]["round"]-1] = report_dict_list[i]["passed_tests"]
+            y[i] = report_dict_list[i]["passed_tests"]
+
 
         random_round = -1
         for r in range(report_dict_list[0]["rounds"]):
-            if report_dict_list[r]["passed_tests"] > 188*0.98:
+            if report_dict_list[r]["passed_tests"] > len(report_dict_list[0]['randomness_test'])*0.98:
                 random_round = report_dict_list[r]["round"]
                 break
 
         plt.clf()
         plt.scatter(x, y, color="cadetblue")
-        plt.hlines(186, 1, report_dict_list[0]["rounds"], color="darkorange", linestyle="dotted", linewidth=2,
-                   label="186")
+        plt.hlines(len(report_dict_list[0]['randomness_test'])*0.98, 1, report_dict_list[0]["rounds"], color="darkorange", linestyle="dotted", linewidth=2,
+                   label=str(math.ceil(len(report_dict_list[0]['randomness_test'])*0.98)))
         plt.plot(x, y, 'o--', color='olive', alpha=0.4)
         if random_round > -1:
             plt.title(
@@ -535,7 +540,7 @@ class NISTStatisticalTests:
         plt.ylabel('Tests passed')
         plt.xticks([i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2) + 1)],
                    [i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2 + 1))])
-        plt.yticks([i * 20 for i in range(1, 11)], [i * 20 for i in range(1, 11)])
+        plt.yticks(list(range(math.ceil(len(report_dict_list[0]['randomness_test'])*0.98))))
         chart_filename = f'nist_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
 
         if show_graph == False:

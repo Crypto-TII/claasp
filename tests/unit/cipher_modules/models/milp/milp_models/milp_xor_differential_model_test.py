@@ -12,7 +12,7 @@ def test_find_all_xor_differential_trails_with_fixed_weight():
 
     assert len(trail) == 6
     for i in range(len(trail)):
-        assert trail[i]['cipher_id'] == 'speck_p8_k16_o8_r2'
+        assert str(trail[i]['cipher']) == 'speck_p8_k16_o8_r2'
         assert trail[i]['total_weight'] == 1.0
         assert eval(trail[i]['components_values']['plaintext']['value']) > 0
         assert eval(trail[i]['components_values']['key']['value']) == 0

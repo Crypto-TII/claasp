@@ -55,7 +55,7 @@ def test_to_bias_for_xor_linear_trail():
     trail = milp.find_lowest_weight_xor_linear_trail([plaintext])
     solution = to_bias_for_xor_linear_trail(speck, trail)
 
-    assert solution['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(solution['cipher']) == 'speck_p32_k64_o32_r4'
     assert solution['total_weight'] == 4.0
     assert solution['measure'] == 'bias'
 
@@ -68,7 +68,7 @@ def test_to_probability_for_xor_linear_trail():
     trail = milp.find_lowest_weight_xor_linear_trail([plaintext])
     solution = to_probability_for_xor_linear_trail(speck, trail)
 
-    assert solution['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(solution['cipher']) == 'speck_p32_k64_o32_r4'
     assert solution['measure'] == 'probability'
     assert solution['total_weight'] == 0.83
 
@@ -81,7 +81,7 @@ def test_to_correlation_for_xor_linear_trail():
     trail = milp.find_lowest_weight_xor_linear_trail([plaintext])
     solution = to_correlation_for_xor_linear_trail(speck, trail)
 
-    assert solution['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(solution['cipher']) == 'speck_p32_k64_o32_r4'
     assert solution['measure'] == 'correlation'
     assert solution['total_weight'] == 3.0
 

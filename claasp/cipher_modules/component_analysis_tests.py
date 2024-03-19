@@ -69,7 +69,8 @@ class CipherComponentsAnalysis:
 
         output_dictionary = {
             'input_parameters': {
-                'test_name': 'component_analysis'
+                'test_name': 'component_analysis',
+                'cipher': self._cipher
             },
             'test_results': components_analysis
         }

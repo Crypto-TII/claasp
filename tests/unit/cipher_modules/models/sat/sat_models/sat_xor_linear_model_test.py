@@ -37,7 +37,7 @@ def test_find_one_xor_linear_trail():
     sat = SatXorLinearModel(speck)
     trail = sat.find_one_xor_linear_trail()
 
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['model_type'] == 'xor_linear'
     assert trail['solver_name'] == 'cryptominisat'
     assert trail['status'] == 'SATISFIABLE'

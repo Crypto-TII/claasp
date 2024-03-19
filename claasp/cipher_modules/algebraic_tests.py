@@ -30,22 +30,36 @@ class AlgebraicTests:
             sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
             sage: toyspn = ToySPN1(number_of_rounds=2)
             sage: alg_test = AlgebraicTests(toyspn)
-            sage: alg_test.algebraic_tests(30) # timeout=30 seconds
+            sage: alg_test.algebraic_tests(timeout_in_seconds=10)
+            {'input_parameters': {'cipher.id': 'toyspn1_p6_k6_o6_r2',
+              'timeout_in_seconds': 10,
+              'test_name': 'algebraic_tests'},
+             'test_results': {'number_of_variables': [66, 126],
+              'number_of_equations': [76, 158],
+              'number_of_monomials': [96, 186],
+              'max_degree_of_equations': [2, 2],
+              'test_passed': [False, True]}}
 
+            sage: from claasp.cipher_modules.algebraic_tests import AlgebraicTests
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=1)
             sage: alg_test = AlgebraicTests(speck)
-            sage: alg_test.algebraic_tests(60) # timeout=60 seconds
+            sage: alg_test.algebraic_tests(timeout_in_seconds=30)
+            {'input_parameters': {'cipher.id': 'speck_p32_k64_o32_r1',
+              'timeout_in_seconds': 30,
+              'test_name': 'algebraic_tests'},
+             'test_results': {'number_of_variables': [320],
+              'number_of_equations': [272],
+              'number_of_monomials': [365],
+              'max_degree_of_equations': [2],
+              'test_passed': [True]}}
 
-            sage: speck = SpeckBlockCipher(number_of_rounds=2)
-            sage: alg_test = AlgebraicTests(speck)
-            sage: alg_test.algebraic_tests(60)
     """
 
     def __init__(self, cipher):
         self._cipher = cipher
 
-    def algebraic_tests(self, timeout=60):
+    def algebraic_tests(self, timeout_in_seconds=60):
         from sage.structure.sequence import Sequence
         nvars_up_to_round = []
 
@@ -68,7 +82,7 @@ class AlgebraicTests:
 
             from cysignals.alarm import alarm, cancel_alarm, AlarmInterrupt
             try:
-                alarm(timeout)
+                alarm(timeout_in_seconds)
                 Fseq.groebner_basis()
                 cancel_alarm()
                 result = False
@@ -78,8 +92,8 @@ class AlgebraicTests:
             tests_up_to_round.append(result)
 
         input_parameters = {
-            "cipher.id": self._cipher.id,
-            "timeout": timeout,
+            "cipher": self._cipher,
+            "timeout_in_seconds": timeout_in_seconds,
             "test_name": "algebraic_tests"
         }
         test_results = {
