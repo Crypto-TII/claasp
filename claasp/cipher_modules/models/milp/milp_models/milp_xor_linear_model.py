@@ -1,5 +1,3 @@
-import os
-import sys
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -19,6 +17,8 @@ import sys
 
 
 import time
+import os
+import sys
 
 from bitstring import BitArray
 
