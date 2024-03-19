@@ -15,13 +15,13 @@ def test_branch_xor_linear_constraints():
     assert constraints[-2] == '-xor_2_10_15_o cipher_output_2_12_31_i'
     assert constraints[-1] == 'xor_2_10_15_o -cipher_output_2_12_31_i'
 
-
 def test_find_all_xor_linear_trails_with_weight_at_most():
-    speck = SpeckBlockCipher(number_of_rounds=3)
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
     sat = SatXorLinearModel(speck)
-    trails = sat.find_all_xor_linear_trails_with_weight_at_most(0, 2)
+    key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+    trails = sat.find_all_xor_linear_trails_with_weight_at_most(0, 3, fixed_values=[key])
 
-    assert len(trails) == 187
+    assert len(trails) == 73
 
 
 def test_find_lowest_weight_xor_linear_trail():
