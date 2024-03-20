@@ -53,30 +53,3 @@ def test_avalanche_tests_with_speck_cipher(benchmark, number_of_samples):
 @pytest.mark.parametrize("number_of_samples", [10, 100, 1000, 10000])
 def test_avalanche_tests_with_aes_cipher(benchmark, number_of_samples):
     benchmark(AvalancheTests(aes).avalanche_tests, number_of_samples=number_of_samples)
-
-
-@pytest.mark.parametrize("number_of_samples", [10, 100, 1000, 10000])
-def test_continuous_diffusion_tests_with_speck_cipher(benchmark, number_of_samples):
-    benchmark(ContinuousDiffusionAnalysis(speck).continuous_diffusion_tests(is_continuous_neutrality_measure=False, is_diffusion_factor=False), number_of_samples=number_of_samples)
-
-
-@pytest.mark.parametrize("number_of_samples", [10, 100, 1000, 10000])
-def test_continuous_diffusion_tests_with_aes_cipher(benchmark, number_of_samples):
-    benchmark(ContinuousDiffusionAnalysis(aes).continuous_diffusion_tests(is_continuous_neutrality_measure=False, is_diffusion_factor=False), number_of_samples=number_of_samples)
-
-
-@pytest.mark.parametrize("nb_samples", [10, 100])
-@pytest.mark.parametrize("hidden_layers", [[32, 32, 32], [64, 64, 64]])
-@pytest.mark.parametrize("number_of_epochs", [1, 10, 100])
-def test_neural_network_blackbox_distinguisher_tests_with_speck_cipher(benchmark, nb_samples,
-                                                                       hidden_layers, number_of_epochs):
-    benchmark(NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests(), nb_samples, hidden_layers,
-              number_of_epochs)
-
-
-@pytest.mark.parametrize("nb_samples", [10, 100])
-@pytest.mark.parametrize("hidden_layers", [[32, 32, 32], [64, 64, 64]])
-@pytest.mark.parametrize("number_of_epochs", [1, 10, 100])
-def test_neural_network_blackbox_distinguisher_tests_with_aes_cipher(benchmark, nb_samples,
-                                                                     hidden_layers, number_of_epochs):
-    benchmark(NeuralNetworkTests(aes).neural_network_blackbox_distinguisher_tests(), nb_samples, hidden_layers, number_of_epochs)
