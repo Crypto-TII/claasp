@@ -49,7 +49,7 @@ TEST_ID_TABLE = {
 }
 
 
-class StatisticalTests:
+class NISTStatisticalTests:
 
     def __init__(self, cipher):
         cipher.sort_cipher()
