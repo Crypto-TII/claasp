@@ -7,7 +7,7 @@ import pandas as pd
 import json
 import shutil
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
 def _print_colored_state(state, verbose, file):
