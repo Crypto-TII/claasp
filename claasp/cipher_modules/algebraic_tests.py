@@ -72,8 +72,7 @@ class AlgebraicTests:
 
         algebraic_model = AlgebraicModel(self._cipher)
         for round_number in range(self._cipher.number_of_rounds):
-            F += algebraic_model.polynomial_system_at_round(round_number) + \
-                 algebraic_model.connection_polynomials_at_round(round_number)
+            F += algebraic_model.polynomial_system_at_round(round_number)
             Fseq = Sequence(F)
             nvars_up_to_round.append(Fseq.nvariables())
             npolynomials_up_to_round.append(len(Fseq))
