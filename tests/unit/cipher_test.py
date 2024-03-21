@@ -202,8 +202,8 @@ def test_impossible_differential_search():
 
 
 def test_is_algebraically_secure():
-    identity = IdentityBlockCipher()
-    assert identity.is_algebraically_secure(120) is False
+    aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds = 1)
+    assert aes.is_algebraically_secure(10) is False
 
 
 def test_is_andrx():
@@ -233,12 +233,13 @@ def test_is_spn():
 
 
 def test_polynomial_system():
-    assert str(IdentityBlockCipher().polynomial_system()) == 'Polynomial Sequence with 128 Polynomials in 256 Variables'
+    tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
+    assert str(tea.polynomial_system()) == 'Polynomial Sequence with 368 Polynomials in 464 Variables'
 
 
 def test_polynomial_system_at_round():
     assert str(FancyBlockCipher(number_of_rounds=1).polynomial_system_at_round(0)) == \
-           'Polynomial Sequence with 252 Polynomials in 288 Variables'
+           'Polynomial Sequence with 252 Polynomials in 168 Variables'
 
 
 def test_print():

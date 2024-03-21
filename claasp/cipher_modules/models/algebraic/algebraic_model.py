@@ -187,6 +187,12 @@ class AlgebraicModel:
             sage: AlgebraicModel(aes).polynomial_system()
             Polynomial Sequence with 206 Polynomials in 136 Variables
 
+            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+            sage: tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
+            sage: AlgebraicModel(tea).polynomial_system()
+            Polynomial Sequence with 368 Polynomials in 464 Variables
+
         """
         polynomials = []
         for r in range(self._cipher.number_of_rounds):
