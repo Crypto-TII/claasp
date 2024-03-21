@@ -31,26 +31,26 @@ class AlgebraicTests:
             sage: toyspn = ToySPN1(number_of_rounds=2)
             sage: alg_test = AlgebraicTests(toyspn)
             sage: alg_test.algebraic_tests(timeout_in_seconds=10)
-            {'input_parameters': {'cipher.id': 'toyspn1_p6_k6_o6_r2',
+            {'input_parameters': {'cipher': toyspn1_p6_k6_o6_r2,
               'timeout_in_seconds': 10,
               'test_name': 'algebraic_tests'},
-             'test_results': {'number_of_variables': [66, 126],
-              'number_of_equations': [76, 158],
-              'number_of_monomials': [96, 186],
+             'test_results': {'number_of_variables': [30, 48],
+              'number_of_equations': [40, 80],
+              'number_of_monomials': [60, 108],
               'max_degree_of_equations': [2, 2],
-              'test_passed': [False, True]}}
+              'test_passed': [False, False]}}
 
             sage: from claasp.cipher_modules.algebraic_tests import AlgebraicTests
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=1)
             sage: alg_test = AlgebraicTests(speck)
             sage: alg_test.algebraic_tests(timeout_in_seconds=30)
-            {'input_parameters': {'cipher.id': 'speck_p32_k64_o32_r1',
+            {'input_parameters': {'cipher': speck_p32_k64_o32_r1,
               'timeout_in_seconds': 30,
               'test_name': 'algebraic_tests'},
-             'test_results': {'number_of_variables': [320],
-              'number_of_equations': [272],
-              'number_of_monomials': [365],
+             'test_results': {'number_of_variables': [144],
+              'number_of_equations': [96],
+              'number_of_monomials': [189],
               'max_degree_of_equations': [2],
               'test_passed': [True]}}
 
