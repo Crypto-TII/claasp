@@ -14,6 +14,7 @@ from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
 import pytest
+@pytest.mark.order(-5)
 def test_save_as_image():
     speck = SpeckBlockCipher(number_of_rounds=2)
     sat = SatXorDifferentialModel(speck)
@@ -49,7 +50,7 @@ def test_save_as_image():
     report_cca = Report(component_analysis)
     report_cca.save_as_image()
 
-
+@pytest.mark.order(-4)
 def test_save_as_latex_table():
     simon = SimonBlockCipher(number_of_rounds=2)
     smt = SmtXorDifferentialModel(simon)
@@ -78,6 +79,7 @@ def test_save_as_latex_table():
     report_sts = Report(nist.nist_statistical_tests('avalanche'))
     report_sts.save_as_latex_table()
 
+@pytest.mark.order(-3)
 def test_save_as_DataFrame():
     speck = SpeckBlockCipher(number_of_rounds=2)
     cp = CpXorDifferentialModel(speck)
@@ -105,6 +107,7 @@ def test_save_as_DataFrame():
     report_sts.save_as_DataFrame()
 
 
+@pytest.mark.order(-2)
 def test_save_as_json():
     simon = SimonBlockCipher(number_of_rounds=2)
 
@@ -145,6 +148,7 @@ def test_clean_reports():
     blackbox_report.clean_reports()
 
 
+@pytest.mark.order(-6)
 def test_show():
     speck = SpeckBlockCipher(number_of_rounds=3)
 
