@@ -13,7 +13,7 @@ from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
-
+import pytest
 def test_save_as_image():
     speck = SpeckBlockCipher(number_of_rounds=2)
     sat = SatXorDifferentialModel(speck)
@@ -134,6 +134,7 @@ def test_save_as_json():
     avalanche_report = Report(avalanche_results)
     avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
 
+@pytest.mark.order("last")
 def test_clean_reports():
     simon = SimonBlockCipher(number_of_rounds=2)
     neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(
