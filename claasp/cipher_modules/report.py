@@ -455,7 +455,7 @@ class Report:
                     show_components[comp] = True
         out_list = {}
 
-        key_flow = ['key']
+        key_flow = [key for key in self.cipher.inputs if key =='key']
 
         abs_prob = 0
         rel_prob = 0
@@ -477,9 +477,8 @@ class Report:
                     input_links = self.cipher.get_component_from_id(comp_id).input_id_links
                     comp_value = '_'.join(comp_id.split('_')[:-2])
 
-                if (all((
-                                id_link in key_flow or 'constant' in id_link or id_link + '_o' in key_flow or id_link + '_i' in key_flow)
-                        for id_link in input_links) or ('key' in comp_id and 'comp_id' != 'key')):
+                if (all(id_link in key_flow or 'constant' in id_link or id_link + '_o' in key_flow or id_link + '_i' in key_flow
+                        for id_link in input_links) or ('key' in comp_id and comp_id != 'key')):
                     key_flow.append(comp_id)
                     if 'linear' in self.test_name:
                         constants_i = [constant_id + '_i' for constant_id in input_links if 'constant' in constant_id]
@@ -524,7 +523,7 @@ class Report:
                     out_format, 0, 0)
 
         for comp_id in out_list.keys():
-            if comp_id not in key_flow:
+            if comp_id not in key_flow and 'key' not in comp_id:
                 if comp_id == 'plaintext' or 'key' in comp_id:
                     print(f'\t{comp_id}\t', file=file)
                 else:
@@ -542,33 +541,34 @@ class Report:
 
         print('', file=file)
         print('total weight = ' + str(self.test_report['total_weight']), file=file)
-        show_key_flow = False
 
+        show_key_flow = False
         for key_comp in key_flow:
-            if key_comp != 'key' and self.test_report['components_values'][key_comp]['weight'] != 0:
+            key_value = self.test_report['components_values'][key_comp]['value']
+            bin_list = list(format(int(key_value, 16), 'b').zfill(
+                4 * len(key_value) if key_value[:2] != '0x' else 4 * len(key_value[2:]))) if '*' not in key_value else list(
+                key_value[2:])
+
+            word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(
+                bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
+                         range(0, len(bin_list), word_size)]
+
+            if word_list.count(word_denominator) > 0:
                 show_key_flow = True
                 break
-
         if show_key_flow:
             print('', file=file)
             print("KEY FLOW", file=file)
             print('', file=file)
 
             for comp_id in key_flow:
-                if comp_id not in ['plaintext', 'key', 'cipher_output',
-                                   'intermediate_output'] and 'key' not in comp_id and 'intermediate_output' not in comp_id and comp_id[
-                                                                                                                                -2:] not in [
-                    '_i', '_o']:
-                    identifier = '_'.join(comp_id.split('_')[:-2])
-                elif 'intermediate_output' in comp_id:
-                    identifier = 'intermediate_output' + comp_id[-2:]
-                elif comp_id[-2:] == '_i' and show_input:
-                    identifier = comp_id.split('_')[0] + '_i'
-                elif comp_id[-2:] == '_o' and show_output:
-                    identifier = comp_id.split('_')[0] + '_o'
+                if comp_id[-2:] == "_i" or comp_id[-2:] == "_o":
+                    comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
                 else:
-                    identifier = comp_id
-                if show_components[identifier]:
+                    comp_value = '_'.join(comp_id.split('_')[:-2])
+                if show_components[comp_value if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
+                                               'intermediate_output', 'intermediate_output_o',
+                                               'intermediate_output_i'] and 'key' not in comp_id) else comp_id]:
                     if comp_id == 'plaintext' or 'key' in comp_id:
                         print(f'\t{comp_id}\t', file=file)
                     else:
