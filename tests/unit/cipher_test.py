@@ -203,7 +203,7 @@ def test_impossible_differential_search():
 
 def test_is_algebraically_secure():
     aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds = 1)
-    assert aes.is_algebraically_secure(10) is False
+    assert aes.is_algebraically_secure(20) is False
 
 
 def test_is_andrx():
