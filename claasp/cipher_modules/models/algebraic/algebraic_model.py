@@ -207,7 +207,7 @@ class AlgebraicModel:
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: AlgebraicModel(fancy).polynomial_system_at_round(0) # long time
+            sage: AlgebraicModel(fancy).polynomial_system_at_round(0)
             Polynomial Sequence with 252 Polynomials in 168 Variables
         """
         if not 0 <= r < self._cipher.number_of_rounds:
@@ -228,14 +228,16 @@ class AlgebraicModel:
                     operation in ['ROTATE_BY_VARIABLE_AMOUNT', 'SHIFT_BY_VARIABLE_AMOUNT']:
                 raise ValueError(f"polynomial generation of {operation} operation is not supported at present")
 
-        polynomials = self._connection_variables_substitution(Sequence(polynomials), r)
+        polynomials = self._apply_connection_variable_mapping(Sequence(polynomials), r)
         return Sequence(polynomials)
 
-    def _connection_variables_substitution(self, polys, r):
+    def _apply_connection_variable_mapping(self, polys, r):
 
-        if len(polys) == 0: return polys
+        if not polys:
+            return polys
+
         R = self.ring()
-        elim_vars = {}
+        variable_substitution_dict = {}
 
         for component in self._cipher.get_components_in_round(r):
             if component.type == "constant":
@@ -251,11 +253,11 @@ class AlgebraicModel:
                                     input_positions[k]]
             prev_input_vars = list(map(R, prev_input_vars))
             if component.type != "cipher_output":
-                elim_vars.update({x: y for x, y in zip(input_vars, prev_input_vars)})
+                variable_substitution_dict.update({x: y for x, y in zip(input_vars, prev_input_vars)})
             else:
-                elim_vars.update({y: x for x, y in zip(input_vars, prev_input_vars)})
+                variable_substitution_dict.update({y: x for x, y in zip(input_vars, prev_input_vars)})
 
-            polys = polys.subs(elim_vars)
+            polys = polys.subs(variable_substitution_dict)
 
         return polys
 
