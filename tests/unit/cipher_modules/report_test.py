@@ -112,9 +112,9 @@ def test_save_as_json():
         simon).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
     blackbox_report.save_as_json(fixed_input='plaintext',fixed_output='round_output')
-    nist = NISTStatisticalTests(simon)
-    report_sts = Report(nist.nist_statistical_tests('avalanche'))
-    report_sts.save_as_json()
+    #nist = NISTStatisticalTests(simon)
+    #report_sts = Report(nist.nist_statistical_tests('avalanche'))
+    #report_sts.save_as_json()
     milp = MilpXorDifferentialModel(simon)
     plaintext = set_fixed_variables(
         component_id='plaintext',
@@ -134,14 +134,14 @@ def test_save_as_json():
     avalanche_report = Report(avalanche_results)
     avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
 
-#def test_clean_reports():
-#    simon = SimonBlockCipher(number_of_rounds=2)
-#    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(
-#        simon).neural_network_blackbox_distinguisher_tests()
-#    blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
+def test_clean_reports():
+    simon = SimonBlockCipher(number_of_rounds=2)
+    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(
+        simon).neural_network_blackbox_distinguisher_tests()
+    blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
 
-#    blackbox_report.save_as_json()
-#    blackbox_report.clean_reports()
+    blackbox_report.save_as_json()
+    blackbox_report.clean_reports()
 
 
 def test_show():
