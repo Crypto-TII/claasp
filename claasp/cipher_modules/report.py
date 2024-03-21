@@ -7,11 +7,11 @@ import pandas as pd
 import json
 import shutil
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 
-def _print_colored_state(state, verbose, file):
 
+def _print_colored_state(state, verbose, file):
     for line in state:
         print('', end='', file=file)
         for x in line:
@@ -100,7 +100,7 @@ def _latex_heatmap(table, table_string, bit_count):
 
 class Report:
 
-    def __init__(self, cipher, test_report):
+    def __init__(self, test_report):
         """
                 Construct an instance of the Report class.
 
@@ -134,7 +134,10 @@ class Report:
 
         """
 
-        self.cipher = cipher
+        try:
+            self.cipher = test_report['input_parameters']['cipher']
+        except KeyError:
+            self.cipher = test_report['cipher']
         self.test_report = test_report
 
         if 'test_name' in test_report.keys():
@@ -148,7 +151,7 @@ class Report:
             self.input_parameters = {}
             self.test_name = test_report['test_name'] if type(test_report) is dict else test_report[0]['test_name']
 
-    def show(self, test_name='trail_search', fixed_input='plaintext', fixed_output='round_output',
+    def show(self, test_name=None, fixed_input='plaintext', fixed_output='round_output',
              fixed_input_difference='average', word_size=1, state_size=1, key_state_size=1,
              verbose=False, show_word_permutation=False,
              show_var_shift=False, show_var_rotate=False, show_theta_xoodoo=False,
@@ -172,26 +175,41 @@ class Report:
                               show_and,
                               show_or, show_not, show_plaintext, show_key,
                               show_intermediate_output, show_cipher_output, show_input, show_output, save_fig=False)
-
-        else:
-
-            test_list = []
-            if 'statistical' in self.test_name:
-                test_list.append(self.test_name)
-            elif 'component_analysis' in self.test_name:
-                Component_Analysis=CipherComponentsAnalysis(self.cipher)
-                Component_Analysis.print_component_analysis_as_radar_charts(results=self.test_report['test_results'])
-            elif 'algebraic' not in self.test_name and self.test_name !='neural_distinguisher_test':
-                test_list = list(self.test_report['test_results'][fixed_input][fixed_output].keys())
-            if test_name not in test_list and 'algebraic' not in self.test_name and self.test_name !='neural_distinguisher_test':
-                print('Error! Invalid test name. Please choose a valid test name')
-                print('The test name has to be one of the following : ',end='')
+            return
+        elif 'component_analysis' in self.test_name:
+            Component_Analysis = CipherComponentsAnalysis(self.cipher)
+            Component_Analysis.print_component_analysis_as_radar_charts(results=self.test_report['test_results'])
+            return
+        elif 'avalanche_tests' == self.test_name:
+            test_list = self.test_report['test_results']['plaintext']['round_output'].keys()
+            if test_name not in test_list:
+                print('Error! Invalid test name. The report.show function requires a test_name input')
+                print('test_name has to be one of the following : ', end='')
                 print(test_list)
                 return
-            self._produce_graph(show_graph=True, fixed_input=fixed_input, fixed_output=fixed_output,
-                                fixed_input_difference=fixed_input_difference, test_name=test_name)
+            input_diff_values = [x['input_difference_value'] for x in
+                                 self.test_report['test_results']['plaintext']['round_output'][test_name] if
+                                 'input_difference_value' in x.keys()]
+            if fixed_input_difference not in input_diff_values:
+                print(
+                    'Error! Invalid input difference value. The report.show() function requires an input_difference_value input')
+                print('input_difference_value has to be one of the following :', end='')
+                print(input_diff_values)
+                return
+        elif 'neural_network_differential_distinguisher' in self.test_name:
+            input_diff_values = [x['input_difference_value'] for x in
+                                 self.test_report['test_results']['plaintext']['round_output'][
+                                     'neural_network_differential_distinguisher']]
+            if fixed_input_difference not in input_diff_values:
+                print(
+                    'Error! Invalid input difference value. The report.show() function requires an input_difference_value input')
+                print('The input difference value has to be one of the following :', end='')
+                print(input_diff_values)
+                return
+        self._produce_graph(show_graph=True, fixed_input=fixed_input, fixed_output=fixed_output,
+                            fixed_input_difference=fixed_input_difference, test_name=test_name)
 
-    def _export(self, file_format, output_dir):
+    def _export(self, file_format, output_dir, fixed_input = None, fixed_output=None, fixed_test = None):
 
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -202,16 +220,16 @@ class Report:
         if 'statistical' in self.test_name:
 
             if file_format == '.csv':
-                df = pd.DataFrame.from_dict(self.test_report["randomness_test"])
+                df = pd.DataFrame.from_dict(self.test_report['test_results'])
                 df.to_csv(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format)
 
             if file_format == '.json':
                 with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
-                    json.dump(self.test_report["randomness_test"], fp, default=lambda x: float(x))
+                    json.dump(self.test_report['test_results'], fp, default=lambda x: float(x))
 
             if file_format == '.tex':
                 with open(output_dir + '/' + self.cipher.id + '/' + self.test_name + file_format, 'w') as fp:
-                    fp.write(pd.DataFrame(self.test_report["randomness_test"]).style.to_latex())
+                    fp.write(pd.DataFrame(self.test_report['test_results']).style.to_latex())
 
         elif 'component_analysis' in self.test_name:
             print('This method is not implemented yet for the component analysis test.')
@@ -259,22 +277,20 @@ class Report:
             if not os.path.exists(output_dir + '/' + self.cipher.id):
                 os.makedirs(output_dir + '/' + self.cipher.id)
 
-            for it in self.test_report["test_results"].keys():
+            for it in self.test_report["test_results"].keys() if fixed_input == None else [fixed_input]:
                 if not os.path.exists(output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                     "test_name"] + '_tables/' + it):
                     os.makedirs(output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                         "test_name"] + '_tables/' + it)
 
-                for out in self.test_report["test_results"][it].keys():
-
+                for out in self.test_report["test_results"][it].keys() if fixed_output == None else [fixed_output]:
                     if not os.path.exists(
                             output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                                 "test_name"] + '_tables/' + it + '/' + out):
                         os.makedirs(output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                             "test_name"] + '_tables/' + it + '/' + out)
 
-                    for test in self.test_report["test_results"][it][out].keys():
-
+                    for test in self.test_report["test_results"][it][out].keys() if fixed_test == None else [fixed_test]:
                         if not os.path.exists(
                                 output_dir + '/' + self.cipher.id + '/' + self.test_report["input_parameters"][
                                     "test_name"] + '_tables/' + it + '/' + out + '/' + test):
@@ -379,14 +395,14 @@ class Report:
 
         print("Report saved in " + output_dir + '/' + self.cipher.id)
 
-    def save_as_DataFrame(self, output_dir=os.getcwd() + '/test_reports'):
-        self._export(file_format='.csv', output_dir=output_dir)
+    def save_as_DataFrame(self, output_dir=os.getcwd() + '/test_reports', fixed_input = None, fixed_output=None, fixed_test=None):
+        self._export(file_format='.csv', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output, fixed_test = fixed_test)
 
-    def save_as_latex_table(self, output_dir=os.getcwd() + '/test_reports'):
-        self._export(file_format='.tex', output_dir=output_dir)
+    def save_as_latex_table(self, output_dir=os.getcwd() + '/test_reports', fixed_input = None, fixed_output=None, fixed_test=None):
+        self._export(file_format='.tex', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output, fixed_test = fixed_test)
 
-    def save_as_json(self, output_dir=os.getcwd() + '/test_reports'):
-        self._export(file_format='.json', output_dir=output_dir)
+    def save_as_json(self, output_dir=os.getcwd() + '/test_reports', fixed_input = None, fixed_output=None, fixed_test=None):
+        self._export(file_format='.json', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output, fixed_test = fixed_test)
 
     def _print_trail(self, word_size, state_size, key_state_size, verbose, show_word_permutation,
                      show_var_shift, show_var_rotate, show_theta_xoodoo,
@@ -447,7 +463,7 @@ class Report:
 
         for comp_id in self.test_report['components_values'].keys():
 
-            if (comp_id != "plaintext" and comp_id != "key") and "key" not  in comp_id:
+            if (comp_id != "plaintext" and comp_id != "key") and "key" not in comp_id:
                 rel_prob = self.test_report['components_values'][comp_id]['weight']
                 abs_prob += rel_prob
 
@@ -461,11 +477,13 @@ class Report:
                     input_links = self.cipher.get_component_from_id(comp_id).input_id_links
                     comp_value = '_'.join(comp_id.split('_')[:-2])
 
-                if (all((id_link in key_flow or 'constant' in id_link or id_link+'_o' in key_flow or id_link+'_i' in key_flow) for id_link in input_links) or ('key' in comp_id and 'comp_id' != 'key')):
+                if (all((
+                                id_link in key_flow or 'constant' in id_link or id_link + '_o' in key_flow or id_link + '_i' in key_flow)
+                        for id_link in input_links) or ('key' in comp_id and 'comp_id' != 'key')):
                     key_flow.append(comp_id)
                     if 'linear' in self.test_name:
-                        constants_i = [constant_id+'_i' for constant_id in input_links if 'constant' in constant_id]
-                        constants_o = [constant_id+'_o' for constant_id in input_links if 'constant' in constant_id]
+                        constants_i = [constant_id + '_i' for constant_id in input_links if 'constant' in constant_id]
+                        constants_o = [constant_id + '_o' for constant_id in input_links if 'constant' in constant_id]
                         key_flow = key_flow + constants_i + constants_o
                     else:
                         constants = [constant_id for constant_id in input_links if 'constant' in constant_id]
@@ -473,17 +491,18 @@ class Report:
 
             if show_components[
                 comp_value if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
-                                              'intermediate_output', 'intermediate_output_o',
-                                              'intermediate_output_i'] and 'key' not in comp_id) else comp_id]:
+                                               'intermediate_output', 'intermediate_output_o',
+                                               'intermediate_output_i'] and 'key' not in comp_id) else comp_id]:
 
                 value = self.test_report['components_values'][comp_id]['value']
 
-                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value)) if value[:2] != '0x' else 4 * len(value[2:])) if '*' not in value else list(
+                bin_list = list(format(int(value, 16), 'b').zfill(
+                    4 * len(value) if value[:2] != '0x' else 4 * len(value[2:]))) if '*' not in value else list(
                     value[2:])
 
-                word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
+                word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(
+                    bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
                              range(0, len(bin_list), word_size)]
-
 
                 if ('intermediate' in comp_id or 'cipher' in comp_id) and comp_id not in key_flow:
                     size = (state_size, len(word_list) // state_size)
@@ -525,13 +544,10 @@ class Report:
         print('total weight = ' + str(self.test_report['total_weight']), file=file)
         show_key_flow = False
 
-
-
         for key_comp in key_flow:
             if key_comp != 'key' and self.test_report['components_values'][key_comp]['weight'] != 0:
                 show_key_flow = True
                 break
-
 
         if show_key_flow:
             print('', file=file)
@@ -539,7 +555,10 @@ class Report:
             print('', file=file)
 
             for comp_id in key_flow:
-                if comp_id not in ['plaintext', 'key', 'cipher_output','intermediate_output'] and 'key' not in comp_id and 'intermediate_output' not in comp_id and comp_id[-2:] not in ['_i','_o']:
+                if comp_id not in ['plaintext', 'key', 'cipher_output',
+                                   'intermediate_output'] and 'key' not in comp_id and 'intermediate_output' not in comp_id and comp_id[
+                                                                                                                                -2:] not in [
+                    '_i', '_o']:
                     identifier = '_'.join(comp_id.split('_')[:-2])
                 elif 'intermediate_output' in comp_id:
                     identifier = 'intermediate_output' + comp_id[-2:]
@@ -572,13 +591,17 @@ class Report:
             df_scores = pd.DataFrame(
                 self.test_report['test_results']['plaintext']['cipher_output']['differences_scores'],
                 index=['scores']).T
+            nr = self.test_report['test_results']['round_start']
             df_result = pd.DataFrame(
                 self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
-                    'accuracies'], index=['accuracy_round' + str(i) for i in range(len(
+                    'accuracies'], index=['accuracy_round' + str(i) for i in range(nr, nr + len(
                     self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
                         'accuracies']))])
 
             if show_graph:
+                print()
+                print()
+                print()
                 print('RESULTS')
                 print('plaintext_input_diff : ' + str(
                     self.test_report['test_results']['plaintext']['cipher_output']['neural_distinguisher_test'][0][
@@ -600,35 +623,44 @@ class Report:
         elif 'statistical' in self.test_name:
             if 'dieharder' in self.test_name:
                 for dict in self.test_report['test_results']:
-                    DieharderTests.generate_chart_round(dict,
-                                                         output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
-                DieharderTests.generate_chart_all(self.test_report['test_results'],
-                                                   output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
+                    DieharderTests._generate_chart_round(dict,
+                                                         output_directory + '/' + self.cipher.id + '/' + self.test_name,
+                                                         show_graph=True)
+                DieharderTests._generate_chart_all(self.test_report['test_results'],
+                                                   output_directory + '/' + self.cipher.id + '/' + self.test_name,
+                                                   show_graph=True)
 
             elif 'nist' in self.test_name:
                 for dict in self.test_report['test_results']:
-                    StatisticalTests.generate_chart_round(dict,
-                                                           output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
-                StatisticalTests.generate_chart_all(self.test_report['test_results'],
-                                                     output_directory + '/' + self.cipher.id + '/' + self.test_name, show_graph=True)
+                    NISTStatisticalTests._generate_chart_round(dict,
+                                                               output_directory + '/' + self.cipher.id + '/' + self.test_name,
+                                                               show_graph=True)
+                NISTStatisticalTests._generate_chart_all(self.test_report['test_results'],
+                                                         output_directory + '/' + self.cipher.id + '/' + self.test_name,
+                                                         show_graph=True)
 
         elif 'algebraic' in self.test_name:
 
-                y = list(self.test_report['test_results'].keys())
-                num_rounds = len(self.test_report['test_results']['number_of_equations'])
-                x = [i+1 for i in range(num_rounds)]
-                z = [[1]*num_rounds]*len(self.test_report['test_results'].keys())
-                z_text = []
-                for test in self.test_report['test_results'].keys():
-                    z_text.append([str(x) for x in self.test_report['test_results'][test]])
-                fig = px.imshow(z, x=x, y=y, color_continuous_scale='Viridis', aspect="auto")
-                fig.update_traces(text=z_text, texttemplate="%{text}")
-                fig.update_xaxes(side="top")
-                if show_graph==False:
-                    fig.write_image(output_directory + '/test_results.png')
-                if show_graph:
-                    fig.show(renderer='png')
-                    return
+            y = list(self.test_report['test_results'].keys())
+            num_rounds = len(self.test_report['test_results']['number_of_equations'])
+            x = [i + 1 for i in range(num_rounds)]
+            z = [[1] * num_rounds] * len(self.test_report['test_results'].keys())
+            z_text = []
+            for test in self.test_report['test_results'].keys():
+                z_text.append([str(x) for x in self.test_report['test_results'][test]])
+            fig = px.imshow(z, x=x, y=y, color_continuous_scale='Viridis', aspect="auto")
+            fig.update_traces(text=z_text, texttemplate="%{text}")
+            fig.update(layout_coloraxis_showscale=False)
+            fig.update_xaxes(side="top")
+            print(output_directory)
+
+            if show_graph == False:
+                print('saving image')
+                fig.write_image(output_directory + '/' + self.cipher.id + '/' + self.test_name + '/test_results.png')
+                print('image saved')
+            if show_graph:
+                fig.show(renderer='png')
+                return
         else:
 
             inputs = list(self.test_report['test_results'].keys())
@@ -714,7 +746,6 @@ class Report:
                                                     self.cipher.id + '/' + self.test_name + '/' + it + '/' + out + '/' + res + '/' + str(
                                         res) + '_' + str(case['input_difference_value']) + '.png', scale=4)
                                 else:
-
                                     fig.show(renderer='png')
                                     return
                                 fig.data = []
@@ -723,7 +754,7 @@ class Report:
                             else:
 
                                 fig = px.line(df, range_x=[1, self.cipher.number_of_rounds],
-                                              range_y=[min(df[0]) - 1, max(df[0]) + 1])
+                                              range_y=[0, 1])
                                 fig.update_layout(xaxis_title="round", yaxis_title=res_key,
                                                   showlegend=False)
 
@@ -738,8 +769,8 @@ class Report:
                                 fig.data = []
                                 fig.layout = {}
 
-
-    def save_as_image(self, word_size=1, state_size=1, key_state_size=1, output_directory=os.getcwd() + '/test_reports',
+    def save_as_image(self, test_name=None, fixed_input=None, fixed_output=None,
+                      fixed_input_difference=None, word_size=1, state_size=1, key_state_size=1, output_directory=os.getcwd() + '/test_reports',
                       verbose=False, show_word_permutation=False,
                       show_var_shift=False, show_var_rotate=False, show_theta_xoodoo=False,
                       show_theta_keccak=False, show_shift_rows=False, show_sigma=False, show_reverse=False,
@@ -797,15 +828,13 @@ class Report:
 
             if not os.path.exists(output_directory + '/' + self.cipher.id + '/' + self.test_name):
                 os.mkdir(output_directory + '/' + self.cipher.id + '/' + self.test_name)
-            self._produce_graph(output_directory)
+            self._produce_graph(output_directory, test_name=test_name, fixed_output=fixed_output, fixed_input_difference=fixed_input_difference, fixed_input=fixed_input)
         print('Report saved in ' + output_directory)
 
-    def clean_reports(self, output_dir=os.getcwd() + '/test_reports/reports'):
+    def clean_reports(self, output_dir=os.getcwd() + '/test_reports'):
 
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
         else:
             print("Directory " + output_dir + " not found")
             return
-
-

@@ -49,7 +49,7 @@ TEST_ID_TABLE = {
 }
 
 
-class StatisticalTests:
+class NISTStatisticalTests:
 
     def __init__(self, cipher):
         cipher.sort_cipher()
@@ -99,6 +99,7 @@ class StatisticalTests:
 
             'input_parameters': {
                 'test_name': 'nist_statistical_tests',
+                'cipher': self.cipher,
                 'test_type': test_type,
                 'round_start': round_start,
                 'round_end': round_end,
@@ -131,7 +132,8 @@ class StatisticalTests:
             self.number_of_samples = self.number_of_samples_in_one_sequence * (self.number_of_sequences + 1)
             self.bits_in_one_sequence = sample_size * self.number_of_samples_in_one_sequence
 
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
+
             dataset = self.data_generator.generate_avalanche_dataset(input_index=self.input_index,
                                                                      number_of_samples=self.number_of_samples)
 
@@ -149,8 +151,7 @@ class StatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
 
             dataset = self.data_generator.generate_correlation_dataset(input_index=self.input_index,
                                                                        number_of_samples=self.number_of_samples,
@@ -169,8 +170,7 @@ class StatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
 
             dataset = self.data_generator.generate_cbc_dataset(input_index=self.input_index,
                                                                number_of_samples=self.number_of_samples,
@@ -188,8 +188,7 @@ class StatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
 
             dataset = self.data_generator.generate_random_dataset(input_index=self.input_index,
                                                                   number_of_samples=self.number_of_samples,
@@ -210,8 +209,7 @@ class StatisticalTests:
             ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
             self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
 
             dataset = self.data_generator.generate_low_density_dataset(input_index=self.input_index,
                                                                        number_of_samples=self.number_of_samples,
@@ -231,8 +229,7 @@ class StatisticalTests:
             ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
             self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-
-            self._create_report_folder()
+            self._create_report_folder(statistical_test_option_list)
 
             dataset = self.data_generator.generate_high_density_dataset(input_index=self.input_index,
                                                                         number_of_samples=self.number_of_samples,
@@ -450,7 +447,7 @@ class StatisticalTests:
         return report_dict
 
     @staticmethod
-    def generate_chart_round(report_dict, output_dir='', show_graph=False):
+    def _generate_chart_round(report_dict, output_dir='', show_graph=False):
         """
         Generate the corresponding chart based on the parsed report dictionary.
 
@@ -463,21 +460,10 @@ class StatisticalTests:
         - save the chart with filename
           f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
 
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: dict = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is in progress.
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is finished.
-
-            sage: dict['data_type'] = 'random'
-            sage: dict['cipher_name'] = 'toy_cipher'
-            sage: dict['round'] = 1
-            sage: dict['rounds'] = 1
-            sage: StatisticalTests.generate_chart_round(dict)
-            Drawing round 1 is in progress.
-            Drawing round 1 is finished.
         """
+
+        if len(report_dict['randomness_test']) == 1:
+            return
         print(f'Drawing round {report_dict["round"]} is in progress.')
         x = [test['test_id'] for test in report_dict['randomness_test']]
         y = [0 for _ in range(len(x))]
@@ -514,7 +500,7 @@ class StatisticalTests:
         print(f'Drawing round {report_dict["round"]} is finished.')
 
     @staticmethod
-    def generate_chart_all(report_dict_list, report_folder="", show_graph=False):
+    def _generate_chart_all(report_dict_list, report_folder="", show_graph=False):
         """
         Generate the corresponding chart based on the list of parsed report dictionary for all rounds.
 
@@ -526,41 +512,24 @@ class StatisticalTests:
 
         - save the chart with filename f'nist_{data_type}_{cipher_name}.png'
 
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: dict = StatisticalTests.parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is in progress.
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is finished.
-
-            sage: dict['data_type'] = 'random'
-            sage: dict['cipher_name'] = 'toy_cipher'
-            sage: dict['round'] = 1
-            sage: dict['rounds'] = 1
-            sage: dict_list = [dict]
-            sage: StatisticalTests.generate_chart_all(dict_list)
-            Drawing chart for all rounds is in progress.
-            Drawing chart for all rounds is in finished.
         """
         print("Drawing chart for all rounds is in progress.")
-        x = [i + 1 for i in range(report_dict_list[0]["rounds"])]
-        y = [0 for _ in range(report_dict_list[0]["rounds"])]
+        x = [i + 1 for i in range(report_dict_list[0]["round"], report_dict_list[-1]["round"]+1)]
+        y = [0 for _ in range(len(x))]
         for i in range(len(report_dict_list)):
-            print(report_dict_list[i]["round"])
-            print(len(y))
-            print()
-            y[report_dict_list[i]["round"]-1] = report_dict_list[i]["passed_tests"]
+            y[i] = report_dict_list[i]["passed_tests"]
+
 
         random_round = -1
         for r in range(report_dict_list[0]["rounds"]):
-            if report_dict_list[r]["passed_tests"] > 188*0.98:
+            if report_dict_list[r]["passed_tests"] > len(report_dict_list[0]['randomness_test'])*0.98:
                 random_round = report_dict_list[r]["round"]
                 break
 
         plt.clf()
         plt.scatter(x, y, color="cadetblue")
-        plt.hlines(186, 1, report_dict_list[0]["rounds"], color="darkorange", linestyle="dotted", linewidth=2,
-                   label="186")
+        plt.hlines(len(report_dict_list[0]['randomness_test'])*0.98, 1, report_dict_list[0]["rounds"], color="darkorange", linestyle="dotted", linewidth=2,
+                   label=str(math.ceil(len(report_dict_list[0]['randomness_test'])*0.98)))
         plt.plot(x, y, 'o--', color='olive', alpha=0.4)
         if random_round > -1:
             plt.title(
@@ -571,7 +540,7 @@ class StatisticalTests:
         plt.ylabel('Tests passed')
         plt.xticks([i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2) + 1)],
                    [i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2 + 1))])
-        plt.yticks([i * 20 for i in range(1, 11)], [i * 20 for i in range(1, 11)])
+        plt.yticks(list(range(math.ceil(len(report_dict_list[0]['randomness_test'])*0.98))))
         chart_filename = f'nist_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
 
         if show_graph == False:
@@ -582,9 +551,9 @@ class StatisticalTests:
             plt.close()
         print(f'Drawing chart for all rounds is in finished.')
 
-    def _create_report_folder(self):
+    def _create_report_folder(self,statistical_test_option_list):
         self.report_folder = os.path.join(self.folder_prefix,
-                                          f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences}lines_{self.bits_in_one_sequence}bits')
+                                          f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences}lines_{self.bits_in_one_sequence}bits_{statistical_test_option_list}test_option_list')
         try:
             os.makedirs(self.report_folder)
         except OSError:
@@ -632,12 +601,10 @@ class StatisticalTests:
             sts_execution_time = time.time() - sts_execution_time
             try:
                 shutil.move(nist_local_experiment_folder, report_folder_round)
-            except OSError as e:
-                print(f'Error: {e.strerror}')
-                print(
-                    f'Please remove the existed folder {report_folder_round} '
-                    f'or indicate another folder for saving the NIST STS reports.')
-                continue
+            except OSError:
+                shutil.rmtree(report_folder_round)
+                shutil.move(nist_local_experiment_folder, report_folder_round)
+
             self._write_execution_time(f'Compute round {round_number}', sts_execution_time)
 
             try:
@@ -655,9 +622,9 @@ class StatisticalTests:
         print("Finished.")
         return sts_report_dicts
 
-    def generate_chart_for_all_rounds(self, flag_chart, sts_report_dicts):
+    def _generate_chart_for_all_rounds(self, flag_chart, sts_report_dicts):
         if flag_chart:
             try:
-                self.generate_chart_all(sts_report_dicts, self.report_folder)
+                self._generate_chart_all(sts_report_dicts, self.report_folder)
             except OSError:
                 print("Error in generating all round chart.")

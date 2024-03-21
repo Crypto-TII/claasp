@@ -711,3 +711,12 @@ def _string_to_hex( string):
     except Exception:
         value = string
     return value
+
+def _filter_fixed_variables(fixed_values, fixed_variable, id):
+    fixed_values_to_keep = [variable for variable in fixed_values if variable["constraint_type"] == "equal"]
+    if id in [value["component_id"] for value in fixed_values_to_keep]:
+        input_index = [value["component_id"] for value in fixed_values_to_keep].index(id)
+        for bit in fixed_values_to_keep[input_index]["bit_positions"]:
+            bit_index = fixed_variable["bit_positions"].index(bit)
+            del fixed_variable["bit_values"][bit_index]
+            del fixed_variable["bit_positions"][bit_index]

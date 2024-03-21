@@ -64,6 +64,7 @@ class NeuralNetworkTests:
         """
         results = {"input_parameters": {
             "test_name": "neural_network_blackbox_distinguisher_tests",
+            "cipher": self.cipher,
             "number_of_samples": nb_samples,
             "hidden_layers": hidden_layers,
             "number_of_epochs": number_of_epochs}, "test_results": {}}
@@ -146,7 +147,7 @@ class NeuralNetworkTests:
         # cipher_output = base_output
 
         base_inputs_np = [np.broadcast_to(
-            np.array([b for b in x.to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
+            np.array([b for b in int(x).to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
             (nb_samples, input_lengths[i] // 8)
         ).transpose().copy() for i, x in enumerate(base_inputs)]
         random_inputs_for_index = np.frombuffer(os.urandom(nb_samples * input_lengths[index] // 8),
@@ -255,6 +256,7 @@ class NeuralNetworkTests:
         """
         results = {"input_parameters": {
             "test_name": "neural_network_differential_distinguisher_tests",
+            "cipher":self.cipher,
             "number_of_samples": nb_samples,
             "input_differences": diff,
             "hidden_layers": hidden_layers,
@@ -313,7 +315,7 @@ class NeuralNetworkTests:
         random_labels_size = nb_samples - np.count_nonzero(np.array(labels))
 
         base_inputs_np = [np.broadcast_to(
-            np.array([b for b in x.to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
+            np.array([b for b in int(x).to_bytes(input_lengths[i] // 8, byteorder='big')], dtype=np.uint8),
             (nb_samples, input_lengths[i] // 8)
         ).transpose().copy() for i, x in enumerate(base_inputs)]
         random_inputs_for_index = np.frombuffer(os.urandom(nb_samples * input_lengths[index] // 8),
@@ -323,7 +325,7 @@ class NeuralNetworkTests:
 
         other_inputs_np = list(base_inputs_np)
 
-        d_array = np.array([b for b in d.to_bytes(input_lengths[index] // 8, byteorder='big')])
+        d_array = np.array([b for b in int(d).to_bytes(input_lengths[index] // 8, byteorder='big')])
         other_inputs_np[index] = other_inputs_np[index] ^ np.broadcast_to(d_array, (
             nb_samples, input_lengths[index] // 8)).transpose()
 
@@ -598,6 +600,7 @@ class NeuralNetworkTests:
         neural_distinguisher_test_results = {
             'input_parameters': {
                 'test_name': 'neural_distinguisher_test',
+                'cipher': self.cipher,
                 'optimizer_samples': optimizer_samples,
                 'optimizer_generations': optimizer_generations,
                 'training_samples': training_samples,
@@ -636,6 +639,9 @@ class NeuralNetworkTests:
         input_size = self.cipher.output_bit_size * 2
         neural_network = self.get_neural_network(neural_net, input_size = input_size)
         nr = max(1, highest_round-3)
+
+        neural_distinguisher_test_results['test_results']['round_start']=nr
+
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.cipher.inputs}), from round {nr}...')
         neural_results = self.train_neural_distinguisher(data_generator, nr, neural_network, training_samples,
                                    testing_samples, number_of_epochs)

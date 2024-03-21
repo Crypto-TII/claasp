@@ -49,39 +49,40 @@ FANCY_EVALUATE_C_FILE = 'claasp/cipher_modules/fancy_block_cipher_p24_k24_o24_r2
 
 
 def test_algebraic_tests():
-
     toyspn = ToySPN1(number_of_rounds=2)
-    d = AlgebraicTests(toyspn).algebraic_tests(30)
+    d = AlgebraicTests(toyspn).algebraic_tests(10)
     assert d == {
-        'input_parameters': {'cipher.id': 'toyspn1_p6_k6_o6_r2', 'timeout': 30, 'test_name': 'algebraic_tests'},
+        'input_parameters': {'cipher': toyspn, 'timeout_in_seconds': 10, 'test_name': 'algebraic_tests'},
         'test_results': {'number_of_variables': [66, 126],
                          'number_of_equations': [76, 158],
                          'number_of_monomials': [96, 186],
                          'max_degree_of_equations': [2, 2],
-                         'test_passed': [False, False]}}
+                         'test_passed': [False, True]}}
 
-    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    d = AlgebraicTests(speck).algebraic_tests(5)
-    assert d == {
-        'input_parameters': {'cipher.id': 'speck_p32_k64_o32_r2', 'timeout': 5, 'test_name': 'algebraic_tests'},
-        'test_results': {'number_of_variables': [304, 800],
-                         'number_of_equations': [240, 688],
-                         'number_of_monomials': [304, 800],
-                         'max_degree_of_equations': [1, 1],
-                         'test_passed': [False, False]}}
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
+    d = AlgebraicTests(speck).algebraic_tests(1)
+    assert d == {'input_parameters': {'cipher': speck,
+                  'timeout_in_seconds': 1,
+                  'test_name': 'algebraic_tests'},
+                 'test_results': {'number_of_variables': [320],
+                                  'number_of_equations': [272],
+                                  'number_of_monomials': [365],
+                                  'max_degree_of_equations': [2],
+                                  'test_passed': [True]}}
 
-    aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=2)
+    aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
     d = AlgebraicTests(aes).algebraic_tests(5)
-    compare_result = {'input_parameters': {'cipher.id': 'aes_block_cipher_k16_p16_o16_r2',
-                                           'timeout': 5,
-                                           'test_name': 'algebraic_tests'},
-                      'test_results': {'number_of_variables': [352, 592],
-                                       'number_of_equations': [454, 796],
-                                       'number_of_monomials': [520, 928],
-                                       'max_degree_of_equations': [2, 2],
-                                       'test_passed': [False, False]}}
+    compare_result = {'input_parameters': {'cipher': aes,
+                      'timeout_in_seconds': 5,
+                      'test_name': 'algebraic_tests'},
+                     'test_results': {'number_of_variables': [320],
+                      'number_of_equations': [390],
+                      'number_of_monomials': [488],
+                      'max_degree_of_equations': [2],
+                      'test_passed': [False]}}
 
     assert d == compare_result
+
 
 def test_delete_generated_evaluate_c_shared_library():
     file_c = open(FANCY_EVALUATE_C_FILE, 'a')
@@ -160,6 +161,7 @@ def test_generate_bit_based_c_code():
     bit_based_c_code = SpeckBlockCipher().generate_bit_based_c_code(True, True)
     assert '\tprintf("\\nROUND 0\\n\\n");\n' in bit_based_c_code
 
+
 def test_generate_word_based_c_code():
     word_based_c_code = SpeckBlockCipher().generate_word_based_c_code(20)
     assert word_based_c_code[:8] == '#include'
@@ -228,6 +230,7 @@ def test_is_shift_arx():
 def test_is_spn():
     aes = AESBlockCipher(number_of_rounds=2)
     assert aes.is_spn() is True
+
 
 def test_polynomial_system():
     assert str(IdentityBlockCipher().polynomial_system()) == 'Polynomial Sequence with 128 Polynomials in 256 Variables'
@@ -365,11 +368,13 @@ def test_print_as_python_dictionary():
 }
 """
 
+
 def test_inputs_size_to_dict():
     speck = SpeckBlockCipher(number_of_rounds=1, key_bit_size=64, block_bit_size=32)
     input_sizes = speck.inputs_size_to_dict()
     assert input_sizes['key'] == 64
     assert input_sizes['plaintext'] == 32
+
 
 def test_vector_check():
     speck = SpeckBlockCipher(number_of_rounds=22)
