@@ -584,12 +584,12 @@ class NISTStatisticalTests:
 
         for round_number in range(round_start, round_end):
             # initialize the directory environment
-            if os.path.exists(nist_local_experiment_folder):
-                try:
-                    shutil.rmtree(nist_local_experiment_folder)
-                except OSError as e:
-                    print(f'Error: {e.strerror}')
-                    return
+            # if os.path.exists(nist_local_experiment_folder):
+            #     try:
+            #         shutil.rmtree(nist_local_experiment_folder)
+            #     except OSError as e:
+            #         print(f'Error: {e.strerror}')
+            #         return
 
             report_folder_round = os.path.abspath(os.path.join(self.report_folder, f'round_{round_number}'))
             dataset[round_number].tofile(dataset_filename)
