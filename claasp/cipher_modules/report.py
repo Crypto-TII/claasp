@@ -460,7 +460,7 @@ class Report:
         else:
             word_list = [
                 '*' if '*' in ''.join(bin_list[x:x + word_size]) else hex(int(''.join(bin_list[x:x + word_size]), 2))[
-                                                                      2:] for x
+                                                                      2:].zfill(int(word_size/4)) for x
                 in range(0, len(bin_list), word_size)]
 
         if ('intermediate' in comp_id or 'cipher' in comp_id) and comp_id not in key_flow:
@@ -534,7 +534,7 @@ class Report:
                     _print_colored_state(out_list[comp_id][0], verbose, file)
                 else:
                     _print_colored_state(out_list[comp_id][0], verbose, file)
-                    print(f'\t{comp_id}\t', file=file)
+                    print(f' {comp_id}\t', file=file)
             else:
                 if verbose:
                     print(
