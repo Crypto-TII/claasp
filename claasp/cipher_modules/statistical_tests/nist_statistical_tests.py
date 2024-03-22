@@ -584,12 +584,13 @@ class NISTStatisticalTests:
 
         for round_number in range(round_start, round_end):
             # initialize the directory environment
-            # if os.path.exists(nist_local_experiment_folder):
-            #     try:
-            #         shutil.rmtree(nist_local_experiment_folder)
-            #     except OSError as e:
-            #         print(f'Error: {e.strerror}')
-            #         return
+            if os.path.exists(nist_local_experiment_folder):
+                if not os.listdir(nist_local_experiment_folder):
+                    try:
+                        shutil.rmtree(nist_local_experiment_folder)
+                    except OSError as e:
+                        print(f'Error: {e.strerror}')
+                        return
 
             report_folder_round = os.path.abspath(os.path.join(self.report_folder, f'round_{round_number}'))
             dataset[round_number].tofile(dataset_filename)
@@ -601,6 +602,15 @@ class NISTStatisticalTests:
             sts_execution_time = time.time() - sts_execution_time
             try:
                 shutil.move(nist_local_experiment_folder, report_folder_round)
+                for filename in os.listdir(nist_local_experiment_folder):
+                    file_path = os.path.join(nist_local_experiment_folder, filename)
+                    try:
+                        if os.path.isfile(file_path):
+                            os.remove(file_path)
+                        elif os.path.isdir(file_path):
+                            shutil.rmtree(file_path)
+                    except Exception as e:
+                        print(f"Error deleting {file_path}: {e}")
             except OSError:
                 shutil.rmtree(report_folder_round)
                 shutil.move(nist_local_experiment_folder, report_folder_round)
