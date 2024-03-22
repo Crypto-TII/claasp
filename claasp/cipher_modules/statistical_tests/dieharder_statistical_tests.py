@@ -19,7 +19,7 @@
 import os
 import math
 import time
-from datetime import timedelta
+from datetime import timedelta, datetime
 import matplotlib.pyplot as plt
 
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType
@@ -455,8 +455,9 @@ class DieharderTests:
         print(f'Drawing chart for all rounds is in finished.')
 
     def _create_report_folder(self):
+        time_date = 'date:'+'time:'.join(str(datetime.now()).split(' '))
         self.report_folder = os.path.join(self.folder_prefix,
-                                          f'{self._cipher_primitive}_{self.dataset_type_dieharder.name}_index{self.input_index}_{self.number_of_sequences_dieharder}lines_{self.bits_in_one_sequence_dieharder}bits')
+                                          f'{self._cipher_primitive}_{self.dataset_type_dieharder.name}_index{self.input_index}_{self.number_of_sequences_dieharder}lines_{self.bits_in_one_sequence_dieharder}bits_{time_date}time')
         try:
             os.makedirs(self.report_folder)
         except OSError:
@@ -471,7 +472,7 @@ class DieharderTests:
             print(f'Error: {e.strerror}')
 
     def _generate_dieharder_dicts(self, dataset, round_start, round_end, dieharder_test_option, FLAG_CHART=False):
-        dataset_folder = os.getcwd() + '/dataset'
+        dataset_folder = os.getcwd() + 'dieharder_dataset'
         dataset_filename = 'dieharder_input_' + self._cipher_primitive
         dataset_filename = os.path.join(dataset_folder, dataset_filename)
         dieharder_report_dicts = []

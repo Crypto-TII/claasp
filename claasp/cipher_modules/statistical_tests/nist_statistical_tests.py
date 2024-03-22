@@ -21,12 +21,11 @@ import math
 import time
 import shutil
 import pathlib
-from datetime import timedelta
+from datetime import timedelta, datetime
 import matplotlib.pyplot as plt
 
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType
 
-reports_path = "test_reports/statistical_tests/nist_statistics_report"
 
 TEST_ID_TABLE = {
 
@@ -552,8 +551,9 @@ class NISTStatisticalTests:
         print(f'Drawing chart for all rounds is in finished.')
 
     def _create_report_folder(self,statistical_test_option_list):
+        time_date = 'date:'+'time:'.join(str(datetime.now()).split(' '))
         self.report_folder = os.path.join(self.folder_prefix,
-                                          f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences}lines_{self.bits_in_one_sequence}bits_{statistical_test_option_list}test_option_list')
+                                          f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences}lines_{self.bits_in_one_sequence}bits_{statistical_test_option_list}test_option_list_{time_date}time')
         try:
             os.makedirs(self.report_folder)
         except OSError:
