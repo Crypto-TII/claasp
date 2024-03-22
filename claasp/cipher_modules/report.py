@@ -423,17 +423,17 @@ class Report:
 
         return component_types, show_key_flow
 
-    def _get_show_components(self, component_types, show_output, show_input, show_key, input_comps):
+    def _get_show_components(self, component_types, show_output, show_input, show_key, input_comps, var_choices):
 
         show_components = {}
         for comp in component_types:
             for comp_choice in input_comps:
                 if 'show_' + comp == comp_choice:
-                    show_components[comp] = locals()[comp_choice]
+                    show_components[comp] = var_choices[comp_choice]
                 if 'show_' + comp == comp_choice + '_o' and show_output:
-                    show_components[comp] = locals()[comp_choice]
+                    show_components[comp] = var_choices[comp_choice]
                 if 'show_' + comp == comp_choice + '_i' and show_input:
-                    show_components[comp] = locals()[comp_choice]
+                    show_components[comp] = var_choices[comp_choice]
                 if 'key' in comp and show_key == True:
                     show_components[comp] = True
 
@@ -508,7 +508,7 @@ class Report:
         input_comps = list(locals().keys())
 
         component_types, show_key_flow = self._get_component_types()
-        show_components = self._get_show_components(component_types, show_output, show_input, show_key, input_comps)
+        show_components = self._get_show_components(component_types, show_output, show_input, show_key, input_comps, locals())
 
         out_list = {}
 
