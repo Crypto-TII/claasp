@@ -407,6 +407,80 @@ class Report:
     def save_as_json(self, output_dir=os.getcwd() + '/test_reports', fixed_input = None, fixed_output=None, fixed_test=None):
         self._export(file_format='.json', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output, fixed_test = fixed_test)
 
+    def _get_component_types(self):
+        component_types = []
+        show_key_flow = False
+        for comp in list(self.test_report['components_values'].keys()):
+            if 'key' in comp:
+                show_key_flow = True
+            if ('key' in comp or comp == 'plaintext') and comp not in component_types:
+                component_types.append(comp)
+            elif '_'.join(comp.split('_')[:-2]) not in component_types and comp[-2:] != "_i" and comp[-2:] != "_o":
+                component_types.append('_'.join(comp.split('_')[:-2]))
+            elif ('_'.join(comp.split('_')[:-3])) + '_' + ('_'.join(comp.split('_')[-1])) not in component_types and (
+                    comp[-2:] == "_i" or comp[-2:] == "_o"):
+                component_types.append(('_'.join(comp.split('_')[:-3])) + '_' + ('_'.join(comp.split('_')[-1])))
+
+        return component_types, show_key_flow
+
+    def _get_show_components(self, component_types, show_output, show_input, show_key, input_comps):
+
+        show_components = {}
+        for comp in component_types:
+            for comp_choice in input_comps:
+                if 'show_' + comp == comp_choice:
+                    show_components[comp] = locals()[comp_choice]
+                if 'show_' + comp == comp_choice + '_o' and show_output:
+                    show_components[comp] = locals()[comp_choice]
+                if 'show_' + comp == comp_choice + '_i' and show_input:
+                    show_components[comp] = locals()[comp_choice]
+                if 'key' in comp and show_key == True:
+                    show_components[comp] = True
+
+        return show_components
+
+    def _update_out_list(self, out_list, rel_prob, abs_prob, show_as_hex, comp_id, word_size, state_size, key_state_size, key_flow, word_denominator):
+
+        value = self.test_report['components_values'][comp_id]['value']
+        bin_list = list(format(int(value, 16), 'b').zfill(
+            4 * len(value) if value[:2] != '0x' else 4 * len(value[2:]))) if '*' not in value else list(
+            value[2:])
+
+        if show_as_hex == False:
+            word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(
+                bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
+                         range(0, len(bin_list), word_size)]
+        else:
+            word_list = [
+                '*' if '*' in ''.join(bin_list[x:x + word_size]) else hex(int(''.join(bin_list[x:x + word_size]), 2))[
+                                                                      2:] for x
+                in range(0, len(bin_list), word_size)]
+
+        if ('intermediate' in comp_id or 'cipher' in comp_id) and comp_id not in key_flow:
+            size = (state_size, len(word_list) // state_size)
+
+        elif ('intermediate' in comp_id or 'cipher' in comp_id) and comp_id in key_flow and comp_id != 'key':
+            size = (key_state_size, len(word_list) // key_state_size)
+
+        else:
+            size = (1, len(word_list))
+        out_format = [[] for _ in range(size[0])]
+        for i in range(size[0]):
+            for j in range(size[1]):
+                if show_as_hex == False:
+                    if word_list[j + i * size[1]] == word_denominator:
+                        out_format[i].append(f'\033[31;4m{word_list[j + i * size[1]]}\033[0m')
+                    else:
+                        out_format[i].append(word_list[j + i * size[1]])
+                else:
+                    if word_list[j + i * size[1]] == '0':
+                        out_format[i].append(word_list[j + i * size[1]])
+                    else:
+                        out_format[i].append(f'\033[31;4m{word_list[j + i * size[1]]}\033[0m')
+
+        out_list[comp_id] = (out_format, rel_prob, abs_prob) if comp_id not in ["plaintext", "key"] else (
+            out_format, 0, 0)
+
     def _print_trail(self, show_as_hex, word_size, state_size, key_state_size, verbose, show_word_permutation,
                      show_var_shift, show_var_rotate, show_theta_xoodoo,
                      show_theta_keccak, show_shift_rows, show_sigma, show_reverse,
@@ -432,30 +506,10 @@ class Report:
             file = None
 
         input_comps = list(locals().keys())
-        component_types = []
 
-        for comp in list(self.test_report['components_values'].keys()):
-            if 'key' in comp:
-                show_key_flow = True
-            if ('key' in comp or comp == 'plaintext') and comp not in component_types:
-                component_types.append(comp)
-            elif '_'.join(comp.split('_')[:-2]) not in component_types and comp[-2:] != "_i" and comp[-2:] != "_o":
-                component_types.append('_'.join(comp.split('_')[:-2]))
-            elif ('_'.join(comp.split('_')[:-3])) + '_' + ('_'.join(comp.split('_')[-1])) not in component_types and (
-                    comp[-2:] == "_i" or comp[-2:] == "_o"):
-                component_types.append(('_'.join(comp.split('_')[:-3])) + '_' + ('_'.join(comp.split('_')[-1])))
+        component_types, show_key_flow = self._get_component_types()
+        show_components = self._get_show_components(component_types, show_output, show_input, show_key, input_comps)
 
-        show_components = {}
-        for comp in component_types:
-            for comp_choice in input_comps:
-                if 'show_' + comp == comp_choice:
-                    show_components[comp] = locals()[comp_choice]
-                if 'show_' + comp == comp_choice + '_o' and show_output:
-                    show_components[comp] = locals()[comp_choice]
-                if 'show_' + comp == comp_choice + '_i' and show_input:
-                    show_components[comp] = locals()[comp_choice]
-                if 'key' in comp and show_key == True:
-                    show_components[comp] = True
         out_list = {}
 
         key_flow = [key for key in self.cipher.inputs if key =='key']
@@ -496,44 +550,7 @@ class Report:
                                                'intermediate_output', 'intermediate_output_o',
                                                'intermediate_output_i'] and 'key' not in comp_id) else comp_id]:
 
-                value = self.test_report['components_values'][comp_id]['value']
-
-                bin_list = list(format(int(value, 16), 'b').zfill(
-                    4 * len(value) if value[:2] != '0x' else 4 * len(value[2:]))) if '*' not in value else list(
-                    value[2:])
-
-                if show_as_hex == False:
-                    word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(
-                    bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
-                             range(0, len(bin_list), word_size)]
-                else:
-                    word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else hex(int(''.join(bin_list[x:x+word_size]), 2))[2:] for x
-                    in range(0, len(bin_list), word_size)]
-
-                if ('intermediate' in comp_id or 'cipher' in comp_id) and comp_id not in key_flow:
-                    size = (state_size, len(word_list) // state_size)
-
-                elif ('intermediate' in comp_id or 'cipher' in comp_id) and comp_id in key_flow and comp_id != 'key':
-                    size = (key_state_size, len(word_list) // key_state_size)
-
-                else:
-                    size = (1, len(word_list))
-                out_format = [[] for _ in range(size[0])]
-                for i in range(size[0]):
-                    for j in range(size[1]):
-                        if show_as_hex == False:
-                            if word_list[j + i * size[1]] == word_denominator:
-                                out_format[i].append(f'\033[31;4m{word_list[j + i * size[1]]}\033[0m')
-                            else:
-                                out_format[i].append(word_list[j + i * size[1]])
-                        else:
-                            if word_list[j + i * size[1]] == '0':
-                                out_format[i].append(word_list[j + i * size[1]])
-                            else:
-                                out_format[i].append(f'\033[31;4m{word_list[j + i * size[1]]}\033[0m')
-
-                out_list[comp_id] = (out_format, rel_prob, abs_prob) if comp_id not in ["plaintext", "key"] else (
-                    out_format, 0, 0)
+                self._update_out_list(out_list, rel_prob, abs_prob, show_as_hex, comp_id, word_size, state_size, key_state_size, key_flow, word_denominator)
 
         for comp_id in out_list.keys():
             if comp_id not in key_flow and 'key' not in comp_id:
