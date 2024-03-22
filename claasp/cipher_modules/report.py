@@ -702,7 +702,7 @@ class Report:
                     for res in results if test_name == None else [test_name]:
                         if not os.path.exists(output_directory + '/' + it + '/' + out + '/' + res) and show_graph == False:
                             os.mkdir(
-                                output_directory + it + '/' + out + '/' + res)
+                                output_directory + '/' + it + '/' + out + '/' + res)
 
                         ### Make Graphs
 
@@ -761,7 +761,7 @@ class Report:
                                     })
 
                                 if show_graph == False:
-                                    fig.write_image(output_directory + it + '/' + out + '/' + res + '/' + str(
+                                    fig.write_image(output_directory + '/' + it + '/' + out + '/' + res + '/' + str(
                                         res) + '_' + str(case['input_difference_value']) + '.png', scale=4)
                                 else:
                                     fig.show(renderer='png')

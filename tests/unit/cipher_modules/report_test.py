@@ -75,8 +75,8 @@ def test_save_as_latex_table():
     trail_report = Report(trail)
     trail_report.save_as_latex_table()
 
-    nist = DieharderTests(simon)
-    report_sts = Report(nist.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
+    dieharder = DieharderTests(simon)
+    report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
     report_sts.save_as_latex_table()
 
 def test_save_as_DataFrame():
