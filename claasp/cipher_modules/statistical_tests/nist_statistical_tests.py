@@ -94,6 +94,7 @@ class NISTStatisticalTests:
 
          """
 
+        time_date = 'date:'+'time:'.join(str(datetime.now()).split(' '))
         nist_test = {
 
             'input_parameters': {
@@ -131,7 +132,7 @@ class NISTStatisticalTests:
             self.number_of_samples = self.number_of_samples_in_one_sequence * (self.number_of_sequences + 1)
             self.bits_in_one_sequence = sample_size * self.number_of_samples_in_one_sequence
 
-            self._create_report_folder(statistical_test_option_list)
+            self._create_report_folder(time_date,statistical_test_option_list)
 
             dataset = self.data_generator.generate_avalanche_dataset(input_index=self.input_index,
                                                                      number_of_samples=self.number_of_samples)
@@ -150,7 +151,7 @@ class NISTStatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = number_of_blocks_in_one_sample * self.cipher.output_bit_size
-            self._create_report_folder(statistical_test_option_list)
+            self._create_report_folder(time_date,statistical_test_option_list)
 
             dataset = self.data_generator.generate_correlation_dataset(input_index=self.input_index,
                                                                        number_of_samples=self.number_of_samples,
@@ -169,7 +170,7 @@ class NISTStatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = number_of_blocks_in_one_sample * self.cipher.output_bit_size
-            self._create_report_folder(statistical_test_option_list)
+            self._create_report_folder(time_date,statistical_test_option_list)
 
             dataset = self.data_generator.generate_cbc_dataset(input_index=self.input_index,
                                                                number_of_samples=self.number_of_samples,
@@ -187,7 +188,7 @@ class NISTStatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-            self._create_report_folder(statistical_test_option_list)
+            self._create_report_folder(time_date,statistical_test_option_list)
 
             dataset = self.data_generator.generate_random_dataset(input_index=self.input_index,
                                                                   number_of_samples=self.number_of_samples,
@@ -208,7 +209,7 @@ class NISTStatisticalTests:
             ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
             self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-            self._create_report_folder(statistical_test_option_list)
+            self._create_report_folder(time_date,statistical_test_option_list)
 
             dataset = self.data_generator.generate_low_density_dataset(input_index=self.input_index,
                                                                        number_of_samples=self.number_of_samples,
@@ -228,7 +229,7 @@ class NISTStatisticalTests:
             ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
             self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-            self._create_report_folder(statistical_test_option_list)
+            self._create_report_folder(time_date,statistical_test_option_list)
 
             dataset = self.data_generator.generate_high_density_dataset(input_index=self.input_index,
                                                                         number_of_samples=self.number_of_samples,
@@ -243,7 +244,7 @@ class NISTStatisticalTests:
         if not dataset:
             return
         self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
-        nist_test['test_results'] = self._generate_nist_dicts(dataset=dataset, round_start=round_start,
+        nist_test['test_results'] = self._generate_nist_dicts(time_date=time_date, dataset=dataset, round_start=round_start,
                                                               round_end=round_end,
                                                               statistical_test_option_list=statistical_test_option_list)
         nist_test['input_parameters']['bits_in_one_sequence'] = bits_in_one_sequence
@@ -550,8 +551,7 @@ class NISTStatisticalTests:
             plt.close()
         print(f'Drawing chart for all rounds is in finished.')
 
-    def _create_report_folder(self,statistical_test_option_list):
-        time_date = 'date:'+'time:'.join(str(datetime.now()).split(' '))
+    def _create_report_folder(self,time_date,statistical_test_option_list):
         self.report_folder = os.path.join(self.folder_prefix,
                                           f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences}lines_{self.bits_in_one_sequence}bits_{statistical_test_option_list}test_option_list_{time_date}time')
         try:
@@ -567,7 +567,7 @@ class NISTStatisticalTests:
         except Exception as e:
             print(f'Error: {e.strerror}')
 
-    def _generate_nist_dicts(self, dataset, round_start, round_end, statistical_test_option_list='1' + 14 * '0'):
+    def _generate_nist_dicts(self,time_date, dataset, round_start, round_end, statistical_test_option_list='1' + 14 * '0'):
         # seems that the statistical tools cannot change the default folder 'experiments'
         nist_local_experiment_folder = f"/usr/local/bin/sts-2.1.2/experiments/"
         dataset_folder = 'dataset'
@@ -591,7 +591,7 @@ class NISTStatisticalTests:
                     print(f'Error: {e.strerror}')
                     return
 
-            report_folder_round = os.path.abspath(os.path.join(self.report_folder, f'round_{round_number}'))
+            report_folder_round = os.path.abspath(os.path.join(self.report_folder, f'round_{round_number}_{time_date}time'))
             dataset[round_number].tofile(dataset_filename)
 
             sts_execution_time = time.time()
