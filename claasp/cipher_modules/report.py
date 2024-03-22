@@ -4,6 +4,7 @@ from plotly.subplots import make_subplots
 from plotly import express as px
 import plotly.graph_objects as go
 import pandas as pd
+import itertools
 import json
 import shutil
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
@@ -426,16 +427,13 @@ class Report:
     def _get_show_components(self, component_types, show_output, show_input, show_key, input_comps, var_choices):
 
         show_components = {}
-        for comp in component_types:
-            for comp_choice in input_comps:
+        for comp,comp_choice in itertools.product(component_types, input_comps):
                 if 'show_' + comp == comp_choice:
                     show_components[comp] = var_choices[comp_choice]
-                if 'show_' + comp == comp_choice + '_o' and show_output:
+                elif 'show_' + comp == comp_choice + '_o' and show_output:
                     show_components[comp] = var_choices[comp_choice]
-                if 'show_' + comp == comp_choice + '_i' and show_input:
+                elif 'show_' + comp == comp_choice + '_i' and show_input:
                     show_components[comp] = var_choices[comp_choice]
-                if 'key' in comp and show_key == True:
-                    show_components[comp] = True
 
         return show_components
 
@@ -465,21 +463,118 @@ class Report:
         else:
             size = (1, len(word_list))
         out_format = [[] for _ in range(size[0])]
-        for i in range(size[0]):
-            for j in range(size[1]):
-                if show_as_hex == False:
-                    if word_list[j + i * size[1]] == word_denominator:
-                        out_format[i].append(f'\033[31;4m{word_list[j + i * size[1]]}\033[0m')
-                    else:
-                        out_format[i].append(word_list[j + i * size[1]])
+        for i,j in itertools.product(range(size[0]), range(size[1])):
+            if show_as_hex == False:
+                if word_list[j + i * size[1]] == word_denominator:
+                    out_format[i].append(f'\033[31;4m{word_list[j + i * size[1]]}\033[0m')
                 else:
-                    if word_list[j + i * size[1]] == '0':
-                        out_format[i].append(word_list[j + i * size[1]])
-                    else:
-                        out_format[i].append(f'\033[31;4m{word_list[j + i * size[1]]}\033[0m')
+                    out_format[i].append(word_list[j + i * size[1]])
+            else:
+                if word_list[j + i * size[1]] == '0':
+                    out_format[i].append(word_list[j + i * size[1]])
+                else:
+                    out_format[i].append(f'\033[31;4m{word_list[j + i * size[1]]}\033[0m')
 
         out_list[comp_id] = (out_format, rel_prob, abs_prob) if comp_id not in ["plaintext", "key"] else (
             out_format, 0, 0)
+
+    def _get_comp_value_and_key_flow(self, comp_id, key_flow):
+
+        if comp_id[-2:] == "_i" or comp_id[-2:] == "_o":
+            input_links = self.cipher.get_component_from_id(comp_id[:-2]).input_id_links
+            comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
+        else:
+            input_links = self.cipher.get_component_from_id(comp_id).input_id_links
+            comp_value = '_'.join(comp_id.split('_')[:-2])
+
+        if (all(
+                id_link in key_flow or 'constant' in id_link or id_link + '_o' in key_flow or id_link + '_i' in key_flow
+                for id_link in input_links) or ('key' in comp_id and comp_id != 'key')):
+            key_flow.append(comp_id)
+            if 'linear' in self.test_name:
+                constants_i = [constant_id + '_i' for constant_id in input_links if 'constant' in constant_id]
+                constants_o = [constant_id + '_o' for constant_id in input_links if 'constant' in constant_id]
+                key_flow += constants_i + constants_o
+            else:
+                constants = [constant_id for constant_id in input_links if 'constant' in constant_id]
+                key_flow += constants
+        return comp_value, key_flow
+
+
+    def _get_show_key_flow(self, key_flow, word_size, word_denominator):
+        show_key_flow = False
+        for key_comp in key_flow:
+            key_value = self.test_report['components_values'][key_comp]['value']
+            bin_list = list(format(int(key_value, 16), 'b').zfill(
+                4 * len(key_value) if key_value[:2] != '0x' else 4 * len(
+                    key_value[2:]))) if '*' not in key_value else list(
+                key_value[2:])
+            word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(
+                bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
+                         range(0, len(bin_list), word_size)]
+
+            if word_list.count(word_denominator) > 0:
+                show_key_flow = True
+                break
+        return show_key_flow
+
+    def _print_plaintext_flow(self, out_list, key_flow, verbose, file, save_fig):
+        for comp_id in [comp for comp in out_list.keys() if comp not in key_flow]:
+            if comp_id == 'plaintext':
+                if verbose==True:
+                    print(f'{comp_id}\t', file=file)
+                    _print_colored_state(out_list[comp_id][0], verbose, file)
+                else:
+                    _print_colored_state(out_list[comp_id][0], verbose, file)
+                    print(f'\t{comp_id}\t', file=file)
+            else:
+                if verbose:
+                    print(
+                        f'{comp_id}        Input Links : {self.cipher.get_component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
+                        file=file if save_fig else None)
+                    _print_colored_state(out_list[comp_id][0], verbose, file)
+                else:
+                    _print_colored_state(out_list[comp_id][0], verbose, file)
+                    print(f' {comp_id}', file=file)
+            if verbose:
+                print('local weight = ' + str(
+                out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
+                out_list[comp_id][2]), file=file)
+            print('', file=file)
+        print('', file=file)
+        print('total weight = ' + str(self.test_report['total_weight']), file=file)
+
+    def _print_key_flow(self, key_flow, show_components, out_list, verbose, file):
+
+        print('', file=file)
+        print("KEY FLOW", file=file)
+        print('', file=file)
+
+        for comp_id in key_flow:
+            if comp_id[-2:] == "_i" or comp_id[-2:] == "_o":
+                comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
+            else:
+                comp_value = '_'.join(comp_id.split('_')[:-2])
+            if show_components[
+                comp_value if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
+                                               'intermediate_output', 'intermediate_output_o',
+                                               'intermediate_output_i'] and 'key' not in comp_id) else comp_id]:
+                if 'key' in comp_id:
+                    _print_colored_state(out_list[comp_id][0], verbose, file)
+                    print(f'\t{comp_id}\t', file=file)
+                else:
+                    if verbose:
+                        print(
+                            f'{comp_id}       Input Links : {self.cipher.get_component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
+                            file=file)
+                        _print_colored_state(out_list[comp_id][0], verbose, file)
+                    else:
+                        _print_colored_state(out_list[comp_id][0], verbose, file)
+                        print(f'{comp_id}\t', file=file)
+                if verbose: print('local weight = ' + str(
+                    out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
+                    out_list[comp_id][2]), file=file)
+                print('', file=file)
 
     def _print_trail(self, show_as_hex, word_size, state_size, key_state_size, verbose, show_word_permutation,
                      show_var_shift, show_var_rotate, show_theta_xoodoo,
@@ -525,25 +620,8 @@ class Report:
                 abs_prob += rel_prob
 
             # Check input links
-
-            if 'plaintext' not in comp_id and 'key' not in comp_id:
-                if comp_id[-2:] == "_i" or comp_id[-2:] == "_o":
-                    input_links = self.cipher.get_component_from_id(comp_id[:-2]).input_id_links
-                    comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
-                else:
-                    input_links = self.cipher.get_component_from_id(comp_id).input_id_links
-                    comp_value = '_'.join(comp_id.split('_')[:-2])
-
-                if (all(id_link in key_flow or 'constant' in id_link or id_link + '_o' in key_flow or id_link + '_i' in key_flow
-                        for id_link in input_links) or ('key' in comp_id and comp_id != 'key')):
-                    key_flow.append(comp_id)
-                    if 'linear' in self.test_name:
-                        constants_i = [constant_id + '_i' for constant_id in input_links if 'constant' in constant_id]
-                        constants_o = [constant_id + '_o' for constant_id in input_links if 'constant' in constant_id]
-                        key_flow = key_flow + constants_i + constants_o
-                    else:
-                        constants = [constant_id for constant_id in input_links if 'constant' in constant_id]
-                        key_flow = key_flow + constants
+            if comp_id != 'plaintext' and 'key' not in comp_id:
+                comp_value, key_flow = self._get_comp_value_and_key_flow(comp_id,key_flow)
 
             if show_components[
                 comp_value if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
@@ -552,75 +630,12 @@ class Report:
 
                 self._update_out_list(out_list, rel_prob, abs_prob, show_as_hex, comp_id, word_size, state_size, key_state_size, key_flow, word_denominator)
 
-        for comp_id in out_list.keys():
-            if comp_id not in key_flow and 'key' not in comp_id:
-                if comp_id == 'plaintext':
-                    if verbose==True:
-                        print(f'{comp_id}\t', file=file)
-                        _print_colored_state(out_list[comp_id][0], verbose, file)
-                    else:
-                        _print_colored_state(out_list[comp_id][0], verbose, file)
-                        print(f'\t{comp_id}\t', file=file)
-                else:
-                    if verbose:
-                        print(
-                            f'{comp_id}        Input Links : {self.cipher.get_component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
-                            file=file if save_fig else None)
-                        _print_colored_state(out_list[comp_id][0], verbose, file)
-                    else:
-                        _print_colored_state(out_list[comp_id][0], verbose, file)
-                        print(f' {comp_id}', file=file)
-                if verbose:
-                    print('local weight = ' + str(
-                    out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
-                    out_list[comp_id][2]), file=file)
-                print('', file=file)
+        self._print_plaintext_flow(out_list, key_flow, verbose, file, save_fig)
 
-        print('', file=file)
-        print('total weight = ' + str(self.test_report['total_weight']), file=file)
+        show_key_flow = self._get_show_key_flow(key_flow, word_size, word_denominator)
 
-        show_key_flow = False
-        for key_comp in key_flow:
-            key_value = self.test_report['components_values'][key_comp]['value']
-            bin_list = list(format(int(key_value, 16), 'b').zfill(
-                4 * len(key_value) if key_value[:2] != '0x' else 4 * len(key_value[2:]))) if '*' not in key_value else list(
-                key_value[2:])
-            word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(
-                bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
-                         range(0, len(bin_list), word_size)]
-
-            if word_list.count(word_denominator) > 0:
-                show_key_flow = True
-                break
         if show_key_flow:
-            print('', file=file)
-            print("KEY FLOW", file=file)
-            print('', file=file)
-
-            for comp_id in key_flow:
-                if comp_id[-2:] == "_i" or comp_id[-2:] == "_o":
-                    comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
-                else:
-                    comp_value = '_'.join(comp_id.split('_')[:-2])
-                if show_components[comp_value if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
-                                               'intermediate_output', 'intermediate_output_o',
-                                               'intermediate_output_i'] and 'key' not in comp_id) else comp_id]:
-                    if 'key' in comp_id:
-                        _print_colored_state(out_list[comp_id][0], verbose, file)
-                        print(f'\t{comp_id}\t', file=file)
-                    else:
-                        if verbose:
-                            print(
-                                f'{comp_id}       Input Links : {self.cipher.get_component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
-                                file=file)
-                            _print_colored_state(out_list[comp_id][0], verbose, file)
-                        else:
-                            _print_colored_state(out_list[comp_id][0], verbose, file)
-                            print(f'{comp_id}\t', file=file)
-                    if verbose: print('local weight = ' + str(
-                        out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
-                        out_list[comp_id][2]), file=file)
-                    print('', file=file)
+            self._print_key_flow(key_flow, show_components, out_list, verbose, file)
 
     def _produce_graph(self, output_directory=os.getcwd(), show_graph=False, fixed_input=None, fixed_output=None,
                        fixed_input_difference=None, test_name=None):
