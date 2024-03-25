@@ -1,10 +1,10 @@
-name: Run pytest and SonarCloud Scan
+name: Run pytest
 
 on:
   push:
     branches:
       - '**'
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened, edited]
     branches:
       - develop
@@ -45,32 +45,3 @@ jobs:
       with:
         name: coverage-report
         path: /home/runner/_work/claasp/coverage.xml
-
-  run-code-coverage:
-    if: ${{ !github.event.repository.fork }}
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        persist-credentials: false
-        fetch-depth: 0
-
-    - name: Download Latest Coverage.xml from Artifacts
-      uses: actions/download-artifact@v2
-      with:
-        name: coverage-report
-
-    - name: Override Coverage Source Path for Sonar
-      run: sed -i "s/<source>\/home\/runner\/_work\/claasp\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
-
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
-      with:
-        args: >
-          -Dsonar.branch.name=${{ env.GITHUB_HEAD_REF }}
-          -Dsonar.python.coverage.reportPaths=coverage.xml
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    needs: run-pytest
