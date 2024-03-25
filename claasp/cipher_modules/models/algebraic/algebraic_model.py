@@ -77,25 +77,11 @@ class AlgebraicModel:
              plaintext_y23 + sbox_0_5_x3]
         """
         polynomials = []
-        R = self.ring()
 
         for component in self._cipher.get_components_in_round(r):
-
             if component.type == "constant":
                 continue
-
-            input_vars = [component.id + "_" + self.input_postfix + str(i) for i in range(component.input_bit_size)]
-            input_vars = list(map(R, input_vars))
-
-            input_links = component.input_id_links
-            input_positions = component.input_bit_positions
-
-            prev_input_vars = []
-            for k in range(len(input_links)):
-                prev_input_vars += [input_links[k] + "_" + self.output_postfix + str(i) for i in
-                                    input_positions[k]]
-            prev_input_vars = list(map(R, prev_input_vars))
-
+            input_vars, prev_input_vars = self._input_vars_previous_input_vars(component)
             polynomials += [x + y for (x, y) in zip(input_vars, prev_input_vars)]
 
         return polynomials
@@ -248,16 +234,7 @@ class AlgebraicModel:
         for component in self._cipher.get_components_in_round(r):
             if component.type == "constant":
                 continue
-            input_vars = [component.id + "_" + self.input_postfix + str(i) for i in range(component.input_bit_size)]
-            input_vars = list(map(R, input_vars))
-            input_links = component.input_id_links
-            input_positions = component.input_bit_positions
-
-            prev_input_vars = []
-            for k in range(len(input_links)):
-                prev_input_vars += [input_links[k] + "_" + self.output_postfix + str(i) for i in
-                                    input_positions[k]]
-            prev_input_vars = list(map(R, prev_input_vars))
+            input_vars, prev_input_vars = self._input_vars_previous_input_vars(component)
             if component.type != "cipher_output":
                 variable_substitution_dict.update({x: y for x, y in zip(input_vars, prev_input_vars)})
             else:
@@ -266,6 +243,19 @@ class AlgebraicModel:
             polys = polys.subs(variable_substitution_dict)
 
         return polys
+
+    def _input_vars_previous_input_vars(self, component):
+        input_vars = [component.id + "_" + self.input_postfix + str(i) for i in range(component.input_bit_size)]
+        input_vars = list(map(self.ring(), input_vars))
+        input_links = component.input_id_links
+        input_positions = component.input_bit_positions
+
+        prev_input_vars = []
+        for k in range(len(input_links)):
+            prev_input_vars += [input_links[k] + "_" + self.output_postfix + str(i) for i in
+                                input_positions[k]]
+        prev_input_vars = list(map(self.ring(), prev_input_vars))
+        return input_vars, prev_input_vars
 
     def ring(self):
         """
