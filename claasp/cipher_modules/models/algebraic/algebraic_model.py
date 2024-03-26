@@ -228,7 +228,6 @@ class AlgebraicModel:
         if not polys:
             return polys
 
-        R = self.ring()
         variable_substitution_dict = {}
 
         for component in self._cipher.get_components_in_round(r):
