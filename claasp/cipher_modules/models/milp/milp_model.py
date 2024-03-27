@@ -47,10 +47,6 @@ from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT, get_e
 from claasp.cipher_modules.models.milp.utils.utils import _get_data, _parse_external_solver_output, _write_model_to_lp_file
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 
-verbose = 0
-verbose_print = print if verbose else lambda *a, **k: None
-
-
 def get_independent_input_output_variables(component):
     """
     Return a list of 2 lists containing the name of each input/output bit.
@@ -132,7 +128,7 @@ def get_input_output_variables(component):
 class MilpModel:
     """Build MILP models for ciphers using Cipher."""
 
-    def __init__(self, cipher, n_window_heuristic=None):
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
         self._cipher = cipher
         self._variables_list = []
         self._model_constraints = []
@@ -143,6 +139,7 @@ class MilpModel:
         self._non_linear_component_id = []
         self._intermediate_output_names = []
         self._number_of_trails_found = 0
+        self._verbose_print = print if verbose else lambda *a, **k: None
 
     def fix_variables_value_constraints(self, fixed_variables=[]):
         """
@@ -293,7 +290,7 @@ class MilpModel:
 
         mip = self._model
 
-        verbose_print("Solving model in progress ...")
+        self._verbose_print("Solving model in progress ...")
         time_start = time.time()
         tracemalloc.start()
         try:
@@ -302,7 +299,7 @@ class MilpModel:
             tracemalloc.stop()
             time_end = time.time()
             milp_time = time_end - time_start
-            verbose_print(f"Time for solving the model = {milp_time}")
+            self._verbose_print(f"Time for solving the model = {milp_time}")
             status = 'SATISFIABLE'
 
         except MIPSolverException as milp_exception:
