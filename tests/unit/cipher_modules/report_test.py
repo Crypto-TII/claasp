@@ -6,6 +6,7 @@ from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.report import Report
+from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
 from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
@@ -74,8 +75,8 @@ def test_save_as_latex_table():
     trail_report = Report(trail)
     trail_report.save_as_latex_table()
 
-    nist = NISTStatisticalTests(simon)
-    report_sts = Report(nist.nist_statistical_tests('avalanche'))
+    dieharder=DieharderTests(simon)
+    report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
     report_sts.save_as_latex_table()
 
 def test_save_as_DataFrame():
@@ -100,8 +101,8 @@ def test_save_as_DataFrame():
     trail_report = Report(trail)
     trail_report.save_as_DataFrame()
 
-    nist = NISTStatisticalTests(speck)
-    report_sts = Report(nist.nist_statistical_tests('avalanche'))
+    dieharder = DieharderTests(speck)
+    report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
     report_sts.save_as_DataFrame()
 
 
@@ -112,24 +113,23 @@ def test_save_as_json():
         simon).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
     blackbox_report.save_as_json(fixed_input='plaintext',fixed_output='round_output')
-    nist = NISTStatisticalTests(simon)
-    report_sts = Report(nist.nist_statistical_tests('avalanche'))
+    dieharder = DieharderTests(simon)
+    report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
     report_sts.save_as_json()
-    milp = MilpXorDifferentialModel(simon)
-    plaintext = set_fixed_variables(
-        component_id='plaintext',
-        constraint_type='not_equal',
-        bit_positions=range(32),
-        bit_values=(0,) * 32)
-    key = set_fixed_variables(
-        component_id='key',
-        constraint_type='equal',
-        bit_positions=range(64),
-        bit_values=(0,) * 64)
 
-    trail = milp.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
+    present = PresentBlockCipher(number_of_rounds=2)
+    sat = SatXorDifferentialModel(present)
+    related_key_setting = [
+        set_fixed_variables(component_id='key', constraint_type='not_equal', bit_positions=list(range(80)),
+                            bit_values=[0] * 80),
+        set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=list(range(64)),
+                            bit_values=[0] * 64)
+    ]
+    trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
+                                                                  solver_name='kissat')
     trail_report = Report(trail)
-    trail_report.save_as_json()
+    trail_report.show()
+
     avalanche_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_results)
     avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
@@ -157,24 +157,18 @@ def test_show():
     avalanche_report.show(test_name='avalanche_weight_vectors', fixed_input_difference=None)
     avalanche_report.show(test_name='avalanche_weight_vectors', fixed_input_difference='average')
 
-    milp = MilpXorDifferentialModel(speck)
-    plaintext = set_fixed_variables(
-        component_id='plaintext',
-        constraint_type='not_equal',
-        bit_positions=range(32),
-        bit_values=(0,) * 32)
-    key = set_fixed_variables(
-        component_id='key',
-        constraint_type='equal',
-        bit_positions=range(64),
-        bit_values=(0,) * 64)
-
-    trail = milp.find_one_xor_differential_trail(fixed_values=[plaintext, key])
+    present = PresentBlockCipher(number_of_rounds=4)
+    sat = SatXorDifferentialModel(present)
+    related_key_setting = [
+        set_fixed_variables(component_id='key', constraint_type='not_equal', bit_positions=list(range(80)),
+                            bit_values=[0] * 80)]
+    trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
+                                                                  solver_name='kissat')
     trail_report = Report(trail)
     trail_report.show()
 
-    nist = NISTStatisticalTests(speck)
-    report_sts = Report(nist.nist_statistical_tests('avalanche'))
+    dieharder = DieharderTests(speck)
+    report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
     report_sts.show()
 
     neural_network_tests = NeuralNetworkTests(speck).neural_network_differential_distinguisher_tests()

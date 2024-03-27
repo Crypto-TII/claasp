@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -78,25 +77,11 @@ class AlgebraicModel:
              plaintext_y23 + sbox_0_5_x3]
         """
         polynomials = []
-        R = self.ring()
 
         for component in self._cipher.get_components_in_round(r):
-
             if component.type == "constant":
                 continue
-
-            input_vars = [component.id + "_" + self.input_postfix + str(i) for i in range(component.input_bit_size)]
-            input_vars = list(map(R, input_vars))
-
-            input_links = component.input_id_links
-            input_positions = component.input_bit_positions
-
-            prev_input_vars = []
-            for k in range(len(input_links)):
-                prev_input_vars += [input_links[k] + "_" + self.output_postfix + str(i) for i in
-                                    input_positions[k]]
-            prev_input_vars = list(map(R, prev_input_vars))
-
+            input_vars, prev_input_vars = self._input_vars_previous_input_vars(component)
             polynomials += [x + y for (x, y) in zip(input_vars, prev_input_vars)]
 
         return polynomials
@@ -107,15 +92,15 @@ class AlgebraicModel:
 
         INPUT:
 
-        - ``timeout`` -- **integer**; the timeout for the Grobner basis computation in seconds
+        - ``timeout`` -- **integer**; the timeout for the Groebner basis computation in seconds
 
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
-            sage: identity = IdentityBlockCipher()
-            sage: algebraic = AlgebraicModel(identity)
-            sage: algebraic.is_algebraically_secure(120)
+            sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
+            sage: toyspn = ToySPN1()
+            sage: algebraic = AlgebraicModel(toyspn)
+            sage: algebraic.is_algebraically_secure(30)
             False
         """
         from cysignals.alarm import alarm, cancel_alarm
@@ -164,14 +149,40 @@ class AlgebraicModel:
 
         EXAMPLES::
 
+            sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
+            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+            sage: toyspn = ToySPN1()
+            sage: AlgebraicModel(toyspn).polynomial_system()
+            Polynomial Sequence with 80 Polynomials in 48 Variables
+
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: AlgebraicModel(fancy).polynomial_system()  # long time
-            Polynomial Sequence with 468 Polynomials in 384 Variables
+            sage: AlgebraicModel(fancy).polynomial_system()
+            Polynomial Sequence with 252 Polynomials in 168 Variables
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+            sage: speck = SpeckBlockCipher(number_of_rounds=2)
+            sage: AlgebraicModel(speck).polynomial_system()
+            Polynomial Sequence with 304 Polynomials in 368 Variables
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+            sage: aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
+            sage: AlgebraicModel(aes).polynomial_system()
+            Polynomial Sequence with 206 Polynomials in 136 Variables
+
+            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+            sage: tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
+            sage: AlgebraicModel(tea).polynomial_system()
+            Polynomial Sequence with 368 Polynomials in 464 Variables
+
         """
-        polynomials = sum([self.polynomial_system_at_round(r) for r in range(self._cipher.number_of_rounds)], [])
-        polynomials += self.connection_polynomials()
+        polynomials = []
+        for r in range(self._cipher.number_of_rounds):
+            polynomials += self.polynomial_system_at_round(r)
 
         return Sequence(polynomials)
 
@@ -188,8 +199,8 @@ class AlgebraicModel:
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: AlgebraicModel(fancy).polynomial_system_at_round(0) # long time
-            Polynomial Sequence with 252 Polynomials in 288 Variables
+            sage: AlgebraicModel(fancy).polynomial_system_at_round(0)
+            Polynomial Sequence with 252 Polynomials in 168 Variables
         """
         if not 0 <= r < self._cipher.number_of_rounds:
             raise ValueError(f"r must be in the range 0 <= r < {self._cipher.number_of_rounds}")
@@ -209,7 +220,41 @@ class AlgebraicModel:
                     operation in ['ROTATE_BY_VARIABLE_AMOUNT', 'SHIFT_BY_VARIABLE_AMOUNT']:
                 raise ValueError(f"polynomial generation of {operation} operation is not supported at present")
 
+        polynomials = self._apply_connection_variable_mapping(Sequence(polynomials), r)
         return Sequence(polynomials)
+
+    def _apply_connection_variable_mapping(self, polys, r):
+
+        if not polys:
+            return polys
+
+        variable_substitution_dict = {}
+
+        for component in self._cipher.get_components_in_round(r):
+            if component.type == "constant":
+                continue
+            input_vars, prev_input_vars = self._input_vars_previous_input_vars(component)
+            if component.type != "cipher_output":
+                variable_substitution_dict.update({x: y for x, y in zip(input_vars, prev_input_vars)})
+            else:
+                variable_substitution_dict.update({y: x for x, y in zip(input_vars, prev_input_vars)})
+
+            polys = polys.subs(variable_substitution_dict)
+
+        return polys
+
+    def _input_vars_previous_input_vars(self, component):
+        input_vars = [component.id + "_" + self.input_postfix + str(i) for i in range(component.input_bit_size)]
+        input_vars = list(map(self.ring(), input_vars))
+        input_links = component.input_id_links
+        input_positions = component.input_bit_positions
+
+        prev_input_vars = []
+        for k in range(len(input_links)):
+            prev_input_vars += [input_links[k] + "_" + self.output_postfix + str(i) for i in
+                                input_positions[k]]
+        prev_input_vars = list(map(self.ring(), prev_input_vars))
+        return input_vars, prev_input_vars
 
     def ring(self):
         """
