@@ -26,7 +26,7 @@ from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import \
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits, \
     output_dictionary_that_contains_xor_inequalities
-from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
+from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX, \
     MILP_BUILDING_MESSAGE, MILP_XOR_LINEAR_OBJECTIVE
 from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, _string_to_hex, \
@@ -38,8 +38,8 @@ from claasp.name_mappings import (INTERMEDIATE_OUTPUT, CONSTANT, CIPHER_OUTPUT, 
 
 
 class MilpXorLinearModel(MilpModel):
-    def __init__(self, cipher, n_window_heuristic=None):
-        super().__init__(cipher, n_window_heuristic)
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
+        super().__init__(cipher, n_window_heuristic, verbose)
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
 
     def add_constraints_to_build_in_sage_milp_class(self, weight=-1, fixed_variables=[]):
@@ -71,7 +71,7 @@ class MilpXorLinearModel(MilpModel):
             sage: mip.number_of_variables()
             1018
         """
-        verbose_print(MILP_BUILDING_MESSAGE)
+        self._verbose_print(MILP_BUILDING_MESSAGE)
         self.build_xor_linear_trail_model(weight, fixed_variables)
         mip = self._model
         p = self._integer_variable
@@ -299,7 +299,7 @@ class MilpXorLinearModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
 
@@ -323,7 +323,7 @@ class MilpXorLinearModel(MilpModel):
                 solution['building_time'] = building_time
                 solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
                 self._number_of_trails_found += 1
-                verbose_print(f"trails found : {self._number_of_trails_found}")
+                self._verbose_print(f"trails found : {self._number_of_trails_found}")
                 list_trails.append(solution)
                 fixed_variables = self._get_fixed_variables_from_solution(fixed_values, inputs_ids, solution)
 
@@ -394,7 +394,7 @@ class MilpXorLinearModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
@@ -418,7 +418,7 @@ class MilpXorLinearModel(MilpModel):
                     solution['building_time'] = building_time
                     solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
                     self._number_of_trails_found += 1
-                    verbose_print(f"trails found : {self._number_of_trails_found}")
+                    self._verbose_print(f"trails found : {self._number_of_trails_found}")
                     list_trails.append(solution)
                     fixed_variables = self._get_fixed_variables_from_solution(fixed_values, inputs_ids, solution)
 
@@ -494,7 +494,7 @@ class MilpXorLinearModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         p = self._integer_variable
         mip.set_objective(p[MILP_XOR_LINEAR_OBJECTIVE])
@@ -542,7 +542,7 @@ class MilpXorLinearModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
@@ -595,7 +595,7 @@ class MilpXorLinearModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
