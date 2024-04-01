@@ -2,7 +2,7 @@ name: run-sonarcloud-scan
 
 on:
   workflow_run:
-    workflows: [run-pytest-tests]
+    workflows: [run-pytest]
     types: [completed]
 
 jobs:
