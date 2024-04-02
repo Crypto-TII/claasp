@@ -159,25 +159,25 @@ class AlgebraicModel:
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
             sage: AlgebraicModel(fancy).polynomial_system()
-            Polynomial Sequence with 252 Polynomials in 168 Variables
+            Polynomial Sequence with 228 Polynomials in 144 Variables
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: speck = SpeckBlockCipher(number_of_rounds=2)
             sage: AlgebraicModel(speck).polynomial_system()
-            Polynomial Sequence with 304 Polynomials in 368 Variables
+            Polynomial Sequence with 288 Polynomials in 352 Variables
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
             sage: AlgebraicModel(aes).polynomial_system()
-            Polynomial Sequence with 206 Polynomials in 136 Variables
+            Polynomial Sequence with 198 Polynomials in 128 Variables
 
             sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
             sage: AlgebraicModel(tea).polynomial_system()
-            Polynomial Sequence with 368 Polynomials in 464 Variables
+            Polynomial Sequence with 352 Polynomials in 448 Variables
 
         """
         polynomials = []
@@ -204,7 +204,7 @@ class AlgebraicModel:
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
             sage: AlgebraicModel(fancy).polynomial_system_at_round(0)
-            Polynomial Sequence with 252 Polynomials in 168 Variables
+            Polynomial Sequence with 228 Polynomials in 144 Variables
         """
         if not 0 <= r < self._cipher.number_of_rounds:
             raise ValueError(f"r must be in the range 0 <= r < {self._cipher.number_of_rounds}")

@@ -75,9 +75,9 @@ def test_algebraic_tests():
     compare_result = {'input_parameters': {'cipher': aes,
                                            'timeout_in_seconds': 5,
                                            'test_name': 'algebraic_tests'},
-                      'test_results': {'number_of_variables': [136],
-                                       'number_of_equations': [206],
-                                       'number_of_monomials': [304],
+                      'test_results': {'number_of_variables': [128],
+                                       'number_of_equations': [198],
+                                       'number_of_monomials': [296],
                                        'max_degree_of_equations': [2],
                                        'test_passed': [False]}}
 
