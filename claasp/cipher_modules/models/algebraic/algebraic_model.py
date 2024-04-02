@@ -181,12 +181,16 @@ class AlgebraicModel:
 
         """
         polynomials = []
+        const_vars = {}
         for r in range(self._cipher.number_of_rounds):
-            polynomials += self.polynomial_system_at_round(r)
+            polynomials += self.polynomial_system_at_round(r, True)
+            const_vars.update(self._dict_constant_component_polynomials(r))
+            if const_vars is not None:
+                polynomials = self._remove_constant_polynomials(const_vars, polynomials)
 
         return Sequence(polynomials)
 
-    def polynomial_system_at_round(self, r):
+    def polynomial_system_at_round(self, r, fun_call_flag=False):
         """
         Return a polynomial system at round `r`.
 
@@ -221,6 +225,12 @@ class AlgebraicModel:
                 raise ValueError(f"polynomial generation of {operation} operation is not supported at present")
 
         polynomials = self._apply_connection_variable_mapping(Sequence(polynomials), r)
+
+        if fun_call_flag is False:
+            const_vars = self._dict_constant_component_polynomials(r)
+            if const_vars is not None:
+                polynomials = self._remove_constant_polynomials(const_vars, polynomials)
+
         return Sequence(polynomials)
 
     def _apply_connection_variable_mapping(self, polys, r):
@@ -255,6 +265,28 @@ class AlgebraicModel:
                                 input_positions[k]]
         prev_input_vars = list(map(self.ring(), prev_input_vars))
         return input_vars, prev_input_vars
+
+    def _dict_constant_component_polynomials(self, round_number):
+
+        constant_vars = {}
+        for component in self._cipher.get_components_in_round(round_number):
+            if component.type == "constant":
+                output_vars = [component.id + "_" + self.output_postfix + str(i) for i in
+                               range(component.output_bit_size)]
+            else:
+                continue
+            output_vars = list(map(self.ring(), output_vars))
+            constant = int(component.description[0], 16)
+            b = list(map(int, reversed(bin(constant)[2:])))
+            b += [0] * (component.output_bit_size - len(b))
+            constant_vars.update({x: y for x, y in zip(output_vars, b)})
+        return constant_vars
+
+    def _remove_constant_polynomials(self, constant_vars, polys):
+
+        polys = Sequence(polys).subs(constant_vars)
+        polys = [p for p in polys if p != 0]
+        return polys
 
     def ring(self):
         """
