@@ -19,23 +19,17 @@ import time
 
 from claasp.cipher_modules.inverse_cipher import get_key_schedule_component_ids
 from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
-from claasp.cipher_modules.models.milp.milp_model import verbose_print
 from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import \
-    update_dictionary_that_contains_wordwise_truncated_input_inequalities, \
-    output_dictionary_that_contains_wordwise_truncated_input_inequalities
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORDWISE_IMPOSSIBLE_AUTO, \
     MILP_WORDWISE_IMPOSSIBLE, MILP_BACKWARD_SUFFIX, MILP_BUILDING_MESSAGE
-from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
-from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils, milp_truncated_utils
 
 
 class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTruncatedXorDifferentialModel):
 
-    def __init__(self, cipher, n_window_heuristic=None):
-        super().__init__(cipher, n_window_heuristic)
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
+        super().__init__(cipher, n_window_heuristic, verbose)
         self._forward_cipher = None
         self._backward_cipher = None
         self._incompatible_components = None
@@ -97,7 +91,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: milp.add_constraints_to_build_in_sage_milp_class(1, get_single_key_scenario_format_for_fixed_values(aes))
 
         """
-        verbose_print(MILP_BUILDING_MESSAGE)
+        self._verbose_print(MILP_BUILDING_MESSAGE)
 
         mip = self._model
         x = self._binary_variable
@@ -177,7 +171,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: milp.add_constraints_to_build_in_sage_milp_class_with_fixed_components(["intermediate_output_0_37"], get_single_key_scenario_format_for_fixed_values(aes))
 
         """
-        verbose_print(MILP_BUILDING_MESSAGE)
+        self._verbose_print(MILP_BUILDING_MESSAGE)
 
         mip = self._model
         x = self._binary_variable
@@ -282,7 +276,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: milp.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(get_single_key_scenario_format_for_fixed_values(aes))
 
         """
-        verbose_print(MILP_BUILDING_MESSAGE)
+        self._verbose_print(MILP_BUILDING_MESSAGE)
 
         mip = self._model
         x = self._binary_variable
@@ -337,7 +331,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(middle_round, fixed_bits, fixed_words)
@@ -372,7 +366,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components(component_id_list,
@@ -409,7 +403,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(fixed_bits, fixed_words, include_all_components=include_all_components)

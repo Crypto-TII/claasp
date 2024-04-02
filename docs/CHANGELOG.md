@@ -5,6 +5,66 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2024-03-22
+
+### Added
+
+- Create new speedy cipher.
+- Create the a5/2 stream cipher.
+- Create a test function for nist statistical tests and dieharder statistical tests that produces a parsed result, standardized for the report class.
+- Gaston permutation with sbox component.
+- Create qarmav2 with mixcolumn component.
+- Support inversion of tweakable primitives and inversion of mixcolumn operation with a non irreducible polynomial.
+- Adding bct mzn model for arx ciphers.
+- Add option to start chacha permutation from a bottom lower round.
+- Adding minizinc boomerang model.
+
+### Changed
+
+- Location of files related to milp inequalities for non linear components or large xors moved to userspace.
+- Location of files related to milp external solvers change to current working directory.
+- Continuous_tests to class.
+
+### Fixed
+
+- Add timestamp to milp external files.
+- File path in cp module changed to absolute path.
+- Consider whole solution when searching xor linear trails.
+- Refactoring of algebraic tests to an object.
+- Create claasp base image for test.
+- Fix sonarcloud github action so forks can be analyzed on pr.
+
+## [2.2.0] - 2024-03-07
+
+### Added
+
+- Create new Speedy cipher
+- Create the A5/2 stream cipher
+- Create the grain128 stream cipher
+- Create a test function for nist statistical tests and dieharder statistical tests that produces a parsed result, standardized for the Report class
+- SAT wordwise deterministic truncated XOR differential trail model
+- Gaston permutation with sbox component
+- Create Qarmav2 with MixColumn component
+- Support inversion of tweakable primitives and inversion of MixColumn operation with a non irreducible polynomial
+- Add option to start Chacha permutation from a bottom lower round
+- Create bitwise impossible XOR differential trail search for SAT
+
+### Changed
+
+- Location of files related to MILP inequalities for non linear components or large xors moved to userspace
+- Location of files related to MILP external solvers change to current working directory
+- Continuous_tests to class
+
+### Fixed
+
+- Add timestamp to MILP external files
+- File path in CP module changed to absolute path
+- Consider whole solution when searching XOR linear trails
+- Refactored algebraic tests to an object and added some tests
+- Refactoring of algebraic tests to an object
+- Create CLAASP base image for test
+- Fix SonarCloud GitHub Action so Forks can be analyzed on PR
+
 ## [2.1.0] - 2024-01-30
 
 ### Added
@@ -89,6 +149,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything! First public release.
 
+[2.3.0]: https://github.com/Crypto-TII/claasp/compare/v2.3.0..v2.1.0
 [2.1.0]: https://github.com/Crypto-TII/claasp/compare/v2.1.0..v2.0.0
 [1.1.0]: https://github.com/Crypto-TII/claasp/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Crypto-TII/claasp/releases/tag/v1.0.0
