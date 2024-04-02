@@ -234,12 +234,12 @@ def test_is_spn():
 
 def test_polynomial_system():
     tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
-    assert str(tea.polynomial_system()) == 'Polynomial Sequence with 368 Polynomials in 464 Variables'
+    assert str(tea.polynomial_system()) == 'Polynomial Sequence with 352 Polynomials in 448 Variables'
 
 
 def test_polynomial_system_at_round():
     assert str(FancyBlockCipher(number_of_rounds=1).polynomial_system_at_round(0)) == \
-           'Polynomial Sequence with 252 Polynomials in 168 Variables'
+           'Polynomial Sequence with 228 Polynomials in 144 Variables'
 
 
 def test_print():
