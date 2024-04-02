@@ -181,12 +181,12 @@ class AlgebraicModel:
 
         """
         polynomials = []
-        const_vars = {}
+        constant_vars = {}
         for r in range(self._cipher.number_of_rounds):
             polynomials += self.polynomial_system_at_round(r, True)
-            const_vars.update(self._dict_constant_component_polynomials(r))
-            if const_vars is not None:
-                polynomials = self._remove_constant_polynomials(const_vars, polynomials)
+            constant_vars.update(self._dict_constant_component_polynomials(r))
+            if constant_vars is not None:
+                polynomials = self._remove_constant_polynomials(constant_vars, polynomials)
 
         return Sequence(polynomials)
 
@@ -227,9 +227,9 @@ class AlgebraicModel:
         polynomials = self._apply_connection_variable_mapping(Sequence(polynomials), r)
 
         if fun_call_flag is False:
-            const_vars = self._dict_constant_component_polynomials(r)
-            if const_vars is not None:
-                polynomials = self._remove_constant_polynomials(const_vars, polynomials)
+            constant_vars = self._dict_constant_component_polynomials(r)
+            if constant_vars is not None:
+                polynomials = self._remove_constant_polynomials(constant_vars, polynomials)
 
         return Sequence(polynomials)
 
