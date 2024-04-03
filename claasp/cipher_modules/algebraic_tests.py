@@ -58,21 +58,23 @@ class AlgebraicTests:
 
     def __init__(self, cipher):
         self._cipher = cipher
+        self._algebraic_model = AlgebraicModel(cipher)
 
     def algebraic_tests(self, timeout_in_seconds=60):
         from sage.structure.sequence import Sequence
         nvars_up_to_round = []
-
         npolynomials_up_to_round = []
         nmonomials_up_to_round = []
         max_deg_of_equations_up_to_round = []
         tests_up_to_round = []
 
         F = []
-
-        algebraic_model = AlgebraicModel(self._cipher)
+        constant_vars = {}
         for round_number in range(self._cipher.number_of_rounds):
-            F += algebraic_model.polynomial_system_at_round(round_number)
+            F += self._algebraic_model.polynomial_system_at_round(round_number, True)
+            constant_vars.update(self._algebraic_model._dict_constant_component_polynomials(round_number))
+            if constant_vars is not None:
+                F = self._algebraic_model._remove_constant_polynomials(constant_vars, F)
             Fseq = Sequence(F)
             nvars_up_to_round.append(Fseq.nvariables())
             npolynomials_up_to_round.append(len(Fseq))
