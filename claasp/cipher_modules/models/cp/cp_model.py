@@ -286,7 +286,7 @@ class CpModel:
 
         return value
 
-    def get_command_for_solver_process(self, input_file_path, model_type, solver_name, num_of_processors, timelimit):
+    def get_command_for_solver_process(self, input_file_path, model_type, solver_name):#, num_of_processors, timelimit):
         solvers = ['xor_differential_one_solution',
                    'xor_linear_one_solution',
                    'deterministic_truncated_xor_differential_one_solution',
@@ -296,11 +296,15 @@ class CpModel:
                    'evaluate_cipher']
         write_model_to_file(self._model_constraints, input_file_path)
         if model_type in solvers:
-            command = ['minizinc', f'-p {num_of_processors}', '--solver-statistics', '--time-limit', str(timelimit),
-                       '--solver', solver_name, input_file_path]
+            command = ['minizinc', '--solver-statistics', '--solver', solver_name, input_file_path]
         else:
-            command = ['minizinc', f'-p {num_of_processors}', '-a', '--solver-statistics',
-                       '--time-limit', str(timelimit), '--solver', solver_name, input_file_path]
+            command = ['minizinc', '-a', '--solver-statistics', '--solver', solver_name, input_file_path]
+        #if model_type in solvers:
+        #    command = ['minizinc', f'-p {num_of_processors}', '--solver-statistics', '--time-limit', str(timelimit),
+        #               '--solver', solver_name, input_file_path]
+        #else:
+        #    command = ['minizinc', f'-p {num_of_processors}', '-a', '--solver-statistics',
+        #               '--time-limit', str(timelimit), '--solver', solver_name, input_file_path]
 
         return command
 
