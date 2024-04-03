@@ -28,6 +28,7 @@ from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import SBOX
+from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL
 
 solve_satisfy = 'solve satisfy;'
 constraint_type_error = 'Constraint type not defined'
@@ -481,6 +482,24 @@ class CpModel:
                 return solutions[0]
             else:
                 return solutions
+                
+    def solver_names(self, verbose = False):
+        if not verbose:
+            print('Internal CP solvers:')
+            print('solver brand name | solver name')
+            for i in range(len(CP_SOLVERS_INTERNAL)):
+                print(f'{CP_SOLVERS_INTERNAL[i]["solver_brand_name"]} | {CP_SOLVERS_INTERNAL[i]["solver_name"]}')
+            print('\n')
+            print('External CP solvers:')
+            print('solver brand name | solver name')
+            for i in range(len(CP_SOLVERS_EXTERNAL)):
+                print(f'{CP_SOLVERS_EXTERNAL[i]["solver_brand_name"]} | {CP_SOLVERS_EXTERNAL[i]["solver_name"]}')
+        else:
+            print('Internal CP solvers:')
+            print(CP_SOLVERS_INTERNAL)
+            print('\n')
+            print('External CP solvers:')
+            print(CP_SOLVERS_EXTERNAL)
 
     def weight_constraints(self, weight):
         """
