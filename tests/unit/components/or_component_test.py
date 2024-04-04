@@ -10,10 +10,10 @@ def test_algebraic_polynomials():
     algebraic = AlgebraicModel(gift)
     algebraic_polynomials = or_component.algebraic_polynomials(algebraic)
 
-    assert str(algebraic_polynomials[0]) == "or_0_4_y0 + 1"
-    assert str(algebraic_polynomials[1]) == "or_0_4_y1 + 1"
-    assert str(algebraic_polynomials[-2]) == "or_0_4_y30 + 1"
-    assert str(algebraic_polynomials[-1]) == "or_0_4_y31 + 1"
+    assert str(algebraic_polynomials[0]) == "or_0_4_x0*or_0_4_x32 + or_0_4_y0 + or_0_4_x32 + or_0_4_x0"
+    assert str(algebraic_polynomials[1]) == "or_0_4_x1*or_0_4_x33 + or_0_4_y1 + or_0_4_x33 + or_0_4_x1"
+    assert str(algebraic_polynomials[-2]) == "or_0_4_x30*or_0_4_x62 + or_0_4_y30 + or_0_4_x62 + or_0_4_x30"
+    assert str(algebraic_polynomials[-1]) == "or_0_4_x31*or_0_4_x63 + or_0_4_y31 + or_0_4_x63 + or_0_4_x31"
 
 
 def test_cp_constraints():
