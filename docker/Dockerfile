@@ -303,6 +303,8 @@ RUN sage -pip install plotly -U kaleido
 COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
 RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
 
+RUN apt-get install -y coinor-cbc coinor-libcbc-dev
+RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
 
 WORKDIR /home/sage/tii-claasp
 

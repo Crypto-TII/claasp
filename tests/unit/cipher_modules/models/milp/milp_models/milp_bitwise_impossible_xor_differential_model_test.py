@@ -128,7 +128,7 @@ def test_find_one_bitwise_impossible_xor_differential_trail_model_with_external_
     key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
     ciphertext = set_fixed_variables(component_id='cipher_output_10_13', constraint_type='equal',
                                      bit_positions=range(32), bit_values=[0] * 6 + [2, 0, 2] + [0] * 23)
-    trail = milp.find_one_bitwise_impossible_xor_differential_trail(6, fixed_values=[plaintext, key, ciphertext], external_solver_name='glpk')
+    trail = milp.find_one_bitwise_impossible_xor_differential_trail(6, fixed_values=[plaintext, key, ciphertext], external_solver_name='glpk_ext')
     assert trail['status'] == 'SATISFIABLE'
     assert trail['components_values']['intermediate_output_5_12']['value'] == '????????????????0??????1??????0?'
     assert trail['components_values']['intermediate_output_5_12_backward']['value'] == SIMON_INCOMPATIBLE_ROUND_OUTPUT
@@ -145,7 +145,7 @@ def test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic
     ciphertext_backward = set_fixed_variables(component_id='cipher_output_10_13_backward', constraint_type='equal',
                                               bit_positions=range(32), bit_values=[0] * 6 + [2, 0, 2] + [0] * 23)
     trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model(
-        fixed_values=[plaintext, key, key_backward, ciphertext_backward], external_solver_name='glpk')
+        fixed_values=[plaintext, key, key_backward, ciphertext_backward], external_solver_name='glpk_ext')
     assert trail['status'] == 'SATISFIABLE'
     assert trail['components_values']['plaintext']['value'] == '00000000000000000000000000000001'
     assert trail['components_values']['intermediate_output_5_12_backward']['value'] == SIMON_INCOMPATIBLE_ROUND_OUTPUT
