@@ -30,7 +30,7 @@ import pickle, os
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 from sage.rings.integer_ring import ZZ
 
-from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 
 small_sbox_file_name = "dictionary_that_contains_inequalities_for_small_sboxes.obj"
 small_sbox_xor_linear_file_name = "dictionary_that_contains_inequalities_for_small_sboxes_xor_linear.obj"
