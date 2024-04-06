@@ -20,8 +20,8 @@ import time
 
 from bitstring import BitArray
 
-from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
-from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_DIFFERENTIAL, MILP_PROBABILITY_SUFFIX, \
     MILP_BUILDING_MESSAGE, MILP_XOR_DIFFERENTIAL_OBJECTIVE
 from claasp.cipher_modules.models.milp.utils.utils import _string_to_hex, _get_variables_values_as_string, _filter_fixed_variables
@@ -33,8 +33,8 @@ from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
 
 class MilpXorDifferentialModel(MilpModel):
 
-    def __init__(self, cipher, n_window_heuristic=None):
-        super().__init__(cipher, n_window_heuristic)
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
+        super().__init__(cipher, n_window_heuristic, verbose)
 
     def add_constraints_to_build_in_sage_milp_class(self, weight=-1, fixed_variables=[]):
         """
@@ -65,7 +65,7 @@ class MilpXorDifferentialModel(MilpModel):
             sage: mip.number_of_variables()
             468
         """
-        verbose_print(MILP_BUILDING_MESSAGE)
+        self._verbose_print(MILP_BUILDING_MESSAGE)
         self.build_xor_differential_trail_model(weight, fixed_variables)
         mip = self._model
         p = self._integer_variable
@@ -171,7 +171,7 @@ class MilpXorDifferentialModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
@@ -202,7 +202,7 @@ class MilpXorDifferentialModel(MilpModel):
                 solution['building_time'] = building_time
                 solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
                 self._number_of_trails_found += 1
-                verbose_print(f"trails found : {self._number_of_trails_found}")
+                self._verbose_print(f"trails found : {self._number_of_trails_found}")
                 list_trails.append(solution)
                 fixed_variables = self._get_fixed_variables_from_solution(fixed_values, inputs_ids, solution)
 
@@ -374,7 +374,7 @@ class MilpXorDifferentialModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
@@ -403,7 +403,7 @@ class MilpXorDifferentialModel(MilpModel):
                     solution['building_time'] = building_time
                     solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
                     self._number_of_trails_found += 1
-                    verbose_print(f"trails found : {self._number_of_trails_found}")
+                    self._verbose_print(f"trails found : {self._number_of_trails_found}")
                     list_trails.append(solution)
                     fixed_variables = self._get_fixed_variables_from_solution(fixed_values, inputs_ids, solution)
 
@@ -463,7 +463,7 @@ class MilpXorDifferentialModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         p = self._integer_variable
         mip.set_objective(p[MILP_XOR_DIFFERENTIAL_OBJECTIVE])
@@ -496,7 +496,7 @@ class MilpXorDifferentialModel(MilpModel):
         EXAMPLES::
 
             # single-key setting
-            from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
@@ -513,7 +513,7 @@ class MilpXorDifferentialModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
@@ -567,7 +567,7 @@ class MilpXorDifferentialModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)

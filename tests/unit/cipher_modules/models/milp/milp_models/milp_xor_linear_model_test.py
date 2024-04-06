@@ -114,7 +114,7 @@ def test_find_one_xor_linear_trail_with_fixed_weight():
 def test_find_one_xor_linear_trail_with_fixed_weight_with_external_solver():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     milp = MilpXorLinearModel(speck)
-    trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="glpk")
+    trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="glpk_ext")
     assert len(trail) == 10
     assert trail["total_weight"] == 1.0
 
@@ -123,14 +123,14 @@ def test_find_one_xor_linear_trail_with_fixed_weight_with_supported_but_not_inst
     with pytest.raises(Exception) as e_info:
         speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
         milp = MilpXorLinearModel(speck)
-        trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="cplex")
+        trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="cplex_ext")
 
 
 def test_find_one_xor_linear_trail_with_fixed_weight_with_installed_external_solver_but_missing_license():
     with pytest.raises(Exception) as e_info:
         speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
         milp = MilpXorLinearModel(speck)
-        trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="Gurobi")
+        trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="Gurobi_ext")
 
 def test_find_one_xor_linear_trail_with_fixed_weight_with_unsupported_external_solver():
     with pytest.raises(Exception) as e_info:
