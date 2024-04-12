@@ -43,38 +43,11 @@ standard is performed whenever a solution method is called (e.g. ``solve``,
 SAT Solvers
 -----------
 
-This module is able to use different SAT solvers. They can be divided in two
-categories: external and internal. All over the module, ``solver_name``
-variable can be replaced with a value in the following.
+This module is able to use many different SAT solvers.
 
-External SAT solvers need to be installed in the system as they are called
-using a subprocess. They and corresponding values for ``solver_name`` variable
-are:
-
-    ============================================================== ======================
-    SAT solver                                                     value
-    ============================================================== ======================
-    `CaDiCal <https://github.com/arminbiere/cadical>`_             ``'cadical'``
-    `CryptoMiniSat <https://github.com/msoos/cryptominisat>`_      ``'cryptominisat'``
-    `Glucose <https://www.labri.fr/perso/lsimon/glucose/>`_        ``'glucose'``
-    `Glucose-syrup <https://www.labri.fr/perso/lsimon/glucose/>`_  ``'glucose-syrup'``
-    `Kissat <https://github.com/arminbiere/kissat>`_               ``'kissat'``
-    `MathSAT <https://mathsat.fbk.eu/>`_                           ``'mathsat'``
-    `Minisat <https://github.com/niklasso/minisat>`_               ``'minisat'``
-    `Yices-sat <https://yices.csl.sri.com/>`_                      ``'yices-sat'``
-    ============================================================== ======================
-
-Internal SAT solvers should be installed by default. To call them, use the
-following values:
-
-    * ``'cryptominisat_sage'``
-    * ``'glucose_sage'``
-    * ``'glucose-syrup_sage'``
-    * ``'LP_sage'``
-    * ``'picosat_sage'``
-
-For any further information on internal SAT solvers, visit `Abstract SAT solver
-<https://doc.sagemath.org/html/en/reference/sat/sage/sat/solvers/satsolver.html>`_.
+For any further information, refer to the file
+:py:mod:`claasp.cipher_modules.models.sat.solvers.py` and to the section
+:ref:`Available SAT solvers`.
 
 **REMARK**: in order to be compliant with the library, the Most Significant Bit
 (MSB) is indexed by 0. Be careful whenever inspecting the code or, as well, a
@@ -89,7 +62,8 @@ import uuid
 from sage.sat.solvers.satsolver import SAT
 
 from claasp.editor import remove_permutations, remove_rotations
-from claasp.cipher_modules.models.sat.utils import constants, utils
+from claasp.cipher_modules.models.sat import solvers
+from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
 from claasp.name_mappings import (SBOX, CIPHER, XOR_LINEAR)
 
@@ -299,7 +273,9 @@ class SatModel:
         self._model_constraints.extend(constraints)
 
     def _solve_with_external_sat_solver(self, model_type, solver_name, options, host=None, env_vars_string=""):
-        if host and (solver_name not in constants.SAT_SOLVERS_DIMACS_COMPLIANT):
+        solver_specs = [specs for specs in solvers.SAT_SOLVERS_EXTERNAL
+                        if specs['solver_name'] == solver_name.upper()][0]
+        if host and (not solver_specs['keywords']['is_dimacs_compliant']):
             raise ValueError('{solver_name} not supported.')
 
         # creating the dimacs
@@ -309,23 +285,23 @@ class SatModel:
         # running the SAT solver
         file_id = f'{uuid.uuid4()}'
         if host is not None:
-            status, sat_time, sat_memory, values = utils.run_sat_solver(solver_name, options,
+            status, sat_time, sat_memory, values = utils.run_sat_solver(solver_specs, options,
                                                                         dimacs, host, env_vars_string)
         else:
-            if solver_name in constants.SAT_SOLVERS_DIMACS_COMPLIANT:
-                status, sat_time, sat_memory, values = utils.run_sat_solver(solver_name, options,
+            if solver_specs['keywords']['is_dimacs_compliant']:
+                status, sat_time, sat_memory, values = utils.run_sat_solver(solver_specs, options,
                                                                             dimacs)
-            elif solver_name == 'minisat':
+            elif solver_specs['solver_name'] == 'MINISAT_EXT':
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
                 output_file = f'{self.cipher_id}_{file_id}_sat_output.cnf'
-                status, sat_time, sat_memory, values = utils.run_minisat(options, dimacs,
+                status, sat_time, sat_memory, values = utils.run_minisat(solver_specs, options, dimacs,
                                                                          input_file, output_file)
-            elif solver_name == 'parkissat':
+            elif solver_specs['solver_name'] == 'PARKISSAT_EXT':
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
-                status, sat_time, sat_memory, values = utils.run_parkissat(options, dimacs, input_file)
-            elif solver_name == 'yices-sat':
+                status, sat_time, sat_memory, values = utils.run_parkissat(solver_specs, options, dimacs, input_file)
+            elif solver_specs['solver_name'] == 'YICES_SAT_EXT':
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
-                status, sat_time, sat_memory, values = utils.run_yices(options, dimacs, input_file)
+                status, sat_time, sat_memory, values = utils.run_yices(solver_specs, options, dimacs, input_file)
 
         # parsing the solution
         if status == 'SATISFIABLE':
@@ -471,12 +447,12 @@ class SatModel:
         """
         if options is None:
             options = []
-        if solver_name.endswith('_sage'):
+        if solver_name.endswith('_EXT'):
+            solution = self._solve_with_external_sat_solver(model_type, solver_name, options)
+        else:
             if options:
                 raise ValueError('Options not allowed for SageMath solvers.')
-            solution = self._solve_with_sage_sat_solver(model_type, solver_name[:-5])
-        else:
-            solution = self._solve_with_external_sat_solver(model_type, solver_name, options)
+            solution = self._solve_with_sage_sat_solver(model_type, solver_name)
 
         return solution
 
