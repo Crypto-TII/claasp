@@ -38,11 +38,11 @@ def test_find_one_xor_differential_trail():
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r5'
     assert trail['model_type'] == 'xor_differential'
-    assert trail['solver_name'] == 'cryptominisat'
+    assert trail['solver_name'] == 'CRYPTOMINISAT_EXT'
     assert trail['status'] == 'SATISFIABLE'
 
-    trail = sat.find_one_xor_differential_trail(fixed_values=[plaintext], solver_name="kissat")
-    assert trail['solver_name'] == 'kissat'
+    trail = sat.find_one_xor_differential_trail(fixed_values=[plaintext], solver_name="KISSAT_EXT")
+    assert trail['solver_name'] == 'KISSAT_EXT'
     assert trail['status'] == 'SATISFIABLE'
 
 
@@ -70,7 +70,7 @@ def test_build_xor_differential_trail_model_fixed_weight_and_parkissat():
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatXorDifferentialModel(speck)
     sat.build_xor_differential_trail_model(3)
-    result = sat._solve_with_external_sat_solver("xor_differential", "parkissat", [f'-c={number_of_cores}'])
+    result = sat._solve_with_external_sat_solver("xor_differential", "PARKISSAT_EXT", [f'-c={number_of_cores}'])
 
     assert int(result['total_weight']) == int(3.0)
 
