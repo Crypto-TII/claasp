@@ -722,7 +722,7 @@ def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_stri
                 values.extend(line.split()[1:])
         values = values[:-1]
     if solver_name == 'kissat':
-        data_keywords = solver_specs['time']
+        data_keywords = solver_specs['keywords']['time']
         lines = solver_output
         data_line = [line for line in lines if data_keywords in line][0]
         seconds_str_index = data_line.find("seconds") - 2

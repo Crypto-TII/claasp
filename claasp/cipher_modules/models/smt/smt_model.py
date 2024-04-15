@@ -31,21 +31,11 @@ the search for XOR differential trails (for SAT CNFs see the correspondent
 class :py:class:`Sat Model <cipher_modules.models.sat.sat_model>`). SMT-LIB is the chosen
 standard.
 
-An SMT solver is called by a subprocess, therefore note also that you will not
-be able to solve the models in the SMT-LIB files until you have installed one
-SMT solver at least. In methods, solvers are chosen by ``solver_name``
-variable. Solvers and their corresponding values for ``solver_name`` variable
-are:
+This module is able to use many different SMT solvers.
 
-    =========================================== =================
-    SMT solver                                  value
-    =========================================== =================
-    `Z3 <https://github.com/Z3Prover/z3>`_      ``'z3'``
-    `Yices-smt2 <https://yices.csl.sri.com/>`_  ``'yices-smt2'``
-    `MathSAT <https://mathsat.fbk.eu/>`_        ``'mathsat'``
-    =========================================== =================
-
-The default choice is z3.
+For any further information, refer to the file
+:py:mod:`claasp.cipher_modules.models.smt.solvers.py` and to the section
+:ref:`Available SMT solvers`.
 """
 import math
 import re
@@ -53,6 +43,7 @@ import subprocess
 
 from claasp.name_mappings import (SBOX, CIPHER, XOR_LINEAR)
 from claasp.cipher_modules.models.smt.utils import constants, utils
+from claasp.cipher_modules.models.smt import solvers
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_component_solution
 
 
@@ -412,19 +403,21 @@ class SmtModel:
             data = float(re.findall(r'\d+\.?\d*', data_line)[0])
             return data
 
-        solver_specs = constants.SMT_SOLVERS[solver_name]
-        command = solver_specs['command'][:]
+        solver_specs = [specs for specs in solvers.SMT_SOLVERS_EXTERNAL
+                        if specs['solver_name'] == solver_name.upper()][0]
+        solver_name = solver_specs['solver_name']
+        command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options']
         smt_input = '\n'.join(self._model_constraints) + '\n'
         solver_process = subprocess.run(command, input=smt_input, capture_output=True, text=True)
         solver_output = solver_process.stdout.splitlines()
-        solve_time = _get_data(solver_specs['time'], solver_output)
-        memory = _get_data(solver_specs['memory'], solver_output)
+        solve_time = _get_data(solver_specs['keywords']['time'], solver_output)
+        memory = _get_data(solver_specs['keywords']['memory'], solver_output)
         if solver_output[0] == 'sat':
-            if solver_name == 'z3':
+            if solver_name == 'Z3_EXT':
                 variable2value = z3_parser(solver_output)
-            elif solver_name == 'yices-smt2':
+            elif solver_name == 'YICES_EXT':
                 variable2value = yices_parser(solver_output)
-            elif solver_name == 'mathsat':
+            elif solver_name == 'MATHSAT_EXT':
                 variable2value = mathsat_parser(solver_output)
             component2attributes, total_weight = self._parse_solver_output(variable2value)
             status = 'SATISFIABLE'

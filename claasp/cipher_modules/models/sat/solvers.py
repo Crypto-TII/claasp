@@ -34,6 +34,7 @@ Docker container running the default image for the library no further action is
 needed.
 """
 
+
 SOLVER_DEFAULT = "CRYPTOMINISAT_EXT"
 
 
