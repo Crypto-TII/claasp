@@ -19,6 +19,7 @@
 
 import time
 
+from claasp.cipher_modules.models.smt import solvers
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.cipher_modules.models.smt.utils import constants
 from claasp.cipher_modules.models.smt.utils.utils import get_component_hex_value
@@ -77,7 +78,7 @@ class SmtCipherModel(SmtModel):
         self._model_constraints = \
             constants.MODEL_PREFIX + self._declarations + self._model_constraints + constants.MODEL_SUFFIX
 
-    def find_missing_bits(self, fixed_values=[], solver_name='z3'):
+    def find_missing_bits(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a generic flow of the cipher from plaintext and key to ciphertext.
 
@@ -105,7 +106,7 @@ class SmtCipherModel(SmtModel):
             sage: smt.find_missing_bits(fixed_values=[ciphertext]) # random
             {'cipher_id': 'speck_k64_p32_o32_r22',
              'model_type': 'speck_k64_p32_o32_r22',
-             'solver_name': 'cryptominisat',
+             'solver_name': 'Z3_EXT',
              ...
               'intermediate_output_21_11': {'value': '90fe', 'weight': 0},
               'cipher_output_21_12': {'value': 'affec7ed', 'weight': 0}},

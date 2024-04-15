@@ -404,7 +404,7 @@ class SatModel:
                           for i in range(component.output_bit_size)])
         return weight
 
-    def solve(self, model_type, solver_name='cryptominisat', options=None):
+    def solve(self, model_type, solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
         Return the solution of the model using the ``solver_name`` SAT solver.
 

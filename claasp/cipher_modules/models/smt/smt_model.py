@@ -366,7 +366,7 @@ class SmtModel:
                 literals.append(f'{component_id}_{position}{out_suffix}')
         constraints.append(utils.smt_assert(utils.smt_or(literals)))
 
-    def solve(self, model_type, solver_name='z3'):
+    def solve(self, model_type, solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution of the model using the ``solver_name`` SMT solver.
 
@@ -377,7 +377,7 @@ class SmtModel:
           * ``'cipher'``
           * ``'xor_differential'``
           * ``'xor_linear'``
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -392,7 +392,7 @@ class SmtModel:
             sage: smt.solve('xor_differential') # random
             {'cipher_id': 'speck_p32_k64_o32_r4',
              'model_type': 'xor_differential',
-             'solver_name': 'z3',
+             'solver_name': 'Z3_EXT',
              'solving_time_seconds': 0.0,
              'memory_megabytes': 0.09,
              'components_values': {},
