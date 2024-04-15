@@ -65,7 +65,7 @@ from claasp.editor import remove_permutations, remove_rotations
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
-from claasp.name_mappings import (SBOX, CIPHER, XOR_LINEAR)
+from claasp.name_mappings import SBOX
 
 
 class SatModel:
@@ -438,7 +438,7 @@ class SatModel:
             sage: sat.solve('cipher') # random
             {'cipher_id': 'tea_p64_k128_o64_r32',
              'model_type': 'tea_p64_k128_o64_r32',
-             'solver_name': 'cryptominisat',
+             'solver_name': 'CRYPTOMINISAT_EXT',
              ...
               'intermediate_output_31_15': {'value': '8ca8d5de0906f08e', 'weight': 0, 'sign': 1},
               'cipher_output_31_16': {'value': '8ca8d5de0906f08e', 'weight': 0, 'sign': 1}},
