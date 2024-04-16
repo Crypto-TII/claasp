@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2024-04-06
+
+### Added
+
+- Added method to get milp solvers.
+- Coinbc backend for milp module.
+
+### Fixed
+
+- Added date time to report folders and statistical tests folders. fixed neural network error message fixed trails output format to include hex words.
+- Fixed trail search output format.
+
 ## [2.3.0] - 2024-03-22
 
 ### Added
@@ -149,6 +161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything! First public release.
 
+[2.4.0]: https://github.com/Crypto-TII/claasp/compare/v2.4.0..v2.3.0
 [2.3.0]: https://github.com/Crypto-TII/claasp/compare/v2.3.0..v2.1.0
 [2.1.0]: https://github.com/Crypto-TII/claasp/compare/v2.1.0..v2.0.0
 [1.1.0]: https://github.com/Crypto-TII/claasp/releases/tag/v1.1.0

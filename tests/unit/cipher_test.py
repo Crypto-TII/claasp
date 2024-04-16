@@ -75,9 +75,9 @@ def test_algebraic_tests():
     compare_result = {'input_parameters': {'cipher': aes,
                                            'timeout_in_seconds': 5,
                                            'test_name': 'algebraic_tests'},
-                      'test_results': {'number_of_variables': [136],
-                                       'number_of_equations': [206],
-                                       'number_of_monomials': [304],
+                      'test_results': {'number_of_variables': [128],
+                                       'number_of_equations': [198],
+                                       'number_of_monomials': [296],
                                        'max_degree_of_equations': [2],
                                        'test_passed': [False]}}
 
@@ -234,12 +234,12 @@ def test_is_spn():
 
 def test_polynomial_system():
     tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
-    assert str(tea.polynomial_system()) == 'Polynomial Sequence with 368 Polynomials in 464 Variables'
+    assert str(tea.polynomial_system()) == 'Polynomial Sequence with 352 Polynomials in 448 Variables'
 
 
 def test_polynomial_system_at_round():
     assert str(FancyBlockCipher(number_of_rounds=1).polynomial_system_at_round(0)) == \
-           'Polynomial Sequence with 252 Polynomials in 168 Variables'
+           'Polynomial Sequence with 228 Polynomials in 144 Variables'
 
 
 def test_print():

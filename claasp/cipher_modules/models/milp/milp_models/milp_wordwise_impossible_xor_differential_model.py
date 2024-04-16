@@ -18,7 +18,7 @@
 import time
 
 from claasp.cipher_modules.inverse_cipher import get_key_schedule_component_ids
-from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORDWISE_IMPOSSIBLE_AUTO, \
     MILP_WORDWISE_IMPOSSIBLE, MILP_BACKWARD_SUFFIX, MILP_BUILDING_MESSAGE
