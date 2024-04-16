@@ -22,6 +22,7 @@ from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_di
 
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, IMPOSSIBLE_XOR_DIFFERENTIAL)
+from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 
 
 class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialModel):
@@ -257,7 +258,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         return cp_constraints
         
     def find_all_impossible_xor_differential_trails(self, number_of_rounds,
-                                                                fixed_values=[], solver_name=None, middle_round=1):
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, middle_round=1):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -304,7 +305,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         return self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name)
 
     def find_one_impossible_xor_differential_trail(self, number_of_rounds=None,
-                                                                fixed_values=[], solver_name=None, middle_round=1):
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, middle_round=1):
         """
         Return the solution representing a differential trail with any weight.
 

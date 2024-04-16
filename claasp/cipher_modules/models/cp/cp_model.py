@@ -22,13 +22,15 @@ import math
 import itertools
 import subprocess
 
+from copy import deepcopy
+
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import SBOX
-from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL
+from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 solve_satisfy = 'solve satisfy;'
 constraint_type_error = 'Constraint type not defined'
@@ -295,13 +297,21 @@ class CpModel:
                    'differential_pair_one_solution',
                    'evaluate_cipher']
         write_model_to_file(self._model_constraints, input_file_path)
-        if model_type in solvers:
-            command = ['minizinc', f'-p {num_of_processors}', '--solver-statistics', '--time-limit', str(timelimit),
-                       '--solver', solver_name, input_file_path]
-        else:
-            command = ['minizinc', f'-p {num_of_processors}', '-a', '--solver-statistics',
-                       '--time-limit', str(timelimit), '--solver', solver_name, input_file_path]
-
+        for i in range(len(CP_SOLVERS_EXTERNAL)):
+            if solver_name == CP_SOLVERS_EXTERNAL[i]['solver_name']:
+                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
+        command_options['keywords']['command']['input_file'].append(input_file_path)
+        if model_type not in solvers:
+            command_options['keywords']['command']['options'].insert(0, '-a')
+        if num_of_processors is not None:
+            command_options['keywords']['command']['options'].insert(0, f'-p {num_of_processors}')
+        if timelimit is not None:
+            command_options['keywords']['command']['options'].append('--time-limit')
+            command_options['keywords']['command']['options'].append(str(timelimit))
+        command = []
+        for key in command_options['keywords']['command']['format']:
+            command.extend(command_options['keywords']['command'][key])
+            
         return command
 
     def get_mix_column_all_inputs(self, input_bit_positions_1, input_id_link_1, numb_of_inp_1):
@@ -411,7 +421,7 @@ class CpModel:
         else:
             component_solution['value'] = value
 
-    def solve(self, model_type, solver_name=None, num_of_processors=1, timelimit=60000):
+    def solve(self, model_type, solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution of the model.
 
@@ -453,7 +463,7 @@ class CpModel:
               'total_weight': '5'}]
         """
         cipher_name = self.cipher_id
-        input_file_path = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
+        input_file_path = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(
             input_file_path, model_type, solver_name, num_of_processors, timelimit
         )

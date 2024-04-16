@@ -16,27 +16,82 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+import os
+
+SOLVER_DEFAULT = 'Chuffed'
+MODEL_DEFAULT_PATH = os.getcwd()
+
 CP_SOLVERS_INTERNAL = []
 
 CP_SOLVERS_EXTERNAL = [
     {
-    'solver_brand_name': 'Chuffed',
-    'solver_name': 'Chuffed' # keyword to call the solver   
+        'solver_brand_name': 'Chuffed',
+        'solver_name': 'Chuffed', # keyword to call the solver  
+        'keywords': {
+            'command': {
+                'executable': ['minizinc'],
+                'options': ['--solver-statistics'],
+                'input_file': [],
+                'output_file': [],
+                'solver': ['--solver', 'Chuffed'],
+                'format': ['executable', 'options', 'solver', 'input_file', 'output_file'],
+            },
+        },
     },
     {
-    'solver_brand_name': 'Gecode',
-    'solver_name': 'Gecode' # keyword to call the solver     
+        'solver_brand_name': 'Gecode',
+        'solver_name': 'Gecode', # keyword to call the solver  
+        'keywords': {
+            'command': {
+                'executable': ['minizinc'],
+                'options': ['--solver-statistics'],
+                'input_file': [],
+                'output_file': [],
+                'solver': ['--solver', 'Gecode'],
+                'format': ['executable', 'options', 'solver', 'input_file', 'output_file'],
+            },
+        },    
     },
     {
-    'solver_brand_name': 'OR Tools',
-    'solver_name': 'XOR' # keyword to call the solver     
+        'solver_brand_name': 'OR Tools',
+        'solver_name': 'Xor', # keyword to call the solver   
+        'keywords': {
+            'command': {
+                'executable': ['minizinc'],
+                'options': ['--solver-statistics'],
+                'input_file': [],
+                'output_file': [],
+                'solver': ['--solver', 'Xor'],
+                'format': ['executable', 'options', 'solver', 'input_file', 'output_file'],
+            },
+        },   
     },
     {
-    'solver_brand_name': 'COIN-BC',
-    'solver_name': 'COIN-BC' # keyword to call the solver     
+        'solver_brand_name': 'COIN-BC',
+        'solver_name': 'COIN-BC', # keyword to call the solver   
+        'keywords': {
+            'command': {
+                'executable': ['minizinc'],
+                'options': ['--solver-statistics'],
+                'input_file': [],
+                'output_file': [],
+                'solver': ['--solver', 'COIN-BC'],
+                'format': ['executable', 'options', 'solver', 'input_file', 'output_file'],
+            },
+        },   
     },
     {
-    'solver_brand_name': 'Choco',
-    'solver_name': 'choco-solver' # keyword to call the solver      
+        'solver_brand_name': 'Choco',
+        'solver_name': 'choco', # keyword to call the solver    
+        'keywords': {
+            'command': {
+                'executable': ['minizinc'],
+                'options': ['--solver-statistics'],
+                'input_file': [],
+                'output_file': [],
+                'solver': ['--solver', 'choco'],
+                'format': ['executable', 'options', 'solver', 'input_file', 'output_file'],
+            },
+        },   
     },
 ]
