@@ -34,9 +34,9 @@ class AlgebraicTests:
             {'input_parameters': {'cipher': toyspn1_p6_k6_o6_r2,
               'timeout_in_seconds': 10,
               'test_name': 'algebraic_tests'},
-             'test_results': {'number_of_variables': [30, 48],
-              'number_of_equations': [40, 80],
-              'number_of_monomials': [60, 108],
+             'test_results': {'number_of_variables': [24, 42],
+              'number_of_equations': [34, 74],
+              'number_of_monomials': [54, 102],
               'max_degree_of_equations': [2, 2],
               'test_passed': [False, False]}}
 
@@ -48,9 +48,9 @@ class AlgebraicTests:
             {'input_parameters': {'cipher': speck_p32_k64_o32_r1,
               'timeout_in_seconds': 30,
               'test_name': 'algebraic_tests'},
-             'test_results': {'number_of_variables': [144],
-              'number_of_equations': [96],
-              'number_of_monomials': [189],
+             'test_results': {'number_of_variables': [112],
+              'number_of_equations': [64],
+              'number_of_monomials': [157],
               'max_degree_of_equations': [2],
               'test_passed': [True]}}
 
@@ -69,12 +69,15 @@ class AlgebraicTests:
         tests_up_to_round = []
 
         F = []
-        constant_vars = {}
+        dict_vars = {}
         for round_number in range(self._cipher.number_of_rounds):
             F += self._algebraic_model.polynomial_system_at_round(round_number, True)
-            constant_vars.update(self._algebraic_model._dict_constant_component_polynomials(round_number))
-            if constant_vars is not None:
-                F = self._algebraic_model._remove_constant_polynomials(constant_vars, F)
+            dict_vars.update(self._algebraic_model._dict_const_rot_not_shift_component_polynomials(round_number))
+            if round_number == self._cipher.number_of_rounds - 1 and dict_vars:
+                dict_vars = self._algebraic_model._substitute_cipher_output_vars_dict_vars(dict_vars, round_number)
+            if dict_vars:
+                F = self._algebraic_model._eliminate_const_not_shift_rot_components_polynomials(dict_vars, F)
+
             Fseq = Sequence(F)
             nvars_up_to_round.append(Fseq.nvariables())
             npolynomials_up_to_round.append(len(Fseq))
