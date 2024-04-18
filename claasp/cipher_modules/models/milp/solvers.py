@@ -17,6 +17,18 @@ import os
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+"""MILP solvers
+.. _Available MILP solvers:
+Available MILP solvers
+---------------------
+In this file, all the available MILP solvers are listed. They can be divided in
+two categories: internal and external.
+Internal MILP solvers should be installed by default and no further action is
+needed. For any other information on internal MILP solvers, visit `Linear Programming (Mixed Integer) - Solver Backends
+ <https://doc.sagemath.org/html/en/thematic_tutorials/linear_programming.html#solvers-backends>`_.
+External MILP solvers need to be installed in the system, with the license, if applicable, as long as you want a
+bare metal installation since they are called using a subprocess. 
+"""
 
 SOLVER_DEFAULT = "GLPK"
 MODEL_DEFAULT_PATH = os.getcwd()

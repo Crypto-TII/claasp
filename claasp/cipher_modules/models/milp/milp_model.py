@@ -22,16 +22,10 @@
 The target of this module is to find different kind of trails associated to a cryptanalysis technique by using MILP,
 e.g. the search for XOR differential trails.
 
-The user is asked to use one of the following MILP solver, some need to be installed and integrated to sage beforehand.
-Available MILP solvers are:
-
-    * `Use Solver through Sage <https://doc.sagemath.org/html/en/thematic_tutorials/linear_programming.html>`_
-    * `GLPK`_ (integrated in sage by default, poor performance)
-    * `Gurobi`_ (show better performance, but you need to get a license beforehand)
-    * `CBC`_
-    * `CVXOPT`_
-    * `CPLEX`_
-    * `PPL`_
+This module is able to use many different MILP solvers.
+For any further information, refer to the file
+:py:mod:`claasp.cipher_modules.models.milp.solvers.py` and to the section
+:ref:`Available MILP solvers`.
 
 The default choice is GLPK.
 
