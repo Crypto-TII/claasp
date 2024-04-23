@@ -70,11 +70,12 @@ SAT_SOLVERS_EXTERNAL = [
                 "solve": "",
                 "output_file": "",
                 "end": "",
-                "format": ["executable", "input_file"],
+                "format": ["executable", "options", "input_file"],
             },
             "time": "real time",
             "memory": "size of process",
             "is_dimacs_compliant": True,
+            "unsat_condition": "s UNSATISFIABLE",
         },
     },
     {
@@ -93,6 +94,7 @@ SAT_SOLVERS_EXTERNAL = [
             "time": "c Total time (this thread)",
             "memory": "c Max Memory (rss)",
             "is_dimacs_compliant": True,
+            "unsat_condition": "s UNSATISFIABLE",
         },
     },
     {
@@ -111,6 +113,7 @@ SAT_SOLVERS_EXTERNAL = [
             "time": "CPU time",
             "memory": None,
             "is_dimacs_compliant": True,
+            "unsat_condition": "s UNSATISFIABLE",
         },
     },
     {
@@ -129,6 +132,7 @@ SAT_SOLVERS_EXTERNAL = [
             "time": "cpu time",
             "memory": "Total Memory",
             "is_dimacs_compliant": True,
+            "unsat_condition": "s UNSATISFIABLE",
         },
     },
     {
@@ -147,6 +151,7 @@ SAT_SOLVERS_EXTERNAL = [
             "time": "process-time",
             "memory": "maximum-resident-set-size",
             "is_dimacs_compliant": True,
+            "unsat_condition": "s UNSATISFIABLE",
         },
     },
     {
@@ -165,6 +170,7 @@ SAT_SOLVERS_EXTERNAL = [
             "time": None,
             "memory": None,
             "is_dimacs_compliant": False,
+            "unsat_condition": "s UNSATISFIABLE",
         },
     },
     {
@@ -183,6 +189,7 @@ SAT_SOLVERS_EXTERNAL = [
             "time": "CPU Time",
             "memory": "Memory used",
             "is_dimacs_compliant": True,
+            "unsat_condition": "s UNSATISFIABLE",
         },
     },
     {
@@ -196,11 +203,12 @@ SAT_SOLVERS_EXTERNAL = [
                 "solve": "",
                 "output_file": "",
                 "end": "",
-                "format": ["executable", "options", "input_file"],
+                "format": ["executable", "options", "input_file", "output_file"],
             },
             "time": "CPU time",
             "memory": "Memory used",
             "is_dimacs_compliant": False,
+            "unsat_condition": "UNSATISFIABLE",
         },
     },
     {
@@ -219,6 +227,7 @@ SAT_SOLVERS_EXTERNAL = [
             "time": "Search time",
             "memory": "Memory used",
             "is_dimacs_compliant": False,
+            "unsat_condition": "unsat",
         },
     },
 ]

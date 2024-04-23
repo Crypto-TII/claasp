@@ -33,6 +33,9 @@ needed.
 SOLVER_DEFAULT = "Z3_EXT"
 
 
+SMT_SOLVERS_INTERNAL = []
+
+
 SMT_SOLVERS_EXTERNAL = [
     {
         "solver_brand_name": "MathSAT 5",
@@ -49,6 +52,7 @@ SMT_SOLVERS_EXTERNAL = [
             },
             "time": "time-seconds",
             "memory": "memory-mb",
+            "unsat_condition": "unsat",
         },
     },
     {
@@ -66,6 +70,7 @@ SMT_SOLVERS_EXTERNAL = [
             },
             "time": "total-run-time",
             "memory": "mem-usage",
+            "unsat_condition": "unsat",
         },
     },
     {
@@ -83,6 +88,7 @@ SMT_SOLVERS_EXTERNAL = [
             },
             "time": "total-time",
             "memory": "memory",
+            "unsat_condition": "unsat",
         },
     },
 ]
