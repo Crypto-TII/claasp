@@ -195,7 +195,7 @@ def test_get_round_from_component_id():
 def test_impossible_differential_search():
     speck6 = SpeckBlockCipher(number_of_rounds=6)
     # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
-    impossible_differentials = speck6.impossible_differential_search("cp", "chuffed")
+    impossible_differentials = speck6.impossible_differential_search("cp", "Chuffed")
 
     assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
             (0x400000, 0x8000) in impossible_differentials)
