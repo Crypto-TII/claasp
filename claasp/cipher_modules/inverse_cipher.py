@@ -1291,7 +1291,7 @@ def get_relative_position(target_link, target_bit_positions, descendant):
         child_input_bit_position = descendant.input_bit_positions[i]
         if link == target_link:
             if set(target_bit_positions) <= set(child_input_bit_position):
-                return [idx + offset for idx, e in enumerate(child_input_bit_position) if e in target_bit_positions]
+                return [bit + offset for bit in target_bit_positions]
         offset += len(child_input_bit_position)
     return []
 
