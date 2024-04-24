@@ -102,7 +102,22 @@ class KasumiBlockCipher(Cipher):
                          cipher_inputs_bit_size=[key_bit_size, block_bit_size],
                          cipher_output_bit_size=block_bit_size)
 
-        p1, p2 = self.round_initialization()
+        p1_1 = p1_2 = p1_3 = p1_4 = p1_5 = p1_6 = 'plaintext'
+        p1_1_positions = list(range(0, 7))
+        p1_2_positions = list(range(7, 9))
+        p1_3_positions = list(range(9, 16))
+        p1_4_positions = list(range(16, 23))
+        p1_5_positions = list(range(23, 25))
+        p1_6_positions = list(range(25, 32))
+
+        p2_1 = p2_2 = p2_3 = p2_4 = p2_5 = p2_6 = 'plaintext'
+        p2_1_positions = list(range(0+32, 7+32))
+        p2_2_positions = list(range(7+32, 9+32))
+        p2_3_positions = list(range(9+32, 16+32))
+        p2_4_positions = list(range(16+32, 23+32))
+        p2_5_positions = list(range(23+32, 25+32))
+        p2_6_positions = list(range(25+32, 32+32))
+
         key = [INPUT_KEY], [list(range(self.key_bit_size))]
         self.add_round()
         key_derived = self.derived_key(key)
@@ -111,24 +126,106 @@ class KasumiBlockCipher(Cipher):
                 self.add_round()
             sub_key = self.round_key(key, key_derived, round_number + 1)
             if round_number % 2 == 0:
-                fl = self.fl_function(p1, sub_key)
-                fo = self.fo_function(fl, sub_key)
-                self.add_XOR_component([fo.id[0], p2.id[0]], [list(range(2 * self.WORD_SIZE)),
-                                                              p2.input_bit_positions[0]], 2 * self.WORD_SIZE)
-                p2 = ComponentState([self.get_current_component_id()], [list(range(2 * self.WORD_SIZE))])
+                fl1, fl2, fl3, fl4, fl5, fl6 = self.fl_function1(
+                    p1_1, p1_2, p1_3, p1_4, p1_5, p1_6,
+                    p1_1_positions, p1_2_positions, p1_3_positions,
+                    p1_4_positions, p1_5_positions, p1_6_positions,
+                    sub_key
+                )
+
+                fo_1, fo_2, fo_3, fo_4, fo_5, fo_6 = self.fo_function1(
+                    fl1, fl2, fl3, fl4, fl5, fl6,
+                    list(range(7)),
+                    list(range(2)),
+                    list(range(7)),
+                    list(range(7)),
+                    list(range(2)),
+                    list(range(7)),
+                    sub_key
+                )
+                p2_1 = self.add_XOR_component([fo_1, p2_1], [list(range(7)),
+                                                           p2_1_positions], 7).id
+                p2_2 = self.add_XOR_component([fo_2, p2_2], [list(range(2)),
+                                                           p2_2_positions], 2).id
+                p2_3 = self.add_XOR_component([fo_3, p2_3], [list(range(7)),
+                                                           p2_3_positions], 7).id
+                p2_4 = self.add_XOR_component([fo_4, p2_4], [list(range(7)),
+                                                           p2_4_positions], 7).id
+                p2_5 = self.add_XOR_component([fo_5, p2_5], [list(range(2)),
+                                                           p2_5_positions], 2).id
+                p2_6 = self.add_XOR_component([fo_6, p2_6], [list(range(7)),
+                                                              p2_6_positions], 7).id
+
+                p2_1_positions = list(range(7))
+                p2_2_positions = list(range(2))
+                p2_3_positions = list(range(7))
+                p2_4_positions = list(range(7))
+                p2_5_positions = list(range(2))
+                p2_6_positions = list(range(7))
+
             else:
-                fo = self.fo_function(p2, sub_key)
-                fl = self.fl_function(fo, sub_key)
-                self.add_XOR_component([fl.id[0], p1.id[0]], [list(range(2 * self.WORD_SIZE)),
-                                                              p1.input_bit_positions[0]], 2 * self.WORD_SIZE)
-                p1 = ComponentState([self.get_current_component_id()], [list(range(2 * self.WORD_SIZE))])
 
-            self.add_round_output_component([p1.id[0], p2.id[0]], [list(range(2 * self.WORD_SIZE)),
-                                                                   list(range(2 * self.WORD_SIZE))],
-                                            self.block_bit_size)
+                fo_1, fo_2, fo_3, fo_4, fo_5, fo_6 = self.fo_function1(
+                    p2_1, p2_2, p2_3, p2_4, p2_5, p2_6,
+                    p2_1_positions, p2_2_positions, p2_3_positions,
+                    p2_4_positions, p2_5_positions, p2_6_positions,sub_key)
 
-        self.add_cipher_output_component([p1.id[0], p2.id[0]], [list(range(2*self.WORD_SIZE)),
-                                                                list(range(2*self.WORD_SIZE))], self.block_bit_size)
+
+                fl1, fl2, fl3, fl4, fl5, fl6 = self.fl_function1(
+                    fo_1, fo_2, fo_3, fo_4, fo_5, fo_6,
+                    list(range(7)), list(range(2)), list(range(7)),
+                    list(range(7)), list(range(2)), list(range(7)),
+                    sub_key
+                )
+
+                p1_1 = self.add_XOR_component([fl1, p1_1], [list(range(7)),
+                                                           p1_1_positions], 7).id
+                p1_2 = self.add_XOR_component([fl2, p1_2], [list(range(2)),
+                                                           p1_2_positions], 2).id
+                p1_3 = self.add_XOR_component([fl3, p1_3], [list(range(7)),
+                                                           p1_3_positions], 7).id
+                p1_4 = self.add_XOR_component([fl4, p1_4], [list(range(7)),
+                                                           p1_4_positions], 7).id
+                p1_5 = self.add_XOR_component([fl5, p1_5], [list(range(2)),
+                                                           p1_5_positions], 2).id
+                p1_6 = self.add_XOR_component([fl6, p1_6], [list(range(7)),
+                                                              p1_6_positions], 7).id
+
+                p1_1_positions = list(range(7))
+                p1_2_positions = list(range(2))
+                p1_3_positions = list(range(7))
+                p1_4_positions = list(range(7))
+                p1_5_positions = list(range(2))
+                p1_6_positions = list(range(7))
+
+
+            self.add_round_output_component(
+                [
+                    p1_1, p1_2, p1_3, p1_4, p1_5, p1_6,
+                    p2_1, p2_2, p2_3, p2_4, p2_5, p2_6,
+                ],
+                [
+                    list(range(7)), list(range(2)), list(range(7)),
+                    list(range(7)), list(range(2)), list(range(7)),
+                    list(range(7)), list(range(2)), list(range(7)),
+                    list(range(7)), list(range(2)), list(range(7))
+                ],
+                self.block_bit_size
+            )
+
+        self.add_cipher_output_component(
+            [
+                p1_1, p1_2, p1_3, p1_4, p1_5, p1_6,
+                p2_1, p2_2, p2_3, p2_4, p2_5, p2_6,
+            ],
+            [
+                list(range(7)), list(range(2)), list(range(7)),
+                list(range(7)), list(range(2)), list(range(7)),
+                list(range(7)), list(range(2)), list(range(7)),
+                list(range(7)), list(range(2)), list(range(7))
+            ],
+            self.block_bit_size
+        )
 
     def _get_number_of_rounds(self, number_of_rounds):
         if number_of_rounds is not None:
@@ -144,84 +241,166 @@ class KasumiBlockCipher(Cipher):
             raise ValueError("No available number of rounds for the given parameters.")
         return configuration_number_of_rounds
 
-    def fi_function(self, p, ki_id, ki_positions):
-        s9_1 = self.add_SBOX_component([p], [list(range(9))], 9, SBox9).id
+    def fi_function1(self, p1, p2, p3, ki_id, ki_positions):
+        s9_1 = self.add_SBOX_component([p1, p2], [list(range(7)), list(range(2))], 9, SBox9).id
+
         cst1 = self.add_constant_component(2, 0b00).id
-        con1 = self.add_concatenate_component([cst1, p], [list(range(2)), list(range(9, self.WORD_SIZE))], 9).id
-        xor1 = self.add_XOR_component([s9_1, con1], [list(range(9)), list(range(9))], 9).id
 
-        s7_1 = self.add_SBOX_component([p], [list(range(9, self.WORD_SIZE))], 7, SBox7).id
-        xor2 = self.add_XOR_component([s7_1, xor1], [list(range(7)), list(range(2, 9))], 7).id
+        xor1_1 = self.add_XOR_component([s9_1, cst1], [list(range(2)), list(range(2))], 2).id
+        xor1_2 = self.add_XOR_component([s9_1, p3], [list(range(2,9)),  list(range(7))], 7).id
 
-        xor3 = self.add_XOR_component([xor1, ki_id], [list(range(9)), ki_positions[7:16]], 9).id
+        s7_1 = self.add_SBOX_component([p3], [list(range(7))], 7, SBox7).id
+
+        xor2 = self.add_XOR_component([s7_1, xor1_2], [list(range(7)), list(range(7))], 7).id
+
+        xor3_1 = self.add_XOR_component([xor1_1, ki_id], [list(range(2)), ki_positions[7:9]], 2).id
+        xor3_2 = self.add_XOR_component([xor1_2, ki_id], [list(range(7)), ki_positions[9:16]], 7).id
+
         xor4 = self.add_XOR_component([xor2, ki_id], [list(range(7)), ki_positions[:7]], 7).id
 
-        s9_2 = self.add_SBOX_component([xor3], [list(range(9))], 9, SBox9).id
+        s9_2 = self.add_SBOX_component([xor3_1, xor3_2], [list(range(2)), list(range(7))], 9, SBox9).id
 
-        con2 = self.add_concatenate_component([cst1, xor4], [list(range(2)), list(range(7))], 9).id
-        xor5 = self.add_XOR_component([s9_2, con2], [list(range(9)), list(range(9))], 9).id
+        xor5_1 = self.add_XOR_component([s9_2, cst1], [list(range(2)), list(range(2))], 2)
+        xor5_2 = self.add_XOR_component([s9_2, xor4], [list(range(2, 9)), list(range(7))], 7)
+        xor5_2_id = xor5_2.id
 
         s7_2 = self.add_SBOX_component([xor4], [list(range(7))], 7, SBox7).id
-        xor6 = self.add_XOR_component([s7_2, xor5], [list(range(7)), list(range(2, 9))], 7).id
+        xor6 = self.add_XOR_component([s7_2, xor5_2_id], [list(range(7)), list(range(7))], 7)
 
-        self.add_concatenate_component([xor6, xor5], [list(range(7)), list(range(9))], self.WORD_SIZE)
-        fi = ComponentState([self.get_current_component_id()], [list(range(self.WORD_SIZE))])
-        return fi
+        return xor6, xor5_1, xor5_2
+    def fo_function1(self, p1, p2, p3, p4, p5, p6, p1_positions, p2_positions, p3_positions,
+                    p4_positions, p5_positions, p6_positions, sub_key):
 
-    def fo_function(self, p, sub_key):
+        xor1_1 = self.add_XOR_component([p1, sub_key], [p1_positions,
+                                                           list(range(32,32+7))],
+                                      7).id
 
-        xor1 = self.add_XOR_component([p.id[0], sub_key], [list(range(self.WORD_SIZE)),
-                                                           [i + 2 * self.WORD_SIZE for i in range(self.WORD_SIZE)]],
-                                      self.WORD_SIZE).id
+        xor1_2 = self.add_XOR_component([p2, sub_key], [p2_positions,
+                                                           list(range(32+7,32+9))],
+                                      2).id
+        xor1_3 = self.add_XOR_component([p3, sub_key], [p3_positions,
+                                                           list(range(32+9,32+16))],
+                                      7).id
+
         ki_id, ki_positions = extract_inputs([sub_key], [list(range(8 * self.WORD_SIZE))],
                                              [i + 5 * self.WORD_SIZE for i in range(self.WORD_SIZE)])
 
-        fi1 = self.fi_function(xor1, ki_id[0], ki_positions[0])
+        fi1_1, fi1_2, fi1_3 = self.fi_function1(xor1_1, xor1_2, xor1_3, ki_id[0], ki_positions[0])
 
-        xor2 = self.add_XOR_component([fi1.id[0], p.id[0]], [list(range(self.WORD_SIZE)),
-                                                             [i + self.WORD_SIZE for i in range(self.WORD_SIZE)]],
-                                      self.WORD_SIZE).id
-        xor3 = self.add_XOR_component([p.id[0], sub_key], [[(i + self.WORD_SIZE) for i in range(self.WORD_SIZE)],
-                                                           [i + 3 * self.WORD_SIZE for i in range(self.WORD_SIZE)]],
-                                      self.WORD_SIZE).id
+        xor2_1 = self.add_XOR_component([fi1_1.id, p4], [list(range(7)),
+                                                             p4_positions],
+                                      7).id
+        xor2_2 = self.add_XOR_component([fi1_2.id, p5], [list(range(2)),
+                                                             p5_positions],
+                                      2).id
+        xor2_3 = self.add_XOR_component([fi1_3.id, p6], [list(range(7)),
+                                                             p6_positions],
+                                      7).id
+
+        subkey_size = [i + 3 * self.WORD_SIZE for i in range(self.WORD_SIZE)]
+        xor3_1 = self.add_XOR_component([p4, sub_key], [p4_positions,
+                                                           subkey_size[0:7]],
+                                      7).id
+        xor3_2 = self.add_XOR_component([p5, sub_key], [p5_positions,
+                                                           subkey_size[7:9]],
+                                      2).id
+        xor3_3 = self.add_XOR_component([p6, sub_key], [p6_positions,
+                                                           subkey_size[9:16]],
+                                      7).id
+
+
         ki2_id, ki2_positions = extract_inputs([sub_key], [list(range(8 * self.WORD_SIZE))],
                                                [i + 6 * self.WORD_SIZE for i in range(self.WORD_SIZE)])
-        fi2 = self.fi_function(xor3, ki2_id[0], ki2_positions[0])
-        xor4 = self.add_XOR_component([fi2.id[0], xor2], [list(range(self.WORD_SIZE)), list(range(self.WORD_SIZE))],
-                                      self.WORD_SIZE).id
+        fi2_1, fi2_2, fi2_3 = self.fi_function1(xor3_1, xor3_2, xor3_3, ki2_id[0], ki2_positions[0])
 
-        xor5 = self.add_XOR_component([xor2, sub_key], [list(range(self.WORD_SIZE)),
-                                                        [i + 4 * self.WORD_SIZE for i in range(self.WORD_SIZE)]],
-                                      self.WORD_SIZE).id
+        xor4_1 = self.add_XOR_component([fi2_1.id, xor2_1], [list(range(7)), list(range(7))],
+                                      7).id
+        xor4_2 = self.add_XOR_component([fi2_2.id, xor2_2], [list(range(2)), list(range(2))],
+                                      2).id
+        xor4_3 = self.add_XOR_component([fi2_3.id, xor2_3], [list(range(7)), list(range(7))],
+                                      7).id
+
+        sub_key_positions = [i + 4 * self.WORD_SIZE for i in range(self.WORD_SIZE)]
+        xor5_1 = self.add_XOR_component([xor2_1, sub_key], [list(range(7)), sub_key_positions[0:7]],
+           7).id
+        xor5_2 = self.add_XOR_component([xor2_2, sub_key], [list(range(2)), sub_key_positions[7:9]],
+           2).id
+        xor5_3 = self.add_XOR_component([xor2_3, sub_key], [list(range(7)), sub_key_positions[9:self.WORD_SIZE]],
+           7).id
+
         ki3_id, ki3_positions = extract_inputs([sub_key], [list(range(8 * self.WORD_SIZE))],
                                                [i + 7 * self.WORD_SIZE for i in range(self.WORD_SIZE)])
-        fi3 = self.fi_function(xor5, ki3_id[0], ki3_positions[0])
-        xor6 = self.add_XOR_component([fi3.id[0], xor4], [list(range(self.WORD_SIZE)), list(range(self.WORD_SIZE))],
-                                      self.WORD_SIZE).id
-        self.add_concatenate_component([xor4, xor6], [list(range(self.WORD_SIZE)), list(range(self.WORD_SIZE))],
-                                       2 * self.WORD_SIZE)
-        fo = ComponentState([self.get_current_component_id()], [list(range(2 * self.WORD_SIZE))])
-        return fo
+        fi3_1, fi3_2, fi3_3 = self.fi_function1(xor5_1, xor5_2, xor5_3, ki3_id[0], ki3_positions[0])
 
-    def fl_function(self, p, sub_key):
-        and1 = self.add_AND_component([p.id[0], sub_key], [list(range(self.WORD_SIZE)), list(range(self.WORD_SIZE))],
-                                      self.WORD_SIZE).id
-        rot1 = self.add_rotate_component([and1], [list(range(self.WORD_SIZE))], self.WORD_SIZE, -1).id
-        xor1 = self.add_XOR_component([rot1, p.id[0]],
-                                      [list(range(self.WORD_SIZE)),
-                                       [(i + self.WORD_SIZE) for i in range(self.WORD_SIZE)]],
-                                      self.WORD_SIZE).id
-        or1 = self.add_OR_component([xor1, sub_key],
-                                    [list(range(self.WORD_SIZE)), [(i + self.WORD_SIZE) for i in range(self.WORD_SIZE)]],
-                                    self.WORD_SIZE).id
-        rot2 = self.add_rotate_component([or1], [list(range(self.WORD_SIZE))], self.WORD_SIZE, -1).id
-        xor2 = self.add_XOR_component([rot2, p.id[0]], [list(range(self.WORD_SIZE)), list(range(self.WORD_SIZE))],
-                                      self.WORD_SIZE).id
+        xor6_1 = self.add_XOR_component([fi3_1.id, xor4_1], [list(range(7)), list(range(7))],
+                                      7).id
+        xor6_2 = self.add_XOR_component([fi3_2.id, xor4_2], [list(range(2)), list(range(2))],
+                                      2).id
+        xor6_3 = self.add_XOR_component([fi3_3.id, xor4_3], [list(range(7)), list(range(7))],
+                                      7).id
 
-        self.add_concatenate_component([xor2, xor1], [list(range(self.WORD_SIZE)), list(range(self.WORD_SIZE))],
-                                       2 * self.WORD_SIZE)
-        fl = ComponentState([self.get_current_component_id()], [list(range(2 * self.WORD_SIZE))])
-        return fl
+        return xor4_1, xor4_2, xor4_3, xor6_1, xor6_2, xor6_3
+
+    def fl_function1(self, p1, p2, p3, p4, p5, p6, p1_positions, p2_positions, p3_positions,
+                    p4_positions, p5_positions, p6_positions, sub_key):
+        word_size = list(range(self.WORD_SIZE))
+        and1_1 = self.add_AND_component([p1, sub_key], [p1_positions, word_size[0:7]],
+                                      7).id
+        and1_2 = self.add_AND_component([p2, sub_key], [p2_positions, word_size[7:9]],
+                                      2).id
+        and1_3 = self.add_AND_component([p3, sub_key], [p3_positions, word_size[9:16]],
+                                      7).id
+
+        rot1 = self.add_rotate_component([and1_1, and1_2, and1_3], [list(range(7)), list(range(2)), list(range(7))], self.WORD_SIZE, -1).id
+
+        rot_size = list(range(self.WORD_SIZE))
+        xor1_1 = self.add_XOR_component([rot1, p4],
+                                      [rot_size[:7],
+                                       p4_positions],
+                                      7).id
+        xor1_2 = self.add_XOR_component([rot1, p5],
+                                      [rot_size[7:9],
+                                       p5_positions],
+                                      2).id
+        xor1_3 = self.add_XOR_component([rot1, p6],
+                                      [rot_size[9:self.WORD_SIZE],
+                                       p6_positions],
+                                      7).id
+
+
+        subkey_size = [(i + self.WORD_SIZE) for i in range(self.WORD_SIZE)]
+        or1_1 = self.add_OR_component([xor1_1, sub_key],
+                                    [list(range(7)),
+                                     subkey_size[0:7]],
+                                    7).id
+        or1_2 = self.add_OR_component([xor1_2, sub_key],
+                                    [list(range(2)),
+                                     subkey_size[7:9]],
+                                    2).id
+        or1_3 = self.add_OR_component([xor1_3, sub_key],
+                                    [list(range(7)),
+                                     subkey_size[9:self.WORD_SIZE]],
+                                    7).id
+
+
+        rot2 = self.add_rotate_component([or1_1, or1_2, or1_3], [list(range(7)), list(range(2)), list(range(7))],
+                                         self.WORD_SIZE, -1).id
+
+        rot_size = list(range(self.WORD_SIZE))
+        xor2_1 = self.add_XOR_component([rot2, p1],
+                                      [rot_size[:7],
+                                       p1_positions],
+                                      7).id
+        xor2_2 = self.add_XOR_component([rot2, p2],
+                                      [rot_size[7:9],
+                                       p2_positions],
+                                      2).id
+        xor2_3 = self.add_XOR_component([rot2, p3],
+                                      [rot_size[9:self.WORD_SIZE],
+                                       p3_positions],
+                                      7).id
+
+        return xor2_1, xor2_2, xor2_3, xor1_1, xor1_2, xor1_3
 
     def derived_key(self, key):
         cst = self.add_constant_component(128, 0x123456789ABCDEFFEDCBA9876543210).id
