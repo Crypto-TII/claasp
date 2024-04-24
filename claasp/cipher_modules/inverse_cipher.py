@@ -1283,17 +1283,18 @@ def remove_components_from_rounds(cipher, start_round, end_round, keep_key_sched
 
     return removed_component_ids, intermediate_outputs
 
-def get_relative_position(target_link, target_bit_positions, descendant):
-    offset = 0
-    if target_link == descendant.id:
+def get_relative_position(target_link, target_bit_positions, intermediate_output):
+    if target_link == intermediate_output.id:
         return target_bit_positions
-    for i, link in enumerate(descendant.input_id_links):
-        child_input_bit_position = descendant.input_bit_positions[i]
-        if link == target_link:
-            if set(target_bit_positions) <= set(child_input_bit_position):
-                return [bit + offset for bit in target_bit_positions]
-        offset += len(child_input_bit_position)
-    return []
+
+    intermediate_output_position_links = {}
+    current_bit_position = 0
+    for input_id_link, input_bit_positions in zip(intermediate_output.input_id_links, intermediate_output.input_bit_positions):
+        for i in input_bit_positions:
+            intermediate_output_position_links[(input_id_link, i)] = current_bit_position
+            current_bit_position += 1
+
+    return [intermediate_output_position_links[(target_link, bit)] for bit in target_bit_positions if (target_link, bit) in intermediate_output_position_links]
 
 def get_most_recent_intermediate_output(target_link, intermediate_outputs):
     for index in sorted(intermediate_outputs, reverse=True):
@@ -1307,4 +1308,5 @@ def update_input_links_from_rounds(cipher_rounds, removed_components, intermedia
                 if link in removed_components:
                     intermediate_output = get_most_recent_intermediate_output(link, intermediate_outputs)
                     component.input_id_links[i] = f'{intermediate_output.id}'
-                    component.input_bit_positions[i] = get_relative_position(link, component.input_bit_positions[i], intermediate_output)
+                    component.input_bit_positions[i] = get_relative_position(link, component.input_bit_positions[i],
+                                                                             intermediate_output)
