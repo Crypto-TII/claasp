@@ -1,3 +1,4 @@
+MINIZINC_USEFUL_FUNCTIONS = """
 include "globals.mzn";
 
 % XOR of 2 arrays
@@ -81,11 +82,11 @@ predicate modadd_linear(array[int] of var 0..1: a, array[int] of var 0..1: b, ar
     array [0..length(a)-1] of var 0..1: prob,
     array [0..length(a)-1] of var 0..1: X=Xor3(a,b,c)
    } in
-   state[0]=0 /\
+   state[0]=0 /\\
    forall (i in 0..length(a)-1)(
-        if state[i]==0 then all_equal([a[i],b[i],c[i]]) else true endif /\
-        state[i+1]=((X[i]+state[i]) mod 2) /\
-        if state[i]==1 then prob[i]=1 else prob[i]=0 endif) /\
+        if state[i]==0 then all_equal([a[i],b[i],c[i]]) else true endif /\\
+        state[i+1]=((X[i]+state[i]) mod 2) /\\
+        if state[i]==1 then prob[i]=1 else prob[i]=0 endif) /\\
    p=100 * sum(prob)
 );
 
@@ -107,11 +108,11 @@ predicate modular_addition_word(array[int] of var 0..2: a, array[int] of var 0..
   } in
   forall (i in 0..length(a)-1) (
     if i<pivot then c[i]=2 else (as[i]=0) /\ (bs[i]=0) /\ (cs[i]=0) endif
-  ) /\
+  ) /\\
   xor_bit_p1(a[pivot],b[pivot],c[pivot])
   /\ if pivot>0 then a[pivot]+b[pivot]>0 else true endif
 );
 
 %Hamming weight of an array
 function var 0..512: Ham_weight(array[int] of var int: x) = sum(i in index_set(x))(x[i] != 0);
-
+"""

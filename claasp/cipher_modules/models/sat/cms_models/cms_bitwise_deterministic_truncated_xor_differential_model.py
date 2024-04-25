@@ -43,15 +43,18 @@ XOR operations were overridden.
 For any further information, visit `CryptoMiniSat - XOR clauses
 <https://www.msoos.org/xor-clauses/>`_.
 """
-from claasp.cipher_modules.models.sat.sat_models.sat_deterministic_truncated_xor_differential_model import \
-    SatDeterministicTruncatedXorDifferentialModel
 
 
-class CmsSatDeterministicTruncatedXorDifferentialModel(SatDeterministicTruncatedXorDifferentialModel):
+from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import \
+    SatBitwiseDeterministicTruncatedXorDifferentialModel
+
+
+class CmsSatDeterministicTruncatedXorDifferentialModel(SatBitwiseDeterministicTruncatedXorDifferentialModel):
 
     def __init__(self, cipher, window_size_weight_pr_vars=-1,
                  counter='sequential', compact=False):
         super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
+
         print("\n*** WARNING ***\n"
               "At the best of the authors knowldege, deterministic truncated XOR differential model "
               "cannot take any advantage of CryptoMiniSat. Therefore, the implementation is the same "

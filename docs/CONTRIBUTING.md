@@ -11,8 +11,8 @@ To contribute to this project, please, follow the following conventions.
   - [Contributing to the documentation](#contributing-to-the-documentation)
 - [Project structure](#project-structure)
 - [GIT Conventions](#git-conventions)
-  - [Branches](#branches)
-  - [Pull Requests](#pull-requests)
+  - [Branches conventions](#branches-conventions)
+  - [Pull Requests conventions](#pull-requests-conventions)
 - [Best practices for development](#best-practices-for-development)
   - [Linter/Formatter](#linterformatter)
   - [Imports](#imports)
@@ -116,6 +116,8 @@ Build #PY-212.4746.96, built on July 27, 2021
 
 ## Python interpreter
 
+### Configuring PyCharm with a Local Interpreter
+
 We will now set up PyCharm to use the Python 3 interpreter of SageMath
    1. Click `PyCharm` menu in the top-left toolbar and select `Preferences...`
    2. Click the drop-down menu of `Project: claasp` and select `Python Interpreter`
@@ -131,7 +133,45 @@ After the steps above, you should now be able to:
 1. Click on `Add Configuration...`.
 2. Click on `Add new run configuration...`.
 3. Select "Python".
-4. Add the file to be run/debugged in the field "Script Path".
+4. Add the file to be run/debugged in the field "Script Path"
+
+### Configuring PyCharm with Docker as a Remote Interpreter
+```angular2html
+PyCharm 2023.3.3 (Professional Edition)
+Build #PY-233.13763.11, built on January 25, 2024
+```
+Configuring PyCharm to use Python from within a container involves setting up a remote interpreter. PyCharm supports Docker as a remote interpreter, allowing you to develop inside a Docker container which can encapsulate the project's environment, dependencies, and settings that CLAASP need. Here's how to set it up:
+
+#### Requirements
+- **Docker**: Ensure Docker is installed and running on your system.
+- **PyCharm 2023.3.3 (Professional Edition)**: The Docker integration feature is available in the Professional edition of PyCharm.
+
+#### Steps to Configure Docker as a Remote Interpreter in PyCharm
+
+1. **Open Your Project in PyCharm**: Start PyCharm and open the project you want to configure.
+
+2. **Install the Docker Plugin (if not already installed)**:
+    - Go to **Preferences** > **Plugins**.
+    - Search for "Docker" in the Marketplace tab and install the plugin.
+    - Restart PyCharm if necessary.
+
+3. **Configure Docker Connection**:
+    - Go to **Preferences** > **Build, Execution, Deployment** > **Docker**.
+    - Click the **+** button to add a new Docker configuration.
+    - PyCharm should automatically detect the Docker installation. Adjust settings if necessary.
+
+4. **Configure Project Interpreter**:
+    - Go to **Preferences** > **Project: [Your Project Name]** > **Python Interpreter**.
+    - In the right corner click **Add Interpreter**.
+    - In the left-hand pane of the Add Python Interpreter dialog, select **On Docker**.
+    - Specify the docker image. You can choose one of "build" or "Pull or use existing":
+      - If your option is "build" then you need to fill the field "Dockerfile" with `docker/Dockerfile`
+      - If your option is "Pull or use existing" then you need to fill the field "image tag" with `claasp:latest`
+    - PyCharm will attempt to find the Python interpreter in the created image. You may need to specify the path to the Python executable if PyCharm cannot locate it automatically (commonly `/usr/bin/python3` or similar).
+
+5. **Apply and Save Changes**: Click **OK** to save your new interpreter settings.
+
+After completing these steps, PyCharm will use the Python interpreter from the specified Docker container for your CLAASP project. 
 
 ### Makefile configuration
 
@@ -472,7 +512,7 @@ This is the current project structure.
 ```
 
 # GIT Conventions
-## Branches
+## Branches Conventions
 - `main` is the main branch.
 - `develop` is the branch where the latest changes are merged into.
 - `<fix|feature|breaking>/<task-name>` is the branch where a new feature is developed.
@@ -480,7 +520,7 @@ This is the current project structure.
 > ⚠️ We encourage you to follow this convention when creating new branches even though branches with the naming 
 > convention `<task-name>` are allowed. ⚠️ 
 
-## Pull Requests
+## Pull Requests Conventions
 - Pull Requests should be made from a `feature-branch` to `develop` and it should be reviewed by at least one person.
 - New branches to development tasks will have `develop` branch as origin. 
 - The only allowed Pull Requests to `main` branch must come from `develop` branch. All other Pull Requests will be 

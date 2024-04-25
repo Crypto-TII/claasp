@@ -21,9 +21,11 @@ import time
 
 from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
-from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
+from claasp.cipher_modules.models.smt.utils.constants import INPUT_BIT_ID_SUFFIX, OUTPUT_BIT_ID_SUFFIX
+from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution, \
+    get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
-                                  MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR)
+                                  MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR, INPUT_KEY)
 
 
 class SmtXorLinearModel(SmtModel):
@@ -84,6 +86,11 @@ class SmtXorLinearModel(SmtModel):
         """
         self._variables_list = []
         variables = []
+        if INPUT_KEY not in [variable["component_id"] for variable in fixed_variables]:
+            self._cipher = self._cipher.remove_key_schedule()
+            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self._cipher, '_'.join)
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
 
@@ -144,6 +151,7 @@ class SmtXorLinearModel(SmtModel):
     def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='z3'):
         """
         Return a list of solutions containing all the XOR linear trails having weight equal to ``fixed_weight``.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         INPUT:
@@ -160,17 +168,22 @@ class SmtXorLinearModel(SmtModel):
 
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: smt = SmtXorLinearModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: trails = smt.find_all_xor_linear_trails_with_fixed_weight(2, fixed_values=[plaintext])
+            sage: trails = smt.find_all_xor_linear_trails_with_fixed_weight(1)
             sage: len(trails)
-            2
+            4
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
+            sage: smt = SmtXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+            sage: trails = smt.find_all_xor_linear_trails_with_fixed_weight(2, fixed_values=[key]) # long
+            sage: len(trails)
+            8
         """
         start_building_time = time.time()
         self.build_xor_linear_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
@@ -180,31 +193,38 @@ class SmtXorLinearModel(SmtModel):
         solution = self.solve(XOR_LINEAR, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
         solutions_list = []
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         while solution['total_weight'] is not None:
             solutions_list.append(solution)
             operands = []
-            for component in self._cipher.get_all_components():
-                bit_len = component.output_bit_size
-                if component.type == SBOX or \
-                        (component.type == WORD_OPERATION and
-                         component.description[0] in ('AND', 'MODADD', 'MODSUB', 'OR', 'SHIFT_BY_VARIABLE_AMOUNT')):
-                    value_to_avoid = int(solution['components_values'][f'{component.id}{out_suffix}']['value'], base=16)
-                    operands.extend([utils.smt_not(f'{component.id}_{j}{out_suffix}')
+            for component in solution['components_values']:
+                value_as_hex_string = solution['components_values'][component]['value']
+                value_to_avoid = int(value_as_hex_string, base=16)
+                bit_len = len(value_as_hex_string) * 4
+                if CONSTANT in component and component.endswith(INPUT_BIT_ID_SUFFIX):
+                    continue
+                elif component.endswith(INPUT_BIT_ID_SUFFIX) or component.endswith(OUTPUT_BIT_ID_SUFFIX):
+                    component_id = component[:-2]
+                    suffix = component[-2:]
+                else:
+                    component_id = component
+                    suffix = OUTPUT_BIT_ID_SUFFIX
+                operands.extend([utils.smt_not(f'{component_id}_{j}{suffix}')
                                      if value_to_avoid >> (bit_len - 1 - j) & 1
-                                     else f'{component.id}_{j}{out_suffix}'
+                                     else f'{component_id}_{j}{suffix}'
                                      for j in range(bit_len)])
             clause = utils.smt_or(operands)
             self._model_constraints = self._model_constraints[:-len(constants.MODEL_SUFFIX)] \
                                       + [utils.smt_assert(clause)] + constants.MODEL_SUFFIX
             solution = self.solve(XOR_LINEAR, solver_name=solver_name)
             solution['building_time_seconds'] = end_building_time - start_building_time
+            solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
 
         return solutions_list
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[], solver_name='z3'):
         """
         Return a list of solutions.
+        By default, the search removes the key schedule, if any.
 
         The list contains all the XOR linear trails having the weight lying in the interval
         ``[min_weight, max_weight]``.
@@ -224,23 +244,30 @@ class SmtXorLinearModel(SmtModel):
 
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: smt = SmtXorLinearModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: trails = smt.find_all_xor_linear_trails_with_weight_at_most(2, 3, fixed_values=[plaintext])
+            sage: trails = smt.find_all_xor_linear_trails_with_weight_at_most(0, 2) # long
             sage: len(trails)
-            11
+            187
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
+            sage: smt = SmtXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+            sage: trails = smt.find_all_xor_linear_trails_with_weight_at_most(0, 3, fixed_values=[key])
+            sage: len(trails)
+            73
         """
         solutions_list = []
         for weight in range(min_weight, max_weight + 1):
             solutions = self.find_all_xor_linear_trails_with_fixed_weight(weight,
                                                                           fixed_values=fixed_values,
                                                                           solver_name=solver_name)
+            for solution in solutions:
+                solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
             solutions_list.extend(solutions)
 
         return solutions_list
@@ -248,6 +275,7 @@ class SmtXorLinearModel(SmtModel):
     def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name='z3'):
         """
         Return the solution representing a XOR LINEAR trail with the lowest possible weight.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         .. NOTE::
@@ -268,17 +296,22 @@ class SmtXorLinearModel(SmtModel):
 
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: smt = SmtXorLinearModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: trail = smt.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])
+            sage: trail = smt.find_lowest_weight_xor_linear_trail()
             sage: trail['total_weight']
             2.0
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=4)
+            sage: smt = SmtXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
+            sage: trail = smt.find_lowest_weight_xor_linear_trail(fixed_values=[key])
+            sage: trail['total_weight']
+            3.0
         """
         current_weight = 0
         start_building_time = time.time()
@@ -299,12 +332,14 @@ class SmtXorLinearModel(SmtModel):
             max_memory = max((max_memory, solution['memory_megabytes']))
         solution['solving_time_seconds'] = total_time
         solution['memory_megabytes'] = max_memory
+        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
     def find_one_xor_linear_trail(self, fixed_values=[], solver_name='z3'):
         """
         Return the solution representing a XOR linear trail.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         The solution probability is almost always lower than the one of a random guess of the longest input.
@@ -322,15 +357,9 @@ class SmtXorLinearModel(SmtModel):
 
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=4)
             sage: smt = SmtXorLinearModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: smt.find_one_xor_linear_trail(fixed_values=[plaintext]) #random
+            sage: smt.find_one_xor_linear_trail() #random
             {'cipher_id': 'speck_p32_k64_o32_r4',
              'model_type': 'xor_linear',
              'solver_name': 'z3',
@@ -339,12 +368,21 @@ class SmtXorLinearModel(SmtModel):
              ...
              'total_weight': 67,
              'building_time_seconds': 0.003168344497680664}
+
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: smt = SmtXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
+            sage: smt.find_one_xor_linear_trail(fixed_values=[key]) #random
         """
         start_building_time = time.time()
         self.build_xor_linear_trail_model(fixed_variables=fixed_values)
         end_building_time = time.time()
         solution = self.solve(XOR_LINEAR, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
+        solution['test_name'] = "find_one_xor_linear_trail"
 
         return solution
 
@@ -352,6 +390,7 @@ class SmtXorLinearModel(SmtModel):
                                                     solver_name='z3'):
         """
         Return the solution representing a XOR linear trail whose weight is ``fixed_weight``.
+        By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         INPUT:
@@ -367,18 +406,23 @@ class SmtXorLinearModel(SmtModel):
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: smt = SmtXorLinearModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=(0,)*32)
-            sage: result = smt.find_one_xor_linear_trail_with_fixed_weight(7, fixed_values=[plaintext])
-            sage: result['total_weight']
+            sage: trail = smt.find_one_xor_linear_trail_with_fixed_weight(7)
+            sage: trail['total_weight']
             7.0
+
+            # including the key schedule in the model
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
+            sage: smt = SmtXorLinearModel(speck)
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+            sage: trail = smt.find_one_xor_linear_trail_with_fixed_weight(3, fixed_values=[key])
+            sage: trail['total_weight']
+            3.0
         """
         start_building_time = time.time()
         self.build_xor_linear_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
@@ -387,6 +431,7 @@ class SmtXorLinearModel(SmtModel):
         end_building_time = time.time()
         solution = self.solve(XOR_LINEAR, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
+        solution['test_name'] = "find_one_xor_linear_trail_with_fixed_weight"
 
         return solution
 

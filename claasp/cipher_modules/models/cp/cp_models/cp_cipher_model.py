@@ -27,7 +27,7 @@ class CpCipherModel(CpModel):
     def __init__(self, cipher):
         super().__init__(cipher)
 
-    def build_cipher_model(self, fixed_variables=[]):
+    def build_cipher_model(self, fixed_variables=[], second=False):
         """
         Build the cipher model.
 
@@ -75,13 +75,24 @@ class CpCipherModel(CpModel):
                     WORD_OPERATION == component.type and operation not in operation_types):
                 print(f'{component.id} not yet implemented')
             else:
-                variables, constraints = component.cp_constraints()
+                if component.type != SBOX:
+                    variables, constraints = component.cp_constraints()
+                else:
+                    variables, constraints = component.cp_constraints(self.sbox_mant)
 
             self._model_constraints.extend(constraints)
             self._variables_list.extend(variables)
-
+        
         self._model_constraints.extend(self.final_constraints())
-        self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
+        
+        if not second:
+            self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
+
+    def evaluate_model(self, fixed_values=[], solver_name='Chuffed'):
+        self.build_cipher_model(fixed_variables = fixed_values)
+        
+        self.solve('evaluate_cipher', solver_name)
+        
 
     def final_constraints(self):
         """
@@ -112,7 +123,7 @@ class CpCipherModel(CpModel):
         cp_constraints.append(new_constraint)
 
         return cp_constraints
-
+        
     def input_constraints(self):
         """
         Return a list of CP constraints for the inputs of the cipher.

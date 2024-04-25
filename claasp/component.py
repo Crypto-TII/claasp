@@ -55,7 +55,7 @@ def linear_layer_to_binary_matrix(linear_layer_function, input_bit_size, output_
         for i in range(p_matrix.nrows()):
             p_matrix[i] = vector_space.random_element()
 
-    c_matrix = matrix(GF(2), input_bit_size, output_bit_size, input_bit_size)
+    c_matrix = matrix(GF(2), input_bit_size, output_bit_size)#, input_bit_size)
     for i in range(c_matrix.nrows()):
         result = linear_layer_function(BitArray(list(p_matrix[i])), *list_specific_inputs)
         c_matrix[i] = vector(GF(2), result)
@@ -145,12 +145,24 @@ class Component:
 
         return self.input_bit_size, input_bit_ids
 
+    def _generate_input_double_ids(self):
+        _, in_ids_0 = self._generate_input_ids(suffix='_0')
+        _, in_ids_1 = self._generate_input_ids(suffix='_1')
+
+        return in_ids_0, in_ids_1
+
     def _generate_output_ids(self, suffix=''):
         output_id_link = self.id
         output_bit_size = self.output_bit_size
         output_bit_ids = [f'{output_id_link}_{j}{suffix}' for j in range(output_bit_size)]
 
         return output_bit_size, output_bit_ids
+
+    def _generate_output_double_ids(self):
+        out_len, out_ids_0 = self._generate_output_ids(suffix='_0')
+        _, out_ids_1 = self._generate_output_ids(suffix='_1')
+
+        return out_len, out_ids_0, out_ids_1
 
     def _get_independent_input_output_variables(self):
         """
@@ -322,10 +334,8 @@ class Component:
         input_class_ids = []
 
         for index, link in enumerate(self.input_id_links):
-            for pos in range(len(self.input_bit_positions[index]) // model.word_size):
-                input_class_ids.append(link + '_word_' + str(
-                        (pos * model.word_size + self.input_bit_positions[index][
-                            0]) // model.word_size) + '_class')
+            for pos in self.input_bit_positions[index][::model.word_size]:
+                input_class_ids.append(link + '_word_' + str(pos // model.word_size) + '_class')
 
         return input_class_ids, output_class_ids
 

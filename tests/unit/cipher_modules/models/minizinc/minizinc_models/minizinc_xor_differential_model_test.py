@@ -4,8 +4,8 @@ from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model import \
     MinizincXorDifferentialModel
 
-speck2 = SpeckBlockCipher(number_of_rounds=4, block_bit_size=32, key_bit_size=64)
-minizinc2 = MinizincXorDifferentialModel(speck2)
+speck4 = SpeckBlockCipher(number_of_rounds=4, block_bit_size=32, key_bit_size=64)
+minizinc4 = MinizincXorDifferentialModel(speck4)
 
 speck5 = SpeckBlockCipher(number_of_rounds=5, block_bit_size=32, key_bit_size=64)
 minizinc5 = MinizincXorDifferentialModel(speck5)
@@ -52,7 +52,7 @@ def test_find_all_xor_differential_trails_with_fixed_weight():
 
 
 def test_find_all_xor_differential_trails_with_weight_at_most():
-    result = minizinc2.find_all_xor_differential_trails_with_weight_at_most(
+    result = minizinc4.find_all_xor_differential_trails_with_weight_at_most(
         1, solver_name='Xor', fixed_values=fixed_variables_32_64
     )
     assert result[0]['total_weight'] > 1
@@ -158,7 +158,29 @@ def test_find_lowest_weight_xor_differential_trail():
 
 
 def test_find_lowest_weight_for_short_xor_differential_trail():
-    minizinc2.set_max_number_of_carries_on_arx_cipher(0)
-    minizinc2.set_max_number_of_nonlinear_carries(0)
-    result = minizinc2.find_lowest_weight_xor_differential_trail(solver_name='Xor', fixed_values=fixed_variables_32_64)
+    minizinc4.set_max_number_of_carries_on_arx_cipher(0)
+    minizinc4.set_max_number_of_nonlinear_carries(0)
+    result = minizinc4.find_lowest_weight_xor_differential_trail(solver_name='Xor', fixed_values=fixed_variables_32_64)
     assert result["total_weight"] == 5
+
+
+def test_get_probability_vars_from_key_schedule():
+    minizinc = MinizincXorDifferentialModel(speck4)
+    minizinc.build_xor_differential_trail_model(fixed_variables=[])
+    expected_result = ['p_modadd_1_2_0', 'p_modadd_2_2_0', 'p_modadd_3_2_0']
+    assert set(minizinc.get_probability_vars_from_key_schedule()) == set(expected_result)
+
+
+def test_get_probability_vars_from_permutation():
+    minizinc = MinizincXorDifferentialModel(speck4)
+    minizinc.build_xor_differential_trail_model(fixed_variables=[])
+    expected_result = ['p_modadd_0_1_0', 'p_modadd_1_7_0', 'p_modadd_2_7_0', 'p_modadd_3_7_0']
+    assert set(minizinc.get_probability_vars_from_permutation()) == set(expected_result)
+
+
+def test_find_min_of_max_xor_differential_between_permutation_and_key_schedule():
+    minizinc = MinizincXorDifferentialModel(speck4)
+    result = minizinc.find_min_of_max_xor_differential_between_permutation_and_key_schedule(
+        fixed_values=fixed_variables_32_64, solver_name='Xor'
+    )
+    assert result['total_weight'] == 5

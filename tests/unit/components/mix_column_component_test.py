@@ -148,6 +148,20 @@ def test_sat_constraints():
     assert constraints[-1] == 'mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'
 
 
+def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
+    midori = MidoriBlockCipher(number_of_rounds=3)
+    mix_column_component = midori.component_from(0, 23)
+    output_bit_ids, constraints = mix_column_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+
+    assert output_bit_ids[3] == 'mix_column_0_23_3_0'
+    assert output_bit_ids[9] == 'mix_column_0_23_9_0'
+    assert output_bit_ids[27] == 'mix_column_0_23_11_1'
+
+    assert constraints[30] == 'mix_column_0_20_38_0 mix_column_0_20_42_0 -inter_0_mix_column_0_23_2_0'
+    assert constraints[60] == 'mix_column_0_20_32_1 inter_0_mix_column_0_23_4_0 inter_0_mix_column_0_23_4_1 -mix_column_0_20_40_1'
+    assert constraints[90] == 'inter_0_mix_column_0_23_6_0 -mix_column_0_20_34_1 -mix_column_0_20_42_1 -inter_0_mix_column_0_23_6_1'
+
+
 def test_sat_xor_linear_mask_propagation_constraints():
     midori = MidoriBlockCipher(number_of_rounds=3)
     mix_column_component = midori.component_from(0, 23)

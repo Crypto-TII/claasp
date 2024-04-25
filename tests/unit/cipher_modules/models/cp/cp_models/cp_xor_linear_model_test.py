@@ -14,11 +14,8 @@ def test_and_xor_linear_probability_lat():
 
 def test_final_xor_linear_constraints():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-    speck = speck.remove_key_schedule()
     cp = CpXorLinearModel(speck)
-    fixed_variables = [
-        set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
-    cp.build_xor_linear_trail_model(-1, fixed_variables)
+    cp.build_xor_linear_trail_model(-1)
 
     assert cp.final_xor_linear_constraints(-1)[:-1] == \
            ['solve:: int_search(p, smallest, indomain_min, complete) minimize sum(p);']
@@ -26,35 +23,26 @@ def test_final_xor_linear_constraints():
 
 def test_find_all_xor_linear_trails_with_fixed_weight():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=3)
-    speck = speck.remove_key_schedule()
     cp = CpXorLinearModel(speck)
-    fixed_variables = [
-        set_fixed_variables('plaintext', 'not_equal', list(range(8)), integer_to_bit_list(0, 8, 'little'))]
-    trails = cp.find_all_xor_linear_trails_with_fixed_weight(1, fixed_variables)
+    trails = cp.find_all_xor_linear_trails_with_fixed_weight(1)
 
     assert len(trails) == 12
 
 
 def test_find_all_xor_linear_trails_with_weight_at_most():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=3)
-    speck = speck.remove_key_schedule()
     cp = CpXorLinearModel(speck)
-    fixed_variables = [
-        set_fixed_variables('plaintext', 'not_equal', list(range(8)), integer_to_bit_list(0, 8, 'little'))]
-    trails = cp.find_all_xor_linear_trails_with_weight_at_most(0, 1, fixed_variables)
+    trails = cp.find_all_xor_linear_trails_with_weight_at_most(0, 1)
 
     assert len(trails) == 13
 
 
 def test_find_lowest_weight_xor_linear_trail():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-    speck = speck.remove_key_schedule()
     cp = CpXorLinearModel(speck)
-    fixed_variables = [
-        set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
-    trail = cp.find_lowest_weight_xor_linear_trail(fixed_variables)
+    trail = cp.find_lowest_weight_xor_linear_trail()
 
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert eval('0x' + trail['components_values']['cipher_output_3_12_o']['value']) >= 0
     assert trail['components_values']['cipher_output_3_12_o']['weight'] == 0
     assert trail['total_weight'] == '3.0'
@@ -62,13 +50,10 @@ def test_find_lowest_weight_xor_linear_trail():
 
 def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-    speck = speck.remove_key_schedule()
     cp = CpXorLinearModel(speck)
-    fixed_variables = [
-        set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
-    trail = cp.find_one_xor_linear_trail(fixed_variables)
+    trail = cp.find_one_xor_linear_trail()
 
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['components_values']['plaintext']['weight'] == 0
     assert eval('0x' + trail['components_values']['plaintext']['value']) > 0
     assert trail['components_values']['cipher_output_3_12_o']['weight'] == 0
@@ -78,12 +63,9 @@ def test_find_one_xor_linear_trail():
 
 def test_find_one_xor_linear_trail_with_fixed_weight():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-    speck = speck.remove_key_schedule()
     cp = CpXorLinearModel(speck)
-    fixed_variables = [
-        set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
-    trail = cp.find_one_xor_linear_trail_with_fixed_weight(3, fixed_variables)
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r4'
+    trail = cp.find_one_xor_linear_trail_with_fixed_weight(3)
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['model_type'] == 'xor_linear_one_solution'
     assert trail['total_weight'] == '3.0'
 

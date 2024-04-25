@@ -64,6 +64,20 @@ def test_generic_sign_linear_constraints():
     assert and_component.generic_sign_linear_constraints(input_constraints, output) == 1
 
 
+def test_sat_constraints():
+    fancy = FancyBlockCipher(number_of_rounds=3)
+    and_component = fancy.component_from(0, 8)
+    output_bit_ids, constraints = and_component.sat_constraints()
+
+    assert output_bit_ids[0] == 'and_0_8_0'
+    assert output_bit_ids[1] == 'and_0_8_1'
+    assert output_bit_ids[2] == 'and_0_8_2'
+
+    assert constraints[-3] == '-and_0_8_11 xor_0_7_11'
+    assert constraints[-2] == '-and_0_8_11 key_23'
+    assert constraints[-1] == 'and_0_8_11 -xor_0_7_11 -key_23'
+
+
 def test_smt_constraints():
     fancy = FancyBlockCipher(number_of_rounds=3)
     and_component = fancy.component_from(0, 8)
