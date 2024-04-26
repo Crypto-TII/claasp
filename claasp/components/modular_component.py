@@ -1215,7 +1215,7 @@ class Modular(Component):
             constraints.append(x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] +
                                x[input_vars[output_bit_size + i]] + x[input_vars[i]] +
                                x[output_vars[i]] +
-                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"] >= - 4)
+                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"] <= 4)
 
         constraints.append(correlation[f"{self.id}_modadd_probability{chunk_number}"] == sum(
             x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] for i in range(output_bit_size)))

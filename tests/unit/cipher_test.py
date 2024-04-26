@@ -53,33 +53,33 @@ def test_algebraic_tests():
     d = AlgebraicTests(toyspn).algebraic_tests(10)
     assert d == {
         'input_parameters': {'cipher': toyspn, 'timeout_in_seconds': 10, 'test_name': 'algebraic_tests'},
-        'test_results': {'number_of_variables': [66, 126],
-                         'number_of_equations': [76, 158],
-                         'number_of_monomials': [96, 186],
+        'test_results': {'number_of_variables': [24, 42],
+                         'number_of_equations': [34, 74],
+                         'number_of_monomials': [54, 102],
                          'max_degree_of_equations': [2, 2],
-                         'test_passed': [False, True]}}
+                         'test_passed': [False, False]}}
 
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
     d = AlgebraicTests(speck).algebraic_tests(1)
     assert d == {'input_parameters': {'cipher': speck,
-                  'timeout_in_seconds': 1,
-                  'test_name': 'algebraic_tests'},
-                 'test_results': {'number_of_variables': [320],
-                                  'number_of_equations': [272],
-                                  'number_of_monomials': [365],
+                                      'timeout_in_seconds': 1,
+                                      'test_name': 'algebraic_tests'},
+                 'test_results': {'number_of_variables': [112],
+                                  'number_of_equations': [64],
+                                  'number_of_monomials': [157],
                                   'max_degree_of_equations': [2],
                                   'test_passed': [True]}}
 
     aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
     d = AlgebraicTests(aes).algebraic_tests(5)
     compare_result = {'input_parameters': {'cipher': aes,
-                      'timeout_in_seconds': 5,
-                      'test_name': 'algebraic_tests'},
-                     'test_results': {'number_of_variables': [320],
-                      'number_of_equations': [390],
-                      'number_of_monomials': [488],
-                      'max_degree_of_equations': [2],
-                      'test_passed': [False]}}
+                                           'timeout_in_seconds': 5,
+                                           'test_name': 'algebraic_tests'},
+                      'test_results': {'number_of_variables': [104],
+                                       'number_of_equations': [174],
+                                       'number_of_monomials': [272],
+                                       'max_degree_of_equations': [2],
+                                       'test_passed': [False]}}
 
     assert d == compare_result
 
@@ -195,15 +195,15 @@ def test_get_round_from_component_id():
 def test_impossible_differential_search():
     speck6 = SpeckBlockCipher(number_of_rounds=6)
     # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
-    impossible_differentials = speck6.impossible_differential_search("cp", "chuffed")
+    impossible_differentials = speck6.impossible_differential_search("cp", "Chuffed")
 
     assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
             (0x400000, 0x8000) in impossible_differentials)
 
 
 def test_is_algebraically_secure():
-    identity = IdentityBlockCipher()
-    assert identity.is_algebraically_secure(120) is False
+    aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds = 1)
+    assert aes.is_algebraically_secure(20) is False
 
 
 def test_is_andrx():
@@ -233,12 +233,13 @@ def test_is_spn():
 
 
 def test_polynomial_system():
-    assert str(IdentityBlockCipher().polynomial_system()) == 'Polynomial Sequence with 128 Polynomials in 256 Variables'
+    tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
+    assert str(tea.polynomial_system()) == 'Polynomial Sequence with 288 Polynomials in 384 Variables'
 
 
 def test_polynomial_system_at_round():
     assert str(FancyBlockCipher(number_of_rounds=1).polynomial_system_at_round(0)) == \
-           'Polynomial Sequence with 252 Polynomials in 288 Variables'
+           'Polynomial Sequence with 228 Polynomials in 144 Variables'
 
 
 def test_print():

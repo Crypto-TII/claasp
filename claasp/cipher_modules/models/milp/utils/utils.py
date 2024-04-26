@@ -25,7 +25,6 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
     output_dictionary_that_contains_xor_inequalities,
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits)
 
-from claasp.cipher_modules.models.milp.utils.config import get_external_milp_solver_configuration
 from sage.numerical.mip import MIPSolverException
 
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED, \
@@ -62,19 +61,15 @@ def _get_variables_value(internal_variables, read_file):
     return variables_value
 
 
-def _parse_external_solver_output(model, solvers_configurations, model_type, solver_name, solver_process):
-    solver_specs = solvers_configurations[solver_name]
-
-    solve_time = _get_data(solver_specs['time'], str(solver_process))
+def _parse_external_solver_output(model, solver_specs, model_type, solution_file_path, solver_process):
+    solve_time = _get_data(solver_specs['keywords']['time'], solver_process)
 
     status = 'UNSATISFIABLE'
     objective_value = None
     components_values = None
 
-    if solver_specs['unsat_condition'] not in str(solver_process):
+    if re.findall(solver_specs['keywords']['unsat_condition'], solver_process) == []:
         status = 'SATISFIABLE'
-
-        solution_file_path = solver_specs['solution_path']
 
         with open(solution_file_path, 'r') as lp_file:
             read_file = lp_file.read()
@@ -711,3 +706,12 @@ def _string_to_hex( string):
     except Exception:
         value = string
     return value
+
+def _filter_fixed_variables(fixed_values, fixed_variable, id):
+    fixed_values_to_keep = [variable for variable in fixed_values if variable["constraint_type"] == "equal"]
+    if id in [value["component_id"] for value in fixed_values_to_keep]:
+        input_index = [value["component_id"] for value in fixed_values_to_keep].index(id)
+        for bit in fixed_values_to_keep[input_index]["bit_positions"]:
+            bit_index = fixed_variable["bit_positions"].index(bit)
+            del fixed_variable["bit_values"][bit_index]
+            del fixed_variable["bit_positions"][bit_index]

@@ -43,13 +43,10 @@ import tracemalloc
 
 from sage.numerical.mip import MixedIntegerLinearProgram, MIPSolverException
 
-from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT, get_external_milp_solver_configuration
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT, MODEL_DEFAULT_PATH, MILP_SOLVERS_EXTERNAL, \
+    MILP_SOLVERS_INTERNAL
 from claasp.cipher_modules.models.milp.utils.utils import _get_data, _parse_external_solver_output, _write_model_to_lp_file
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
-
-verbose = 0
-verbose_print = print if verbose else lambda *a, **k: None
-
 
 def get_independent_input_output_variables(component):
     """
@@ -132,7 +129,7 @@ def get_input_output_variables(component):
 class MilpModel:
     """Build MILP models for ciphers using Cipher."""
 
-    def __init__(self, cipher, n_window_heuristic=None):
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
         self._cipher = cipher
         self._variables_list = []
         self._model_constraints = []
@@ -143,6 +140,7 @@ class MilpModel:
         self._non_linear_component_id = []
         self._intermediate_output_names = []
         self._number_of_trails_found = 0
+        self._verbose_print = print if verbose else lambda *a, **k: None
 
     def fix_variables_value_constraints(self, fixed_variables=[]):
         """
@@ -259,6 +257,8 @@ class MilpModel:
             sage: milp._model
             Mixed Integer Program (no objective, 0 variables, 0 constraints)
         """
+        if solver_name.upper().endswith("_EXT"):
+            solver_name = SOLVER_DEFAULT
         self._model = MixedIntegerLinearProgram(maximization=False, solver=solver_name)
         self._binary_variable = self._model.new_variable(binary=True)
         self._integer_variable = self._model.new_variable(integer=True)
@@ -266,17 +266,21 @@ class MilpModel:
 
     def _solve_with_external_solver(self, model_type, model_path, solver_name=SOLVER_DEFAULT):
 
-        solvers_configuration = get_external_milp_solver_configuration(f'{model_path[:-3]}.sol')
-        if solver_name not in solvers_configuration:
-            raise ValueError(f"Invalid solver name: {solver_name}."
-                             f"Currently supported solvers are 'Gurobi', 'cplex', 'scip' and 'glpk'.")
 
-        solver_specs = solvers_configuration[solver_name]
-        command = solver_specs['command']
-        options = solver_specs['options']
+        solver_specs = [specs for specs in MILP_SOLVERS_EXTERNAL if specs["solver_name"] == solver_name.upper()][0]
+        solution_file_path = f'{MODEL_DEFAULT_PATH}/{model_path[:-3]}.sol'
+
+        command = ""
+        for key in solver_specs['keywords']['command']['format']:
+            parameter = solver_specs['keywords']['command'][key]
+            if key == "input_file":
+                parameter += " " + model_path
+            elif key == "output_file":
+                parameter = parameter + solution_file_path if parameter.endswith('=') else parameter + " " + solution_file_path
+            elif key == "options":
+                parameter = " ".join(parameter)
+            command += " " + parameter
         tracemalloc.start()
-
-        command += model_path + options
         solver_process = subprocess.run(command, capture_output=True, shell=True, text=True)
         milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
         tracemalloc.stop()
@@ -285,29 +289,29 @@ class MilpModel:
             raise MIPSolverException("Make sure that the solver is correctly installed.")
 
         if 'memory' in solver_specs:
-            milp_memory = _get_data(solver_specs['memory'], str(solver_process))
+            milp_memory = _get_data(solver_specs['keywords']['memory'], str(solver_process))
 
-        return _parse_external_solver_output(self, solvers_configuration, model_type, solver_name, solver_process) + (milp_memory,)
+        return _parse_external_solver_output(self, solver_specs, model_type, solution_file_path, solver_process.stdout) + (milp_memory,)
 
     def _solve_with_internal_solver(self):
 
         mip = self._model
-
-        verbose_print("Solving model in progress ...")
+        status = 'UNSATISFIABLE'
+        self._verbose_print("Solving model in progress ...")
         time_start = time.time()
         tracemalloc.start()
         try:
             mip.solve()
+            status = 'SATISFIABLE'
+
+        except MIPSolverException as milp_exception:
+            print(milp_exception)
+        finally:
             milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
             tracemalloc.stop()
             time_end = time.time()
             milp_time = time_end - time_start
-            verbose_print(f"Time for solving the model = {milp_time}")
-            status = 'SATISFIABLE'
-
-        except MIPSolverException as milp_exception:
-            status = 'UNSATISFIABLE'
-            print(milp_exception)
+            self._verbose_print(f"Time for solving the model = {milp_time}")
 
         return status, milp_time, milp_memory
 
@@ -332,22 +336,43 @@ class MilpModel:
             ...
             sage: solution = milp.solve("xor_differential") # random
         """
-        if external_solver_name:
-            solver_name_in_solution = external_solver_name
+        if external_solver_name or (solver_name.upper().endswith("_EXT")):
+            solver_choice = external_solver_name or solver_name
+            if solver_choice.upper() not in [specs["solver_name"] for specs in MILP_SOLVERS_EXTERNAL]:
+                raise ValueError(f"Invalid solver name: {solver_choice}.\n"
+                                 f"Please select a solver in the following list: {[specs['solver_name'] for specs in MILP_SOLVERS_EXTERNAL]}.")
+
+            solver_name_in_solution = solver_choice
             model_path = _write_model_to_lp_file(self, model_type)
             solution_file_path, status, objective_value, components_values, milp_time, milp_memory = self._solve_with_external_solver(
-                model_type, model_path, external_solver_name)
+                model_type, model_path, solver_choice)
             os.remove(model_path)
             os.remove(f"{solution_file_path}")
         else:
+            objective_value = None
+            components_values = None
             solver_name_in_solution = solver_name
             status, milp_time, milp_memory = self._solve_with_internal_solver()
-            objective_value, components_values = self._parse_solver_output()
+            if status == 'SATISFIABLE':
+                objective_value, components_values = self._parse_solver_output()
 
         solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name_in_solution, milp_time,
                                                          milp_memory, components_values, objective_value)
         solution['status'] = status
         return solution
+
+    def solver_names(self, verbose=False):
+        solver_names = []
+
+        keys = ['solver_brand_name', 'solver_name']
+        for solver in MILP_SOLVERS_INTERNAL:
+            solver_names.append({key: solver[key] for key in keys})
+        if verbose:
+            keys = ['solver_brand_name', 'solver_name', 'keywords']
+
+        for solver in MILP_SOLVERS_EXTERNAL:
+            solver_names.append({key: solver[key] for key in keys})
+        return solver_names
 
     @property
     def binary_variable(self):

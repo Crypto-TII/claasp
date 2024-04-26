@@ -10,7 +10,7 @@ def test_build_impossible_xor_differential_trail_model():
     fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
     cp.build_impossible_xor_differential_trail_model(number_of_rounds=5, fixed_variables=fixed_variables, middle_round=3)
 
-    assert len(cp.model_constraints) == 1566
+    assert len(cp.model_constraints) == 1662
     assert cp.model_constraints[2] == 'array[0..31] of var 0..2: plaintext;'
     assert cp.model_constraints[3] == 'array[0..63] of var 0..2: key;'
     assert cp.model_constraints[4] == 'array[0..31] of var 0..2: inverse_cipher_output_4_12;'

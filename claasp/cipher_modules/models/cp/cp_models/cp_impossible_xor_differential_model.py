@@ -28,6 +28,7 @@ from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_di
 
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, IMPOSSIBLE_XOR_DIFFERENTIAL)
+from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 
 
 class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialModel):
@@ -618,7 +619,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
 
         return cp_constraints
         
-    def find_all_impossible_xor_differential_trails(self, number_of_rounds, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None):
+    def find_all_impossible_xor_differential_trails(self, number_of_rounds, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -662,9 +663,9 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         """
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round)
 
-        return self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name, initial_round, middle_round, final_round)
+        return self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name, initial_round, middle_round, final_round, num_of_processors, timelimit)
 
-    def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True):
+    def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -718,9 +719,9 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         self._model_constraints.remove(f'solve satisfy;')
         self._model_constraints.append(f'solve maximize count(plaintext, 0) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 0);')
 
-        return self.solve('impossible_xor_differential_one_solution', solver_name, initial_round, middle_round, final_round)
+        return self.solve('impossible_xor_differential_one_solution', solver_name, initial_round, middle_round, final_round, num_of_processors, timelimit)
         
-    def find_one_impossible_attack_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True):
+    def find_one_impossible_attack_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -772,9 +773,9 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         """
         self.build_impossible_attack_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
-        return self.solve('impossible_xor_differential_one_solution', solver_name, initial_round, middle_round, final_round)
+        return self.solve('impossible_xor_differential_one_solution', solver_name, initial_round, middle_round, final_round, num_of_processors, timelimit)
         
-    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True):
+    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -826,7 +827,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         """
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
-        return self.solve('impossible_xor_differential_one_solution', solver_name, initial_round, middle_round, final_round)
+        return self.solve('impossible_xor_differential_one_solution', solver_name, initial_round, middle_round, final_round, num_of_processors, timelimit)
         
     def get_component_round(self, id_link):
         if '_' in id_link:

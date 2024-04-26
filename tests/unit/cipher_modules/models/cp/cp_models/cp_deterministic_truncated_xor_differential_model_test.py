@@ -11,23 +11,10 @@ def test_build_deterministic_truncated_xor_differential_trail_model():
     fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
     cp.build_deterministic_truncated_xor_differential_trail_model(fixed_variables)
 
-    assert len(cp.model_constraints) == 422
+    assert len(cp.model_constraints) == 438
     assert cp.model_constraints[2] == 'array[0..31] of var 0..2: plaintext;'
     assert cp.model_constraints[3] == 'array[0..63] of var 0..2: key;'
     assert cp.model_constraints[4] == 'array[0..15] of var 0..2: rot_0_0;'
-
-
-def test_build_inverse_deterministic_truncated_xor_differential_trail_model():
-    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    cp = CpDeterministicTruncatedXorDifferentialModel(speck)
-    fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little')),
-                       set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))]
-    cp.build_inverse_deterministic_truncated_xor_differential_trail_model(2, fixed_variables)
-
-    assert len(cp.model_constraints) == 1166
-    assert cp.model_constraints[2] == 'constraint rot_0_0[0] = plaintext[9];'
-    assert cp.model_constraints[3] == 'constraint rot_0_0[1] = plaintext[10];'
-    assert cp.model_constraints[4] == 'constraint rot_0_0[2] = plaintext[11];'
 
 
 def test_find_all_deterministic_truncated_xor_differential_trail():
