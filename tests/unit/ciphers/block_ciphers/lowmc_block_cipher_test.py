@@ -123,3 +123,4 @@ def test_lowmc_block_cipher():
     plaintext = 0xf7616dc514fd0e1028561d098aafa54c34be728cf24a5024df17b9cc2e33fbfa >> 1
     ciphertext = 0x4448c70ac3863021be232c63381687cd5defb50ba28d7b268e19727baebc679a >> 1
     assert lowmc.evaluate([plaintext, key]) == ciphertext
+    assert lowmc.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

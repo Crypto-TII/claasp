@@ -44,3 +44,4 @@ def test_md5_hash_function():
                     '0000000000000000000000000000000158', 16)
     ciphertext = 0xa9be46cd1b651b325365939a2a4bc7e2
     assert md5.evaluate([plaintext]) == ciphertext
+    assert md5.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext

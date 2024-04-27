@@ -32,3 +32,4 @@ def test_qarmav2_mixcolumn_block_cipher():
     tweak = 0x7e5c3a18f6d4b290e5c3a18f6d4b29071eb852fc630da741b852fc960da741eb
     ciphertext = 0x361262e2ecf88f03f4ea898d6a4f412f
     assert qarmav2.evaluate([key, plaintext, tweak]) == ciphertext
+    assert qarmav2.evaluate_vectorized([key, plaintext, tweak], evaluate_api = True) == ciphertext

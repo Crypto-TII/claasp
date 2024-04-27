@@ -30,3 +30,4 @@ def test_midori_block_cipher():
     ciphertext = 0x1e0ac4fddff71b4c1801b73ee4afc83d
     assert midori.evaluate([plaintext, key]) == ciphertext
     assert midori.test_against_reference_code(2) is True
+    assert midori.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

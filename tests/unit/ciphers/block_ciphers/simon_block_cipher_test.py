@@ -41,3 +41,4 @@ def test_simon_block_cipher():
     ciphertext = 0x8d2b5579afc8a3a03bf72a87efe7b868
     assert simon.evaluate([plaintext, key]) == ciphertext
     assert simon.test_against_reference_code(2) is True
+    assert simon.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext

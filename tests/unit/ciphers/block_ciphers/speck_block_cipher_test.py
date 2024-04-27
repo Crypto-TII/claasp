@@ -25,3 +25,4 @@ def test_speck_block_cipher():
     key = 0x131211100b0a090803020100
     ciphertext = 0x9f7952ec4175946c
     assert speck.evaluate([plaintext, key]) == ciphertext
+    assert speck.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

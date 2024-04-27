@@ -27,3 +27,4 @@ def test_tea_block_cipher():
     ciphertext = 0x25476362
     assert tea.evaluate([plaintext, key]) == ciphertext
     assert tea.test_against_reference_code(2) is True
+    assert tea.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

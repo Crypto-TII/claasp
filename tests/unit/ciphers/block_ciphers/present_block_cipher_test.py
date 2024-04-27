@@ -27,3 +27,4 @@ def test_present_block_cipher():
     ciphertext = 0x82f5b82cb02cd1b6
     assert present.evaluate([plaintext, key]) == ciphertext
     assert present.test_against_reference_code(2) is True
+    assert present.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

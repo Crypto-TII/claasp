@@ -28,3 +28,4 @@ def test_lea_block_cipher():
     plaintext = 0x303132333435363738393a3b3c3d3e3f
     key = 0x0f1e2d3c4b5a69788796a5b4c3d2e1f0f0e1d2c3b4a5968778695a4b3c2d1e0f
     assert lea.evaluate([plaintext, key]) == 0xd651aff647b189c13a8900ca27f9e197
+    assert lea.evaluate_vectorized([plaintext, key], evaluate_api=True) == 0xd651aff647b189c13a8900ca27f9e197

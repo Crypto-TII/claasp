@@ -27,3 +27,4 @@ def test_raiden_block_cipher():
     ciphertext = 0x5a1674df
     assert raiden.evaluate([plaintext, key]) == ciphertext
     assert raiden.test_against_reference_code(2) is True
+    assert raiden.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

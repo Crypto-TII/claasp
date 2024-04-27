@@ -45,3 +45,4 @@ def test_threefish_block_cipher():
                      '04478346201A1FEDF11AF3DAF1C5C3D672789', 16)
     assert threefish.evaluate([plaintext, key, tweak]) == ciphertext
     assert threefish.test_against_reference_code(2) is True
+    assert threefish.evaluate_vectorized([plaintext, key, tweak], evaluate_api = True) == ciphertext

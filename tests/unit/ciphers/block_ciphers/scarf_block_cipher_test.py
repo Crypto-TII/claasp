@@ -18,3 +18,4 @@ def test_scarf_block_cipher():
     plaintext = 0x3FF
     ciphertext = 0x145
     assert cipher.evaluate([plaintext, key, tweak]) == ciphertext
+    assert cipher.evaluate_vectorized([plaintext, key, tweak], evaluate_api = True) == ciphertext

@@ -34,3 +34,4 @@ def test_twofish_block_cipher():
     plaintext = 0x39DA69D6BA4997D585B6DC073CA341B2
     ciphertext = 0x182B02D81497EA45F9DAACDC29193A65
     assert two_fish.evaluate([key, plaintext]) == ciphertext
+    assert two_fish.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext

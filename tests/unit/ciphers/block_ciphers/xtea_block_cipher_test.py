@@ -27,3 +27,4 @@ def test_xtea_block_cipher():
     ciphertext = 0x5be9022a
     assert xtea.evaluate([plaintext, key]) == ciphertext
     assert xtea.test_against_reference_code(2) is True
+    assert xtea.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

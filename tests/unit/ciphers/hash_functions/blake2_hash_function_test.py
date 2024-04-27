@@ -36,3 +36,4 @@ def test_blake2_hash_function():
                        'a9b7c79125928d55d3f8ddbeb1530c05a276', 16)
     assert blake2.evaluate([plaintext, state]) == output_state
     assert blake2.test_against_reference_code(2) is True
+    assert blake2.evaluate_vectorized([plaintext, state], evaluate_api=True) == output_state

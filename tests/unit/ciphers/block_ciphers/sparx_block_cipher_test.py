@@ -34,3 +34,4 @@ def test_sparx_block_cipher():
     ciphertext = 0x3328e63714c76ce632d15a54e4b0c820
     assert sparx.evaluate([plaintext, key]) == ciphertext
     assert sparx.test_against_reference_code(2) is True
+    assert sparx.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

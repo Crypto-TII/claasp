@@ -18,3 +18,4 @@ def test_bea1_block_cipher():
     pt = 0x4e7a51e6d08c7a3515f0
     ciphertext = 0xa36097ea1bdcddf8b06d
     assert bea.evaluate([key,pt]) == ciphertext
+    assert bea.evaluate_vectorized([key,pt], evaluate_api=True) == ciphertext

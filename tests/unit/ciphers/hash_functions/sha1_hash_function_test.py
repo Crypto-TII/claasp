@@ -44,3 +44,4 @@ def test_sha1_hash_function():
                     '0000000000000000000000000000000090', 16)
     ciphertext = 0x1c5fdb6b3f737e9fd8b2906a1f06d13dc21e794f
     assert sha1.evaluate([plaintext]) == ciphertext
+    assert sha1.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext
