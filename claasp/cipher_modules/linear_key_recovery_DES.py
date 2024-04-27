@@ -4,9 +4,8 @@ import random
 import numpy as np
 from os import urandom
 
-nb_rounds = 5
 nb_pairs = 100 # pow(2,16)
-key = 0x10316e028c8f3b4a
+masterkey = 0x10316e028c8f3b4a
 
 def test_vector_vectorized(number_rounds=16):
     """
@@ -18,7 +17,7 @@ def test_vector_vectorized(number_rounds=16):
     cipher = DESBlockCipher(number_of_rounds=number_rounds)
 
     pairs = 3
-    np_key = np.frombuffer(int(key).to_bytes(length=8, byteorder='big'), dtype=np.uint8).reshape(-1,1)
+    np_key = np.frombuffer(int(masterkey).to_bytes(length=8, byteorder='big'), dtype=np.uint8).reshape(-1,1)
     np_key_repeated = np.repeat(np_key, pairs, axis=1)
     np_plaintext = np.frombuffer(int(0).to_bytes(length=8, byteorder='big'), dtype=np.uint8).reshape(-1,1)
     np_plaintext_repeated = np.repeat(np_plaintext, pairs, axis=1)
@@ -38,7 +37,7 @@ def generate_npairs_vectorized(number_rounds):
     cipher = DESBlockCipher(number_of_rounds=number_rounds)
     dictio = {}
 
-    np_key = np.frombuffer(int(key).to_bytes(length=8, byteorder='big'), dtype=np.uint8).reshape(-1,1)
+    np_key = np.frombuffer(int(masterkey).to_bytes(length=8, byteorder='big'), dtype=np.uint8).reshape(-1,1)
     np_key_repeated = np.repeat(np_key, nb_pairs, axis=1)
     plaintext = np.frombuffer(urandom(nb_pairs*8), dtype = np.uint8).reshape((-1, nb_pairs))
     plaintext_list = [hex(int.from_bytes(plaintext[:,i].tobytes(), byteorder='big')) for i in range(nb_pairs)]
@@ -62,7 +61,7 @@ def generate_npairs(number_rounds):
 
     for _ in range(nb_pairs):
         plaintext = random.getrandbits(64)
-        ciphertext = cipher.evaluate([key, plaintext])
+        ciphertext = cipher.evaluate([masterkey, plaintext])
         dictio[plaintext] = ciphertext
 
     end_time = datetime.now()
@@ -104,7 +103,7 @@ def test_linear_approx_on_multiple_pair():
     count = 0
     for _ in range(nb_pairs):
         plaintext = random.getrandbits(64)
-        ciphertext = cipher.evaluate([key, plaintext])
+        ciphertext = cipher.evaluate([masterkey, plaintext])
         if test_linear_approximation_on_a_pair(plaintext, ciphertext):
             count += 1
     print("count = {}".format(count))
@@ -303,7 +302,7 @@ def master_key_recovery():
 
     cipher = DESBlockCipher(number_of_rounds=6)
     plaintext = random.getrandbits(64)
-    ciphertext = cipher.evaluate([key, plaintext])
+    ciphertext = cipher.evaluate([masterkey, plaintext])
 
     start_time = datetime.now()
     # full_masterkey = 1166834735692856138 <=> partial_masterkey (34 remaining bits) = 387030374883592 <=> i = 46158058
