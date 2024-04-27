@@ -294,7 +294,7 @@ def gen_rest_of_masterkey(i, unknown_bits_position):
 def master_key_recovery():
     """
     from claasp.cipher_modules.linear_key_recovery_DES import *
-    Paul = master_key_recovery()
+    guessed_master_key, Paul = master_key_recovery()
     """
     # partial_subkey = partial_subkey_recovery_vectorized()
     partial_subkey = 138149613607 # to be removed
@@ -340,4 +340,4 @@ def master_key_recovery():
     else:
         print("Master key found !!!")
     Paul = [all_guessed_master_key, partial_masterkey, unknown_bits_position]
-    return Paul
+    return guessed_master_key, Paul
