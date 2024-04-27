@@ -80,7 +80,7 @@ def bit_vector_select_word(input, bits, verbosity=False):
     return output
 
 
-def bit_vector_SBOX(input, sbox, verbosity=False):
+def bit_vector_SBOX(input, sbox, verbosity=False, output_bit_size = None):
     """
     Computes the SBox operation on binary values.
 
@@ -95,6 +95,10 @@ def bit_vector_SBOX(input, sbox, verbosity=False):
     int_val = np.packbits(tmp, axis=0)
     int_output = sbox[int_val]
     output = np.unpackbits(int_output, axis=0)
+    if output_bit_size is None:
+        output = output[-input.shape[0]:]
+    else:
+        output = output[-output_bit_size:]
     if verbosity:
         print("SBox")
         print("Input : ", input.transpose())
@@ -103,7 +107,7 @@ def bit_vector_SBOX(input, sbox, verbosity=False):
         print("Output : ", output.transpose())
         print("---")
 
-    return output[-input.shape[0]:]
+    return output
 
 
 def bit_vector_XOR(input, number_of_inputs, output_bit_size, verbosity=False):

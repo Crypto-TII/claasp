@@ -219,7 +219,6 @@ def get_word_operation_component_bit_based_c_code(component, verbosity):
 
     return word_operation_code
 
-
 def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False,
                                                      verbosity=False, convert_output_to_bytes=False):
     """

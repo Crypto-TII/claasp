@@ -32,3 +32,4 @@ def test_hight_block_cipher():
 
     hight = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=32)
     assert hight.evaluate([plaintext, key], verbosity=False) == 0x3b25d694326c4375
+    assert hight.evaluate_vectorized([plaintext, key], evaluate_api=True) == 0x3b25d694326c4375
