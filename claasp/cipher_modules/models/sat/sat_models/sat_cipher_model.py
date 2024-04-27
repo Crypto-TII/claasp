@@ -19,6 +19,7 @@
 
 import time
 
+from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CIPHER, WORD_OPERATION, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
@@ -68,7 +69,7 @@ class SatCipherModel(SatModel):
             self._model_constraints.extend(constraints)
             self._variables_list.extend(variables)
 
-    def find_missing_bits(self, fixed_values=[], solver_name='cryptominisat'):
+    def find_missing_bits(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a generic flow of the cipher from plaintext and key to ciphertext.
 
@@ -96,7 +97,7 @@ class SatCipherModel(SatModel):
             sage: sat.find_missing_bits(fixed_values=[ciphertext]) # random
             {'cipher_id': 'speck_p32_k64_o32_r22',
              'model_type': 'cipher',
-             'solver_name': 'cryptominisat',
+             'solver_name': 'CRYPTOMINISAT_EXT',
              ...
               'intermediate_output_21_11': {'value': '1411'},
               'cipher_output_21_12': {'value': 'affec7ed'}},

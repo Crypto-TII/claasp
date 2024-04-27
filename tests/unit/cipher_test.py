@@ -396,7 +396,7 @@ def test_vector_check():
 
 def test_zero_correlation_linear_search():
     speck6 = SpeckBlockCipher(number_of_rounds=6)
-    zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "yices-smt2")
+    zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "YICES_EXT")
     assert len(zero_correlation_linear_approximations) > 0
 
 

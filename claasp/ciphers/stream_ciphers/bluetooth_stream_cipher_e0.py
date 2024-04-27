@@ -158,7 +158,7 @@ class BluetoothStreamCipherE0(Cipher):
         ks_id = [lfsr_state, lfsr_state, lfsr_state, lfsr_state, fsm_id[2]]
         ks_pos = [[1], [32], [57], [96], fsm_pos[2]]
         z = self.add_XOR_component(ks_id, ks_pos, 1).id
-        if clock_number is 0:
+        if clock_number == 0:
             ks = self.add_round_output_component([z], [list(range(1))], 1).id
         else:
             ks = self.add_round_output_component([ks, z], [list(range(clock_number)), [0]], clock_number + 1).id
