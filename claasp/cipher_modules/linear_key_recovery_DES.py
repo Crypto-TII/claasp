@@ -4,7 +4,7 @@ import random
 import numpy as np
 from os import urandom
 
-nb_pairs = 100 # pow(2,16)
+nb_pairs = 5 # pow(2,16)
 masterkey = 0x10316e028c8f3b4a
 
 def test_vector_vectorized(number_rounds=16):
@@ -50,6 +50,7 @@ def generate_npairs_vectorized(number_rounds):
     end_time = datetime.now()
     print('Duration for evaluation: {}'.format(end_time - start_time))
     return dictio
+
 
 def generate_npairs(number_rounds):
     """

@@ -261,7 +261,9 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
     elif CIPHER_INVERSE_SUFFIX in cipher.id:
-        code.append('  return intermediateOutputs["plaintext"]')
+        # code.append('  return intermediateOutputs["plaintext"]')
+        code.append('  last_inter_output = list(intermediateOutputs.keys())[-1]')
+        code.append('  return intermediateOutputs[last_inter_output]')
     else:
         code.append('  return intermediateOutputs["cipher_output"]')
 
