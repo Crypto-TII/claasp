@@ -4,7 +4,7 @@ import random
 import numpy as np
 from os import urandom
 
-nb_pairs = 5 # pow(2,16)
+nb_pairs = 100000 #pow(2,16)
 masterkey = 0x10316e028c8f3b4a
 
 def test_vector_vectorized(number_rounds=16):
@@ -80,12 +80,13 @@ def xor_bits(state32, position):
     """
     res = 0
     for i in position:
-        res ^= (state32 & (1 << (32 - i))) >> (32 - i)
+        # res ^= (state32 & (1 << (32 - i))) >> (32 - i)
+        res ^= (state32 & (1 << i)) >> i
     return res
 
 def test_linear_approximation_on_a_pair(plaintext, ciphertext):
-    position_left = [17]
-    position_right = [1,2,3,4,5,8,14,25]
+    position_left = [15]
+    position_right = [7,18,24,27,28,29,30,31]
     plaintext_right = plaintext & 0xffffffff
     plaintext_left = (plaintext & 0xffffffff00000000) >> 32
     ciphertext_right = ciphertext & 0xffffffff
@@ -172,7 +173,7 @@ def partial_subkey_recovery_vectorized():
     # full_subkey6 = 152108258343 <=> partial_subkey6 (30 bits that influences the l.a) = 138149613607 <=> i = 44658535
     # Reduction of the research area:
     Juan = {} # keys of this dict are the 30 guessed bits of subkey6, the values are the corresponding counters
-    for i in range(44658533, 44658538): # range(pow(2,34)) for the full research
+    for i in range(100): #range(44658500, 44658600): # range(pow(2,34)) for the full research
         partial_subkey = gen_partial_subkey(i)
         np_partial_subkey = np.frombuffer(int(partial_subkey).to_bytes(length=8, byteorder='big'), dtype=np.uint8).reshape(-1, 1)
         np_partial_subkey_repeated = np.repeat(np_partial_subkey, nb_pairs, axis=1)
