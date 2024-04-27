@@ -5,7 +5,7 @@ import numpy as np
 from os import urandom
 
 nb_rounds = 5
-nb_pairs = 10000 # pow(2,16)
+nb_pairs = 100 # pow(2,16)
 key = 0x10316e028c8f3b4a
 
 def test_vector_vectorized(number_rounds=16):
@@ -29,10 +29,10 @@ def test_vector_vectorized(number_rounds=16):
     end_time = datetime.now()
     print('Duration for evaluation: {}'.format(end_time - start_time))
 
-def generate_npairs_vectorized(number_rounds=nb_rounds):
+def generate_npairs_vectorized(number_rounds):
     """
     from claasp.cipher_modules.linear_key_recovery_DES import *
-    d = generate_npairs_vectorized()
+    d = generate_npairs_vectorized(6)
     """
     start_time = datetime.now()
     cipher = DESBlockCipher(number_of_rounds=number_rounds)
@@ -51,10 +51,10 @@ def generate_npairs_vectorized(number_rounds=nb_rounds):
     print('Duration for evaluation: {}'.format(end_time - start_time))
     return dictio
 
-def generate_npairs(number_rounds=nb_rounds):
+def generate_npairs(number_rounds):
     """
     from claasp.cipher_modules.linear_key_recovery_DES import *
-    d = generate_npairs()
+    d = generate_npairs(6)
     """
     start_time = datetime.now()
     cipher = DESBlockCipher(number_of_rounds=number_rounds)
@@ -85,21 +85,21 @@ def xor_bits(state32, position):
 def test_linear_approximation_on_a_pair(plaintext, ciphertext):
     position_left = [17]
     position_right = [1,2,3,4,5,8,14,25]
-    # position_left = [15]
-    # position_right = [7,18,24,27,28,29,30,31]
-
     plaintext_right = plaintext & 0xffffffff
     plaintext_left = (plaintext & 0xffffffff00000000) >> 32
     ciphertext_right = ciphertext & 0xffffffff
     ciphertext_left = (ciphertext & 0xffffffff00000000) >> 32
-    return xor_bits(plaintext_right, position_right) ^ xor_bits(plaintext_left, position_left) ^ xor_bits(ciphertext_right, position_right) ^ xor_bits(ciphertext_left, position_left)
+    if xor_bits(plaintext_right, position_right) ^ xor_bits(plaintext_left, position_left) ^ xor_bits(ciphertext_right, position_right) ^ xor_bits(ciphertext_left, position_left):
+        return 0
+    else:
+        return 1
 
-def test_linear_approx_on_multiple_pair(number_rounds=nb_rounds):
+def test_linear_approx_on_multiple_pair():
     """
     from claasp.cipher_modules.linear_key_recovery_DES import *
     test_linear_approx_on_multiple_pair()
     """
-    cipher = DESBlockCipher(number_of_rounds=number_rounds)
+    cipher = DESBlockCipher(number_of_rounds=5)
     start_time = datetime.now()
     count = 0
     for _ in range(nb_pairs):
@@ -118,7 +118,7 @@ def test_linear_approx_on_multiple_pair_vectorized():
     """
     start_time = datetime.now()
     count = 0
-    dictio = generate_npairs_vectorized()
+    dictio = generate_npairs_vectorized(5)
     for plaintext in list(dictio.keys()):
         if test_linear_approximation_on_a_pair(int(plaintext,16), int(dictio[plaintext], 16)):
             count += 1
@@ -129,7 +129,7 @@ def test_linear_approx_on_multiple_pair_vectorized():
 def gen_partial_subkey(i):
     """
     from claasp.cipher_modules.linear_key_recovery_DES import *
-    gen_partial_subkey(44658535)
+    hex(gen_partial_subkey(44658535))
     """
     subkey48 = 0
     subkey48 ^= i & 0x3f
@@ -143,15 +143,15 @@ def gen_partial_subkey(i):
     subkey48 ^= (i & 0x3f) << 36
     return subkey48
 
-def partial_subkey_recovery():
+def partial_subkey_recovery_vectorized():
     """
     from claasp.cipher_modules.linear_key_recovery_DES import *
-    partial_subkey_recovery()
+    partial_subkey_recovery_vectorized()
     """
-    cipher = DESBlockCipher(number_of_rounds=nb_rounds+1)
-    partial = cipher.cipher_partial_inverse(nb_rounds, nb_rounds, True)
+    cipher = DESBlockCipher(number_of_rounds=6)
+    partial = cipher.cipher_partial_inverse(5, 5, True)
 
-    dictio_using_key = generate_npairs_vectorized()
+    dictio_using_key = generate_npairs_vectorized(6)
     ciphertext_list = [int(c, 16) for c in dictio_using_key.values()]
     np_ciphertexts = [
         np.frombuffer(int(ciphertext_list[i]).to_bytes(length=8, byteorder='big'), dtype=np.uint8).reshape(-1, 1) for i
@@ -190,6 +190,48 @@ def partial_subkey_recovery():
 
     return true_partial_subkey
 
+
+def partial_subkey_recovery():
+    """
+    from claasp.cipher_modules.linear_key_recovery_DES import *
+    partial_subkey_recovery()
+    """
+    cipher = DESBlockCipher(number_of_rounds=6)
+    partial = cipher.cipher_partial_inverse(5, 5, True)
+    dictio_using_key = generate_npairs(6)
+
+    start_time = datetime.now()
+    max_bias = 0
+    true_partial_subkey = 0
+    count = 0
+    print("Desired partial subkey6 = {}".format(hex(138149613607)))
+    print("Partial subkey6 recovery ...")
+    # full_subkey6 = 152108258343 <=> partial_subkey6 (30 bits that influences the l.a) = 138149613607 <=> i = 44658535
+    # Reduction of the research area:
+    for i in [6478, 44658535, 44658000]: #range(44658534, 44658537): # range(pow(2,34)) for the full research
+        partial_subkey = gen_partial_subkey(i)
+        print(f"partial_subkey = {hex(partial_subkey)}")
+        for plaintext, ciphertext in dictio_using_key.items():
+            state64 = partial.evaluate([partial_subkey, ciphertext]) # TODO: check if order is correct
+            if test_linear_approximation_on_a_pair(plaintext, state64):
+                count += 1
+        # bias = abs(float(count) - nb_pairs/2)/nb_pairs
+        bias = abs(float(count)/nb_pairs - 1/2)
+        print(f"bias = {bias}")
+        if bias > max_bias:
+            max_bias = bias
+            true_partial_subkey = partial_subkey
+        # max = bias
+        print(f"count = {count}")
+        count = 0
+    end_time = datetime.now()
+    print('Duration: {}'.format(end_time - start_time))
+    print("Partial subkey6 = {}".format(hex(true_partial_subkey)))
+    print("-------------")
+
+    return true_partial_subkey
+
+
 # Symbolic master key
 symbolic_master_key = ["k" + str(i) for i in range(64)]
 # print("6th round subkey:")
@@ -200,7 +242,7 @@ symbolic_key = symbolic_master_key
 
 def partial_master_key_recovery(val_int, symbolic_key, subkey6):
     """
-    # subkey6 = 0b000000000010000000101010010110111101000000100111 = 138149613607 (30 bits correctly guessed of subkey6)
+    # partial_subkey6 = 0b000000000010000000101010010110111101000000100111 = 138149613607 (30 bits correctly guessed of subkey6)
     from claasp.cipher_modules.linear_key_recovery_DES import *
     partial_master_key_recovery(138149613607, symbolic_key, subkey6)
     """
@@ -226,10 +268,10 @@ def partial_master_key_recovery(val_int, symbolic_key, subkey6):
     # print("master_key_val:", master_key_val_str)
     return int(master_key_val_str,2), int(master_key_pos_str,2)
 
-def gen_partial_key(i, unknown_bits_position):
+def gen_rest_of_masterkey(i, unknown_bits_position):
     """
     from claasp.cipher_modules.linear_key_recovery_DES import *
-    bin(gen_partial_key(15, [1,2,3,6]))
+    bin(gen_rest_of_masterkey(15, [1,2,3,6]))
     """
     partial_key = 0
     for index, pos in enumerate(unknown_bits_position):
@@ -243,9 +285,9 @@ def master_key_recovery():
     from claasp.cipher_modules.linear_key_recovery_DES import *
     master_key_recovery()
     """
-    # partial_subkey = partial_subkey_recovery()
+    # partial_subkey = partial_subkey_recovery_vectorized()
     partial_subkey = 138149613607 # to be removed
-    partial_key, known_bits_position = partial_master_key_recovery(partial_subkey, symbolic_key, subkey6)
+    partial_masterkey, known_bits_position = partial_master_key_recovery(partial_subkey, symbolic_key, subkey6)
     print("Exhaustive research of the 34 remaining bits of the master key ...")
     unknown_bits_position = []
     for i in range(64):
@@ -259,7 +301,7 @@ def master_key_recovery():
     # #printBin(partial_masterkey)
     # #print(0x2c050ea) # 46158058
 
-    cipher = DESBlockCipher(number_of_rounds=nb_rounds)
+    cipher = DESBlockCipher(number_of_rounds=6)
     plaintext = random.getrandbits(64)
     ciphertext = cipher.evaluate([key, plaintext])
 
@@ -267,8 +309,8 @@ def master_key_recovery():
     # full_masterkey = 1166834735692856138 <=> partial_masterkey (34 remaining bits) = 387030374883592 <=> i = 46158058
     # Reduction of the research area:
     for i in range(46158055, 46158060): # range(pow(2,34)) for the full research
-        guess_partial_key = gen_partial_key(i, unknown_bits_position)
-        guessed_master_key = guess_partial_key ^ partial_key
+        guess_rest_of_partial_masterkey = gen_rest_of_masterkey(i, unknown_bits_position)
+        guessed_master_key = guess_rest_of_partial_masterkey ^ partial_masterkey
         ciphertext_from_guessed_master_key = cipher.evaluate([guessed_master_key, plaintext])
         if ciphertext == ciphertext_from_guessed_master_key:
             end_time = datetime.now()
