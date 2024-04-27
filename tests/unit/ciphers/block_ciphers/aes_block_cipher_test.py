@@ -19,6 +19,7 @@ def test_aes_block_cipher():
     plaintext = 0x6bc1bee22e409f96e93d7e117393172a
     ciphertext = 0x3ad77bb40d7a3660a89ecaf32466ef97
     assert aes.evaluate([key, plaintext]) == ciphertext
+    assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
 
     aes = AESBlockCipher(word_size=8, state_size=3)
     key = 0x2b7e151628aed2a6ab

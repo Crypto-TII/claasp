@@ -76,17 +76,49 @@ def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
 
     return function_output
 
+def all_component_sizes_are_powers_of_two(cipher):
+    for comp in cipher.get_all_components:
+        if comp.input_bit_size % 2 !=0 or comp.output_bit_size % 2 !=0:
+            return False
+    return False
 
-def evaluate_vectorized(cipher, cipher_input, intermediate_outputs=False, verbosity=False):
-    if np.any(np.array(cipher.inputs_bit_size) % 8 != 0):
+def evaluate_vectorized(cipher, cipher_input, intermediate_outputs=False, verbosity=False, evaluate_api = False):
+
+    def convert_int_inputs_to_bits():
+        assert len(cipher_input) == len(cipher.inputs)
+        bit_inputs = []
+        for i, inp in enumerate(cipher_input):
+            expected_bit_size = cipher.inputs_bit_size[i]
+            bit_inputs.append(np.array([int(b) for b in bin(inp)[2:].zfill(expected_bit_size)]).reshape(expected_bit_size, -1))
+        return bit_inputs
+
+    def convert_int_inputs_to_bytes():
+        assert len(cipher_input) == len(cipher.inputs)
+        byte_inputs = []
+        import math
+        for i, inp in enumerate(cipher_input):
+            num_bytes = math.ceil(cipher.inputs_bit_size[i]/8)
+            byte_inputs.append(np.uint8([(inp >> ((num_bytes - j - 1) * 8)) & 0xff
+                      for j in range(num_bytes)]).reshape((num_bytes, -1)))
+        return byte_inputs
+
+    def convert_output_to_int(x):
+        return sum([int(v) << (cipher.output_bit_size - 8 * (i+1)) for i, v in enumerate(x[0].flatten())])
+
+    if np.any(np.array(cipher.inputs_bit_size) % 8 != 0) or not cipher.all_sboxes_are_standard():
         python_code_string = code_generator \
             .generate_bit_based_vectorized_python_code_string(cipher,
                                                               store_intermediate_outputs=intermediate_outputs,
                                                               verbosity=verbosity,
                                                               convert_output_to_bytes=True)
-        cipher_input = [np.unpackbits(cipher_input[i], axis=0)[:x, ]
+        if evaluate_api:
+            cipher_input = convert_int_inputs_to_bits()
+        else:
+            cipher_input = [np.unpackbits(cipher_input[i], axis=0)[:x, ]
                         for i, x in enumerate(cipher.inputs_bit_size)]
     else:
+        if evaluate_api:
+            cipher_input = convert_int_inputs_to_bytes()
         python_code_string = code_generator \
             .generate_byte_based_vectorized_python_code_string(
                 cipher,
@@ -94,8 +126,10 @@ def evaluate_vectorized(cipher, cipher_input, intermediate_outputs=False, verbos
 
     f_module = ModuleType("evaluate")
     exec(python_code_string, f_module.__dict__)
-
-    return f_module.evaluate(cipher_input, intermediate_outputs)
+    cipher_output = f_module.evaluate(cipher_input, intermediate_outputs)
+    if evaluate_api:
+        cipher_output = convert_output_to_int(cipher_output)
+    return cipher_output
 
 
 def evaluate_with_intermediate_outputs_continuous_diffusion_analysis(cipher, cipher_input, sbox_precomputations,
