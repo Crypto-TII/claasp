@@ -310,10 +310,15 @@ class DESBlockCipher(Cipher):
         # Round 0 different from others since it starts with FirstAddRoundKey
         self.add_round()
 
+        # state = self.add_permutation_component([INPUT_PLAINTEXT],
+        #                                        [self.INITIAL_PERMUTATION[number_of_sboxes]],
+        #                                        self.CIPHER_BLOCK_SIZE,
+        #                                        list(range(self.CIPHER_BLOCK_SIZE)))
+        # For the key recovery using linear crypta (Matsui), we ignore INITIAL_PERMUTATION.
         state = self.add_permutation_component([INPUT_PLAINTEXT],
-                                               [self.INITIAL_PERMUTATION[number_of_sboxes]],
-                                               self.CIPHER_BLOCK_SIZE,
-                                               list(range(self.CIPHER_BLOCK_SIZE)))
+                                               [list(range(number_of_sboxes * 8))],
+                                               number_of_sboxes * 8,
+                                               list(range(number_of_sboxes * 8)))
 
         key_state = self.add_permutation_component([INPUT_KEY],
                                                    [list(range(number_of_sboxes * 8))],
@@ -395,14 +400,21 @@ class DESBlockCipher(Cipher):
 
             # Round Output
             if round_number == number_of_rounds - 1:
-                state = self.add_permutation_component(
-                    [right_state.id, state.id],
-                    [list(range(number_of_sboxes * 4)), list(range(number_of_sboxes * 4, number_of_sboxes * 8))],
-                    self.CIPHER_BLOCK_SIZE,
-                    self.FINAL_PERMUTATION[number_of_sboxes])
-                self.add_cipher_output_component([state.id],
-                                                 [list(range(self.CIPHER_BLOCK_SIZE))],
+                # state = self.add_permutation_component(
+                #     [right_state.id, state.id],
+                #     [list(range(number_of_sboxes * 4)), list(range(number_of_sboxes * 4, number_of_sboxes * 8))],
+                #     self.CIPHER_BLOCK_SIZE,
+                #     self.FINAL_PERMUTATION[number_of_sboxes])
+                # self.add_cipher_output_component([state.id],
+                #                                  [list(range(self.CIPHER_BLOCK_SIZE))],
+                #                                  self.CIPHER_BLOCK_SIZE)
+                # For the key recovery using linear crypta (Matsui), we ignore FINAL_PERMUTATION
+                self.add_cipher_output_component([right_state.id, state.id],
+                                                 [list(range(number_of_sboxes * 4)), list(range(number_of_sboxes * 4, number_of_sboxes * 8))],
                                                  self.CIPHER_BLOCK_SIZE)
+                # self.add_cipher_output_component([state.id, right_state.id],
+                #                                  [list(range(number_of_sboxes * 4, number_of_sboxes * 8)), list(range(number_of_sboxes * 4))],
+                #                                  self.CIPHER_BLOCK_SIZE)
             else:
                 state = self.add_permutation_component(
                     [state.id, right_state.id],

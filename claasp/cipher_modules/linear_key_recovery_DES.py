@@ -80,13 +80,15 @@ def xor_bits(state32, position):
     """
     res = 0
     for i in position:
-        # res ^= (state32 & (1 << (32 - i))) >> (32 - i)
-        res ^= (state32 & (1 << i)) >> i
+        res ^= (state32 & (1 << (32 - i))) >> (32 - i)
+        # res ^= (state32 & (1 << i)) >> i
     return res
 
 def test_linear_approximation_on_a_pair(plaintext, ciphertext):
-    position_left = [15]
-    position_right = [7,18,24,27,28,29,30,31]
+    # position_left = [15]
+    # position_right = [7,18,24,27,28,29,30,31]
+    position_left = [17]
+    position_right = [1,2,3,4,5,8,14,25]
     plaintext_right = plaintext & 0xffffffff
     plaintext_left = (plaintext & 0xffffffff00000000) >> 32
     ciphertext_right = ciphertext & 0xffffffff
@@ -110,6 +112,33 @@ def test_linear_approx_on_multiple_pair():
         if test_linear_approximation_on_a_pair(plaintext, ciphertext):
             count += 1
     print("count = {}".format(count))
+    end_time = datetime.now()
+    print('Duration: {}'.format(end_time - start_time))
+
+def test_linear_approx_on_multiple_pair_backward():
+    """
+    from claasp.cipher_modules.linear_key_recovery_DES import *
+    test_linear_approx_on_multiple_pair_backward()
+    """
+    cipher = DESBlockCipher(number_of_rounds=6)
+    partial = cipher.cipher_partial_inverse(5, 5, True)
+    start_time = datetime.now()
+    count_forward = 0
+    count_backward = 0
+    for _ in range(nb_pairs):
+        plaintext = random.getrandbits(64)
+        result = cipher.evaluate([masterkey, plaintext], intermediate_output=True)
+        ciphertext = result[0]
+        state_round5 = result[1]["round_output"][-1]
+        if test_linear_approximation_on_a_pair(plaintext, state_round5):
+            count_forward += 1
+        state64 = partial.evaluate([ciphertext, masterkey])
+        if test_linear_approximation_on_a_pair(plaintext, state64):
+            count_backward += 1
+        if state64 != state_round5:
+            print("error")
+    print("count_forward = {}".format(count_forward))
+    print("count_backward = {}".format(count_backward))
     end_time = datetime.now()
     print('Duration: {}'.format(end_time - start_time))
 
@@ -149,6 +178,40 @@ def gen_partial_subkey(i):
     subkey48 ^= (i & 0x3f) << 36
     return subkey48
 
+def repeat_input_difference(input_difference_, number_of_samples_, number_of_bytes_):
+    bytes_array = input_difference_.to_bytes(number_of_bytes_, 'big')
+    np_array = np.array(list(bytes_array), dtype=np.uint8)
+    column_array = np_array.reshape(-1, 1)
+    return np.tile(column_array, (1, number_of_samples_))
+
+def test_linear_approx_on_multiple_pair_vectorized_backward():
+    """
+    from claasp.cipher_modules.linear_key_recovery_DES import *
+    test_linear_approx_on_multiple_pair_vectorized_backward()
+    """
+    cipher = DESBlockCipher(number_of_rounds=6)
+    partial = cipher.cipher_partial_inverse(5, 5, True)
+    start_time = datetime.now()
+    count = 0
+
+    key_data = repeat_input_difference(masterkey, nb_pairs, 8)
+    rng = np.random.default_rng()
+    plaintext_data = rng.integers(low=0, high=256, size=(8, nb_pairs), dtype=np.uint8)
+    plaintext_list = [hex(int.from_bytes(plaintext_data[:,i].tobytes(), byteorder='big')) for i in range(nb_pairs)] # works when reading columns
+    ciphertext_data = cipher.evaluate_vectorized([key_data, plaintext_data])
+
+    state64 = partial.evaluate_vectorized([ciphertext_data[0].T, key_data])[0] # carefull, order change with partial
+    midpoint = state64.shape[1] // 2
+    state64_swapped = np.hstack((state64[:, midpoint:], state64[:, :midpoint]))
+    state64_list = [hex(int.from_bytes(state64_swapped[i].tobytes(), byteorder='big')) for i in range(nb_pairs)] # works when reading rows
+
+    for index, plaintext in enumerate(plaintext_list):
+        if test_linear_approximation_on_a_pair(int(plaintext,16), int(state64_list[index],16)):
+            count += 1
+    print("count = {}".format(count))
+    end_time = datetime.now()
+    print('Duration for testing linear approx: {}'.format(end_time - start_time))
+
 def partial_subkey_recovery_vectorized():
     """
     from claasp.cipher_modules.linear_key_recovery_DES import *
@@ -157,32 +220,31 @@ def partial_subkey_recovery_vectorized():
     cipher = DESBlockCipher(number_of_rounds=6)
     partial = cipher.cipher_partial_inverse(5, 5, True)
 
-    dictio_using_key = generate_npairs_vectorized(6)
-    ciphertext_list = [int(c, 16) for c in dictio_using_key.values()]
-    np_ciphertexts = [
-        np.frombuffer(int(ciphertext_list[i]).to_bytes(length=8, byteorder='big'), dtype=np.uint8).reshape(-1, 1) for i
-        in range(nb_pairs)]
-    np_ciphertexts_concat = np.dstack(np_ciphertexts).reshape(-1, nb_pairs)
-
     start_time = datetime.now()
+    count = 0
+    rng = np.random.default_rng()
+    plaintext_data = rng.integers(low=0, high=256, size=(8, nb_pairs), dtype=np.uint8)
+    plaintext_list = [hex(int.from_bytes(plaintext_data[:,i].tobytes(), byteorder='big')) for i in range(nb_pairs)] # works when reading columns
+    key_data = repeat_input_difference(masterkey, nb_pairs, 8)
+    ciphertext_data = cipher.evaluate_vectorized([key_data, plaintext_data])
+
     max_bias = 0
     true_partial_subkey = 0
-    count = 0
     print("Desired partial subkey6 = {}".format(hex(138149613607)))
     print("Partial subkey6 recovery ...")
     # full_subkey6 = 152108258343 <=> partial_subkey6 (30 bits that influences the l.a) = 138149613607 <=> i = 44658535
     # Reduction of the research area:
     Juan = {} # keys of this dict are the 30 guessed bits of subkey6, the values are the corresponding counters
-    for i in range(100): #range(44658500, 44658600): # range(pow(2,34)) for the full research
+    for i in [6478, 44658535, 44658000]: #range(44658500, 44658600): # range(pow(2,30)) for the full research
         partial_subkey = gen_partial_subkey(i)
-        np_partial_subkey = np.frombuffer(int(partial_subkey).to_bytes(length=8, byteorder='big'), dtype=np.uint8).reshape(-1, 1)
-        np_partial_subkey_repeated = np.repeat(np_partial_subkey, nb_pairs, axis=1)
-
-        state64 = partial.evaluate_vectorized([np_partial_subkey_repeated, np_ciphertexts_concat]) # TODO: check if order is correct
-        state64_list = [hex(int.from_bytes(state64[0][i].tobytes(), byteorder='big')) for i in range(nb_pairs)]
-
-        for index, plaintext in enumerate(dictio_using_key.keys()):
-            if test_linear_approximation_on_a_pair(int(plaintext,16), int(state64_list[index],16)):
+        print(f"--------> sk = {hex(partial_subkey)}")
+        key_data = repeat_input_difference(masterkey, nb_pairs, 8)
+        state64 = partial.evaluate_vectorized([ciphertext_data[0].T, key_data])[0]
+        midpoint = state64.shape[1] // 2
+        state64_swapped = np.hstack((state64[:, midpoint:], state64[:, :midpoint]))
+        state64_list = [hex(int.from_bytes(state64_swapped[i].tobytes(), byteorder='big')) for i in range(nb_pairs)]
+        for index, plaintext in enumerate(plaintext_list):
+            if test_linear_approximation_on_a_pair(int(plaintext, 16), int(state64_list[index], 16)):
                 count += 1
         bias = abs(float(count)/nb_pairs - 1/2)
         if bias > max_bias:
@@ -217,9 +279,13 @@ def partial_subkey_recovery():
     # Reduction of the research area:
     for i in [6478, 44658535, 44658000]: #range(44658534, 44658537): # range(pow(2,34)) for the full research
         partial_subkey = gen_partial_subkey(i)
-        print(f"partial_subkey = {hex(partial_subkey)}")
+        # print(f"partial_subkey = {hex(partial_subkey)}")
         for plaintext, ciphertext in dictio_using_key.items():
-            state64 = partial.evaluate([partial_subkey, ciphertext]) # TODO: check if order is correct
+            # print("ciphertext")
+            # print(hex(ciphertext))
+            state64 = partial.evaluate([ciphertext, partial_subkey]) # TODO: check if order is correct
+            # print("state64")
+            # print(hex(state64))
             if test_linear_approximation_on_a_pair(plaintext, state64):
                 count += 1
         bias = abs(float(count)/nb_pairs - 1/2)
