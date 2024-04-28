@@ -100,8 +100,7 @@ def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
         for i in range(sbox_lat.nrows()):
             set_of_occurrences = set(sbox_lat.rows()[i])
             set_of_occurrences -= {0}
-            valid_probabilities.update({round(100 * math.log2(2 ** input_size / abs(occurrence)))
-                                        for occurrence in set_of_occurrences})
+            valid_probabilities.update({round(100 * math.log2(abs(pow(2, input_size - 1) / occurence))) for occurence in set_of_occurrences})
         sbox_mant.append((description, output_id_link))
 
 
@@ -698,7 +697,7 @@ class SBOX(Component):
         sbox_params = [f'bit_vector_select_word({self.input_id_links[i]},  {self.input_bit_positions[i]})'
                        for i in range(len(self.input_id_links))]
         return [f'  {self.id} = bit_vector_SBOX(bit_vector_CONCAT([{",".join(sbox_params)} ]), '
-                f'np.array({self.description}, dtype=np.uint8))']
+                f'np.array({self.description}, dtype=np.uint8), output_bit_size = {self.output_bit_size})']
 
     def get_byte_based_vectorized_python_code(self, params):
         return [f'  {self.id} = byte_vector_SBOX({params}, np.array({self.description}, dtype=np.uint8))']
