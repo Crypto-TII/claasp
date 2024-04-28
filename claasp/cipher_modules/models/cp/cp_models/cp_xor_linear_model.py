@@ -613,8 +613,9 @@ class CpXorLinearModel(CpModel):
             for i in range(sbox_lat.nrows()):
                 set_of_occurrences = set(sbox_lat.rows()[i])
                 set_of_occurrences -= {0}
-                valid_probabilities.update({round(100 * math.log2(2 ** input_size / abs(occurrence)))
-                                            for occurrence in set_of_occurrences})
+                valid_probabilities.update({round(100 * math.log2(abs(pow(2, input_size - 1) / occurence))) for occurence in set_of_occurrences})
+                #valid_probabilities.update({round(100 * math.log2(2 ** input_size / abs(occurrence)))
+                #                            for occurrence in set_of_occurrences})
             self.sbox_mant.append((description, output_id_link))
 
     def weight_xor_linear_constraints(self, weight):

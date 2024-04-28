@@ -76,16 +76,10 @@ def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
 
     return function_output
 
-def all_component_sizes_are_powers_of_two(cipher):
-    for comp in cipher.get_all_components:
-        if comp.input_bit_size % 2 !=0 or comp.output_bit_size % 2 !=0:
-            return False
-    return False
 
 def evaluate_vectorized(cipher, cipher_input, intermediate_outputs=False, verbosity=False, evaluate_api = False):
 
     def convert_int_inputs_to_bits():
-        assert len(cipher_input) == len(cipher.inputs)
         bit_inputs = []
         for i, inp in enumerate(cipher_input):
             expected_bit_size = cipher.inputs_bit_size[i]
@@ -93,7 +87,6 @@ def evaluate_vectorized(cipher, cipher_input, intermediate_outputs=False, verbos
         return bit_inputs
 
     def convert_int_inputs_to_bytes():
-        assert len(cipher_input) == len(cipher.inputs)
         byte_inputs = []
         import math
         for i, inp in enumerate(cipher_input):
@@ -106,6 +99,7 @@ def evaluate_vectorized(cipher, cipher_input, intermediate_outputs=False, verbos
         return sum([int(v) << (cipher.output_bit_size - 8 * (i+1)) for i, v in enumerate(x[0].flatten())])
 
     if np.any(np.array(cipher.inputs_bit_size) % 8 != 0) or not cipher.all_sboxes_are_standard():
+        print("BIT BASED")
         python_code_string = code_generator \
             .generate_bit_based_vectorized_python_code_string(cipher,
                                                               store_intermediate_outputs=intermediate_outputs,
@@ -117,6 +111,7 @@ def evaluate_vectorized(cipher, cipher_input, intermediate_outputs=False, verbos
             cipher_input = [np.unpackbits(cipher_input[i], axis=0)[:x, ]
                         for i, x in enumerate(cipher.inputs_bit_size)]
     else:
+        print("BYTE BASED")
         if evaluate_api:
             cipher_input = convert_int_inputs_to_bytes()
         python_code_string = code_generator \

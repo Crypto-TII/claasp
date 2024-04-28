@@ -14,6 +14,7 @@ def test_tinyjambu_fsr_32bits_word_permutation():
     plaintext = 0x00000000000000000000000000000000
     ciphertext = 0xc07a21053c7ca049e687585d161fbad7
     assert tinyjambu.evaluate([plaintext, key]) == ciphertext
+    assert tinyjambu.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
 
     key1 = 0x12345678123456781234567812345678
     plaintext1 = 0x00000000000000000000000000000000

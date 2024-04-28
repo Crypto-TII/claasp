@@ -27,4 +27,4 @@ def test_skinny_block_cipher():
     key = 0xdf889548cfc7ea52d296339301797449ab588a34a47f1ab2dfe9c8293fbea9a5ab1afac2611012cd8cef952618c3ebe8
     ciphertext = 0xff38d1d24c864c4352a853690fe36e5e
     assert skinny.evaluate([plaintext, key]) == ciphertext
-    assert skinny.evaluate([plaintext, key], evaluate_api = True) == ciphertext
+    assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext

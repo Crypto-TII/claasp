@@ -1719,3 +1719,8 @@ class Cipher:
                     return False
         return True
 
+    def all_component_sizes_are_even(cipher):
+        for comp in cipher.get_all_components:
+            if comp.input_bit_size % 2 !=0 or comp.output_bit_size % 2 !=0:
+                return False
+        return True

@@ -35,4 +35,4 @@ def test_speedy_block_cipher():
     key = 0x764c4f6254e1bff208e95862428faed01584f4207a7e8477
     ciphertext = 0xed3d0ea11c427bd32570df41c6fd66ebbf4916e760ed0943
     assert speedy.evaluate([plaintext, key]) == ciphertext
-    assert speedy.evaluate([plaintext, key], evaluate_api=True) == ciphertext
+    assert speedy.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

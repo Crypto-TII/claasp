@@ -659,7 +659,6 @@ class SBOX(Component):
         cp_constraints.append(new_constraint)
         model.component_and_probability[output_id_link] = model.c
         model.c = model.c + 1
-
         return cp_declarations, cp_constraints
 
     def generate_sbox_sign_lat(self):

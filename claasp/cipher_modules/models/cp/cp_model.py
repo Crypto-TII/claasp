@@ -477,6 +477,7 @@ class CpModel:
                 solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name,
                                                                  solve_time, memory,
                                                                  components_values, total_weight)
+                print(solution)
                 if 'UNSATISFIABLE' in solver_output[0]:
                     solution['status'] = 'UNSATISFIABLE'
                 else:
