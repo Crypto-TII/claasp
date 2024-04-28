@@ -1709,3 +1709,11 @@ class Cipher:
     def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
         round_number = self.get_round_from_component_id(component_id)
         self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
+
+    def all_sboxes_are_standard(self):
+        for comp in self.get_all_components():
+            if 'sbox' in comp.id:
+                if (comp.input_bit_size != comp.output_bit_size) or (comp.input_bit_size % 2 != 0) or (
+                        comp.output_bit_size % 2 != 0):
+                    return False
+        return True
