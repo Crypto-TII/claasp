@@ -78,7 +78,7 @@ def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
 
 
 def evaluate_vectorized(cipher, cipher_input, intermediate_outputs=False, verbosity=False):
-    if np.any(np.array(cipher.inputs_bit_size) % 8 != 0):
+    if np.any(np.array(cipher.inputs_bit_size) % 8 != 0) or not cipher.all_sboxes_are_standard():
         python_code_string = code_generator \
             .generate_bit_based_vectorized_python_code_string(cipher,
                                                               store_intermediate_outputs=intermediate_outputs,

@@ -561,3 +561,10 @@ def test_cipher_inverse():
     ciphertext = qarmav2.evaluate([key, plaintext, tweak])
     cipher_inv = qarmav2.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, tweak, key]) == plaintext
+
+
+def test_all_sboxes_are_standard():
+    aes = AESBlockCipher(number_of_rounds=2)
+    assert aes.all_sboxes_are_standard()
+    des = DESBlockCipher(number_of_rounds = 2, number_of_sboxes=8)
+    assert not des.all_sboxes_are_standard()
