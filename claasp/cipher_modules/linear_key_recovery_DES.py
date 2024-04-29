@@ -1,11 +1,55 @@
 from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
+from claasp.ciphers.block_ciphers.des_1round import DESBlockCipher_1round
 from datetime import datetime
 import random
 import numpy as np
 from os import urandom
 
-nb_pairs = 100000 #pow(2,16)
+nb_pairs = 5 #pow(2,16)
 masterkey = 0x10316e028c8f3b4a
+
+ROUND_PERMUTATION = [8, 16, 22, 30, 12, 27, 1, 17, 23, 15, 29, 5, 25, 19, 9, 0, 7, 13, 24, 2, 3, 28, 10, 18, 31, 11, 21, 6, 4, 26, 14, 20]
+
+ROUND_PERMUTATION_BIN = \
+[[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+[0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
+EXPANSION = [
+                31, 0, 1, 2, 3, 4, 3, 4, 5, 6, 7, 8,
+                7, 8, 9, 10, 11, 12, 11, 12, 13, 14, 15, 16,
+                15, 16, 17, 18, 19, 20, 19, 20, 21, 22, 23, 24,
+                23, 24, 25, 26, 27, 28, 27, 28, 29, 30, 31, 0,
+]
 
 def test_vector_vectorized(number_rounds=16):
     """
@@ -190,6 +234,7 @@ def test_linear_approx_on_multiple_pair_vectorized_backward():
     test_linear_approx_on_multiple_pair_vectorized_backward()
     """
     cipher = DESBlockCipher(number_of_rounds=6)
+    des_1round = DESBlockCipher_1round()
     partial = cipher.cipher_partial_inverse(5, 5, True)
     start_time = datetime.now()
     count = 0
@@ -203,7 +248,12 @@ def test_linear_approx_on_multiple_pair_vectorized_backward():
     state64 = partial.evaluate_vectorized([ciphertext_data[0].T, key_data])[0] # carefull, order change with partial
     midpoint = state64.shape[1] // 2
     state64_swapped = np.hstack((state64[:, midpoint:], state64[:, :midpoint]))
+    print(state64_swapped)
     state64_list = [hex(int.from_bytes(state64_swapped[i].tobytes(), byteorder='big')) for i in range(nb_pairs)] # works when reading rows
+
+    subkey_data = repeat_input_difference(152108258343, nb_pairs, 8)
+    state64_1round = des_1round.evaluate_vectorized([ciphertext_data[0].T, subkey_data])[0]
+    print(state64_1round)
 
     for index, plaintext in enumerate(plaintext_list):
         if test_linear_approximation_on_a_pair(int(plaintext,16), int(state64_list[index],16)):
@@ -212,6 +262,35 @@ def test_linear_approx_on_multiple_pair_vectorized_backward():
     end_time = datetime.now()
     print('Duration for testing linear approx: {}'.format(end_time - start_time))
 
+def invert_manually_vectorized(guess_subkey):
+    """
+    from claasp.cipher_modules.linear_key_recovery_DES import *
+    invert_manually_vectorized(0xabcdef123456)
+    """
+    cipher = DESBlockCipher(number_of_rounds=2)
+    rng = np.random.default_rng()
+    plaintext = rng.integers(low=0, high=256, size=(8, nb_pairs), dtype=np.uint8)
+    plaintext_list = [hex(int.from_bytes(plaintext[:,i].tobytes(), byteorder='big')) for i in range(nb_pairs)] # works when reading columns
+    key = repeat_input_difference(masterkey, nb_pairs, 8)
+    ciphertext = cipher.evaluate_vectorized([key, plaintext])[0]
+    print(ciphertext)
+
+    ciphertext_right = ciphertext[:, 4:]
+    print(ciphertext_right)
+    before_expansion_bin = np.unpackbits(ciphertext_right, axis=0)
+    print(before_expansion_bin)
+    after_expansion_bin = before_expansion_bin.transpose().dot(ROUND_PERMUTATION_BIN).transpose() % 2
+    print(after_expansion_bin)
+
+    subkey = repeat_input_difference(guess_subkey, nb_pairs, 6)
+    print(subkey)
+    subkey_bin = np.unpackbits(subkey, axis=0)
+    print(subkey_bin)
+    xor = np.bitwise_xor(after_expansion_bin, subkey)
+    print(xor)
+
+
+
 def partial_subkey_recovery_vectorized():
     """
     from claasp.cipher_modules.linear_key_recovery_DES import *
@@ -219,6 +298,7 @@ def partial_subkey_recovery_vectorized():
     """
     cipher = DESBlockCipher(number_of_rounds=6)
     partial = cipher.cipher_partial_inverse(5, 5, True)
+    des_1round = DESBlockCipher_1round()
 
     start_time = datetime.now()
     count = 0
@@ -238,11 +318,11 @@ def partial_subkey_recovery_vectorized():
     for i in [6478, 44658535, 44658000]: #range(44658500, 44658600): # range(pow(2,30)) for the full research
         partial_subkey = gen_partial_subkey(i)
         print(f"--------> sk = {hex(partial_subkey)}")
-        key_data = repeat_input_difference(masterkey, nb_pairs, 8)
-        state64 = partial.evaluate_vectorized([ciphertext_data[0].T, key_data])[0]
-        midpoint = state64.shape[1] // 2
-        state64_swapped = np.hstack((state64[:, midpoint:], state64[:, :midpoint]))
-        state64_list = [hex(int.from_bytes(state64_swapped[i].tobytes(), byteorder='big')) for i in range(nb_pairs)]
+        subkey_data = repeat_input_difference(partial_subkey, nb_pairs, 8)
+        state64 = des_1round.evaluate_vectorized([ciphertext_data[0].T, subkey_data])[0]
+        # midpoint = state64.shape[1] // 2
+        # state64_swapped = np.hstack((state64[:, midpoint:], state64[:, :midpoint]))
+        state64_list = [hex(int.from_bytes(state64[i].tobytes(), byteorder='big')) for i in range(nb_pairs)]
         for index, plaintext in enumerate(plaintext_list):
             if test_linear_approximation_on_a_pair(int(plaintext, 16), int(state64_list[index], 16)):
                 count += 1
