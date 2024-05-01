@@ -92,8 +92,7 @@ class FSR(Component):
         if bits_inside_word == 1:
             return self._algebraic_polynomials_binary(model)
         else:
-            # return self._algebraic_polynomials_word(model)
-            return "under construction."
+            return self._algebraic_polynomials_word(model)
 
     def _algebraic_polynomials_binary(self, model):
         noutputs = self.output_bit_size
@@ -122,7 +121,6 @@ class FSR(Component):
             if len(self.description[0][i]) > 2:
                 clock_polynomials[i] = _get_polynomial_from_binary_polynomial_index_list(self.description[0][i][2], x_polynomial_ring)
 
-
         for _ in range(clocks):
             for i in range(number_of_registers):
                 output_bit = registers_polynomial[i](*x)
@@ -134,45 +132,66 @@ class FSR(Component):
         output_polynomials = y+vector(x)
         return output_polynomials
 
-    # def _algebraic_polynomials_word(self, model):
-    #
-    #     noutputs = self.output_bit_size
-    #     ninputs = self.input_bit_size
-    #     ring_R = model.ring()
-    #     x = vector(ring_R, (map(ring_R, [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)])))
-    #     y = vector(ring_R, (map(ring_R, [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)])))
-    #     word_array = bits_to_words_array(x, self.description[1], ring_R.base())
-    #     x_polynomial_ring = PolynomialRing(ring_R.base(), len(word_array))
-    #     number_of_registers = len(self.description[0])
-    #     registers_polynomial = [0 for _ in range(number_of_registers)]
-    #     registers_start = [0 for _ in range(number_of_registers)]
-    #     registers_update_bit = [0 for _ in range(number_of_registers)]
-    #     clock_polynomials = [None for _ in range(number_of_registers)]
-    #     if len(self.description) > 2:
-    #         clocks = self.description[2]
-    #     else:
-    #         clocks = 1
-    #
-    #     end = 0
-    #     for i in range(number_of_registers):
-    #         registers_polynomial[i] = get_polynomial_from_word_polynomial_index_list(self.description[0][i][1], x_polynomial_ring)
-    #         registers_start[i] = end
-    #         end += self.description[0][i][0]
-    #         registers_update_bit[i] = end - 1
-    #         if len(self.description[0][i]) > 2:
-    #             clock_polynomials[i] = get_polynomial_from_word_polynomial_index_list(self.description[0][i][2], ring_R)
-    #
-    #     for _ in range(clocks):
-    #         for i in range(number_of_registers):
-    #             output_bit = registers_polynomial[i](*word_array)
-    #             clock_bit = clock_polynomials[i](*word_array)
-    #             for k in range(registers_start[i], registers_update_bit[i]):
-    #                 word_array[k] = clock_bit*word_array[k+1] + (clock_bit+1)*word_array[k]
-    #             word_array[registers_update_bit[i]] = clock_bit*output_bit + (clock_bit+1)*x[registers_update_bit[i]]
-    #
-    #     x = words_array_to_bits(word_array, self.description[1])
-    #     output_polynomials = y+vector(x)
-    #     return output_polynomials
+    def _algebraic_polynomials_word(self, model):
+
+        def bits_to_words_array(input, bits_inside_word, word_gf):
+            y = word_gf.gen()
+
+            monomials = [pow(y, i) for i in range(bits_inside_word - 1, -1, -1)]
+            word_array = [0 for _ in
+                          range(int(len(input) / bits_inside_word))]
+
+            for i in range(len(word_array)):
+                c = 0
+                for j in range(len(monomials)):
+                    c += (input[(i * bits_inside_word) + j]) * monomials[j]
+                word_array[i] = c
+
+            return word_array
+
+        bits_inside_word = self.description[1]
+        noutputs = self.output_bit_size
+        ninputs = self.input_bit_size
+        ring_R = model.ring()
+        number_of_words = int(len(input) / bits_inside_word)
+
+        x = vector(ring_R, (map(ring_R, [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)])))
+        y = vector(ring_R, (map(ring_R, [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)])))
+        word_gf = GF(pow(2, bits_inside_word))
+        word_array = bits_to_words_array(x, bits_inside_word, word_gf)
+
+        word_polynomial_ring = PolynomialRing(word_gf, number_of_words)
+
+        number_of_registers = len(self.description[0])
+        registers_polynomial = [0 for _ in range(number_of_registers)]
+        registers_start = [0 for _ in range(number_of_registers)]
+        registers_update_bit = [0 for _ in range(number_of_registers)]
+        clock_polynomials = [None for _ in range(number_of_registers)]
+        if len(self.description) > 2:
+            clocks = self.description[2]
+        else:
+            clocks = 1
+
+        end = 0
+        for i in range(number_of_registers):
+            registers_polynomial[i] = _get_polynomial_from_binary_polynomial_index_list(self.description[0][i][1], word_polynomial_ring)
+            registers_start[i] = end
+            end += self.description[0][i][0]
+            registers_update_bit[i] = end - 1
+            if len(self.description[0][i]) > 2:
+                clock_polynomials[i] = _get_polynomial_from_word_polynomial_index_list(self.description[0][i][2], word_polynomial_ring)
+
+        for _ in range(clocks):
+            for i in range(number_of_registers):
+                output_bit = registers_polynomial[i](*word_array)
+                clock_bit = clock_polynomials[i](*word_array)
+                for k in range(registers_start[i], registers_update_bit[i]):
+                    word_array[k] = clock_bit*word_array[k+1] + (clock_bit+1)*word_array[k]
+                word_array[registers_update_bit[i]] = clock_bit*output_bit + (clock_bit+1)*x[registers_update_bit[i]]
+
+        x = words_array_to_bits(word_array, self.description[1])
+        output_polynomials = y+vector(x)
+        return output_polynomials
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         if len(self.description) > 2:
