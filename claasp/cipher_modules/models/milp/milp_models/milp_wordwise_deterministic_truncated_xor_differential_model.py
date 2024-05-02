@@ -331,6 +331,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         building_time = end - start
         solution = self.solve(MILP_WORDWISE_DETERMINISTIC_TRUNCATED, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = 'find_one_wordwise_deterministic_truncated_xor_differential_trail'
 
         return solution
 
@@ -373,6 +374,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         building_time = end - start
         solution = self.solve(MILP_WORDWISE_DETERMINISTIC_TRUNCATED, solver_name, external_solver_name)
         solution['building_time'] = building_time
+        solution['test_name'] = 'find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail'
 
         return solution
 

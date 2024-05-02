@@ -449,12 +449,17 @@ class Report:
                          key_state_size, key_flow, word_denominator):
 
         value = self.test_report['components_values'][comp_id]['value']
-        bin_list = list(format(int(value, 16), 'b').zfill(
-            4 * len(value) if value[:2] != '0x' else 4 * len(value[2:]))) if '*' not in value else list(
-            value[2:])
 
+        if '*' not in value and '?' not in value and '2' not in value:
+            bin_list = list(format(int(value, 16), 'b').zfill(
+            4 * len(value) if value[:2] != '0x' else 4 * len(value[2:])))
+        elif '*' in value:
+            bin_list = list(value[2:])
+        elif '?' in value or '2' in value:
+            bin_list = list(value)
         if show_as_hex == False:
-            word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(
+
+            word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else '2' if '2' in ''.join(bin_list[x:x + word_size]) else '?' if '?' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(
                 bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
                          range(0, len(bin_list), word_size)]
         else:
@@ -544,13 +549,14 @@ class Report:
                 else:
                     _print_colored_state(out_list[comp_id][0], verbose, file)
                     print(f' {comp_id}', file=file)
-            if verbose:
+            if verbose and 'truncated' not in self.test_name:
                 print('local weight = ' + str(
                     out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
                     out_list[comp_id][2]), file=file)
             print('', file=file)
         print('', file=file)
-        print('total weight = ' + str(self.test_report['total_weight']), file=file)
+        if 'truncated' not in self.test_name:
+            print('total weight = ' + str(self.test_report['total_weight']), file=file)
 
     def _print_key_flow(self, key_flow, show_components, out_list, verbose, file):
 
@@ -579,7 +585,8 @@ class Report:
                     else:
                         _print_colored_state(out_list[comp_id][0], verbose, file)
                         print(f'{comp_id}\t', file=file)
-                if verbose: print('local weight = ' + str(
+                if verbose and 'truncated' not in self.test_name:
+                    print('local weight = ' + str(
                     out_list[comp_id][1]) + '\t' + 'total weight = ' + str(
                     out_list[comp_id][2]), file=file)
                 print('', file=file)
@@ -620,13 +627,16 @@ class Report:
 
         abs_prob = 0
         rel_prob = 0
+
         word_denominator = '1' if word_size == 1 else 'A'
 
         for comp_id in self.test_report['components_values'].keys():
 
             if (comp_id != "plaintext" and comp_id != "key") and "key" not in comp_id:
-                rel_prob = self.test_report['components_values'][comp_id]['weight']
-                abs_prob += rel_prob
+
+                if 'weight' in self.test_report['components_values'][comp_id].keys():
+                    rel_prob = self.test_report['components_values'][comp_id]['weight']
+                    abs_prob += rel_prob
 
             # Check input links
             if comp_id != 'plaintext' and 'key' not in comp_id:

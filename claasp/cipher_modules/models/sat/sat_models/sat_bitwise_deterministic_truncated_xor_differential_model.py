@@ -195,6 +195,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
         end_building_time = time.time()
         solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time
+        solution['test_name'] = 'find_one_bitwise_deterministic_truncated_xor_differential_trail'
 
         return solution
 
@@ -240,6 +241,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             max_memory = max((max_memory, solution['memory_megabytes']))
         solution['solving_time_seconds'] = total_time
         solution['memory_megabytes'] = max_memory
+        solution['test_name'] = 'find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail'
 
         return solution
 
