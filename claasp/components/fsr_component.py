@@ -56,6 +56,34 @@ def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
         p += m
     return p
 
+
+def _bits_to_words_array(input, bits_inside_word, word_gf):
+    poly = word_gf.polynomial()
+    R = PolynomialRing(GF(2), 't').quotient(poly)
+    y = R.gen()
+
+    monomials = [pow(y, i) for i in range(bits_inside_word - 1, -1, -1)]
+    word_array = [0 for _ in
+                  range(int(len(input) / bits_inside_word))]
+
+    for i in range(len(word_array)):
+        c = 0
+        for j in range(len(monomials)):
+            c += (input[(i * bits_inside_word) + j]) * monomials[j]
+        word_array[i] = c
+
+    return word_array
+
+def _words_array_to_bits(word_array):
+    output = []
+
+    for _ in word_array:
+        coef = _.list()
+        coef.reverse()
+        for __ in coef:
+            output.append(__)
+    return output
+
 class FSR(Component):
     def __init__(self, current_round_number, current_round_number_of_components, input_id_links,
                  input_bit_positions, output_bit_size, description):
@@ -133,22 +161,6 @@ class FSR(Component):
         return output_polynomials
 
     def _algebraic_polynomials_word(self, model):
-
-        def bits_to_words_array(input, bits_inside_word, word_gf):
-            y = word_gf.gen()
-
-            monomials = [pow(y, i) for i in range(bits_inside_word - 1, -1, -1)]
-            word_array = [0 for _ in
-                          range(int(len(input) / bits_inside_word))]
-
-            for i in range(len(word_array)):
-                c = 0
-                for j in range(len(monomials)):
-                    c += (input[(i * bits_inside_word) + j]) * monomials[j]
-                word_array[i] = c
-
-            return word_array
-
         bits_inside_word = self.description[1]
         noutputs = self.output_bit_size
         ninputs = self.input_bit_size
@@ -158,15 +170,14 @@ class FSR(Component):
         x = vector(ring_R, (map(ring_R, [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)])))
         y = vector(ring_R, (map(ring_R, [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)])))
         word_gf = GF(pow(2, bits_inside_word))
-        word_array = bits_to_words_array(x, bits_inside_word, word_gf)
-
+        word_array = _bits_to_words_array(x, bits_inside_word, word_gf)
         word_polynomial_ring = PolynomialRing(word_gf, number_of_words)
 
         number_of_registers = len(self.description[0])
         registers_polynomial = [0 for _ in range(number_of_registers)]
         registers_start = [0 for _ in range(number_of_registers)]
         registers_update_bit = [0 for _ in range(number_of_registers)]
-        clock_polynomials = [None for _ in range(number_of_registers)]
+        # clock_polynomials = [None for _ in range(number_of_registers)]
         if len(self.description) > 2:
             clocks = self.description[2]
         else:
@@ -174,22 +185,22 @@ class FSR(Component):
 
         end = 0
         for i in range(number_of_registers):
-            registers_polynomial[i] = _get_polynomial_from_binary_polynomial_index_list(self.description[0][i][1], word_polynomial_ring)
+            registers_polynomial[i] = _get_polynomial_from_word_polynomial_index_list(self.description[0][i][1], word_polynomial_ring)
             registers_start[i] = end
             end += self.description[0][i][0]
             registers_update_bit[i] = end - 1
-            if len(self.description[0][i]) > 2:
-                clock_polynomials[i] = _get_polynomial_from_word_polynomial_index_list(self.description[0][i][2], word_polynomial_ring)
+            # if len(self.description[0][i]) > 2:
+            #     clock_polynomials[i] = _get_polynomial_from_word_polynomial_index_list(self.description[0][i][2], word_polynomial_ring)
 
         for _ in range(clocks):
             for i in range(number_of_registers):
-                output_bit = registers_polynomial[i](*word_array)
-                clock_bit = clock_polynomials[i](*word_array)
+                output_word = registers_polynomial[i](*word_array)
+                # clock_word = clock_polynomials[i](*word_array)
                 for k in range(registers_start[i], registers_update_bit[i]):
-                    word_array[k] = clock_bit*word_array[k+1] + (clock_bit+1)*word_array[k]
-                word_array[registers_update_bit[i]] = clock_bit*output_bit + (clock_bit+1)*x[registers_update_bit[i]]
+                    word_array[k] = word_array[k+1]
+                word_array[registers_update_bit[i]] = output_word
 
-        x = words_array_to_bits(word_array, self.description[1])
+        x = _words_array_to_bits(word_array)
         output_polynomials = y+vector(x)
         return output_polynomials
 
