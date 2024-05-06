@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -20,7 +19,6 @@
 import os
 import sys
 import inspect
-from copy import deepcopy
 
 import claasp
 from claasp import editor
@@ -30,9 +28,7 @@ from claasp.rounds import Rounds
 from claasp.cipher_modules import tester, evaluator
 from claasp.utils.templates import TemplateManager, CSVBuilder
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-from claasp.cipher_modules import continuous_tests, neural_network_tests, code_generator, \
-    component_analysis_tests, avalanche_tests, algebraic_tests
-from claasp.name_mappings import CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, MIX_COLUMN, SBOX, WORD_OPERATION
+from claasp.cipher_modules import code_generator
 import importlib
 from claasp.cipher_modules.inverse_cipher import *
 
@@ -43,6 +39,8 @@ TII_C_LIB_PATH = f'{tii_dir_path}/cipher/'
 
 
 class Cipher:
+
+
     def __init__(self, family_name, cipher_type, cipher_inputs,
                  cipher_inputs_bit_size, cipher_output_bit_size,
                  cipher_reference_code=None):
@@ -150,6 +148,8 @@ class Cipher:
         self._id = self.make_cipher_id()
         self._file_name = self.make_file_name()
 
+    def __repr__(self):
+        return self.id
     def _are_there_not_forbidden_components(self, forbidden_types, forbidden_descriptions):
         return self._rounds.are_there_not_forbidden_components(forbidden_types, forbidden_descriptions)
 
@@ -180,10 +180,10 @@ class Cipher:
         return editor.add_mix_column_component(self, input_id_links, input_bit_positions,
                                                output_bit_size, mix_column_description)
 
-    def add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus = None):
+    def add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
         return editor.add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
-    def add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus = None):
+    def add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
         return editor.add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
     def add_NOT_component(self, input_id_links, input_bit_positions, output_bit_size):
@@ -246,75 +246,6 @@ class Cipher:
     def add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size)
 
-    def algebraic_tests(self, timeout):
-        """
-        Return a dictionary explaining the result of the algebraic test.
-
-        INPUT:
-
-        - ``timeout`` -- **integer**; the timeout for the Grobner basis computation in seconds
-
-        OUTPUTS: a dictionary with the following keys:
-
-            - ``npolynomials`` -- number of polynomials
-            - ``nvariables`` -- number of variables
-            - ``timeout`` -- timeout in seconds
-            - ``pass`` -- whether the algebraic test pass w.r.t the given timeout
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: d = speck.algebraic_tests(5)  # long time
-            sage: d == {'input_parameters': {'timeout': 5}, 'test_results':
-            ....: {'number_of_variables': [304, 800],
-            ....: 'number_of_equations': [240, 688], 'number_of_monomials': [304, 800],
-            ....: 'max_degree_of_equations': [1, 1], 'test_passed': [False, False]}}  # long time
-            True
-        """
-        return algebraic_tests.algebraic_tests(self, timeout)
-
-    def analyze_cipher(self, tests_configuration):
-        """
-        Generate a dictionary with the analysis of the cipher.
-
-        The analysis is related to the following tests:
-
-        - Diffusion Tests
-
-        INPUT:
-
-        - ``tests_configuration`` -- **python dictionary**
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: sp = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: tests_configuration = {"diffusion_tests": {"run_tests": True, "number_of_samples": 100,
-            ....: "run_avalanche_dependence": True, "run_avalanche_dependence_uniform": True,
-            ....: "run_avalanche_weight": True, "run_avalanche_entropy": True,
-            ....: "avalanche_dependence_uniform_bias": 0.2, "avalanche_dependence_criterion_threshold": 0,
-            ....: "avalanche_dependence_uniform_criterion_threshold":0, "avalanche_weight_criterion_threshold": 0.1,
-            ....: "avalanche_entropy_criterion_threshold":0.1}, "component_analysis_tests": {"run_tests": True}}
-            sage: analysis = sp.analyze_cipher(tests_configuration)
-            sage: analysis["diffusion_tests"]["test_results"]["key"]["round_output"][ # random
-            ....: "avalanche_dependence_vectors"]["differences"][31]["output_vectors"][0]["vector"] # random
-        """
-        tmp_tests_configuration = deepcopy(tests_configuration)
-        analysis_results = {}
-        if "diffusion_tests" in tests_configuration and tests_configuration["diffusion_tests"]["run_tests"]:
-            tmp_tests_configuration["diffusion_tests"].pop("run_tests")
-            analysis_results['diffusion_tests'] = \
-                avalanche_tests.avalanche_tests(self, **tmp_tests_configuration["diffusion_tests"])
-        if "component_analysis_tests" in tests_configuration and tests_configuration[
-                "component_analysis_tests"]["run_tests"]:
-            analysis_results["component_analysis_tests"] = component_analysis_tests.component_analysis_tests(self)
-        if "algebraic_tests" in tests_configuration and tests_configuration["algebraic_tests"]["run_tests"]:
-            timeout = tests_configuration["algebraic_tests"]["timeout"]
-            analysis_results["algebraic_tests"] = algebraic_tests.algebraic_tests(self, timeout=timeout)
-
-        return analysis_results
-
     def as_python_dictionary(self):
         return {
             'cipher_id': self._id,
@@ -327,248 +258,8 @@ class Cipher:
             'cipher_reference_code': self._reference_code
         }
 
-    def avalanche_probability_vectors(self, nb_samples):
-        """
-        Return the avalanche probability vectors of each input bit difference for each round.
-
-        The inputs considered are plaintext, key, etc.
-
-        The i-th component of the vector is the probability that i-th bit of the output
-        flips due to the input bit difference.
-
-        .. NOTE::
-
-            apvs["key"]["round_output"][position][index_occurrence] = vector of round_output size with input diff
-            injected in key
-
-        INPUT:
-
-        - ``nb_samples`` -- **integer**; used to compute the estimated probability of flipping
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: speck = speck(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: apvs = speck.avalanche_probability_vectors(100)
-            sage: apvs["key"]["round_output"][31][0] # random
-        """
-        return avalanche_tests.avalanche_probability_vectors(self, nb_samples)
-
-    def component_analysis_tests(self):
-        """
-        Return a list of dictionaries, each one giving some properties of the cipher's operations.
-
-        INPUT:
-
-        - None
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-            sage: result = aes.component_analysis_tests()
-            sage: len(result)
-            9
-        """
-        return component_analysis_tests.component_analysis_tests(self)
-
-    def print_component_analysis_as_radar_charts(self, component_analysis_results):
-        """
-        Return a matplotlib object containing the radar charts of the components analysis test
-
-        INPUT:
-
-        - ``component_analysis_results`` -- **list**; results of the component analysis method
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-            sage: result = aes.component_analysis_tests()
-            sage: fig = aes.print_component_analysis_as_radar_charts(result)
-            sage: fig.show() # doctest: +SKIP
-        """
-        return component_analysis_tests.print_component_analysis_as_radar_charts(component_analysis_results)
-
     def component_from(self, round_number, index):
         return self._rounds.component_from(round_number, index)
-
-    def compute_criterion_from_avalanche_probability_vectors(self, all_apvs, avalanche_dependence_uniform_bias):
-        r"""
-        Return a python dictionary that contains the dictionaries corresponding to each criterion.
-
-        ALGORITHM:
-
-        The avalanche dependence is the number of output bit that flip with respect to an input bit difference,
-        for a given round.
-        If the worst avalanche dependence for a certain round is close to the output bit size with respect to a certain
-        threshold, we say that the cipher satisfies the avalanche dependence criterion for this round.
-
-        The avalanche dependence uniform is the number of output bit that flip with a probability
-        $\in \left[\frac{1}{2} - \text{bias}; \frac{1}{2} + \text{bias}\right]$,
-        with respect to an input bit difference, for a given round. If the worst avalanche dependence uniform for a
-        certain round is close to the output bit size with respect to a certain threshold,
-        we say that the cipher satisfies the avalanche dependence uniform criterion for this round.
-
-        The avalanche weight is the expected Hamming weight of the output difference with respect to an input bit
-        difference, for a given round.
-        If the avalanche weights of all the input bit differences for a certain round is close to half of
-        the output bit size with respect to a certain threshold, we say that the cipher satisfies the
-        avalanche criterion for this round.
-
-        The avalanche entropy is defined as uncertainty about whether output bits flip with respect to an input
-        bit difference, for a given round.
-        If the strict avalanche entropy of all the input bit differences for a certain round is close to
-        the output bit size with respect to a certain threshold, we say that the cipher satisfies the
-        strict avalanche criterion for this round.
-
-        .. NOTE::
-
-            d["key"]["round_output"][position][index_occurrence]["avalanche_dependence"] = vector of round_output size
-            with input diff injected in key
-
-        INPUT:
-
-        - ``all_apvs`` -- **dictionary**; all avalanche probability vectors returned by avalanche_probability_vectors()
-        - ``avalanche_dependence_uniform_bias`` -- **float**; define the range where the probability of flipping should be
-
-        .. SEEALSO::
-
-            :py:meth:`~avalanche_probability_vectors` for the returning vectors.
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: speck = speck(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: apvs = speck.avalanche_probability_vectors(100)
-            sage: d = speck.compute_criterion_from_avalanche_probability_vectors(apvs, 0.2)
-            sage: d["key"]["round_output"][0][0]["avalanche_dependence_vectors"] # random
-        """
-        return avalanche_tests.compute_criterion_from_avalanche_probability_vectors(self, all_apvs,
-                                                                                    avalanche_dependence_uniform_bias)
-
-    def continuous_avalanche_factor(self, lambda_value, number_of_samples):
-        """
-        Continuous generalization of the metric Avalanche Factor. This method implements Definition 14 of [MUR2020]_.
-
-        INPUT:
-
-        - ``lambda_value`` --  **float**; threshold value used to express the input difference
-        - ``number_of_samples`` --  **integer**; number of samples used to compute the continuous avalanche factor
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: speck_cipher = speck(number_of_rounds=2)
-            sage: result = speck_cipher.continuous_avalanche_factor(0.001, 10)
-            sage: result['plaintext']['round_key_output']['continuous_avalanche_factor']['values'][0]['value']
-            0.0
-        """
-        return continuous_tests.continuous_avalanche_factor(self, lambda_value, number_of_samples)
-
-    def continuous_diffusion_factor(self, beta_number_of_samples, gf_number_samples):
-        """
-        Continuous Diffusion Factor. This method implements Definition 16 of [MUR2020]_.
-
-        INPUT:
-
-        - ``beta_number_of_samples`` -- **integer**; number of samples used to compute the continuous measure metric
-        - ``gf_number_samples`` -- **integer**;  number of vectors used to approximate gf_2
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: speck_cipher = speck(number_of_rounds=2) # long time
-            sage: output = speck_cipher.continuous_diffusion_factor(5, 20) # long time
-            sage: output['plaintext']['cipher_output']['diffusion_factor']['values'][0]['2'] > 0 # long time
-            True
-        """
-        return continuous_tests.continuous_diffusion_factor(self, beta_number_of_samples, gf_number_samples)
-
-    def continuous_diffusion_tests(self,
-                                   continuous_avalanche_factor_number_of_samples=100,
-                                   threshold_for_avalanche_factor=0.001,
-                                   continuous_neutral_measure_beta_number_of_samples=10,
-                                   continuous_neutral_measure_gf_number_samples=10,
-                                   continuous_diffusion_factor_beta_number_of_samples=10,
-                                   continuous_diffusion_factor_gf_number_samples=10,
-                                   is_continuous_avalanche_factor=True,
-                                   is_continuous_neutrality_measure=True,
-                                   is_diffusion_factor=True):
-        """
-        Return a python dictionary that contains the dictionaries corresponding to each metric in [MUR2020]_.
-
-        INPUT:
-
-        - ``continuous_avalanche_factor_number_of_samples`` -- **integer** (default: `100`); number of samples
-          used to obtain the metric continuous_avalanche_factor
-        - ``threshold_for_avalanche_factor`` -- **float** (default: `0.001`); threshold value used to compute the
-          input difference for the metric continuous_avalanche_factor
-        - ``continuous_neutral_measure_beta_number_of_samples`` -- **integer** (default: `10`); number of samples
-          used to compute the continuous measure metric
-        - ``continuous_neutral_measure_gf_number_samples`` -- **integer** (default: `10`);  number of vectors used
-          to approximate gf_2
-        - ``continuous_diffusion_factor_beta_number_of_samples`` -- **integer** (default: `10`); number of samples
-          used to compute the continuous measure metric
-        - ``continuous_diffusion_factor_gf_number_samples`` -- **integer** (default: `10`);  number of vectors
-          used to approximate gf_2
-        - ``is_continuous_avalanche_factor`` -- **boolean** (default: `True`); flag indicating if we want the
-          continuous_avalanche_factor or not
-        - ``is_continuous_neutrality_measure`` -- **boolean** (default: `True`); flag indicating if we want the
-          continuous_neutrality_measure or not
-        - ``is_diffusion_factor`` -- **boolean** (default: `True`); flag indicating if we want the
-          continuous_neutrality_measure, or not
-
-        OUTPUT:
-
-            - A python dictionary that contains the test result to each metric. E.g.: continuous_neutrality_measure,
-              continuous_avalanche_factor, diffusion_factor
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: speck_cipher = speck(number_of_rounds=1) # long time
-            sage: output = speck_cipher.continuous_diffusion_tests() # long time
-            sage: output['plaintext']['round_key_output']['continuous_neutrality_measure']['values'][0]['1'] == 0.0 # long time
-            True
-        """
-        return continuous_tests.continuous_diffusion_tests(self,
-                                                           continuous_avalanche_factor_number_of_samples,
-                                                           threshold_for_avalanche_factor,
-                                                           continuous_neutral_measure_beta_number_of_samples,
-                                                           continuous_neutral_measure_gf_number_samples,
-                                                           continuous_diffusion_factor_beta_number_of_samples,
-                                                           continuous_diffusion_factor_gf_number_samples,
-                                                           is_continuous_avalanche_factor,
-                                                           is_continuous_neutrality_measure,
-                                                           is_diffusion_factor)
-
-    def continuous_neutrality_measure_for_bit_j(self, beta_number_of_samples, gf_number_samples,
-                                                input_bit=None, output_bits=None):
-        """
-        Continuous Neutrality Measure. This method implements Definition 15 of [MUR2020]_.
-
-        INPUT:
-
-        - ``beta_number_of_samples`` -- **integer**; number of samples used to compute the continuous measure metric
-        - ``gf_number_samples`` -- **integer**;  number of vectors used to approximate gf_2
-        - ``input_bit`` -- **integer** (default: `None`); input bit position to be analyzed
-        - ``output_bits`` -- **list** (default: `None`); output bit positions to be analyzed
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: output = speck(number_of_rounds=2).continuous_neutrality_measure_for_bit_j(50, 200) # long time
-            sage: output['plaintext']['cipher_output']['continuous_neutrality_measure']['values'][0]['2'] > 0 # long time
-            True
-        """
-        return continuous_tests.continuous_neutrality_measure_for_bit_j(self, beta_number_of_samples,
-                                                                        gf_number_samples, input_bit,
-                                                                        output_bits)
-
-    def continuous_neutrality_measure_for_bit_j_and_beta(self, input_bit, beta, number_of_samples, output_bits):
-        return continuous_tests.continuous_neutrality_measure_for_bit_j_and_beta(self, beta, input_bit,
-                                                                                 number_of_samples, output_bits)
 
     def delete_generated_evaluate_c_shared_library(self):
         """
@@ -584,107 +275,6 @@ class Cipher:
             sage: fancy().delete_generated_evaluate_c_shared_library() # doctest: +SKIP
         """
         code_generator.delete_generated_evaluate_c_shared_library(self)
-
-    def diffusion_tests(self, number_of_samples=5,
-                        avalanche_dependence_uniform_bias=0.05,
-                        avalanche_dependence_criterion_threshold=0,
-                        avalanche_dependence_uniform_criterion_threshold=0,
-                        avalanche_weight_criterion_threshold=0.01,
-                        avalanche_entropy_criterion_threshold=0.01,
-                        run_avalanche_dependence=True,
-                        run_avalanche_dependence_uniform=True,
-                        run_avalanche_weight=True,
-                        run_avalanche_entropy=True):
-        """
-        Return a python dictionary that contains the dictionaries corresponding to each criterion and their analysis.
-
-        INPUT:
-
-        - ``number_of_samples`` -- **integer** (default: `5`); used to compute the estimated probability of flipping
-        - ``avalanche_dependence_uniform_bias`` -- **float** (default: `0.05`); define the range where the probability
-          of flipping should be
-        - ``avalanche_dependence_criterion_threshold`` --  **float** (default: `0`); It is a bias. The criterion is satisfied
-          for a given input bit difference if for all output bits of the round under analysis, the corresponding
-          avalanche dependence criterion d is such that block_bit_size - bias <= d <= block_bit_size + bias
-        - ``avalanche_dependence_uniform_criterion_threshold`` --  **float** (default: `0`); It is a bias. The criterion is
-          satisfied for a given input bit difference if for all output bits of the round under analysis, the
-          corresponding avalanche dependence uniform criterion d is such that
-          block_bit_size - bias <= d <= block_bit_size + bias
-        - ``avalanche_weight_criterion_threshold`` --  **float** (default: `0.01`); It is a bias. The criterion is
-          satisfied for a given input bit difference if for all output bits of the round under analysis, the
-          corresponding avalanche weight criterion is such that block_bit_size/2 - bias <= d <= block_bit_size/2 + bias
-        - ``avalanche_entropy_criterion_threshold`` --  **float** (default: `0.01`); It is a bias. The criterion is
-          satisfied for a given input bit difference if for all output bits of the round under analysis, the
-          corresponding avalanche entropy criterion d is such that block_bit_size - bias <= d <= block_bit_size + bias
-        - ``run_avalanche_dependence`` -- **boolean** (default: `True`); if True, add the avalanche dependence results
-          to the output dictionary
-        - ``run_avalanche_dependence_uniform`` -- **boolean** (default: `True`); if True, add the avalanche dependence
-          uniform results to the output dictionary
-        - ``run_avalanche_weight`` -- **boolean** (default: `True`); if True, add the avalanche weight results to the
-          output dictionary
-        - ``run_avalanche_entropy`` -- **boolean** (default: `True`); if True, add the avalanche entropy results to the
-          output dictionary
-
-        .. NOTE::
-
-            diff inserted in:
-            d["test_results"]["plaintext"]["round_output"]["avalanche_entropy"]["differences"][position][
-            "output_vectors"][round]
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
-            sage: d = speck.diffusion_tests(number_of_samples=100)
-            sage: d["test_results"]["key"]["round_output"][ # random
-            ....: "avalanche_dependence_vectors"]["differences"][0]["output_vectors"][0]["vector"] # random
-        """
-        return avalanche_tests.avalanche_tests(self,
-                                               number_of_samples, avalanche_dependence_uniform_bias,
-                                               avalanche_dependence_criterion_threshold,
-                                               avalanche_dependence_uniform_criterion_threshold,
-                                               avalanche_weight_criterion_threshold,
-                                               avalanche_entropy_criterion_threshold, run_avalanche_dependence,
-                                               run_avalanche_dependence_uniform, run_avalanche_weight,
-                                               run_avalanche_entropy)
-
-    def generate_heatmap_graphs_for_avalanche_tests(self, avalanche_results, difference_positions=None, criterion_names=None):
-        """
-        Return a string containing latex instructions to generate heatmap graphs of the avalanche tests.
-        The string can then be printed on a terminal or on a file.
-
-        INPUT:
-
-        - ``avalanche_results`` -- **dictionary**; results of the avalanche tests
-        - ``difference_positions`` -- **list** (default: `None`); positions of the differences to inject.
-            The default value is equivalent to pick one of the worst position for a difference and the average value.
-        - ``criterion_names`` -- **list** (default: `None`); names of the criteria to observe
-            The default value is equivalent to to pick all of the 4 criteria:
-            - "avalanche_dependence_vectors"
-            - "avalanche_dependence_uniform_vectors"
-            - "avalanche_entropy_vectors"
-            - "avalanche_weight_vectors"
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: sp = SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=5)
-            sage: d = sp.diffusion_tests(number_of_samples=100)
-            sage: h = sp.generate_heatmap_graphs_for_avalanche_tests(d)
-            sage: h[:20]
-            '\\documentclass[12pt]'
-
-            sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-            sage: ascon = AsconPermutation(number_of_rounds=4)
-            sage: d = ascon.diffusion_tests(number_of_samples=100) # long
-            sage: h = ascon.generate_heatmap_graphs_for_avalanche_tests(d, [0], ["avalanche_weight_vectors"]) # long
-
-            sage: from claasp.ciphers.permutations.xoodoo_permutation import XoodooPermutation
-            sage: cipher = XoodooPermutation(number_of_rounds=4)
-            sage: d = cipher.diffusion_tests(number_of_samples=100) # long
-            sage: h = cipher.generate_heatmap_graphs_for_avalanche_tests(d, [1,193], ["avalanche_dependence_vectors", "avalanche_entropy_vectors"]) # long
-        """
-        return avalanche_tests.generate_heatmap_graphs_for_avalanche_tests(self, avalanche_results, difference_positions, criterion_names)
 
     def evaluate(self, cipher_input, intermediate_output=False, verbosity=False):
         """
@@ -979,7 +569,7 @@ class Cipher:
             sage: ciphertext = cipher.evaluate([key, plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False #  sbox_1_56 --------- 124 -- the length of [input_bit_positions] is not equal to input_bit_size
+            True
 
             sage: from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
             sage: cipher = KasumiBlockCipher(number_of_rounds=2)
@@ -1005,16 +595,22 @@ class Cipher:
                 # print(c.id, "---------", len(cipher_components_tmp))
                 # OPTION 1 - Add components that are not invertible
                 if are_there_enough_available_inputs_to_evaluate_component(c, available_bits, all_equivalent_bits,
-                                                       key_schedule_component_ids, self):
+                                                                           key_schedule_component_ids, self):
                     # print("--------> evaluated")
-                    inverted_component = evaluated_component(c, available_bits, key_schedule_component_ids, all_equivalent_bits, self)
+                    inverted_component = evaluated_component(c, available_bits, key_schedule_component_ids,
+                                                             all_equivalent_bits, self)
                     update_available_bits_with_component_output_bits(c, available_bits, self)
                     inverted_cipher_components.append(inverted_component)
                     cipher_components_tmp.remove(c)
                 # OPTION 2 - Add components that are invertible
-                elif (is_possibly_invertible_component(c) and are_there_enough_available_inputs_to_perform_inversion(c, available_bits, all_equivalent_bits, self)) or (c.type == CIPHER_INPUT and (c.description[0] == INPUT_KEY or c.description[0] == INPUT_TWEAK)):
+                elif (is_possibly_invertible_component(c) and are_there_enough_available_inputs_to_perform_inversion(c,
+                                                                                                                     available_bits,
+                                                                                                                     all_equivalent_bits,
+                                                                                                                     self)) or (
+                        c.type == CIPHER_INPUT and (c.description[0] == INPUT_KEY or c.description[0] == INPUT_TWEAK)):
                     # print("--------> inverted")
-                    inverted_component = component_inverse(c, available_bits, all_equivalent_bits, key_schedule_component_ids, self)
+                    inverted_component = component_inverse(c, available_bits, all_equivalent_bits,
+                                                           key_schedule_component_ids, self)
                     update_available_bits_with_component_input_bits(c, available_bits)
                     update_available_bits_with_component_output_bits(c, available_bits, self)
                     inverted_cipher_components.append(inverted_component)
@@ -1036,11 +632,13 @@ class Cipher:
             elif component.id in key_schedule_component_ids:
                 inverted_cipher._rounds.round_at(0)._components.append(component)
             else:
-                inverted_cipher._rounds.round_at(self.number_of_rounds - 1 - component.round)._components.append(component)
+                inverted_cipher._rounds.round_at(self.number_of_rounds - 1 - component.round)._components.append(
+                    component)
 
         sorted_inverted_cipher = sort_cipher_graph(inverted_cipher)
 
         return sorted_inverted_cipher
+
     def get_partial_cipher(self, start_round=None, end_round=None, keep_key_schedule=True):
 
         if start_round is None:
@@ -1052,14 +650,16 @@ class Cipher:
         assert start_round <= end_round
 
         inputs = deepcopy(self.inputs)
-        partial_cipher = Cipher(f"{self.family_name}_partial_{start_round}_to_{end_round}", f"{self.type}", inputs, self._inputs_bit_size, self.output_bit_size)
+        partial_cipher = Cipher(f"{self.family_name}_partial_{start_round}_to_{end_round}", f"{self.type}", inputs,
+                                self._inputs_bit_size, self.output_bit_size)
         for round in self.rounds_as_list:
             partial_cipher.rounds_as_list.append(deepcopy(round))
 
-        removed_components_ids, intermediate_outputs = remove_components_from_rounds(partial_cipher, start_round, end_round, keep_key_schedule)
+        removed_components_ids, intermediate_outputs = remove_components_from_rounds(partial_cipher, start_round,
+                                                                                     end_round, keep_key_schedule)
 
         if start_round > 0:
-            for input_type in set(self.inputs) - {INPUT_KEY}:
+            for input_type in set([input for input in self.inputs if INPUT_KEY not in input]):
                 removed_components_ids.append(input_type)
                 input_index = partial_cipher.inputs.index(input_type)
                 partial_cipher.inputs.pop(input_index)
@@ -1136,7 +736,9 @@ class Cipher:
         partial_cipher_inverse = partial_cipher.cipher_inverse()
 
         key_schedule_component_ids = get_key_schedule_component_ids(partial_cipher_inverse)
-        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in key_schedule_component_ids[1:]]
+        key_schedule_components = [partial_cipher_inverse.get_component_from_id(id) for id in key_schedule_component_ids
+                                   if
+                                   INPUT_KEY not in id]
 
         if not keep_key_schedule:
             for current_round in partial_cipher_inverse.rounds_as_list:
@@ -1222,76 +824,6 @@ class Cipher:
         return evaluator.evaluate_with_intermediate_outputs_continuous_diffusion_analysis(
             self, cipher_input, sbox_precomputations, sbox_precomputations_mix_columns, verbosity)
 
-    def find_good_input_difference_for_neural_distinguisher(self, difference_positions,
-                                                            initial_population=32, number_of_generations=50,
-                                                            nb_samples=10 ** 4, previous_generation=None,
-                                                            verbose=False):
-        """
-        Return good neural distinguisher input differences for a cipher.
-
-        INPUT:
-
-        - ``difference_positions`` -- **table of booleans**; one for each input to the cipher. True in positions where
-          differences are allowed
-        - ``initial_population`` -- **integer** (default: `32`); parameter of the evolutionary algorithm
-        - ``number_of_generations`` -- **integer** (default: `50`); number of iterations of the evolutionary algorithm
-        - ``nb_samples`` -- **integer** (default: `10`); number of samples for testing each input difference
-        - ``previous_generation`` -- (default: `None`); optional: initial table of differences to try
-        - ``verbose`` -- **boolean** (default: `False`); verbosity
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: cipher = SpeckBlockCipher()
-            sage: diff, scores, highest_round = find_good_input_difference_for_neural_distinguisher(cipher, [True, False], verbose = False, number_of_generations=5)
-        """
-        return neural_network_tests.find_good_input_difference_for_neural_distinguisher(self,
-                                                                                        difference_positions,
-                                                                                        initial_population,
-                                                                                        number_of_generations,
-                                                                                        nb_samples,
-                                                                                        previous_generation,
-                                                                                        verbose)
-
-
-    def train_neural_distinguisher(self, data_generator, starting_round, neural_network, training_samples=10**7, testing_samples=10**6, epochs = 5, pipeline = True):
-        """
-        Trains a neural distinguisher for the data generated by the data_generator function, using the provided neural network, at round starting_rounds. 
-        If pipeline is set to True, retrains the distinguisher for one more round, as long as the validation accuracy remains significant.
-
-        INPUT:
-
-        - ``data_generator`` -- **function**; A dataset generation function, taking as input a cipher (usually self), a number of rounds, 
-        and a number of samples, an returns a dataset X, Y, where X is a numpy matrix with one row per sample, and Y is a label veector. 
-        To reproduce classical neural distinguisher results, on would use the example below. 
-        - ``starting_round`` -- **integer**; number of rounds to analyze
-        - ``neural_network`` -- **(compiled) keras model** (default: `None`); the neural network to use for distinguishing, either a custom one or one
-        returned by the get_neural_network function of neural_network_tests. 
-        - ``training_samples`` -- **integer**; (default: `10**7`) number samples used for training
-        - ``testing_samples`` -- **integer**; (default: `10**6`) number samples used for testing
-        - ``pipeline`` -- **boolean**; (default: `True`) If False, only trains for starting_round. If True, increments starting_round and retrain
-        the model as long as the accuracy is statistically significant.
-        - ``verbose`` -- **boolean** (default: `False`); verbosity
-
-        EXAMPLES::
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-	    sage: from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
-	    sage: cipher = SpeckBlockCipher()
-	    sage: input_differences = [0x400000, 0]
-	    sage: data_generator = lambda nr, samples: get_differential_dataset(cipher, input_differences, number_of_rounds = nr, samples = samples)
-	    sage: neural_network = get_neural_network('gohr_resnet', input_size = 64)
-	    sage: cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network)
-        """
-        if pipeline:
-            from claasp.cipher_modules.neural_network_tests import neural_staged_training
-            acc = neural_staged_training(self, data_generator, starting_round, neural_network, training_samples, testing_samples, epochs)
-        else:
-            from claasp.cipher_modules.neural_network_tests import train_neural_distinguisher
-            acc = train_neural_distinguisher(self, data_generator, starting_round, neural_network, training_samples, testing_samples, epochs)
-        return acc
-
-
-
     def generate_bit_based_c_code(self, intermediate_output=False, verbosity=False):
         """
         Return a string containing the C code that defines the self.evaluate() method.
@@ -1311,66 +843,6 @@ class Cipher:
             True
         """
         return code_generator.generate_bit_based_c_code(self, intermediate_output, verbosity)
-
-    # LM: TII team needs to update this method because the keys from diffusion_tests_results do not correspond
-    def generate_csv_report(self, nb_samples, output_absolute_path):
-        """
-        Generate a CSV report containing criteria to estimate the vulnerability of the cipher.
-
-        This method generate a CSV report containing the criteria presented in the paper
-        "The design of Xoodoo and Xoofff" [1].
-        [1] https://tosc.iacr.org/index.php/ToSC/article/view/7359
-
-        INPUT:
-
-        - ``nb_samples`` -- **integer**; number of samples
-        - ``output_absolute_path`` -- **string**; output of the absolute path
-
-        EXAMPLES::
-
-            sage: import inspect
-            sage: import claasp
-            sage: import os.path
-            sage: tii_path = inspect.getfile(claasp)
-            sage: tii_dir_path = os.path.dirname(tii_path)
-            sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
-            sage: identity = IdentityBlockCipher()
-            sage: identity.generate_csv_report(10, f"{tii_dir_path}/{identity.id}_report.csv")
-            sage: os.path.isfile(f"{tii_dir_path}/{identity.id}_report.csv")
-            True
-            sage: import os
-            sage: os.remove(f"{tii_dir_path}/{identity.id}_report.csv")
-        """
-
-        diffusion_tests_results = self.diffusion_tests(nb_samples)
-        first_input_tag = list(diffusion_tests_results['test_results'].keys())[0]
-        output_tags = diffusion_tests_results['test_results'][first_input_tag].keys()
-        property_values_array = []
-        for output_tag in output_tags:
-            property_values_array_temp = avalanche_tests.get_average_criteria_list_by_output_tag(
-                diffusion_tests_results, output_tag
-            )
-            property_values_array += property_values_array_temp
-
-        str_of_inputs_bit_size = list(map(str, self._inputs_bit_size))
-        cipher_primitive = self._id + "_" + "_".join(str_of_inputs_bit_size)
-        cipher_data = {
-            'type': self._type,
-            'scheme': self._id,
-            'cipher_inputs': self._inputs,
-            'cipher_inputs_bit_size': list(map(str, self._inputs_bit_size)),
-            'primitive': cipher_primitive,
-            'total_number_rounds': self.number_of_rounds,
-            'details': property_values_array
-        }
-        template_manager = TemplateManager()
-        excel_builder = CSVBuilder(cipher_data)
-        template_manager.set_builder(excel_builder)
-        template_information = {"template_path": "diffusion_test_template.csv"}
-        excel = template_manager.get_template().render_template(template_information)
-        text_file = open(output_absolute_path, "w")
-        text_file.write(excel)
-        text_file.close()
 
     def generate_evaluate_c_code_shared_library(self, intermediate_output=False, verbosity=False):
         """
@@ -1486,8 +958,7 @@ class Cipher:
         """
         return self._rounds.get_round_from_component_id(component_id)
 
-
-    def impossible_differential_search(self, technique = "sat", solver = "Kissat", scenario = "single-key"):
+    def impossible_differential_search(self, technique="sat", solver="Kissat", scenario="single-key"):
         """
         Return a list of impossible differentials if there are any; otherwise return an empty list
         INPUT:
@@ -1669,47 +1140,6 @@ class Cipher:
 
     def make_file_name(self):
         return editor.make_file_name(self._id)
-
-    def neural_network_blackbox_distinguisher_tests(
-            self, nb_samples=10000, hidden_layers=[32, 32, 32], number_of_epochs=10):
-        """
-        Return a python dictionary that contains the accuracies corresponding to each round.
-
-        INPUT:
-
-        - ``nb_samples`` -- **integer** (default: `10000`); how many sample the neural network is trained with
-        - ``hidden_layers`` -- **list** (default: `[32, 32, 32]`); a list containing the number of neurons in each
-          hidden layer of the neural network
-        - ``number_of_epochs`` -- **integer** (default: `10`); how long is the training of the neural network
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: #speck(number_of_rounds=22).neural_network_blackbox_distinguisher_tests(nb_samples = 10) # random
-        """
-        return neural_network_tests.neural_network_blackbox_distinguisher_tests(
-            self, nb_samples, hidden_layers, number_of_epochs)
-
-    def neural_network_differential_distinguisher_tests(
-            self, nb_samples=10000, hidden_layers=[32, 32, 32], number_of_epochs=10, diff=[0x01]):
-        """
-        Return a python dictionary that contains the accuracies corresponding to each round.
-
-        INPUT:
-
-        - ``nb_samples`` -- **integer** (default: `10000`); how many sample the neural network is trained with
-        - ``hidden_layers`` -- **list** (default: `[32, 32, 32]`); a list containing the number of neurons in each
-          hidden layer of the neural network
-        - ``number_of_epochs`` -- **integer** (default: `10`); how long is the training of the neural network
-        - ``diff`` -- **list** (default: `[0x01]`); list of input differences
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
-            sage: #speck(number_of_rounds=22).neural_network_differential_distinguisher_tests(nb_samples = 10) # random
-        """
-        return neural_network_tests.neural_network_differential_distinguisher_tests(
-            self, nb_samples, hidden_layers, number_of_epochs, diff)
 
     def print(self):
         """
@@ -2076,15 +1506,13 @@ class Cipher:
         """
         return tester.test_vector_check(self, list_of_test_vectors_input, list_of_test_vectors_output)
 
-
     def inputs_size_to_dict(self):
         inputs_dictionary = {}
         for i, name in enumerate(self.inputs):
             inputs_dictionary[name] = self.inputs_bit_size[i]
         return inputs_dictionary
 
-
-    def find_impossible_property(self, type, technique = "sat", solver = "kissat", scenario = "single-key"):
+    def find_impossible_property(self, type, technique="sat", solver="kissat", scenario="single-key"):
         """
         From [SGLYTQH2017] : Finds impossible differentials or zero-correlation linear approximations (based on type)
         by fixing the input and output iteratively to all possible Hamming weight 1 value, and asking the solver
@@ -2121,7 +1549,7 @@ class Cipher:
                     fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
                                                             integer_to_bit_list(1 << output_bit_position, plain_bits,
                                                                                 'big')))
-                    solution = search_function(fixed_values, solver_name = solver)
+                    solution = search_function(fixed_values, solver_name=solver)
                     if solution['status'] == "UNSATISFIABLE":
                         impossible.append((1 << input_bit_position, 1 << output_bit_position))
         elif scenario == "related-key":
@@ -2137,12 +1565,12 @@ class Cipher:
                     fixed_values.append(set_fixed_variables(last_component_id, 'equal', list(range(plain_bits)),
                                                             integer_to_bit_list(1 << output_bit_position, plain_bits,
                                                                                 'big')))
-                    solution = search_function(fixed_values, solver_name = solver)
+                    solution = search_function(fixed_values, solver_name=solver)
                     if solution['status'] == "UNSATISFIABLE":
                         impossible.append((1 << input_bit_position, 1 << output_bit_position))
         return impossible
 
-    def zero_correlation_linear_search(self, technique = "sat", solver = "Kissat"):
+    def zero_correlation_linear_search(self, technique="sat", solver="Kissat"):
         """
         Return a list of zero_correlation linear approximations if there are any; otherwise return an empty list
         INPUT:
@@ -2210,3 +1638,74 @@ class Cipher:
     @property
     def type(self):
         return self._type
+
+    def create_networx_graph_from_input_ids(self):
+        import networkx as nx
+        data = self.as_python_dictionary()['cipher_rounds']
+        # Create a directed graph
+        G = nx.DiGraph()
+
+        # Flatten the list of lists
+        flat_data = [item for sublist in data for item in sublist]
+
+        # Add nodes
+        for item in flat_data:
+            G.add_node(item["id"])
+
+        # Add edges based on input_id_link
+        for item in flat_data:
+            for input_id in item.get("input_id_link", []):
+                # Adding an edge from input_id to the current item's id
+                G.add_edge(input_id, item["id"])
+
+        return G
+
+    def create_top_and_bottom_subgraphs_from_components_graph(self, e0_bottom_ids, e1_top_ids):
+        import networkx as nx
+
+        def induced_subgraph_of_predecessors(DG, nodes):
+            visited = set()
+
+            def dfs(v):
+                if v not in visited:
+                    visited.add(v)
+                    for predecessor in DG.predecessors(v):
+                        dfs(predecessor)
+
+            for node in nodes:
+                dfs(node)
+
+            return DG.subgraph(visited)
+
+        def get_descendants_subgraph(G, start_nodes):
+            """
+            Extract a subgraph containing only the descendants (successors) of a given list of nodes from a graph.
+
+            Parameters:
+            - G (nx.DiGraph): The original directed graph.
+            - start_nodes (list): The list of nodes to start the search from.
+
+            Returns:
+            - H (nx.DiGraph): The subgraph containing start_nodes and their descendants.
+            """
+            # Create an empty directed subgraph
+            H = nx.DiGraph()
+
+            # Add nodes from start_nodes to the subgraph and their descendants
+            for node in start_nodes:
+                if node in G:
+                    H.add_node(node)
+                    for successor in nx.dfs_successors(G, source=node):
+                        H.add_edge(node, successor)
+                        H.add_node(successor)
+
+            return H
+
+        graph_cipher = self.create_networx_graph_from_input_ids()
+        ancestors_ids = induced_subgraph_of_predecessors(graph_cipher, e0_bottom_ids)
+        descendants_ids = get_descendants_subgraph(graph_cipher, e1_top_ids)
+        return ancestors_ids, descendants_ids
+
+    def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
+        round_number = self.get_round_from_component_id(component_id)
+        self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)

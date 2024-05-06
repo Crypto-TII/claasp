@@ -16,8 +16,8 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Dieharder statistical tests" href="dieharder_statistical_tests.html" />
-    <link rel="prev" title="Dataset generator" href="dataset_generator.html" />
+    <link rel="next" title="Aes block cipher" href="../../ciphers/block_ciphers/aes_block_cipher.html" />
+    <link rel="prev" title="Input data example" href="input_data_example.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +33,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="dieharder_statistical_tests.html" title="Dieharder statistical tests"
+          <a href="../../ciphers/block_ciphers/aes_block_cipher.html" title="Aes block cipher"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="dataset_generator.html" title="Dataset generator"
+          <a href="input_data_example.html" title="Input data example"
              accesskey="P">previous</a> |</li>
   
     
@@ -63,7 +63,7 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_all">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_chart_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_all" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_generate_chart_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the corresponding chart based on the list of parsed report dictionary for all rounds.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -84,7 +84,7 @@
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;round&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;rounds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="gp">sage: </span><span class="n">dict_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
-<span class="gp">sage: </span><span class="n">StatisticalTests</span><span class="o">.</span><span class="n">generate_chart_all</span><span class="p">(</span><span class="n">dict_list</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">StatisticalTests</span><span class="o">.</span><span class="n">_generate_chart_all</span><span class="p">(</span><span class="n">dict_list</span><span class="p">)</span>
 <span class="go">Drawing chart for all rounds is in progress.</span>
 <span class="go">Drawing chart for all rounds is in finished.</span>
 </pre></div>
@@ -98,7 +98,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_round">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_chart_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_round" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_generate_chart_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.nist_statistical_tests.StatisticalTests.generate_chart_round" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the corresponding chart based on the parsed report dictionary.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -119,7 +119,7 @@ f’nist_{report_dict[“data_type”]}_{report_dict[“cipher_name”]}_round_{
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;cipher_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;toy_cipher&#39;</span>
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;round&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;rounds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="gp">sage: </span><span class="n">StatisticalTests</span><span class="o">.</span><span class="n">generate_chart_round</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">StatisticalTests</span><span class="o">.</span><span class="n">_generate_chart_round</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 <span class="go">Drawing round 1 is in progress.</span>
 <span class="go">Drawing round 1 is finished.</span>
 </pre></div>
@@ -438,13 +438,13 @@ see the corresponding report generated under the folder nist_statistics_report f
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="dataset_generator.html"
-                          title="previous chapter">Dataset generator</a></p>
+    <p class="topless"><a href="input_data_example.html"
+                          title="previous chapter">Input data example</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="dieharder_statistical_tests.html"
-                          title="next chapter">Dieharder statistical tests</a></p>
+    <p class="topless"><a href="../../ciphers/block_ciphers/aes_block_cipher.html"
+                          title="next chapter">Aes block cipher</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -477,10 +477,10 @@ see the corresponding report generated under the folder nist_statistics_report f
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="dieharder_statistical_tests.html" title="Dieharder statistical tests"
+          <a href="../../ciphers/block_ciphers/aes_block_cipher.html" title="Aes block cipher"
              >next</a> |</li>
         <li class="right" >
-          <a href="dataset_generator.html" title="Dataset generator"
+          <a href="input_data_example.html" title="Input data example"
              >previous</a> |</li>
   
     

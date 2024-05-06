@@ -29,7 +29,7 @@ jobs:
 
       - name: Commit push changes
         uses: actions-js/push@master
-        if: ${{env.should_add_last_changes_to_master == 'true'}}
+        if: ${{ env.should_add_last_changes_to_master == 'true' }}
         with:
           github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
           message: 'Changelog version updated'
@@ -37,7 +37,7 @@ jobs:
           force: true
 
       - name: Create tags
-        if: ${{env.should_add_last_changes_to_master == 'true'}}
+        if: ${{ env.should_add_last_changes_to_master == 'true' }}
         run: |
           project_version=$(cat VERSION)
           tag_name="$project_version"
@@ -46,17 +46,36 @@ jobs:
           echo "release_message=$release_message" >> $GITHUB_ENV
 
       - name: Create push tag
-        if: ${{env.should_add_last_changes_to_master == 'true'}}
-        id: 'tag_create'
+        if: ${{ env.should_add_last_changes_to_master == 'true' }}
         uses: rickstaa/action-create-tag@v1
         with:
           github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
-          tag: ${{env.tag_name}}
+          tag: ${{ env.tag_name }}
           tag_exists_error: false
-          message: ${{env.release_message}}
+          message: ${{ env.release_message }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Extract release notes
+        run: python3 extract_release_notes.py >> ./docs/release_notes.md
+
+      - name: Create release
+        if: ${{ env.should_add_last_changes_to_master == 'true' }}
+        uses: actions/create-release@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.tag_name }}
+          release_name: Release ${{ env.tag_name }}
+          body_path: ./docs/release_notes.md
+          draft: false
+          prerelease: false
 
       - name: Update develop branch
-        if: ${{env.should_add_last_changes_to_master == 'true'}}
+        if: ${{ env.should_add_last_changes_to_master == 'true' }}
         uses: morbalint/git-merge-action@v1
         with:
           target: 'develop'

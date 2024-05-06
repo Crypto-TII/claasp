@@ -10,10 +10,10 @@ def test_algebraic_polynomials():
     algebraic = AlgebraicModel(gift)
     algebraic_polynomials = or_component.algebraic_polynomials(algebraic)
 
-    assert str(algebraic_polynomials[0]) == "or_0_4_y0 + 1"
-    assert str(algebraic_polynomials[1]) == "or_0_4_y1 + 1"
-    assert str(algebraic_polynomials[-2]) == "or_0_4_y30 + 1"
-    assert str(algebraic_polynomials[-1]) == "or_0_4_y31 + 1"
+    assert str(algebraic_polynomials[0]) == "or_0_4_x0*or_0_4_x32 + or_0_4_y0 + or_0_4_x32 + or_0_4_x0"
+    assert str(algebraic_polynomials[1]) == "or_0_4_x1*or_0_4_x33 + or_0_4_y1 + or_0_4_x33 + or_0_4_x1"
+    assert str(algebraic_polynomials[-2]) == "or_0_4_x30*or_0_4_x62 + or_0_4_y30 + or_0_4_x62 + or_0_4_x30"
+    assert str(algebraic_polynomials[-1]) == "or_0_4_x31*or_0_4_x63 + or_0_4_y31 + or_0_4_x63 + or_0_4_x31"
 
 
 def test_cp_constraints():
@@ -51,6 +51,20 @@ def test_generic_sign_linear_constraints():
     output = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
 
     assert or_component.generic_sign_linear_constraints(input_tert, output) == 1
+
+
+def test_sat_constraints():
+    gift = GiftPermutation(number_of_rounds=3)
+    or_component = gift.component_from(0, 4)
+    output_bit_ids, constraints = or_component.sat_constraints()
+
+    assert output_bit_ids[0] == 'or_0_4_0'
+    assert output_bit_ids[1] == 'or_0_4_1'
+    assert output_bit_ids[2] == 'or_0_4_2'
+
+    assert constraints[-3] == 'or_0_4_31 -xor_0_3_31'
+    assert constraints[-2] == 'or_0_4_31 -xor_0_1_31'
+    assert constraints[-1] == '-or_0_4_31 xor_0_3_31 xor_0_1_31'
 
 
 def test_smt_constraints():

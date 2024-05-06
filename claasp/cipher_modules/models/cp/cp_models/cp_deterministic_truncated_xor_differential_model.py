@@ -17,9 +17,16 @@
 # ****************************************************************************
 
 
+import os
+import math
+import itertools
+import subprocess
+
 from claasp.cipher_modules.models.cp.cp_model import CpModel, solve_satisfy
+from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL)
+from claasp.cipher_modules.models.cp.solvers import MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 
 class CpDeterministicTruncatedXorDifferentialModel(CpModel):
@@ -27,6 +34,34 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
     def __init__(self, cipher):
         super().__init__(cipher)
 
+    def add_solutions_from_components_values(self, components_values, memory, model_type, solutions, solve_time,
+                                             solver_name, solver_output):
+        for nsol in components_values.keys():
+            solution = convert_solver_solution_to_dictionary(
+                self.cipher_id,
+                model_type,
+                solver_name,
+                solve_time,
+                memory,
+                components_values[nsol],
+                0)
+            if 'UNSATISFIABLE' in solver_output[0]:
+                solution['status'] = 'UNSATISFIABLE'
+            else:
+                solution['status'] = 'SATISFIABLE'
+            solutions.append(solution)
+
+    def add_solution_to_components_values(self, component_id, component_solution, components_values, j, output_to_parse,
+                                          solution_number, string):
+        if component_id in self._cipher.inputs:
+            components_values[f'solution{solution_number}'][f'{component_id}'] = component_solution
+        elif f'{component_id}_i' in string:
+            components_values[f'solution{solution_number}'][f'{component_id}_i'] = component_solution
+        elif f'{component_id}_o' in string:
+            components_values[f'solution{solution_number}'][f'{component_id}_o'] = component_solution
+        elif f'{component_id} ' in string:
+            components_values[f'solution{solution_number}'][f'{component_id}'] = component_solution
+    
     def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[], number_of_rounds=None):
         """
         Build the CP model for the search of deterministic truncated XOR differential trails.
@@ -63,18 +98,22 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
             if component.type not in component_types or \
                     (component.type == WORD_OPERATION and operation not in operation_types):
                 print(f'{component.id} not yet implemented')
-            variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
+            if component.type == SBOX:
+                variables, constraints, sbox_mant = component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_mant)
+                self.sbox_mant = sbox_mant
+            else:
+                variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
             self._variables_list.extend(variables)
             deterministic_truncated_xor_differential.extend(constraints)
 
-        variables, constraints = self.input_deterministic_truncated_xor_differential_constraints(number_of_rounds)
+        variables, constraints = self.input_deterministic_truncated_xor_differential_constraints()
         self._model_prefix.extend(variables)
         self._variables_list.extend(constraints)
         deterministic_truncated_xor_differential.extend(
             self.final_deterministic_truncated_xor_differential_constraints())
         self._model_constraints = self._model_prefix + self._variables_list + deterministic_truncated_xor_differential
 
-    def build_inverse_deterministic_truncated_xor_differential_trail_model(self, number_of_rounds, fixed_variables=[]):
+    def build_inverse_deterministic_truncated_xor_differential_trail_model(self, number_of_rounds=None, fixed_variables=[]):
         """
         Build CP model for search of deterministic truncated XOR differential trails for the inverted cipher.
 
@@ -99,6 +138,9 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         constraints = self.fix_variables_value_constraints(fixed_variables)
         self._model_constraints = constraints
         cipher = self._cipher
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
 
         for cipher_round in range(number_of_rounds + 1):
             for component in cipher.get_all_components():
@@ -119,7 +161,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
                 self._variables_list.extend(variables)
                 self._model_constraints.extend(constraints)
 
-        variables, constraints = self.input_deterministic_truncated_xor_differential_constraints(number_of_rounds, True)
+        variables, constraints = self.input_deterministic_truncated_xor_differential_constraints()
         self._model_prefix.extend(variables)
         self._variables_list.extend(constraints)
         self._model_constraints.extend(
@@ -156,7 +198,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
 
         return cp_constraints
 
-    def final_impossible_constraints(self, number_of_rounds):
+    def final_impossible_constraints(self, number_of_rounds=None):
         """
         Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
 
@@ -175,6 +217,9 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         """
         cipher_inputs = self._cipher.inputs
         cipher = self._cipher
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
         cp_constraints = [solve_satisfy]
         new_constraint = 'output['
         incompatibility_constraint = 'constraint'
@@ -201,8 +246,8 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
 
         return cp_constraints
 
-    def find_all_deterministic_truncated_xor_differential_trail(self, number_of_rounds,
-                                                                fixed_values=[], solver_name=None):
+    def find_all_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -244,12 +289,15 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
               'solving_time_seconds': 0.002,
               'total_weight': '0.0'}]
         """
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds)
 
         return self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name)
 
     def find_one_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
-                                                                fixed_values=[], solver_name=None):
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -299,11 +347,14 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
               'solving_time_seconds': 0.0,
               'total_weight': '0.0'}]
         """
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds)
 
         return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name)
 
-    def input_deterministic_truncated_xor_differential_constraints(self, number_of_rounds, inverse=False):
+    def input_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of CP constraints for the inputs of the cipher for the first step model.
 
@@ -324,30 +375,22 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
                ...
               'constraint count(plaintext,2) = 0;'])
         """
+        number_of_rounds = self._cipher.number_of_rounds
+
         cp_constraints = []
         cp_declarations = [f'array[0..{bit_size - 1}] of var 0..2: {input_};'
                            for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)]
         cipher = self._cipher
-        rounds = self._cipher.number_of_rounds - number_of_rounds if inverse else number_of_rounds
+        rounds = number_of_rounds
         for component in cipher.get_all_components():
             output_id_link = component.id
             output_size = int(component.output_bit_size)
-            if 'output' in component.type \
-                    and inverse and cipher.get_round_from_component_id(component.id) == rounds - 1:
-                cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link}_inverse;')
-            elif CIPHER_OUTPUT in component.type:
+            if CIPHER_OUTPUT in component.type:
                 cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
                 cp_constraints.append(f'constraint count({output_id_link},2) < {output_size};')
             elif CONSTANT not in component.type:
                 cp_declarations.append(f'array[0..{output_size - 1}] of var 0..2: {output_id_link};')
-        if inverse:
-            for i, input in enumerate(self._cipher.inputs):
-                if CIPHER_OUTPUT in input:
-                    cp_constraints.append(f'constraint count({input},1) > 0;')
-                    cp_constraints.append(f'constraint count({input},2) = 0;')
-        else:
-            cp_constraints.append('constraint count(plaintext,1) > 0;')
-            cp_constraints.append('constraint count(plaintext,2) = 0;')
+        cp_constraints.append('constraint count(plaintext,1) > 0;')
 
         return cp_declarations, cp_constraints
 
@@ -476,3 +519,176 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
                           for i in range(output_size)]
 
         return cp_declarations, cp_constraints
+        
+    def format_component_value(self, component_id, string):
+        if f'{component_id}_i' in string:
+            value = string.replace(f'{component_id}_i', '')
+        elif f'{component_id}_o' in string:
+            value = string.replace(f'{component_id}_o', '')
+        elif f'inverse_{component_id}' in string:
+            value = string.replace(f'inverse_{component_id}', '')
+        elif f'{component_id}' in string:
+            value = string.replace(component_id, '')
+        value = value.replace('= [', '')
+        value = value.replace(']', '')
+        value = value.replace(',', '')
+        value = value.replace(' ', '')
+
+        return value
+
+    def parse_solver_information(self, output_to_parse):
+        memory = -1
+        time = -1
+        string_total_weight = []
+        components_values = {}
+        number_of_solutions = 1
+        for string in output_to_parse:
+            if 'time=' in string:
+                time_string = string
+                time = float(time_string.replace("%%%mzn-stat: time=", ""))
+            elif 'solveTime=' in string:
+                time_string = string
+                time = float(time_string.replace("%%%mzn-stat: solveTime=", ""))
+            elif 'trailMem=' in string:
+                memory_string = string
+                memory = float(memory_string.replace("%%%mzn-stat: trailMem=", ""))
+            elif '----------' in string:
+                string_total_weight.append("0")
+                components_values[f'solution{number_of_solutions}'] = {}
+                number_of_solutions += 1
+        if number_of_solutions == 1:
+            components_values = {}
+
+        return components_values, memory, time
+
+    def _parse_solver_output(self, output_to_parse, model_type):
+        """
+        Parse solver solution (if needed).
+
+        INPUT:
+
+        - ``output_to_parse`` -- **list**; strings that represents the solver output
+        - ``truncated`` -- **boolean** (default: `False`)
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import CpXorDifferentialTrailSearchModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, write_model_to_file
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: cp = CpXorDifferentialTrailSearchModel(speck)
+            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
+            sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(32), integer_to_bit_list(0, 32, 'little')))
+            sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
+            sage: write_model_to_file(cp._model_constraints,'doctesting_file.mzn')
+            sage: command = ['minizinc', '--solver-statistics', '--solver', 'Chuffed', 'doctesting_file.mzn']
+            sage: import subprocess
+            sage: solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+            sage: os.remove('doctesting_file.mzn')
+            sage: solver_output = solver_process.stdout.splitlines()
+            sage: cp._parse_solver_output(solver_output) # random
+            (0.018,
+             ...
+             'cipher_output_3_12': {'value': '0', 'weight': 0}}},
+             ['0'])
+        """
+        components_values, memory, time = self.parse_solver_information(output_to_parse)
+        all_components = [*self._cipher.inputs, *self._cipher.get_all_components_ids()]
+        for component_id in all_components:
+            solution_number = 1
+            for j, string in enumerate(output_to_parse):
+                if f'{component_id}' in string or f'{component_id}_i' in string or f'{component_id}_o' in string or f'inverse_{component_id}' in string:
+                    value = self.format_component_value(component_id, string)
+                    component_solution = {}
+                    component_solution['value'] = value
+                    self.add_solution_to_components_values(component_id, component_solution, components_values, j,
+                                                           output_to_parse, solution_number, string)
+                elif '----------' in string:
+                    solution_number += 1
+        if 'impossible' in model_type and solution_number > 1:
+            for nsol in components_values.keys():
+                components_values[nsol] = self.extract_incompatibilities_from_output(components_values[nsol])
+
+        return time, memory, components_values
+            
+    def solve(self, model_type, solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
+        """
+        Return the solution of the model.
+
+        INPUT:
+
+        - ``model_type`` -- **string**; the model to solve:
+
+          * 'cipher'
+          * 'xor_differential'
+          * 'xor_differential_one_solution'
+          * 'xor_linear'
+          * 'xor_linear_one_solution'
+          * 'deterministic_truncated_xor_differential'
+          * 'deterministic_truncated_xor_differential_one_solution'
+          * 'impossible_xor_differential'
+        - ``solver_name`` -- **string** (default: `None`); the name of the solver. Available values are:
+
+          * ``'Chuffed'``
+          * ``'Gecode'``
+          * ``'COIN-BC'``
+
+        - ``num_of_processors`` -- **integer**; the number of processors to be used
+        - ``timelimit`` -- **integer**; time limit to output a result
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import CpXorDifferentialTrailSearchModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: cp = CpXorDifferentialTrailSearchModel(speck)
+            sage: fixed_variables = [set_fixed_variables('key', 'equal', list(range(64)), integer_to_bit_list(0, 64, 'little')), set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
+            sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
+            sage: cp.solve('xor_differential', 'Chuffed') # random
+            [{'cipher_id': 'speck_p32_k64_o32_r4',
+              ...
+              'total_weight': '7'},
+             {'cipher_id': 'speck_p32_k64_o32_r4',
+               ...
+              'total_weight': '5'}]
+        """
+        
+        cipher_name = self.cipher_id
+        input_file_path = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
+        command = self.get_command_for_solver_process(
+            input_file_path, model_type, solver_name, num_of_processors, timelimit
+        )
+        solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+        os.remove(input_file_path)
+        if solver_process.returncode >= 0:
+            solutions = []
+            solver_output = solver_process.stdout.splitlines()
+            if model_type in ['deterministic_truncated_xor_differential',
+                              'deterministic_truncated_xor_differential_one_solution',
+                              'impossible_xor_differential',
+                              'impossible_xor_differential_one_solution']:
+                solve_time, memory, components_values = self._parse_solver_output(solver_output, model_type)
+                total_weight = 0
+            else:
+                solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type)
+            if components_values == {}:
+                solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name,
+                                                                 solve_time, memory,
+                                                                 components_values, total_weight)
+                if 'UNSATISFIABLE' in solver_output[0]:
+                    solution['status'] = 'UNSATISFIABLE'
+                else:
+                    solution['status'] = 'SATISFIABLE'
+                solutions.append(solution)
+            else:
+                self.add_solutions_from_components_values(components_values, memory, model_type, solutions, solve_time,
+                                                          solver_name, solver_output)
+            if model_type in ['xor_differential_one_solution',
+                              'xor_linear_one_solution',
+                              'deterministic_truncated_one_solution',
+                              'impossible_xor_differential_one_solution']:
+                return solutions[0]
+            else:
+                return solutions
+

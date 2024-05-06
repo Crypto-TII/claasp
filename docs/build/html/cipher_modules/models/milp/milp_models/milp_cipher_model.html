@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
     <link rel="next" title="Tea cipher xordiff model" href="../tmp/tea_cipher_xordiff_model.html" />
-    <link rel="prev" title="Milp xor linear model" href="milp_xor_linear_model.html" />
+    <link rel="prev" title="Milp wordwise impossible xor differential model" href="milp_wordwise_impossible_xor_differential_model.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -36,7 +36,7 @@
           <a href="../tmp/tea_cipher_xordiff_model.html" title="Tea cipher xordiff model"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="milp_xor_linear_model.html" title="Milp xor linear model"
+          <a href="milp_wordwise_impossible_xor_differential_model.html" title="Milp wordwise impossible xor differential model"
              accesskey="P">previous</a> |</li>
   
     
@@ -148,16 +148,6 @@ format</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_cipher_model.MilpCipherModel.get_component_value_weight">
-<span class="sig-name descname"><span class="pre">get_component_value_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probability_variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components_variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_cipher_model.MilpCipherModel.get_component_value_weight" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_cipher_model.MilpCipherModel.get_final_output">
-<span class="sig-name descname"><span class="pre">get_final_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components_variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probability_variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_cipher_model.MilpCipherModel.get_final_output" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_cipher_model.MilpCipherModel.init_model_in_sage_milp_class">
 <span class="sig-name descname"><span class="pre">init_model_in_sage_milp_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_cipher_model.MilpCipherModel.init_model_in_sage_milp_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a MILP instance from the build-in sage class.</p>
@@ -220,12 +210,13 @@ format</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_cipher_model.MilpCipherModel.solve">
-<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_cipher_model.MilpCipherModel.solve" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_cipher_model.MilpCipherModel.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the solution of the model.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">model_type</span></code> – <strong>string</strong>; the model to solve</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">GLPK</span>); the solver to call</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">GLPK</span>); the solver to call when building the internal Sagemath MILP model. If no external solver is specified, <code class="docutils literal notranslate"><span class="pre">solver_name</span></code> will also be used to solve the model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">external_solver_name</span></code> – <strong>string</strong> (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.</p></li>
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
@@ -276,8 +267,8 @@ format</p></li>
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="milp_xor_linear_model.html"
-                          title="previous chapter">Milp xor linear model</a></p>
+    <p class="topless"><a href="milp_wordwise_impossible_xor_differential_model.html"
+                          title="previous chapter">Milp wordwise impossible xor differential model</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
@@ -318,7 +309,7 @@ format</p></li>
           <a href="../tmp/tea_cipher_xordiff_model.html" title="Tea cipher xordiff model"
              >next</a> |</li>
         <li class="right" >
-          <a href="milp_xor_linear_model.html" title="Milp xor linear model"
+          <a href="milp_wordwise_impossible_xor_differential_model.html" title="Milp wordwise impossible xor differential model"
              >previous</a> |</li>
   
     

@@ -16,8 +16,8 @@
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Smt xor differential model" href="smt_xor_differential_model.html" />
-    <link rel="prev" title="Utils" href="../utils/utils.html" />
+    <link rel="next" title="Smt cipher model" href="smt_cipher_model.html" />
+    <link rel="prev" title="Smt xor differential model" href="smt_xor_differential_model.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +33,10 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="smt_xor_differential_model.html" title="Smt xor differential model"
+          <a href="smt_cipher_model.html" title="Smt cipher model"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../utils/utils.html" title="Utils"
+          <a href="smt_xor_differential_model.html" title="Smt xor differential model"
              accesskey="P">previous</a> |</li>
   
     
@@ -58,40 +58,22 @@
   <section id="module-cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model">
 <span id="smt-deterministic-truncated-xor-differential-model"></span><h1>Smt deterministic truncated xor differential model<a class="headerlink" href="#module-cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SmtXorDifferentialModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sequential'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SmtDeterministicTruncatedXorDifferentialModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sequential'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher_modules.models.smt.smt_model.SmtModel</span></code></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.build_deterministic_truncated_xor_differential_trail_model">
-<span class="sig-name descname"><span class="pre">build_deterministic_truncated_xor_differential_trail_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.build_deterministic_truncated_xor_differential_trail_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build the model for the search of deterministic truncated XOR differential trails.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">fixed_variables</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); the variables to be fixed in standard format</p></li>
-</ul>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.set_fixed_variables" title="cipher_modules.models.utils.set_fixed_variables"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code></a></p>
-</div>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">SmtXorDifferentialModel</span>
-<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">smt</span> <span class="o">=</span> <span class="n">SmtXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">smt</span><span class="o">.</span><span class="n">build_deterministic_truncated_xor_differential_trail_model</span><span class="p">()</span>
-<span class="go">...</span>
-</pre></div>
-</div>
-</dd></dl>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.calculate_component_weight">
+<span class="sig-name descname"><span class="pre">calculate_component_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.calculate_component_weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.cipher_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cipher_id</span></span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.cipher_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.cipher_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cipher_id</span></span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.cipher_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.cipher_input_variables">
-<span class="sig-name descname"><span class="pre">cipher_input_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.cipher_input_variables" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.cipher_input_variables">
+<span class="sig-name descname"><span class="pre">cipher_input_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.cipher_input_variables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the list of input variables.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -113,8 +95,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.fix_variables_value_constraints">
-<span class="sig-name descname"><span class="pre">fix_variables_value_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.fix_variables_value_constraints" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints">
+<span class="sig-name descname"><span class="pre">fix_variables_value_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of SMT-LIB asserts for fixing variables in CIPHER and XOR DIFFERENTIAL model.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -138,23 +120,13 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.get_cipher_components_for_components_values">
-<span class="sig-name descname"><span class="pre">get_cipher_components_for_components_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.get_cipher_components_for_components_values" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.get_cipher_input_for_components_values">
-<span class="sig-name descname"><span class="pre">get_cipher_input_for_components_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.get_cipher_input_for_components_values" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.get_xor_probability_constraints">
-<span class="sig-name descname"><span class="pre">get_xor_probability_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.get_xor_probability_constraints" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.get_xor_probability_constraints">
+<span class="sig-name descname"><span class="pre">get_xor_probability_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.get_xor_probability_constraints" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.model_constraints">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_constraints</span></span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.model_constraints" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.model_constraints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_constraints</span></span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.model_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the model specified by <code class="docutils literal notranslate"><span class="pre">model_type</span></code>.</p>
 <p>If the key refers to one of the available solver, Otherwise will raise a KeyError exception.</p>
 <p>INPUT:</p>
@@ -175,18 +147,18 @@
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.sboxes_ddt_templates">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sboxes_ddt_templates</span></span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.sboxes_ddt_templates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.sboxes_ddt_templates">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sboxes_ddt_templates</span></span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.sboxes_ddt_templates" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.sboxes_lat_templates">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sboxes_lat_templates</span></span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.sboxes_lat_templates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.sboxes_lat_templates">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sboxes_lat_templates</span></span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.sboxes_lat_templates" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.solve">
-<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'z3'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.solve" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'z3'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the solution of the model using the <code class="docutils literal notranslate"><span class="pre">solver_name</span></code> SMT solver.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -221,18 +193,18 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.update_constraints_for_equal_type">
-<span class="sig-name descname"><span class="pre">update_constraints_for_equal_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.update_constraints_for_equal_type" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.update_constraints_for_equal_type">
+<span class="sig-name descname"><span class="pre">update_constraints_for_equal_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.update_constraints_for_equal_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.update_constraints_for_not_equal_type">
-<span class="sig-name descname"><span class="pre">update_constraints_for_not_equal_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.update_constraints_for_not_equal_type" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.update_constraints_for_not_equal_type">
+<span class="sig-name descname"><span class="pre">update_constraints_for_not_equal_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.update_constraints_for_not_equal_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.weight_constraints">
-<span class="sig-name descname"><span class="pre">weight_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtXorDifferentialModel.weight_constraints" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.weight_constraints">
+<span class="sig-name descname"><span class="pre">weight_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.weight_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a variable list and SMT-LIB list asserts representing the fixing of the total weight to the input value.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -253,13 +225,13 @@
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="../utils/utils.html"
-                          title="previous chapter">Utils</a></p>
+    <p class="topless"><a href="smt_xor_differential_model.html"
+                          title="previous chapter">Smt xor differential model</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="smt_xor_differential_model.html"
-                          title="next chapter">Smt xor differential model</a></p>
+    <p class="topless"><a href="smt_cipher_model.html"
+                          title="next chapter">Smt cipher model</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -292,10 +264,10 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="smt_xor_differential_model.html" title="Smt xor differential model"
+          <a href="smt_cipher_model.html" title="Smt cipher model"
              >next</a> |</li>
         <li class="right" >
-          <a href="../utils/utils.html" title="Utils"
+          <a href="smt_xor_differential_model.html" title="Smt xor differential model"
              >previous</a> |</li>
   
     
