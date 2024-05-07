@@ -160,9 +160,11 @@ RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1
     && tar -xf glucose-syrup-4.1.tgz \
     && rm glucose-syrup-4.1.tgz
 
-RUN make glucose-syrup-4.1/simp
+RUN cd glucose-syrup-4.1/simp \
+    && make
 
-RUN make glucose-syrup-4.1/parallel
+RUN cd glucose-syrup-4.1/parallel \
+    && make
 
 WORKDIR /opt
 

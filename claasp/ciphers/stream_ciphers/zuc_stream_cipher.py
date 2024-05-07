@@ -229,7 +229,7 @@ class ZucStreamCipher(Cipher):
         return key_st
 
     def lfsr_S_high_16bits(self, S, P):
-        if len(S) is 3:
+        if len(S) == 3:
             s_h_id = S[:2]
             s_h_ps = [P[0], P[1][:8]]
         else:
@@ -238,7 +238,7 @@ class ZucStreamCipher(Cipher):
         return s_h_id, s_h_ps
 
     def lfsr_S_low_16bits(self, S, P):
-        if len(S) is 3:
+        if len(S) == 3:
             s_l_id = S[1:3]
             s_l_ps = [P[1][7:15], P[2]]
         else:

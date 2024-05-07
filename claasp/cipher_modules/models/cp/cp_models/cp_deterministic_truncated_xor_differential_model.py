@@ -26,6 +26,7 @@ from claasp.cipher_modules.models.cp.cp_model import CpModel, solve_satisfy
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL)
+from claasp.cipher_modules.models.cp.solvers import MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 
 class CpDeterministicTruncatedXorDifferentialModel(CpModel):
@@ -246,7 +247,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         return cp_constraints
 
     def find_all_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
-                                                                fixed_values=[], solver_name='Chuffed'):
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -296,7 +297,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         return self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name)
 
     def find_one_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
-                                                                fixed_values=[], solver_name='Chuffed'):
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -610,7 +611,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
 
         return time, memory, components_values
             
-    def solve(self, model_type, solver_name=None, num_of_processors=1, timelimit=60000):
+    def solve(self, model_type, solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution of the model.
 
@@ -654,7 +655,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         """
         
         cipher_name = self.cipher_id
-        input_file_path = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
+        input_file_path = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(
             input_file_path, model_type, solver_name, num_of_processors, timelimit
         )

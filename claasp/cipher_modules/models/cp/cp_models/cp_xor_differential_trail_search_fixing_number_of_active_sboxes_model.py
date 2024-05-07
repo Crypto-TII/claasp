@@ -21,6 +21,9 @@ import os
 import math
 import subprocess
 import time as tm
+
+from copy import deepcopy
+
 from sage.crypto.sbox import SBox
 
 
@@ -31,6 +34,7 @@ from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import 
     CpXorDifferentialModel, update_and_or_ddt_valid_probabilities)
 from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_number_of_active_sboxes_model import (
     CpXorDifferentialNumberOfActiveSboxesModel)
+from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, CP_SOLVERS_INTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 
 class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
@@ -73,7 +77,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
         self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
 
-    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], first_step_solver_name='Chuffed', second_step_solver_name='Chuffed'):
+    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT):
         """
         Return a list of solutions containing all the differential trails having the ``fixed_weight`` weight of correlation.
 
@@ -109,7 +113,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         """
         return self.solve_full_two_steps_xor_differential_model('xor_differential_all_solutions', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name)
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], first_step_solver_name='Chuffed', second_step_solver_name='Chuffed'):
+    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT):
         """
         Return the solution representing a differential trail with the lowest weight.
 
@@ -149,7 +153,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         """
         return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', -1, fixed_values, first_step_solver_name, second_step_solver_name)
 
-    def find_one_xor_differential_trail(self, fixed_values=[], first_step_solver_name='Chuffed', second_step_solver_name='Chuffed'):
+    def find_one_xor_differential_trail(self, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -183,7 +187,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         """
         return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', 0, fixed_values, first_step_solver_name, second_step_solver_name)
 
-    def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], first_step_solver_name='Chuffed', second_step_solver_name='Chuffed'):
+    def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -303,7 +307,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         return cp_declarations, cp_constraints
 
     def solve_full_two_steps_xor_differential_model(self, model_type='xor_differential_one_solution', weight=-1, fixed_variables=[],
-                                                    first_step_solver_name=None, second_step_solver_name=None, nmax=2, repetition=1):
+                                                    first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1):
         """
         Return the solution of the model for an SPN cipher.
 
@@ -351,10 +355,14 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         self.build_xor_differential_trail_second_step_model(weight, fixed_variables)
         end = tm.time()
         build_time += end - start
-        input_file_name = f'{cipher_name}_Cp_xor_differential_{first_step_solver_name}.mzn'
-        solution_file_name = f'{cipher_name}_table_of_solutions_{first_step_solver_name}.mzn'
+        input_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Cp_xor_differential_{first_step_solver_name}.mzn'
+        solution_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_table_of_solutions_{first_step_solver_name}.mzn'
         write_model_to_file(self._model_constraints, input_file_name)
 
+        for i in range(len(CP_SOLVERS_EXTERNAL)):
+            if second_step_solver_name == CP_SOLVERS_EXTERNAL[i]['solver_name']:
+                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
+                        
         for attempt in range(10000):
             if weight == -1:
                 start = tm.time()
@@ -365,16 +373,30 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
                     'xor_differential_first_step_find_all_solutions', first_step_solver_name)
                 solve_time += solve_first_step_time
                 self.generate_table_of_solutions(first_step_all_solutions, first_step_solver_name)
-                command = ['minizinc', '-a', '--solver-statistics', '--solver',
-                           second_step_solver_name, input_file_name, solution_file_name]
+                
+                command_options['keywords']['command']['input_file'].append(input_file_name)
+                command_options['keywords']['command']['output_file'].append(solution_file_name)
+                command_options['keywords']['command']['options'].insert(0, '-a')
+                command = []
+                for key in command_options['keywords']['command']['format']:
+                    command.extend(command_options['keywords']['command'][key])
             elif model_type == 'xor_differential_all_solutions':
                 self.generate_table_of_solutions(first_step_solution, first_step_solver_name)
-                command = ['minizinc', '-a', '--solver-statistics', '--solver', second_step_solver_name,
-                           input_file_name, solution_file_name]
+                
+                command_options['keywords']['command']['input_file'].append(input_file_name)
+                command_options['keywords']['command']['output_file'].append(solution_file_name)
+                command_options['keywords']['command']['options'].insert(0, '-a')
+                command = []
+                for key in command_options['keywords']['command']['format']:
+                    command.extend(command_options['keywords']['command'][key])
             else:
                 self.generate_table_of_solutions(first_step_solution, first_step_solver_name)
-                command = ['minizinc', '--solver-statistics', '--solver', second_step_solver_name,
-                           input_file_name, solution_file_name]
+                
+                command_options['keywords']['command']['input_file'].append(input_file_name)
+                command_options['keywords']['command']['output_file'].append(solution_file_name)
+                command = []
+                for key in command_options['keywords']['command']['format']:
+                    command.extend(command_options['keywords']['command'][key])
 
             solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
             if solver_process.returncode < 0:
@@ -433,16 +455,25 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         """
         start = tm.time()
         cipher_name = self.cipher_id
-        input_file_name = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
+        input_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
+        for i in range(len(CP_SOLVERS_EXTERNAL)):
+            if solver_name == CP_SOLVERS_EXTERNAL[i]['solver_name']:
+                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
+        command_options['keywords']['command']['input_file'].append(input_file_name)
+            
         if model_type == 'xor_differential_first_step_find_all_solutions':
             write_model_to_file(self._first_step_find_all_solutions, input_file_name)
-            command = ['minizinc', '-a', '--solver', solver_name, input_file_name]
+            command_options['keywords']['command']['options'].insert(0, '-a')
         else:
             if model_type == 'xor_differential_first_step':
                 write_model_to_file(self._first_step, input_file_name)
             else:
                 write_model_to_file(self._model_constraints, input_file_name)
-            command = ['minizinc', '--solver', solver_name, input_file_name]
+                
+        command = []
+        for key in command_options['keywords']['command']['format']:
+            command.extend(command_options['keywords']['command'][key])
+        command.remove('--solver-statistics')
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
         os.remove(input_file_name)
         solution = []
@@ -488,6 +519,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
             sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step','Chuffed')
             sage: cp.transform_first_step_model(0, first_step_solution[0])
         """
+        print(active_sboxes)
         self._first_step_find_all_solutions = []
         for line in self._first_step:
             if ': number_of_active_sBoxes;' in line:

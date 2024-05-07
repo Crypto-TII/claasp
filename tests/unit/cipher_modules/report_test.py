@@ -126,7 +126,7 @@ def test_save_as_json():
                             bit_values=[0] * 64)
     ]
     trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
-                                                                  solver_name='kissat')
+                                                                  solver_name='KISSAT_EXT')
     trail_report = Report(trail)
     trail_report.show()
 
@@ -163,7 +163,7 @@ def test_show():
         set_fixed_variables(component_id='key', constraint_type='not_equal', bit_positions=list(range(80)),
                             bit_values=[0] * 80)]
     trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
-                                                                  solver_name='kissat')
+                                                                  solver_name='KISSAT_EXT')
     trail_report = Report(trail)
     trail_report.show()
 

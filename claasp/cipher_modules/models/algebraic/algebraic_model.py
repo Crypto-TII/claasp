@@ -153,7 +153,7 @@ class AlgebraicModel:
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: toyspn = ToySPN1()
             sage: AlgebraicModel(toyspn).polynomial_system()
-            Polynomial Sequence with 80 Polynomials in 48 Variables
+            Polynomial Sequence with 74 Polynomials in 42 Variables
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
@@ -165,32 +165,55 @@ class AlgebraicModel:
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: speck = SpeckBlockCipher(number_of_rounds=2)
             sage: AlgebraicModel(speck).polynomial_system()
-            Polynomial Sequence with 288 Polynomials in 352 Variables
+            Polynomial Sequence with 192 Polynomials in 256 Variables
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
             sage: AlgebraicModel(aes).polynomial_system()
-            Polynomial Sequence with 198 Polynomials in 128 Variables
+            Polynomial Sequence with 174 Polynomials in 104 Variables
 
             sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
             sage: AlgebraicModel(tea).polynomial_system()
-            Polynomial Sequence with 352 Polynomials in 448 Variables
+            Polynomial Sequence with 288 Polynomials in 384 Variables
+
+            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+            sage: gift = GiftPermutation(number_of_rounds=1)
+            sage: AlgebraicModel(gift).polynomial_system()
+            Polynomial Sequence with 448 Polynomials in 640 Variables
+
 
         """
         polynomials = []
-        constant_vars = {}
-        for r in range(self._cipher.number_of_rounds):
-            polynomials += self.polynomial_system_at_round(r, True)
-            constant_vars.update(self._dict_constant_component_polynomials(r))
-            if constant_vars is not None:
-                polynomials = self._remove_constant_polynomials(constant_vars, polynomials)
+        dict_vars = {}
 
+        for round_number in range(self._cipher.number_of_rounds):
+            polynomials += self.polynomial_system_at_round(round_number, True)
+
+            dict_vars.update(self._dict_const_rot_not_shift_component_polynomials(round_number))
+            if round_number == self._cipher.number_of_rounds - 1 and dict_vars:
+                dict_vars = self._substitute_cipher_output_vars_dict_vars(dict_vars, round_number)
+            if dict_vars:
+                polynomials = self._eliminate_const_not_shift_rot_components_polynomials(dict_vars, polynomials)
         return Sequence(polynomials)
 
-    def polynomial_system_at_round(self, r, fun_call_flag=False):
+    def _substitute_cipher_output_vars_dict_vars(self, dict_vars, round_number):
+        cipher_dict = {}
+        cipher_component = self._cipher.get_components_in_round(round_number)[-1]
+        input_vars, prev_input_vars = self._input_vars_previous_input_vars(cipher_component)
+        cipher_dict.update({y: x for x, y in zip(input_vars, prev_input_vars)})
+        sub_dict_vars = {}
+        for k, val in dict_vars.items():
+            if val not in {0, 1}:
+                sub_dict_vars[k] = val.subs(cipher_dict)
+            else:
+                sub_dict_vars[k] = val
+        return sub_dict_vars
+
+    def polynomial_system_at_round(self, r, method_call_flag=False):
         """
         Return a polynomial system at round `r`.
 
@@ -226,11 +249,12 @@ class AlgebraicModel:
 
         polynomials = self._apply_connection_variable_mapping(Sequence(polynomials), r)
 
-        if fun_call_flag is False:
-            constant_vars = self._dict_constant_component_polynomials(r)
-            if constant_vars is not None:
-                polynomials = self._remove_constant_polynomials(constant_vars, polynomials)
-
+        if method_call_flag is False:
+            dict_vars = self._dict_const_rot_not_shift_component_polynomials(r)
+            if r == self._cipher.number_of_rounds - 1 and dict_vars:
+                dict_vars = self._substitute_cipher_output_vars_dict_vars(dict_vars, r)
+            if dict_vars:
+                polynomials = self._eliminate_const_not_shift_rot_components_polynomials(dict_vars, polynomials)
         return Sequence(polynomials)
 
     def _apply_connection_variable_mapping(self, polys, r):
@@ -239,7 +263,6 @@ class AlgebraicModel:
             return polys
 
         variable_substitution_dict = {}
-
         for component in self._cipher.get_components_in_round(r):
             if component.type == "constant":
                 continue
@@ -248,7 +271,6 @@ class AlgebraicModel:
                 variable_substitution_dict.update({x: y for x, y in zip(input_vars, prev_input_vars)})
             else:
                 variable_substitution_dict.update({y: x for x, y in zip(input_vars, prev_input_vars)})
-
             polys = polys.subs(variable_substitution_dict)
 
         return polys
@@ -266,25 +288,45 @@ class AlgebraicModel:
         prev_input_vars = list(map(self.ring(), prev_input_vars))
         return input_vars, prev_input_vars
 
-    def _dict_constant_component_polynomials(self, round_number):
+    def _dict_const_rot_not_shift_component_polynomials(self, round_number):
 
-        constant_vars = {}
+        dict_vars = {}
+        word_operation = ["ROTATE", "SHIFT", "NOT"]
         for component in self._cipher.get_components_in_round(round_number):
-            if component.type == "constant":
-                output_vars = [component.id + "_" + self.output_postfix + str(i) for i in
-                               range(component.output_bit_size)]
-            else:
-                continue
-            output_vars = list(map(self.ring(), output_vars))
-            constant = int(component.description[0], 16)
-            b = list(map(int, reversed(bin(constant)[2:])))
-            b += [0] * (component.output_bit_size - len(b))
-            constant_vars.update({x: y for x, y in zip(output_vars, b)})
-        return constant_vars
+            if component.type == "constant" or (
+                    component.type == "word_operation" and component.description[0] in word_operation):
+                x = [component.id + "_" + self.output_postfix + str(i) for i in
+                     range(component.output_bit_size)]
 
-    def _remove_constant_polynomials(self, constant_vars, polys):
+                x = list(map(self.ring(), x))
+                input_links = component.input_id_links
+                input_positions = component.input_bit_positions
+                y = []
+                for k in range(len(input_links)):
+                    y += [input_links[k] + "_" + self.output_postfix + str(i) for i in
+                          input_positions[k]]
+                y = list(map(self.ring(), y))
+                noutputs = component.output_bit_size
+                if component.type == "constant":
+                    constant = int(component.description[0], 16)
+                    b = list(map(int, reversed(bin(constant)[2:])))
+                    b += [0] * (noutputs - len(b))
+                    dict_vars.update({x: y for x, y in zip(x, b)})
+                else:
+                    if component.description[0] == 'ROTATE':
+                        rotation_const = component.description[1]
+                        dict_vars.update({x[i]: y[(rotation_const + i) % noutputs] for i in range(len(x))})
+                    elif component.description[0] == 'SHIFT':
+                        shift_constant = component.description[1] % noutputs
+                        dict_vars.update({x[i]: 0 for i in range(shift_constant)})
+                        dict_vars.update({x[shift_constant:][i]: y[i] for i in range(noutputs - shift_constant)})
+                    else:
+                        dict_vars.update({x[i]: y[i] + 1 for i in range(len(x))})
 
-        polys = Sequence(polys).subs(constant_vars)
+        return dict_vars
+
+    def _eliminate_const_not_shift_rot_components_polynomials(self, dict_vars, polys):
+        polys = Sequence(polys).subs(dict_vars)
         polys = [p for p in polys if p != 0]
         return polys
 
