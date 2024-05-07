@@ -1,0 +1,71 @@
+%%%   TUGRAZ COLORS   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% from beamerthemetugraz2018.sty
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tugcolors}[2022/03/14 TU Graz color palette]
+
+\RequirePackage{xcolor}
+
+\definecolor{tug}{HTML}{F70146}
+%\definecolor{tug}{HTML}{e4154b} % - online version of TU Graz red
+
+%%% Faculties
+\definecolor{arch}{HTML}{0A98A2} % Architektur
+\definecolor{bauw}{HTML}{D68E23} % Bauingenieurwissenschaften
+\definecolor{etec}{HTML}{68242C} % Elektrotechnik und Informationstechnik
+\definecolor{mach}{HTML}{3066BA} % Maschinenbau und Wirtschaftswissenschaften
+\definecolor{chem}{HTML}{5E60A8} % Technische Chemie, Verfahrenstechnik und Biotechnologie
+%\definecolor{info}{HTML}{0A2A2C} % Informatik und Biomedizinische Technik - old
+\definecolor{info}{HTML}{19B4E3} % Informatik und Biomedizinische Technik
+\definecolor{math}{HTML}{1E6934} % Mathematik, Physik und Geodäsie
+%%% Faculty synonyms - official
+\colorlet{bau}{bauw}
+\colorlet{etit}{etec}
+\colorlet{mpug}{math}
+\colorlet{tcvp}{chem}
+\colorlet{mbww}{mach}
+\colorlet{infbio}{info}
+
+%%% Powerpoint palette
+\definecolor{fore}{HTML}{0F0F0F} % Text/Hintergrund - dunkel 1
+\definecolor{back}{HTML}{FFFFFF} % Text/Hintergrund - hell 1
+\definecolor{dark}{HTML}{3B5A70} % Text/Hintergrund - dunkel 2
+\definecolor{lite}{HTML}{EEECE1} % Text/Hintergrund - hell 2
+\definecolor{head}{HTML}{245B78} % Web blocks - head/dark
+\definecolor{body}{HTML}{E2E9ED} % Web blocks - body/lite
+\definecolor{urlA}{HTML}{0066D8} % Link
+\definecolor{urlB}{HTML}{6C2F91} % Besuchter Link
+\colorlet   {colA}{tug}          % Akzent 1
+\definecolor{colB}{HTML}{5191C1} % Akzent 2
+\definecolor{colC}{HTML}{A5A5A5} % Akzent 3
+\definecolor{colD}{HTML}{285F82} % Akzent 4
+\definecolor{colE}{HTML}{78B473} % Akzent 5
+\definecolor{colF}{HTML}{E59352} % Akzent 6
+\definecolor{colEold}{HTML}{77BABF} % Akzent 5 OLD
+
+%%% TUG named palette
+\colorlet{tugred}{colA}
+\colorlet{tuggreen}{colE}
+\colorlet{tugblue}{colD}
+\colorlet{tugyellow}{colF}
+\colorlet{tugcyan}{colEold}
+\colorlet{tugpurple}{urlB}
+\colorlet{tugviolet}{chem}
+\colorlet{tugmagenta}{tugpurple}
+\colorlet{tugturquoise}{arch}
+\colorlet{tugbrown}{etec}
+\colorlet{tugteal}{info}
+\colorlet{tugblack}{fore}
+\colorlet{tugwhite}{back}
+\colorlet{tuggray}{colC}
+\colorlet{tuggrey}{tuggray}
+\colorlet{tugdark}{dark}
+\colorlet{tugmid}{colB}
+\colorlet{tuglite}{lite}
+
+\definecolor{titleblue}{HTML}{4482A9}
+\definecolor{titleteal}{HTML}{263B48}
+\definecolor{titledark}{HTML}{174064}
+\definecolor{titlelite}{HTML}{CFC8A7}
+
+\definecolor{gold}{HTML}{F0AB00} % color for keys
+\endinput

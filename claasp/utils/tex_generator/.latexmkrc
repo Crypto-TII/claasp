@@ -1,0 +1,1 @@
+$ENV{PATH} .= ':/Library/TeX/texbin';
