@@ -51,16 +51,14 @@ def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
         cc = "{0:b}".format(_[0])
         for i in range(len(cc)):
             if cc[i] == '1':  m = m + pow(y, len(cc) - 1 - i)
-        for i in _[1]:
+        for i in _:
             m = m * x[i]
         p += m
     return p
 
 
 def _bits_to_words_array(input, bits_inside_word, word_gf):
-    poly = word_gf.polynomial()
-    R = PolynomialRing(GF(2), 't').quotient(poly)
-    y = R.gen()
+    y = word_gf.gen()
 
     monomials = [pow(y, i) for i in range(bits_inside_word - 1, -1, -1)]
     word_array = [0 for _ in
@@ -74,14 +72,20 @@ def _bits_to_words_array(input, bits_inside_word, word_gf):
 
     return word_array
 
-def _words_array_to_bits(word_array):
+def _words_array_to_bits(word_array, word_gf):
+    y = word_gf.gen()
+    bits_inside_word = word_gf.degree()
+    gf_vector = [pow(y, i) for i in range(bits_inside_word-1, -1, -1)]
     output = []
-
     for _ in word_array:
-        coef = _.list()
-        coef.reverse()
-        for __ in coef:
-            output.append(__)
+        coeffcients = _.coefficients()
+        monomials = _.monomials()
+        for i in range(len(coeffcients)):
+            bits = [0 for i in range(bits_inside_word)]
+            for j in range(len(gf_vector)):
+                if coeffcients[i] == gf_vector[j]:
+                    bits[j] += monomials[i]
+            output += bits
     return output
 
 class FSR(Component):
@@ -165,19 +169,18 @@ class FSR(Component):
         noutputs = self.output_bit_size
         ninputs = self.input_bit_size
         ring_R = model.ring()
-        number_of_words = int(len(input) / bits_inside_word)
+        number_of_words = int(ninputs / bits_inside_word)
 
         x = vector(ring_R, (map(ring_R, [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)])))
         y = vector(ring_R, (map(ring_R, [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)])))
         word_gf = GF(pow(2, bits_inside_word))
         word_array = _bits_to_words_array(x, bits_inside_word, word_gf)
-        word_polynomial_ring = PolynomialRing(word_gf, number_of_words)
+        word_polynomial_ring = PolynomialRing(word_gf, number_of_words, 'w')
 
         number_of_registers = len(self.description[0])
         registers_polynomial = [0 for _ in range(number_of_registers)]
         registers_start = [0 for _ in range(number_of_registers)]
-        registers_update_bit = [0 for _ in range(number_of_registers)]
-        # clock_polynomials = [None for _ in range(number_of_registers)]
+        registers_update_word = [0 for _ in range(number_of_registers)]
         if len(self.description) > 2:
             clocks = self.description[2]
         else:
@@ -188,23 +191,20 @@ class FSR(Component):
             registers_polynomial[i] = _get_polynomial_from_word_polynomial_index_list(self.description[0][i][1], word_polynomial_ring)
             registers_start[i] = end
             end += self.description[0][i][0]
-            registers_update_bit[i] = end - 1
-            # if len(self.description[0][i]) > 2:
-            #     clock_polynomials[i] = _get_polynomial_from_word_polynomial_index_list(self.description[0][i][2], word_polynomial_ring)
+            registers_update_word[i] = end - 1
 
         for _ in range(clocks):
             for i in range(number_of_registers):
                 output_word = registers_polynomial[i](*word_array)
-                # clock_word = clock_polynomials[i](*word_array)
-                for k in range(registers_start[i], registers_update_bit[i]):
+                for k in range(registers_start[i], registers_update_word[i]):
                     word_array[k] = word_array[k+1]
-                word_array[registers_update_bit[i]] = output_word
+                word_array[registers_update_word[i]] = output_word
 
-        x = _words_array_to_bits(word_array)
+        x = _words_array_to_bits(word_array, word_gf)
         output_polynomials = y+vector(x)
         return output_polynomials
 
-    def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
+    def get_bit_based_vectorized_python_code(self, params):
         if len(self.description) > 2:
             clocks = self.description[2]
         else:
