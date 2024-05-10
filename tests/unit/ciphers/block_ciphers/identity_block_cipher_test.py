@@ -27,3 +27,4 @@ def test_identity_block_cipher():
     key = 0xffff
     ciphertext = 0xffffffff
     assert identity.evaluate([plaintext, key]) == ciphertext
+    assert identity.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

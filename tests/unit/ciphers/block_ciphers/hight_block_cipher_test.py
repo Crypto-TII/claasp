@@ -22,6 +22,7 @@ def test_hight_block_cipher():
     plaintext = 0x0011223344556677
     key = 0x0
     assert hight.evaluate([plaintext, key], verbosity=False) == 0x1055ddee99ba66e0
+    assert hight.evaluate_vectorized([plaintext, key], evaluate_api=True) == 0x1055ddee99ba66e0
 
     hight = HightBlockCipher(block_bit_size=64,
                              key_bit_size=128,
@@ -29,6 +30,7 @@ def test_hight_block_cipher():
                              transformations_flag=False)
     key = 0x000000066770000000a0000000000001
     assert hight.evaluate([plaintext, key], verbosity=False) == 0x2b8b6b285d2d0e9c
+    assert hight.evaluate_vectorized([plaintext, key], evaluate_api=True) == 0x2b8b6b285d2d0e9c
 
     hight = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=32)
     assert hight.evaluate([plaintext, key], verbosity=False) == 0x3b25d694326c4375

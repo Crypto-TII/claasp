@@ -22,6 +22,7 @@ def test_rc5_block_cipher():
     plaintext = 0x0001
     ciphertext = 0x212a
     assert rc5.evaluate([key, plaintext]) == ciphertext
+    assert rc5.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
 
     rc5 = RC5BlockCipher(word_size=16, number_of_rounds=16, key_size=64)
     key = 0x0001020304050607
@@ -34,24 +35,28 @@ def test_rc5_block_cipher():
     plaintext = 0x0001020304050607
     ciphertext = 0x2A0EDC0E9431FF73
     assert rc5.evaluate([key, plaintext]) == ciphertext
+    assert rc5.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
 
     rc5 = RC5BlockCipher(word_size=64, number_of_rounds=24, key_size=192)
     key = 0x000102030405060708090A0B0C0D0E0F1011121314151617
     plaintext = 0x000102030405060708090A0B0C0D0E0F
     ciphertext = 0xA46772820EDBCE0235ABEA32AE7178DA
     assert rc5.evaluate([key, plaintext]) == ciphertext
+    assert rc5.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
 
     rc5 = RC5BlockCipher(word_size=128, number_of_rounds=28, key_size=256)
     key = 0x000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F
     plaintext = 0x000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F
     ciphertext = 0xECA5910921A4F4CFDD7AD7AD20A1FCBA068EC7A7CD752D68FE914B7FE180B440
     assert rc5.evaluate([key, plaintext]) == ciphertext
+    assert rc5.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
 
     rc5 = RC5BlockCipher(word_size=24, number_of_rounds=4, key_size=1)
     key = 0x0
     plaintext = 0x000102030405
     ciphertext = 0x89CBDCC9525A
     assert rc5.evaluate([key, plaintext]) == ciphertext
+    assert rc5.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
 
     rc5 = RC5BlockCipher(word_size=80, number_of_rounds=4, key_size=96)
     key = 0x000102030405060708090A0B

@@ -19,6 +19,8 @@ def test_raiden_block_cipher():
     key = 0x1de1c3c2c65880074c32dce537b22ab3
     ciphertext = 0x99bf13c039b49812
     assert raiden.evaluate([plaintext, key]) == ciphertext
+    assert raiden.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+
     assert raiden.test_against_reference_code(2) is True
 
     raiden = RaidenBlockCipher(32, 64, 32)

@@ -19,6 +19,7 @@ def test_speck_block_cipher():
     key = 0x1918111009080100
     ciphertext = 0xa86842f2
     assert speck.evaluate([plaintext, key]) == ciphertext
+    assert speck.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
 
     speck = SpeckBlockCipher(block_bit_size=64, key_bit_size=96)
     plaintext = 0x74614620736e6165

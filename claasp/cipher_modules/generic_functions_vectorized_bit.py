@@ -16,6 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+import inspect
 
 import numpy as np
 
@@ -76,9 +77,7 @@ def bit_vector_select_word(input, bits, verbosity=False):
         print(f'select_word bits : {bits}')
         print(f'select_word output : {output.transpose()}')
         print("---")
-
     return output
-
 
 def bit_vector_SBOX(input, sbox, verbosity=False, output_bit_size = None):
     """
@@ -121,14 +120,22 @@ def bit_vector_XOR(input, number_of_inputs, output_bit_size, verbosity=False):
     - ``output_bit_size`` -- **integer**; is an integer representing the bit size of the output
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    output = 0  # copy(inputConcatenated[0:output_bit_size])
+    output = 0
     if number_of_inputs == len(input) and np.all([x.shape[0] == output_bit_size for x in input]):
         for i in range(number_of_inputs):
             output = output + input[i]
     else:
-        inputConcatenated = bit_vector_CONCAT(input)
-        for i in range(number_of_inputs):
-            output += inputConcatenated[i * output_bit_size:(i + 1) * output_bit_size]
+        assert np.all([x.shape[0] <= output_bit_size for x in input])
+        output = np.zeros(shape=(output_bit_size, np.max([input[i].shape[1] for i in range(len(input))])), dtype=np.uint8)
+        first_bit_index = 0
+        for i in range(len(input)):
+            current_input = input[i]
+            bit_size = current_input.shape[0]
+            output[first_bit_index:first_bit_index + bit_size] += current_input
+            first_bit_index += bit_size
+            if first_bit_index == output_bit_size:
+                first_bit_index = 0
+
     output &= 1
 
     if DEBUG_MODE:
@@ -151,6 +158,7 @@ def print_component_info(input, output, component_type):
     print([input[i].transpose() for i in range(len(input))])
     print(" Output:")
     print(output.transpose())
+
 
 
 def bit_vector_CONCAT(input):
@@ -434,7 +442,13 @@ def bit_vector_linear_layer(input, matrix, verbosity=False):
     - ``matrix`` -- **list**; a list of lists of 0s and 1s. len(matrix) should be equal to input.len
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    output = input.transpose().dot(matrix).transpose() % 2
+    m8 = np.uint8(matrix)
+    # Bit permutation case
+    if np.sum(m8, axis=0).max() == 1:
+        permutation_indexes = np.where(m8.T == 1)[1]
+        output = input[permutation_indexes]
+    else:
+        output = input.transpose().dot(m8).transpose() % 2
     if verbosity:
         print("LINEAR LAYER:")
         print(input)

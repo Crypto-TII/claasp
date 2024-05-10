@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -22,11 +21,13 @@ from types import ModuleType
 from subprocess import Popen, PIPE
 
 from claasp.cipher_modules import code_generator
+from claasp.cipher_modules.generic_functions_vectorized_byte import cipher_inputs_to_evaluate_vectorized_inputs, \
+    evaluate_vectorized_outputs_to_integers
 
 
 def evaluate(cipher, cipher_input, intermediate_output=False, verbosity=False):
     python_code_string = code_generator.generate_python_code_string(cipher, verbosity)
-    
+
     f_module = ModuleType("evaluate")
     exec(python_code_string, f_module.__dict__)
 
@@ -77,53 +78,16 @@ def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
     return function_output
 
 
-def evaluate_vectorized(cipher, cipher_input, intermediate_outputs=False, verbosity=False, evaluate_api = False):
+def evaluate_vectorized(cipher, cipher_input, intermediate_output=False, verbosity=False, evaluate_api=False,
+                        bit_based=False):
 
-    def convert_int_inputs_to_bits():
-        bit_inputs = []
-        for i, inp in enumerate(cipher_input):
-            expected_bit_size = cipher.inputs_bit_size[i]
-            bit_inputs.append(np.array([int(b) for b in bin(inp)[2:].zfill(expected_bit_size)]).reshape(expected_bit_size, -1))
-        return bit_inputs
-
-    def convert_int_inputs_to_bytes():
-        byte_inputs = []
-        import math
-        for i, inp in enumerate(cipher_input):
-            num_bytes = math.ceil(cipher.inputs_bit_size[i]/8)
-            byte_inputs.append(np.uint8([(inp >> ((num_bytes - j - 1) * 8)) & 0xff
-                      for j in range(num_bytes)]).reshape((num_bytes, -1)))
-        return byte_inputs
-
-    def convert_output_to_int(x):
-        return sum([int(v) << (cipher.output_bit_size - 8 * (i+1)) for i, v in enumerate(x[0].flatten())])
-
-    if np.any(np.array(cipher.inputs_bit_size) % 8 != 0) or not cipher.all_sboxes_are_standard():
-        print("BIT BASED")
-        python_code_string = code_generator \
-            .generate_bit_based_vectorized_python_code_string(cipher,
-                                                              store_intermediate_outputs=intermediate_outputs,
-                                                              verbosity=verbosity,
-                                                              convert_output_to_bytes=True)
-        if evaluate_api:
-            cipher_input = convert_int_inputs_to_bits()
-        else:
-            cipher_input = [np.unpackbits(cipher_input[i], axis=0)[:x, ]
-                        for i, x in enumerate(cipher.inputs_bit_size)]
-    else:
-        print("BYTE BASED")
-        if evaluate_api:
-            cipher_input = convert_int_inputs_to_bytes()
-        python_code_string = code_generator \
-            .generate_byte_based_vectorized_python_code_string(
-                cipher,
-                store_intermediate_outputs=intermediate_outputs, verbosity=verbosity)
-
+    python_code_string = code_generator.generate_byte_based_vectorized_python_code_string(cipher,
+                                                                                              store_intermediate_outputs=intermediate_output,
+                                                                                              verbosity=verbosity,
+                                                                                              integers_inputs_and_outputs=evaluate_api)
     f_module = ModuleType("evaluate")
     exec(python_code_string, f_module.__dict__)
-    cipher_output = f_module.evaluate(cipher_input, intermediate_outputs)
-    if evaluate_api:
-        cipher_output = convert_output_to_int(cipher_output)
+    cipher_output = f_module.evaluate(cipher_input, intermediate_output)
     return cipher_output
 
 

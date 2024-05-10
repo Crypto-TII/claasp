@@ -296,7 +296,7 @@ class AvalancheTests:
                 all_avalanche_probability_vectors[cipher_input][intermediate_output_name] = []
 
         inputs = self._generate_random_inputs(nb_samples)
-        evaluated_inputs = evaluator.evaluate_vectorized(self._cipher, inputs, intermediate_outputs=True, verbosity=False)
+        evaluated_inputs = evaluator.evaluate_vectorized(self._cipher, inputs, intermediate_output=True, verbosity=False)
         input_bits_to_analyse = self._cipher.get_all_inputs_bit_positions()
         for index_of_specific_input, specific_input in enumerate(self._cipher.inputs):  # where the diff is injected
             for input_diff in input_bits_to_analyse[specific_input]:
@@ -323,7 +323,7 @@ class AvalancheTests:
                                                evaluated_inputs, input_diff, index_of_specific_input):
         inputs_prime = self._generate_inputs_prime(index_of_specific_input, input_diff, inputs)
         evaluated_inputs_prime = evaluator.evaluate_vectorized(self._cipher, inputs_prime,
-                                                               intermediate_outputs=True, verbosity=False)
+                                                               intermediate_output=True, verbosity=False)
         intermediate_avalanche_probability_vectors = {}
         for intermediate_output_name in list(dict_intermediate_output_names.keys()):
             intermediate_avalanche_probability_vectors[intermediate_output_name] = \
