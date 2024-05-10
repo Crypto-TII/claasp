@@ -305,7 +305,11 @@ class SatModel:
 
         # parsing the solution
         if status == 'SATISFIABLE':
+
             variable2value = self._get_solver_solution_parsed(variable2number, values)
+            self._arx_modadd_carries = {
+                key: value for key, value in variable2value.items() if key.startswith("carry_result_")
+            }
             component2fields, total_weight = self._parse_solver_output(variable2value)
         else:
             component2fields, total_weight = {}, None

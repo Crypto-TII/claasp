@@ -28,10 +28,13 @@ from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, 
 
 
 class SatXorDifferentialModel(SatModel):
-    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False,
-                 window_size_by_round=None, window_size_by_component_id=None):
-        self._window_size_by_round = window_size_by_round
-        self._window_size_by_component_id = window_size_by_component_id
+    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False):
+        self._window_size_by_component_id_values = None
+        self._window_size_by_round_values = None
+        self._window_size_full_window_vars = None
+        self._window_size_number_of_full_window = None
+        self._window_size_full_window_operator = None
+        self._arx_modadd_carries = None
         super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
@@ -80,6 +83,26 @@ class SatXorDifferentialModel(SatModel):
             variables, constraints = self.weight_constraints(weight)
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
+
+        if self._window_size_full_window_vars is not None:
+            self._variables_list.extend(self._window_size_full_window_vars)
+
+            if self._window_size_full_window_operator == 'at_least':
+                greater_or_equal = True
+            else:
+                greater_or_equal = False
+
+            if self._window_size_number_of_full_window == 0:
+                all_ones_dummy_variables, all_ones_constraints = [], [f'-{variable}' for variable in self._window_size_full_window_vars]
+            else:
+                all_ones_dummy_variables, all_ones_constraints = self._sequential_counter_algorithm(
+                    self._window_size_full_window_vars,
+                    self._window_size_number_of_full_window,
+                    'dummy_all_ones_0',
+                    greater_or_equal=greater_or_equal
+                )
+            self._variables_list.extend(all_ones_dummy_variables)
+            self._model_constraints.extend(all_ones_constraints)
 
     def build_xor_differential_trail_and_checker_model_at_intermediate_output_level(
             self, weight=-1, fixed_variables=[]
@@ -423,10 +446,42 @@ class SatXorDifferentialModel(SatModel):
 
         return components_solutions, total_weight
 
-    @property
-    def window_size_by_round(self):
-        return self._window_size_by_round
+    def set_window_size_heuristic_by_round(
+            self, window_size_by_round_values, number_of_full_windows=None, full_window_operator='at_least'
+    ):
+        if not self._cipher.is_arx():
+            raise Exception('Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.')
+        self._window_size_by_round_values = window_size_by_round_values
+        if number_of_full_windows is not None:
+            self._window_size_full_window_vars = []
+            self._window_size_number_of_full_window = number_of_full_windows
+            self._window_size_full_window_operator = full_window_operator
+
+    def set_window_size_heuristic_by_component_id(
+            self, window_size_by_component_id_values, number_of_full_windows=None, full_window_operator='at_least'
+    ):
+        if not self._cipher.is_arx():
+            raise Exception('Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.')
+        self._window_size_by_component_id_values = window_size_by_component_id_values
+        if number_of_full_windows is not None:
+            self._window_size_full_window_vars = []
+            self._window_size_number_of_full_window = number_of_full_windows
+            self._window_size_full_window_operator = full_window_operator
+
+    def set_track_arx_carries(self):
+        self._arx_modadd_carries = []
 
     @property
-    def window_size_by_component_id(self):
-        return self._window_size_by_component_id
+    def window_size_number_of_full_window(self):
+        return self._window_size_number_of_full_window
+
+    @property
+    def window_size_by_round_values(self):
+        return self._window_size_by_round_values
+    @property
+    def arx_modadd_carries(self):
+        return self._arx_modadd_carries
+
+    @property
+    def window_size_by_component_id_values(self):
+        return self._window_size_by_component_id_values

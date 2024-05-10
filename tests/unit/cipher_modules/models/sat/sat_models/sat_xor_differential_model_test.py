@@ -54,13 +54,27 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     assert int(result['total_weight']) == int(3.0)
 
 
+def test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window():
+    speck = SpeckBlockCipher(number_of_rounds=10)
+    sat = SatXorDifferentialModel(speck)
+    sat.set_window_size_heuristic_by_round(
+        [3 for i in range(10)], number_of_full_windows=2
+    )
+    sat.set_track_arx_carries()
+    result = sat.find_one_xor_differential_trail_with_fixed_weight(34, solver_name="CADICAL_EXT")
+    import ipdb;
+    ipdb.set_trace()
+    assert int(result['total_weight']) == int(34.0)
+
+
 def test_find_one_xor_differential_trail_with_fixed_weight_and_window_heuristic_per_component():
     speck = SpeckBlockCipher(number_of_rounds=3)
     filtered_objects = [obj.id for obj in speck.get_all_components() if obj.description[0] == "MODADD"]
     dict_of_window_heuristic_per_component = {}
     for component_id in filtered_objects:
         dict_of_window_heuristic_per_component[component_id] = 0
-    sat = SatXorDifferentialModel(speck, window_size_by_component_id=dict_of_window_heuristic_per_component)
+    sat = SatXorDifferentialModel(speck)
+    sat.set_window_size_heuristic_by_component_id(dict_of_window_heuristic_per_component)
     result = sat.find_one_xor_differential_trail_with_fixed_weight(3)
     assert int(result['total_weight']) == int(3.0)
 
