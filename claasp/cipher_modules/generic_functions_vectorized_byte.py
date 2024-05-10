@@ -291,7 +291,7 @@ def generate_formatted_inputs_(actual_inputs_bits, i, output, pos, real_bits,
                 k = k + 1
 
 
-def byte_vector_SBOX(val, sbox, verbosity=False):
+def byte_vector_SBOX(val, sbox, input_bit_size, verbosity=False):
     """
     Computes the result of the SBox operation.
 
@@ -301,13 +301,21 @@ def byte_vector_SBOX(val, sbox, verbosity=False):
     - ``sbox`` --  **np.array(dtype = np.uint8)** An integer numpy array representing the SBox.
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
+    if input_bit_size<=8:
+        output = np.uint8(sbox)[val[0]]
+    else:
+        assert val[0].shape[0] == 2, "The inputs cannot be larger than two bytes each."
+        input_as_uint16 =  (np.uint16(val[0][0, :]) << 8)^val[0][1,:]
+        sub = np.uint16(sbox)[input_as_uint16]
+        output = np.uint8(np.vstack([sub>>8, sub&0xff]))
+
     if verbosity:
         print("SBox")
         print("Input : ", val[0].transpose())
         print("Output : ", sbox[val[0]].transpose())
         print("---")
 
-    return sbox[val[0]]
+    return output
 
 
 def byte_vector_XOR(input, verbosity=False):

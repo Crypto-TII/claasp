@@ -700,7 +700,7 @@ class SBOX(Component):
                 f'np.array({self.description}, dtype=np.uint8), output_bit_size = {self.output_bit_size})']
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} = byte_vector_SBOX({params}, np.array({self.description}, dtype=np.uint8))']
+        return [f'  {self.id} = byte_vector_SBOX({params}, {self.description}, {self.input_bit_size})']
 
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):
         # TODO: consider the option for sbox
