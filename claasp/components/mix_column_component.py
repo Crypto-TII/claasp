@@ -543,8 +543,8 @@ class MixColumn(LinearLayer):
                     if element not in mul_tables:
                         mul_tables[element] = [(F.fetch_int(i) * F.fetch_int(element)).integer_representation()
                                                for i in range(2 ** input_size)]
-            return [f'  {self.id}=byte_vector_mix_column({params} , {matrix}, {mul_tables})']
-        return [f'  {self.id}=byte_vector_mix_column_poly0({params} , {matrix})']
+            return [f'  {self.id}=byte_vector_mix_column({params} , {matrix}, {mul_tables}, {input_size})']
+        return [f'  {self.id}=byte_vector_mix_column_poly0({params} , {matrix}, {input_size})']
 
     def milp_constraints(self, model):
         """

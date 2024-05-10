@@ -606,7 +606,7 @@ def byte_vector_linear_layer(input, matrix):
     return output
 
 
-def byte_vector_mix_column(input, matrix, mul_table, verbosity=False):
+def byte_vector_mix_column(input, matrix, mul_table, input_size, verbosity=False):
     """
     Computes the mix_column operation.
 
@@ -617,23 +617,27 @@ def byte_vector_mix_column(input, matrix, mul_table, verbosity=False):
     - ``mul_tables`` -- **dictionary**; a dictionary giving the multiplication table by x at key x
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
+    assert input_size == 4 or input_size==8, "Vectorized evaluation of mix_columns does not support word sizes other than 8 and 4"
     if verbosity:
         print("MIXCOLUMN:")
         print(input.transpose())
-    output = np.zeros(shape=(len(input), input[0].shape[1]), dtype=np.uint8)
+    print(input)
+    tmp = np.zeros(shape=(len(input), input[0].shape[1]), dtype=np.uint8)
     for i in [*mul_table]:
         mul_table[i] = np.array(mul_table[i], dtype=np.uint8)
     for i in range(len(matrix)):
         for j in range(len(matrix[0])):
-            output[i] = reduce(lambda x, y: x ^ y, [output[i], mul_table[matrix[i][j]][input[j]]])
-    if verbosity:
-        print(output.transpose())
-        print("---")
+            tmp[i] = reduce(lambda x, y: x ^ y, [tmp[i], mul_table[matrix[i][j]][input[j]]])
+    print(tmp)
+    if input_size < 8 :
+        output = np.uint8([(tmp[2*i, :] << 4) ^ tmp[2*i+1, :] for i in range(len(input)//2)])
+        print("Inf 8 ", output)
+        return output
+    else:
+        return tmp
 
-    return output
 
-
-def byte_vector_mix_column_poly0(input, matrix, verbosity=False):
+def byte_vector_mix_column_poly0(input, matrix, input_size, verbosity=False):
     """
     Computes the mix_column operation, special case where poly=0.
 
@@ -643,24 +647,19 @@ def byte_vector_mix_column_poly0(input, matrix, verbosity=False):
     - ``matrix`` -- **list**; a list of lists of integers
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    if verbosity:
-        print("MIXCOLUMN poly 0:")
-        print(input.transpose())
-    output = np.zeros(shape=(len(input) * input[0].shape[0], input[0].shape[1]), dtype=np.uint8)
+    assert input_size == 4 or input_size==8, "Vectorized evaluation of mix_columns does not support word sizes other than 8 and 4"
+    tmp = np.zeros(shape=(len(input), input[0].shape[1]), dtype=np.uint8)
     for i in range(len(matrix)):
         for j in range(len(matrix[0])):
-            # for k in range(len(matrix)):
-            # print(output.shape,  i, j, input[j].shape, output[i].shape, matrix[i][j])
-            #   output[i] = output[i]^(matrix[i][j]*input[j])
-            output[i * input[0].shape[0]:(i + 1) * input[0].shape[0]] = \
-                output[i * input[0].shape[0]:(i + 1) * input[0].shape[0]] ^ matrix[i][j] * input[j]
-            # reduce(lambda x, y:x^y, [output[i], matrix[i][j]*input[j]])
-    if verbosity:
-        print(output.transpose())
-        print("---")
+            tmp[i * input[0].shape[0]:(i + 1) * input[0].shape[0]] = \
+                tmp[i * input[0].shape[0]:(i + 1) * input[0].shape[0]] ^ matrix[i][j] * input[j]
 
-    return output
-
+    if input_size < 8 :
+        output = np.uint8([(tmp[2*i, :] << 4) ^ tmp[2*i+1, :] for i in range(len(input)//2)])
+        print("Inf 8 ", output)
+        return output
+    else:
+        return tmp
 
 def print_component_info(input, output, component_type):
     print(component_type)
