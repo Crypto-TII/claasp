@@ -22,7 +22,7 @@ from claasp.component import Component
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.code_generator import constant_to_bitstring
-
+from claasp.cipher_modules.generic_functions_vectorized_byte import integer_array_to_evaluate_vectorized_input
 
 def constant_to_repr(val, output_size):
     _val = int(val, 0)
@@ -33,6 +33,8 @@ def constant_to_repr(val, output_size):
     ret = [(_val >> s - (8 * (i + 1))) & 0xff for i in range(s // 8)]
 
     return ret
+
+
 
 
 class Constant(Component):
@@ -301,7 +303,13 @@ class Constant(Component):
                 f'dtype=np.uint8).reshape({self.output_bit_size, 1})']
 
     def get_byte_based_vectorized_python_code(self, params):
+        #print("*CONSTANT"*10)
+        #print(self.description, self.output_bit_size)
+        #print("*"*10, flush=True)
         val = constant_to_repr(self.description[0], self.output_bit_size)
+        val2 = integer_array_to_evaluate_vectorized_input([int(self.description[0],0)], self.output_bit_size)
+
+
         return [f'  {self.id} = np.array({val}, dtype=np.uint8).reshape({len(val)}, 1)']
 
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):

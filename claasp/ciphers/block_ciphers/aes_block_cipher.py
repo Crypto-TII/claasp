@@ -284,6 +284,16 @@ class AESBlockCipher(Cipher):
         return key_sboxes_components
 
     def create_constant_component(self, round_number, state_size, word_size):
+        # if word_size != 8:
+        #     #if self.ROUND_CONSTANT[word_size][round_number][:2] == '0b':
+        #     constant = self.add_constant_component(len(self.ROUND_CONSTANT[word_size][round_number]) - 2,
+        #                                                int(self.ROUND_CONSTANT[word_size][round_number], 0))
+        #     #elif self.ROUND_CONSTANT[word_size][round_number][:2] == '0x':
+        #     #    constant = self.add_constant_component(self.ROW_SIZE,
+        #     #                                           int(self.ROUND_CONSTANT[word_size][round_number], 16))
+        #     #else:
+        #     #    print("Error : Constant format")
+        # else:
         if word_size != 8:
             if self.ROUND_CONSTANT[word_size][round_number][:2] == '0b':
                 constant = self.add_constant_component(len(self.ROUND_CONSTANT[word_size][round_number]) - 2,
@@ -297,6 +307,7 @@ class AESBlockCipher(Cipher):
             constant = self.add_constant_component(self.ROW_SIZE,
                                                    int(self.ROUND_CONSTANT[word_size][state_size][round_number],
                                                        16))
+        #print(self.SBOX_BIT_SIZE,self.NUM_ROWS, constant.description)
 
         return constant
 

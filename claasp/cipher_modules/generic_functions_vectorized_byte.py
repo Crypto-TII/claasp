@@ -17,7 +17,6 @@
 
 
 import numpy as np
-from copy import copy
 from functools import reduce
 import math
 
@@ -34,8 +33,10 @@ def integer_array_to_evaluate_vectorized_input(values, bit_size):
     - ``values`` -- **list** A list of integers
     - ``bit_size`` -- **integer** The bit size of the elements of values.
     """
-    num_bytes = math.ceil(bit_size / 8)
+    num_bytes = get_number_of_bytes_needed_for_bit_size(bit_size)
+    # math.ceil(bit_size / 8)
     values_as_np = np.array(values, dtype=object) & (2 ** bit_size - 1)
+    #print(f"In conv function : {values=}, {values_as_np=}")
     evaluate_vectorized_input = (np.uint8([(values_as_np >> ((num_bytes - j - 1) * 8)) & 0xff
                                            for j in range(num_bytes)]).reshape((num_bytes, -1)))
     return evaluate_vectorized_input
@@ -123,7 +124,7 @@ def byte_vector_is_consecutive(l):
 
 
 def byte_vector_select_all_words(unformatted_inputs, real_bits, real_inputs, number_of_inputs, words_per_input,
-                                 actual_inputs_bits, verbosity=False):
+                                 actual_inputs_bits):
     """
     Parses the inputs from the cipher into a list of numpy byte arrays, each corresponding to one input to the function.
 
@@ -137,12 +138,7 @@ def byte_vector_select_all_words(unformatted_inputs, real_bits, real_inputs, num
     - ``number_of_inputs`` -- **integer**; an integer representing the number of inputs expected by the operation
     - ``words_per_input`` -- **integer**; the number of 8-bit words to be reserved for each of the inputs
     - ``actual_inputs_bits`` -- **integer**; the bit size of the variables in unformatted_inputs
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    if verbosity:
-        print("SELECT : ")
-        print("Input =")
-        print([x.transpose() for x in unformatted_inputs])
     number_of_columns = [unformatted_inputs[i].shape[1] for i in range(len(unformatted_inputs))]
     max_number_of_columns = np.max(number_of_columns)
     output = [0 for _ in range(number_of_inputs)]
@@ -152,23 +148,14 @@ def byte_vector_select_all_words(unformatted_inputs, real_bits, real_inputs, num
         if len(real_inputs[i]) == 1 and np.all(real_bits[i][0] == list(range(actual_inputs_bits[real_inputs[i][0]]))):
             output[i] = unformatted_inputs[real_inputs[i][0]]
             if number_of_output_bits % 8 > 0:
-                left_byte_mask = 2**(number_of_output_bits % 8)-1
+                left_byte_mask = 2 ** (number_of_output_bits % 8) - 1
             else:
                 left_byte_mask = 0xffff
-            output[i][0,:] &= left_byte_mask
+            output[i][0, :] &= left_byte_mask
         else:
             output[i] = np.zeros(shape=(words_per_input, max_number_of_columns), dtype=np.uint8)
             generate_formatted_inputs(actual_inputs_bits, i, output, pos, real_bits, real_inputs, unformatted_inputs,
                                       words_per_input)
-
-    if verbosity:
-        print(f"{unformatted_inputs=}")
-        print(f"{real_bits=}")
-        print(f"{real_inputs=}")
-        print(f"{number_of_inputs=}")
-        print(f"{words_per_input=}")
-        print(f"{actual_inputs_bits=}")
-        print(f"{output=}")
     return output
 
 
@@ -199,11 +186,10 @@ def get_number_of_consecutive_bits(l):
     return number_of_consecutive_bits
 
 
-
 def generate_formatted_inputs(actual_inputs_bits, i, output, pos, real_bits,
                               real_inputs, unformatted_inputs, words_per_input):
     number_of_output_bits = np.sum([len(x) for x in real_bits[i]])
-    if number_of_output_bits % 8 > 0 :
+    if number_of_output_bits % 8 > 0:
         left_zero_padding = 8 - (number_of_output_bits % 8)
     else:
         left_zero_padding = 0
@@ -212,9 +198,9 @@ def generate_formatted_inputs(actual_inputs_bits, i, output, pos, real_bits,
 
     for j in range(len(real_inputs[i])):
         val = unformatted_inputs[real_inputs[i][- j - 1]]
-        bits_taken = len(real_bits[i][-j-1])
-        if actual_inputs_bits[real_inputs[i][-j-1]] % 8 > 0:
-            offset_for_first_byte = 8 - (actual_inputs_bits[real_inputs[i][-j-1]] % 8)
+        bits_taken = len(real_bits[i][-j - 1])
+        if actual_inputs_bits[real_inputs[i][-j - 1]] % 8 > 0:
+            offset_for_first_byte = 8 - (actual_inputs_bits[real_inputs[i][-j - 1]] % 8)
         else:
             offset_for_first_byte = 0
         b_list = np.array(real_bits[i][- j - 1]) + offset_for_first_byte
@@ -225,73 +211,18 @@ def generate_formatted_inputs(actual_inputs_bits, i, output, pos, real_bits,
         # print(f"{offset_for_first_byte=}")
         # print(f"{left_zero_padding=}")
 
-        if j ==0:
+        if j == 0:
             last_bit_position = None
         else:
             last_bit_position = -bits_counter
-        binary_output[-bits_taken-bits_counter:last_bit_position] = binary_version[b_list, :]
-        #binary_output[-bits_taken-bits_counter:-bits_counter] = binary_version[b_list, :]
+        binary_output[-bits_taken - bits_counter:last_bit_position] = binary_version[b_list, :]
+        # binary_output[-bits_taken-bits_counter:-bits_counter] = binary_version[b_list, :]
 
         bits_counter += bits_taken
     output[i] = np.packbits(binary_output, axis=0)
 
-def generate_formatted_inputs_(actual_inputs_bits, i, output, pos, real_bits,
-                              real_inputs, unformatted_inputs, words_per_input):
-    bit_position_in_output = 0
-    for j in range(len(real_inputs[i])):
-        val = real_inputs[i][len(real_inputs[i]) - j - 1]
-        b_list = real_bits[i][len(real_inputs[i]) - j - 1]
-        # val is the input, b_list is the list of bits I need to get
-        b2 = copy(b_list)
-        b2.reverse()  # Could save a copy with b2 = reversed(b_list)
-        # Why the reverse?
-        ####
-        aligned = actual_inputs_bits[real_inputs[i][j]] % 8 == 0
-        offset_for_first_byte = 8 - (actual_inputs_bits[real_inputs[i][j]] % 8)
 
-        #####
-
-        #
-        for k in range(len(b2)):
-            b = b2[k] # kth position of b2 from the end
-            #######
-            # Special case: shift
-            # Compute number of consecutive bits I can take
-            number_of_consecutive_bits = get_number_of_consecutive_bits(b2[k:])
-            bits_positions_to_take = b2[k:k+1+number_of_consecutive_bits]
-            ######
-            #word_pos_in_output = (8 * words_per_input - pos - 1) // 8  # Position of the word in output; may need ceil
-            word_pos_in_output = bit_position_in_output // 8 # word where the bit needs to go, with 0 being the rightmost one
-            word_pos_in_input = b // 8  # word where the bit comes from, with 0 being the rightmost one
-
-            bit_left_shift_in_output = pos % 8
-            bits_per_word_in_input = actual_inputs_bits[val] // unformatted_inputs[val].shape[
-                0]  # Assumes 10 bits is 5/5 rather than 2/8. I think I should fix this line
-            bit_pos_in_input = 8 - bits_per_word_in_input + (b % bits_per_word_in_input)
-
-            if pos % 8 == 0 and k + 8 <= len(b2) and byte_vector_is_consecutive(b2[k:k + 8]) \
-                    and b2[k + 7] % 8 == 0 and bits_per_word_in_input == 8:
-                output[i][word_pos_in_output] = unformatted_inputs[val][word_pos_in_input]
-                pos = pos + 8
-                k = k + 8
-            elif pos % 4 == 0 and k + 4 <= len(b2) and byte_vector_is_consecutive(b2[k:k + 4]) \
-                    and b2[k + 3] % 4 == 0 and bits_per_word_in_input == 4:
-                if pos % 8 == 0:
-                    output[i][word_pos_in_output] ^= unformatted_inputs[val][word_pos_in_input]
-                    pos = pos + 4
-                    k = k + 4
-                elif pos % 8 == 4:
-                    output[i][word_pos_in_output] ^= unformatted_inputs[val][word_pos_in_input] << 4
-                    pos = pos + 4
-                    k = k + 4
-            else:
-                output[i][word_pos_in_output] ^= ((unformatted_inputs[val][word_pos_in_input] >> (
-                        8 - 1 - bit_pos_in_input)) & 1) << bit_left_shift_in_output
-                pos = pos + 1
-                k = k + 1
-
-
-def byte_vector_SBOX(val, sbox, input_bit_size, verbosity=False):
+def byte_vector_SBOX(val, sbox, input_bit_size):
     """
     Computes the result of the SBox operation.
 
@@ -299,50 +230,30 @@ def byte_vector_SBOX(val, sbox, input_bit_size, verbosity=False):
 
     - ``val`` -- **np.array(dtype = np.uint8)** A numpy matrix with one row per byte and one column per sample.
     - ``sbox`` --  **np.array(dtype = np.uint8)** An integer numpy array representing the SBox.
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    if input_bit_size<=8:
+    if input_bit_size <= 8:
         output = np.uint8(sbox)[val[0]]
     else:
         assert val[0].shape[0] == 2, "The inputs cannot be larger than two bytes each."
-        input_as_uint16 =  (np.uint16(val[0][0, :]) << 8)^val[0][1,:]
+        input_as_uint16 = (np.uint16(val[0][0, :]) << 8) ^ val[0][1, :]
         sub = np.uint16(sbox)[input_as_uint16]
-        output = np.uint8(np.vstack([sub>>8, sub&0xff]))
-
-    if verbosity:
-        print("SBox")
-        print("Input : ", val[0].transpose())
-        print("Output : ", sbox[val[0]].transpose())
-        print("---")
-
+        output = np.uint8(np.vstack([sub >> 8, sub & 0xff]))
     return output
 
 
-def byte_vector_XOR(input, verbosity=False):
+def byte_vector_XOR(input):
     """
     Computes the result of the XOR operation.
 
     INPUT:
     - ``input`` -- **list**; A list of numpy byte matrices to be XORed, each with one row per byte, and one column per
         sample.
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    if verbosity:
-        print("XOR")
-        print("Input =")
-        print([x.transpose() for x in input])
-
     output = reduce(lambda x, y: x ^ y, input)
-    if verbosity:
-        print("Output = ")
-        print(output.transpose())
-        print("/XOR")
-        print("\n")
-
     return output
 
 
-def byte_vector_AND(input, verbosity=False):
+def byte_vector_AND(input):
     """
     Computes the result of the AND operation
 
@@ -351,17 +262,12 @@ def byte_vector_AND(input, verbosity=False):
     INPUT:
     - ``input`` -- **list**; A list of numpy byte matrices to be ANDed, each with one row per byte, and one column per
         sample.
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output.
     """
     output = reduce(lambda x, y: x & y, input)
-
-    if verbosity:
-        print_component_info(input, output, "AND:")
-
     return output
 
 
-def byte_vector_OR(input, verbosity=False):
+def byte_vector_OR(input):
     """
     Computes the result of the OR operation.
 
@@ -370,17 +276,12 @@ def byte_vector_OR(input, verbosity=False):
     INPUT:
     - ``input`` -- **list**; A list of numpy byte matrices to be ORed, each with one row per byte, and one column per
         sample.
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output.
     """
     output = reduce(lambda x, y: x | y, input)
-
-    if verbosity:
-        print_component_info(input, output, "OR:")
-
     return output
 
 
-def byte_vector_NOT(input, verbosity=False):
+def byte_vector_NOT(input):
     """
     Computes the result of the NOT operation.
 
@@ -388,17 +289,12 @@ def byte_vector_NOT(input, verbosity=False):
 
     - ``input`` -- **list**; A list of one numpy byte matrix to be negated, with one row per byte, and one column per
         sample
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
     output = ~input[0]
-
-    if verbosity:
-        print_component_info(input, output, "NOT:")
-
     return output
 
 
-def byte_vector_SHIFT_BY_VARIABLE_AMOUNT(input, input_size, shift_direction, verbosity=False):
+def byte_vector_SHIFT_BY_VARIABLE_AMOUNT(input, input_size, shift_direction):
     """
     Computes the bitwise shift by variable amount operation.
 
@@ -408,7 +304,6 @@ def byte_vector_SHIFT_BY_VARIABLE_AMOUNT(input, input_size, shift_direction, ver
     - ``input_size`` -- **integer**; size in bits of value to be shifted
     - ``shift_direction`` -- **integer**; the value of the shift, positive for right and
         negative for left
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
 
     """
     bits = np.uint8(np.log2(input_size))
@@ -422,27 +317,17 @@ def byte_vector_SHIFT_BY_VARIABLE_AMOUNT(input, input_size, shift_direction, ver
         if len(ind[0]) > 0:
             output[:, ind[0]] = byte_vector_SHIFT([input0[:, ind[0]]],
                                                   i * shift_direction)  # np.roll(input0[:, ind], i*shift_direction, axis=0)
-    if verbosity:
-        print("VARIABLE_SHIFT:")
-        print("Output with shape ", output.shape)
-        print(output)
-
     return output
 
 
-def byte_vector_MODADD(input, verbosity=False):
+def byte_vector_MODADD(input):
     """
     Computes the result of the MODADD operation.
 
     INPUT:
 
     - ``input`` -- **list**; A list of numpy byte matrices to be added, each with one row per byte, and one column per sample.
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    if verbosity:
-        print("MODADD")
-        print("Input =")
-        print(input)
     for i in range(len(input) - 1):
         if i == 0:
             a = input[0].copy()
@@ -463,22 +348,16 @@ def byte_vector_MODADD(input, verbosity=False):
             np.less(m - c[1:], b[1:], out=cbuf)
             c = reduce(lambda a, b: a + b, [c, b])
             b = carry.copy()
-    if verbosity:
-        print("Output:")
-        print(c)
-        print("/MODADD")
-
     return c
 
 
-def byte_vector_MODSUB(input, verbosity=False):
+def byte_vector_MODSUB(input):
     """
     Computes the result of the MODSUB operation.
 
     INPUT:
 
     - ``input`` -- **list**; A list of 2 numpy byte matrices to be subtracted, each with one row per byte, and one column per sample.
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
 
     assert len(input) == 2  # Other cases not implemented
@@ -491,13 +370,10 @@ def byte_vector_MODSUB(input, verbosity=False):
     a = byte_vector_MODADD([inputsList[0], inputsList[1]])
     output = byte_vector_MODADD([a, one])
 
-    if verbosity:
-        print_component_info(input, output, "MODSUB:")
-
     return output
 
 
-def byte_vector_ROTATE(input, rotation_amount, input_bit_size, verbosity=False):
+def byte_vector_ROTATE(input, rotation_amount, input_bit_size):
     """
     Computes the result of the bitwise ROTATE operation.
 
@@ -507,17 +383,12 @@ def byte_vector_ROTATE(input, rotation_amount, input_bit_size, verbosity=False):
     - ``input_size`` -- **integer**; size in bits of value to be shifted
     - ``rotation_amount`` -- **integer**; the value of the rotation, positive for right and
         negative for left
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    if verbosity:
-        print("ROTATE, ", rotation_amount)
-        print("Input = ")
-        print(input, input_bit_size)
-
     if input_bit_size % 8 != 0:
         bits_to_cut = 8 - (input_bit_size % 8)
         bin_input = np.unpackbits(input[0], axis=0)
-        rotated = np.vstack([np.zeros((bits_to_cut, bin_input.shape[1]), dtype = np.uint8) ,np.roll(bin_input[bits_to_cut:, :], rotation_amount)])
+        rotated = np.vstack([np.zeros((bits_to_cut, bin_input.shape[1]), dtype=np.uint8),
+                             np.roll(bin_input[bits_to_cut:, :], rotation_amount)])
         ret = np.packbits(rotated, axis=0)
     else:
         rot = rotation_amount
@@ -529,15 +400,10 @@ def byte_vector_ROTATE(input, rotation_amount, input_bit_size, verbosity=False):
             a = ret >> bitRot if sign > 0 else ret << bitRot
             b = ret << (8 - bitRot) if sign > 0 else ret >> (8 - bitRot)
             ret = a ^ np.roll(b, sign, axis=0)
-    if verbosity:
-        print(input[0].transpose())
-        print("Output =")
-        print(ret)
-
     return ret
 
 
-def byte_vector_SHIFT(input, shift_amount, verbosity=False):
+def byte_vector_SHIFT(input, shift_amount):
     """
     Computes the result of the bitwise SHIFT operation.
 
@@ -547,13 +413,7 @@ def byte_vector_SHIFT(input, shift_amount, verbosity=False):
     - ``input_size`` -- **integer**; size in bits of value to be shifted
     - ``shift_smount`` -- **integer**; the value of the shift, positive for right and
         negative for left
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    if verbosity:
-        print("SHIFT, ", shift_amount)
-        print("Input = ")
-        print(input)
-
     rot = shift_amount
     wordRot = abs(rot) // NB
     bitRot = int(abs(rot) % NB)
@@ -574,12 +434,6 @@ def byte_vector_SHIFT(input, shift_amount, verbosity=False):
             ret[-wordRot:] = 0
         mask = ((0xff) << bitRot) & 0xff
         ret[-1 - wordRot] = ret[-1 - wordRot] & mask
-
-    if verbosity:
-        print("Wordrot:", wordRot, ", bitrot:", bitRot, ", Mask = ", hex(mask))
-        print("Output =")
-        print(ret)
-
     return ret
 
 
@@ -600,13 +454,13 @@ def byte_vector_linear_layer(input, matrix):
     else:
         bin_result = np.dot(m8.T, np.uint8(input)[:, 0, :]) & 1
     if len(input) % 8 != 0:
-        bin_result = np.vstack([np.zeros((8 - (len(input) % 8), input[0].shape[1]), dtype = np.uint8), bin_result])
+        bin_result = np.vstack([np.zeros((8 - (len(input) % 8), input[0].shape[1]), dtype=np.uint8), bin_result])
     output = np.packbits(bin_result, axis=0)
 
     return output
 
 
-def byte_vector_mix_column(input, matrix, mul_table, input_size, verbosity=False):
+def byte_vector_mix_column(input, matrix, mul_table, word_size):
     """
     Computes the mix_column operation.
 
@@ -615,29 +469,22 @@ def byte_vector_mix_column(input, matrix, mul_table, input_size, verbosity=False
     - ``input`` -- **np.array(dtype = np.uint8)** A numpy matrix with one row per byte, and one column per sample.
     - ``matrix`` -- **list**; a list of lists of integers
     - ``mul_tables`` -- **dictionary**; a dictionary giving the multiplication table by x at key x
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    assert input_size == 4 or input_size==8, "Vectorized evaluation of mix_columns does not support word sizes other than 8 and 4"
-    if verbosity:
-        print("MIXCOLUMN:")
-        print(input.transpose())
-    print(input)
+    assert word_size == 4 or word_size == 8, "Vectorized evaluation of mix_columns does not support word sizes other than 8 and 4"
     tmp = np.zeros(shape=(len(input), input[0].shape[1]), dtype=np.uint8)
     for i in [*mul_table]:
         mul_table[i] = np.array(mul_table[i], dtype=np.uint8)
     for i in range(len(matrix)):
         for j in range(len(matrix[0])):
             tmp[i] = reduce(lambda x, y: x ^ y, [tmp[i], mul_table[matrix[i][j]][input[j]]])
-    print(tmp)
-    if input_size < 8 :
-        output = np.uint8([(tmp[2*i, :] << 4) ^ tmp[2*i+1, :] for i in range(len(input)//2)])
-        print("Inf 8 ", output)
+    if word_size < 8:
+        output = np.uint8([(tmp[2 * i, :] << 4) ^ tmp[2 * i + 1, :] for i in range(len(input) // 2)])
         return output
     else:
         return tmp
 
 
-def byte_vector_mix_column_poly0(input, matrix, input_size, verbosity=False):
+def byte_vector_mix_column_poly0(input, matrix, word_size):
     """
     Computes the mix_column operation, special case where poly=0.
 
@@ -645,25 +492,16 @@ def byte_vector_mix_column_poly0(input, matrix, input_size, verbosity=False):
 
     - ``input`` -- **np.array(dtype = np.uint8)** A numpy matrix with one row per byte, and one column per byte.
     - ``matrix`` -- **list**; a list of lists of integers
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    assert input_size == 4 or input_size==8, "Vectorized evaluation of mix_columns does not support word sizes other than 8 and 4"
+    assert word_size == 4 or word_size == 8, "Vectorized evaluation of mix_columns does not support word sizes other than 8 and 4"
     tmp = np.zeros(shape=(len(input), input[0].shape[1]), dtype=np.uint8)
     for i in range(len(matrix)):
         for j in range(len(matrix[0])):
             tmp[i * input[0].shape[0]:(i + 1) * input[0].shape[0]] = \
                 tmp[i * input[0].shape[0]:(i + 1) * input[0].shape[0]] ^ matrix[i][j] * input[j]
 
-    if input_size < 8 :
-        output = np.uint8([(tmp[2*i, :] << 4) ^ tmp[2*i+1, :] for i in range(len(input)//2)])
-        print("Inf 8 ", output)
+    if word_size < 8:
+        output = np.uint8([(tmp[2 * i, :] << 4) ^ tmp[2 * i + 1, :] for i in range(len(input) // 2)])
         return output
     else:
         return tmp
-
-def print_component_info(input, output, component_type):
-    print(component_type)
-    print("Inputs : ")
-    print([input[i].transpose() for i in range(len(input))])
-    print(" Output:")
-    print(output.transpose())

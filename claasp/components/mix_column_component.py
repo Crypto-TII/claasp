@@ -538,6 +538,7 @@ class MixColumn(LinearLayer):
             F2 = FiniteField(2)['x']
             _modulus = int_to_poly(polynomial, input_size + 1, F2.gen())
             F = FiniteField(pow(2, input_size), name='a', modulus=_modulus)
+
             for row in matrix:
                 for element in row:
                     if element not in mul_tables:
