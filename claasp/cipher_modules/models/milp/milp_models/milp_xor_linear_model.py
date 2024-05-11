@@ -20,6 +20,7 @@ import time
 import os
 import sys
 
+import numpy as np
 from bitstring import BitArray
 
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
@@ -28,9 +29,9 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
     output_dictionary_that_contains_xor_inequalities
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX, \
-    MILP_BUILDING_MESSAGE, MILP_XOR_LINEAR_OBJECTIVE
+    MILP_BUILDING_MESSAGE, MILP_XOR_LINEAR_OBJECTIVE, MILP_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, _string_to_hex, \
-    _filter_fixed_variables
+    _filter_fixed_variables, _set_weight_precision
 from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list, \
     set_component_solution, get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (INTERMEDIATE_OUTPUT, CONSTANT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
@@ -41,6 +42,7 @@ class MilpXorLinearModel(MilpModel):
     def __init__(self, cipher, n_window_heuristic=None, verbose=False):
         super().__init__(cipher, n_window_heuristic, verbose)
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
+        self._has_non_integer_weight = False
 
     def add_constraints_to_build_in_sage_milp_class(self, weight=-1, fixed_variables=[]):
         """
@@ -403,7 +405,8 @@ class MilpXorLinearModel(MilpModel):
 
         inputs_ids = self._cipher.inputs
         list_trails = []
-        for weight in range(min_weight, max_weight + 1):
+        precision = _set_weight_precision(self, "linear")
+        for weight in np.arange(min_weight, max_weight + 1, precision):
             looking_for_other_solutions = 1
             _, weight_constraints = self.weight_xor_linear_constraints(weight)
             for constraint in weight_constraints:
@@ -765,7 +768,7 @@ class MilpXorLinearModel(MilpModel):
     def _parse_solver_output(self):
         mip = self._model
         objective_variables = mip.get_values(self._integer_variable)
-        objective_value = objective_variables[MILP_XOR_LINEAR_OBJECTIVE] / 10.
+        objective_value = objective_variables[MILP_XOR_LINEAR_OBJECTIVE] / float(MILP_WEIGHT_PRECISION)
         components_variables = mip.get_values(self._binary_variable)
         components_values = self._get_component_values(objective_variables, components_variables)
 
@@ -795,6 +798,6 @@ class MilpXorLinearModel(MilpModel):
             mask = _string_to_hex(mask_str)
             bias = 0
             if component_id + MILP_PROBABILITY_SUFFIX in probability_variables:
-                bias = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / 10.
+                bias = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / float(MILP_WEIGHT_PRECISION)
             final_output.append(set_component_solution(mask, bias, sign=1))
         return final_output

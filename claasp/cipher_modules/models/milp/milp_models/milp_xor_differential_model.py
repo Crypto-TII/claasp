@@ -18,13 +18,15 @@ import os
 import sys
 import time
 
+import numpy as np
 from bitstring import BitArray
 
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_DIFFERENTIAL, MILP_PROBABILITY_SUFFIX, \
-    MILP_BUILDING_MESSAGE, MILP_XOR_DIFFERENTIAL_OBJECTIVE
-from claasp.cipher_modules.models.milp.utils.utils import _string_to_hex, _get_variables_values_as_string, _filter_fixed_variables
+    MILP_BUILDING_MESSAGE, MILP_XOR_DIFFERENTIAL_OBJECTIVE, MILP_WEIGHT_PRECISION
+from claasp.cipher_modules.models.milp.utils.utils import _string_to_hex, _get_variables_values_as_string, \
+    _filter_fixed_variables, _set_weight_precision
 from claasp.cipher_modules.models.utils import integer_to_bit_list, set_component_solution, \
     get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
@@ -35,6 +37,7 @@ class MilpXorDifferentialModel(MilpModel):
 
     def __init__(self, cipher, n_window_heuristic=None, verbose=False):
         super().__init__(cipher, n_window_heuristic, verbose)
+        self._has_non_integer_weight = False
 
     def add_constraints_to_build_in_sage_milp_class(self, weight=-1, fixed_variables=[]):
         """
@@ -186,7 +189,7 @@ class MilpXorDifferentialModel(MilpModel):
 
         if fixed_values == []:
             fixed_values = get_single_key_scenario_format_for_fixed_values(self._cipher)
-        if self.is_single_key(fixed_values):
+        if INPUT_KEY in self._cipher.inputs and self.is_single_key(fixed_values):
             inputs_ids = [i for i in self._cipher.inputs if INPUT_KEY not in i]
         else:
             inputs_ids = self._cipher.inputs
@@ -314,10 +317,10 @@ class MilpXorDifferentialModel(MilpModel):
         """
         cipher_inputs = self._cipher.inputs
         cipher_inputs_bit_size = self._cipher.inputs_bit_size
-        for fixed_input in fixed_values:
+        for fixed_input in [value for value in fixed_values if value['component_id'] in cipher_inputs]:
             input_size = cipher_inputs_bit_size[cipher_inputs.index(fixed_input['component_id'])]
             if fixed_input['component_id'] == 'key' and fixed_input['constraint_type'] == 'equal' \
-                    and fixed_input['bit_positions'] == list(range(input_size)) \
+                    and list(fixed_input['bit_positions']) == list(range(input_size)) \
                     and all(v == 0 for v in fixed_input['bit_values']):
                 return True
 
@@ -384,11 +387,12 @@ class MilpXorDifferentialModel(MilpModel):
         if fixed_values == []:
             fixed_values = get_single_key_scenario_format_for_fixed_values(self._cipher)
         inputs_ids = self._cipher.inputs
-        if self.is_single_key(fixed_values):
+        if INPUT_KEY in self._cipher.inputs and self.is_single_key(fixed_values):
             inputs_ids = [i for i in self._cipher.inputs if INPUT_KEY not in i]
 
         list_trails = []
-        for weight in range(min_weight, max_weight + 1):
+        precision = _set_weight_precision(self, "differential")
+        for weight in np.arange(min_weight, max_weight + 1, precision):
             looking_for_other_solutions = 1
             variables, weight_constraints = self.weight_constraints(weight)
             for constraint in weight_constraints:
@@ -620,7 +624,7 @@ class MilpXorDifferentialModel(MilpModel):
     def _parse_solver_output(self):
         mip = self._model
         objective_variables = mip.get_values(self._integer_variable)
-        objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / 10.
+        objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / float(MILP_WEIGHT_PRECISION)
         components_variables = mip.get_values(self._binary_variable)
         components_values = self._get_component_values(objective_variables, components_variables)
 
@@ -648,7 +652,7 @@ class MilpXorDifferentialModel(MilpModel):
             difference = _string_to_hex(diff_str)
             weight = 0
             if component_id + MILP_PROBABILITY_SUFFIX in probability_variables:
-                weight = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / 10.
+                weight = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / float(MILP_WEIGHT_PRECISION)
             final_output.append(set_component_solution(value=difference, weight=weight))
         return final_output
 

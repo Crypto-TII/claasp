@@ -20,7 +20,10 @@ import re
 from subprocess import run
 
 from bitstring import BitArray
+from sage.arith.misc import is_power_of_two
 
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import \
+    get_dictionary_that_contains_inequalities_for_large_sboxes
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
     output_dictionary_that_contains_xor_inequalities,
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits)
@@ -30,7 +33,8 @@ from sage.numerical.mip import MIPSolverException
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED, \
     MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_BACKWARD_SUFFIX, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE, \
     MILP_XOR_DIFFERENTIAL_OBJECTIVE, MILP_BITWISE_IMPOSSIBLE, MILP_WORDWISE_IMPOSSIBLE, MILP_BITWISE_IMPOSSIBLE_AUTO, \
-    MILP_WORDWISE_IMPOSSIBLE_AUTO
+    MILP_WORDWISE_IMPOSSIBLE_AUTO, MILP_WEIGHT_PRECISION
+from claasp.name_mappings import SBOX
 
 
 ### -------------------------External solver parsing methods------------------------- ###
@@ -97,7 +101,7 @@ def _parse_external_solver_output(model, solver_specs, model_type, solution_file
         else:
             components_variables = _get_variables_value(model.binary_variable, read_file)
             objective_variables = _get_variables_value(model.integer_variable, read_file)
-            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / 10.
+            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / float(MILP_WEIGHT_PRECISION)
 
         components_values = model._get_component_values(objective_variables, components_variables)
 
@@ -715,3 +719,22 @@ def _filter_fixed_variables(fixed_values, fixed_variable, id):
             bit_index = fixed_variable["bit_positions"].index(bit)
             del fixed_variable["bit_values"][bit_index]
             del fixed_variable["bit_positions"][bit_index]
+            
+def _set_weight_precision(model, analysis_type):
+    if any(SBOX in item for item in model.non_linear_component_id):
+        dict_product_of_sum = get_dictionary_that_contains_inequalities_for_large_sboxes(analysis=analysis_type)
+        for id in model.non_linear_component_id:
+            sb = tuple(model._cipher.get_component_from_id(id).description)
+            for proba in dict_product_of_sum[str(sb)].keys():
+                if not is_power_of_two(proba):
+                    model._has_non_integer_weight = True
+                    break
+            else:
+                continue
+            break
+
+    if model._has_non_integer_weight:
+        step = 1 / float(MILP_WEIGHT_PRECISION)
+    else:
+        step = 1
+    return step

@@ -165,9 +165,9 @@ def test_milp_large_xor_linear_probability_constraints():
     assert str(constraints[1]) == "1 - x_0 - x_1 - x_2 - x_3 - x_4 - x_5 - x_6 - x_7 <= 8 - 8*x_16"
     assert str(constraints[-2]) == "x_17 + x_18 + x_19 + x_20 + x_21 + x_22 + x_23 + x_24 + x_25 + x_26 + x_27 + " \
                                    "x_28 + x_29 + x_30 + x_31 + x_32 == x_16"
-    assert str(constraints[-1]) == "x_33 == 60*x_17 + 50*x_18 + 44*x_19 + 40*x_20 + 37*x_21 + 34*x_22 + 32*x_23 + " \
-                                   "30*x_24 + 30*x_25 + 32*x_26 + 34*x_27 + 37*x_28 + 40*x_29 + 44*x_30 + 50*x_31 + " \
-                                   "60*x_32"
+    assert str(constraints[-1]) == "x_33 == 600*x_17 + 500*x_18 + 442*x_19 + 400*x_20 + 368*x_21 + 342*x_22 + " \
+                                    "319*x_23 + 300*x_24 + 300*x_25 + 319*x_26 + 342*x_27 + 368*x_28 + 400*x_29 + " \
+                                    "442*x_30 + 500*x_31 + 600*x_32"
 
 
 def test_milp_small_xor_differential_probability_constraints():
@@ -187,7 +187,7 @@ def test_milp_small_xor_differential_probability_constraints():
     assert str(constraints[0]) == "x_8 <= x_0 + x_1 + x_2 + x_3"
     assert str(constraints[1]) == X_0_X_8
     assert str(constraints[-2]) == "x_9 + x_10 == x_8"
-    assert str(constraints[-1]) == "x_11 == 30*x_9 + 20*x_10"
+    assert str(constraints[-1]) == "x_11 == 300*x_9 + 200*x_10"
 
 
 def test_milp_small_xor_linear_probability_constraints():
@@ -207,7 +207,7 @@ def test_milp_small_xor_linear_probability_constraints():
     assert str(constraints[0]) == "x_8 <= x_4 + x_5 + x_6 + x_7"
     assert str(constraints[1]) == X_0_X_8
     assert str(constraints[-2]) == "x_9 + x_10 + x_11 + x_12 == x_8"
-    assert str(constraints[-1]) == "x_13 == 20*x_9 + 10*x_10 + 10*x_11 + 20*x_12"
+    assert str(constraints[-1]) == "x_13 == 200*x_9 + 100*x_10 + 100*x_11 + 200*x_12"
 
 
 def test_milp_xor_differential_propagation_constraints():
@@ -225,7 +225,7 @@ def test_milp_xor_differential_propagation_constraints():
     assert str(constraints[0]) == "x_0 + x_1 + x_2 + x_3 <= 4*x_8"
     assert str(constraints[1]) == "1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8"
     assert str(constraints[-2]) == "x_9 + x_10 == x_8"
-    assert str(constraints[-1]) == "x_11 == 30*x_9 + 20*x_10"
+    assert str(constraints[-1]) == "x_11 == 300*x_9 + 200*x_10"
 
 
 def test_milp_xor_linear_mask_propagation_constraints():
@@ -240,10 +240,10 @@ def test_milp_xor_linear_mask_propagation_constraints():
     assert str(variables[-2]) == "('x[sbox_0_1_2_o]', x_6)"
     assert str(variables[-1]) == "('x[sbox_0_1_3_o]', x_7)"
 
-    assert str(constraints[0]) == "x_8 <= x_4 + x_5 + x_6 + x_7"
-    assert str(constraints[1]) == X_0_X_8
+    assert str(constraints[0]) == "x_0 + x_1 + x_2 + x_3 <= 4*x_8"
+    assert str(constraints[1]) == "1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8"
     assert str(constraints[-2]) == "x_9 + x_10 + x_11 + x_12 == x_8"
-    assert str(constraints[-1]) == "x_13 == 20*x_9 + 10*x_10 + 10*x_11 + 20*x_12"
+    assert str(constraints[-1]) == "x_13 == 200*x_9 + 100*x_10 + 100*x_11 + 200*x_12"
 
 
 def test_sat_constraints():

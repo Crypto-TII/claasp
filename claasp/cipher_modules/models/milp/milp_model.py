@@ -45,6 +45,7 @@ from sage.numerical.mip import MixedIntegerLinearProgram, MIPSolverException
 
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT, MODEL_DEFAULT_PATH, MILP_SOLVERS_EXTERNAL, \
     MILP_SOLVERS_INTERNAL
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import _get_data, _parse_external_solver_output, _write_model_to_lp_file
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 
@@ -231,10 +232,10 @@ class MilpModel:
         constraints = []
 
         if weight >= 0:
-            constraints.append(p["probability"] == 10 * weight)
+            constraints.append(p["probability"] == MILP_WEIGHT_PRECISION * weight)
             variables = [("p[probability]", p["probability"])]
         elif weight != -1:
-            self._model.set_max(p["probability"], - 10 * weight)
+            self._model.set_max(p["probability"], - MILP_WEIGHT_PRECISION * weight)
             variables = [("p[probability]", p["probability"])]
 
         return variables, constraints
