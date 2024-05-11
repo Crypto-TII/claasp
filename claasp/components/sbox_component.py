@@ -104,6 +104,43 @@ def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
         sbox_mant.append((description, output_id_link))
 
 
+def milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_vars,
+                                                         output_vars, sbox_input_size, sbox_output_size, x, p,
+                                                         probability_dictionary, analysis):
+    constraints = []
+    # condition to know if sbox is active or not
+    constraints.append(
+        sbox_input_size * x[f"{component_id}_active"] >= sum(x[input_vars[i]] for i in range(sbox_input_size)))
+    constraints.append(
+        sbox_input_size * (1 - x[f"{component_id}_active"]) >=
+        -sum(x[input_vars[i]] for i in range(sbox_input_size)) + 1)
+    constraints += [x[f"{component_id}_active"] >= x[output_vars[i]] for i in range(sbox_output_size)]
+    # mip.add_constraint(sum(x[output_vars[i]] for i in range(sbox.input_size())) >= x[id + "_active"])
+
+    if analysis == "differential":
+        exponent = sbox_input_size
+    else:
+        exponent = sbox_input_size - 1
+
+    M = MILP_WEIGHT_PRECISION * sbox_input_size
+    constraint_choice_proba = 0
+    constraint_compute_proba = 0
+    for proba in probability_dictionary.keys():
+        for ineq in probability_dictionary[proba]:
+            constraint = milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq, input_vars,
+                                                                              output_vars, proba, sbox_input_size,
+                                                                              sbox_output_size, x)
+            constraints.append(constraint >= 0)
+
+        constraint_choice_proba += x[f"{component_id}_sboxproba_{proba}"]
+        constraint_compute_proba += (x[f"{component_id}_sboxproba_{proba}"] *
+                                     MILP_WEIGHT_PRECISION * round(-log(abs(proba) / (2 ** exponent), 2),
+                                                                   2))
+    constraints.append(constraint_choice_proba == x[f"{component_id}_active"])
+    constraints.append(p[f"{component_id}_probability"] == constraint_compute_proba)
+
+    return constraints
+
 def milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq, input_vars,
                                                          output_vars, proba, sbox_input_size, sbox_output_size, x):
     constraint = 0
@@ -751,7 +788,6 @@ class SBOX(Component):
         p = integer_variable
         input_vars, output_vars = self._get_input_output_variables()
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
-        constraints = []
         component_id = self.id
         non_linear_component_id.append(component_id)
         sbox = SBox(self.description)
@@ -759,31 +795,9 @@ class SBOX(Component):
         update_dictionary_that_contains_inequalities_for_large_sboxes(sbox, analysis="differential")
         dict_product_of_sum = get_dictionary_that_contains_inequalities_for_large_sboxes(analysis="differential")
 
-        # condition to know if sbox is active or not
-        constraints.append(
-            sbox_input_size * x[f"{component_id}_active"] >= sum(x[input_vars[i]] for i in range(sbox_input_size)))
-        constraints.append(
-            sbox_input_size * (1 - x[f"{component_id}_active"]) >= -sum(
-                x[input_vars[i]] for i in range(sbox_input_size)) + 1)
-        constraints += [x[f"{component_id}_active"] >= x[output_vars[i]] for i in range(sbox_output_size)]
-        # mip.add_constraint(sum(x[output_vars[i]] for i in range(sbox.input_size())) >= x[id + "_active"])
-
-        M = MILP_WEIGHT_PRECISION * sbox_input_size
-        constraint_choice_proba = 0
-        constraint_compute_proba = 0
-        for proba in dict_product_of_sum[str(sbox)].keys():
-            for ineq in dict_product_of_sum[str(sbox)][proba]:
-                constraint = milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq, input_vars,
-                                                                                  output_vars, proba, sbox_input_size,
-                                                                                  sbox_output_size, x)
-                constraints.append(constraint >= 0)
-
-            constraint_choice_proba += x[f"{component_id}_sboxproba_{proba}"]
-            constraint_compute_proba += \
-                x[f"{component_id}_sboxproba_{proba}"] * MILP_WEIGHT_PRECISION * round(-log(proba / 2 ** sbox_input_size, 2), 2)
-
-        constraints.append(constraint_choice_proba == x[f"{component_id}_active"])
-        constraints.append(p[f"{component_id}_probability"] == constraint_compute_proba)
+        constraints = milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_vars,
+                                                             output_vars, sbox_input_size, sbox_output_size, x, p,
+                                                             dict_product_of_sum[str(sbox)], analysis="differential")
 
         return variables, constraints
 
@@ -823,14 +837,13 @@ class SBOX(Component):
             1 - x_0 - x_1 - x_2 - x_3 - x_4 - x_5 - x_6 - x_7 <= 8 - 8*x_16,
             ...
             x_17 + x_18 + x_19 + x_20 + x_21 + x_22 + x_23 + x_24 + x_25 + x_26 + x_27 + x_28 + x_29 + x_30 + x_31 + x_32 == x_16,
-            x_33 == 60*x_17 + 50*x_18 + 44*x_19 + 40*x_20 + 37*x_21 + 34*x_22 + 32*x_23 + 30*x_24 + 30*x_25 + 32*x_26 + 34*x_27 + 37*x_28 + 40*x_29 + 44*x_30 + 50*x_31 + 60*x_32]
+            x_33 == 600*x_17 + 500*x_18 + 442*x_19 + 400*x_20 + 368*x_21 + 342*x_22 + 319*x_23 + 300*x_24 + 300*x_25 + 319*x_26 + 342*x_27 + 368*x_28 + 400*x_29 + 442*x_30 + 500*x_31 + 600*x_32]
         """
 
         x = binary_variable
         p = integer_variable
         input_vars, output_vars = self._get_independent_input_output_variables()
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
-        constraints = []
         component_id = self.id
         non_linear_component_id.append(component_id)
         sbox = SBox(self.description)
@@ -838,29 +851,11 @@ class SBOX(Component):
         update_dictionary_that_contains_inequalities_for_large_sboxes(sbox, analysis="linear")
         dict_product_of_sum = get_dictionary_that_contains_inequalities_for_large_sboxes(analysis="linear")
 
-        # condition to know if sbox is active or not
-        constraints.append(
-            sbox_input_size * x[f"{component_id}_active"] >= sum(x[input_vars[i]] for i in range(sbox_input_size)))
-        constraints.append(
-            sbox_input_size * (1 - x[f"{component_id}_active"]) >=
-            -sum(x[input_vars[i]] for i in range(sbox_input_size)) + 1)
-        constraints += [x[f"{component_id}_active"] >= x[output_vars[i]] for i in range(sbox_output_size)]
-
-        M = MILP_WEIGHT_PRECISION * sbox_input_size
-        constraint_choice_proba = 0
-        constraint_compute_proba = 0
-        for proba in dict_product_of_sum[str(sbox)].keys():
-            for ineq in dict_product_of_sum[str(sbox)][proba]:
-                constraint = milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq, input_vars,
-                                                                                  output_vars, proba, sbox_input_size,
-                                                                                  sbox_output_size, x)
-                constraints.append(constraint >= 0)
-
-            constraint_choice_proba += x[f"{component_id}_sboxproba_{proba}"]
-            constraint_compute_proba += (x[f"{component_id}_sboxproba_{proba}"] *
-                                         MILP_WEIGHT_PRECISION * round(-log(abs(proba) / (2 ** (sbox_input_size - 1)), 2), 2))
-        constraints.append(constraint_choice_proba == x[f"{component_id}_active"])
-        constraints.append(p[f"{component_id}_probability"] == constraint_compute_proba)
+        constraints = milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_vars,
+                                                                           output_vars, sbox_input_size,
+                                                                           sbox_output_size, x, p,
+                                                                           dict_product_of_sum[str(sbox)],
+                                                                           analysis="linear")
 
         return variables, constraints
 
