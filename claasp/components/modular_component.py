@@ -920,8 +920,7 @@ class Modular(Component):
             )
 
         variables = output_bit_ids + dummy_bit_ids + hw_bit_ids
-
-        if model._arx_modadd_carries == [] or len(model._arx_modadd_carries) > 0:
+        if model.arx_modadd_carries != None:
             arx_modadd_carries_constraints = []
             arx_modadd_carries_variables = []
             carry_prefix = f"carry_result_{self.id}"

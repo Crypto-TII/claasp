@@ -84,7 +84,7 @@ class SatXorDifferentialModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-        if self._window_size_full_window_vars is not None:
+        if self._window_size_full_window_vars != None:
             self._variables_list.extend(self._window_size_full_window_vars)
 
             if self._window_size_full_window_operator == 'at_least':
@@ -478,6 +478,7 @@ class SatXorDifferentialModel(SatModel):
     @property
     def window_size_by_round_values(self):
         return self._window_size_by_round_values
+
     @property
     def arx_modadd_carries(self):
         return self._arx_modadd_carries

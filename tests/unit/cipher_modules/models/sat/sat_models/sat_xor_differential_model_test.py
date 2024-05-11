@@ -6,8 +6,7 @@ from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model impo
 
 speck_5rounds = SpeckBlockCipher(number_of_rounds=5)
 def test_find_all_xor_differential_trails_with_fixed_weight():
-    speck = SpeckBlockCipher(number_of_rounds=5)
-    sat = SatXorDifferentialModel(speck, window_size_weight_pr_vars=1)
+    sat = SatXorDifferentialModel(speck_5rounds, window_size_weight_pr_vars=1)
 
     assert int(sat.find_all_xor_differential_trails_with_fixed_weight(
         9)[0]['total_weight']) == int(9.0)
@@ -48,23 +47,46 @@ def test_find_one_xor_differential_trail():
 
 def test_find_one_xor_differential_trail_with_fixed_weight():
     speck = SpeckBlockCipher(number_of_rounds=3)
-    sat = SatXorDifferentialModel(speck, window_size_by_round=[0, 0, 0])
+    sat = SatXorDifferentialModel(speck)
+    sat.set_window_size_heuristic_by_round([0, 0, 0])
     result = sat.find_one_xor_differential_trail_with_fixed_weight(3)
 
     assert int(result['total_weight']) == int(3.0)
 
 
-def test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window():
+def test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_3_window():
+    speck = SpeckBlockCipher(number_of_rounds=9)
+    sat = SatXorDifferentialModel(speck)
+    sat.set_window_size_heuristic_by_round(
+        [2 for i in range(9)], number_of_full_windows=1
+    )
+    sat.set_track_arx_carries()
+    result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name="PARKISSAT_EXT")
+
+    assert int(result['total_weight']) == int(30.0)
+
+def test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window_parallel():
     speck = SpeckBlockCipher(number_of_rounds=10)
     sat = SatXorDifferentialModel(speck)
     sat.set_window_size_heuristic_by_round(
-        [3 for i in range(10)], number_of_full_windows=2
+        [3 for i in range(10)], number_of_full_windows=1
     )
     sat.set_track_arx_carries()
-    result = sat.find_one_xor_differential_trail_with_fixed_weight(34, solver_name="CADICAL_EXT")
-    import ipdb;
-    ipdb.set_trace()
-    assert int(result['total_weight']) == int(34.0)
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='not_equal',
+        bit_positions=range(32),
+        bit_values=integer_to_bit_list(0, 32, 'big'))
+    key = set_fixed_variables(
+        component_id='key',
+        constraint_type='equal',
+        bit_positions=range(64),
+        bit_values=(0,) * 64)
+    sat.build_xor_differential_trail_model(48, fixed_variables=[plaintext, key])
+    result = sat._solve_with_external_sat_solver(
+        "xor_differential", "PARKISSAT_EXT", ["-c=10"]
+    )
+    assert int(result['total_weight']) == int(48.0)
 
 
 def test_find_one_xor_differential_trail_with_fixed_weight_and_window_heuristic_per_component():
