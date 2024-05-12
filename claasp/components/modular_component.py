@@ -920,22 +920,6 @@ class Modular(Component):
             )
 
         variables = output_bit_ids + dummy_bit_ids + hw_bit_ids
-        if model.arx_modadd_carries != None:
-            arx_modadd_carries_constraints = []
-            arx_modadd_carries_variables = []
-            carry_prefix = f"carry_result_{self.id}"
-            for i in range(output_bit_len):
-                model._arx_modadd_carries.append(f"{carry_prefix}_{i}")
-            a = input_bit_ids[:output_bit_len]
-            b = input_bit_ids[output_bit_len:]
-            c = output_bit_ids
-            for i in range(output_bit_len):
-                arx_modadd_carries_constraints.extend(sat_utils.cnf_xor(
-                    f"{carry_prefix}_{i}", [a[i], b[i], c[i]]
-                ))
-                arx_modadd_carries_variables.extend([f"{carry_prefix}_{i}"])
-            constraints.extend(arx_modadd_carries_constraints)
-            variables.extend(arx_modadd_carries_variables)
 
         return variables, constraints
 

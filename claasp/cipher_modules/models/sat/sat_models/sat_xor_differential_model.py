@@ -34,7 +34,6 @@ class SatXorDifferentialModel(SatModel):
         self._window_size_full_window_vars = None
         self._window_size_number_of_full_window = None
         self._window_size_full_window_operator = None
-        self._arx_modadd_carries = None
         super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
@@ -468,9 +467,6 @@ class SatXorDifferentialModel(SatModel):
             self._window_size_number_of_full_window = number_of_full_windows
             self._window_size_full_window_operator = full_window_operator
 
-    def set_track_arx_carries(self):
-        self._arx_modadd_carries = []
-
     @property
     def window_size_number_of_full_window(self):
         return self._window_size_number_of_full_window
@@ -478,10 +474,6 @@ class SatXorDifferentialModel(SatModel):
     @property
     def window_size_by_round_values(self):
         return self._window_size_by_round_values
-
-    @property
-    def arx_modadd_carries(self):
-        return self._arx_modadd_carries
 
     @property
     def window_size_by_component_id_values(self):
