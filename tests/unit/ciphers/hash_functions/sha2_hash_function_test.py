@@ -6,12 +6,12 @@ def test_sha2_hash_function():
     assert sha2.number_of_rounds == 65
     assert sha2.type == 'hash_function'
     assert sha2.family_name == 'SHA2_family'
-    assert sha2.id == 'SHA2_family_k512_o256_r65'
+    assert sha2.id == 'SHA2_family_i512_o256_r65'
     assert sha2.component_from(0, 0).id == 'constant_0_0'
 
     sha2 = SHA2HashFunction(number_of_rounds=4)
     assert sha2.number_of_rounds == 4
-    assert sha2.id == 'SHA2_family_k512_o256_r4'
+    assert sha2.id == 'SHA2_family_i512_o256_r4'
     assert sha2.component_from(3, 0).id == 'constant_3_0'
 
     sha2 = SHA2HashFunction()

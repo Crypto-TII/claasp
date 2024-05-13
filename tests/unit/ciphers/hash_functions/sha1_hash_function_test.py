@@ -6,12 +6,12 @@ def test_sha1_hash_function():
     assert sha1.number_of_rounds == 80
     assert sha1.type == 'hash_function'
     assert sha1.family_name == 'SHA1'
-    assert sha1.id == 'SHA1_k512_o160_r80'
+    assert sha1.id == 'SHA1_i512_o160_r80'
     assert sha1.component_from(0, 0).id == 'constant_0_0'
 
     sha1 = SHA1HashFunction(number_of_rounds=4)
     assert sha1.number_of_rounds == 4
-    assert sha1.id == 'SHA1_k512_o160_r4'
+    assert sha1.id == 'SHA1_i512_o160_r4'
     assert sha1.component_from(3, 0).id == 'and_3_0'
 
     sha1 = SHA1HashFunction()

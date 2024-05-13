@@ -4,12 +4,12 @@ def test_whirlpool_hash_function():
     whirlpool = WhirlpoolHashFunction()
     assert whirlpool.type == 'hash_function'
     assert whirlpool.family_name == 'whirlpool_hash_function'
-    assert whirlpool.id == 'whirlpool_hash_function_k512_o512_r10'
+    assert whirlpool.id == 'whirlpool_hash_function_i512_o512_r10'
     assert whirlpool.component_from(0,0).id == 'constant_0_0'
 
     whirlpool = WhirlpoolHashFunction(number_of_rounds=4)
     assert whirlpool.number_of_rounds == 4
-    assert whirlpool.id == 'whirlpool_hash_function_k512_o512_r4'
+    assert whirlpool.id == 'whirlpool_hash_function_i512_o512_r4'
     assert whirlpool.component_from(3,0).id == 'sbox_3_0'
 
     # The following test vector values have been obtained from the reference implementation of Whirlpool

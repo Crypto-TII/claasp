@@ -6,12 +6,12 @@ def test_md5_hash_function():
     assert md5.number_of_rounds == 64
     assert md5.type == 'hash_function'
     assert md5.family_name == 'MD5'
-    assert md5.id == 'MD5_k512_o64_r64'
+    assert md5.id == 'MD5_i512_o64_r64'
     assert md5.component_from(0, 0).id == 'constant_0_0'
 
     md5 = MD5HashFunction(number_of_rounds=4)
     assert md5.number_of_rounds == 4
-    assert md5.id == 'MD5_k512_o64_r4'
+    assert md5.id == 'MD5_i512_o64_r4'
     assert md5.component_from(3, 0).id == 'constant_3_0'
 
     md5 = MD5HashFunction()
