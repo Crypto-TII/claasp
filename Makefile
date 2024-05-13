@@ -25,7 +25,7 @@ rundocker: builddocker
 	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
 
 builddocker-m1:
-	docker build --build-arg="GUROBI_ARCH=linux64" -f docker/Dockerfile --platform linux/x86_64 --target claasp-base -t $(DOCKER_IMG_NAME) .
+	docker build -f docker/Dockerfile --platform linux/x86_64 --target claasp-base -t $(DOCKER_IMG_NAME) .
 
 rundocker-m1: builddocker-m1
 	docker run -i -p 8888:8888 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
@@ -95,6 +95,3 @@ copyright: install
 
 local-installation:
 	./configure.sh
-
-local-installation-m1:
-	./configure.sh armlinux64
