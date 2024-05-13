@@ -369,7 +369,9 @@ class SatXorDifferentialModel(SatModel):
             ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
             ....:     bit_values=[0]*64)
-            sage: sat.find_one_xor_differential_trail(fixed_values=[key])
+            sage: result = sat.find_one_xor_differential_trail(fixed_values=[key])
+            sage: result['total_weight'] == 9.0
+            True
         """
         start_building_time = time.time()
         self.build_xor_differential_trail_model(fixed_variables=fixed_values)
@@ -401,7 +403,8 @@ class SatXorDifferentialModel(SatModel):
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorDifferentialModel(speck, window_size_by_round=[0, 0, 0])
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: sat.set_window_size_heuristic_by_round([0, 0, 0])
             sage: trail = sat.find_one_xor_differential_trail_with_fixed_weight(3)
             sage: trail['total_weight']
             3.0

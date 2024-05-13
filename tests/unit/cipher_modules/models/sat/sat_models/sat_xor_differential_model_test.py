@@ -64,7 +64,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_ful
     result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name="CADICAL_EXT")
     assert int(result['total_weight']) == int(30.0)
 
-def test_find_one_xor_differential_trail_with_fixed_weight():
+def test_find_one_xor_differential_trail_with_fixed_weight_9_rounds():
     speck = SpeckBlockCipher(number_of_rounds=9)
     sat = SatXorDifferentialModel(speck)
 
@@ -72,7 +72,6 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
         [2 for i in range(9)]
     )
     result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name="CADICAL_EXT")
-    print(result['solving_time_seconds'])
     assert int(result['total_weight']) == int(30.0)
 
 def test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window_parallel():
