@@ -8,6 +8,10 @@ docker_command = ''
 environment_variables = []
 for line in dockerfile_lines:
     line = line.strip()
+
+    if line.startswith("FROM claasp-base AS claasp-lib"):
+        break
+
     is_a_comment = line.startswith('#')
     is_split_command = line.endswith('\\')
     if not line or is_a_comment:
