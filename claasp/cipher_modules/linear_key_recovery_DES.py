@@ -194,105 +194,11 @@ def repeat_input_difference(input_difference_, number_of_samples_, number_of_byt
     column_array = np_array.reshape(-1, 1)
     return np.tile(column_array, (1, number_of_samples_))
 
-def test_linear_approx_on_multiple_pair_vectorized_backward():
-    """
-    from claasp.cipher_modules.linear_key_recovery_DES import *
-    test_linear_approx_on_multiple_pair_vectorized_backward()
-    """
-    cipher = DESBlockCipher(number_of_rounds=6)
-    des_1round = DESBlockCipher_1round()
-    partial = cipher.cipher_partial_inverse(5, 5, True)
-    start_time = datetime.now()
-    count = 0
-
-    key_data = repeat_input_difference(masterkey, nb_pairs, 8)
-    rng = np.random.default_rng()
-    plaintext_data = rng.integers(low=0, high=256, size=(8, nb_pairs), dtype=np.uint8)
-    plaintext_list = [hex(int.from_bytes(plaintext_data[:,i].tobytes(), byteorder='big')) for i in range(nb_pairs)] # works when reading columns
-    ciphertext_data = cipher.evaluate_vectorized([key_data, plaintext_data])
-
-    state64 = partial.evaluate_vectorized([ciphertext_data[0].T, key_data])[0] # carefull, order change with partial
-    midpoint = state64.shape[1] // 2
-    state64_swapped = np.hstack((state64[:, midpoint:], state64[:, :midpoint]))
-    print(state64_swapped)
-    state64_list = [hex(int.from_bytes(state64_swapped[i].tobytes(), byteorder='big')) for i in range(nb_pairs)] # works when reading rows
-
-    subkey_data = repeat_input_difference(0xa8e27a4a, nb_pairs, 8)
-    state64_1round = des_1round.evaluate_vectorized([subkey_data, ciphertext_data[0].T])[0]
-    midpoint = state64_1round.shape[1] // 2
-    state64_1round_swapped = np.hstack((state64_1round[:, midpoint:], state64_1round[:, :midpoint]))
-    print(state64_1round_swapped)
-    state64_1round_swapped_list = [hex(int.from_bytes(state64_1round_swapped[i].tobytes(), byteorder='big')) for i in
-                    range(nb_pairs)]  # works when reading rows
-
-    for index, plaintext in enumerate(plaintext_list):
-        if test_linear_approximation_on_a_pair(int(plaintext,16), int(state64_list[index],16)):
-            count += 1
-    print("count = {}".format(count))
-    end_time = datetime.now()
-    print('Duration for testing linear approx: {}'.format(end_time - start_time))
-
-
-def partial_subkey_recovery_vectorized():
-    """
-    from claasp.cipher_modules.linear_key_recovery_DES import *
-    true_partial_subkey, Juan = partial_subkey_recovery_vectorized()
-    """
-    cipher = DESBlockCipher(number_of_rounds=6)
-    partial = cipher.cipher_partial_inverse(5, 5, False)
-    partial.set_inputs(["cipher_output_5_14", "linear_layer_5_2"], [64, 48]) # linear_layer_5_2 is the subkey6
-    # des_1round = DESBlockCipher_1round()
-
-    start_time = datetime.now()
-    count = 0
-    key_data = repeat_input_difference(masterkey, nb_pairs, 8)
-    rng = np.random.default_rng()
-    plaintext_data = rng.integers(low=0, high=256, size=(8, nb_pairs), dtype=np.uint8)
-    plaintext_list = [hex(int.from_bytes(plaintext_data[:,i].tobytes(), byteorder='big')) for i in range(nb_pairs)] # works when reading columns
-    ciphertext_data = cipher.evaluate_vectorized([key_data, plaintext_data])
-
-    max_bias = 0
-    true_partial_subkey = 0
-    print("Desired partial subkey6 = {}".format(hex(138149613607)))
-    print("Partial subkey6 recovery ...")
-    # full_subkey6 = 152108258343 <=> partial_subkey6 (30 bits that influences the l.a) = 138149613607 <=> i = 44658535
-    # Reduction of the research area:
-    Juan = {} # keys of this dict are the 30 guessed bits of subkey6, the values are the corresponding counters
-    for i in [6478, 152108258343, 44658000]: #range(44658500, 44658600): # range(pow(2,30)) for the full research
-        # partial_subkey = gen_partial_subkey(i)
-        partial_subkey = i
-        print(f"--------> sk = {hex(partial_subkey)}")
-        subkey_data = repeat_input_difference(partial_subkey, nb_pairs, 8)
-        state64_1round = partial.evaluate_vectorized([ciphertext_data[0].T, subkey_data])[0]
-        midpoint = state64_1round.shape[1] // 2
-        state64_1round_swapped = np.hstack((state64_1round[:, midpoint:], state64_1round[:, :midpoint]))
-        state64_1round_swapped_list = [hex(int.from_bytes(state64_1round_swapped[i].tobytes(), byteorder='big')) for i
-                                       in
-                                       range(nb_pairs)]  # works when reading rows
-        for index, plaintext in enumerate(plaintext_list):
-            if test_linear_approximation_on_a_pair(int(plaintext, 16), int(state64_1round_swapped_list[index], 16)):
-                count += 1
-        bias = abs(float(count)/nb_pairs - 1/2)
-        if bias > max_bias:
-            max_bias = bias
-            true_partial_subkey = partial_subkey
-        Juan[partial_subkey] = count
-        count = 0
-    end_time = datetime.now()
-    print('Duration: {}'.format(end_time - start_time))
-    print("Partial subkey6 = {}".format(hex(true_partial_subkey)))
-    print("-------------")
-
-    return true_partial_subkey, Juan
-
-
-
 def generate_pairs(number_of_samples = 2 ** 13):
     des = DESBlockCipherWithout_IP_FP(number_of_rounds=6)
     rng = np.random.default_rng()
 
     key_data = repeat_input_difference(0x10316e028c8f3b4a, number_of_samples, 8)
-
 
     plaintext_data = rng.integers(low=0, high=256, size=(8, number_of_samples), dtype=np.uint8)
     bit_positions = [7,18,24,27,28,29,30,31,47]
@@ -324,6 +230,11 @@ def extract_bits(columns, positions):
     return np.array(results, dtype=np.uint8)
 
 def partial_subkey_recovery_vectorized():
+    """
+    from claasp.cipher_modules.linear_key_recovery_DES import *
+    true_partial_subkey = partial_subkey_recovery_vectorized()
+    """
+    start_time = datetime.now()
     number_of_samples = 5000
     cipher = DESBlockCipherWithout_IP_FP(number_of_rounds=6)
     plaintext_data_6, ciphertext_data6 = generate_pairs(number_of_samples)
@@ -333,9 +244,14 @@ def partial_subkey_recovery_vectorized():
     python_dict = {}
     max_bias = 0
     true_partial_subkey = 0
-    for key_candidate in range(152108258343, 152108258343+100):
-        key_candidates = repeat_input_difference(key_candidate, number_of_samples, 6)
-        ciphertext_data5_guess = partial.evaluate_vectorized([ciphertext_data6, key_candidates])[0]
+    print("Desired partial subkey6 = {}".format(hex(138149613607)))
+    print("Partial subkey6 recovery ...")
+    # full_subkey6 = 152108258343 <=> partial_subkey6 (30 bits that influences the l.a) = 138149613607 <=> i = 44658535
+    # Reduction of the research area:
+    for i in range(44658535, 44658635): # range(pow(2,30)) for the full research
+        partial_subkey_candidate = gen_partial_subkey(i)
+        partial_subkey_candidate_n = repeat_input_difference(partial_subkey_candidate, number_of_samples, 6)
+        ciphertext_data5_guess = partial.evaluate_vectorized([ciphertext_data6, partial_subkey_candidate_n])[0]
         midpoint = ciphertext_data5_guess.shape[1] // 2
         # Swap halves
         ciphertext_data5_guess = np.hstack((ciphertext_data5_guess[:, midpoint:], ciphertext_data5_guess[:, :midpoint]))
@@ -350,54 +266,15 @@ def partial_subkey_recovery_vectorized():
         bias = abs(float(count)/number_of_samples - 1/2)
         if bias > max_bias:
             max_bias = bias
-            true_partial_subkey = key_candidate
-        python_dict[key_candidate] = count
-        print("key_candidate, count, bias :", key_candidate, count, bias)
-    return true_partial_subkey
+            true_partial_subkey = partial_subkey_candidate
+        python_dict[partial_subkey_candidate] = count
+        # print("partial_subkey_candidate, count, bias :", partial_subkey_candidate, count, bias)
 
-
-def partial_subkey_recovery():
-    """
-    from claasp.cipher_modules.linear_key_recovery_DES import *
-    partial_subkey_recovery()
-    """
-    cipher = DESBlockCipher(number_of_rounds=6)
-    partial = cipher.cipher_partial_inverse(5, 5, True)
-    dictio_using_key = generate_npairs(6)
-
-    start_time = datetime.now()
-    max_bias = 0
-    true_partial_subkey = 0
-    count = 0
-    print("Desired partial subkey6 = {}".format(hex(138149613607)))
-    print("Partial subkey6 recovery ...")
-    # full_subkey6 = 152108258343 <=> partial_subkey6 (30 bits that influences the l.a) = 138149613607 <=> i = 44658535
-    # Reduction of the research area:
-    for i in [6478, 44658535, 44658000]: #range(44658534, 44658537): # range(pow(2,34)) for the full research
-        partial_subkey = gen_partial_subkey(i)
-        # print(f"partial_subkey = {hex(partial_subkey)}")
-        for plaintext, ciphertext in dictio_using_key.items():
-            # print("ciphertext")
-            # print(hex(ciphertext))
-            state64 = partial.evaluate([ciphertext, partial_subkey]) # TODO: check if order is correct
-            # print("state64")
-            # print(hex(state64))
-            if test_linear_approximation_on_a_pair(plaintext, state64):
-                count += 1
-        bias = abs(float(count)/nb_pairs - 1/2)
-        print(f"bias = {bias}")
-        if bias > max_bias:
-            max_bias = bias
-            true_partial_subkey = partial_subkey
-        print(f"count = {count}")
-        count = 0
     end_time = datetime.now()
     print('Duration: {}'.format(end_time - start_time))
-    print("Partial subkey6 = {}".format(hex(true_partial_subkey)))
+    print("Partial subkey6 found = {}".format(hex(true_partial_subkey)))
     print("-------------")
-
     return true_partial_subkey
-
 
 def get_partial_master_key_from_partial_subkey(partial_subkey_val_int):
     """
@@ -462,20 +339,15 @@ def get_full_masterkey_from_partial_masterkey(partial_masterkey, partial_masterk
     start_time = datetime.now()
     # full_masterkey = 1166834735692856138 <=> partial_masterkey (34 remaining bits) = 387030374883592 <=> i = 46158058
     # Reduction of the research area:
-    all_guessed_master_key = {}
     flag_masterkey_found = 0
     # Code can be improved by using vectorized evaluation here:
-    for i in range(46158050, 46158060): # range(pow(2,26)) for the full research
+    for i in range(46158000, 46158100): # range(pow(2,26)) for the full research
         guess_rest_of_partial_masterkey = gen_rest_of_masterkey(i, unknown_bits_position)
         guessed_master_key = guess_rest_of_partial_masterkey ^ partial_masterkey
         ciphertext_from_guessed_master_key = cipher.evaluate([guessed_master_key, plaintext])
         if ciphertext == ciphertext_from_guessed_master_key:
-            end_time = datetime.now()
-            print('Duration: {}'.format(end_time - start_time))
-            all_guessed_master_key[guessed_master_key] = True
             flag_masterkey_found = 1
             break
-        all_guessed_master_key[guessed_master_key] = False
     end_time = datetime.now()
     print('Duration: {}'.format(end_time - start_time))
     if not flag_masterkey_found:
@@ -483,3 +355,13 @@ def get_full_masterkey_from_partial_masterkey(partial_masterkey, partial_masterk
     else:
         print("Master key found")
     return guessed_master_key
+
+def master_key_recovery():
+    """
+    from claasp.cipher_modules.linear_key_recovery_DES import *
+    master_key = master_key_recovery()
+    """
+    true_partial_subkey = partial_subkey_recovery_vectorized()
+    master_key_val_str, master_key_mask_str = get_partial_master_key_from_partial_subkey(true_partial_subkey)
+    master_key = get_full_masterkey_from_partial_masterkey(master_key_val_str, master_key_mask_str)
+    return master_key
