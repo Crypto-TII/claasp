@@ -73,19 +73,16 @@ def _bits_to_words_array(input, bits_inside_word, word_gf):
     return word_array
 
 def _words_array_to_bits(word_array, word_gf):
-    y = word_gf.gen()
     bits_inside_word = word_gf.degree()
-    gf_vector = [pow(y, i) for i in range(bits_inside_word-1, -1, -1)]
-    output = []
-    for _ in word_array:
-        coeffcients = _.coefficients()
-        monomials = _.monomials()
-        for i in range(len(coeffcients)):
-            bits = [0 for i in range(bits_inside_word)]
-            for j in range(len(gf_vector)):
-                if coeffcients[i] == gf_vector[j]:
-                    bits[j] += monomials[i]
-            output += bits
+    output = [0] * (len(word_array)*bits_inside_word)
+    for i in range(len(word_array)):
+        coeffcients = word_array[i].coefficients()
+        monomials = word_array[i].monomials()
+        for j in range(len(coeffcients)):
+            bits = coeffcients[j].polynomial().monomials()
+            for b in bits:
+                output[i*bits_inside_word+b.degree()] += monomials[j]
+
     return output
 
 class FSR(Component):
