@@ -80,7 +80,6 @@ def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
 
 def evaluate_vectorized(cipher, cipher_input, intermediate_output=False, verbosity=False, evaluate_api=False,
                         bit_based=False):
-
     python_code_string = code_generator.generate_byte_based_vectorized_python_code_string(cipher,
                                                                                               store_intermediate_outputs=intermediate_output,
                                                                                               verbosity=verbosity,

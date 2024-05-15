@@ -19,6 +19,7 @@
 
 import time
 
+from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import constants, utils
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.utils.constants import OUTPUT_BIT_ID_SUFFIX, INPUT_BIT_ID_SUFFIX
@@ -114,7 +115,8 @@ class SatXorLinearModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='cryptominisat'):
+    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
+                                                     solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions containing all the XOR linear trails having weight equal to ``fixed_weight``.
         By default, the search removes the key schedule, if any.
@@ -124,7 +126,7 @@ class SatXorLinearModel(SatModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -183,7 +185,7 @@ class SatXorLinearModel(SatModel):
         return solutions_list
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
-                                                       solver_name='cryptominisat'):
+                                                       solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions.
         By default, the search removes the key schedule, if any.
@@ -196,7 +198,7 @@ class SatXorLinearModel(SatModel):
         - ``min_weight`` -- **integer**; the weight from which to start the search
         - ``max_weight`` -- **integer**; the weight at which the search stops
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -234,7 +236,7 @@ class SatXorLinearModel(SatModel):
 
         return solutions_list
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name='cryptominisat'):
+    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR LINEAR trail with the lowest possible weight.
         By default, the search removes the key schedule, if any.
@@ -248,7 +250,7 @@ class SatXorLinearModel(SatModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -298,7 +300,7 @@ class SatXorLinearModel(SatModel):
 
         return solution
 
-    def find_one_xor_linear_trail(self, fixed_values=[], solver_name='cryptominisat'):
+    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR linear trail.
         By default, the search removes the key schedule, if any.
@@ -309,7 +311,7 @@ class SatXorLinearModel(SatModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -350,7 +352,7 @@ class SatXorLinearModel(SatModel):
         return solution
 
     def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                    solver_name='cryptominisat'):
+                                                    solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR linear trail whose weight is ``fixed_weight``.
         By default, the search removes the key schedule, if any.
@@ -360,7 +362,7 @@ class SatXorLinearModel(SatModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 

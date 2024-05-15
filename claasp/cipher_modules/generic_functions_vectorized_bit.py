@@ -79,6 +79,7 @@ def bit_vector_select_word(input, bits, verbosity=False):
         print("---")
     return output
 
+
 def bit_vector_SBOX(input, sbox, verbosity=False, output_bit_size = None):
     """
     Computes the SBox operation on binary values.

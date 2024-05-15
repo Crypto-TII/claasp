@@ -706,10 +706,10 @@ def _get_data(data_keywords, lines):
     return data
 
 
-def run_sat_solver(solver_name, options, dimacs_input, host=None, env_vars_string=""):
+def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_string=""):
     """Call the SAT solver specified in `solver_specs`, using input and output pipes."""
-    solver_specs = constants.SAT_SOLVERS[solver_name]
-    command = solver_specs['command'][:] + options
+    solver_name = solver_specs['solver_name']
+    command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options'] + options
     if host:
         command = ['ssh', f'{host}'] + [env_vars_string] + command
     solver_process = subprocess.run(command, input=dimacs_input, capture_output=True, text=True)
@@ -722,7 +722,7 @@ def run_sat_solver(solver_name, options, dimacs_input, host=None, env_vars_strin
                 values.extend(line.split()[1:])
         values = values[:-1]
     if solver_name == 'kissat':
-        data_keywords = solver_specs['time']
+        data_keywords = solver_specs['keywords']['time']
         lines = solver_output
         data_line = [line for line in lines if data_keywords in line][0]
         seconds_str_index = data_line.find("seconds") - 2
@@ -732,9 +732,9 @@ def run_sat_solver(solver_name, options, dimacs_input, host=None, env_vars_strin
             seconds_str_index -= 1
         time = float(output_str[::-1])
     else:
-        time = _get_data(solver_specs['time'], solver_output)
+        time = _get_data(solver_specs['keywords']['time'], solver_output)
     memory = float('inf')
-    memory_keywords = solver_specs['memory']
+    memory_keywords = solver_specs['keywords']['memory']
     if memory_keywords:
         if not (solver_name == 'glucose-syrup' and status != 'SATISFIABLE'):
             memory = _get_data(memory_keywords, solver_output)
@@ -746,18 +746,17 @@ def run_sat_solver(solver_name, options, dimacs_input, host=None, env_vars_strin
     return status, time, memory, values
 
 
-def run_minisat(options, dimacs_input, input_file_name, output_file_name):
+def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_file_name):
     """Call the MiniSat solver specified in `solver_specs`, using input and output files."""
     with open(input_file_name, 'wt') as input_file:
         input_file.write(dimacs_input)
-    solver_specs = constants.SAT_SOLVERS['minisat']
-    command = solver_specs['command'][:] + options
+    command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options'] + options
     command.append(input_file_name)
     command.append(output_file_name)
     solver_process = subprocess.run(command, capture_output=True, text=True)
     solver_output = solver_process.stdout.splitlines()
-    time = _get_data(solver_specs['time'], solver_output)
-    memory = _get_data(solver_specs['memory'], solver_output)
+    time = _get_data(solver_specs['keywords']['time'], solver_output)
+    memory = _get_data(solver_specs['keywords']['memory'], solver_output)
     status = solver_output[-1]
     values = []
     if status == 'SATISFIABLE':
@@ -769,13 +768,12 @@ def run_minisat(options, dimacs_input, input_file_name, output_file_name):
     return status, time, memory, values
 
 
-def run_parkissat(options, dimacs_input, input_file_name):
+def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
     """Call the Parkissat solver specified in `solver_specs`, using input and output files."""
     with open(input_file_name, 'wt') as input_file:
         input_file.write(dimacs_input)
-    solver_specs = constants.SAT_SOLVERS['parkissat']
     import time
-    command = solver_specs['command'][:] + options
+    command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options'] + options
     command.append(input_file_name)
     start = time.time()
     solver_process = subprocess.run(command, capture_output=True, text=True)
@@ -797,18 +795,17 @@ def run_parkissat(options, dimacs_input, input_file_name):
     return status, time, memory, values
 
 
-def run_yices(options, dimacs_input, input_file_name):
+def run_yices(solver_specs, options, dimacs_input, input_file_name):
     """Call the Yices SAT solver specified in `solver_specs`, using input file."""
     with open(input_file_name, 'wt') as input_file:
         input_file.write(dimacs_input)
-    solver_specs = constants.SAT_SOLVERS['yices-sat']
-    command = solver_specs['command'][:] + options
+    command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options'] + options
     command.append(input_file_name)
     solver_process = subprocess.run(command, capture_output=True, text=True)
     solver_stats = solver_process.stderr.splitlines()
     solver_output = solver_process.stdout.splitlines()
-    time = _get_data(solver_specs['time'], solver_stats)
-    memory = _get_data(solver_specs['memory'], solver_stats)
+    time = _get_data(solver_specs['keywords']['time'], solver_stats)
+    memory = _get_data(solver_specs['keywords']['memory'], solver_stats)
     status = 'SATISFIABLE' if solver_output[0] == 'sat' else 'UNSATISFIABLE'
     values = []
     if status == 'SATISFIABLE':

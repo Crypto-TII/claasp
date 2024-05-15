@@ -1712,15 +1712,3 @@ class Cipher:
         round_number = self.get_round_from_component_id(component_id)
         self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
 
-    def all_sboxes_are_standard(self):
-        for comp in self.get_all_components():
-            if 'sbox' in comp.id:
-                if (comp.input_bit_size != comp.output_bit_size) or (comp.input_bit_size %2 !=0) or (comp.output_bit_size %2 !=0):
-                    return False
-        return True
-
-    def all_component_sizes_are_even(cipher):
-        for comp in cipher.get_all_components:
-            if comp.input_bit_size % 2 !=0 or comp.output_bit_size % 2 !=0:
-                return False
-        return True

@@ -19,6 +19,7 @@
 import time
 from copy import deepcopy
 
+from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values
@@ -114,7 +115,7 @@ class SatXorDifferentialModel(SatModel):
         self._model_constraints.extend(sat._model_constraints)
 
     def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                           solver_name='cryptominisat'):
+                                                           solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions containing all the XOR differential trails having the ``fixed_weight`` weight.
         By default, the search is set in the single-key setting.
@@ -123,7 +124,7 @@ class SatXorDifferentialModel(SatModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -185,7 +186,7 @@ class SatXorDifferentialModel(SatModel):
         return solutions_list
 
     def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
-                                                             solver_name='cryptominisat'):
+                                                             solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions.
         By default, the search is set in the single-key setting.
@@ -198,7 +199,7 @@ class SatXorDifferentialModel(SatModel):
         - ``min_weight`` -- **integer**; the weight from which to start the search
         - ``max_weight`` -- **integer**; the weight at which the search stops
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -237,12 +238,12 @@ class SatXorDifferentialModel(SatModel):
                                                                                 solver_name=solver_name)
 
             for solution in solutions:
-                    solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
+                solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
             solutions_list.extend(solutions)
 
         return solutions_list
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name='cryptominisat'):
+    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a trail with the lowest weight.
         By default, the search is set in the single-key setting.
@@ -255,7 +256,7 @@ class SatXorDifferentialModel(SatModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -310,7 +311,7 @@ class SatXorDifferentialModel(SatModel):
 
         return solution
 
-    def find_one_xor_differential_trail(self, fixed_values=[], solver_name='cryptominisat'):
+    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR differential trail.
         By default, the search is set in the single-key setting.
@@ -319,7 +320,7 @@ class SatXorDifferentialModel(SatModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -358,7 +359,7 @@ class SatXorDifferentialModel(SatModel):
         return solution
 
     def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                          solver_name='cryptominisat'):
+                                                          solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR differential trail whose probability is ``2 ** fixed_weight``.
         By default, the search is set in the single-key setting.
@@ -366,7 +367,7 @@ class SatXorDifferentialModel(SatModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
