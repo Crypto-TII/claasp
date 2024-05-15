@@ -244,7 +244,6 @@ class CipherOutput(Component):
         return code
 
     def get_byte_based_vectorized_python_code(self, params):
-        print(params)
         return [f'  {self.id} = {params}[0]',
                 f'  if "{self.description[0]}" not in intermediateOutputs.keys():',
                 f'      intermediateOutputs["{self.description[0]}"] = []',

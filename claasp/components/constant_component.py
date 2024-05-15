@@ -303,13 +303,7 @@ class Constant(Component):
                 f'dtype=np.uint8).reshape({self.output_bit_size, 1})']
 
     def get_byte_based_vectorized_python_code(self, params):
-        #print("*CONSTANT"*10)
-        #print(self.description, self.output_bit_size)
-        #print("*"*10, flush=True)
         val = constant_to_repr(self.description[0], self.output_bit_size)
-        val2 = integer_array_to_evaluate_vectorized_input([int(self.description[0],0)], self.output_bit_size)
-
-
         return [f'  {self.id} = np.array({val}, dtype=np.uint8).reshape({len(val)}, 1)']
 
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):

@@ -295,14 +295,14 @@ class AESBlockCipher(Cipher):
         #     #    print("Error : Constant format")
         # else:
         if word_size != 8:
-            if self.ROUND_CONSTANT[word_size][round_number][:2] == '0b':
-                constant = self.add_constant_component(len(self.ROUND_CONSTANT[word_size][round_number]) - 2,
-                                                       int(self.ROUND_CONSTANT[word_size][round_number], 2))
-            elif self.ROUND_CONSTANT[word_size][round_number][:2] == '0x':
-                constant = self.add_constant_component(self.ROW_SIZE,
-                                                       int(self.ROUND_CONSTANT[word_size][round_number], 16))
-            else:
-                print("Error : Constant format")
+            #if self.ROUND_CONSTANT[word_size][round_number][:2] == '0b':
+            constant = self.add_constant_component(len(self.ROUND_CONSTANT[word_size][round_number]) - 2,
+                                                       int(self.ROUND_CONSTANT[word_size][round_number], 0))
+            #elif self.ROUND_CONSTANT[word_size][round_number][:2] == '0x':
+            #    constant = self.add_constant_component(self.ROW_SIZE,
+            #                                           int(self.ROUND_CONSTANT[word_size][round_number], 16))
+            #else:
+            #    print("Error : Constant format")
         else:
             constant = self.add_constant_component(self.ROW_SIZE,
                                                    int(self.ROUND_CONSTANT[word_size][state_size][round_number],

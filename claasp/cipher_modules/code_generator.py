@@ -410,8 +410,8 @@ def prepare_input_byte_based_vectorized_python_code_string(bit_sizes, component)
     if component.type == 'constant':
         return params
 
-    assert (input_bit_size % number_of_inputs) == 0, f"The number of inputs does not divide the number of input bits " \
-                                                     f"for component {component.id}. "
+    #assert (input_bit_size % number_of_inputs) == 0, f"The number of inputs does not divide the number of input bits " \
+         #                                             f"for component {component.id}. "
     bits_per_input = input_bit_size // number_of_inputs
     words_per_input = get_number_of_bytes_needed_for_bit_size(bits_per_input)
     # Divide inputs
@@ -469,7 +469,7 @@ def get_number_of_inputs(component):
         else:
             number_of_inputs = component.description[1]
     elif component.type == 'mix_column':
-        number_of_inputs = len(component.description[0])
+        number_of_inputs = len(component.description[0][0])
     elif component.type == 'linear_layer':
         number_of_inputs = len(component.description[0])
     elif component.type == 'sbox':
