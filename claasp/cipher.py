@@ -791,7 +791,7 @@ class Cipher:
             sage: int.from_bytes(result[-1][1].tobytes(), byteorder='big') == C1Lib
             True
         """
-        return evaluator.evaluate_vectorized(self, cipher_input, intermediate_outputs, verbosity, evaluate_api, bit_based)
+        return evaluator.evaluate_vectorized(self, cipher_input, intermediate_output, verbosity, evaluate_api, bit_based)
 
     def evaluate_with_intermediate_outputs_continuous_diffusion_analysis(
             self, cipher_input, sbox_precomputations, sbox_precomputations_mix_columns, verbosity=False):
