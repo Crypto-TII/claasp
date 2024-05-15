@@ -325,10 +325,10 @@ class NeuralNetworkTests:
 
         other_inputs_np = list(base_inputs_np)
 
-        d_array = np.array([b for b in int(d).to_bytes(input_lengths[index] // 8, byteorder='big')])
+        d_array = np.uint8([b for b in int(d).to_bytes(input_lengths[index] // 8, byteorder='big')])
         other_inputs_np[index] = other_inputs_np[index] ^ np.broadcast_to(d_array, (
             nb_samples, input_lengths[index] // 8)).transpose()
-
+        print([(x.shape, x.dtype) for x in other_inputs_np])
         cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_output=True)
         other_output = evaluator.evaluate_vectorized(self.cipher, other_inputs_np, intermediate_output=True)
 
