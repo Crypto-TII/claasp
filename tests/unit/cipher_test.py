@@ -115,6 +115,7 @@ def test_evaluate_vectorized():
     X1Lib = int.from_bytes(X[:, 1].tobytes(), byteorder='big')
     C0Lib = speck.evaluate([X0Lib, K0Lib])
     C1Lib = speck.evaluate([X1Lib, K1Lib])
+    print(result, C0Lib, C1Lib)
     assert int.from_bytes(result[-1][0].tobytes(), byteorder='big') == C0Lib
 
     assert int.from_bytes(result[-1][1].tobytes(), byteorder='big') == C1Lib

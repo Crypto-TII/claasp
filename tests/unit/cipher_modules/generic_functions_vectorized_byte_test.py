@@ -73,7 +73,6 @@ def test_evaluate_vectorized_outputs_to_integers():
     values = [np.uint8([0x3f]).reshape(1, 1)]
     assert evaluate_vectorized_outputs_to_integers(values, bit_size) == 0x3f
 
-
 def test_byte_vector_select_all_words():
     input_bit_size = 64
     num_cols = 2

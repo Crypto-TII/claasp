@@ -248,7 +248,8 @@ class CipherOutput(Component):
                 f'  if "{self.description[0]}" not in intermediateOutputs.keys():',
                 f'      intermediateOutputs["{self.description[0]}"] = []',
                 f'  if integers_inputs_and_outputs:',
-                f'    intermediateOutputs["{self.description[0]}"].append(evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size}))',
+#                f'    intermediateOutputs["{self.description[0]}"].append(evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size}))',
+                f'    intermediateOutputs["{self.description[0]}"] = evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size})',
                 f'  else:',
                 f'    intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())']
 
