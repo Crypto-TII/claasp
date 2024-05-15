@@ -1,16 +1,16 @@
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -138,15 +138,6 @@ def byte_vector_select_all_words(unformated_inputs, real_bits, real_inputs, numb
     - ``words_per_input`` -- **integer**; the number of 8-bit words to be reserved for each of the inputs
     - ``actual_inputs_bits`` -- **integer**; the bit size of the variables in unformatted_inputs
     """
-    #
-    # print("*"*20)
-    # print("SELECT")
-    # print(f"{unformated_inputs=}")
-    # print(f"{real_bits=}")
-    # print(f"{real_inputs=}")
-    # print(f"{number_of_inputs=}")
-    # print(f"{words_per_input=}")
-    # print(f"{actual_inputs_bits=}")
 
     number_of_columns = [x.shape[1] for x in unformated_inputs]
     max_number_of_columns = np.max(number_of_columns)
