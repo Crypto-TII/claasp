@@ -485,11 +485,6 @@ def byte_vector_mix_column(input, matrix, mul_table, word_size):
     tmp = np.zeros(shape=(len(matrix) * input[0].shape[0], input[0].shape[1]), dtype=np.uint8)
 
     #tmp = np.zeros(shape=(len(matrix), input[0].shape[1]), dtype=np.uint8)
-    print("="*30)
-    print("MC")
-    print(f"{word_size=}")
-    print(f"{tmp.shape=}")
-    print(input)
 
     for i in [*mul_table]:
         mul_table[i] = np.array(mul_table[i], dtype=np.uint8)
