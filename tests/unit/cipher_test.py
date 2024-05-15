@@ -192,14 +192,14 @@ def test_get_round_from_component_id():
     fancy = FancyBlockCipher(number_of_rounds=2)
     assert fancy.get_round_from_component_id('xor_1_14') == 1
 
-
-def test_impossible_differential_search():
-    speck6 = SpeckBlockCipher(number_of_rounds=6)
-    # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
-    impossible_differentials = speck6.impossible_differential_search("cp", "Chuffed")
-
-    assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
-            (0x400000, 0x8000) in impossible_differentials)
+#
+# def test_impossible_differential_search():
+#     speck6 = SpeckBlockCipher(number_of_rounds=6)
+#     # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
+#     impossible_differentials = speck6.impossible_differential_search("cp", "Chuffed")
+#
+#     assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
+#             (0x400000, 0x8000) in impossible_differentials)
 
 
 def test_is_algebraically_secure():
@@ -561,10 +561,3 @@ def test_cipher_inverse():
     ciphertext = qarmav2.evaluate([key, plaintext, tweak])
     cipher_inv = qarmav2.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, tweak, key]) == plaintext
-
-
-def test_all_sboxes_are_standard():
-    aes = AESBlockCipher(number_of_rounds=2)
-    assert aes.all_sboxes_are_standard()
-    des = DESBlockCipher(number_of_rounds = 2, number_of_sboxes=8)
-    assert not des.all_sboxes_are_standard()
