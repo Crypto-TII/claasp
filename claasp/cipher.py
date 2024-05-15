@@ -747,7 +747,7 @@ class Cipher:
 
         return partial_cipher_inverse
 
-    def evaluate_vectorized(self, cipher_input, intermediate_outputs=False, verbosity=False, evaluate_api = False, bit_based = False):
+    def evaluate_vectorized(self, cipher_input, intermediate_output=False, verbosity=False, evaluate_api = False, bit_based = False):
         """
         Return the output of the cipher for multiple inputs.
 
@@ -766,7 +766,7 @@ class Cipher:
 
         - ``cipher_input`` -- **list**; block cipher inputs (ndarray of uint8 representing one byte each, n rows, m columns,
           with m the number of inputs to evaluate)
-        - ``intermediate_outputs`` -- **boolean** (default: `False`)
+        - ``intermediate_output`` -- **boolean** (default: `False`)
         - ``verbosity`` -- **boolean** (default: `False`); set this flag to True in order to print the input/output of
           each component
         - ``evaluate_api`` -- **boolean** (default: `False`); if set to True, takes integer inputs (as the evaluate function)
