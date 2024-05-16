@@ -1,4 +1,4 @@
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WEIGHT_PRECISION
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -277,7 +277,7 @@ class MultiInputNonlinearLogicalOperator(Component):
                 tmp += x[component_id + "_and_" + str(index)] * ineq[self.description[1] + 2]
                 tmp += ineq[0]
                 constraints.append(tmp >= 0)
-        constraints.append(p[component_id + "_probability"] == MILP_WEIGHT_PRECISION * sum(x[component_id + "_and_" + str(i)]
+        constraints.append(p[component_id + "_probability"] == (10 ** model.weight_precision) * sum(x[component_id + "_and_" + str(i)]
                                                                         for i in range(len(output_vars))))
         result = variables, constraints
 
@@ -334,7 +334,7 @@ class MultiInputNonlinearLogicalOperator(Component):
         if number_of_inputs == 2:
             variables, constraints = self.milp_twoterms_xor_linear_probability_constraints(
                 binary_variable, integer_variable, input_vars, output_vars, 0)
-            constraints.append(p[component_id + "_probability"] == MILP_WEIGHT_PRECISION * p[component_id + "_and_probability" + str(0)])
+            constraints.append(p[component_id + "_probability"] == (10 ** model.weight_precision) * p[component_id + "_and_probability" + str(0)])
 
         elif number_of_inputs > 2:
             temp_output_vars = [[f"{var}_temp_and_{i}" for var in output_vars]
@@ -359,7 +359,7 @@ class MultiInputNonlinearLogicalOperator(Component):
             variables.extend(temp_variables)
             constraints.extend(temp_constraints)
             constraints.append(
-                p[component_id + "_probability"] == MILP_WEIGHT_PRECISION * sum(p[component_id + "_and_probability" + str(i)]
+                p[component_id + "_probability"] == (10 ** model.weight_precision) * sum(p[component_id + "_and_probability" + str(i)]
                                                              for i in range(number_of_inputs - 1)))
         result = variables, constraints
 

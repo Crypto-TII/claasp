@@ -30,7 +30,7 @@ from claasp.cipher_modules.models.milp.utils.generate_undisturbed_bits_inequalit
     update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits, \
     get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits, \
     delete_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WEIGHT_PRECISION
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFAULT_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.input import Input
 from claasp.component import Component, free_input
@@ -106,7 +106,7 @@ def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
 
 def milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_vars,
                                                          output_vars, sbox_input_size, sbox_output_size, x, p,
-                                                         probability_dictionary, analysis):
+                                                         probability_dictionary, analysis, weight_precision):
     constraints = []
     # condition to know if sbox is active or not
     constraints.append(
@@ -122,7 +122,7 @@ def milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_var
     else:
         exponent = sbox_input_size - 1
 
-    M = MILP_WEIGHT_PRECISION * sbox_input_size
+    M = (10 ** weight_precision) * sbox_input_size
     constraint_choice_proba = 0
     constraint_compute_proba = 0
     for proba in probability_dictionary.keys():
@@ -134,8 +134,8 @@ def milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_var
 
         constraint_choice_proba += x[f"{component_id}_sboxproba_{proba}"]
         constraint_compute_proba += (x[f"{component_id}_sboxproba_{proba}"] *
-                                     MILP_WEIGHT_PRECISION * round(-log(abs(proba) / (2 ** exponent), 2),
-                                                                   2))
+                                     (10 ** weight_precision) * round(-log(abs(proba) / (2 ** exponent), 2),
+                                                                   weight_precision))
     constraints.append(constraint_choice_proba == x[f"{component_id}_active"])
     constraints.append(p[f"{component_id}_probability"] == constraint_compute_proba)
 
@@ -744,7 +744,7 @@ class SBOX(Component):
         return ['\t//// TODO']
 
     def milp_large_xor_differential_probability_constraints(self, binary_variable, integer_variable,
-                                                            non_linear_component_id):
+                                                            non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
         Return lists of variables and constrains modeling SBOX component, with input bit size less or equal to 6.
 
@@ -758,6 +758,7 @@ class SBOX(Component):
         - ``binary_variable`` -- **boolean MIPVariable object**
         - ``integer_variable`` -- **boolean MIPVariable object**
         - ``non_linear_component_id`` -- **string**
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
 
@@ -797,11 +798,11 @@ class SBOX(Component):
 
         constraints = milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_vars,
                                                              output_vars, sbox_input_size, sbox_output_size, x, p,
-                                                             dict_product_of_sum[str(sbox)], analysis="differential")
+                                                             dict_product_of_sum[str(sbox)], analysis="differential", weight_precision=weight_precision)
 
         return variables, constraints
 
-    def milp_large_xor_linear_probability_constraints(self, binary_variable, integer_variable, non_linear_component_id):
+    def milp_large_xor_linear_probability_constraints(self, binary_variable, integer_variable, non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
         Return lists of variables and constrains modeling SBOX component, with input bit size less or equal to 6.
 
@@ -815,6 +816,7 @@ class SBOX(Component):
         - ``binary_variable`` -- **boolean MIPVariable object**
         - ``integer_variable`` -- **integer MIPVariable object**
         - ``non_linear_component_id`` -- **string**
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
 
@@ -855,12 +857,12 @@ class SBOX(Component):
                                                                            output_vars, sbox_input_size,
                                                                            sbox_output_size, x, p,
                                                                            dict_product_of_sum[str(sbox)],
-                                                                           analysis="linear")
+                                                                           analysis="linear", weight_precision=weight_precision)
 
         return variables, constraints
 
     def milp_small_xor_differential_probability_constraints(self, binary_variable, integer_variable,
-                                                            non_linear_component_id):
+                                                            non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
         Return a list of variables and a list of constrains modeling a component of type SBOX.
 
@@ -874,6 +876,7 @@ class SBOX(Component):
         - ``binary_variable`` -- **boolean MIPVariable object**
         - ``integer_variable`` -- **integer MIPVariable object**
         - ``non_linear_component_id`` -- **string**
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
 
@@ -919,7 +922,7 @@ class SBOX(Component):
             constraints.append(x[f"{self.id}_active"] >= x[output_vars[i]])
         # mip.add_constraint(sum(x[output_vars[i]] for i in range(sbox.input_size())) >= x[id + "_active"])
 
-        M = MILP_WEIGHT_PRECISION * max(input_size, output_size)
+        M = (10 ** weight_precision) * max(input_size, output_size)
         dict_constraints = {}
         for proba in dict_inequalities:
             dict_constraints[proba] = []
@@ -934,13 +937,14 @@ class SBOX(Component):
 
         constraints.append(
             sum(x[f"{self.id}_proba_{proba}"] for proba in dict_constraints) == x[f"{self.id}_active"])
-        constraints.append(p[f"{self.id}_probability"] == MILP_WEIGHT_PRECISION * sum(
+        constraints.append(p[f"{self.id}_probability"] == (10 ** weight_precision) * sum(
             x[f"{self.id}_proba_{proba}"] * (-log(proba / 2 ** sbox.input_size(), 2)) for proba in
             dict_constraints))
 
         return variables, constraints
 
-    def milp_small_xor_linear_probability_constraints(self, binary_variable, integer_variable, non_linear_component_id):
+    def milp_small_xor_linear_probability_constraints(self, binary_variable, integer_variable, non_linear_component_id,
+                                                      weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
         Return a list of variables and a list of constrains modeling a component of type Sbox.
 
@@ -955,6 +959,7 @@ class SBOX(Component):
         - ``binary_variable`` -- **MIPVariable object**
         - ``integer_variable`` -- **MIPVariable object**
         - ``non_linear_component_id`` -- **list**
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
 
@@ -1004,7 +1009,7 @@ class SBOX(Component):
 
         # Big-M Reformulation method as used in 4.1 of
         # https://tosc.iacr.org/index.php/ToSC/article/view/805/759
-        M = MILP_WEIGHT_PRECISION * max(input_size, output_size)
+        M = (10 ** weight_precision) * max(input_size, output_size)
         dict_constraints = {}
         for proba in dict_inequalities:
             dict_constraints[proba] = []
@@ -1021,7 +1026,7 @@ class SBOX(Component):
             sum(x[f"{component_id}_proba_{proba}"] for proba in dict_constraints) == x[f"{component_id}_active"])
 
         # correlation[i,j] =  2p[i,j] - 1, where p[i,j] = LAT[i,j] / 2^n + 1/2
-        constraints.append(p[f"{component_id}_probability"] == MILP_WEIGHT_PRECISION * sum(x[f"{component_id}_proba_{proba}"] *
+        constraints.append(p[f"{component_id}_probability"] == (10 ** weight_precision) * sum(x[f"{component_id}_proba_{proba}"] *
                                                                         (log((2 ** (sbox.input_size() - 1)) / abs(
                                                                             proba), 2)) for proba in dict_constraints))
 
@@ -1061,9 +1066,11 @@ class SBOX(Component):
         binary_variable = model.binary_variable
         integer_variable = model.integer_variable
         non_linear_component_id = model.non_linear_component_id
+        weight_precision = model.weight_precision
         variables, constraints = self.milp_large_xor_differential_probability_constraints(binary_variable,
-                                                                                              integer_variable,
-                                                                                              non_linear_component_id)
+                                                                                          integer_variable,
+                                                                                          non_linear_component_id,
+                                                                                          weight_precision)
 
         return variables, constraints
 
@@ -1101,10 +1108,10 @@ class SBOX(Component):
         binary_variable = model.binary_variable
         integer_variable = model.integer_variable
         non_linear_component_id = model.non_linear_component_id
-
+        weight_precision = model.weight_precision
         variables, constraints = self.milp_large_xor_linear_probability_constraints(binary_variable,
                                                                                         integer_variable,
-                                                                                        non_linear_component_id)
+                                                                                        non_linear_component_id, weight_precision)
         return variables, constraints
 
     def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):

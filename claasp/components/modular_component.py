@@ -1,4 +1,4 @@
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WEIGHT_PRECISION
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -439,7 +439,7 @@ class Modular(Component):
             constraints.append(
                 -x[input_vars[output_bit_size + i]] - x[input_vars[output_bit_size + i - 1]] - x[input_vars[i - 1]] + x[
                     output_vars[i - 1]] + x[component_id + "_eq_" + str(i)] >= -2)
-        constraints.append(p[component_id + "_probability"] == MILP_WEIGHT_PRECISION * sum(
+        constraints.append(p[component_id + "_probability"] == (10 ** model.weight_precision) * sum(
             x[component_id + "_eq_" + str(i)] for i in range(output_bit_size - 1, 0, -1)))
         # the most significant bit is not taken in consideration
         if model.n_window_heuristic is not None:
@@ -780,7 +780,7 @@ class Modular(Component):
                                                                                            integer_variable,
                                                                                            input_vars,
                                                                                            output_vars, 0)
-            constraints.append(correlation[component_id + "_probability"] == MILP_WEIGHT_PRECISION *
+            constraints.append(correlation[component_id + "_probability"] == (10 ** model.weight_precision) *
                                correlation[component_id + "_modadd_probability" + str(0)])
 
         elif number_of_inputs > 2:
@@ -809,7 +809,7 @@ class Modular(Component):
             variables.extend(temp_variables)
             constraints.extend(temp_constraints)
             constraints.append(correlation[component_id + "_probability"] ==
-                               MILP_WEIGHT_PRECISION * sum(correlation[component_id + "_modadd_probability" + str(i)]
+                               (10 ** model.weight_precision) * sum(correlation[component_id + "_modadd_probability" + str(i)]
                                         for i in range(number_of_inputs - 1)))
         result = variables, constraints
         return result
