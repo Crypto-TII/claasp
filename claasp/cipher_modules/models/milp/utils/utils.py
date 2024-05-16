@@ -33,7 +33,7 @@ from sage.numerical.mip import MIPSolverException
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED, \
     MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_BACKWARD_SUFFIX, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE, \
     MILP_XOR_DIFFERENTIAL_OBJECTIVE, MILP_BITWISE_IMPOSSIBLE, MILP_WORDWISE_IMPOSSIBLE, MILP_BITWISE_IMPOSSIBLE_AUTO, \
-    MILP_WORDWISE_IMPOSSIBLE_AUTO, MILP_WEIGHT_PRECISION
+    MILP_WORDWISE_IMPOSSIBLE_AUTO
 from claasp.name_mappings import SBOX
 
 
@@ -101,7 +101,7 @@ def _parse_external_solver_output(model, solver_specs, model_type, solution_file
         else:
             components_variables = _get_variables_value(model.binary_variable, read_file)
             objective_variables = _get_variables_value(model.integer_variable, read_file)
-            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / float(MILP_WEIGHT_PRECISION)
+            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / float(10 ** model.weight_precision)
 
         components_values = model._get_component_values(objective_variables, components_variables)
 
@@ -734,7 +734,7 @@ def _set_weight_precision(model, analysis_type):
             break
 
     if model._has_non_integer_weight:
-        step = 1 / float(MILP_WEIGHT_PRECISION)
+        step = 1 / float(10 ** model.weight_precision)
     else:
         step = 1
     return step

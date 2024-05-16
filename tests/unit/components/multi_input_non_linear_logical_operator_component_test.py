@@ -1,5 +1,7 @@
 from claasp.cipher_modules.models.cp.cp_model import CpModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
+from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 
@@ -45,7 +47,7 @@ def test_cp_xor_differential_propagation_constraints():
 
 def test_milp_xor_differential_propagation_constraints():
     simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpModel(simon)
+    milp = MilpXorDifferentialModel(simon)
     milp.init_model_in_sage_milp_class()
     and_component = simon.get_component_from_id("and_0_4")
     variables, constraints = and_component.milp_xor_differential_propagation_constraints(milp)
@@ -64,7 +66,7 @@ def test_milp_xor_differential_propagation_constraints():
 
 def test_milp_xor_linear_mask_propagation_constraints():
     simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpModel(simon)
+    milp = MilpXorLinearModel(simon)
     milp.init_model_in_sage_milp_class()
     and_component = simon.get_component_from_id("and_0_4")
     variables, constraints = and_component.milp_xor_linear_mask_propagation_constraints(milp)

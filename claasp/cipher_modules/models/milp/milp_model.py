@@ -45,7 +45,7 @@ from sage.numerical.mip import MixedIntegerLinearProgram, MIPSolverException
 
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT, MODEL_DEFAULT_PATH, MILP_SOLVERS_EXTERNAL, \
     MILP_SOLVERS_INTERNAL
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WEIGHT_PRECISION
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFAULT_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import _get_data, _parse_external_solver_output, _write_model_to_lp_file
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 
@@ -206,13 +206,14 @@ class MilpModel:
 
         return constraints
 
-    def weight_constraints(self, weight):
+    def weight_constraints(self, weight, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
         Return a list of variables and a list of constraints that fix the total weight to a specific value.
 
         INPUT:
 
         - ``weight`` -- **integer**; the total weight. If negative, no constraints on the weight is added
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
 
@@ -232,10 +233,10 @@ class MilpModel:
         constraints = []
 
         if weight >= 0:
-            constraints.append(p["probability"] == MILP_WEIGHT_PRECISION * weight)
+            constraints.append(p["probability"] == (10 ** weight_precision) * weight)
             variables = [("p[probability]", p["probability"])]
         elif weight != -1:
-            self._model.set_max(p["probability"], - MILP_WEIGHT_PRECISION * weight)
+            self._model.set_max(p["probability"], - (10 ** weight_precision) * weight)
             variables = [("p[probability]", p["probability"])]
 
         return variables, constraints

@@ -1,4 +1,6 @@
 from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
@@ -212,7 +214,7 @@ def test_milp_small_xor_linear_probability_constraints():
 
 def test_milp_xor_differential_propagation_constraints():
     present = PresentBlockCipher(number_of_rounds=6)
-    milp = MilpModel(present)
+    milp = MilpXorDifferentialModel(present)
     milp.init_model_in_sage_milp_class()
     sbox_component = present.component_from(0, 1)
     variables, constraints = sbox_component.milp_xor_differential_propagation_constraints(milp)
@@ -230,7 +232,7 @@ def test_milp_xor_differential_propagation_constraints():
 
 def test_milp_xor_linear_mask_propagation_constraints():
     present = PresentBlockCipher(number_of_rounds=6)
-    milp = MilpModel(present)
+    milp = MilpXorLinearModel(present)
     milp.init_model_in_sage_milp_class()
     sbox_component = present.component_from(0, 1)
     variables, constraints = sbox_component.milp_xor_linear_mask_propagation_constraints(milp)
