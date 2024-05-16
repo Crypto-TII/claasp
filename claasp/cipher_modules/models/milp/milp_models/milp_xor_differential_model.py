@@ -185,7 +185,7 @@ class MilpXorDifferentialModel(MilpModel):
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
         number_new_constraints = 0
-        variables, constraints = self.weight_constraints(fixed_weight, weight_precision)
+        _, constraints = self.weight_constraints(fixed_weight, weight_precision)
         for constraint in constraints:
             mip.add_constraint(constraint)
         number_new_constraints += len(constraints)
@@ -402,7 +402,7 @@ class MilpXorDifferentialModel(MilpModel):
         precision = _set_weight_precision(self, "differential")
         for weight in np.arange(min_weight, max_weight + 1, precision):
             looking_for_other_solutions = 1
-            variables, weight_constraints = self.weight_constraints(weight, weight_precision)
+            _, weight_constraints = self.weight_constraints(weight, weight_precision)
             for constraint in weight_constraints:
                 mip.add_constraint(constraint)
             number_new_constraints = len(weight_constraints)
@@ -587,7 +587,7 @@ class MilpXorDifferentialModel(MilpModel):
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
-        variables, constraints = self.weight_constraints(fixed_weight, weight_precision)
+        _, constraints = self.weight_constraints(fixed_weight, weight_precision)
         for constraint in constraints:
             mip.add_constraint(constraint)
         end = time.time()
