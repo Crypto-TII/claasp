@@ -387,7 +387,7 @@ class Modular(Component):
             x_15 <= x_48,
             ...
             -2 <= -1*x_0 - x_16 - x_17 + x_32 + x_63,
-            x_64 == 10*x_49 + 10*x_50 + 10*x_51 + 10*x_52 + 10*x_53 + 10*x_54 + 10*x_55 + 10*x_56 + 10*x_57 + 10*x_58 + 10*x_59 + 10*x_60 + 10*x_61 + 10*x_62 + 10*x_63]
+            x_64 == 100*x_49 + 100*x_50 + 100*x_51 + 100*x_52 + 100*x_53 + 100*x_54 + 100*x_55 + 100*x_56 + 100*x_57 + 100*x_58 + 100*x_59 + 100*x_60 + 100*x_61 + 100*x_62 + 100*x_63]
         """
         x = model.binary_variable
         p = model.integer_variable
@@ -439,7 +439,7 @@ class Modular(Component):
             constraints.append(
                 -x[input_vars[output_bit_size + i]] - x[input_vars[output_bit_size + i - 1]] - x[input_vars[i - 1]] + x[
                     output_vars[i - 1]] + x[component_id + "_eq_" + str(i)] >= -2)
-        constraints.append(p[component_id + "_probability"] == 10 * sum(
+        constraints.append(p[component_id + "_probability"] == (10 ** model.weight_precision) * sum(
             x[component_id + "_eq_" + str(i)] for i in range(output_bit_size - 1, 0, -1)))
         # the most significant bit is not taken in consideration
         if model.n_window_heuristic is not None:
@@ -763,7 +763,7 @@ class Modular(Component):
             ...
              -4 <= x_15 + x_31 + x_47 + x_63 + x_64,
              x_65 == x_48 + x_49 + x_50 + x_51 + x_52 + x_53 + x_54 + x_55 + x_56 + x_57 + x_58 + x_59 + x_60 + x_61 + x_62 + x_63,
-             x_66 == 10*x_65]
+             x_66 == 100*x_65]
         """
         binary_variable = model.binary_variable
         integer_variable = model.integer_variable
@@ -780,7 +780,7 @@ class Modular(Component):
                                                                                            integer_variable,
                                                                                            input_vars,
                                                                                            output_vars, 0)
-            constraints.append(correlation[component_id + "_probability"] == 10 *
+            constraints.append(correlation[component_id + "_probability"] == (10 ** model.weight_precision) *
                                correlation[component_id + "_modadd_probability" + str(0)])
 
         elif number_of_inputs > 2:
@@ -809,7 +809,7 @@ class Modular(Component):
             variables.extend(temp_variables)
             constraints.extend(temp_constraints)
             constraints.append(correlation[component_id + "_probability"] ==
-                               10 * sum(correlation[component_id + "_modadd_probability" + str(i)]
+                               (10 ** model.weight_precision) * sum(correlation[component_id + "_modadd_probability" + str(i)]
                                         for i in range(number_of_inputs - 1)))
         result = variables, constraints
         return result
