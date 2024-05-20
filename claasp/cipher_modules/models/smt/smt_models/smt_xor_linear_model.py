@@ -19,6 +19,7 @@
 
 import time
 
+from claasp.cipher_modules.models.smt import solvers
 from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.cipher_modules.models.smt.utils.constants import INPUT_BIT_ID_SUFFIX, OUTPUT_BIT_ID_SUFFIX
@@ -148,7 +149,8 @@ class SmtXorLinearModel(SmtModel):
 
         return cipher_input_bit_ids
 
-    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='z3'):
+    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
+                                                     solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions containing all the XOR linear trails having weight equal to ``fixed_weight``.
         By default, the search removes the key schedule, if any.
@@ -158,7 +160,7 @@ class SmtXorLinearModel(SmtModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -221,7 +223,8 @@ class SmtXorLinearModel(SmtModel):
 
         return solutions_list
 
-    def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[], solver_name='z3'):
+    def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
+                                                       solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions.
         By default, the search removes the key schedule, if any.
@@ -234,7 +237,7 @@ class SmtXorLinearModel(SmtModel):
         - ``min_weight`` -- **integer**; the weight from which to start the search
         - ``max_weight`` -- **integer**; the weight at which the search stops
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -272,7 +275,7 @@ class SmtXorLinearModel(SmtModel):
 
         return solutions_list
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name='z3'):
+    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR LINEAR trail with the lowest possible weight.
         By default, the search removes the key schedule, if any.
@@ -286,7 +289,7 @@ class SmtXorLinearModel(SmtModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -336,7 +339,7 @@ class SmtXorLinearModel(SmtModel):
 
         return solution
 
-    def find_one_xor_linear_trail(self, fixed_values=[], solver_name='z3'):
+    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR linear trail.
         By default, the search removes the key schedule, if any.
@@ -347,7 +350,7 @@ class SmtXorLinearModel(SmtModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -362,7 +365,7 @@ class SmtXorLinearModel(SmtModel):
             sage: smt.find_one_xor_linear_trail() #random
             {'cipher_id': 'speck_p32_k64_o32_r4',
              'model_type': 'xor_linear',
-             'solver_name': 'z3',
+             'solver_name': 'Z3_EXT',
              'solving_time_seconds': 0.06,
              'memory_megabytes': 19.65,
              ...
@@ -387,7 +390,7 @@ class SmtXorLinearModel(SmtModel):
         return solution
 
     def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                    solver_name='z3'):
+                                                    solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR linear trail whose weight is ``fixed_weight``.
         By default, the search removes the key schedule, if any.

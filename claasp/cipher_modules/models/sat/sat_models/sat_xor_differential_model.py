@@ -19,6 +19,7 @@
 import time
 from copy import deepcopy
 
+from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values
@@ -27,10 +28,12 @@ from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, 
 
 
 class SatXorDifferentialModel(SatModel):
-    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False,
-                 window_size_by_round=None, window_size_by_component_id=None):
-        self._window_size_by_round = window_size_by_round
-        self._window_size_by_component_id = window_size_by_component_id
+    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False):
+        self._window_size_by_component_id_values = None
+        self._window_size_by_round_values = None
+        self._window_size_full_window_vars = None
+        self._window_size_number_of_full_window = None
+        self._window_size_full_window_operator = None
         super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
@@ -80,6 +83,26 @@ class SatXorDifferentialModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
+        if self._window_size_full_window_vars != None:
+            self._variables_list.extend(self._window_size_full_window_vars)
+
+            if self._window_size_full_window_operator == 'at_least':
+                greater_or_equal = True
+            else:
+                greater_or_equal = False
+
+            if self._window_size_number_of_full_window == 0:
+                all_ones_dummy_variables, all_ones_constraints = [], [f'-{variable}' for variable in self._window_size_full_window_vars]
+            else:
+                all_ones_dummy_variables, all_ones_constraints = self._sequential_counter_algorithm(
+                    self._window_size_full_window_vars,
+                    self._window_size_number_of_full_window,
+                    'dummy_all_ones_0',
+                    greater_or_equal=greater_or_equal
+                )
+            self._variables_list.extend(all_ones_dummy_variables)
+            self._model_constraints.extend(all_ones_constraints)
+
     def build_xor_differential_trail_and_checker_model_at_intermediate_output_level(
             self, weight=-1, fixed_variables=[]
     ):
@@ -114,7 +137,7 @@ class SatXorDifferentialModel(SatModel):
         self._model_constraints.extend(sat._model_constraints)
 
     def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                           solver_name='cryptominisat'):
+                                                           solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions containing all the XOR differential trails having the ``fixed_weight`` weight.
         By default, the search is set in the single-key setting.
@@ -123,7 +146,7 @@ class SatXorDifferentialModel(SatModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -185,7 +208,7 @@ class SatXorDifferentialModel(SatModel):
         return solutions_list
 
     def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
-                                                             solver_name='cryptominisat'):
+                                                             solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions.
         By default, the search is set in the single-key setting.
@@ -198,7 +221,7 @@ class SatXorDifferentialModel(SatModel):
         - ``min_weight`` -- **integer**; the weight from which to start the search
         - ``max_weight`` -- **integer**; the weight at which the search stops
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -237,12 +260,12 @@ class SatXorDifferentialModel(SatModel):
                                                                                 solver_name=solver_name)
 
             for solution in solutions:
-                    solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
+                solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
             solutions_list.extend(solutions)
 
         return solutions_list
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name='cryptominisat'):
+    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a trail with the lowest weight.
         By default, the search is set in the single-key setting.
@@ -255,7 +278,7 @@ class SatXorDifferentialModel(SatModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -310,7 +333,7 @@ class SatXorDifferentialModel(SatModel):
 
         return solution
 
-    def find_one_xor_differential_trail(self, fixed_values=[], solver_name='cryptominisat'):
+    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR differential trail.
         By default, the search is set in the single-key setting.
@@ -319,7 +342,7 @@ class SatXorDifferentialModel(SatModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -346,7 +369,9 @@ class SatXorDifferentialModel(SatModel):
             ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
             ....:     bit_values=[0]*64)
-            sage: sat.find_one_xor_differential_trail(fixed_values=[key])
+            sage: result = sat.find_one_xor_differential_trail(fixed_values=[key])
+            sage: result['total_weight'] == 9.0
+            True
         """
         start_building_time = time.time()
         self.build_xor_differential_trail_model(fixed_variables=fixed_values)
@@ -358,7 +383,7 @@ class SatXorDifferentialModel(SatModel):
         return solution
 
     def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                          solver_name='cryptominisat'):
+                                                          solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR differential trail whose probability is ``2 ** fixed_weight``.
         By default, the search is set in the single-key setting.
@@ -366,7 +391,7 @@ class SatXorDifferentialModel(SatModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -378,7 +403,8 @@ class SatXorDifferentialModel(SatModel):
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorDifferentialModel(speck, window_size_by_round=[0, 0, 0])
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: sat.set_window_size_heuristic_by_round([0, 0, 0])
             sage: trail = sat.find_one_xor_differential_trail_with_fixed_weight(3)
             sage: trail['total_weight']
             3.0
@@ -422,10 +448,36 @@ class SatXorDifferentialModel(SatModel):
 
         return components_solutions, total_weight
 
-    @property
-    def window_size_by_round(self):
-        return self._window_size_by_round
+    def set_window_size_heuristic_by_round(
+            self, window_size_by_round_values, number_of_full_windows=None, full_window_operator='at_least'
+    ):
+        if not self._cipher.is_arx():
+            raise Exception('Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.')
+        self._window_size_by_round_values = window_size_by_round_values
+        if number_of_full_windows is not None:
+            self._window_size_full_window_vars = []
+            self._window_size_number_of_full_window = number_of_full_windows
+            self._window_size_full_window_operator = full_window_operator
+
+    def set_window_size_heuristic_by_component_id(
+            self, window_size_by_component_id_values, number_of_full_windows=None, full_window_operator='at_least'
+    ):
+        if not self._cipher.is_arx():
+            raise Exception('Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.')
+        self._window_size_by_component_id_values = window_size_by_component_id_values
+        if number_of_full_windows is not None:
+            self._window_size_full_window_vars = []
+            self._window_size_number_of_full_window = number_of_full_windows
+            self._window_size_full_window_operator = full_window_operator
 
     @property
-    def window_size_by_component_id(self):
-        return self._window_size_by_component_id
+    def window_size_number_of_full_window(self):
+        return self._window_size_number_of_full_window
+
+    @property
+    def window_size_by_round_values(self):
+        return self._window_size_by_round_values
+
+    @property
+    def window_size_by_component_id_values(self):
+        return self._window_size_by_component_id_values
