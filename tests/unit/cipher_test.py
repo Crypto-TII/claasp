@@ -204,7 +204,7 @@ def test_get_round_from_component_id():
 
 def test_is_algebraically_secure():
     aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds = 1)
-    assert aes.is_algebraically_secure(20) is False
+    assert aes.is_algebraically_secure(200) is False
 
 
 def test_is_andrx():
