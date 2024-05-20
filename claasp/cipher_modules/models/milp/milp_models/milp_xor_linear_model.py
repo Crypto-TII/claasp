@@ -20,6 +20,7 @@ import time
 import os
 import sys
 
+import numpy as np
 from bitstring import BitArray
 
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
@@ -28,9 +29,9 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
     output_dictionary_that_contains_xor_inequalities
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX, \
-    MILP_BUILDING_MESSAGE, MILP_XOR_LINEAR_OBJECTIVE
+    MILP_BUILDING_MESSAGE, MILP_XOR_LINEAR_OBJECTIVE, MILP_DEFAULT_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, _string_to_hex, \
-    _filter_fixed_variables
+    _filter_fixed_variables, _set_weight_precision
 from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list, \
     set_component_solution, get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (INTERMEDIATE_OUTPUT, CONSTANT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
@@ -41,8 +42,11 @@ class MilpXorLinearModel(MilpModel):
     def __init__(self, cipher, n_window_heuristic=None, verbose=False):
         super().__init__(cipher, n_window_heuristic, verbose)
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
+        self._weight_precision = MILP_DEFAULT_WEIGHT_PRECISION
+        self._has_non_integer_weight = False
 
-    def add_constraints_to_build_in_sage_milp_class(self, weight=-1, fixed_variables=[]):
+    def add_constraints_to_build_in_sage_milp_class(self, weight=-1, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
+                                                    fixed_variables=[]):
         """
         Take the constraints contained in self._model_constraints and add them to the build-in sage class.
 
@@ -51,6 +55,7 @@ class MilpXorLinearModel(MilpModel):
         - ``model_type`` -- **string**; the model to solve
         - ``weight`` -- **integer** (default: `-1`); the total weight. It is the negative base-2 logarithm of the total
           correlation of the trail. If negative, no constraints on the weight is added
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
         - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in
           standard format
 
@@ -72,6 +77,7 @@ class MilpXorLinearModel(MilpModel):
             1018
         """
         self._verbose_print(MILP_BUILDING_MESSAGE)
+        self._weight_precision = weight_precision
         self.build_xor_linear_trail_model(weight, fixed_variables)
         mip = self._model
         p = self._integer_variable
@@ -183,7 +189,7 @@ class MilpXorLinearModel(MilpModel):
         self._model_constraints.extend(constraints)
 
         if weight != -1:
-            variables, constraints = self.weight_xor_linear_constraints(weight)
+            variables, constraints = self.weight_xor_linear_constraints(weight, self._weight_precision)
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
@@ -252,7 +258,9 @@ class MilpXorLinearModel(MilpModel):
 
         return constraints
 
-    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
+                                                     weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
+                                                     solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return all the XOR linear trails with weight equal to ``fixed_weight`` as a solutions list in standard format.
         By default, the search removes the key schedule, if any.
@@ -272,6 +280,7 @@ class MilpXorLinearModel(MilpModel):
         - ``fixed_weight`` -- **integer**; the weight found using :py:meth:`~find_lowest_weight_xor_linear_trail`
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need
           to be fixed
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
         - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
 
         EXAMPLES::
@@ -303,8 +312,8 @@ class MilpXorLinearModel(MilpModel):
         mip = self._model
         mip.set_objective(None)
 
-        self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
-        _, constraints = self.weight_xor_linear_constraints(fixed_weight)
+        self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
+        _, constraints = self.weight_xor_linear_constraints(fixed_weight, weight_precision)
         for constraint in constraints:
             mip.add_constraint(constraint)
         number_new_constraints = len(constraints)
@@ -345,6 +354,7 @@ class MilpXorLinearModel(MilpModel):
         return [trail for trail in list_trails if trail['status'] == 'SATISFIABLE']
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
+                                                       weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
                                                        solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return all XOR linear trails with weight greater than ``min_weight`` and lower than or equal to ``max_weight``.
@@ -367,7 +377,9 @@ class MilpXorLinearModel(MilpModel):
         - ``max_weight`` -- **integer**; the upper bound for the weight
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need to
           be fixed
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
         - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
 
@@ -397,15 +409,16 @@ class MilpXorLinearModel(MilpModel):
         self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
-        self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
+        self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
         end = time.time()
         building_time = end - start
 
         inputs_ids = self._cipher.inputs
         list_trails = []
-        for weight in range(min_weight, max_weight + 1):
+        precision = _set_weight_precision(self, "linear")
+        for weight in np.arange(min_weight, max_weight + 1, precision):
             looking_for_other_solutions = 1
-            _, weight_constraints = self.weight_xor_linear_constraints(weight)
+            _, weight_constraints = self.weight_xor_linear_constraints(weight, weight_precision)
             for constraint in weight_constraints:
                 mip.add_constraint(constraint)
             number_new_constraints = len(weight_constraints)
@@ -436,7 +449,8 @@ class MilpXorLinearModel(MilpModel):
 
         return [trail for trail in list_trails if trail['status'] == 'SATISFIABLE']
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
+                                            solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return a XOR linear trail with the lowest weight in standard format, i.e. the solver solution.
         By default, the search removes the key schedule, if any.
@@ -453,7 +467,9 @@ class MilpXorLinearModel(MilpModel):
 
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need to
           be fixed
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
         - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
 
@@ -498,7 +514,7 @@ class MilpXorLinearModel(MilpModel):
         mip = self._model
         p = self._integer_variable
         mip.set_objective(p[MILP_XOR_LINEAR_OBJECTIVE])
-        self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
+        self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
@@ -507,7 +523,8 @@ class MilpXorLinearModel(MilpModel):
 
         return solution
 
-    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_one_xor_linear_trail(self, fixed_values=[], weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
+                                  solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return a XOR linear trail, not necessarily the one with the lowest weight.
         By default, the search removes the key schedule, if any.
@@ -517,7 +534,9 @@ class MilpXorLinearModel(MilpModel):
 
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed
           in standard format (see )
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
+        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         .. SEEALSO::
 
@@ -545,7 +564,7 @@ class MilpXorLinearModel(MilpModel):
         self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
-        self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
+        self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
@@ -555,6 +574,7 @@ class MilpXorLinearModel(MilpModel):
         return solution
 
     def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
+                                                    weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
                                                     solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return one XOR linear trail with weight equal to ``fixed_weight`` as a list in standard format.
@@ -566,7 +586,9 @@ class MilpXorLinearModel(MilpModel):
         - ``fixed_weight`` -- **integer**; the weight found using :py:meth:`~find_lowest_weight_xor_linear_trail`
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
             format
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
+        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         .. SEEALSO::
 
@@ -598,8 +620,8 @@ class MilpXorLinearModel(MilpModel):
         self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
-        self.add_constraints_to_build_in_sage_milp_class(-1, fixed_values)
-        _, constraints = self.weight_xor_linear_constraints(fixed_weight)
+        self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
+        _, constraints = self.weight_xor_linear_constraints(fixed_weight, weight_precision)
         for constraint in constraints:
             mip.add_constraint(constraint)
         end = time.time()
@@ -722,7 +744,7 @@ class MilpXorLinearModel(MilpModel):
                 constraint += x[output_var]
                 constraints.append(constraint >= 1)
 
-    def weight_xor_linear_constraints(self, weight):
+    def weight_xor_linear_constraints(self, weight, weight_precision):
         """
         Return a list of variables and a list of constraints that fix the total weight to a specific value.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
@@ -731,6 +753,7 @@ class MilpXorLinearModel(MilpModel):
 
         - ``weight`` -- **integer**; the total weight. By default, it is the negative base-2 logarithm of the total
           correlation of the trail.
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
 
@@ -745,7 +768,7 @@ class MilpXorLinearModel(MilpModel):
             sage: constraints
             [x_0 == 100]
         """
-        return self.weight_constraints(weight)
+        return self.weight_constraints(weight, weight_precision)
 
     def _get_component_values(self, objective_variables, components_variables):
         components_values = {}
@@ -765,7 +788,7 @@ class MilpXorLinearModel(MilpModel):
     def _parse_solver_output(self):
         mip = self._model
         objective_variables = mip.get_values(self._integer_variable)
-        objective_value = objective_variables[MILP_XOR_LINEAR_OBJECTIVE] / 10.
+        objective_value = objective_variables[MILP_XOR_LINEAR_OBJECTIVE] / float(10 ** self._weight_precision)
         components_variables = mip.get_values(self._binary_variable)
         components_values = self._get_component_values(objective_variables, components_variables)
 
@@ -795,6 +818,10 @@ class MilpXorLinearModel(MilpModel):
             mask = _string_to_hex(mask_str)
             bias = 0
             if component_id + MILP_PROBABILITY_SUFFIX in probability_variables:
-                bias = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / 10.
+                bias = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / float(10 ** self._weight_precision)
             final_output.append(set_component_solution(mask, bias, sign=1))
         return final_output
+
+    @property
+    def weight_precision(self):
+        return self._weight_precision
