@@ -361,7 +361,8 @@ def master_key_recovery():
     from claasp.cipher_modules.linear_key_recovery_DES import *
     master_key = master_key_recovery()
     """
+    # the master_key found does not coincide entirely to the real master_key because of the 8 bits used for parity.
     true_partial_subkey = partial_subkey_recovery_vectorized()
     master_key_val_str, master_key_mask_str = get_partial_master_key_from_partial_subkey(true_partial_subkey)
-    master_key = get_full_masterkey_from_partial_masterkey(master_key_val_str, master_key_mask_str)
-    return master_key
+    master_key_found = get_full_masterkey_from_partial_masterkey(master_key_val_str, master_key_mask_str)
+    return master_key_found
