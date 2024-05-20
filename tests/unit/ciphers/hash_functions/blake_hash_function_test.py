@@ -24,6 +24,7 @@ def test_blake_hash_function():
                        'ff618d7a1d95f0f298ad48e03e31d69d958c8', 16)
     assert blake.evaluate([plaintext, state]) == output_state
     assert blake.test_against_reference_code(2) is True
+    assert blake.evaluate_vectorized([plaintext, state], evaluate_api=True) == output_state
 
     blake = BlakeHashFunction(block_bit_size=1024, state_bit_size=1024, word_size=64)
     plaintext = int('0x0080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
@@ -37,3 +38,4 @@ def test_blake_hash_function():
                        'd2feb3b276d336c6c8bc63d13e99bb3b08feef23aed8a237b480f33c7b6aea4550ab4634', 16)
     assert blake.evaluate([plaintext, state]) == output_state
     assert blake.test_against_reference_code(2) is True
+    assert blake.evaluate_vectorized([plaintext, state], evaluate_api=True) == output_state

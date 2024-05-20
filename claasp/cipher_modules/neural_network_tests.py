@@ -156,7 +156,7 @@ class NeuralNetworkTests:
         base_inputs_np[index] = random_inputs_for_index
         base_input_index_unpacked = np.unpackbits(base_inputs_np[index].transpose(), axis=1)
 
-        cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_outputs=True)
+        cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_output=True)
 
         for k in cipher_output:
             for j in range(len(cipher_output[k])):
@@ -325,12 +325,12 @@ class NeuralNetworkTests:
 
         other_inputs_np = list(base_inputs_np)
 
-        d_array = np.array([b for b in int(d).to_bytes(input_lengths[index] // 8, byteorder='big')])
+        d_array = np.uint8([b for b in int(d).to_bytes(input_lengths[index] // 8, byteorder='big')])
         other_inputs_np[index] = other_inputs_np[index] ^ np.broadcast_to(d_array, (
             nb_samples, input_lengths[index] // 8)).transpose()
-
-        cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_outputs=True)
-        other_output = evaluator.evaluate_vectorized(self.cipher, other_inputs_np, intermediate_outputs=True)
+        print([(x.shape, x.dtype) for x in other_inputs_np])
+        cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_output=True)
+        other_output = evaluator.evaluate_vectorized(self.cipher, other_inputs_np, intermediate_output=True)
 
         for k in cipher_output:
             for j in range(len(cipher_output[k])):
@@ -365,17 +365,17 @@ class NeuralNetworkTests:
 
         if number_of_rounds < self.cipher.number_of_rounds:
             C0 = np.unpackbits(
-                self.cipher.evaluate_vectorized(inputs_0, intermediate_outputs=True)['round_output'][number_of_rounds - 1],
+                self.cipher.evaluate_vectorized(inputs_0, intermediate_output=True)['round_output'][number_of_rounds - 1],
                 axis=1)
             C1 = np.unpackbits(
-                self.cipher.evaluate_vectorized(inputs_1, intermediate_outputs=True)['round_output'][number_of_rounds - 1],
+                self.cipher.evaluate_vectorized(inputs_1, intermediate_output=True)['round_output'][number_of_rounds - 1],
                 axis=1)
         elif number_of_rounds == self.cipher.number_of_rounds:
             C0 = np.unpackbits(
-                self.cipher.evaluate_vectorized(inputs_0, intermediate_outputs=True)['cipher_output'][0],
+                self.cipher.evaluate_vectorized(inputs_0, intermediate_output=True)['cipher_output'][0],
                 axis=1)
             C1 = np.unpackbits(
-                self.cipher.evaluate_vectorized(inputs_1, intermediate_outputs=True)['cipher_output'][0],
+                self.cipher.evaluate_vectorized(inputs_1, intermediate_output=True)['cipher_output'][0],
                 axis=1)
         else:
             raise RoundNumberTooHigh("The number of rounds required for the differential dataset is larger than the number of rounds of the"
@@ -787,7 +787,7 @@ class NeuralNetworkTests:
         # Initialisation
         input_lengths = self.cipher.inputs_bit_size
         input_tags = self.cipher.inputs
-        evaluate = lambda x: self.cipher.evaluate_vectorized(x, intermediate_outputs=True)
+        evaluate = lambda x: self.cipher.evaluate_vectorized(x, intermediate_output=True)
         threshold = 0.05
         # Generation of the baseline ciphertexts
         inputs0 = []
