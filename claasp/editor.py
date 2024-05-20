@@ -275,9 +275,9 @@ def add_FSR_component(cipher, input_id_links, input_bit_positions, output_bit_si
         sage: cipher = Cipher("cipher_name", "fsr", ["input"], [12], 12)
         sage: cipher.add_round()
         sage: fsr_0_0 = cipher.add_FSR_component(["input", "input"], [[0,1,2,3,4],[0,1,2,3,4,5,6]], 12, [[
-        [5, [[4], [5], [6, 7]]],  # Register_len:5,  feedback poly: x4 + x5 + x6*x7
-        [7, [[0], [8], [1, 2]]]  # Register_len:7, feedback poly: x0 + x1*x2 + x8
-        ], 1])
+        ....: [5, [[4], [5], [6, 7]]],  # Register_len:5,  feedback poly: x4 + x5 + x6*x7
+        ....: [7, [[0], [8], [1, 2]]]  # Register_len:7, feedback poly: x0 + x1*x2 + x8
+        ....: ], 1])
         sage: cipher.print()
         cipher_id = cipher_name_i12_o12_r1
         cipher_type = fsr
@@ -285,7 +285,6 @@ def add_FSR_component(cipher, input_id_links, input_bit_positions, output_bit_si
         cipher_inputs_bit_size = [12]
         cipher_output_bit_size = 12
         cipher_number_of_rounds = 1
-
         <BLANKLINE>
             # round = 0 - round component = 0
             id = fsr_0_0
@@ -479,7 +478,7 @@ def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit
             input_id_link = ['input', 'input']
             input_bit_positions = [[0, 1], [2, 3]]
             output_bit_size = 2
-            description = ['MODADD', 2]
+            description = ['MODADD', 2, None]
         cipher_reference_code = None
     """
     if cipher.current_round_number is None:
@@ -524,7 +523,7 @@ def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit
             input_id_link = ['input', 'input']
             input_bit_positions = [[0, 1], [2, 3]]
             output_bit_size = 2
-            description = ['MODSUB', 2]
+            description = ['MODSUB', 2, None]
         cipher_reference_code = None
     """
     if cipher.current_round_number is None:
@@ -792,7 +791,7 @@ def add_round(cipher):
           # round 0
           [
           ],
-        ],
+          ],
         'cipher_reference_code': None,
         }
     """
