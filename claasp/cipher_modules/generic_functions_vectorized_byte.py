@@ -139,6 +139,7 @@ def byte_vector_select_all_words(unformated_inputs, real_bits, real_inputs, numb
     - ``actual_inputs_bits`` -- **integer**; the bit size of the variables in unformatted_inputs
     """
 
+
     number_of_columns = [x.shape[1] for x in unformated_inputs]
     max_number_of_columns = np.max(number_of_columns)
     output = [0 for _ in range(number_of_inputs)]
