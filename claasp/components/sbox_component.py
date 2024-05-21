@@ -255,7 +255,8 @@ class SBOX(Component):
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
             sage: sbox_component = fancy.component_from(0, 0)
             sage: algebraic = AlgebraicModel(fancy)
-            sage: sbox_component.algebraic_polynomials(algebraic)
+            sage: algebraic_polynomials = sbox_component.algebraic_polynomials(algebraic)
+            sage: algebraic_polynomials
             [sbox_0_0_y2 + sbox_0_0_x1,
              sbox_0_0_x0*sbox_0_0_y0 + sbox_0_0_x0*sbox_0_0_x3,
              ...
@@ -444,13 +445,10 @@ class SBOX(Component):
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: aes = AESBlockCipher(number_of_rounds=3)
             sage: sbox_component = aes.component_from(0, 1)
-            sage: sbox_component.cp_deterministic_truncated_xor_differential_constraints()
-            ([],
-             ['constraint table(xor_0_0[0]++xor_0_0[1]++xor_0_0[2]++xor_0_0[3]++xor_0_0[4]++xor_0_0[5]++xor_0_0[6]++xor_0_0[7]++'
-             '[sbox_0_1[0]]++[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]]++[sbox_0_1[4]]++[sbox_0_1[5]]++[sbox_0_1[6]]++[sbox_0_1[7]], '
-             '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2'
-             '...'
-             '2,2,0,2,1,2,1,2,2,2,2,2,2,2,2,2,1,0,2,2,1,2,2,2,2,2,2,2,2,2,2,2);'])
+            sage: declarations, constraints, sbox_mant = sbox_component.cp_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
+            sage: constraints
+            ['constraint table([xor_0_0[0]]++[xor_0_0[1]]++[xor_0_0[2]]++[xor_0_0[3]]++[xor_0_0[4]]++[xor_0_0[5]]++[xor_0_0[6]]++[xor_0_0[7]]++[sbox_0_1[0]]++[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]]++[sbox_0_1[4]]++[sbox_0_1[5]]++[sbox_0_1[6]]++[sbox_0_1[7]], table_sbox_0_1);']
+
         """
         input_id_links = self.input_id_links
         output_id_link = self.id
