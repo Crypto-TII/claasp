@@ -21,7 +21,7 @@ import os
 SOLVER_DEFAULT = 'Chuffed'
 MODEL_DEFAULT_PATH = os.getcwd()
 
-CP_SOLVERS_INTERNAL = []
+CP_SOLVERS_INTERNAL = [['Xor', 'api', 'cbc', 'choco', 'chuffed', 'coin-bc', 'coinbc', 'cp', 'cplex', 'experimental', 'findmus', 'float', 'gecode', 'gist', 'globalizer', 'gurobi', 'int', 'lcg', 'mip', 'org.choco.choco', 'org.chuffed.chuffed', 'org.gecode.gecode', 'org.gecode.gist', 'org.minizinc.findmus', 'org.minizinc.globalizer', 'org.minizinc.mip.coin-bc', 'org.minizinc.mip.cplex', 'org.minizinc.mip.gurobi', 'org.minizinc.mip.scip', 'org.minizinc.mip.xpress', 'osicbc', 'restart', 'scip', 'set', 'tool', 'xpress']]
 
 CP_SOLVERS_EXTERNAL = [
     {
