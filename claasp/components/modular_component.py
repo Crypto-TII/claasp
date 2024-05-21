@@ -370,10 +370,10 @@ class Modular(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: modadd_component = speck.component_from(0, 1)
-            sage: milp = MilpModel(speck)
+            sage: milp = MilpXorDifferentialModel(speck)
             sage: milp.init_model_in_sage_milp_class()
             sage: variables, constraints = modadd_component.milp_xor_differential_propagation_constraints(milp)
             sage: variables
@@ -461,14 +461,14 @@ class Modular(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: modadd_component = cipher.get_component_from_id("modadd_0_1")
             sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: constraints
-            [x_48 <= 16,
+            [x_48 <= 15,
              0 <= x_48,
              0 <= 16 + x_48 - 17*x_49,
              x_48 - 17*x_49 <= 0,
@@ -642,7 +642,7 @@ class Modular(Component):
             sage: modadd_component = fancy.component_from(1, 9)
             sage: _, constraints = modadd_component.minizinc_xor_differential_propagation_constraints(minizinc)
             sage: constraints[6]
-            'constraint modular_addition_word(array1d(0..6-1, [modadd_1_9_x0,modadd_1_9_x1,modadd_1_9_x2,modadd_1_9_x3,modadd_1_9_x4,modadd_1_9_x5]),array1d(0..6-1, [modadd_1_9_x6,modadd_1_9_x7,modadd_1_9_x8,modadd_1_9_x9,modadd_1_9_x10,modadd_1_9_x11]),array1d(0..6-1, [modadd_1_9_y0_0,modadd_1_9_y1_0,modadd_1_9_y2_0,modadd_1_9_y3_0,modadd_1_9_y4_0,modadd_1_9_y5_0]), p_modadd_1_9_0, dummy_modadd_1_9_0, -1)=1;\n'
+            'constraint modular_addition_word(array1d(0..6-1, [modadd_1_9_x0,modadd_1_9_x1,modadd_1_9_x2,modadd_1_9_x3,modadd_1_9_x4,modadd_1_9_x5]),array1d(0..6-1, [modadd_1_9_x6,modadd_1_9_x7,modadd_1_9_x8,modadd_1_9_x9,modadd_1_9_x10,modadd_1_9_x11]),array1d(0..6-1, [modadd_1_9_y0_0,modadd_1_9_y1_0,modadd_1_9_y2_0,modadd_1_9_y3_0,modadd_1_9_y4_0,modadd_1_9_y5_0]), p_modadd_1_9_0, dummy_modadd_1_9_0, -1)=1;\nconstraint carry_modadd_1_9_0 = XOR3(array1d(0..6-1, [modadd_1_9_x0,modadd_1_9_x1,modadd_1_9_x2,modadd_1_9_x3,modadd_1_9_x4,modadd_1_9_x5]),array1d(0..6-1, [modadd_1_9_x6,modadd_1_9_x7,modadd_1_9_x8,modadd_1_9_x9,modadd_1_9_x10,modadd_1_9_x11]),array1d(0..6-1, [modadd_1_9_y0_0,modadd_1_9_y1_0,modadd_1_9_y2_0,modadd_1_9_y3_0,modadd_1_9_y4_0,modadd_1_9_y5_0]));\n'
         """
         def create_block_of_modadd_constraints(input_vars_1_temp, input_vars_2_temp,
                                                output_varstrs_temp, i, round_number):
@@ -744,9 +744,9 @@ class Modular(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpModel(speck)
+            sage: milp = MilpXorLinearModel(speck)
             sage: milp.init_model_in_sage_milp_class()
             sage: modadd_component = speck.component_from(0, 1)
             sage: variables, constraints = modadd_component.milp_xor_linear_mask_propagation_constraints(milp)
@@ -761,7 +761,7 @@ class Modular(Component):
             0 <= -1*x_0 - x_16 + x_32 + x_48 + x_49,
             0 <= x_0 + x_16 - x_32 + x_48 - x_49,
             ...
-             -4 <= x_15 + x_31 + x_47 + x_63 + x_64,
+             x_15 + x_31 + x_47 + x_63 + x_64 <= 4,
              x_65 == x_48 + x_49 + x_50 + x_51 + x_52 + x_53 + x_54 + x_55 + x_56 + x_57 + x_58 + x_59 + x_60 + x_61 + x_62 + x_63,
              x_66 == 100*x_65]
         """
@@ -946,9 +946,10 @@ class Modular(Component):
               'modadd_0_1_1_0',
               'modadd_0_1_2_0',
               ...
-              'rot_0_0_15_0 plaintext_31_0 -rot_0_0_15_1 -modadd_0_1_15_0',
-              'rot_0_0_15_0 plaintext_31_0 -plaintext_31_1 -modadd_0_1_15_0',
+              'rot_0_0_15_1 modadd_0_1_15_0 modadd_0_1_15_1 -plaintext_31_1',
+              'plaintext_31_1 modadd_0_1_15_0 modadd_0_1_15_1 -rot_0_0_15_1',
               'modadd_0_1_15_0 -rot_0_0_15_1 -plaintext_31_1 -modadd_0_1_15_1'])
+
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()

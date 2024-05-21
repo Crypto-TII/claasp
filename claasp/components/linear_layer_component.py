@@ -594,12 +594,12 @@ class LinearLayer(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: cipher = MidoriBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: cipher = MidoriBlockCipher(number_of_rounds=2)
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: linear_layer_component = cipher.component_from(0, 21)
-            sage: variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp) # random
             sage: variables
             [('x[mix_column_0_20_word_0_class_bit_0]', x_0),
              ('x[mix_column_0_20_word_0_class_bit_1]', x_1),
