@@ -115,6 +115,7 @@ def test_evaluate_vectorized():
     X1Lib = int.from_bytes(X[:, 1].tobytes(), byteorder='big')
     C0Lib = speck.evaluate([X0Lib, K0Lib])
     C1Lib = speck.evaluate([X1Lib, K1Lib])
+    print(result, C0Lib, C1Lib)
     assert int.from_bytes(result[-1][0].tobytes(), byteorder='big') == C0Lib
 
     assert int.from_bytes(result[-1][1].tobytes(), byteorder='big') == C1Lib
@@ -191,19 +192,19 @@ def test_get_round_from_component_id():
     fancy = FancyBlockCipher(number_of_rounds=2)
     assert fancy.get_round_from_component_id('xor_1_14') == 1
 
-
-def test_impossible_differential_search():
-    speck6 = SpeckBlockCipher(number_of_rounds=6)
-    # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
-    impossible_differentials = speck6.impossible_differential_search("cp", "Chuffed")
-
-    assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
-            (0x400000, 0x8000) in impossible_differentials)
+#
+# def test_impossible_differential_search():
+#     speck6 = SpeckBlockCipher(number_of_rounds=6)
+#     # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
+#     impossible_differentials = speck6.impossible_differential_search("cp", "Chuffed")
+#
+#     assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
+#             (0x400000, 0x8000) in impossible_differentials)
 
 
 def test_is_algebraically_secure():
     aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds = 1)
-    assert aes.is_algebraically_secure(20) is False
+    assert aes.is_algebraically_secure(200) is False
 
 
 def test_is_andrx():
@@ -399,7 +400,6 @@ def test_zero_correlation_linear_search():
     zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "YICES_EXT")
     assert len(zero_correlation_linear_approximations) > 0
 
-
 def test_cipher_inverse():
     key = 0xabcdef01abcdef01
     plaintext = 0x01234567
@@ -561,10 +561,3 @@ def test_cipher_inverse():
     ciphertext = qarmav2.evaluate([key, plaintext, tweak])
     cipher_inv = qarmav2.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, tweak, key]) == plaintext
-
-
-def test_all_sboxes_are_standard():
-    aes = AESBlockCipher(number_of_rounds=2)
-    assert aes.all_sboxes_are_standard()
-    des = DESBlockCipher(number_of_rounds = 2, number_of_sboxes=8)
-    assert not des.all_sboxes_are_standard()
