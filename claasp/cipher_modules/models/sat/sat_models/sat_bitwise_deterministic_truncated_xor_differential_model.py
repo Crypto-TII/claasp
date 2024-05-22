@@ -19,6 +19,7 @@
 
 import time
 
+from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
@@ -29,7 +30,8 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
     def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False):
         super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
-    def build_bitwise_deterministic_truncated_xor_differential_trail_model(self, number_of_unknown_variables=None, fixed_variables=[]):
+    def build_bitwise_deterministic_truncated_xor_differential_trail_model(self, number_of_unknown_variables=None,
+                                                                           fixed_variables=[]):
         """
         Build the model for the search of deterministic truncated XOR DIFFERENTIAL trails.
 
@@ -144,7 +146,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
         return constraints
 
     def find_one_bitwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[],
-                                                                        solver_name='cryptominisat'):
+                                                                        solver_name=solvers.SOLVER_DEFAULT):
         """
         Returns one deterministic truncated XOR differential trail.
 
@@ -196,7 +198,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
 
         return solution
 
-    def find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[], solver_name='cryptominisat'):
+    def find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a differential trail with the lowest number of unknown variables.
 

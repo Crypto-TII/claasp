@@ -1,7 +1,6 @@
 name: Build and push image for testing
 on:
-  pull_request:
-    types: [ closed ]
+  push:
     branches:
       - main
 

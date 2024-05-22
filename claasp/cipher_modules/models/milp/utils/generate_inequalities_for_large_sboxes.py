@@ -37,8 +37,8 @@ large_sboxes_xor_linear_inequalities_file_path = os.path.join(MILP_AUXILIARY_FIL
 
 def generate_espresso_input(input_size, output_size, value, valid_transformations_matrix):
     # little_endian
-    def to_bits(x):
-        return ZZ(x).digits(base=2, padto=input_size)[::-1]
+    def to_bits(x, size):
+        return ZZ(x).digits(base=2, padto=size)[::-1]
 
     espresso_input = [f"# there are {input_size + output_size} input variables\n"]
     espresso_input.append(f".i {input_size + output_size}")
@@ -49,7 +49,7 @@ def generate_espresso_input(input_size, output_size, value, valid_transformation
     n, m = input_size, output_size
     for i in range(0, 1 << n):
         for o in range(0, 1 << m):
-            io = "".join([str(i) for i in to_bits(i) + to_bits(o)])
+            io = "".join([str(i) for i in to_bits(i, input_size) + to_bits(o, output_size)])
             if i + o > 0 and valid_transformations_matrix[i][o] == value:
                 espresso_input.append(f"{io} 1\n")
             else:

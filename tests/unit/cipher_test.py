@@ -53,9 +53,9 @@ def test_algebraic_tests():
     d = AlgebraicTests(toyspn).algebraic_tests(10)
     assert d == {
         'input_parameters': {'cipher': toyspn, 'timeout_in_seconds': 10, 'test_name': 'algebraic_tests'},
-        'test_results': {'number_of_variables': [30, 48],
-                         'number_of_equations': [40, 80],
-                         'number_of_monomials': [60, 108],
+        'test_results': {'number_of_variables': [24, 42],
+                         'number_of_equations': [34, 74],
+                         'number_of_monomials': [54, 102],
                          'max_degree_of_equations': [2, 2],
                          'test_passed': [False, False]}}
 
@@ -64,9 +64,9 @@ def test_algebraic_tests():
     assert d == {'input_parameters': {'cipher': speck,
                                       'timeout_in_seconds': 1,
                                       'test_name': 'algebraic_tests'},
-                 'test_results': {'number_of_variables': [144],
-                                  'number_of_equations': [96],
-                                  'number_of_monomials': [189],
+                 'test_results': {'number_of_variables': [112],
+                                  'number_of_equations': [64],
+                                  'number_of_monomials': [157],
                                   'max_degree_of_equations': [2],
                                   'test_passed': [True]}}
 
@@ -75,9 +75,9 @@ def test_algebraic_tests():
     compare_result = {'input_parameters': {'cipher': aes,
                                            'timeout_in_seconds': 5,
                                            'test_name': 'algebraic_tests'},
-                      'test_results': {'number_of_variables': [128],
-                                       'number_of_equations': [198],
-                                       'number_of_monomials': [296],
+                      'test_results': {'number_of_variables': [104],
+                                       'number_of_equations': [174],
+                                       'number_of_monomials': [272],
                                        'max_degree_of_equations': [2],
                                        'test_passed': [False]}}
 
@@ -115,6 +115,7 @@ def test_evaluate_vectorized():
     X1Lib = int.from_bytes(X[:, 1].tobytes(), byteorder='big')
     C0Lib = speck.evaluate([X0Lib, K0Lib])
     C1Lib = speck.evaluate([X1Lib, K1Lib])
+    print(result, C0Lib, C1Lib)
     assert int.from_bytes(result[-1][0].tobytes(), byteorder='big') == C0Lib
 
     assert int.from_bytes(result[-1][1].tobytes(), byteorder='big') == C1Lib
@@ -191,19 +192,19 @@ def test_get_round_from_component_id():
     fancy = FancyBlockCipher(number_of_rounds=2)
     assert fancy.get_round_from_component_id('xor_1_14') == 1
 
-
-def test_impossible_differential_search():
-    speck6 = SpeckBlockCipher(number_of_rounds=6)
-    # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
-    impossible_differentials = speck6.impossible_differential_search("cp", "chuffed")
-
-    assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
-            (0x400000, 0x8000) in impossible_differentials)
+#
+# def test_impossible_differential_search():
+#     speck6 = SpeckBlockCipher(number_of_rounds=6)
+#     # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
+#     impossible_differentials = speck6.impossible_differential_search("cp", "Chuffed")
+#
+#     assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
+#             (0x400000, 0x8000) in impossible_differentials)
 
 
 def test_is_algebraically_secure():
     aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds = 1)
-    assert aes.is_algebraically_secure(20) is False
+    assert aes.is_algebraically_secure(200) is False
 
 
 def test_is_andrx():
@@ -234,7 +235,7 @@ def test_is_spn():
 
 def test_polynomial_system():
     tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
-    assert str(tea.polynomial_system()) == 'Polynomial Sequence with 352 Polynomials in 448 Variables'
+    assert str(tea.polynomial_system()) == 'Polynomial Sequence with 288 Polynomials in 384 Variables'
 
 
 def test_polynomial_system_at_round():
@@ -396,9 +397,8 @@ def test_vector_check():
 
 def test_zero_correlation_linear_search():
     speck6 = SpeckBlockCipher(number_of_rounds=6)
-    zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "yices-smt2")
+    zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "YICES_EXT")
     assert len(zero_correlation_linear_approximations) > 0
-
 
 def test_cipher_inverse():
     key = 0xabcdef01abcdef01

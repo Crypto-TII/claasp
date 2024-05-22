@@ -747,7 +747,7 @@ class Cipher:
 
         return partial_cipher_inverse
 
-    def evaluate_vectorized(self, cipher_input, intermediate_outputs=False, verbosity=False):
+    def evaluate_vectorized(self, cipher_input, intermediate_output=False, verbosity=False, evaluate_api = False, bit_based = False):
         """
         Return the output of the cipher for multiple inputs.
 
@@ -766,10 +766,12 @@ class Cipher:
 
         - ``cipher_input`` -- **list**; block cipher inputs (ndarray of uint8 representing one byte each, n rows, m columns,
           with m the number of inputs to evaluate)
-        - ``intermediate_outputs`` -- **boolean** (default: `False`)
+        - ``intermediate_output`` -- **boolean** (default: `False`)
         - ``verbosity`` -- **boolean** (default: `False`); set this flag to True in order to print the input/output of
           each component
-
+        - ``evaluate_api`` -- **boolean** (default: `False`); if set to True, takes integer inputs (as the evaluate function)
+        and returns integer inputs; it is expected that cipher.evaluate(x) == cipher.evaluate_vectorized(x, evaluate_api = True)
+        is True.
         EXAMPLES::
 
             sage: import numpy as np
@@ -789,7 +791,7 @@ class Cipher:
             sage: int.from_bytes(result[-1][1].tobytes(), byteorder='big') == C1Lib
             True
         """
-        return evaluator.evaluate_vectorized(self, cipher_input, intermediate_outputs, verbosity)
+        return evaluator.evaluate_vectorized(self, cipher_input, intermediate_output, verbosity, evaluate_api, bit_based)
 
     def evaluate_with_intermediate_outputs_continuous_diffusion_analysis(
             self, cipher_input, sbox_precomputations, sbox_precomputations_mix_columns, verbosity=False):
@@ -1709,3 +1711,4 @@ class Cipher:
     def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
         round_number = self.get_round_from_component_id(component_id)
         self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
+

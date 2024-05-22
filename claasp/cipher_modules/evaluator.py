@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -22,11 +21,13 @@ from types import ModuleType
 from subprocess import Popen, PIPE
 
 from claasp.cipher_modules import code_generator
+from claasp.cipher_modules.generic_functions_vectorized_byte import cipher_inputs_to_evaluate_vectorized_inputs, \
+    evaluate_vectorized_outputs_to_integers
 
 
 def evaluate(cipher, cipher_input, intermediate_output=False, verbosity=False):
     python_code_string = code_generator.generate_python_code_string(cipher, verbosity)
-    
+
     f_module = ModuleType("evaluate")
     exec(python_code_string, f_module.__dict__)
 
@@ -77,25 +78,16 @@ def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
     return function_output
 
 
-def evaluate_vectorized(cipher, cipher_input, intermediate_outputs=False, verbosity=False):
-    if np.any(np.array(cipher.inputs_bit_size) % 8 != 0):
-        python_code_string = code_generator \
-            .generate_bit_based_vectorized_python_code_string(cipher,
-                                                              store_intermediate_outputs=intermediate_outputs,
-                                                              verbosity=verbosity,
-                                                              convert_output_to_bytes=True)
-        cipher_input = [np.unpackbits(cipher_input[i], axis=0)[:x, ]
-                        for i, x in enumerate(cipher.inputs_bit_size)]
-    else:
-        python_code_string = code_generator \
-            .generate_byte_based_vectorized_python_code_string(
-                cipher,
-                store_intermediate_outputs=intermediate_outputs, verbosity=verbosity)
-
+def evaluate_vectorized(cipher, cipher_input, intermediate_output=False, verbosity=False, evaluate_api=False,
+                        bit_based=False):
+    python_code_string = code_generator.generate_byte_based_vectorized_python_code_string(cipher,
+                                                                                              store_intermediate_outputs=intermediate_output,
+                                                                                              verbosity=verbosity,
+                                                                                              integers_inputs_and_outputs=evaluate_api)
     f_module = ModuleType("evaluate")
     exec(python_code_string, f_module.__dict__)
-
-    return f_module.evaluate(cipher_input, intermediate_outputs)
+    cipher_output = f_module.evaluate(cipher_input, intermediate_output)
+    return cipher_output
 
 
 def evaluate_with_intermediate_outputs_continuous_diffusion_analysis(cipher, cipher_input, sbox_precomputations,

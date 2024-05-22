@@ -111,7 +111,7 @@ class TriviumStreamCipher(Cipher):
         k_bits_id = [state, state, state, state, state, state]
         k_bits_pos = [[0], [27], [93], [108], [177], [222]]
         key_stream_bit = self.add_XOR_component(k_bits_id, k_bits_pos, 1).id
-        if clock_number is 0:
+        if clock_number == 0:
             key_stream = self.add_round_output_component([key_stream_bit], [list(range(1))], 1).id
         else:
             key_stream = self.add_round_output_component([key_stream, key_stream_bit],
