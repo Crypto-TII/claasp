@@ -10,9 +10,9 @@ aes = AESBlockCipher()
 
 def test_run_avalanche_nist_statistics_test_with_speck_cipher(benchmark):
     tests = NISTStatisticalTests(speck)
-    benchmark(tests.run_avalanche_nist_statistics_test, 0, 10, 10)
+    benchmark(tests.nist_statistical_tests, test_type='avalanche')
 
 
 def test_run_avalanche_nist_statistics_test_with_aes_cipher(benchmark):
     tests = NISTStatisticalTests(aes)
-    benchmark(tests.run_avalanche_nist_statistics_test, 0, 10, 10)
+    benchmark(tests.nist_statistical_tests, test_type='avalanche')

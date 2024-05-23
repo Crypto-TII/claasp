@@ -601,13 +601,7 @@ class XOR(Component):
 
         for i in range(number_of_inputs):
             for j in range(output_bit_size):
-                input_component_id = input_vars[output_bit_size * i + j].rsplit('_', 1)[0]
-                if input_component_id in model.cipher.inputs:
-                    constraints.append(x[ind_output_vars[j]] == x[ind_input_vars[output_bit_size * i + j]])
-                else:
-                    input_component = model.cipher.get_component_from_id(input_component_id)
-                    if CONSTANT not in input_component.type:
-                        constraints.append(x[ind_output_vars[j]] == x[ind_input_vars[output_bit_size * i + j]])
+                constraints.append(x[ind_output_vars[j]] == x[ind_input_vars[output_bit_size * i + j]])
 
         return variables, constraints
 

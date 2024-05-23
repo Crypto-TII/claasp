@@ -22,11 +22,15 @@ import math
 import itertools
 import subprocess
 
+from copy import deepcopy
+
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
+from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import SBOX
+from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 solve_satisfy = 'solve satisfy;'
 constraint_type_error = 'Constraint type not defined'
@@ -57,15 +61,13 @@ class CpModel:
         self.list_of_xor_components = []
         self.list_of_xor_all_inputs = []
         self.component_and_probability = {}
-        self._model_prefix = [
-            'include "globals.mzn";',
-            f"include \"{os.path.join(os.path.dirname(__file__), 'Minizinc_functions', 'Usefulfunctions.mzn')}\";"]
+        self._model_prefix = ['include "globals.mzn";', f'{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}']
 
     def add_solutions_from_components_values(self, components_values, memory, model_type, solutions, solve_time,
                                              solver_name, solver_output, total_weight):
         for i in range(len(total_weight)):
             solution = convert_solver_solution_to_dictionary(
-                self.cipher_id,
+                self._cipher,
                 model_type,
                 solver_name,
                 solve_time,
@@ -287,7 +289,7 @@ class CpModel:
 
         return value
 
-    def get_command_for_solver_process(self, input_file_path, model_type, solver_name):
+    def get_command_for_solver_process(self, input_file_path, model_type, solver_name, num_of_processors, timelimit):
         solvers = ['xor_differential_one_solution',
                    'xor_linear_one_solution',
                    'deterministic_truncated_xor_differential_one_solution',
@@ -295,11 +297,21 @@ class CpModel:
                    'differential_pair_one_solution',
                    'evaluate_cipher']
         write_model_to_file(self._model_constraints, input_file_path)
-        if model_type in solvers:
-            command = ['minizinc', '--solver-statistics', '--solver', solver_name, input_file_path]
-        else:
-            command = ['minizinc', '-a', '--solver-statistics', '--solver', solver_name, input_file_path]
-
+        for i in range(len(CP_SOLVERS_EXTERNAL)):
+            if solver_name == CP_SOLVERS_EXTERNAL[i]['solver_name']:
+                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
+        command_options['keywords']['command']['input_file'].append(input_file_path)
+        if model_type not in solvers:
+            command_options['keywords']['command']['options'].insert(0, '-a')
+        if num_of_processors is not None:
+            command_options['keywords']['command']['options'].insert(0, f'-p {num_of_processors}')
+        if timelimit is not None:
+            command_options['keywords']['command']['options'].append('--time-limit')
+            command_options['keywords']['command']['options'].append(str(timelimit))
+        command = []
+        for key in command_options['keywords']['command']['format']:
+            command.extend(command_options['keywords']['command'][key])
+            
         return command
 
     def get_mix_column_all_inputs(self, input_bit_positions_1, input_id_link_1, numb_of_inp_1):
@@ -409,7 +421,7 @@ class CpModel:
         else:
             component_solution['value'] = value
 
-    def solve(self, model_type, solver_name=None):
+    def solve(self, model_type, solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution of the model.
 
@@ -430,6 +442,8 @@ class CpModel:
           * ``'Chuffed'``
           * ``'Gecode'``
           * ``'COIN-BC'``
+        - ``num_of_processors`` -- **integer**; the number of processors to be used
+        - ``timelimit`` -- **integer**; time limit to output a result
 
         EXAMPLES::
 
@@ -449,8 +463,10 @@ class CpModel:
               'total_weight': '5'}]
         """
         cipher_name = self.cipher_id
-        input_file_path = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
-        command = self.get_command_for_solver_process(input_file_path, model_type, solver_name)
+        input_file_path = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
+        command = self.get_command_for_solver_process(
+            input_file_path, model_type, solver_name, num_of_processors, timelimit
+        )
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
         os.remove(input_file_path)
         if solver_process.returncode >= 0:
@@ -458,7 +474,7 @@ class CpModel:
             solver_output = solver_process.stdout.splitlines()
             solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output)
             if components_values == {}:
-                solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name,
+                solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name,
                                                                  solve_time, memory,
                                                                  components_values, total_weight)
                 if 'UNSATISFIABLE' in solver_output[0]:
@@ -476,6 +492,24 @@ class CpModel:
                 return solutions[0]
             else:
                 return solutions
+                
+    def solver_names(self, verbose = False):
+        if not verbose:
+            print('Internal CP solvers:')
+            print('solver brand name | solver name')
+            for i in range(len(CP_SOLVERS_INTERNAL)):
+                print(f'{CP_SOLVERS_INTERNAL[i]["solver_brand_name"]} | {CP_SOLVERS_INTERNAL[i]["solver_name"]}')
+            print('\n')
+            print('External CP solvers:')
+            print('solver brand name | solver name')
+            for i in range(len(CP_SOLVERS_EXTERNAL)):
+                print(f'{CP_SOLVERS_EXTERNAL[i]["solver_brand_name"]} | {CP_SOLVERS_EXTERNAL[i]["solver_name"]}')
+        else:
+            print('Internal CP solvers:')
+            print(CP_SOLVERS_INTERNAL)
+            print('\n')
+            print('External CP solvers:')
+            print(CP_SOLVERS_EXTERNAL)
 
     def weight_constraints(self, weight):
         """

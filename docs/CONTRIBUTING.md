@@ -41,12 +41,13 @@ To contribute to this project, please, follow the following conventions.
 
 # GitHub collaboration
 
-In order to collaborate with the project, you need to fork this projects.
+In order to collaborate with the project, you need to fill this [Google form](https://forms.gle/rYMKW76fCF15Lnxm6) to 
+be added as a collaboratior in [CLAASP GitHub repository](https://github.com/Crypto-TII/claasp).
 
 ## Pull requests
 
-Pull requests are the way to contribute to the project. Pull requests coming from forks will be reviewed and need to 
-have all the checks passing green.
+Pull requests are the way to contribute to the project. Only collaborators can create pull requests, so pull requests 
+coming from forks will be rejected.
 
 # Development environment
 
@@ -161,9 +162,11 @@ Configuring PyCharm to use Python from within a container involves setting up a 
 
 4. **Configure Project Interpreter**:
     - Go to **Preferences** > **Project: [Your Project Name]** > **Python Interpreter**.
-    - Click on the gear icon and select **Add**.
+    - In the right corner click **Add Interpreter**.
     - In the left-hand pane of the Add Python Interpreter dialog, select **On Docker**.
-    - Specify the docker image. You can choose your local image CLAASP or the public one from `hub.docker.com` called `tiicrc/claasp-lib`
+    - Specify the docker image. You can choose one of "build" or "Pull or use existing":
+      - If your option is "build" then you need to fill the field "Dockerfile" with `docker/Dockerfile`
+      - If your option is "Pull or use existing" then you need to fill the field "image tag" with `claasp:latest`
     - PyCharm will attempt to find the Python interpreter in the created image. You may need to specify the path to the Python executable if PyCharm cannot locate it automatically (commonly `/usr/bin/python3` or similar).
 
 5. **Apply and Save Changes**: Click **OK** to save your new interpreter settings.
