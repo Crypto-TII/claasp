@@ -49,30 +49,50 @@ wordsize2zindex = {
 
 
 class SimonSboxBlockCipher(Cipher):
-    # """
-    # Construct an instance of the SimonBlockCipher class.
+    """
+    Construct an instance of the SimonSboxBlockCipher class.
 
-    # This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
+    This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
 
-    # INPUT:
+    INPUT:
 
-    # - ``block_bit_size`` -- **integer** (default: `32`); cipher input and output block bit size of the cipher
-    # - ``key_bit_size`` -- **integer** (default: `64`); cipher key bit size of the cipher
-    # - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds of the cipher. The cipher uses the
-    #   corresponding amount given the other parameters (if available) when number_of_rounds is None
-    # - ``rotation_amount`` -- **list** (default: `[-1, -8, -2]`); the list containing the 3 rotation amounts for the
-    #   round function
+    - ``block_bit_size`` -- **integer** (default: `32`); cipher input and output block bit size of the cipher
+    - ``key_bit_size`` -- **integer** (default: `64`); cipher key bit size of the cipher
+    - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds of the cipher. The cipher uses the
+      corresponding amount given the other parameters (if available) when number_of_rounds is None
+    - ``rotation_amount`` -- **list** (default: `[-1, -8, -2]`); the list containing the 3 rotation amounts for the
+      round function
 
-    # EXAMPLES::
+    EXAMPLES::
 
-    #     sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-    #     sage: simon = SimonBlockCipher()
-    #     sage: simon.number_of_rounds
-    #     32
+        sage: from claasp.ciphers.block_ciphers.simon_sbox_block_cipher import SimonSboxBlockCipher
+        sage: simon_sbox = SimonSboxBlockCipher()
+        sage: simon_sbox.number_of_rounds
+        32
 
-    #     sage: simon.component_from(0, 0).id
-    #     'intermediate_output_0_0'
-    # """
+        sage: simon_sbox.component_from(0, 0).id
+        'intermediate_output_0_0'
+    """
+
+    sbox = [0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3, 2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5, 5, 4,
+            0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3, 2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5, 5, 4,
+            8, 9, 8, 9, 10, 11, 11, 10, 8, 9, 8, 9, 10, 11, 11, 10, 12, 13, 12, 13, 14, 15, 15, 14, 14, 15,
+            14, 15, 12, 13, 13, 12, 12, 13, 12, 13, 14, 15, 15, 14, 12, 13, 12, 13, 14, 15, 15, 14, 8, 9,
+            8, 9, 10, 11, 11, 10, 10, 11, 10, 11, 8, 9, 9, 8, 0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3,
+            2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5, 5, 4, 0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3,
+            2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5, 5, 4, 8, 9, 8, 9, 10, 11, 11, 10, 8, 9, 8, 9, 10,
+            11, 11, 10, 12, 13, 12, 13, 14, 15, 15, 14, 14, 15, 14, 15, 12, 13, 13, 12, 12, 13, 12, 13, 14,
+            15, 15, 14, 12, 13, 12, 13, 14, 15, 15, 14, 8, 9, 8, 9, 10, 11, 11, 10, 10, 11, 10, 11, 8, 9,
+            9, 8, 0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3, 2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5,
+            5, 4, 0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3, 2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5,
+            5, 4, 8, 9, 8, 9, 10, 11, 11, 10, 8, 9, 8, 9, 10, 11, 11, 10, 12, 13, 12, 13, 14, 15, 15, 14,
+            14, 15, 14, 15, 12, 13, 13, 12, 12, 13, 12, 13, 14, 15, 15, 14, 12, 13, 12, 13, 14, 15, 15, 14,
+            8, 9, 8, 9, 10, 11, 11, 10, 10, 11, 10, 11, 8, 9, 9, 8, 8, 9, 8, 9, 10, 11, 11, 10, 8, 9, 8, 9,
+            10, 11, 11, 10, 12, 13, 12, 13, 14, 15, 15, 14, 14, 15, 14, 15, 12, 13, 13, 12, 8, 9, 8, 9, 10,
+            11, 11, 10, 8, 9, 8, 9, 10, 11, 11, 10, 12, 13, 12, 13, 14, 15, 15, 14, 14, 15, 14, 15, 12, 13,
+            13, 12, 0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3, 2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4,
+            5, 5, 4, 4, 5, 4, 5, 6, 7, 7, 6, 4, 5, 4, 5, 6, 7, 7, 6, 0, 1, 0, 1, 2, 3, 3, 2, 2, 3, 2, 3, 0,
+            1, 1, 0]
 
     def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=[-1, -8, -2]):
         self.block_bit_size = block_bit_size
@@ -102,9 +122,9 @@ class SimonSboxBlockCipher(Cipher):
         x = INPUT_PLAINTEXT, list(range(self.word_size))
         y = INPUT_PLAINTEXT, list(range(self.word_size, 2 * self.word_size))
 
-        round_keys = [None] * n
+        round_keys = [None] * number_of_rounds
 
-        for round_number in range(n):
+        for round_number in range(number_of_rounds):
             self.add_round()
             self.generate_round_key(round_keys, round_number)
             x, y = self.feistel_function(x, y, round_keys[round_number])
@@ -113,13 +133,13 @@ class SimonSboxBlockCipher(Cipher):
 
     def f(self, x):
         # f(x) = ((x <<< 1) & (x <<< 8)) ⊕ (x <<< 2)
-        indices = (1, 8, 2, 9, 3, 10, 4, 11, 5)
+        positions = [1, 8, 2, 9, 3, 10, 4, 11, 5]
         sboxes_ids = []
-        for _ in range(self.number_of_sboxes):
-            sbox_positions = list(map(int.__add__(i*4), indices))
-            sboxes.append(self.add_SBOX_component(x[0], [x[1][:8]], ).id)
+        for i in range(self.number_of_sboxes):
+            sbox_positions = [(position + 4*i) % self.word_size for position in positions]
+            sboxes_ids.append(self.add_SBOX_component([x[0]], [sbox_positions], 4, self.sbox).id)
 
-        return sboxes_ids, [list(range(8)) for _ in range(self.number_of_sboxes)]
+        return sboxes_ids, [list(range(4)) for _ in range(self.number_of_sboxes)]
 
     def feistel_function(self, x, y, k):
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
@@ -127,7 +147,7 @@ class SimonSboxBlockCipher(Cipher):
         new_x_id = self.add_XOR_component([y[0], *sboxes[0], k[0]], [y[1], *sboxes[1], k[1]],
                                           self.word_size).id
 
-        self.add_round_output_component([new_x_id, x.id], [list(range(self.word_size)), x[0]],
+        self.add_round_output_component([new_x_id, x[0]], [list(range(self.word_size)), x[1]],
                                         self.block_bit_size).id
 
         return (new_x_id, list(range(self.word_size))), (x[0], x[1])
