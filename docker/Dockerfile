@@ -1,7 +1,6 @@
 FROM ubuntu:22.04 AS claasp-base
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GUROBI_ARCH=linux64
 ARG COPY_CLAASP_LIBRARY=false
 ARG INSTALL_CLAASP_LIBRARY=false
 
@@ -30,11 +29,11 @@ COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
 WORKDIR /opt
 
-RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_${GUROBI_ARCH}.tar.gz \
-    && tar -xf gurobi10.0.0_${GUROBI_ARCH}.tar.gz \
-    && rm gurobi10.0.0_${GUROBI_ARCH}.tar.gz
+RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz \
+    && tar -xf gurobi10.0.0_linux64.tar.gz \
+    && rm gurobi10.0.0_linux64.tar.gz
 
-ENV GUROBI_HOME="/opt/gurobi1000/${GUROBI_ARCH}"
+ENV GUROBI_HOME="/opt/gurobi1000/linux64"
 ENV PATH="${PATH}:${GUROBI_HOME}/bin"
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
 

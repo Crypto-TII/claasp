@@ -258,7 +258,7 @@ class MultiInputNonlinearLogicalOperator(Component):
             [0 <= -1*x_32 + x_48,
             0 <= -1*x_33 + x_49,
             ...
-            x_64 == 10*x_48 + 10*x_49 + 10*x_50 + 10*x_51 + 10*x_52 + 10*x_53 + 10*x_54 + 10*x_55 + 10*x_56 + 10*x_57 + 10*x_58 + 10*x_59 + 10*x_60 + 10*x_61 + 10*x_62 + 10*x_63]
+            x_64 == 100*x_48 + 100*x_49 + 100*x_50 + 100*x_51 + 100*x_52 + 100*x_53 + 100*x_54 + 100*x_55 + 100*x_56 + 100*x_57 + 100*x_58 + 100*x_59 + 100*x_60 + 100*x_61 + 100*x_62 + 100*x_63]
         """
         x = model.binary_variable
         p = model.integer_variable
@@ -277,7 +277,7 @@ class MultiInputNonlinearLogicalOperator(Component):
                 tmp += x[component_id + "_and_" + str(index)] * ineq[self.description[1] + 2]
                 tmp += ineq[0]
                 constraints.append(tmp >= 0)
-        constraints.append(p[component_id + "_probability"] == 10 * sum(x[component_id + "_and_" + str(i)]
+        constraints.append(p[component_id + "_probability"] == (10 ** model.weight_precision) * sum(x[component_id + "_and_" + str(i)]
                                                                         for i in range(len(output_vars))))
         result = variables, constraints
 
@@ -318,7 +318,7 @@ class MultiInputNonlinearLogicalOperator(Component):
             ...
             0 <= -1*x_15 + x_47,
             x_48 == x_32 + x_33 + x_34 + x_35 + x_36 + x_37 + x_38 + x_39 + x_40 + x_41 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47,
-            x_49 == 10*x_48]
+            x_49 == 100*x_48]
         """
         binary_variable = model.binary_variable
         integer_variable = model.integer_variable
@@ -334,7 +334,7 @@ class MultiInputNonlinearLogicalOperator(Component):
         if number_of_inputs == 2:
             variables, constraints = self.milp_twoterms_xor_linear_probability_constraints(
                 binary_variable, integer_variable, input_vars, output_vars, 0)
-            constraints.append(p[component_id + "_probability"] == 10 * p[component_id + "_and_probability" + str(0)])
+            constraints.append(p[component_id + "_probability"] == (10 ** model.weight_precision) * p[component_id + "_and_probability" + str(0)])
 
         elif number_of_inputs > 2:
             temp_output_vars = [[f"{var}_temp_and_{i}" for var in output_vars]
@@ -359,7 +359,7 @@ class MultiInputNonlinearLogicalOperator(Component):
             variables.extend(temp_variables)
             constraints.extend(temp_constraints)
             constraints.append(
-                p[component_id + "_probability"] == 10 * sum(p[component_id + "_and_probability" + str(i)]
+                p[component_id + "_probability"] == (10 ** model.weight_precision) * sum(p[component_id + "_and_probability" + str(i)]
                                                              for i in range(number_of_inputs - 1)))
         result = variables, constraints
 

@@ -20,6 +20,7 @@ def test_sparx_block_cipher():
     ciphertext = 0x2bbef15201f55f98
     assert sparx.evaluate([plaintext, key]) == ciphertext
     assert sparx.test_against_reference_code(2) is True
+    assert sparx.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
 
     sparx = SparxBlockCipher(block_bit_size=128)
     plaintext = 0x0123456789abcdeffedcba9876543210
@@ -27,6 +28,7 @@ def test_sparx_block_cipher():
     ciphertext = 0x1cee75407dbf23d8e0ee1597f42852d8
     assert sparx.evaluate([plaintext, key]) == ciphertext
     assert sparx.test_against_reference_code(2) is True
+    assert sparx.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
 
     sparx = SparxBlockCipher(block_bit_size=128, key_bit_size=256)
     plaintext = 0x0123456789abcdeffedcba9876543210
@@ -34,3 +36,4 @@ def test_sparx_block_cipher():
     ciphertext = 0x3328e63714c76ce632d15a54e4b0c820
     assert sparx.evaluate([plaintext, key]) == ciphertext
     assert sparx.test_against_reference_code(2) is True
+    assert sparx.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

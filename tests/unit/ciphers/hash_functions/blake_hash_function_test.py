@@ -21,6 +21,7 @@ def test_blake_hash_function():
     digest = 0x7a07e5194c7e2bac28acf9eca5adb385f201e16106b69682b290a439232a09561ce6d791bace48a4761dd447d40ff618d7a1d95f0f298ad48e03e31d69d958c8
     assert blake.evaluate([message, state]) == digest
     assert blake.test_against_reference_code(2) is True
+    assert blake.evaluate_vectorized([plaintext, state], evaluate_api=True) == output_state
 
     blake = BlakeHashFunction(block_bit_size=1024, state_bit_size=1024, word_size=64)
     message = 0x0080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000008
@@ -28,3 +29,4 @@ def test_blake_hash_function():
     digest = 0xa4c49432d99d5e8de90f2891abd6b4a649c0415e4a303c040411becca4309ea7d84c660093c4cabd1da7328a685c8535af04db28c411cfe1148facbcaf9cd9fe595b67d2dcf8e77fe805a26c2b41f54c8f13bb9aae41cd1da413194ad2feb3b276d336c6c8bc63d13e99bb3b08feef23aed8a237b480f33c7b6aea4550ab4634
     assert blake.evaluate([message, state]) == digest
     assert blake.test_against_reference_code(2) is True
+    assert blake.evaluate_vectorized([plaintext, state], evaluate_api=True) == output_state
