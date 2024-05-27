@@ -145,13 +145,28 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_one_
     window_size = 3
     probability_weight = 34
     sat.set_window_size_heuristic_by_round(
-        [window_size for _ in range(10)], number_of_full_windows=number_of_full_windows
+        [window_size for _ in range(10)], number_of_full_windows=number_of_full_windows, full_window_operator='exactly'
     )
-    result = sat.find_one_xor_differential_trail_with_fixed_weight(probability_weight, solver_name="CADICAL_EXT")
+
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='not_equal',
+        bit_positions=range(32),
+        bit_values=integer_to_bit_list(0, 32, 'big'))
+    key = set_fixed_variables(
+        component_id='key',
+        constraint_type='equal',
+        bit_positions=range(64),
+        bit_values=(0,) * 64)
+    sat.build_xor_differential_trail_model(34, fixed_variables=[plaintext, key])
+    result = sat._solve_with_external_sat_solver(
+        "xor_differential", "PARKISSAT_EXT", ["-c=6"]
+    )
     speck_components = speck.get_all_components()
     modadd_objects = list(filter(lambda obj: isinstance(obj, MODADD), speck_components))
     carry_list = compute_modadd_xor(modadd_objects, result['components_values'])
     computed_number_of_full_windows = count_sequences_of_ones(carry_list, window_size)
+
     assert int(result['total_weight']) == int(probability_weight)
     assert computed_number_of_full_windows == number_of_full_windows
 

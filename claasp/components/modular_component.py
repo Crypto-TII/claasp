@@ -885,7 +885,7 @@ class Modular(Component):
             if self.id not in model.window_size_by_component_id_values:
                 raise ValueError(f"component with id {self.id} is not in the list window_size_by_component_id")
             window_size = model.window_size_by_component_id_values[self.id]
-            extend_constraints_for_window_size(output_bit_len, window_size, input_bit_ids, output_bit_ids, constraints)
+            extend_constraints_for_window_size(model, output_bit_len, window_size, input_bit_ids, output_bit_ids, constraints)
 
         variables = output_bit_ids + dummy_bit_ids + hw_bit_ids
 
