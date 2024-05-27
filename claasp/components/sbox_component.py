@@ -127,7 +127,7 @@ def milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq, 
 
 def sat_build_table_template(table, get_hamming_weight_function, input_bit_len, output_bit_len):
     # create espresso input
-    input_length = 2 * input_bit_len + output_bit_len
+    input_length = input_bit_len + 2 * output_bit_len
     espresso_input = [f'.i {input_length}', '.o 1']
     for i in range(table.nrows()):
         for j in range(table.ncols()):
@@ -135,7 +135,7 @@ def sat_build_table_template(table, get_hamming_weight_function, input_bit_len, 
                 input_diff = f'{i:0{input_bit_len}b}'
                 output_diff = f'{j:0{output_bit_len}b}'
                 hamming_weight = get_hamming_weight_function(input_bit_len, table[i, j])
-                weight_vec = '0' * (input_bit_len - hamming_weight)
+                weight_vec = '0' * (output_bit_len - hamming_weight)
                 weight_vec += '1' * hamming_weight
                 espresso_input.append(f'{input_diff}{output_diff}{weight_vec} 1')
     espresso_input.append('.e')
@@ -1481,7 +1481,7 @@ class SBOX(Component):
         """
         input_bit_len, input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(input_bit_len)]
+        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         sbox_values = self.description
         sboxes_ddt_templates = model.sboxes_ddt_templates
 
