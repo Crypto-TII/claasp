@@ -14,6 +14,8 @@ for line in dockerfile_lines:
     line = line.strip()
 
     if line.startswith("FROM"):
+        if line.startswith("FROM claasp-base AS claasp-lib"):
+            break
         continue
 
     is_a_comment = line.startswith("#")
@@ -42,10 +44,11 @@ for line in dockerfile_lines:
             bash_instruction = f"export {command}"
         case "WORKDIR":
             directory = docker_command.split("WORKDIR")[1].strip()
-            if os.path.exists(directory):
-                bash_instruction = f"cd {directory}"
-            else:
-                bash_instruction = f"mkdir {directory} && cd {directory}"
+            if directory != '/home/sage/tii-claasp':
+                if os.path.exists(directory):
+                    bash_instruction = f"cd {directory}"
+                else:
+                    bash_instruction = f"mkdir {directory} && cd {directory}"
         case "COPY":
             command = docker_command.split("COPY")[1].strip()
             src, dst = command.split()
@@ -57,7 +60,8 @@ for line in dockerfile_lines:
             docker_command = ""
             continue
 
-    bash_instructions.append(bash_instruction)
+    if bash_instruction:
+        bash_instructions.append(bash_instruction)
     docker_command = ""
 
 
