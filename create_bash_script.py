@@ -13,10 +13,8 @@ docker_command = ""
 for line in dockerfile_lines:
     line = line.strip()
 
-    if line.startswith("FROM"):
-        if line.startswith("FROM claasp-base AS claasp-lib"):
-            break
-        continue
+    if line.startswith("FROM claasp-base AS claasp-lib"):
+        break
 
     is_a_comment = line.startswith("#")
     if not line or is_a_comment:
