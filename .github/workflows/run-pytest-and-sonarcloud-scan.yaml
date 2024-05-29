@@ -38,6 +38,7 @@ jobs:
     - name: Run remote-pytest
       run: |
             cd /home/runner/_work/claasp
+            echo running pytest for claasp
             make remote-pytest
 
     - name: Upload Coverage.xml to artifacts
