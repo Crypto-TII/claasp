@@ -52,9 +52,7 @@ To install the dependencies manually, you can do it through make command or exec
 root directory of the project.
 
 #### Make command
-You need to have `make` installed for this execution.
-- For m1 macs, run ```make local-installation-m1```
-- For other machines, run ```make local-installation```
+You need to have `make` installed for this execution. Run ```make local-installation```
 
 #### Script execution
 - For m1 macs, run ```./configure.sh armlinux64```

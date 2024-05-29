@@ -171,6 +171,20 @@ def test_sat_constraints():
     assert constraints[-1] == '-not_0_8_31 -xor_0_6_31'
 
 
+def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
+    gift = GiftPermutation(number_of_rounds=3)
+    not_component = gift.component_from(0, 8)
+    output_bit_ids, constraints = not_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+
+    assert output_bit_ids[0] == 'not_0_8_0_0'
+    assert output_bit_ids[1] == 'not_0_8_1_0'
+    assert output_bit_ids[2] == 'not_0_8_2_0'
+
+    assert constraints[-3] == 'xor_0_6_30_0 -xor_0_6_30_1 -not_0_8_30_1'
+    assert constraints[-2] == 'xor_0_6_31_0 xor_0_6_31_1 not_0_8_31_1'
+    assert constraints[-1] == 'xor_0_6_31_0 -xor_0_6_31_1 -not_0_8_31_1'
+
+
 def test_sat_xor_differential_propagation_constraints():
     gift = GiftPermutation(number_of_rounds=3)
     not_component = gift.component_from(0, 8)

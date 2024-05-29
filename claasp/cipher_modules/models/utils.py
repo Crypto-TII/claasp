@@ -21,7 +21,8 @@ import sys
 import math
 from copy import deepcopy
 
-from claasp.name_mappings import CONSTANT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
+from claasp.name_mappings import CONSTANT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, INPUT_KEY, INPUT_PLAINTEXT, \
+    INPUT_MESSAGE, INPUT_STATE
 
 
 def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids):
@@ -36,7 +37,7 @@ def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_o
             arcs[previous_output_bit_ids[i]].append(curr_input_bit_ids[i])
 
 
-def convert_solver_solution_to_dictionary(cipher_id, model_type, solver_name, solve_time, memory,
+def convert_solver_solution_to_dictionary(cipher, model_type, solver_name, solve_time, memory,
                                           components_values, total_weight):
     """
     Return a dictionary that represents the solution obtained from the solver.
@@ -71,7 +72,7 @@ def convert_solver_solution_to_dictionary(cipher_id, model_type, solver_name, so
          'total_weight': 0}
     """
     return {
-        'cipher_id': cipher_id,
+        'cipher': cipher,
         'model_type': model_type,
         'solver_name': solver_name,
         'solving_time_seconds': solve_time,
@@ -212,6 +213,55 @@ def set_component_value_weight_sign(value, weight=0, sign=1):
         'weight': weight,
         'sign': sign
     }
+
+def set_component_solution(value, weight=None, sign=None):
+    """
+    Return a dictionary that represents the solution for one component of the cipher.
+
+    INPUT:
+
+    - ``value`` -- **string**; hexadecimal representation (e.g. ``'abcd1234'``) that represents the output of the
+      component
+    - ``weight`` -- **integer** (default: `None`); the weight of the component
+    - ``sign`` -- **integer** (default: `None`); the sign of the weight of the component (either 1 or -1)
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.utils import set_component_solution
+        sage: set_component_solution('abcd1234', 0, 1)
+        {'sign': 1, 'value': 'abcd1234', 'weight': 0}
+    """
+    component_solution = {'value': value}
+    if weight is not None:
+        component_solution['weight'] = weight
+    if sign is not None:
+        component_solution['sign'] = sign
+    return component_solution
+
+
+def set_component_solution(value, weight=None, sign=None):
+    """
+    Return a dictionary that represents the solution for one component of the cipher.
+
+    INPUT:
+
+    - ``value`` -- **string**; hexadecimal representation (e.g. ``'abcd1234'``) that represents the output of the
+      component
+    - ``weight`` -- **integer** (default: `None`); the weight of the component
+    - ``sign`` -- **integer** (default: `None`); the sign of the weight of the component (either 1 or -1)
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.utils import set_component_solution
+        sage: set_component_solution('abcd1234', 0, 1)
+        {'sign': 1, 'value': 'abcd1234', 'weight': 0}
+    """
+    component_solution = {'value': value}
+    if weight is not None:
+        component_solution['weight'] = weight
+    if sign is not None:
+        component_solution['sign'] = sign
+    return component_solution
 
 
 def set_fixed_variables(component_id, constraint_type, bit_positions, bit_values):
@@ -687,15 +737,17 @@ def get_single_key_scenario_format_for_fixed_values(_cipher):
         'not_equal'
     """
     fixed_variables = []
-    if 'key' in _cipher.inputs:
-        input_size = _cipher.inputs_bit_size[_cipher.inputs.index("key")]
+    if INPUT_KEY in _cipher.inputs:
+        input_size = _cipher.inputs_bit_size[_cipher.inputs.index(INPUT_KEY)]
         list_of_0s = [0] * input_size
-        fixed_variable = set_fixed_variables("key", "equal", list(range(input_size)), list_of_0s)
+        fixed_variable = set_fixed_variables(INPUT_KEY, "equal", list(range(input_size)), list_of_0s)
         fixed_variables.append(fixed_variable)
-    input_size = _cipher.inputs_bit_size[_cipher.inputs.index("plaintext")]
-    list_of_0s = [0] * input_size
-    fixed_variable = set_fixed_variables("plaintext", "not_equal", list(range(input_size)), list_of_0s)
-    fixed_variables.append(fixed_variable)
+    possible_inputs = {INPUT_PLAINTEXT, INPUT_MESSAGE, INPUT_STATE}
+    for input in set(_cipher.inputs).intersection(possible_inputs):
+        input_size = _cipher.inputs_bit_size[_cipher.inputs.index(input)]
+        list_of_0s = [0] * input_size
+        fixed_variable = set_fixed_variables(input, "not_equal", list(range(input_size)), list_of_0s)
+        fixed_variables.append(fixed_variable)
 
     return fixed_variables
 

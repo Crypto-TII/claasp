@@ -12,6 +12,8 @@ from claasp.utils.utils import pprint_dictionary
 from claasp.utils.utils import pprint_dictionary_to_file
 from claasp.utils.utils import bytes_positions_to_little_endian_for_32_bits
 from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.cipher_modules.avalanche_tests import AvalancheTests
 
 
 def test_bytes_positions_to_little_endian_for_32_bits():
@@ -26,53 +28,23 @@ def test_get_k_th_bit():
 
 
 def test_pprint_dictionary():
-    tests_configuration = {"diffusion_tests": {"run_tests": True,
-                                               "number_of_samples": 100,
-                                               "run_avalanche_dependence": True,
-                                               "run_avalanche_dependence_uniform": True,
-                                               "run_avalanche_weight": True, "run_avalanche_entropy": True,
-                                               "avalanche_dependence_uniform_bias": 0.2,
-                                               "avalanche_dependence_criterion_threshold": 0,
-                                               "avalanche_dependence_uniform_criterion_threshold": 0,
-                                               "avalanche_weight_criterion_threshold": 0.1,
-                                               "avalanche_entropy_criterion_threshold": 0.1},
-                           "component_analysis_tests": {"run_tests": True}}
-    cipher = IdentityBlockCipher()
-    analysis = cipher.analyze_cipher(tests_configuration)
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    pprint_dictionary(analysis['diffusion_tests']['input_parameters'])
-    sys.stdout = old_stdout
-    assert result.getvalue() == """{   'avalanche_dependence_criterion_threshold': 0,
-    'avalanche_dependence_uniform_bias': 0.2,
-    'avalanche_dependence_uniform_criterion_threshold': 0,
-    'avalanche_entropy_criterion_threshold': 0.1,
-    'avalanche_weight_criterion_threshold': 0.1,
-    'number_of_samples': 100}
-"""
+    speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
+    test = AvalancheTests(speck)
+    d = test.avalanche_tests(number_of_samples=100)
+    pprint_dictionary(d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0])
+    result = d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0]["input_difference_value"]
+    assert result == "0x1"
 
 
 def test_pprint_dictionary_to_file():
-    identity = IdentityBlockCipher()
-    tests_configuration = {"diffusion_tests": {"run_tests": True, "number_of_samples": 100,
-                                               "run_avalanche_dependence": True,
-                                               "run_avalanche_dependence_uniform": True,
-                                               "run_avalanche_weight": True,
-                                               "run_avalanche_entropy": True,
-                                               "avalanche_dependence_uniform_bias": 0.2,
-                                               "avalanche_dependence_criterion_threshold": 0,
-                                               "avalanche_dependence_uniform_criterion_threshold": 0,
-                                               "avalanche_weight_criterion_threshold": 0.1,
-                                               "avalanche_entropy_criterion_threshold": 0.1},
-                           "component_analysis_tests": {"run_tests": True}}
-    path = inspect.getfile(claasp)
-    dir_path = os.path.dirname(path)
-    analysis = identity.analyze_cipher(tests_configuration)
-    pprint_dictionary_to_file(analysis['diffusion_tests']['input_parameters'], f"{dir_path}/test_json")
-    assert os.path.isfile(f"{dir_path}/test_json") is True
-    os.remove(f"{dir_path}/test_json")
-
+    speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
+    test = AvalancheTests(speck)
+    d = test.avalanche_tests(number_of_samples=100)
+    tii_path = inspect.getfile(claasp)
+    tii_dir_path = os.path.dirname(tii_path)
+    pprint_dictionary_to_file(d["input_parameters"], f"{tii_dir_path}/test_json")
+    assert os.path.isfile(f"{tii_dir_path}/test_json") is True
+    os.remove(f"{tii_dir_path}/test_json")
 
 def test_sgn_function():
     assert sgn_function(-1) == -1

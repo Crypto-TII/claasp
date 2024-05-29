@@ -22,7 +22,6 @@ from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
 
 SBOX_CELL_SIZE = 8
-CONSTANT_ZERO_LEN = 7
 PARAMETERS_CONFIGURATION_LIST = [{'state_bit_size': 160, 'number_of_rounds': 80},
                                  {'state_bit_size': 176, 'number_of_rounds': 90}]
 S_BOX = [0xee, 0xed, 0xeb, 0xe0, 0xe2, 0xe1, 0xe4, 0xef, 0xe7, 0xea, 0xe8, 0xe5, 0xe9, 0xec, 0xe3, 0xe6,

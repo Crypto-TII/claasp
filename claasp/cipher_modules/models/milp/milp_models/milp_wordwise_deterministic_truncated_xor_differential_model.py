@@ -16,23 +16,31 @@
 # ****************************************************************************
 
 import time
-from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
-from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
-from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints, fix_variables_value_deterministic_truncated_xor_differential_constraints
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.milp_model import MilpModel
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_WORDWISE_DETERMINISTIC_TRUNCATED, \
+    MILP_BUILDING_MESSAGE, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints, \
+    _get_variables_values_as_string
+from claasp.cipher_modules.models.milp.utils.milp_truncated_utils import \
+    fix_variables_value_deterministic_truncated_xor_differential_constraints
+from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
     update_dictionary_that_contains_wordwise_truncated_input_inequalities,
     output_dictionary_that_contains_wordwise_truncated_input_inequalities
 )
+from claasp.editor import get_output_bit_size_from_id
+from numpy import array_split
 
 
 class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
-    def __init__(self, cipher, n_window_heuristic=None):
-        super().__init__(cipher, n_window_heuristic)
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
+        super().__init__(cipher, n_window_heuristic, verbose)
         self._trunc_wordvar = None
-        self._word_size = 1
+        self._word_size = 4
         if self._cipher.is_spn():
             for component in self._cipher.get_all_components():
                 if SBOX in component.type:
@@ -62,15 +70,17 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         self._trunc_wordvar = self._model.new_variable(integer=True, nonnegative=True)
         self._model.set_max(self._trunc_wordvar, 3)
 
-    def add_constraints_to_build_in_sage_milp_class(self, fixed_variables=[]):
+    def add_constraints_to_build_in_sage_milp_class(self, fixed_bits=[], fixed_words=[]):
         """
         Take the constraints contained in self._model_constraints and add them to the build-in sage class.
 
         INPUT:
 
         - ``model_type`` -- **string**; the model to solve
-        - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in
-          standard format
+        - ``fixed_bits`` -- *list of dict*, the bit variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``fixed_words`` -- *list of dict*, the word variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
 
         .. SEEALSO::
 
@@ -86,7 +96,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             sage: milp.add_constraints_to_build_in_sage_milp_class()
 
         """
-        verbose_print("Building model in progress ...")
+        self._verbose_print(MILP_BUILDING_MESSAGE)
 
         mip = self._model
         x = self._binary_variable
@@ -96,22 +106,25 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         components = self._cipher.get_all_components()
         last_component = components[-1]
 
-        self.build_wordwise_deterministic_truncated_xor_differential_trail_model(fixed_variables)
+        self.build_wordwise_deterministic_truncated_xor_differential_trail_model(fixed_bits, fixed_words)
         for index, constraint in enumerate(self._model_constraints):
             mip.add_constraint(constraint)
 
         # objective is the number of unknown patterns i.e. tuples of the form (1, x)
         _, output_ids = last_component._get_wordwise_input_output_linked_class_tuples(self)
-        mip.add_constraint(p["probability"] == sum(x[output_msb] for output_msb in [id[0] for id in output_ids]))
+        mip.add_constraint(p[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE] == sum(x[output_msb] for output_msb in [id[0] for id in output_ids]))
 
-    def build_wordwise_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[]):
+    def build_wordwise_deterministic_truncated_xor_differential_trail_model(self, fixed_bits=[], fixed_words=[], cipher_list=None):
         """
         Build the model for the search of wordwise deterministic truncated XOR differential trails.
 
         INPUT:
 
-        - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in
-          standard format
+        - ``fixed_bits`` -- *list of dict*, the bit variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``fixed_words`` -- *list of dict*, the word variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``cipher_list`` -- **list** (default: `[]`); cipher objects to be included in the model
 
         .. SEEALSO::
 
@@ -119,32 +132,33 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
-            sage: milp.build_wordwise_deterministic_truncated_xor_differential_trail_model()
+            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(16),
+                                    bit_values=[0, 1, 0, 3] + [0] * 12)
+            sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(128),
+                              bit_values=[0] * 128)
+            sage: milp.build_wordwise_deterministic_truncated_xor_differential_trail_model(fixed_bits=[key], fixed_words=[plaintext])
             ...
         """
         self._variables_list = []
-
-        variables, constraints = self.input_wordwise_deterministic_truncated_xor_differential_constraints()
-
-        if fixed_variables.count(2) > 0 or fixed_variables.count(3) > 0:
-            constraints+=self.fix_variables_value_wordwise_deterministic_truncated_xor_differential_constraints(fixed_variables)
-        else:
-            constraints+=self.fix_variables_value_constraints(fixed_variables)
+        cipher_list = cipher_list or [self._cipher]
+        component_list = [c for cipher_component in [cipher.get_all_components() for cipher in cipher_list] for c in cipher_component]
+        variables, constraints = self.input_wordwise_deterministic_truncated_xor_differential_constraints(component_list)
+        constraints += self.fix_variables_value_wordwise_deterministic_truncated_xor_differential_constraints(fixed_bits, fixed_words, cipher_list)
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in component_list:
             component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                WORD_OPERATION]
             operation = component.description[0]
             operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
-            if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
+            if component.type in component_types or operation in operation_types:
                 variables, constraints = component.milp_wordwise_deterministic_truncated_xor_differential_constraints(self)
             else:
                 print(f'{component.id} not yet implemented')
@@ -152,15 +166,18 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def fix_variables_value_wordwise_deterministic_truncated_xor_differential_constraints(self, fixed_variables=[]):
+    def fix_variables_value_wordwise_deterministic_truncated_xor_differential_constraints(self,  fixed_bits=[], fixed_words=[], cipher_list=None):
         """
         Returns a list of constraints that fix the input variables to a
         specific value.
+        If some bit variables are set to 0, the corresponding word (if it exists) is also set to 0.
 
         INPUTS:
 
         - ``model_variables`` -- *MIPVariable object*, the variable object of the model
-        - ``fixed_variables`` -- *list of dict*, the variables to be fixed in
+        - ``fixed_bits`` -- *list of dict*, the bitwise variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``fixed_words`` -- *list of dict*, the wordwise variables to be fixed in
           standard format
 
           .. SEEALSO::
@@ -190,17 +207,30 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             [x_0 == 1,
              x_1 == 0,
              ...
-             -3 + 4*x_13 - 4*x_14 <= x_15,
-             x_4 + x_7 + x_10 + x_13 == 1]
+             x_10 == x_11,
+             1 <= x_4 + x_6 + x_8 + x_10]
 
 
         """
-        return fix_variables_value_deterministic_truncated_xor_differential_constraints(self, self.trunc_wordvar, fixed_variables)
+        x = self.trunc_wordvar
+        constraints = self.fix_variables_value_constraints(fixed_bits)
+        cipher_list = cipher_list or [self._cipher]
+        for fixed_variable in fixed_bits:
+            if fixed_variable["constraint_type"] == "equal":
+                output_bit_size = get_output_bit_size_from_id(cipher_list, fixed_variable["component_id"])
+                for i, current_word_bits in enumerate(array_split(range(output_bit_size), output_bit_size // self._word_size)):
+                    if set(current_word_bits) <= set(fixed_variable["bit_positions"]):
+                        if sum([fixed_variable["bit_values"][fixed_variable["bit_positions"].index(_)] for _ in
+                                current_word_bits]) == 0:
+                            constraints.append(x[f'{fixed_variable["component_id"]}_word_{i}_class'] == 0)
 
-    def input_wordwise_deterministic_truncated_xor_differential_constraints(self):
+        return constraints + fix_variables_value_deterministic_truncated_xor_differential_constraints(self, x,
+                                                                                                      fixed_words)
+
+    def input_wordwise_deterministic_truncated_xor_differential_constraints(self, component_list=None):
         """
         Model 1 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
-        using the milp technique from https://github.com/Deterministic-TD-MDLA/auxiliary_material/blob/master/Supplementary-Material.pdf
+        using the MILP technique from https://github.com/Deterministic-TD-MDLA/auxiliary_material/blob/master/Supplementary-Material.pdf
 
         EXAMPLE::
 
@@ -232,11 +262,13 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         variables = []
         constraints = []
 
+        component_list = component_list or self._cipher.get_all_components()
+
         update_dictionary_that_contains_wordwise_truncated_input_inequalities(self._word_size)
         dict_inequalities = output_dictionary_that_contains_wordwise_truncated_input_inequalities()
         inequalities = dict_inequalities[self._word_size]
 
-        for component in self._cipher.get_all_components():
+        for component in component_list:
             input_full_tuples, output_full_tuples = component._get_wordwise_input_output_full_tuples(self)
             all_vars = [_ for j in input_full_tuples + output_full_tuples for _ in j]
 
@@ -262,52 +294,56 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         return variables, constraints
 
-    def find_one_wordwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_one_wordwise_deterministic_truncated_xor_differential_trail(self, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Returns one deterministic truncated XOR differential trail.
 
         INPUTS:
 
         - ``solver_name`` -- *str*, the solver to call
-        - ``fixed_values`` -- *list of dict*, the variables to be fixed in
+        - ``fixed_bits`` -- *list of dict*, the bit variables to be fixed in
           standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``fixed_words`` -- *list of dict*, the word variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLE::
 
-            sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: M = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
-            sage: M.init_model_in_sage_milp_class()
-            sage: trail = M.find_one_wordwise_deterministic_truncated_xor_differential_trail(get_single_key_scenario_format_for_fixed_values(aes))
+            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(16), bit_values=[0,1,0,3] + [0] * 12)
+            sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(128), bit_values=[0]*128)
+            sage: trail = M.find_one_wordwise_deterministic_truncated_xor_differential_trail(fixed_bits=[key], fixed_words=[plaintext])
             ...
             sage: trail['status']
             'SATISFIABLE'
-
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
-        self.add_constraints_to_build_in_sage_milp_class(fixed_values)
+        self.add_constraints_to_build_in_sage_milp_class(fixed_bits, fixed_words)
         end = time.time()
         building_time = end - start
-        solution = self.solve("wordwise_deterministic_truncated_xor_differential", solver_name)
+        solution = self.solve(MILP_WORDWISE_DETERMINISTIC_TRUNCATED, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
 
-    def find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail(self, fixed_bits=[], fixed_words=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
         """
         Return the solution representing a differential trail with the lowest number of unknown variables.
 
         INPUTS:
 
         - ``solver_name`` -- *str*, the solver to call
-        - ``fixed_values`` -- *list of dict*, the variables to be fixed in
-          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``fixed_bits`` -- *list of dict*, the bit variables to be fixed in standard format
+        - ``fixed_words`` -- *list of dict*, the word variables to be fixed in standard format
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLE::
 
@@ -327,15 +363,15 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         p = self._integer_variable
-        mip.set_objective(p["probability"])
+        mip.set_objective(p[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE])
 
-        self.add_constraints_to_build_in_sage_milp_class(fixed_values)
+        self.add_constraints_to_build_in_sage_milp_class(fixed_bits, fixed_words)
         end = time.time()
         building_time = end - start
-        solution = self.solve("wordwise_deterministic_truncated_xor_differential", solver_name)
+        solution = self.solve(MILP_WORDWISE_DETERMINISTIC_TRUNCATED, solver_name, external_solver_name)
         solution['building_time'] = building_time
 
         return solution
@@ -348,3 +384,44 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
     @property
     def word_size(self):
         return self._word_size
+
+
+    def _get_component_values(self, objective_variables, components_variables):
+        components_values = {}
+        list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        for component_id in list_component_ids:
+            dict_tmp = self._get_component_value_weight(component_id, components_variables)
+            components_values[component_id] = dict_tmp
+        return components_values
+    def _parse_solver_output(self):
+        mip = self._model
+        components_variables = mip.get_values(self._trunc_wordvar)
+        objective_variables = mip.get_values(self._integer_variable)
+        objective_value = objective_variables[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE]
+        components_values = self._get_component_values(objective_variables, components_variables)
+
+        return objective_value, components_values
+
+    def _get_component_value_weight(self, component_id, components_variables):
+
+        wordsize = self._word_size
+        if component_id in self._cipher.inputs:
+            output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)] // wordsize
+        else:
+            component = self._cipher.get_component_from_id(component_id)
+            output_size = component.output_bit_size // wordsize
+        suffix_dict = {"_class": output_size}
+        final_output = self._get_final_output(component_id, components_variables, suffix_dict)
+        if len(final_output) == 1:
+            final_output = final_output[0]
+
+        return final_output
+
+    def _get_final_output(self, component_id, components_variables, suffix_dict):
+        final_output = []
+        for suffix in suffix_dict.keys():
+            diff_str = _get_variables_values_as_string(component_id + "_word", components_variables, suffix,
+                                                            suffix_dict[suffix])
+            final_output.append(set_component_solution(diff_str))
+
+        return final_output

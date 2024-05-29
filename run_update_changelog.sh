@@ -31,7 +31,7 @@ if [[ is_valid_last_commit ]]; then
 	repository_name=$1
 	if [ ${#pull_request_commits[@]} -gt 0 ]; then
 		python3 update_changelog.py --repository_url "${repository_name}" --pull_request_commits "${pull_request_commits[@]}"
-    	if [[ $(git status --porcelain CHANGELOG.md) ]]; then
+    	if [[ $(git status --porcelain ./docs/CHANGELOG.md) ]]; then
 			should_add_last_changes_to_master=true
 		fi
 	fi

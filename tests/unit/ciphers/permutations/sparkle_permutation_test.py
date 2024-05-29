@@ -24,3 +24,4 @@ def test_sparkle_permutation():
     ciphertext = int('0x00627afd81ed6af7f594e39485b6e59222ba1ed9d8b60cc900ed77965ec691586bf138b79bc1cefcbb71c93113432'
                      '6842374b2f159938253a2349c67f524daf0', 16)
     assert sparkle.evaluate([plaintext]) == ciphertext
+    assert sparkle.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext

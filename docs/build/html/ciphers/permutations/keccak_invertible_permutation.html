@@ -13,10 +13,11 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Xoodoo invertible permutation" href="xoodoo_invertible_permutation.html" />
-    <link rel="prev" title="Ascon sbox sigma permutation" href="ascon_sbox_sigma_permutation.html" />
+    <link rel="next" title="Keccak permutation" href="keccak_permutation.html" />
+    <link rel="prev" title="Chacha permutation" href="chacha_permutation.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -32,12 +33,19 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="xoodoo_invertible_permutation.html" title="Xoodoo invertible permutation"
+          <a href="keccak_permutation.html" title="Keccak permutation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="ascon_sbox_sigma_permutation.html" title="Ascon sbox sigma permutation"
+          <a href="chacha_permutation.html" title="Chacha permutation"
              accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../../index.html"><img src="../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
         <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
         <li class="nav-item nav-item-this"><a href="">Keccak invertible permutation</a></li> 
       </ul>
     </div>  
@@ -79,13 +87,18 @@
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_FSR_component">
+<span class="sig-name descname"><span class="pre">add_FSR_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_FSR_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_MODADD_component">
-<span class="sig-name descname"><span class="pre">add_MODADD_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_MODADD_component" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_MODADD_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_MODADD_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_MODSUB_component">
-<span class="sig-name descname"><span class="pre">add_MODSUB_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_MODSUB_component" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_MODSUB_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_MODSUB_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -186,6 +199,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_sigma_component">
 <span class="sig-name descname"><span class="pre">add_sigma_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts_parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_sigma_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_suffix_to_components">
+<span class="sig-name descname"><span class="pre">add_suffix_to_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_id_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.add_suffix_to_components" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -305,6 +323,44 @@ injected in key</p>
 <dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.chi_definition">
 <span class="sig-name descname"><span class="pre">chi_definition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.chi_definition" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.cipher_inverse">
+<span class="sig-name descname"><span class="pre">cipher_inverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.cipher_inverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the graph representation of the inverse of the cipher under analysis</p>
+<p>EXAMPLE:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="mh">0xabcdef01abcdef01</span>
+<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="mh">0x01234567</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">ciphertext</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">plaintext</span><span class="p">,</span> <span class="n">key</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="n">cipher_inv</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">cipher_inverse</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">cipher_inv</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">ciphertext</span><span class="p">,</span> <span class="n">key</span><span class="p">])</span> <span class="o">==</span> <span class="n">plaintext</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.cipher_partial_inverse">
+<span class="sig-name descname"><span class="pre">cipher_partial_inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_key_schedule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.cipher_partial_inverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the inverted portion of a cipher.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">start_round</span></code> – <strong>integer</strong>; initial round number of the partial cipher</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">end_round</span></code> – <strong>integer</strong>; final round number of the partial cipher</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="mh">0xabcdef01abcdef01</span>
+<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="mh">0x01234567</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">plaintext</span><span class="p">,</span> <span class="n">key</span><span class="p">],</span> <span class="n">intermediate_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">partial_speck</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">cipher_partial_inverse</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">partial_speck</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">key</span><span class="p">])</span> <span class="o">==</span> <span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s1">&#39;intermediate_output_0_6&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.component_analysis_tests">
@@ -703,7 +759,6 @@ differences are allowed</p></li>
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.neural_network_tests</span> <span class="kn">import</span> <span class="n">find_good_input_difference_for_neural_distinguisher</span>
 <span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="n">diff</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">highest_round</span> <span class="o">=</span> <span class="n">find_good_input_difference_for_neural_distinguisher</span><span class="p">(</span><span class="n">cipher</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">number_of_generations</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
@@ -761,15 +816,15 @@ input/output of each component</p></li>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">import</span> <span class="nn">inspect</span>
 <span class="gp">sage: </span><span class="kn">import</span> <span class="nn">claasp</span>
 <span class="gp">sage: </span><span class="kn">import</span> <span class="nn">os.path</span>
-<span class="gp">sage: </span><span class="n">path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">claasp</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">tii_path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">claasp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">tii_dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">tii_path</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span>
 <span class="gp">sage: </span><span class="n">identity</span> <span class="o">=</span> <span class="n">IdentityBlockCipher</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">generate_csv_report</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">generate_csv_report</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">sage: </span><span class="kn">import</span> <span class="nn">os</span>
-<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -938,6 +993,11 @@ input/output of each component</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.get_number_of_components_in_round">
 <span class="sig-name descname"><span class="pre">get_number_of_components_in_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.get_number_of_components_in_round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.get_partial_cipher">
+<span class="sig-name descname"><span class="pre">get_partial_cipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_key_schedule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.get_partial_cipher" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1462,6 +1522,38 @@ hidden layer of the neural network</p></li>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.run_autond_pipeline">
+<span class="sig-name descname"><span class="pre">run_autond_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_generations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testing_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.run_autond_pipeline" title="Permalink to this definition">¶</a></dt>
+<dd><dl>
+<dt>Runs the AutoND pipeline ([BGHR2023]):</dt><dd><ul class="simple">
+<li><p>Find an input difference for the inputs set to True in difference_positions using an optimizer</p></li>
+<li><p>Train a neural distinguisher based on DBitNET for that input difference, increasing the number of rounds</p></li>
+</ul>
+<p>until the accuracy is no better than random guessing.</p>
+</dd>
+</dl>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">difference_positions</span></code> – <strong>list of booleans</strong>; default: <a href="#id5"><span class="problematic" id="id6">`</span></a>True in the plaintext position, False in the</p></li>
+</ul>
+<p>other positions`. If specified, must have the same length as self.inputs_bit_size, and contain one boolean per
+input position. The optimizer will look for input differences in the positions set to True; by default,
+the single-key case will be run.
+- <code class="docutils literal notranslate"><span class="pre">optimizer_samples</span></code> – <strong>integer</strong>; number of samples used by the optimizer; higher values increase the
+quality of the optimizer, at the cost of a longer runtime.
+- <code class="docutils literal notranslate"><span class="pre">optimizer_generations</span></code> – <strong>integer</strong>; (default: <span class="math">50</span>) number of generations used by the optimizer;
+higher values increase the runtime.
+- <code class="docutils literal notranslate"><span class="pre">training_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**7</span>) number samples used for training
+- <code class="docutils literal notranslate"><span class="pre">testing_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**6</span>) number samples used for testing
+- <code class="docutils literal notranslate"><span class="pre">number_of_epochs</span></code> – <strong>integer</strong>; (default: <span class="math">40</span>) number of training epochs
+- <code class="docutils literal notranslate"><span class="pre">verbose</span></code> – <strong>boolean</strong>; (default: <span class="math">False</span>) verbosity of the optimizer</p>
+<p>EXAMPLES::
+sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+sage: cipher = SpeckBlockCipher()
+sage: cipher.run_autond_pipeline()</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.set_file_name">
 <span class="sig-name descname"><span class="pre">set_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.set_file_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1469,6 +1561,11 @@ hidden layer of the neural network</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.set_id">
 <span class="sig-name descname"><span class="pre">set_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.set_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.set_inputs">
+<span class="sig-name descname"><span class="pre">set_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs_ids_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs_bit_size_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.set_inputs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1542,6 +1639,65 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
 <span class="sig-name descname"><span class="pre">theta_definition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.theta_definition" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.train_gohr_neural_distinguisher">
+<span class="sig-name descname"><span class="pre">train_gohr_neural_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testing_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.train_gohr_neural_distinguisher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains a differential neural distinguisher on nr rounds, for the input difference input_difference, using a slightly
+modified (AMSGrad instead of cyclic learning rate schedule) depth depth Gohr’s RESNet ([Go2019]).</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_difference</span></code> – <strong>list of integers</strong>; The input difference, expressed as a list with one value per
+input to the cipher.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_rounds</span></code> – <strong>integer</strong>; number of rounds to analyze</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">depth</span></code> – <strong>integer</strong>; (default: <span class="math">1</span>) the depth of the neural network, as defined in Gohr’s paper</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">word_size</span></code> – <strong>integer</strong>; the word size of the cipher, determines the shape of the neural network.</p></li>
+</ul>
+<p>Defaults to output_bit_size when unspecified (may reduce the accuracy of the obtained distinguisher).
+- <code class="docutils literal notranslate"><span class="pre">training_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**7</span>) number samples used for training
+- <code class="docutils literal notranslate"><span class="pre">testing_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**6</span>) number samples used for testing
+- <code class="docutils literal notranslate"><span class="pre">number_of_epochs</span></code> – <strong>integer</strong>; (default: <span class="math">40</span>) number of training epochs</p>
+<p>EXAMPLES::
+sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+sage: cipher = SpeckBlockCipher()
+sage: input_differences = [0x400000, 0]
+sage: number_of_rounds = 5
+sage: cipher.train_gohr_neural_distinguisher(input_differences, number_of_rounds, word_size = 16, number_of_epochs = 1)
+2000/2000 [==============================] - 294s 146ms/step - loss: 0.0890 - acc: 0.8876 - val_loss: 0.0734 - val_acc: 0.9101
+Validation accuracy at 5 rounds :0.9101160168647766
+0.9101160168647766</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.train_neural_distinguisher">
+<span class="sig-name descname"><span class="pre">train_neural_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starting_round</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neural_network</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testing_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.train_neural_distinguisher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains a neural distinguisher for the data generated by the data_generator function, using the provided neural network, at round starting_rounds. 
+If pipeline is set to True, retrains the distinguisher for one more round, as long as the validation accuracy remains significant.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">data_generator</span></code> – <strong>function</strong>; A dataset generation function, taking as input a cipher (usually self), a number of rounds,</p></li>
+</ul>
+<p>and a number of samples, an returns a dataset X, Y, where X is a numpy matrix with one row per sample, and Y is a label veector. 
+To reproduce classical neural distinguisher results, on would use the example below. 
+- <code class="docutils literal notranslate"><span class="pre">starting_round</span></code> – <strong>integer</strong>; number of rounds to analyze
+- <code class="docutils literal notranslate"><span class="pre">neural_network</span></code> – <strong>(compiled) keras model</strong> (default: <span class="math">None</span>); the neural network to use for distinguishing, either a custom one or one
+returned by the get_neural_network function of neural_network_tests. 
+- <code class="docutils literal notranslate"><span class="pre">training_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**7</span>) number samples used for training
+- <code class="docutils literal notranslate"><span class="pre">testing_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**6</span>) number samples used for testing
+- <code class="docutils literal notranslate"><span class="pre">pipeline</span></code> – <strong>boolean</strong>; (default: <span class="math">True</span>) If False, only trains for starting_round. If True, increments starting_round and retrain
+the model as long as the accuracy is statistically significant.
+- <code class="docutils literal notranslate"><span class="pre">verbose</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); verbosity</p>
+<p>EXAMPLES::
+sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher</p>
+<blockquote>
+<div><p>sage: from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
+sage: cipher = SpeckBlockCipher()
+sage: input_differences = [0x400000, 0]
+sage: data_generator = lambda nr, samples: get_differential_dataset(cipher, input_differences, number_of_rounds = nr, samples = samples)
+sage: neural_network = get_neural_network(‘gohr_resnet’, input_size = 64)
+sage: cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network)</p>
+</div></blockquote>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.type">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#ciphers.permutations.keccak_invertible_permutation.KeccakInvertiblePermutation.type" title="Permalink to this definition">¶</a></dt>
@@ -1571,13 +1727,13 @@ INPUT:</p>
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="ascon_sbox_sigma_permutation.html"
-                          title="previous chapter">Ascon sbox sigma permutation</a></p>
+    <p class="topless"><a href="chacha_permutation.html"
+                          title="previous chapter">Chacha permutation</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="xoodoo_invertible_permutation.html"
-                          title="next chapter">Xoodoo invertible permutation</a></p>
+    <p class="topless"><a href="keccak_permutation.html"
+                          title="next chapter">Keccak permutation</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -1610,12 +1766,19 @@ INPUT:</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="xoodoo_invertible_permutation.html" title="Xoodoo invertible permutation"
+          <a href="keccak_permutation.html" title="Keccak permutation"
              >next</a> |</li>
         <li class="right" >
-          <a href="ascon_sbox_sigma_permutation.html" title="Ascon sbox sigma permutation"
+          <a href="chacha_permutation.html" title="Chacha permutation"
              >previous</a> |</li>
+  
+    
+      <a href="../../../index.html"><img src="../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
         <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
         <li class="nav-item nav-item-this"><a href="">Keccak invertible permutation</a></li> 
       </ul>
     </div>

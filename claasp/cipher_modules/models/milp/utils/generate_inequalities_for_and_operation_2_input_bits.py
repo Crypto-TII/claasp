@@ -17,7 +17,7 @@
 
 
 """The target of this module is to generate MILP inequalities for a AND operation between 2 input bits."""
-from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 
 
 def and_inequalities():

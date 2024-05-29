@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -65,9 +64,6 @@ class CipherOutput(Component):
               'xor_2_10_15 -cipher_output_2_12_31'])
         """
         return self.sat_constraints()
-
-    def cms_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.cms_constraints()
 
     def cms_xor_differential_propagation_constraints(self, model):
         return self.cms_constraints()
@@ -232,7 +228,7 @@ class CipherOutput(Component):
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         code = []
         cipher_output_params = [f'bit_vector_select_word({self.input_id_links[i]},  {self.input_bit_positions[i]})'
-                         for i in range(len(self.input_id_links))]
+                                for i in range(len(self.input_id_links))]
         code.append(f'  {self.id} = bit_vector_CONCAT([{",".join(cipher_output_params)} ])')
         code.append(f'  if "{self.description[0]}" not in intermediateOutputs.keys():')
         code.append(f'      intermediateOutputs["{self.description[0]}"] = []')
@@ -250,7 +246,11 @@ class CipherOutput(Component):
         return [f'  {self.id} = {params}[0]',
                 f'  if "{self.description[0]}" not in intermediateOutputs.keys():',
                 f'      intermediateOutputs["{self.description[0]}"] = []',
-                f'  intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())']
+                f'  if integers_inputs_and_outputs:',
+#                f'    intermediateOutputs["{self.description[0]}"].append(evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size}))',
+                f'    intermediateOutputs["{self.description[0]}"] = evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size})',
+                f'  else:',
+                f'    intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())']
 
     def milp_constraints(self, model):
         """
@@ -483,8 +483,42 @@ class CipherOutput(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.sat_constraints()
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for OUTPUT in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: output_component = speck.component_from(2, 12)
+            sage: output_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            (['cipher_output_2_12_0_0',
+              'cipher_output_2_12_1_0',
+              'cipher_output_2_12_2_0',
+              ...
+              'xor_2_10_14_1 -cipher_output_2_12_30_1',
+              'cipher_output_2_12_31_1 -xor_2_10_15_1',
+              'xor_2_10_15_1 -cipher_output_2_12_31_1'])
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        constraints = []
+        for out_id, in_id in zip(out_ids_0, in_ids_0):
+            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
+        for out_id, in_id in zip(out_ids_1, in_ids_1):
+            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
+
+        return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model):
         return self.sat_constraints()
@@ -557,9 +591,6 @@ class CipherOutput(Component):
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
-
-    def smt_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.smt_constraints()
 
     def smt_xor_differential_propagation_constraints(self, model):
         return self.smt_constraints()

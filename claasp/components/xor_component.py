@@ -600,13 +600,7 @@ class XOR(Component):
 
         for i in range(number_of_inputs):
             for j in range(output_bit_size):
-                input_component_id = input_vars[output_bit_size * i + j].rsplit('_', 1)[0]
-                if input_component_id in model.cipher.inputs:
-                    constraints.append(x[ind_output_vars[j]] == x[ind_input_vars[output_bit_size * i + j]])
-                else:
-                    input_component = model.cipher.get_component_from_id(input_component_id)
-                    if CONSTANT not in input_component.type:
-                        constraints.append(x[ind_output_vars[j]] == x[ind_input_vars[output_bit_size * i + j]])
+                constraints.append(x[ind_output_vars[j]] == x[ind_input_vars[output_bit_size * i + j]])
 
         return variables, constraints
 
@@ -877,7 +871,9 @@ class XOR(Component):
         constraints = []
 
         for i, output_var in enumerate(output_vars):
-            result_ids = [f'temp_xor_{j}_{self.id}_{i}'for j in range(number_of_inputs - 2)] + [output_var]
+            result_ids = [tuple([f'temp_xor_{j}_{self.id}_word_{i}_0', f'temp_xor_{j}_{self.id}_word_{i}_1'] + [
+                f'temp_xor_{j}_{self.id}_word_{i}_bit_{k}' for k in range(model.word_size)]) for j in
+                          range(number_of_inputs - 2)] + [output_var]
             constraints.extend(milp_utils.milp_xor_truncated_wordwise(model,
                                                                       input_vars[i::output_word_size][0],
                                                                       input_vars[i::output_word_size][1],
@@ -1076,6 +1072,45 @@ class XOR(Component):
             constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::output_bit_len]))
 
         return output_bit_ids, constraints
+
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for XOR in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: xor_component = speck.component_from(0, 2)
+            sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            (['xor_0_2_0_0',
+              'xor_0_2_1_0',
+              'xor_0_2_2_0',
+              ...
+              'modadd_0_1_15_1 xor_0_2_15_0 xor_0_2_15_1 -key_63_1',
+              'key_63_1 xor_0_2_15_0 xor_0_2_15_1 -modadd_0_1_15_1',
+              'xor_0_2_15_0 -modadd_0_1_15_1 -key_63_1 -xor_0_2_15_1'])
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        in_ids = [(id_0, id_1) for id_0, id_1 in zip(in_ids_0, in_ids_1)]
+        out_ids = [(id_0, id_1) for id_0, id_1 in zip(out_ids_0, out_ids_1)]
+        constraints = []
+        for i, out_id in enumerate(out_ids):
+            result_ids = [(f'inter_{j}_{self.id}_{i}_0', f'inter_{j}_{self.id}_{i}_1')
+                          for j in range(self.description[1] - 2)] + [out_id]
+            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::out_len]))
+
+        return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         return self.sat_constraints()

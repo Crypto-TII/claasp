@@ -25,14 +25,15 @@ It uses the notion of undisturbed differential bits discussed in https://link.sp
 
 The logic minimizer espresso is required for this module. It is already installed in the docker.
 """
-import pickle, os, pathlib
+import pickle, os
+from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 from claasp.cipher_modules.models.milp.utils.utils import generate_espresso_input, delete_espresso_dictionary, \
     output_espresso_dictionary, generate_product_of_sum_from_espresso
 
 from sage.rings.integer_ring import ZZ
 
 undisturbed_bit_sboxes_inequalities_file_name = "dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits.obj"
-undisturbed_bit_sboxes_inequalities_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), undisturbed_bit_sboxes_inequalities_file_name)
+undisturbed_bit_sboxes_inequalities_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH, undisturbed_bit_sboxes_inequalities_file_name)
 
 
 def _to_bits(x, input_size):

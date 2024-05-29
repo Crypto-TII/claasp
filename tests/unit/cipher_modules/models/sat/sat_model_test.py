@@ -13,28 +13,20 @@ def test_solve():
     tea = TeaBlockCipher(number_of_rounds=32)
     sat = SatCipherModel(tea)
     sat.build_cipher_model()
-    solution = sat.solve('cipher', solver_name='cryptominisat')
-    assert solution['cipher_id'] == 'tea_p64_k128_o64_r32'
-    assert solution['solver_name'] == 'cryptominisat'
+    solution = sat.solve('cipher', solver_name='CRYPTOMINISAT_EXT')
+    assert str(solution['cipher']) == 'tea_p64_k128_o64_r32'
+    assert solution['solver_name'] == 'CRYPTOMINISAT_EXT'
     assert eval('0x' + solution['components_values']['modadd_0_3']['value']) >= 0
-    assert solution['components_values']['modadd_0_3']['weight'] >= 0
-    assert solution['components_values']['modadd_0_3']['sign'] == 1
     assert eval('0x' + solution['components_values']['cipher_output_31_16']['value']) >= 0
-    assert solution['components_values']['cipher_output_31_16']['weight'] == 0
-    assert solution['components_values']['cipher_output_31_16']['sign'] == 1
     # testing with sage solver
     simon = SimonBlockCipher(number_of_rounds=32)
     sat = SatCipherModel(simon)
     sat.build_cipher_model()
-    solution = sat.solve('cipher', solver_name='cryptominisat_sage')
-    assert solution['cipher_id'] == 'simon_p32_k64_o32_r32'
+    solution = sat.solve('cipher', solver_name='cryptominisat')
+    assert str(solution['cipher']) == 'simon_p32_k64_o32_r32'
     assert solution['solver_name'] == 'cryptominisat'
     assert eval('0x' + solution['components_values']['rot_0_3']['value']) >= 0
-    assert solution['components_values']['rot_0_3']['weight'] >= 0
-    assert solution['components_values']['rot_0_3']['sign'] == 1
     assert eval('0x' + solution['components_values']['cipher_output_31_13']['value']) >= 0
-    assert solution['components_values']['cipher_output_31_13']['weight'] == 0
-    assert solution['components_values']['cipher_output_31_13']['sign'] == 1
 
 
 def test_fix_variables_value_constraints():

@@ -96,9 +96,6 @@ class Rotate(Component):
         """
         return self.sat_constraints()
 
-    def cms_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.cms_constraints()
-
     def cms_xor_differential_propagation_constraints(self, model=None):
         return self.cms_constraints()
 
@@ -349,7 +346,7 @@ class Rotate(Component):
         return [f'  {self.id} = bit_vector_ROTATE([{",".join(params)} ], {self.description[1]})']
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} = byte_vector_ROTATE({params}, {self.description[1]})']
+        return [f'  {self.id} = byte_vector_ROTATE({params}, {self.description[1]}, {self.input_bit_size})']
 
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):
         rotate_code = []
@@ -676,8 +673,45 @@ class Rotate(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.sat_constraints()
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for ROTATION in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: rotate_component = speck.component_from(1, 1)
+            sage: rotate_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            (['rot_1_1_0_0',
+              'rot_1_1_1_0',
+              'rot_1_1_2_0',
+              ...
+              'key_39_1 -rot_1_1_14_1',
+              'rot_1_1_15_1 -key_40_1',
+              'key_40_1 -rot_1_1_15_1'])
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        rotation = self.description[1]
+        in_ids_0_rotated = in_ids_0[-rotation:] + in_ids_0[:-rotation]
+        in_ids_1_rotated = in_ids_1[-rotation:] + in_ids_1[:-rotation]
+        constraints = []
+        for out_id, in_id in zip(out_ids_0, in_ids_0_rotated):
+            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
+        for out_id, in_id in zip(out_ids_1, in_ids_1_rotated):
+            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
+
+        return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         return self.sat_constraints()
@@ -755,9 +789,6 @@ class Rotate(Component):
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
-
-    def smt_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.smt_constraints()
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         return self.smt_constraints()

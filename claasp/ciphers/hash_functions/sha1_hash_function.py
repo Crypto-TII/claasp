@@ -26,7 +26,7 @@ The input is named *key* because the hash function SHA-1 can be seen like a
 symmetric cipher whose plaintext is the initial state and key is the input.
 """
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY
+from claasp.name_mappings import INPUT_MESSAGE
 from claasp.DTOs.component_state import ComponentState
 
 PARAMETERS_CONFIGURATION_LIST = [{'word_size': 32, 'number_of_rounds': 80}]
@@ -49,9 +49,9 @@ class SHA1HashFunction(Cipher):
 
         sage: from claasp.ciphers.hash_functions.sha1_hash_function import SHA1HashFunction
         sage: sha1 = SHA1HashFunction()
-        sage: plaintext = 0x43686961726180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030
-        sage: ciphertext = 0x04f0c8e0efe316e609390a3d98e97f5acc53c199
-        sage: sha1.evaluate([plaintext]) == ciphertext
+        sage: message = 0x43686961726180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030
+        sage: digest = 0x04f0c8e0efe316e609390a3d98e97f5acc53c199
+        sage: sha1.evaluate([message]) == digest
         True
     """
 
@@ -64,11 +64,11 @@ class SHA1HashFunction(Cipher):
 
         super().__init__(family_name="SHA1",
                          cipher_type="hash_function",
-                         cipher_inputs=[INPUT_KEY],
+                         cipher_inputs=[INPUT_MESSAGE],
                          cipher_inputs_bit_size=[word_size * 16],
                          cipher_output_bit_size=160)
 
-        W = [ComponentState(INPUT_KEY, [list(range(i * self.word_size, (i + 1) * self.word_size))])
+        W = [ComponentState(INPUT_MESSAGE, [list(range(i * self.word_size, (i + 1) * self.word_size))])
              for i in range(16)]
 
         self.add_round()

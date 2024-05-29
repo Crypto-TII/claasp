@@ -10,10 +10,10 @@ def test_algebraic_polynomials():
     algebraic = AlgebraicModel(gift)
     algebraic_polynomials = or_component.algebraic_polynomials(algebraic)
 
-    assert str(algebraic_polynomials[0]) == "or_0_4_y0 + 1"
-    assert str(algebraic_polynomials[1]) == "or_0_4_y1 + 1"
-    assert str(algebraic_polynomials[-2]) == "or_0_4_y30 + 1"
-    assert str(algebraic_polynomials[-1]) == "or_0_4_y31 + 1"
+    assert str(algebraic_polynomials[0]) == "or_0_4_x0*or_0_4_x32 + or_0_4_y0 + or_0_4_x32 + or_0_4_x0"
+    assert str(algebraic_polynomials[1]) == "or_0_4_x1*or_0_4_x33 + or_0_4_y1 + or_0_4_x33 + or_0_4_x1"
+    assert str(algebraic_polynomials[-2]) == "or_0_4_x30*or_0_4_x62 + or_0_4_y30 + or_0_4_x62 + or_0_4_x30"
+    assert str(algebraic_polynomials[-1]) == "or_0_4_x31*or_0_4_x63 + or_0_4_y31 + or_0_4_x63 + or_0_4_x31"
 
 
 def test_cp_constraints():
@@ -35,11 +35,11 @@ def test_cp_xor_linear_mask_propagation_constraints():
     cp = CpModel(gift)
     declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
 
-    assert declarations == ['array[0..31] of var int: p_or_39_6;', 'array[0..63] of var 0..1:or_39_6_i;',
+    assert declarations == ['array[0..31] of var 0..3200: p_or_39_6;', 'array[0..63] of var 0..1:or_39_6_i;',
                             'array[0..31] of var 0..1:or_39_6_o;']
 
-    assert constraints[0] == 'constraint table(or_39_6_i[0]++or_39_6_i[32]++or_39_6_o[0]++p_or_39_6[0],and2inputs_LAT);'
-    assert constraints[-2] == 'constraint table(or_39_6_i[31]++or_39_6_i[63]++or_39_6_o[31]++p_or_39_6[31],' \
+    assert constraints[0] == 'constraint table([or_39_6_i[0]]++[or_39_6_i[32]]++[or_39_6_o[0]]++[p_or_39_6[0]],and2inputs_LAT);'
+    assert constraints[-2] == 'constraint table([or_39_6_i[31]]++[or_39_6_i[63]]++[or_39_6_o[31]]++[p_or_39_6[31]],' \
                               'and2inputs_LAT);'
     assert constraints[-1] == 'constraint p[0] = sum(p_or_39_6);'
 
@@ -51,6 +51,20 @@ def test_generic_sign_linear_constraints():
     output = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
 
     assert or_component.generic_sign_linear_constraints(input_tert, output) == 1
+
+
+def test_sat_constraints():
+    gift = GiftPermutation(number_of_rounds=3)
+    or_component = gift.component_from(0, 4)
+    output_bit_ids, constraints = or_component.sat_constraints()
+
+    assert output_bit_ids[0] == 'or_0_4_0'
+    assert output_bit_ids[1] == 'or_0_4_1'
+    assert output_bit_ids[2] == 'or_0_4_2'
+
+    assert constraints[-3] == 'or_0_4_31 -xor_0_3_31'
+    assert constraints[-2] == 'or_0_4_31 -xor_0_1_31'
+    assert constraints[-1] == '-or_0_4_31 xor_0_3_31 xor_0_1_31'
 
 
 def test_smt_constraints():

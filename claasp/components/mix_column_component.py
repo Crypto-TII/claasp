@@ -537,13 +537,14 @@ class MixColumn(LinearLayer):
             F2 = FiniteField(2)['x']
             _modulus = int_to_poly(polynomial, input_size + 1, F2.gen())
             F = FiniteField(pow(2, input_size), name='a', modulus=_modulus)
+
             for row in matrix:
                 for element in row:
                     if element not in mul_tables:
                         mul_tables[element] = [(F.fetch_int(i) * F.fetch_int(element)).integer_representation()
                                                for i in range(2 ** input_size)]
-            return [f'  {self.id}=byte_vector_mix_column({params} , {matrix}, {mul_tables})']
-        return [f'  {self.id}=byte_vector_mix_column_poly0({params} , {matrix})']
+            return [f'  {self.id}=byte_vector_mix_column({params} , {matrix}, {mul_tables}, {input_size})']
+        return [f'  {self.id}=byte_vector_mix_column_poly0({params} , {matrix}, {input_size})']
 
     def milp_constraints(self, model):
         """
@@ -646,7 +647,7 @@ class MixColumn(LinearLayer):
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
             sage: mix_column_component = aes.component_from(0, 21)
-            sage: variables, constraints = mix_column_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp) # long
+            sage: variables, constraints = mix_column_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x[rot_0_17_word_0_class_bit_0]', x_0),
              ('x[rot_0_17_word_0_class_bit_1]', x_1),
@@ -657,8 +658,8 @@ class MixColumn(LinearLayer):
             [1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 - x_15,
              1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_6 + x_7 - x_15,
              ...
-             1 <= 2 - x_2 - x_3,
-             1 <= 2 - x_0 - x_1]
+            1 <= 1 - x_11 + x_13,
+            1 <= 1 - x_9 + x_11]
 
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: cipher = MidoriBlockCipher(number_of_rounds=2)
@@ -732,6 +733,37 @@ class MixColumn(LinearLayer):
         self.set_description(original_description)
         result = variables, constraints
         return result
+
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for MIX COLUMN in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+            sage: midori = MidoriBlockCipher(number_of_rounds=3)
+            sage: mix_column_component = midori.component_from(0, 23)
+            sage: out_ids, constraints = mix_column_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            sage: constraints[7]
+            'mix_column_0_23_0_0 -inter_0_mix_column_0_23_0_0'
+        """
+        matrix = binary_matrix_of_linear_component(self)
+        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())]
+                             for j in range(matrix.ncols())]
+        original_description = deepcopy(self.description)
+        self.set_description(matrix_transposed)
+        out_ids, constraints = super().sat_bitwise_deterministic_truncated_xor_differential_constraints()
+        self.set_description(original_description)
+        return out_ids, constraints
 
     def sat_xor_differential_propagation_constraints(self, model):
         return self.sat_constraints()

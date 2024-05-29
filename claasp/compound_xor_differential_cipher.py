@@ -60,10 +60,10 @@ def create_xor_component(component1_, component2_, round_object, round_number):
     current_components_number = round_object.get_number_of_components()
     output_bit_size = component1_.output_bit_size
     new_xor_component = XOR(round_number, current_components_number, input_links, input_link_positions, output_bit_size)
-    if component1_.type == 'intermediate_output':
-        new_xor_component.set_id(f'{component1_.id}_pair2')
-    elif component1_.type == 'cipher_output':
-        new_xor_component.set_id(f'{component1_.id}_pair2')
+
+    if component1_.type == 'intermediate_output' or component1_.type == 'cipher_output':
+        component_id = "_".join(component1_.id.split('_')[:-1])
+        new_xor_component.set_id(component_id)
     round_object.add_component(new_xor_component)
 
 

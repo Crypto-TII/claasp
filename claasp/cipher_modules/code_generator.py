@@ -1,16 +1,17 @@
 
 # ****************************************************************************
-#
+# Copyright 2023 Technology Innovation Institute
+# 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#
+# 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#
+# 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -19,13 +20,15 @@
 import os
 import math
 import inspect
+import time
 from subprocess import call
 
 import claasp
 from claasp.component import free_input
 from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, CONSTANT,
-                                  CONCATENATE, PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT)
-
+                                  CONCATENATE, PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
+                                  FSR, CIPHER_INVERSE_SUFFIX)
+from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_of_bytes_needed_for_bit_size
 path = inspect.getfile(claasp)
 dir_path = os.path.dirname(path)
 
@@ -247,17 +250,73 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
     for component in cipher.get_all_components():
         params = prepare_input_bit_based_vectorized_python_code_string(component)
         component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
-                                   'sbox', 'cipher_output', 'intermediate_output']
+                                   'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODSUB', 'OR', 'AND']
         if component.type in component_types_allowed or (component.type == 'word_operation' and
                                                          component.description[0] in component_descriptions_allowed):
             code.extend(component.get_bit_based_vectorized_python_code(params, convert_output_to_bytes))
         name = component.id
-        if verbosity and component.type != 'constant':
+        if True and component.type != 'constant':
             code.append(f'  bit_vector_print_as_hex_values("{name}_output", {name})')
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
+    elif CIPHER_INVERSE_SUFFIX in cipher.id:
+        code.append('  return intermediateOutputs["plaintext"]')
+    else:
+        code.append('  return intermediateOutputs["cipher_output"]')
+
+    return '\n'.join(code)
+
+
+def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False,
+                                                     verbosity=False, convert_output_to_bytes=False):
+    """
+    Return string python code needed to evaluate a cipher using a vectorized implementation bit based oriented.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; a cipher instance
+    - ``store_intermediate_outputs`` -- **boolean** (default: `False`); set this flag to True in order to return a list
+      with each round output
+    - ``verbosity`` -- **boolean** (default: `False`); set to True to make the Python code print the input/output of
+      each component
+    - ``convert_output_to_bytes`` -- **boolean** (default: `False`)
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.cipher_modules import code_generator
+        sage: speck = SpeckBlockCipher()
+        sage: string_python_code = code_generator.generate_bit_based_vectorized_python_code_string(speck)
+        sage: string_python_code.split("\n")[0]
+        'from claasp.cipher_modules.generic_functions_vectorized_bit import *'
+    """
+    code = ['from claasp.cipher_modules.generic_functions_vectorized_bit import *\n',
+            'from time import time \n'
+            'def evaluate(input, store_intermediate_outputs):', '  intermediateOutputs={}']
+    code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
+    for component in cipher.get_all_components():
+        params = prepare_input_bit_based_vectorized_python_code_string(component)
+        component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
+                                   'sbox', 'cipher_output', 'intermediate_output', 'fsr']
+        component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
+                                          'MODADD', 'MODSUB', 'OR', 'AND']
+        if component.type in component_types_allowed or (component.type == 'word_operation' and
+                                                         component.description[0] in component_descriptions_allowed):
+            code.append("  t0 = time()")
+            code.extend(component.get_bit_based_vectorized_python_code(params, convert_output_to_bytes))
+        name = component.id
+        #code.append(f"  print('{name}', {name}.dtype)")
+        code.append(f"  print('{name}', time()-t0)")
+
+        if verbosity and component.type != 'constant':
+            code.append(f'  bit_vector_print_as_hex_values("{name}_output", {name})')
+
+    if store_intermediate_outputs:
+        code.append('  return intermediateOutputs')
+    elif CIPHER_INVERSE_SUFFIX in cipher.id:
+        code.append('  return intermediateOutputs["plaintext"]')
     else:
         code.append('  return intermediateOutputs["cipher_output"]')
 
@@ -281,7 +340,7 @@ def constant_to_bitstring(val, output_size):
     return ret
 
 
-def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False, verbosity=False):
+def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False, verbosity=False, integers_inputs_and_outputs = False):
     r"""
     Return string python code needed to evaluate a cipher using a vectorized implementation byte based oriented.
 
@@ -304,32 +363,41 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
     """
     cipher.sort_cipher()
 
-    code = ['from claasp.cipher_modules.generic_functions_vectorized_byte import *\n', '\n',
+    code = ['from claasp.cipher_modules.generic_functions_vectorized_byte import *\n',
+            'integers_inputs_and_outputs='+str(integers_inputs_and_outputs)+'\n',
             'def evaluate(input, store_intermediate_outputs):', '  intermediateOutputs={}']
-    bit_sizes = {}
+    output_bit_sizes = {}
+    code.append('  if integers_inputs_and_outputs:\n'
+                '    input = cipher_inputs_to_evaluate_vectorized_inputs(input, ' + str(cipher.inputs_bit_size) + ')')
     for i in range(len(cipher.inputs)):
         code.append(f'  {cipher.inputs[i]}=input[{i}]')
-        bit_sizes[cipher.inputs[i]] = cipher.inputs_bit_size[i]
+        output_bit_sizes[cipher.inputs[i]] = cipher.inputs_bit_size[i]
     for component in cipher.get_all_components():
-        params = prepare_input_byte_based_vectorized_python_code_string(bit_sizes, component)
-        bit_sizes[component.id] = component.output_bit_size
+        #code.append(f'  print("{component.id}")')
+        formatted_component_inputs = prepare_input_byte_based_vectorized_python_code_string(output_bit_sizes, component)
+        output_bit_sizes[component.id] = component.output_bit_size
         component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
-                                   'sbox', 'cipher_output', 'intermediate_output']
+                                   'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODSUB', 'OR', 'AND']
         if component.type in component_types_allowed or (component.type == 'word_operation' and
                                                          component.description[0] in component_descriptions_allowed):
-            code.extend(component.get_byte_based_vectorized_python_code(params))
+            code.extend(component.get_byte_based_vectorized_python_code(formatted_component_inputs))
 
         name = component.id
 
         if verbosity and component.type != 'constant':
-            code.append(f'  byte_vector_print_as_hex_values("{name}_input", {params})')
+            code.append(f'  byte_vector_print_as_hex_values("{name}_input", {formatted_component_inputs})')
             code.append(f'  byte_vector_print_as_hex_values("{name}_output", {name})')
+    #code.append('  print("CIPHER OUTPUT : ", cipher_output_15_15)')
+
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
+    elif CIPHER_INVERSE_SUFFIX in cipher.id:
+        code.append('  return intermediateOutputs["plaintext"]')
     else:
         code.append('  return intermediateOutputs["cipher_output"]')
+   # print('\n'.join(code))
 
     return '\n'.join(code)
 
@@ -343,8 +411,10 @@ def prepare_input_byte_based_vectorized_python_code_string(bit_sizes, component)
     if component.type == 'constant':
         return params
 
+    #assert (input_bit_size % number_of_inputs) == 0, f"The number of inputs does not divide the number of input bits " \
+         #                                             f"for component {component.id}. "
     bits_per_input = input_bit_size // number_of_inputs
-    words_per_input = math.ceil(bits_per_input / 8)
+    words_per_input = get_number_of_bytes_needed_for_bit_size(bits_per_input)
     # Divide inputs
     real_inputs = [[] for _ in range(number_of_inputs)]
     real_bits = [[] for _ in range(number_of_inputs)]
@@ -400,7 +470,7 @@ def get_number_of_inputs(component):
         else:
             number_of_inputs = component.description[1]
     elif component.type == 'mix_column':
-        number_of_inputs = len(component.description[0])
+        number_of_inputs = len(component.description[0][0])
     elif component.type == 'linear_layer':
         number_of_inputs = len(component.description[0])
     elif component.type == 'sbox':
@@ -411,17 +481,6 @@ def get_number_of_inputs(component):
         number_of_inputs = 1
 
     return number_of_inputs
-
-
-def constant_to_repr(val, output_size):
-    _val = int(val, 0)
-    if output_size % 8 != 0:
-        s = output_size + (8 - (output_size % 8))
-    else:
-        s = output_size
-    ret = [(_val >> s - (8 * (i + 1))) & 0xff for i in range(s // 8)]
-
-    return ret
 
 
 def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosity):
@@ -622,6 +681,8 @@ def build_function_call(component):
                    f"(component_input, {component.output_bit_size}, {component.description[1]})"
         elif component.description[0] == 'NOT':
             return f"{component.description[0]}(component_input)"
+        elif component.description[0] in ['MODADD', 'MODSUB']:
+            return f"{component.description[0]}(component_input, {component.description[1]}, {component.description[2]})"
         else:
             return f"{component.description[0]}(component_input, {component.description[1]})"
     elif component.type == CONSTANT:
@@ -630,6 +691,17 @@ def build_function_call(component):
         return "component_input"
     elif component.type == PADDING:
         return "padding(component_input)"
+    elif component.type == FSR:
+        registers_info = component.description[0]
+        bits_inside_word = component.description[1]
+        if len(component.description) == 2:
+            number_of_clocks = 1
+        else:
+            number_of_clocks = component.description[2]
+        if bits_inside_word == 1:
+            return f"fsr_binary(component_input, {registers_info}, {number_of_clocks})"
+        else:
+            return f"fsr_word(component_input, {registers_info}, {bits_inside_word}, {number_of_clocks})"
     elif component.type == INTERMEDIATE_OUTPUT:
         return "component_input"
     elif component.type == CIPHER_OUTPUT:

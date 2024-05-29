@@ -1,7 +1,8 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS claasp-base
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GUROBI_ARCH=linux64
+ARG COPY_CLAASP_LIBRARY=false
+ARG INSTALL_CLAASP_LIBRARY=false
 
 # Install dependencies with apt-get
 RUN apt-get -qq update
@@ -28,11 +29,11 @@ COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
 WORKDIR /opt
 
-RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_${GUROBI_ARCH}.tar.gz \
-    && tar -xf gurobi10.0.0_${GUROBI_ARCH}.tar.gz \
-    && rm gurobi10.0.0_${GUROBI_ARCH}.tar.gz
+RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz \
+    && tar -xf gurobi10.0.0_linux64.tar.gz \
+    && rm gurobi10.0.0_linux64.tar.gz
 
-ENV GUROBI_HOME="/opt/gurobi1000/${GUROBI_ARCH}"
+ENV GUROBI_HOME="/opt/gurobi1000/linux64"
 ENV PATH="${PATH}:${GUROBI_HOME}/bin"
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
 
@@ -74,7 +75,6 @@ RUN sage -pip install bitstring==4.0.1 \
   progress==1.6 \
   pycosat==0.6.3 \
   pygments==2.12.0 \
-  sage-numerical-backends-gurobi==9.3.1 \
   sage-package==0.0.7 \
   setuptools==59.6.0 \
   sphinx==4.5.0 \
@@ -83,7 +83,10 @@ RUN sage -pip install bitstring==4.0.1 \
   pytest==7.2.1 \
   pytest-cov==4.0.0 \
   pytest-xdist==3.2.0 \
-  pytest-benchmark==4.0.0
+  pytest-benchmark==4.0.0 \
+  networkx==2.8.8 \
+  numpy==1.24.3 \
+  joblib==1.4.2
 
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
@@ -157,9 +160,11 @@ RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1
     && tar -xf glucose-syrup-4.1.tgz \
     && rm glucose-syrup-4.1.tgz
 
-RUN make glucose-syrup-4.1/simp
+RUN cd glucose-syrup-4.1/simp \
+    && make
 
-RUN make glucose-syrup-4.1/parallel
+RUN cd glucose-syrup-4.1/parallel \
+    && make
 
 WORKDIR /opt
 
@@ -296,4 +301,17 @@ RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libselinux.so.1
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libsystemd.so.0
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libcrypt.so.1
 
-WORKDIR /home/sage/claasp
+RUN sage -pip install plotly -U kaleido
+COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
+RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
+
+RUN apt-get install -y coinor-cbc coinor-libcbc-dev
+RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
+
+WORKDIR /home/sage/tii-claasp
+
+FROM claasp-base AS claasp-lib
+
+COPY . .
+
+RUN make install

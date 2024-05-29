@@ -13,10 +13,11 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Not component" href="not_component.html" />
-    <link rel="prev" title="Cipher output component" href="cipher_output_component.html" />
+    <link rel="next" title="Constant component" href="constant_component.html" />
+    <link rel="prev" title="And component" href="and_component.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
     <script src="../_static/thebe-sage.js" type="text/javascript"></script>
@@ -32,12 +33,19 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="not_component.html" title="Not component"
+          <a href="constant_component.html" title="Constant component"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="cipher_output_component.html" title="Cipher output component"
+          <a href="and_component.html" title="And component"
              accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
         <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
         <li class="nav-item nav-item-this"><a href="">Shift component</a></li> 
       </ul>
     </div>  
@@ -115,11 +123,6 @@
 </pre></div>
 </div>
 </dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="components.shift_component.SHIFT.cms_deterministic_truncated_xor_differential_trail_constraints">
-<span class="sig-name descname"><span class="pre">cms_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_component.SHIFT.cms_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="components.shift_component.SHIFT.cms_xor_differential_propagation_constraints">
@@ -337,6 +340,37 @@
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.shift_component.SHIFT.milp_bitwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">milp_bitwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_component.SHIFT.milp_bitwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of variables and a list of constrains modeling a component of type Shift.</p>
+<p>EXAMPLE:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.tea_block_cipher</span> <span class="kn">import</span> <span class="n">TeaBlockCipher</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">TeaBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">cipher</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">shift_component</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;shift_0_0&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">shift_component</span><span class="o">.</span><span class="n">milp_bitwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x_class[plaintext_8]&#39;, x_0),</span>
+<span class="go">(&#39;x_class[plaintext_9]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go">(&#39;x_class[shift_0_0_6]&#39;, x_14),</span>
+<span class="go">(&#39;x_class[shift_0_0_7]&#39;, x_15)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_8 == x_4,</span>
+<span class="go">x_9 == x_5,</span>
+<span class="go">x_10 == x_6,</span>
+<span class="go">x_11 == x_7,</span>
+<span class="go">x_12 == 0,</span>
+<span class="go">x_13 == 0,</span>
+<span class="go">x_14 == 0,</span>
+<span class="go">x_15 == 0]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.shift_component.SHIFT.milp_constraints">
 <span class="sig-name descname"><span class="pre">milp_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_component.SHIFT.milp_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of variables and a list of constrains modeling a component of type SHIFT for MILP CIPHER model.</p>
@@ -372,9 +406,33 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="components.shift_component.SHIFT.milp_deterministic_truncated_xor_differential_trail_constraints">
-<span class="sig-name descname"><span class="pre">milp_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_component.SHIFT.milp_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="components.shift_component.SHIFT.milp_wordwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">milp_wordwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_component.SHIFT.milp_wordwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of variables and a list of constrains modeling a component of type Shift.</p>
+<p>EXAMPLE:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">cipher</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.components.shift_component</span> <span class="kn">import</span> <span class="n">SHIFT</span>
+<span class="gp">sage: </span><span class="n">shift_component</span> <span class="o">=</span> <span class="n">SHIFT</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;sbox_0_2&#39;</span><span class="p">,</span> <span class="s1">&#39;sbox_0_6&#39;</span><span class="p">,</span> <span class="s1">&#39;sbox_0_10&#39;</span><span class="p">,</span> <span class="s1">&#39;sbox_0_14&#39;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">]],</span> <span class="mi">32</span><span class="p">,</span> <span class="o">-</span><span class="mi">8</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">shift_component</span><span class="o">.</span><span class="n">milp_wordwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x_class[sbox_0_2_word_0_class]&#39;, x_0),</span>
+<span class="go"> (&#39;x_class[sbox_0_6_word_0_class]&#39;, x_1),</span>
+<span class="go"> ...</span>
+<span class="go"> (&#39;x[shift_0_18_30]&#39;, x_70),</span>
+<span class="go"> (&#39;x[shift_0_18_31]&#39;, x_71)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_4 == x_1,</span>
+<span class="go"> x_5 == x_2,</span>
+<span class="go"> ...</span>
+<span class="go"> x_70 == 0,</span>
+<span class="go"> x_71 == 0]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="components.shift_component.SHIFT.milp_xor_differential_propagation_constraints">
@@ -604,11 +662,6 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="components.shift_component.SHIFT.smt_deterministic_truncated_xor_differential_trail_constraints">
-<span class="sig-name descname"><span class="pre">smt_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_component.SHIFT.smt_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="components.shift_component.SHIFT.smt_xor_differential_propagation_constraints">
 <span class="sig-name descname"><span class="pre">smt_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.shift_component.SHIFT.smt_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -663,13 +716,13 @@
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="cipher_output_component.html"
-                          title="previous chapter">Cipher output component</a></p>
+    <p class="topless"><a href="and_component.html"
+                          title="previous chapter">And component</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="not_component.html"
-                          title="next chapter">Not component</a></p>
+    <p class="topless"><a href="constant_component.html"
+                          title="next chapter">Constant component</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -702,12 +755,19 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="not_component.html" title="Not component"
+          <a href="constant_component.html" title="Constant component"
              >next</a> |</li>
         <li class="right" >
-          <a href="cipher_output_component.html" title="Cipher output component"
+          <a href="and_component.html" title="And component"
              >previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
         <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
         <li class="nav-item nav-item-this"><a href="">Shift component</a></li> 
       </ul>
     </div>

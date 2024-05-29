@@ -98,9 +98,6 @@ class SHIFT(Component):
         """
         return self.sat_constraints()
 
-    def cms_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.cms_constraints()
-
     def cms_xor_differential_propagation_constraints(self, model=None):
         return self.cms_constraints()
 
@@ -707,8 +704,54 @@ class SHIFT(Component):
 
         return output_bit_ids, constraints
 
-    def sat_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.sat_constraints()
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for SHIFT in SAT
+        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+            sage: tea = TeaBlockCipher(number_of_rounds=3)
+            sage: shift_component = tea.component_from(0, 0)
+            sage: shift_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            (['shift_0_0_0_0',
+              'shift_0_0_1_0',
+              'shift_0_0_2_0',
+              ...
+              '-shift_0_0_30_1',
+              '-shift_0_0_31_0',
+              '-shift_0_0_31_1'])
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        shift_amount = self.description[1]
+        constraints = []
+        if shift_amount < 0:
+            shift_amount = -shift_amount
+            for i in range(out_len - shift_amount):
+                constraints.extend(sat_utils.cnf_equivalent([out_ids_0[i], in_ids_0[i + shift_amount]]))
+                constraints.extend(sat_utils.cnf_equivalent([out_ids_1[i], in_ids_1[i + shift_amount]]))
+            for i in range(out_len - shift_amount, out_len):
+                constraints.append(f'-{out_ids_0[i]}')
+                constraints.append(f'-{out_ids_1[i]}')
+        else:
+            for i in range(shift_amount):
+                constraints.append(f'-{out_ids_0[i]}')
+                constraints.append(f'-{out_ids_1[i]}')
+            for i in range(shift_amount, out_len):
+                constraints.extend(sat_utils.cnf_equivalent([out_ids_0[i], in_ids_0[i - shift_amount]]))
+                constraints.extend(sat_utils.cnf_equivalent([out_ids_1[i], in_ids_1[i - shift_amount]]))
+
+        return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         return self.sat_constraints()
@@ -805,9 +848,6 @@ class SHIFT(Component):
                 constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
-
-    def smt_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.smt_constraints()
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         return self.smt_constraints()

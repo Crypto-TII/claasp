@@ -21,6 +21,12 @@ def test_chacha_permutation():
                  '19c12b4b04e16de9e83d0cb4e3c50a2', 16)
     assert chacha.evaluate([plaintext], verbosity=False) == output
 
+    chacha = ChachaPermutation(number_of_rounds=1)
+    assert chacha.get_component_from_id("rot_0_2").description[1] == -16
+
+    chacha = ChachaPermutation(number_of_rounds=1, start_round=('odd', 'bottom'))
+    assert chacha.get_component_from_id("rot_0_2").description[1] == -8
+
 
 def test_toy_chacha_permutation():
     """
@@ -44,3 +50,4 @@ def test_toy_chacha_permutation():
     plaintext = int("0x" + "".join(state), 16)
     output = int('0xe023858e713feb86a730656ac909f76a', 16)
     assert chacha.evaluate([plaintext], verbosity=False) == output
+    assert chacha.evaluate_vectorized([plaintext], evaluate_api=True) == output

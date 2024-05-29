@@ -79,6 +79,19 @@
         \Bos, J.W., Ducas, L., Kiltz, E., Lepoint, T., Lyubashevsky, V., Schanck, J.M., Schwabe, P.,
         Seiler, G., Stehlé, D.: CRYSTALS-Kyber: A CCA-Secure Module-Lattice-Based KEM. EuroS&P 2018: 353-367.
 
+.. [BHPR2021]
+        Bellini E., Hambitzer A., Protopapa M., Rossi M. : *Limitations
+        of the Use of Neural Networks in Black Box Cryptanalysis* :
+        In Innovative Security Solutions for Information Technology
+        and Communications: 14th International Conference, SecITC 2021,
+        Virtual Event, November 25–26, 2021, Revised Selected Papers.
+        Springer-Verlag, Berlin, Heidelberg, 100–124
+
+.. [BR2021]
+        Bellini, E., Rossi, M. : *Performance Comparison Between Deep Learning-Based
+        and Conventional Cryptographic Distinguishers* : In: Arai, K. (eds) Intelligent Computing.
+        Lecture Notes in Networks and Systems, vol 285. Springer
+
 .. [BKLPPRSV2007]
         Bogdanov A., Knudsen L., Leander G., Paar C., Poschmann A., Robshaw M.,
         Seurin Y., Vikkelsoe C. : *PRESENT: An Ultra-Lightweight Block Cipher*
@@ -94,6 +107,10 @@
         Bettale L., Faugère J.-C., Perret L. : *Hybrid approach for solving
         multivariate systems over finite fields* : J. Mathematical
         Cryptology,3(3):177–197, 2009
+
+.. [BGHR2023]
+        Bellini E., Gerault D., Hambitzer A., Rossi M: A Cipher-Agnostic Neural Training Pipeline with Automated
+        Finding of Good Input Differences : In IACR Transactions on Symmetric Cryptology 2023
 
 .. [BCC+2010]
         Bouillaguet C., Chen H-C., Cheng H-C, Chou T., Niederhagen R., Shamir
@@ -247,6 +264,10 @@
 
         **G**
 
+.. [Go2019]
+        Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
+* : In Advances in Cryptology – CRYPTO 2019
+
 .. _claasp-ref-H:
 
 .. only:: html
@@ -295,6 +316,13 @@
 .. only:: html
 
         **L**
+
+.. [LMM+2021]
+        Leander G., Moos T., Moradi A., Rasoolzadeh S. (2021). *The SPEEDY
+        Family of Block Ciphers: Engineering an Ultra Low-Latency Cipher from
+        Gate Level for Secure Processor Architectures*. IACR Transactions on
+        Cryptographic Hardware and Embedded Systems, 2021(4), 510–545.
+        https://doi.org/10.46586/tches.v2021.i4.510-545
 
 .. [Lin1999]
         van Lint J. : *Introduction to coding theory* : 3rd ed. Springer-Verlag

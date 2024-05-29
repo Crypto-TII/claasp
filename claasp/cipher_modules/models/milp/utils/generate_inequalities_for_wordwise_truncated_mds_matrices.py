@@ -24,11 +24,12 @@ using model 5 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
 """
 from itertools import product
 from math import ceil, log
-import pickle, os, pathlib
+import pickle, os
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 
 wordwise_truncated_mds_file_name = "dictionary_containing_truncated_mds_inequalities.obj"
-wordwise_truncated_mds_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), wordwise_truncated_mds_file_name)
+wordwise_truncated_mds_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH, wordwise_truncated_mds_file_name)
 
 
 
@@ -42,7 +43,7 @@ def generate_valid_points_for_truncated_mds_matrix(dimensions=(4,4), max_pattern
     valid_points = []
 
     if max_pattern_value == 3:
-        list_of_possible_deltas = range(max_pattern_value)
+        list_of_possible_deltas = range(max_pattern_value + 1)
 
         for delta in product(list_of_possible_deltas, repeat=ncols):
             if sum(delta) == 0:

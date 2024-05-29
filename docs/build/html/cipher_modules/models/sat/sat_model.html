@@ -13,10 +13,11 @@
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Cms xor differential model" href="cms_models/cms_xor_differential_model.html" />
-    <link rel="prev" title="Constraints" href="../algebraic/constraints.html" />
+    <link rel="next" title="Sat deterministic truncated xor differential model" href="sat_models/sat_deterministic_truncated_xor_differential_model.html" />
+    <link rel="prev" title="Minizinc cipher model" href="../minizinc/minizinc_models/minizinc_cipher_model.html" />
     <link rel="icon" href="../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -32,12 +33,19 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cms_models/cms_xor_differential_model.html" title="Cms xor differential model"
+          <a href="sat_models/sat_deterministic_truncated_xor_differential_model.html" title="Sat deterministic truncated xor differential model"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../algebraic/constraints.html" title="Constraints"
+          <a href="../minizinc/minizinc_models/minizinc_cipher_model.html" title="Minizinc cipher model"
              accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../../../index.html"><img src="../../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
         <li class="nav-item nav-item-0"><a href="../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
         <li class="nav-item nav-item-this"><a href="">Sat model</a></li> 
       </ul>
     </div>  
@@ -130,11 +138,11 @@ following values:</p>
 CNF.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_model.SatModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SatModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size_weight_pr_vars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sequential'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_model.SatModel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SatModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size_weight_pr_vars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sequential'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_model.SatModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_model.SatModel.calculate_component_weight">
-<span class="sig-name descname"><span class="pre">calculate_component_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_model.SatModel.calculate_component_weight" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_component_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_model.SatModel.calculate_component_weight" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -179,11 +187,6 @@ CNF.</p>
 </pre></div>
 </div>
 </dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_model.SatModel.get_component_value">
-<span class="sig-name descname"><span class="pre">get_component_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_model.SatModel.get_component_value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_model.SatModel.model_constraints">
@@ -288,11 +291,6 @@ system.</p>
 </div>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_model.SatModel.window_size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">window_size</span></span><a class="headerlink" href="#cipher_modules.models.sat.sat_model.SatModel.window_size" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </section>
@@ -318,13 +316,13 @@ system.</p>
   </div>
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="../algebraic/constraints.html"
-                          title="previous chapter">Constraints</a></p>
+    <p class="topless"><a href="../minizinc/minizinc_models/minizinc_cipher_model.html"
+                          title="previous chapter">Minizinc cipher model</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="cms_models/cms_xor_differential_model.html"
-                          title="next chapter">Cms xor differential model</a></p>
+    <p class="topless"><a href="sat_models/sat_deterministic_truncated_xor_differential_model.html"
+                          title="next chapter">Sat deterministic truncated xor differential model</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -357,12 +355,19 @@ system.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cms_models/cms_xor_differential_model.html" title="Cms xor differential model"
+          <a href="sat_models/sat_deterministic_truncated_xor_differential_model.html" title="Sat deterministic truncated xor differential model"
              >next</a> |</li>
         <li class="right" >
-          <a href="../algebraic/constraints.html" title="Constraints"
+          <a href="../minizinc/minizinc_models/minizinc_cipher_model.html" title="Minizinc cipher model"
              >previous</a> |</li>
+  
+    
+      <a href="../../../../index.html"><img src="../../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
         <li class="nav-item nav-item-0"><a href="../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+
         <li class="nav-item nav-item-this"><a href="">Sat model</a></li> 
       </ul>
     </div>

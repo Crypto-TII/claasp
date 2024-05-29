@@ -104,7 +104,7 @@ class DatasetGenerator:
                 inputs.append(np.zeros(shape=(bit_size // 8, number_of_samples), dtype=np.uint8))
 
         # output of cipher
-        outputs = self.cipher.evaluate_vectorized(inputs, intermediate_outputs=True)
+        outputs = self.cipher.evaluate_vectorized(inputs, intermediate_output=True)
 
         # avalanche output of cipher
         outputs_avanlanche_list = [
@@ -121,7 +121,7 @@ class DatasetGenerator:
         for i in range(self.cipher.inputs_bit_size[input_index]):
             inputs_avalanche = deepcopy(inputs)
             inputs_avalanche[input_index] = xor(inputs_avalanche[input_index], np.packbits(mask, axis=0))
-            outputs_avanlanche = self.cipher.evaluate_vectorized(inputs_avalanche, intermediate_outputs=True)
+            outputs_avanlanche = self.cipher.evaluate_vectorized(inputs_avalanche, intermediate_output=True)
             for r in range(self.cipher.number_of_rounds - 1):
                 outputs_avanlanche_list[r][:, i * self.cipher.output_bit_size //
                                            8:(i + 1) * self.cipher.output_bit_size // 8] = \
@@ -219,7 +219,7 @@ class DatasetGenerator:
 
             for j in range(number_of_blocks_in_one_sample):
                 # output of cipher
-                outputs = self.cipher.evaluate_vectorized(inputs, intermediate_outputs=True)
+                outputs = self.cipher.evaluate_vectorized(inputs, intermediate_output=True)
                 for round_number in range(self.cipher.number_of_rounds - 1):
                     outputs_list[round_number].append(outputs["round_output"][round_number][round_number])
                     inputs[input_index][:, round_number] = \
@@ -302,7 +302,7 @@ class DatasetGenerator:
                                          np.random.randint(256, size=(1, bit_size // 8)), dtype=np.uint8)
                     inputs.append(rand_input.transpose())
 
-            outputs = self.cipher.evaluate_vectorized(inputs, intermediate_outputs=True)
+            outputs = self.cipher.evaluate_vectorized(inputs, intermediate_output=True)
             for r in range(self.cipher.number_of_rounds - 1):
                 outputs_list[r].append(xor(outputs["round_output"][r], inputs_fixed.transpose()))
             outputs_list[-1].append(xor(outputs["cipher_output"][0], inputs_fixed.transpose()))
@@ -387,7 +387,7 @@ class DatasetGenerator:
                     inputs.append(rand_input.transpose())
 
             # output of cipher
-            outputs = self.cipher.evaluate_vectorized(inputs, intermediate_outputs=True)
+            outputs = self.cipher.evaluate_vectorized(inputs, intermediate_output=True)
             for r in range(self.cipher.number_of_rounds - 1):
                 outputs_list[r].append(outputs["round_output"][r])
             outputs_list[-1].append(outputs["cipher_output"][0])
@@ -505,7 +505,7 @@ class DatasetGenerator:
                     inputs.append(rand_input.transpose())
 
             # output of cipher
-            outputs = self.cipher.evaluate_vectorized(inputs, intermediate_outputs=True)
+            outputs = self.cipher.evaluate_vectorized(inputs, intermediate_output=True)
             for round_number in range(self.cipher.number_of_rounds - 1):
                 outputs_list[round_number].append(outputs["round_output"][round_number])
             outputs_list[-1].append(outputs["cipher_output"][0])

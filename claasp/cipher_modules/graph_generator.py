@@ -33,6 +33,19 @@ def _get_predecessors_subgraph(original_graph, nodes):
 
     for node in nodes:
         dfs(node)
+    #print("visited", visited)
+
+    # Check for any intermediate_output nodes
+    for v in list(visited):  # Using list to avoid 'set changed size during iteration' error
+        for successor in original_graph.successors(v):
+            if successor.startswith('intermediate_output') or successor.startswith('cipher_output'):
+                immediate_predecessors = list(original_graph.predecessors(successor))
+                #print("immediate_predecessors", immediate_predecessors)
+                #import code; code.interact(local=dict(globals(), **locals()))
+                if set(immediate_predecessors).issubset(visited):
+                    visited.add(successor)
+
+
 
     return original_graph.subgraph(visited)
 
@@ -42,7 +55,7 @@ def _get_descendants_subgraph(original_graph, start_nodes):
     for node in start_nodes:
         if node in original_graph:
             bottom_graph.add_node(node)
-            for successor in nx.dfs_successors(original_graph, source=node):
+            for successor in nx.dfs_tree(original_graph, source=node):
                 bottom_graph.add_edge(node, successor)
                 bottom_graph.add_node(successor)
 

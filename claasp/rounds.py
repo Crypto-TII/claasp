@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from claasp.round import Round
 from claasp.DTOs.power_of_2_word_based_dto import PowerOf2WordBasedDTO
 
