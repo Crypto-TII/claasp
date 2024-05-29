@@ -1,5 +1,4 @@
 # ****************************************************************************
-# Copyright 2023 Technology Innovation Institute
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,10 +31,10 @@ from claasp.cipher_modules import code_generator
 import importlib
 from claasp.cipher_modules.inverse_cipher import *
 
-tii_path = inspect.getfile(claasp)
-tii_dir_path = os.path.dirname(tii_path)
+path = inspect.getfile(claasp)
+dir_path = os.path.dirname(path)
 
-TII_C_LIB_PATH = f'{tii_dir_path}/cipher/'
+C_LIB_PATH = f'{dir_path}/cipher/'
 
 
 class Cipher:

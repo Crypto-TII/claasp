@@ -1246,7 +1246,7 @@ def sort_cipher_graph(cipher):
     - ``cipher`` -- graph representation of a cipher as a python dictionary
 
     EXAMPLE::
-        sage: from tii.graph_representations.creator import GraphRepresentationCreator
+        sage: from graph_representations.creator import GraphRepresentationCreator
         sage: GR = GraphRepresentationCreator()
         sage: cipher_python_dictionary = GR.identity_block_cipher_creator()
         sage: sorted_cipher = GR.sort_cipher_graph(cipher_python_dictionary)

@@ -40,11 +40,11 @@ def test_pprint_dictionary_to_file():
     speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
     test = AvalancheTests(speck)
     d = test.avalanche_tests(number_of_samples=100)
-    tii_path = inspect.getfile(claasp)
-    tii_dir_path = os.path.dirname(tii_path)
-    pprint_dictionary_to_file(d["input_parameters"], f"{tii_dir_path}/test_json")
-    assert os.path.isfile(f"{tii_dir_path}/test_json") is True
-    os.remove(f"{tii_dir_path}/test_json")
+    claasp_path = inspect.getfile(claasp)
+    claasp_dir_path = os.path.dirname(claasp_path)
+    pprint_dictionary_to_file(d["input_parameters"], f"{claasp_dir_path}/test_json")
+    assert os.path.isfile(f"{claasp_dir_path}/test_json") is True
+    os.remove(f"{claasp_dir_path}/test_json")
 
 def test_sgn_function():
     assert sgn_function(-1) == -1

@@ -28,4 +28,4 @@ jobs:
         fetch-depth: 0
 
     - name: Run tests
-      run: docker run --rm -v $PWD:/home/sage/tii-claasp tiicrc/claasp-base:latest make github-pytest
+      run: docker run --rm -v $PWD:/home/sage/claasp tiicrc/claasp-base:latest make github-pytest
