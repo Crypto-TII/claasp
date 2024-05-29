@@ -28,10 +28,12 @@ from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, 
 
 
 class SatXorDifferentialModel(SatModel):
-    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False,
-                 window_size_by_round=None, window_size_by_component_id=None):
-        self._window_size_by_round = window_size_by_round
-        self._window_size_by_component_id = window_size_by_component_id
+    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False):
+        self._window_size_by_component_id_values = None
+        self._window_size_by_round_values = None
+        self._window_size_full_window_vars = None
+        self._window_size_number_of_full_window = None
+        self._window_size_full_window_operator = None
         super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
@@ -80,6 +82,51 @@ class SatXorDifferentialModel(SatModel):
             variables, constraints = self.weight_constraints(weight)
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
+
+        if self._window_size_full_window_vars is not None:
+            self._variables_list.extend(self._window_size_full_window_vars)
+
+            if self._window_size_number_of_full_window == 0:
+                self._variables_list.extend([])
+                self._model_constraints.extend([f'-{variable}' for variable in self._window_size_full_window_vars])
+                return
+
+
+            if self._window_size_full_window_operator == 'at_least':
+                all_ones_dummy_variables, all_ones_constraints = self._sequential_counter_algorithm(
+                    self._window_size_full_window_vars,
+                    self._window_size_number_of_full_window - 1,
+                    'dummy_all_ones_at_least',
+                    greater_or_equal=True
+                )
+            elif self._window_size_full_window_operator == 'at_most':
+                all_ones_dummy_variables, all_ones_constraints = self._sequential_counter_algorithm(
+                    self._window_size_full_window_vars,
+                    self._window_size_number_of_full_window,
+                    'dummy_all_ones_at_most',
+                    greater_or_equal=False
+                )
+            elif self._window_size_full_window_operator == 'exactly':
+                all_ones_dummy_variables1, all_ones_constraints1 = self._sequential_counter_algorithm(
+                    self._window_size_full_window_vars,
+                    self._window_size_number_of_full_window,
+                    'dummy_all_ones_at_least',
+                    greater_or_equal=True
+                )
+                all_ones_dummy_variables2, all_ones_constraints2 = self._sequential_counter_algorithm(
+                    self._window_size_full_window_vars,
+                    self._window_size_number_of_full_window,
+                    'dummy_all_ones_at_most',
+                    greater_or_equal=False
+                )
+                all_ones_dummy_variables = all_ones_dummy_variables1 + all_ones_dummy_variables2
+                all_ones_constraints = all_ones_constraints1 + all_ones_constraints2
+            else:
+                raise ValueError(f'Unknown operator {self._window_size_full_window_operator}')
+
+
+            self._variables_list.extend(all_ones_dummy_variables)
+            self._model_constraints.extend(all_ones_constraints)
 
     def build_xor_differential_trail_and_checker_model_at_intermediate_output_level(
             self, weight=-1, fixed_variables=[]
@@ -347,7 +394,9 @@ class SatXorDifferentialModel(SatModel):
             ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
             ....:     bit_values=[0]*64)
-            sage: sat.find_one_xor_differential_trail(fixed_values=[key])
+            sage: result = sat.find_one_xor_differential_trail(fixed_values=[key])
+            sage: result['total_weight'] == 9.0
+            True
         """
         start_building_time = time.time()
         self.build_xor_differential_trail_model(fixed_variables=fixed_values)
@@ -379,7 +428,8 @@ class SatXorDifferentialModel(SatModel):
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorDifferentialModel(speck, window_size_by_round=[0, 0, 0])
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: sat.set_window_size_heuristic_by_round([0, 0, 0])
             sage: trail = sat.find_one_xor_differential_trail_with_fixed_weight(3)
             sage: trail['total_weight']
             3.0
@@ -423,10 +473,40 @@ class SatXorDifferentialModel(SatModel):
 
         return components_solutions, total_weight
 
-    @property
-    def window_size_by_round(self):
-        return self._window_size_by_round
+    def set_window_size_heuristic_by_round(
+            self, window_size_by_round_values, number_of_full_windows=None, full_window_operator='at_least'
+    ):
+        if not self._cipher.is_arx():
+            raise Exception('Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.')
+        self._window_size_by_round_values = window_size_by_round_values
+        if number_of_full_windows is not None:
+            self._window_size_full_window_vars = []
+            self._window_size_number_of_full_window = number_of_full_windows
+            self._window_size_full_window_operator = full_window_operator
+
+    def set_window_size_heuristic_by_component_id(
+            self, window_size_by_component_id_values, number_of_full_windows=None, full_window_operator='at_least'
+    ):
+        if not self._cipher.is_arx():
+            raise Exception('Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.')
+        self._window_size_by_component_id_values = window_size_by_component_id_values
+        if number_of_full_windows is not None:
+            self._window_size_full_window_vars = []
+            self._window_size_number_of_full_window = number_of_full_windows
+            self._window_size_full_window_operator = full_window_operator
 
     @property
-    def window_size_by_component_id(self):
-        return self._window_size_by_component_id
+    def window_size_number_of_full_window(self):
+        return self._window_size_number_of_full_window
+
+    @property
+    def window_size_full_window_vars(self):
+        return self._window_size_full_window_vars
+
+    @property
+    def window_size_by_round_values(self):
+        return self._window_size_by_round_values
+
+    @property
+    def window_size_by_component_id_values(self):
+        return self._window_size_by_component_id_values

@@ -20,7 +20,7 @@
 from math import sqrt
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_STATE
+from claasp.name_mappings import INPUT_MESSAGE, INPUT_STATE
 
 PARAMETERS_CONFIGURATION_LIST = [
     {'block_bit_size': 1024, 'state_bit_size': 1024, 'number_of_rounds': 12}
@@ -201,14 +201,14 @@ class Blake2HashFunction(Cipher):
 
         super().__init__(family_name="blake2",
                          cipher_type="hash_function",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_STATE],
+                         cipher_inputs=[INPUT_MESSAGE, INPUT_STATE],
                          cipher_inputs_bit_size=[self.block_bit_size, state_bit_size],
                          cipher_output_bit_size=state_bit_size,
                          cipher_reference_code=reference_code.format(self.block_bit_size, state_bit_size,
                                                                      number_of_rounds, word_size, self.permutations,
                                                                      self.rot_amounts))
 
-        data_word_ids = [INPUT_PLAINTEXT] * self.state_size_in_words
+        data_word_ids = [INPUT_MESSAGE] * self.state_size_in_words
         data_word_ranges = [list(range(i * self.word_size, (i + 1) * self.word_size))
                             for i in range(self.state_size_in_words)]
         state_word_ids = [INPUT_STATE] * self.state_size_in_words

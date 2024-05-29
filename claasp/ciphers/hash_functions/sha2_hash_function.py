@@ -28,7 +28,7 @@ seen like a symmetric cipher whose plaintext is the initial state and key is
 the input.
 """
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY
+from claasp.name_mappings import INPUT_MESSAGE
 from claasp.DTOs.component_state import ComponentState
 
 PARAMETERS_CONFIGURATION_LIST = [
@@ -62,9 +62,9 @@ class SHA2HashFunction(Cipher):
 
         sage: from claasp.ciphers.hash_functions.sha2_hash_function import SHA2HashFunction
         sage: sha2 = SHA2HashFunction()
-        sage: plaintext = 0x43686961726180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030
-        sage: ciphertext = 0x0d8d2647a12b0d544989a6b03603b8b3c27e2c4e0be08671745366d1a8bc4d95
-        sage: sha2.evaluate([plaintext]) == ciphertext
+        sage: message = 0x43686961726180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030
+        sage: digest = 0x0d8d2647a12b0d544989a6b03603b8b3c27e2c4e0be08671745366d1a8bc4d95
+        sage: sha2.evaluate([message]) == digest
         True
     """
 
@@ -84,7 +84,7 @@ class SHA2HashFunction(Cipher):
 
         super().__init__(family_name="SHA2_family",
                          cipher_type="hash_function",
-                         cipher_inputs=[INPUT_KEY],
+                         cipher_inputs=[INPUT_MESSAGE],
                          cipher_inputs_bit_size=[self.word_size * 16],
                          cipher_output_bit_size=output_bit_size)
 
@@ -153,7 +153,7 @@ class SHA2HashFunction(Cipher):
         elif self.output_bit_size == 384:
             numbers_of_words_in_digest = 6
 
-        W = [ComponentState(INPUT_KEY, [list(range(t * self.word_size, (t + 1) * self.word_size))])
+        W = [ComponentState(INPUT_MESSAGE, [list(range(t * self.word_size, (t + 1) * self.word_size))])
              for t in range(16)]
 
         self.add_round()
