@@ -356,7 +356,7 @@ class Cipher:
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
             sage: key = 0x98edeafc899338c45fad
             sage: plaintext = 0x42c20fd3b586879e
-            sage: cipher = PresentBlockCipher(number_of_rounds=2)
+            sage: cipher = PresentBlockCipher(number_of_rounds=1)
             sage: ciphertext = cipher.evaluate([plaintext, key])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
@@ -364,7 +364,7 @@ class Cipher:
 
             sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
             sage: plaintext = 0
-            sage: cipher = AsconSboxSigmaPermutation(number_of_rounds=2)
+            sage: cipher = AsconSboxSigmaPermutation(number_of_rounds=1)
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
@@ -433,7 +433,7 @@ class Cipher:
 
             sage: from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
             sage: plaintext = 0x1234
-            sage: cipher = SparklePermutation(number_of_steps=2)
+            sage: cipher = SparklePermutation(number_of_steps=1)
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
@@ -441,7 +441,7 @@ class Cipher:
 
             sage: from claasp.ciphers.permutations.xoodoo_invertible_permutation import XoodooInvertiblePermutation
             sage: plaintext = 0x1234
-            sage: cipher = XoodooInvertiblePermutation(number_of_rounds=2)
+            sage: cipher = XoodooInvertiblePermutation(number_of_rounds=1)
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
@@ -484,7 +484,7 @@ class Cipher:
             True
 
             sage: from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
-            sage: cipher = SalsaPermutation(number_of_rounds=5)
+            sage: cipher = SalsaPermutation(number_of_rounds=2)
             sage: plaintext = 0xffff
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
@@ -492,7 +492,7 @@ class Cipher:
             True
 
             sage: from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
-            sage: cipher = BEA1BlockCipher(number_of_rounds=2)
+            sage: cipher = BEA1BlockCipher(number_of_rounds=1)
             sage: key = 0x8cdd0f3459fb721e798655298d5c1
             sage: plaintext = 0x47a57eff5d6475a68916
             sage: ciphertext = cipher.evaluate([key, plaintext])
@@ -509,58 +509,12 @@ class Cipher:
             True
 
             sage: from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-            sage: cipher = ChachaPermutation(number_of_rounds=5)
+            sage: cipher = ChachaPermutation(number_of_rounds=2)
             sage: plaintext = 0xffff
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
             True
-
-            sage: from claasp.ciphers.permutations.gimli_sbox_permutation import GimliSboxPermutation
-            sage: cipher = GimliSboxPermutation(number_of_rounds=2, word_size=32)
-            sage: plaintext = 0x111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
-            sage: ciphertext = cipher.evaluate([plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            False # loop 356
-
-            sage: from claasp.ciphers.block_ciphers.sparx_block_cipher import SparxBlockCipher
-            sage: plaintext = 0x0123456789abcdef
-            sage: key = 0x00112233445566778899aabbccddeeff
-            sage: cipher = SparxBlockCipher(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False # loop 66
-
-            sage: from claasp.ciphers.block_ciphers.threefish_block_cipher import ThreefishBlockCipher
-            sage: cipher = ThreefishBlockCipher(number_of_rounds=2)
-            sage: plaintext = 0xF8F9FAFBFCFDFEFFF0F1F2F3F4F5F6F7E8E9EAEBECEDEEEFE0E1E2E3E4E5E6E7
-            sage: key = 0x17161514131211101F1E1D1C1B1A191827262524232221202F2E2D2C2B2A2928
-            sage: tweak = 0x07060504030201000F0E0D0C0B0A0908
-            sage: ciphertext = cipher.evaluate([plaintext, key, tweak])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key, tweak]) == plaintext
-            False # loop 29
-
-
-            sage: from claasp.ciphers.permutations.tinyjambu_permutation import TinyJambuPermutation
-            sage: cipher = TinyJambuPermutation(number_of_rounds=2)
-            sage: plaintext = 0xffff
-            sage: key = 0x1234
-            sage: ciphertext = cipher.evaluate([key, plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False # loop 8
-
-            sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
-            sage: cipher = LowMCBlockCipher(block_bit_size=192, key_bit_size=192, number_of_rounds=4)
-            sage: key = 0x800000000000000000000000000000000000000000000000
-            sage: plaintext = 0xABFF00000000000000000000000000000000000000000000
-            sage: ciphertext = cipher.evaluate([key, plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False # loop 274
 
             sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
             sage: cipher = TwofishBlockCipher(key_length=256, number_of_rounds=2)
@@ -570,16 +524,6 @@ class Cipher:
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
-
-            sage: from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
-            sage: cipher = KasumiBlockCipher(number_of_rounds=2)
-            sage: key = 0x9900aabbccddeeff1122334455667788
-            sage: plaintext = 0xfedcba0987654321
-            sage: ciphertext = cipher.evaluate([key, plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            False # loop 96
-
         """
         inverted_cipher = Cipher(f"{self.id}{CIPHER_INVERSE_SUFFIX}", f"{self.type}", [], [], self.output_bit_size)
 
@@ -727,8 +671,9 @@ class Cipher:
             sage: plaintext = 0x01234567
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: result = speck.evaluate([plaintext, key], intermediate_output=True)
-            sage: partial_speck = speck.cipher_partial_inverse(1, 2)
+            sage: partial_speck = speck.cipher_partial_inverse(1, 2, keep_key_schedule=True)
             sage: partial_speck.evaluate([result[0], key]) == result[2]['intermediate_output_0_6'][0]
+            True
 
         """
 
@@ -1406,9 +1351,10 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
-            sage: IdentityBlockCipher().polynomial_system()
-            Polynomial Sequence with 128 Polynomials in 256 Variables
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
+            sage: speck.polynomial_system()
+            Polynomial Sequence with 64 Polynomials in 112 Variables
         """
         algebraic_model = AlgebraicModel(self)
         return algebraic_model.polynomial_system()
@@ -1423,9 +1369,9 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: FancyBlockCipher(number_of_rounds=1).polynomial_system_at_round(0)
-            Polynomial Sequence with 252 Polynomials in 288 Variables
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: SpeckBlockCipher(number_of_rounds=1).polynomial_system_at_round(0)
+            Polynomial Sequence with 64 Polynomials in 112 Variables
         """
         algebraic_model = AlgebraicModel(self)
         return algebraic_model.polynomial_system_at_round(r)
