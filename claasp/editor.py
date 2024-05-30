@@ -1632,7 +1632,12 @@ def remove_rotations(cipher):
         sage: removed_rotations_speck = remove_rotations(speck)
         sage: removed_rotations_speck.print_as_python_dictionary()
         cipher = {
-        ...
+        'cipher_id': 'speck_p32_k64_o32_r5',
+        'cipher_type': 'block_cipher',
+        'cipher_inputs': ['plaintext', 'key'],
+        'cipher_inputs_bit_size': [32, 64],
+        'cipher_output_bit_size': 32,
+        'cipher_number_of_rounds': 5,
         'cipher_rounds' : [
           # round 0
           [
@@ -1644,7 +1649,7 @@ def remove_rotations(cipher):
             'input_id_link': ['plaintext', 'plaintext'],
             'input_bit_positions': [[9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8], [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]],
             'output_bit_size': 16,
-            'description': ['MODADD', 2],
+            'description': ['MODADD', 2, None],
           },
           {
             # round = 0 - round component = 1
@@ -1666,9 +1671,403 @@ def remove_rotations(cipher):
             'output_bit_size': 16,
             'description': ['XOR', 2],
           },
-          ...
+          {
+            # round = 0 - round component = 3
+            'id': 'intermediate_output_0_5',
+            'type': 'intermediate_output',
+            'input_bit_size': 16,
+            'input_id_link': ['key'],
+            'input_bit_positions': [[48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]],
+            'output_bit_size': 16,
+            'description': ['round_key_output'],
+          },
+          {
+            # round = 0 - round component = 4
+            'id': 'intermediate_output_0_6',
+            'type': 'intermediate_output',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_0_2', 'xor_0_4'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 32,
+            'description': ['round_output'],
+          },
+          ],
+          # round 1
+          [
+          {
+            # round = 1 - round component = 0
+            'id': 'constant_1_0',
+            'type': 'constant',
+            'input_bit_size': 0,
+            'input_id_link': [''],
+            'input_bit_positions': [[]],
+            'output_bit_size': 16,
+            'description': ['0x0000'],
+          },
+          {
+            # round = 1 - round component = 1
+            'id': 'modadd_1_2',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['key', 'key'],
+            'input_bit_positions': [[41, 42, 43, 44, 45, 46, 47, 32, 33, 34, 35, 36, 37, 38, 39, 40], [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]],
+            'output_bit_size': 16,
+            'description': ['MODADD', 2, None],
+          },
+          {
+            # round = 1 - round component = 2
+            'id': 'xor_1_3',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['modadd_1_2', 'constant_1_0'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 1 - round component = 3
+            'id': 'xor_1_5',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_1_3', 'key'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 48, 49]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 1 - round component = 4
+            'id': 'modadd_1_7',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_0_2', 'xor_0_4'],
+            'input_bit_positions': [[9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['MODADD', 2, None],
+          },
+          {
+            # round = 1 - round component = 5
+            'id': 'xor_1_8',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['modadd_1_7', 'xor_1_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 1 - round component = 6
+            'id': 'xor_1_10',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_1_8', 'xor_0_4'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 1 - round component = 7
+            'id': 'intermediate_output_1_11',
+            'type': 'intermediate_output',
+            'input_bit_size': 16,
+            'input_id_link': ['xor_1_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['round_key_output'],
+          },
+          {
+            # round = 1 - round component = 8
+            'id': 'intermediate_output_1_12',
+            'type': 'intermediate_output',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_1_8', 'xor_1_10'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 32,
+            'description': ['round_output'],
+          },
+          ],
+          # round 2
+          [
+          {
+            # round = 2 - round component = 0
+            'id': 'constant_2_0',
+            'type': 'constant',
+            'input_bit_size': 0,
+            'input_id_link': [''],
+            'input_bit_positions': [[]],
+            'output_bit_size': 16,
+            'description': ['0x0001'],
+          },
+          {
+            # round = 2 - round component = 1
+            'id': 'modadd_2_2',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['key', 'xor_1_5'],
+            'input_bit_positions': [[25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22, 23, 24], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['MODADD', 2, None],
+          },
+          {
+            # round = 2 - round component = 2
+            'id': 'xor_2_3',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['modadd_2_2', 'constant_2_0'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 2 - round component = 3
+            'id': 'xor_2_5',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_2_3', 'xor_1_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 2 - round component = 4
+            'id': 'modadd_2_7',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_1_8', 'xor_1_10'],
+            'input_bit_positions': [[9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['MODADD', 2, None],
+          },
+          {
+            # round = 2 - round component = 5
+            'id': 'xor_2_8',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['modadd_2_7', 'xor_2_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 2 - round component = 6
+            'id': 'xor_2_10',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_2_8', 'xor_1_10'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 2 - round component = 7
+            'id': 'intermediate_output_2_11',
+            'type': 'intermediate_output',
+            'input_bit_size': 16,
+            'input_id_link': ['xor_2_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['round_key_output'],
+          },
+          {
+            # round = 2 - round component = 8
+            'id': 'intermediate_output_2_12',
+            'type': 'intermediate_output',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_2_8', 'xor_2_10'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 32,
+            'description': ['round_output'],
+          },
+          ],
+          # round 3
+          [
+          {
+            # round = 3 - round component = 0
+            'id': 'constant_3_0',
+            'type': 'constant',
+            'input_bit_size': 0,
+            'input_id_link': [''],
+            'input_bit_positions': [[]],
+            'output_bit_size': 16,
+            'description': ['0x0002'],
+          },
+          {
+            # round = 3 - round component = 1
+            'id': 'modadd_3_2',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['key', 'xor_2_5'],
+            'input_bit_positions': [[9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['MODADD', 2, None],
+          },
+          {
+            # round = 3 - round component = 2
+            'id': 'xor_3_3',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['modadd_3_2', 'constant_3_0'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 3 - round component = 3
+            'id': 'xor_3_5',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_3_3', 'xor_2_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 3 - round component = 4
+            'id': 'modadd_3_7',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_2_8', 'xor_2_10'],
+            'input_bit_positions': [[9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['MODADD', 2, None],
+          },
+          {
+            # round = 3 - round component = 5
+            'id': 'xor_3_8',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['modadd_3_7', 'xor_3_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 3 - round component = 6
+            'id': 'xor_3_10',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_3_8', 'xor_2_10'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 3 - round component = 7
+            'id': 'intermediate_output_3_11',
+            'type': 'intermediate_output',
+            'input_bit_size': 16,
+            'input_id_link': ['xor_3_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['round_key_output'],
+          },
+          {
+            # round = 3 - round component = 8
+            'id': 'intermediate_output_3_12',
+            'type': 'intermediate_output',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_3_8', 'xor_3_10'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 32,
+            'description': ['round_output'],
+          },
+          ],
+          # round 4
+          [
+          {
+            # round = 4 - round component = 0
+            'id': 'constant_4_0',
+            'type': 'constant',
+            'input_bit_size': 0,
+            'input_id_link': [''],
+            'input_bit_positions': [[]],
+            'output_bit_size': 16,
+            'description': ['0x0003'],
+          },
+          {
+            # round = 4 - round component = 1
+            'id': 'modadd_4_2',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_1_3', 'xor_3_5'],
+            'input_bit_positions': [[9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['MODADD', 2, None],
+          },
+          {
+            # round = 4 - round component = 2
+            'id': 'xor_4_3',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['modadd_4_2', 'constant_4_0'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 4 - round component = 3
+            'id': 'xor_4_5',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_4_3', 'xor_3_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 4 - round component = 4
+            'id': 'modadd_4_7',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_3_8', 'xor_3_10'],
+            'input_bit_positions': [[9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['MODADD', 2, None],
+          },
+          {
+            # round = 4 - round component = 5
+            'id': 'xor_4_8',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['modadd_4_7', 'xor_4_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 4 - round component = 6
+            'id': 'xor_4_10',
+            'type': 'word_operation',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_4_8', 'xor_3_10'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1]],
+            'output_bit_size': 16,
+            'description': ['XOR', 2],
+          },
+          {
+            # round = 4 - round component = 7
+            'id': 'intermediate_output_4_11',
+            'type': 'intermediate_output',
+            'input_bit_size': 16,
+            'input_id_link': ['xor_4_5'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 16,
+            'description': ['round_key_output'],
+          },
+          {
+            # round = 4 - round component = 8
+            'id': 'cipher_output_4_12',
+            'type': 'cipher_output',
+            'input_bit_size': 32,
+            'input_id_link': ['xor_4_8', 'xor_4_10'],
+            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+            'output_bit_size': 32,
+            'description': ['cipher_output'],
+          },
+          ],
+          ],
         'cipher_reference_code': None,
         }
+
     """
     cipher_without_rotations = propagate_rotations(cipher)
     for round_ in cipher.rounds_as_list:
