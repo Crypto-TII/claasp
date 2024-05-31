@@ -759,27 +759,28 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
             sage: from sage.crypto.sbox import SBox
-            sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: milp = MilpModel(aes)
+            sage: present = PresentBlockCipher(number_of_rounds=3)
+            sage: milp = MilpModel(present)
             sage: milp.init_model_in_sage_milp_class()
-            sage: sbox_component = aes.component_from(0, 1)
+            sage: sbox_component = present.component_from(0, 1)
             sage: from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import delete_dictionary_that_contains_inequalities_for_large_sboxes
             sage: delete_dictionary_that_contains_inequalities_for_large_sboxes()
-            sage: variables, constraints = sbox_component.milp_large_xor_differential_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id) # long
+            sage: variables, constraints = sbox_component.milp_large_xor_differential_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id)
             ...
-            sage: variables # long
-            [('x[xor_0_0_0]', x_0),
-            ('x[xor_0_0_1]', x_1),
-            ...
-            ('x[sbox_0_1_6]', x_14),
-            ('x[sbox_0_1_7]', x_15)]
-            sage: constraints[:3] # long
-            [x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 <= 8*x_16,
-            1 - x_0 - x_1 - x_2 - x_3 - x_4 - x_5 - x_6 - x_7 <= 8 - 8*x_16,
-            x_8 <= x_16]
+            sage: variables
+             [('x[xor_0_0_0]', x_0),
+             ('x[xor_0_0_1]', x_1),
+             ...
+             ('x[sbox_0_1_2]', x_6),
+            ('x[sbox_0_1_3]', x_7)]
+            sage: constraints[:3]
+            [x_0 + x_1 + x_2 + x_3 <= 4*x_8,
+             1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
+             x_4 <= x_8]
+
         """
 
         x = binary_variable
@@ -863,9 +864,9 @@ class SBOX(Component):
         """
         Return a list of variables and a list of constrains modeling a component of type SBOX.
 
-        .. NOTE::
+         NOTE::
 
-            This is for MILP small xor differential probability. Constraints extracted from
+          This is for MILP small xor differential probability. Constraints extracted from
           https://eprint.iacr.org/2014/747.pdf and https://tosc.iacr.org/index.php/ToSC/article/view/805/759
 
         INPUT:
@@ -893,10 +894,10 @@ class SBOX(Component):
             ('x[sbox_0_1_3]', x_7)]
             sage: constraints
             [x_8 <= x_0 + x_1 + x_2 + x_3,
-            x_0 <= x_8,
-            ...
-            x_9 + x_10 == x_8,
-            x_11 == 30*x_9 + 20*x_10]
+             x_0 <= x_8,
+             ...
+             x_9 + x_10 == x_8,
+             x_11 == 300*x_9 + 200*x_10]
         """
 
         x = binary_variable
@@ -1040,13 +1041,12 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: present = PresentBlockCipher(number_of_rounds=6)
-            sage: milp = MilpModel(present)
+            sage: milp = MilpXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0, 1)
             sage: variables, constraints = sbox_component.milp_xor_differential_propagation_constraints(milp)
-            ...
             sage: variables
             [('x[xor_0_0_0]', x_0),
             ('x[xor_0_0_1]', x_1),
@@ -1058,7 +1058,7 @@ class SBOX(Component):
             1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
             ...
             x_9 + x_10 == x_8,
-            x_11 == 30*x_9 + 20*x_10]
+            x_11 == 300*x_9 + 200*x_10]
         """
         binary_variable = model.binary_variable
         integer_variable = model.integer_variable
@@ -1082,9 +1082,9 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
             sage: present = PresentBlockCipher(number_of_rounds=6)
-            sage: milp = MilpModel(present)
+            sage: milp = MilpXorLinearModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0, 1)
             sage: variables, constraints = sbox_component.milp_xor_linear_mask_propagation_constraints(milp)
@@ -1096,8 +1096,8 @@ class SBOX(Component):
             ('x[sbox_0_1_2_o]', x_6),
             ('x[sbox_0_1_3_o]', x_7)]
             sage: constraints
-            [x_8 <= x_4 + x_5 + x_6 + x_7,
-            x_0 <= x_8,
+            [x_0 + x_1 + x_2 + x_3 <= 4*x_8,
+            1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
             ...
             x_9 + x_10 + x_11 + x_12 == x_8,
             x_13 == 200*x_9 + 100*x_10 + 100*x_11 + 200*x_12]
@@ -1120,11 +1120,17 @@ class SBOX(Component):
         6 inequalities can enforce these transitions. They can either be computer using
         Sage with the Polyhedron class
 
-        sage: valid_points = [[0,0,0,0], [0,1,1,0],[1,0,1,0],[1,1,1,1]]
-        sage: from sage.geometry.polyhedron.constructor import Polyhedron
-        sage: Polyhedron(vertices=valid_points)
-        sage: for inequality in poly.Hrepresentation():
-        ....:    print(f'{inequality.repr_pretty()}')
+
+            sage: valid_points = [[0,0,0,0], [0,1,1,0],[1,0,1,0],[1,1,1,1]]
+            sage: from sage.geometry.polyhedron.constructor import Polyhedron
+            sage: poly = Polyhedron(vertices=valid_points)
+            sage: for inequality in poly.Hrepresentation():
+            ....:    print(f'{inequality.repr_pretty()}')
+            x0 + x1 - x2 - x3 == 0
+            x3 >= 0
+            x0 - x3 >= 0
+            x1 - x3 >= 0
+            -x0 - x1 + x3 >= -1
 
         or using espresso
 
@@ -1150,10 +1156,9 @@ class SBOX(Component):
             sage: constraints
             [x_0 + x_1 <= 1 + x_3,
              x_2 <= x_0 + x_1,
-            ...
+             ...
              x_1 <= x_2,
              x_0 <= x_2]
-
         """
         x = model.binary_variable
 
@@ -1294,6 +1299,7 @@ class SBOX(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0,1)
             sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            ...
             sage: variables
             [('x[xor_0_0_0_class_bit_0]', x_0),
              ('x[xor_0_0_0_class_bit_1]', x_1),
@@ -1314,8 +1320,7 @@ class SBOX(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = ascon.component_from(0, 3)
             sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
-
-
+            ...
         """
 
         x = model.binary_variable
