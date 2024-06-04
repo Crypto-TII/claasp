@@ -17,7 +17,7 @@ concurrency:
 jobs:
   run-pytest:
     if: ${{ !github.event.repository.fork }}
-    runs-on:  claasp-arc-runnerset
+    runs-on:  self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v2
