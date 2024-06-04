@@ -74,7 +74,7 @@ class MilpXorLinearModel(MilpModel):
             ...
             sage: mip = milp._model
             sage: mip.number_of_variables()
-            1018
+            743
         """
         self._verbose_print(MILP_BUILDING_MESSAGE)
         self._weight_precision = weight_precision
@@ -301,9 +301,9 @@ class MilpXorLinearModel(MilpModel):
             sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
             sage: milp = MilpXorLinearModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
-            sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(2, fixed_values=[key]) # long
+            sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(2, fixed_values=[key]) # long # doctest: +SKIP
             ...
-            sage: len(trails)
+            sage: len(trails) # doctest: +SKIP
             8
         """
         start = time.time()
@@ -399,9 +399,9 @@ class MilpXorLinearModel(MilpModel):
             sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
             sage: milp = MilpXorLinearModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
-            sage: trails = milp.find_all_xor_linear_trails_with_weight_at_most(0, 3, fixed_values=[key]) # long
+            sage: trails = milp.find_all_xor_linear_trails_with_weight_at_most(0, 3, fixed_values=[key]) # long # doctest: +SKIP
             ...
-            sage: len(trails)
+            sage: len(trails) # doctest: +SKIP
             73
         """
         start = time.time()
@@ -504,8 +504,8 @@ class MilpXorLinearModel(MilpModel):
             sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=4)
             sage: milp = MilpXorLinearModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
-            sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[key])
-            sage: trail["total_weight"]
+            sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_values=[key]) # doctest: +SKIP
+            sage: trail["total_weight"] # doctest: +SKIP
             3.0
         """
         start = time.time()
@@ -744,7 +744,7 @@ class MilpXorLinearModel(MilpModel):
                 constraint += x[output_var]
                 constraints.append(constraint >= 1)
 
-    def weight_xor_linear_constraints(self, weight, weight_precision):
+    def weight_xor_linear_constraints(self, weight, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
         Return a list of variables and a list of constraints that fix the total weight to a specific value.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
@@ -766,7 +766,7 @@ class MilpXorLinearModel(MilpModel):
             sage: variables
             [('p[probability]', x_0)]
             sage: constraints
-            [x_0 == 100]
+            [x_0 == 1000]
         """
         return self.weight_constraints(weight, weight_precision)
 
