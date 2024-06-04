@@ -491,12 +491,12 @@ class SBOX(Component):
             cp_declarations.append(undisturbed_declaration)
         new_constraint = f'constraint table({table_input}++{table_output}, table_{output_id_link_sost});'
         cp_constraints.append(new_constraint)
-                    
+
         return cp_declarations, cp_constraints, sbox_mant
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self, sbox_mant, inverse=False):
         return self.cp_deterministic_truncated_xor_differential_constraints(sbox_mant, inverse)
-        
+
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists of declarations and constraints for SBOX component for CP wordwise deterministic truncated xor differential.
@@ -1351,7 +1351,12 @@ class SBOX(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for S-BOX in SAT CIPHER model.
+        Return a list of variables and a list of clauses for S-BOX in SAT CIPHER model
+
+        The underlying logic is: for every (input, output) pair of the S-boxes build the implication
+        ``(i0, i1, ..., in) -> oj`` for every bit in the binary representation of the output. The ``i``s
+        vector is the binary representation of the input. Note that this is the same logic of the method
+        ``cnf()`` in ``sage.crypto.sbox.SBox`` class.
 
         .. SEEALSO::
 
