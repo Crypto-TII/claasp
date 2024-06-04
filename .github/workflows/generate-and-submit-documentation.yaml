@@ -15,19 +15,5 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
-    - name: touch a file
-      run: |
-        cd /home/runner/_work/claasp
-        touch test.txt
-
-    - name: upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: test-artifact
-        path: /home/runner/_work/claasp/test.txt
-
-    - name: test dind
-      run: sleep 600
-
-    # - name: Generate documentation
-    #   run: make doc
+    - name: Generate documentation
+      run: make doc
