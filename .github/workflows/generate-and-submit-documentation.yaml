@@ -7,7 +7,7 @@ on:
 jobs:
   generate-documentation:
     # if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop'
-    runs-on: claasp-arc-runnerset
+    runs-on: self-hosted-k3s
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -15,6 +15,16 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
-    - name: Generate documentation
-      run: make doc
+    - name: touch a file
+      run: |
+        cd /home/runner/_work/claasp
+        touch test.txt
 
+    - name: upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-artifact
+        path: /home/runner/_work/claasp/test.txt
+
+    # - name: Generate documentation
+    #   run: make doc
