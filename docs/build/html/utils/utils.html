@@ -1,22 +1,23 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Utils &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Utils &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Sequence operations" href="sequence_operations.html" />
+    <link rel="next" title="Sage scripts" href="sage_scripts.html" />
     <link rel="prev" title="Integer functions" href="integer_functions.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
@@ -33,7 +34,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sequence_operations.html" title="Sequence operations"
+          <a href="sage_scripts.html" title="Sage scripts"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="integer_functions.html" title="Integer functions"
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Utils</a></li> 
       </ul>
@@ -56,7 +57,7 @@
           <div class="body" role="main">
             
   <section id="module-utils.utils">
-<span id="utils"></span><h1>Utils<a class="headerlink" href="#module-utils.utils" title="Permalink to this headline">¶</a></h1>
+<span id="utils"></span><h1>Utils<a class="headerlink" href="#module-utils.utils" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="utils.utils.aggregate_list_of_dictionary">
 <span class="sig-name descname"><span class="pre">aggregate_list_of_dictionary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_by_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_value_keys</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.utils.aggregate_list_of_dictionary" title="Permalink to this definition">¶</a></dt>
@@ -267,24 +268,12 @@ from <span class="math">U(low,high)</span>.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">dictionary</span></code> – <strong>dictionary</strong></p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.utils.utils</span> <span class="kn">import</span> <span class="n">pprint_dictionary</span>
-<span class="gp">sage: </span><span class="n">tests_configuration</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;diffusion_tests&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;run_tests&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;number_of_samples&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="s2">&quot;run_avalanche_dependence&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;run_avalanche_dependence_uniform&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="s2">&quot;run_avalanche_weight&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;run_avalanche_entropy&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="s2">&quot;avalanche_dependence_uniform_bias&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;avalanche_dependence_criterion_threshold&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="s2">&quot;avalanche_dependence_uniform_criterion_threshold&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;avalanche_weight_criterion_threshold&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="s2">&quot;avalanche_entropy_criterion_threshold&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">},</span> <span class="s2">&quot;component_analysis_tests&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;run_tests&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
-<span class="gp">....: </span><span class="p">}</span>
-<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">IdentityBlockCipher</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">analysis</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">analyze_cipher</span><span class="p">(</span><span class="n">tests_configuration</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">pprint_dictionary</span><span class="p">(</span><span class="n">analysis</span><span class="p">[</span><span class="s1">&#39;diffusion_tests&#39;</span><span class="p">][</span><span class="s1">&#39;input_parameters&#39;</span><span class="p">])</span>
-<span class="go">{   &#39;avalanche_dependence_criterion_threshold&#39;: 0,</span>
-<span class="go">&#39;avalanche_dependence_uniform_bias&#39;: 0.200000000000000,</span>
-<span class="go">&#39;avalanche_dependence_uniform_criterion_threshold&#39;: 0,</span>
-<span class="go">&#39;avalanche_entropy_criterion_threshold&#39;: 0.100000000000000,</span>
-<span class="go">&#39;avalanche_weight_criterion_threshold&#39;: 0.100000000000000,</span>
-<span class="go">&#39;number_of_samples&#39;: 100}</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.avalanche_tests</span> <span class="kn">import</span> <span class="n">AvalancheTests</span>
+<span class="gp">sage: </span><span class="n">test</span> <span class="o">=</span> <span class="n">AvalancheTests</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">avalanche_tests</span><span class="p">(</span><span class="n">number_of_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">pprint_dictionary</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;test_results&quot;</span><span class="p">][</span><span class="s2">&quot;plaintext&quot;</span><span class="p">][</span><span class="s2">&quot;round_output&quot;</span><span class="p">][</span><span class="s2">&quot;avalanche_dependence_vectors&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -386,8 +375,8 @@ from <span class="math">U(low,high)</span>.</p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="sequence_operations.html"
-                          title="next chapter">Sequence operations</a></p>
+    <p class="topless"><a href="sage_scripts.html"
+                          title="next chapter">Sage scripts</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -405,7 +394,7 @@ from <span class="math">U(low,high)</span>.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -420,7 +409,7 @@ from <span class="math">U(low,high)</span>.</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sequence_operations.html" title="Sequence operations"
+          <a href="sage_scripts.html" title="Sage scripts"
              >next</a> |</li>
         <li class="right" >
           <a href="integer_functions.html" title="Integer functions"
@@ -431,7 +420,7 @@ from <span class="math">U(low,high)</span>.</p>
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Utils</a></li> 
       </ul>

@@ -1,23 +1,24 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Reverse component &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Reverse component &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Linear layer component" href="linear_layer_component.html" />
-    <link rel="prev" title="Theta keccak component" href="theta_keccak_component.html" />
+    <link rel="next" title="Rotate component" href="rotate_component.html" />
+    <link rel="prev" title="Round" href="../round.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
     <script src="../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +34,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="linear_layer_component.html" title="Linear layer component"
+          <a href="rotate_component.html" title="Rotate component"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="theta_keccak_component.html" title="Theta keccak component"
+          <a href="../round.html" title="Round"
              accesskey="P">previous</a> |</li>
   
     
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Reverse component</a></li> 
       </ul>
@@ -56,11 +57,11 @@
           <div class="body" role="main">
             
   <section id="module-components.reverse_component">
-<span id="reverse-component"></span><h1>Reverse component<a class="headerlink" href="#module-components.reverse_component" title="Permalink to this headline">¶</a></h1>
+<span id="reverse-component"></span><h1>Reverse component<a class="headerlink" href="#module-components.reverse_component" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="components.reverse_component.Reverse">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Reverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_round_number_of_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.reverse_component.Reverse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.components.linear_layer_component.LinearLayer</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LinearLayer</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="components.reverse_component.Reverse.algebraic_polynomials">
 <span class="sig-name descname"><span class="pre">algebraic_polynomials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.reverse_component.Reverse.algebraic_polynomials" title="Permalink to this definition">¶</a></dt>
@@ -474,6 +475,30 @@ component in deterministic truncated XOR differential model.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.reverse_component.Reverse.sat_bitwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">sat_bitwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.reverse_component.Reverse.sat_bitwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for LINEAR LAYER in
+SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">linear_layer_component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">constraints</span> <span class="o">=</span> <span class="n">linear_layer_component</span><span class="o">.</span><span class="n">sat_bitwise_deterministic_truncated_xor_differential_constraints</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">11</span><span class="p">]</span>
+<span class="go">&#39;inter_0_linear_layer_0_6_0_1 inter_1_linear_layer_0_6_0_0 inter_1_linear_layer_0_6_0_1 -sbox_0_1_0_1&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.reverse_component.Reverse.sat_constraints">
 <span class="sig-name descname"><span class="pre">sat_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.reverse_component.Reverse.sat_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of variables and a list of clauses for LINEAR LAYER in SAT CIPHER model.</p>
@@ -647,13 +672,13 @@ component in deterministic truncated XOR differential model.</p>
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="theta_keccak_component.html"
-                          title="previous chapter">Theta keccak component</a></p>
+    <p class="topless"><a href="../round.html"
+                          title="previous chapter">Round</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="linear_layer_component.html"
-                          title="next chapter">Linear layer component</a></p>
+    <p class="topless"><a href="rotate_component.html"
+                          title="next chapter">Rotate component</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -671,7 +696,7 @@ component in deterministic truncated XOR differential model.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -686,10 +711,10 @@ component in deterministic truncated XOR differential model.</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="linear_layer_component.html" title="Linear layer component"
+          <a href="rotate_component.html" title="Rotate component"
              >next</a> |</li>
         <li class="right" >
-          <a href="theta_keccak_component.html" title="Theta keccak component"
+          <a href="../round.html" title="Round"
              >previous</a> |</li>
   
     
@@ -697,7 +722,7 @@ component in deterministic truncated XOR differential model.</p>
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Reverse component</a></li> 
       </ul>

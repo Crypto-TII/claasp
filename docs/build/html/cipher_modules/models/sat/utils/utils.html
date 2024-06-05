@@ -1,22 +1,23 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Utils &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Utils &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sage.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Smt model" href="../../smt/smt_model.html" />
+    <link rel="next" title="N window heuristic helper" href="n_window_heuristic_helper.html" />
     <link rel="prev" title="Mzn predicates" href="mzn_predicates.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
@@ -33,7 +34,7 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../../smt/smt_model.html" title="Smt model"
+          <a href="n_window_heuristic_helper.html" title="N window heuristic helper"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="mzn_predicates.html" title="Mzn predicates"
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Utils</a></li> 
       </ul>
@@ -56,12 +57,12 @@
           <div class="body" role="main">
             
   <section id="module-cipher_modules.models.sat.utils.utils">
-<span id="utils"></span><h1>Utils<a class="headerlink" href="#module-cipher_modules.models.sat.utils.utils" title="Permalink to this headline">¶</a></h1>
+<span id="utils"></span><h1>Utils<a class="headerlink" href="#module-cipher_modules.models.sat.utils.utils" title="Permalink to this heading">¶</a></h1>
 <section id="general">
-<h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<h2>General<a class="headerlink" href="#general" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="direct-building-of-cnfs-representing-boolean-equalities">
-<h2>Direct building of CNFs representing boolean equalities<a class="headerlink" href="#direct-building-of-cnfs-representing-boolean-equalities" title="Permalink to this headline">¶</a></h2>
+<h2>Direct building of CNFs representing boolean equalities<a class="headerlink" href="#direct-building-of-cnfs-representing-boolean-equalities" title="Permalink to this heading">¶</a></h2>
 <p>Building a CNF representing a generic boolean equality can be time consuming.
 This module offers functions to directly build the CNF of basic boolean
 equalities. It also offers function to directly build CNFs for the
@@ -71,7 +72,7 @@ trails.</p>
 satisfiability is equivalent to the equality they represent.</p>
 </section>
 <section id="running-sat-solver">
-<h2>Running SAT solver<a class="headerlink" href="#running-sat-solver" title="Permalink to this headline">¶</a></h2>
+<h2>Running SAT solver<a class="headerlink" href="#running-sat-solver" title="Permalink to this heading">¶</a></h2>
 <p><a class="reference internal" href="../sat_model.html#module-cipher_modules.models.sat.sat_model" title="cipher_modules.models.sat.sat_model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sat</span> <span class="pre">Model</span></code></a> allows to use many SAT solvers like CryptoMiniSat,
 Glucose, Minisat and others. Unfortunately, some of them do not take input from
 stdin and need an input file. Functions of this section supply the best running
@@ -442,8 +443,129 @@ the whole <code class="docutils literal notranslate"><span class="pre">result</s
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_xor_truncated">
+<span class="sig-name descname"><span class="pre">cnf_xor_truncated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_xor_truncated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of strings representing the CNF of the Boolean XOR when
+searching for DETERMINISTIC TRUNCATED XOR DIFFERENTIAL. I.e., an XOR
+behaving as in the following table:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>variable_0</p></th>
+<th class="head"><p>variable_1</p></th>
+<th class="head"><p>result</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>0</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+</tr>
+</tbody>
+</table>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">result</span></code> – <strong>tuple of two strings</strong>; the result variable</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variable_0</span></code> – <strong>tuple of two string</strong>; the first variable</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variable_1</span></code> – <strong>tuple of two string</strong>; the second variable</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_xor_truncated</span>
+<span class="gp">sage: </span><span class="n">cnf_xor_truncated</span><span class="p">((</span><span class="s1">&#39;r0&#39;</span><span class="p">,</span> <span class="s1">&#39;r1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;a0&#39;</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b0&#39;</span><span class="p">,</span> <span class="s1">&#39;b1&#39;</span><span class="p">))</span>
+<span class="go">[&#39;r0 -a0&#39;,</span>
+<span class="go"> &#39;r0 -b0&#39;,</span>
+<span class="go"> &#39;a0 b0 -r0&#39;,</span>
+<span class="go"> &#39;a1 b1 r0 -r1&#39;,</span>
+<span class="go"> &#39;a1 r0 r1 -b1&#39;,</span>
+<span class="go"> &#39;b1 r0 r1 -a1&#39;,</span>
+<span class="go"> &#39;r0 -a1 -b1 -r1&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_xor_truncated_seq">
+<span class="sig-name descname"><span class="pre">cnf_xor_truncated_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_xor_truncated_seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of strings representing the CNF of the Boolean XOR performed
+between more than 2 inputs when searching for DETERMINISTIC TRUNCATED XOR
+DIFFERENTIAL.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-meth docutils literal notranslate"><span class="pre">cnf_xor_truncated()</span></code></p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">results</span></code> – <strong>list</strong>; intermediate results + final result</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variables</span></code> – <strong>list</strong>; the variables</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_xor_truncated_seq</span>
+<span class="gp">sage: </span><span class="n">cnf_xor_truncated_seq</span><span class="p">([(</span><span class="s1">&#39;i0&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;r0&#39;</span><span class="p">,</span> <span class="s1">&#39;r1&#39;</span><span class="p">)],</span> <span class="p">[(</span><span class="s1">&#39;a0&#39;</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b0&#39;</span><span class="p">,</span> <span class="s1">&#39;b1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c0&#39;</span><span class="p">,</span> <span class="s1">&#39;c1&#39;</span><span class="p">)])</span>
+<span class="go">[&#39;i0 -a0&#39;,</span>
+<span class="go"> &#39;i0 -b0&#39;,</span>
+<span class="go"> &#39;a0 b0 -i0&#39;,</span>
+<span class="go"> ...</span>
+<span class="go"> &#39;i1 r0 r1 -c1&#39;,</span>
+<span class="go"> &#39;c1 r0 r1 -i1&#39;,</span>
+<span class="go"> &#39;r0 -i1 -c1 -r1&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.create_numerical_cnf">
 <span class="sig-name descname"><span class="pre">create_numerical_cnf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cnf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.create_numerical_cnf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.modadd_truncated">
+<span class="sig-name descname"><span class="pre">modadd_truncated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">carry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_carry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.modadd_truncated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.modadd_truncated_lsb">
+<span class="sig-name descname"><span class="pre">modadd_truncated_lsb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_carry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.modadd_truncated_lsb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.modadd_truncated_msb">
+<span class="sig-name descname"><span class="pre">modadd_truncated_msb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">carry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.modadd_truncated_msb" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -453,25 +575,25 @@ the whole <code class="docutils literal notranslate"><span class="pre">result</s
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.run_minisat">
-<span class="sig-name descname"><span class="pre">run_minisat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_minisat" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run_minisat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_minisat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the MiniSat solver specified in <span class="math">solver_specs</span>, using input and output files.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.run_parkissat">
-<span class="sig-name descname"><span class="pre">run_parkissat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_parkissat" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run_parkissat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_parkissat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the Parkissat solver specified in <span class="math">solver_specs</span>, using input and output files.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.run_sat_solver">
-<span class="sig-name descname"><span class="pre">run_sat_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_vars_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_sat_solver" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run_sat_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_vars_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_sat_solver" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the SAT solver specified in <span class="math">solver_specs</span>, using input and output pipes.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.run_yices">
-<span class="sig-name descname"><span class="pre">run_yices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_yices" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run_yices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_yices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the Yices SAT solver specified in <span class="math">solver_specs</span>, using input file.</p>
 </dd></dl>
 
@@ -504,8 +626,8 @@ the whole <code class="docutils literal notranslate"><span class="pre">result</s
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="../../smt/smt_model.html"
-                          title="next chapter">Smt model</a></p>
+    <p class="topless"><a href="n_window_heuristic_helper.html"
+                          title="next chapter">N window heuristic helper</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -523,7 +645,7 @@ the whole <code class="docutils literal notranslate"><span class="pre">result</s
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -538,7 +660,7 @@ the whole <code class="docutils literal notranslate"><span class="pre">result</s
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../../smt/smt_model.html" title="Smt model"
+          <a href="n_window_heuristic_helper.html" title="N window heuristic helper"
              >next</a> |</li>
         <li class="right" >
           <a href="mzn_predicates.html" title="Mzn predicates"
@@ -549,7 +671,7 @@ the whole <code class="docutils literal notranslate"><span class="pre">result</s
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Utils</a></li> 
       </ul>

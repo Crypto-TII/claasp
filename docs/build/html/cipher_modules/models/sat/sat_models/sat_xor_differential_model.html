@@ -1,22 +1,23 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Sat xor differential model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Sat xor differential model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sage.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Sat cipher model" href="sat_cipher_model.html" />
+    <link rel="next" title="Mzn predicates" href="../utils/mzn_predicates.html" />
     <link rel="prev" title="Sat xor linear model" href="sat_xor_linear_model.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
@@ -33,7 +34,7 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sat_cipher_model.html" title="Sat cipher model"
+          <a href="../utils/mzn_predicates.html" title="Mzn predicates"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="sat_xor_linear_model.html" title="Sat xor linear model"
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Sat xor differential model</a></li> 
       </ul>
@@ -56,11 +57,11 @@
           <div class="body" role="main">
             
   <section id="module-cipher_modules.models.sat.sat_models.sat_xor_differential_model">
-<span id="sat-xor-differential-model"></span><h1>Sat xor differential model<a class="headerlink" href="#module-cipher_modules.models.sat.sat_models.sat_xor_differential_model" title="Permalink to this headline">¶</a></h1>
+<span id="sat-xor-differential-model"></span><h1>Sat xor differential model<a class="headerlink" href="#module-cipher_modules.models.sat.sat_models.sat_xor_differential_model" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SatXorDifferentialModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size_weight_pr_vars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sequential'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size_by_round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher_modules.models.sat.sat_model.SatModel</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SatXorDifferentialModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size_weight_pr_vars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sequential'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SatModel</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.build_xor_differential_trail_and_checker_model_at_intermediate_output_level">
 <span class="sig-name descname"><span class="pre">build_xor_differential_trail_and_checker_model_at_intermediate_output_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.build_xor_differential_trail_and_checker_model_at_intermediate_output_level" title="Permalink to this definition">¶</a></dt>
@@ -122,35 +123,41 @@ trail weight</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight">
-<span class="sig-name descname"><span class="pre">find_all_xor_differential_trails_with_fixed_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cryptominisat'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of solutions containing all the XOR differential trails having the <code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> weight.</p>
+<span class="sig-name descname"><span class="pre">find_all_xor_differential_trails_with_fixed_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CRYPTOMINISAT_EXT'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of solutions containing all the XOR differential trails having the <code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> weight.
+By default, the search is set in the single-key setting.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> – <strong>integer</strong>; the weight to be fixed</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); they can be created using <code class="docutils literal notranslate"><span class="pre">set_fixed_variables</span></code> method</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">cryptominisat</span>); the name of the solver</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">CRYPTOMINISAT_EXT</span>); the name of the solver</p></li>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="../sat_model.html#sat-solvers"><span class="std std-ref">SAT Solvers</span></a></p>
 </div>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># single-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span><span class="p">,</span> <span class="n">integer_to_bit_list</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
-<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_fixed_weight</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="go">True</span>
+
+<span class="go"># related-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
 <span class="gp">....: </span>    <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;key&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
 <span class="gp">....: </span>    <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
-<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
-<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_fixed_weight</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">,</span> <span class="n">key</span><span class="p">])</span>
+<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">64</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_fixed_weight</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 <span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
 <span class="go">True</span>
 </pre></div>
@@ -159,8 +166,9 @@ trail weight</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_all_xor_differential_trails_with_weight_at_most">
-<span class="sig-name descname"><span class="pre">find_all_xor_differential_trails_with_weight_at_most</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cryptominisat'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_all_xor_differential_trails_with_weight_at_most" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of solutions.</p>
+<span class="sig-name descname"><span class="pre">find_all_xor_differential_trails_with_weight_at_most</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CRYPTOMINISAT_EXT'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_all_xor_differential_trails_with_weight_at_most" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of solutions.
+By default, the search is set in the single-key setting.</p>
 <p>The list contain all the XOR differential trails having the weight lying in the interval
 <code class="docutils literal notranslate"><span class="pre">[min_weight,</span> <span class="pre">max_weight]</span></code>.</p>
 <p>INPUT:</p>
@@ -168,30 +176,35 @@ trail weight</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">min_weight</span></code> – <strong>integer</strong>; the weight from which to start the search</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">max_weight</span></code> – <strong>integer</strong>; the weight at which the search stops</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); they can be created using <code class="docutils literal notranslate"><span class="pre">set_fixed_variables</span></code> method</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">cryptominisat</span>); the name of the solver</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">CRYPTOMINISAT_EXT</span>); the name of the solver</p></li>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="../sat_model.html#sat-solvers"><span class="std std-ref">SAT Solvers</span></a></p>
 </div>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># single-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span><span class="p">,</span> <span class="n">integer_to_bit_list</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
-<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_weight_at_most</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span> <span class="o">==</span> <span class="mi">28</span>
+<span class="go">True</span>
+
+<span class="go"># related-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
 <span class="gp">....: </span>    <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;key&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
 <span class="gp">....: </span>    <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
-<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
-<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_weight_at_most</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">,</span> <span class="n">key</span><span class="p">])</span>
-<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span> <span class="o">==</span> <span class="mi">28</span>
+<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">64</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_weight_at_most</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span> <span class="o">==</span> <span class="mi">9</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -199,8 +212,9 @@ trail weight</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_lowest_weight_xor_differential_trail">
-<span class="sig-name descname"><span class="pre">find_lowest_weight_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cryptominisat'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_lowest_weight_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the solution representing a trail with the lowest weight.</p>
+<span class="sig-name descname"><span class="pre">find_lowest_weight_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CRYPTOMINISAT_EXT'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_lowest_weight_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the solution representing a trail with the lowest weight.
+By default, the search is set in the single-key setting.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>There could be more than one trail with the lowest weight. In order to find all the lowest weight trail,
@@ -209,105 +223,121 @@ run <a class="reference internal" href="#cipher_modules.models.sat.sat_models.sa
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); can be created using <code class="docutils literal notranslate"><span class="pre">set_fixed_variables</span></code> method</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">cryptominisat</span>); the name of the solver</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">CRYPTOMINISAT_EXT</span>); the name of the solver</p></li>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="../sat_model.html#sat-solvers"><span class="std std-ref">SAT Solvers</span></a></p>
 </div>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># single-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_lowest_weight_xor_differential_trail</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
+<span class="go">9.0</span>
+
+<span class="go"># related-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
-<span class="gp">....: </span>        <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>        <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>        <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
-<span class="gp">....: </span>        <span class="n">bit_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
 <span class="gp">....: </span>        <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;key&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>        <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>        <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
 <span class="gp">....: </span>        <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
 <span class="gp">....: </span>        <span class="n">bit_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,)</span><span class="o">*</span><span class="mi">64</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_lowest_weight_xor_differential_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">,</span> <span class="n">key</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_lowest_weight_xor_differential_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 <span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
-<span class="go">9.0</span>
+<span class="go">1.0</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_one_xor_differential_trail">
-<span class="sig-name descname"><span class="pre">find_one_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cryptominisat'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_one_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the solution representing a XOR differential trail.</p>
-<p>The solution probability is almost always lower than the one of a random guess of the longest input.</p>
+<span class="sig-name descname"><span class="pre">find_one_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CRYPTOMINISAT_EXT'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_one_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the solution representing a XOR differential trail.
+By default, the search is set in the single-key setting.
+The solution probability is almost always lower than the one of a random guess of the longest input.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); they can be created using <code class="docutils literal notranslate"><span class="pre">set_fixed_variables</span></code> method</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">cryptominisat</span>); the name of the solver</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">CRYPTOMINISAT_EXT</span>); the name of the solver</p></li>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="../sat_model.html#sat-solvers"><span class="std std-ref">SAT Solvers</span></a></p>
 </div>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># single-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span><span class="p">,</span> <span class="n">integer_to_bit_list</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
+<span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">find_one_xor_differential_trail</span><span class="p">()</span> <span class="c1"># random</span>
+
+<span class="go"># related-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
+<span class="gp">....: </span>    <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;key&#39;</span><span class="p">,</span>
 <span class="gp">....: </span>    <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
-<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">))</span>
-<span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">find_one_xor_differential_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">])</span> <span class="c1"># random</span>
-<span class="go">{&#39;cipher_id&#39;: &#39;speck_p32_k64_o32_r5&#39;,</span>
-<span class="go"> &#39;model_type&#39;: &#39;xor_differential&#39;,</span>
-<span class="go"> &#39;solver_name&#39;: &#39;cryptominisat&#39;,</span>
-<span class="go"> &#39;solving_time_seconds&#39;: 0.0,</span>
-<span class="go"> &#39;memory_megabytes&#39;: 7.09,</span>
-<span class="go"> ...</span>
-<span class="go"> &#39;status&#39;: &#39;SATISFIABLE&#39;,</span>
-<span class="go"> &#39;building_time_seconds&#39;: 0.004874706268310547}</span>
+<span class="gp">....: </span>    <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
+<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">64</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_one_xor_differential_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">9.0</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_one_xor_differential_trail_with_fixed_weight">
-<span class="sig-name descname"><span class="pre">find_one_xor_differential_trail_with_fixed_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cryptominisat'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_one_xor_differential_trail_with_fixed_weight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the solution representing a XOR differential trail whose probability is <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">**</span> <span class="pre">fixed_weight</span></code>.</p>
-<p>INPUT:</p>
+<span class="sig-name descname"><span class="pre">find_one_xor_differential_trail_with_fixed_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CRYPTOMINISAT_EXT'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_one_xor_differential_trail_with_fixed_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the solution representing a XOR differential trail whose probability is <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">**</span> <span class="pre">fixed_weight</span></code>.
+By default, the search is set in the single-key setting.
+INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> – <strong>integer</strong>; the weight to be fixed</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); can be created using <code class="docutils literal notranslate"><span class="pre">set_fixed_variables</span></code> method</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">cryptominisat</span>); the name of the solver</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">CRYPTOMINISAT_EXT</span>); the name of the solver</p></li>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="../sat_model.html#sat-solvers"><span class="std std-ref">SAT Solvers</span></a></p>
 </div>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># single-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">,</span> <span class="n">window_size_by_round</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
-<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">set_window_size_heuristic_by_round</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_one_xor_differential_trail_with_fixed_weight</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
+<span class="go">3.0</span>
+
+<span class="go"># related-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
 <span class="gp">....: </span>    <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;key&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>    <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
 <span class="gp">....: </span>    <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
-<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,)</span><span class="o">*</span><span class="mi">64</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_one_xor_differential_trail_with_fixed_weight</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">,</span> <span class="n">key</span><span class="p">])</span>
-<span class="gp">sage: </span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
+<span class="gp">....: </span>    <span class="n">bit_values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">64</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">find_one_xor_differential_trail_with_fixed_weight</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
 <span class="go">3.0</span>
 </pre></div>
 </div>
@@ -384,8 +414,18 @@ run <a class="reference internal" href="#cipher_modules.models.sat.sat_models.sa
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.set_window_size_heuristic_by_component_id">
+<span class="sig-name descname"><span class="pre">set_window_size_heuristic_by_component_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_size_by_component_id_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_full_windows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_window_operator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'at_least'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.set_window_size_heuristic_by_component_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.set_window_size_heuristic_by_round">
+<span class="sig-name descname"><span class="pre">set_window_size_heuristic_by_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_size_by_round_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_full_windows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_window_operator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'at_least'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.set_window_size_heuristic_by_round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.solve">
-<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cryptominisat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.solve" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CRYPTOMINISAT_EXT'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the solution of the model using the <code class="docutils literal notranslate"><span class="pre">solver_name</span></code> SAT solver.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -418,7 +458,7 @@ system.</p>
 <span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="s1">&#39;cipher&#39;</span><span class="p">)</span> <span class="c1"># random</span>
 <span class="go">{&#39;cipher_id&#39;: &#39;tea_p64_k128_o64_r32&#39;,</span>
 <span class="go"> &#39;model_type&#39;: &#39;tea_p64_k128_o64_r32&#39;,</span>
-<span class="go"> &#39;solver_name&#39;: &#39;cryptominisat&#39;,</span>
+<span class="go"> &#39;solver_name&#39;: &#39;CRYPTOMINISAT_EXT&#39;,</span>
 <span class="go"> ...</span>
 <span class="go">  &#39;intermediate_output_31_15&#39;: {&#39;value&#39;: &#39;8ca8d5de0906f08e&#39;, &#39;weight&#39;: 0, &#39;sign&#39;: 1},</span>
 <span class="go">  &#39;cipher_output_31_16&#39;: {&#39;value&#39;: &#39;8ca8d5de0906f08e&#39;, &#39;weight&#39;: 0, &#39;sign&#39;: 1}},</span>
@@ -455,8 +495,18 @@ system.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.window_size_by_round">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">window_size_by_round</span></span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.window_size_by_round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.window_size_by_component_id_values">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">window_size_by_component_id_values</span></span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.window_size_by_component_id_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.window_size_by_round_values">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">window_size_by_round_values</span></span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.window_size_by_round_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.window_size_number_of_full_window">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">window_size_number_of_full_window</span></span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.window_size_number_of_full_window" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -477,8 +527,8 @@ system.</p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="sat_cipher_model.html"
-                          title="next chapter">Sat cipher model</a></p>
+    <p class="topless"><a href="../utils/mzn_predicates.html"
+                          title="next chapter">Mzn predicates</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -496,7 +546,7 @@ system.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -511,7 +561,7 @@ system.</p>
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sat_cipher_model.html" title="Sat cipher model"
+          <a href="../utils/mzn_predicates.html" title="Mzn predicates"
              >next</a> |</li>
         <li class="right" >
           <a href="sat_xor_linear_model.html" title="Sat xor linear model"
@@ -522,7 +572,7 @@ system.</p>
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Sat xor differential model</a></li> 
       </ul>

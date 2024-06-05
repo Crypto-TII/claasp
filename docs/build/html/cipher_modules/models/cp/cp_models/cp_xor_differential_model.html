@@ -1,23 +1,24 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Cp xor differential model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Cp xor differential model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sage.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Cp xor linear model" href="cp_xor_linear_model.html" />
-    <link rel="prev" title="Cp cipher model" href="cp_cipher_model.html" />
+    <link rel="next" title="Cp xor differential trail search fixing number of active sboxes model" href="cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model.html" />
+    <link rel="prev" title="Cp xor linear model" href="cp_xor_linear_model.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +34,10 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cp_xor_linear_model.html" title="Cp xor linear model"
+          <a href="cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model.html" title="Cp xor differential trail search fixing number of active sboxes model"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="cp_cipher_model.html" title="Cp cipher model"
+          <a href="cp_xor_linear_model.html" title="Cp xor linear model"
              accesskey="P">previous</a> |</li>
   
     
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Cp xor differential model</a></li> 
       </ul>
@@ -56,11 +57,11 @@
           <div class="body" role="main">
             
   <section id="module-cipher_modules.models.cp.cp_models.cp_xor_differential_model">
-<span id="cp-xor-differential-model"></span><h1>Cp xor differential model<a class="headerlink" href="#module-cipher_modules.models.cp.cp_models.cp_xor_differential_model" title="Permalink to this headline">¶</a></h1>
+<span id="cp-xor-differential-model"></span><h1>Cp xor differential model<a class="headerlink" href="#module-cipher_modules.models.cp.cp_models.cp_xor_differential_model" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CpXorDifferentialModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher_modules.models.cp.cp_model.CpModel</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">CpModel</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.add_solution_to_components_values">
 <span class="sig-name descname"><span class="pre">add_solution_to_components_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_solution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_parse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.add_solution_to_components_values" title="Permalink to this definition">¶</a></dt>
@@ -103,16 +104,10 @@ trail weight</p></li>
 standard format</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">)</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span><span class="p">,</span> <span class="n">integer_to_bit_list</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">fixed_variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
-<span class="gp">....: </span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="s1">&#39;little&#39;</span><span class="p">))]</span>
-<span class="gp">sage: </span><span class="n">fixed_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
-<span class="gp">....: </span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;little&#39;</span><span class="p">)))</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">cp</span><span class="o">.</span><span class="n">build_xor_differential_trail_model</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">fixed_variables</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -157,17 +152,11 @@ standard format</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">weight</span></code> – <strong>integer</strong>; a specific weight. If set to non-negative integer, fixes the XOR trail weight</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">)</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span><span class="p">,</span> <span class="n">integer_to_bit_list</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">fixed_variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
-<span class="gp">....: </span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="s1">&#39;little&#39;</span><span class="p">))]</span>
-<span class="gp">sage: </span><span class="n">fixed_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
-<span class="gp">....: </span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;little&#39;</span><span class="p">)))</span>
-<span class="gp">sage: </span><span class="n">cp</span><span class="o">.</span><span class="n">build_xor_differential_trail_model</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">fixed_variables</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span><span class="o">.</span><span class="n">build_xor_differential_trail_model</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">cp</span><span class="o">.</span><span class="n">final_xor_differential_constraints</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="go">[&#39;solve:: int_search(p, smallest, indomain_min, complete) minimize weight;&#39;]</span>
 </pre></div>
@@ -177,7 +166,8 @@ standard format</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight">
 <span class="sig-name descname"><span class="pre">find_all_xor_differential_trails_with_fixed_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Chuffed'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of solutions containing all the differential trails having the <code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> weight.</p>
+<dd><p>Return a list of solutions containing all the differential trails having the <code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> weight.
+By default, the search is set in the single-key setting.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> – <strong>integer</strong>; the weight to be fixed</p></li>
@@ -191,21 +181,25 @@ standard format</p></li>
 </li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">)</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># single-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span><span class="p">,</span> <span class="n">integer_to_bit_list</span>
-<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">fixed_values</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="gp">sage: </span><span class="n">fixed_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">)),</span>
-<span class="gp">....: </span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">)))</span>
-<span class="gp">sage: </span><span class="n">fixed_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)),</span>
-<span class="gp">....: </span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">)))</span>
-<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_fixed_weight</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">fixed_values</span><span class="p">,</span> <span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span> <span class="c1"># long</span>
-<span class="go">...</span>
-<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span> <span class="c1"># long</span>
-<span class="go">6</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_fixed_weight</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="n">solver_name</span><span class="o">=</span><span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span>
+<span class="go">2</span>
+
+<span class="go"># related-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">)),</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">64</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_fixed_weight</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">solver_name</span><span class="o">=</span><span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span>
+<span class="go">2</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -213,8 +207,9 @@ standard format</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.find_all_xor_differential_trails_with_weight_at_most">
 <span class="sig-name descname"><span class="pre">find_all_xor_differential_trails_with_weight_at_most</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Chuffed'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.find_all_xor_differential_trails_with_weight_at_most" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of solutions containing all the differential trails.</p>
-<p>The differential trails having the weight of correlation lying in the interval <code class="docutils literal notranslate"><span class="pre">[min_weight,</span> <span class="pre">max_weight]</span></code>.</p>
+<dd><p>Return a list of solutions containing all the differential trails.
+By default, the search is set in the single-key setting.
+The differential trails having the weight of correlation lying in the interval <code class="docutils literal notranslate"><span class="pre">[min_weight,</span> <span class="pre">max_weight]</span></code>.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">min_weight</span></code> – <strong>integer</strong>; the weight from which to start the search</p></li>
@@ -229,21 +224,25 @@ standard format</p></li>
 </li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">)</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># single-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span><span class="p">,</span> <span class="n">integer_to_bit_list</span>
-<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">fixed_values</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="gp">sage: </span><span class="n">fixed_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">)),</span>
-<span class="gp">....: </span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">)))</span>
-<span class="gp">sage: </span><span class="n">fixed_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)),</span>
-<span class="gp">....: </span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">)))</span>
-<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_weight_at_most</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="n">fixed_values</span><span class="p">,</span> <span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span>
-<span class="go">...</span>
-<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span> <span class="c1"># long</span>
-<span class="go">7</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_weight_at_most</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="n">solver_name</span><span class="o">=</span><span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span>
+<span class="go">28</span>
+
+<span class="go"># related-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">)),</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">64</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trails</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">find_all_xor_differential_trails_with_weight_at_most</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">solver_name</span><span class="o">=</span><span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span> <span class="c1"># long</span>
+<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">trails</span><span class="p">)</span>
+<span class="go">9</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -256,7 +255,8 @@ standard format</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.find_lowest_weight_xor_differential_trail">
 <span class="sig-name descname"><span class="pre">find_lowest_weight_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Chuffed'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.find_lowest_weight_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the solution representing a differential trail with the lowest weight of correlation.</p>
+<dd><p>Return the solution representing a differential trail with the lowest probability weight.
+By default, the search is set in the single-key setting.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>There could be more than one trail with the lowest weight. In order to find all the lowest weight
@@ -274,24 +274,29 @@ trail, run <code class="xref py py-meth docutils literal notranslate"><span clas
 </li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">)</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># single-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span><span class="p">,</span> <span class="n">integer_to_bit_list</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">fixed_values</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="gp">sage: </span><span class="n">fixed_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">)),</span>
-<span class="gp">....: </span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">)))</span>
-<span class="gp">sage: </span><span class="n">fixed_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">)),</span>
-<span class="gp">....: </span><span class="n">integer_to_bit_list</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">)))</span>
-<span class="gp">sage: </span><span class="n">cp</span><span class="o">.</span><span class="n">find_lowest_weight_xor_differential_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="p">,</span><span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span> <span class="c1"># random</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span><span class="o">.</span><span class="n">find_lowest_weight_xor_differential_trail</span><span class="p">(</span><span class="n">solver_name</span><span class="o">=</span><span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span> <span class="c1"># random</span>
 <span class="go">{&#39;building_time&#39;: 0.007165431976318359,</span>
 <span class="go"> &#39;cipher_id&#39;: &#39;speck_p32_k64_o32_r4&#39;,</span>
 <span class="go"> &#39;components_values&#39;: {&#39;cipher_output_4_12&#39;: {&#39;value&#39;: &#39;850a9520&#39;,</span>
 <span class="go"> &#39;weight&#39;: 0},</span>
 <span class="go">  ...</span>
 <span class="go"> &#39;total_weight&#39;: &#39;9.0&#39;}</span>
+
+<span class="go"># related-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">)),</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">find_lowest_weight_xor_differential_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">solver_name</span><span class="o">=</span><span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
+<span class="go">&#39;1.0&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -299,7 +304,8 @@ trail, run <code class="xref py py-meth docutils literal notranslate"><span clas
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.find_one_xor_differential_trail">
 <span class="sig-name descname"><span class="pre">find_one_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Chuffed'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.find_one_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the solution representing a differential trail with any weight.</p>
+<dd><p>Return the solution representing a differential trail with any weight.
+By default, the search is set in the single-key setting.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); can be created using <code class="docutils literal notranslate"><span class="pre">set_fixed_variables</span></code> method</p></li>
@@ -312,23 +318,26 @@ trail, run <code class="xref py py-meth docutils literal notranslate"><span clas
 </li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># single-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
-<span class="gp">....: </span>        <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>        <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>        <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
-<span class="gp">....: </span>        <span class="n">bit_values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span><span class="o">.</span><span class="n">find_one_xor_differential_trail</span><span class="p">([</span><span class="n">plaintext</span><span class="p">],</span> <span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span> <span class="c1"># random</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span><span class="o">.</span><span class="n">find_one_xor_differential_trail</span><span class="p">(</span><span class="n">solver_name</span><span class="o">=</span><span class="n">Chuffed</span><span class="s1">&#39;) # random</span>
 <span class="go">{&#39;cipher_id&#39;: &#39;speck_p32_k64_o32_r2&#39;,</span>
 <span class="go"> &#39;model_type&#39;: &#39;xor_differential_one_solution&#39;,</span>
 <span class="go">  ...</span>
 <span class="go"> &#39;cipher_output_1_12&#39;: {&#39;value&#39;: &#39;ffff0000&#39;, &#39;weight&#39;: 0}},</span>
 <span class="go"> &#39;total_weight&#39;: &#39;18.0&#39;}</span>
+
+<span class="go"># related-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">)),</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">find_one_xor_differential_trail</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">solver_name</span><span class="o">=</span><span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span> <span class="c1"># random</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -336,7 +345,8 @@ trail, run <code class="xref py py-meth docutils literal notranslate"><span clas
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.find_one_xor_differential_trail_with_fixed_weight">
 <span class="sig-name descname"><span class="pre">find_one_xor_differential_trail_with_fixed_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Chuffed'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.find_one_xor_differential_trail_with_fixed_weight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the solution representing a differential trail with the weight of correlation equal to <code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code>.</p>
+<dd><p>Return the solution representing a differential trail with the weight of probability equal to <code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code>.
+By default, the search is set in the single-key setting.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_weight</span></code> – <strong>integer</strong>; the value to which the weight is fixed, if non-negative</p></li>
@@ -350,23 +360,25 @@ trail, run <code class="xref py py-meth docutils literal notranslate"><span clas
 </li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="go"># single-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span>
-<span class="gp">....: </span>        <span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>        <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
-<span class="gp">....: </span>        <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
-<span class="gp">....: </span>        <span class="n">bit_values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span><span class="o">.</span><span class="n">find_one_xor_differential_trail_with_fixed_weight</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="p">[</span><span class="n">plaintext</span><span class="p">],</span> <span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span> <span class="c1"># random</span>
-<span class="go">{&#39;cipher_id&#39;: &#39;speck_p32_k64_o32_r5&#39;,</span>
-<span class="go"> &#39;model_type&#39;: &#39;xor_differential_one_solution&#39;,</span>
-<span class="go"> ...</span>
-<span class="go"> &#39;total_weight&#39;: &#39;9.0&#39;,</span>
-<span class="go"> &#39;building_time_seconds&#39;: 0.0013153553009033203}</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">find_one_xor_differential_trail_with_fixed_weight</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">solver_name</span><span class="o">=</span><span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span> <span class="c1"># random</span>
+<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
+<span class="go">&#39;3.0&#39;</span>
+
+<span class="go"># related-key setting</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">)),</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">64</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">find_one_xor_differential_trail_with_fixed_weight</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">solver_name</span><span class="o">=</span><span class="s1">&#39;Chuffed&#39;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
+<span class="go">&#39;3.0&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -436,7 +448,7 @@ value (as integer) for the variables that need to be fixed to a certain value:</
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.get_command_for_solver_process">
-<span class="sig-name descname"><span class="pre">get_command_for_solver_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.get_command_for_solver_process" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_command_for_solver_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_of_processors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timelimit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.get_command_for_solver_process" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -469,10 +481,9 @@ value (as integer) for the variables that need to be fixed to a certain value:</
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="gp">....: </span>    <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CpXorDifferentialModel</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialTrailSearchModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">cp</span><span class="o">.</span><span class="n">input_xor_differential_constraints</span><span class="p">()</span>
 <span class="go">([&#39;array[0..31] of var 0..1: plaintext;&#39;,</span>
 <span class="go">  &#39;array[0..63] of var 0..1: key;&#39;,</span>
@@ -518,7 +529,7 @@ value (as integer) for the variables that need to be fixed to a certain value:</
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.solve">
-<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.solve" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Chuffed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_of_processors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timelimit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the solution of the model.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -541,6 +552,8 @@ value (as integer) for the variables that need to be fixed to a certain value:</
 <li><p><code class="docutils literal notranslate"><span class="pre">'COIN-BC'</span></code></p></li>
 </ul>
 </li>
+<li><p><code class="docutils literal notranslate"><span class="pre">num_of_processors</span></code> – <strong>integer</strong>; the number of processors to be used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timelimit</span></code> – <strong>integer</strong>; time limit to output a result</p></li>
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model</span> <span class="kn">import</span> <span class="n">CpXorDifferentialTrailSearchModel</span>
@@ -560,6 +573,11 @@ value (as integer) for the variables that need to be fixed to a certain value:</
 </pre></div>
 </div>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.solver_names">
+<span class="sig-name descname"><span class="pre">solver_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.solver_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.cp.cp_models.cp_xor_differential_model.CpXorDifferentialModel.update_sbox_ddt_valid_probabilities">
@@ -596,7 +614,7 @@ value (as integer) for the variables that need to be fixed to a certain value:</
 <li><p><code class="docutils literal notranslate"><span class="pre">numadd</span></code> – <strong>integer</strong>; the number of addenda</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model</span> <span class="kn">import</span> <span class="p">(</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model</span> <span class="kn">import</span> <span class="p">(</span>
 <span class="gp">....: </span>    <span class="n">and_xor_differential_probability_ddt</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.simon_block_cipher</span> <span class="kn">import</span> <span class="n">SimonBlockCipher</span>
 <span class="gp">sage: </span><span class="n">simon</span> <span class="o">=</span> <span class="n">SimonBlockCipher</span><span class="p">()</span>
@@ -622,13 +640,13 @@ value (as integer) for the variables that need to be fixed to a certain value:</
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="cp_cipher_model.html"
-                          title="previous chapter">Cp cipher model</a></p>
+    <p class="topless"><a href="cp_xor_linear_model.html"
+                          title="previous chapter">Cp xor linear model</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="cp_xor_linear_model.html"
-                          title="next chapter">Cp xor linear model</a></p>
+    <p class="topless"><a href="cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model.html"
+                          title="next chapter">Cp xor differential trail search fixing number of active sboxes model</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -646,7 +664,7 @@ value (as integer) for the variables that need to be fixed to a certain value:</
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -661,10 +679,10 @@ value (as integer) for the variables that need to be fixed to a certain value:</
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cp_xor_linear_model.html" title="Cp xor linear model"
+          <a href="cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model.html" title="Cp xor differential trail search fixing number of active sboxes model"
              >next</a> |</li>
         <li class="right" >
-          <a href="cp_cipher_model.html" title="Cp cipher model"
+          <a href="cp_xor_linear_model.html" title="Cp xor linear model"
              >previous</a> |</li>
   
     
@@ -672,7 +690,7 @@ value (as integer) for the variables that need to be fixed to a certain value:</
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v2.5.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Cp xor differential model</a></li> 
       </ul>
