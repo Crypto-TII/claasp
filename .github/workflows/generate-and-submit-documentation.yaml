@@ -6,7 +6,6 @@ on:
 
 jobs:
   generate-documentation:
-    # if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop'
     runs-on: self-hosted-k3s
     steps:
     - name: Checkout
@@ -17,3 +16,30 @@ jobs:
 
     - name: Generate documentation
       run: make doc
+
+#    - name: Commit & Push changes
+#      run: |
+#        git clone https://github.com/Crypto-TII/claasp.git claasp-lib
+#        git config --global user.name 'Github'
+#        git config --global user.email ${{ secrets.DEPLOYMENT_REPOSITORY_EMAIL }}
+#        cd claasp-lib
+#        git checkout fix/generate-documentation-workflow-test-commit
+#        make doc
+#        git add .
+#        git commit -m "Update documentation"
+#        git push origin fix/generate-documentation-workflow-test-commit
+#        git merge fix/generate-documentation-workflow-test-commit fix/generate-documentation-workflow-test-merge
+
+    - name: Commit & Push changes
+      uses: actions-js/push@master
+      with:
+        branch: 'test/runner_scale_sets_for_ci'
+        github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
+        message: "Update documentation"
+
+    - name: Update develop branch
+      uses: morbalint/git-merge-action@v1
+      with:
+        target_branch: 'fix/generate-documentation-workflow-test-merge'
+        type: now
+        token: ${{ secrets.PERSONAL_ACCESS_TOKEN_FINE_GRAINED }}
