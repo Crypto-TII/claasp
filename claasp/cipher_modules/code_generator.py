@@ -41,6 +41,12 @@ def delete_generated_evaluate_c_shared_library(cipher):
     call(["rm", TII_C_LIB_PATH + name + ".o"])
     call(["rm", TII_C_LIB_PATH + "generic_bit_based_c_functions.o"])
 
+def delete_generated_evaluate_cuda_shared_library(cipher):
+    name = cipher.id + "_evaluate"
+    call(["rm", TII_C_LIB_PATH + name + ".cu"])
+    call(["rm", TII_C_LIB_PATH + name + ".o"])
+    call(["rm", TII_C_LIB_PATH + "generic_bit_based_c_functions.o"])
+
 
 def generate_bit_based_c_code(cipher, intermediate_output, verbosity):
     code = ['#include <stdio.h>', '#include <stdbool.h>', '#include <stdlib.h>',
@@ -73,6 +79,46 @@ def generate_bit_based_c_code(cipher, intermediate_output, verbosity):
     code.append(f'\tdelete({", ".join(evaluate_args)});')
     code.append('}')
 
+    return '\n'.join(code)
+
+def generate_bit_based_cuda_code(cipher, intermediate_output, verbosity):
+    code = ['#include <stdio.h>', '#include <stdbool.h>', '#include <stdlib.h>',
+            '#include "generic_bit_based_c_functions.cuh"\n']
+    function_args = []
+    for cipher_input in cipher.inputs:
+        function_args.append(f'BitString *{cipher_input}')
+    function_declaration = f'BitString* evaluate({", ".join(function_args)}) {{'
+    code.append(function_declaration)
+
+    code.append('\tBitString *input;')
+    code.append('\tBitString **input_id;')
+    code.append('\tuint16_t **input_positions;')
+    code.append('\tuint64_t **matrix;')
+    code.append('\tuint64_t *substitution_list;')
+    code.append('\tuint8_t **linear_transformation;\n')
+    code.extend(get_rounds_bit_based_c_code(cipher, intermediate_output, verbosity))
+    code.append('}')
+    code.append('int main(int argc, char *argv[]) {')
+    evaluate_args = []
+    for i in range(len(cipher.inputs)):
+        evaluate_args.append(cipher.inputs[i])
+        code.append(
+            f'\tBitString* {cipher.inputs[i]} = '
+            f'bitstring_from_hex_string(argv[{i + 1}], {cipher.inputs_bit_size[i]});')
+    code.append(f'\tBitString* output = evaluate({", ".join(evaluate_args)});')
+    if not intermediate_output:
+        code.append('\tprint_bitstring(output, 16);')
+    evaluate_args.append('output')
+    code.append(f'\tdelete({", ".join(evaluate_args)});')
+    code.append('}')
+
+
+
+    print('\n'.join(code))
+    with open("./projects/pycu/skinny.cu", "w") as text_file:
+        text_file.write('\n'.join(code))
+    import ipdb;
+    ipdb.set_trace()
     return '\n'.join(code)
 
 
@@ -388,7 +434,6 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         if verbosity and component.type != 'constant':
             code.append(f'  byte_vector_print_as_hex_values("{name}_input", {formatted_component_inputs})')
             code.append(f'  byte_vector_print_as_hex_values("{name}_output", {name})')
-    #code.append('  print("CIPHER OUTPUT : ", cipher_output_15_15)')
 
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
@@ -483,6 +528,43 @@ def get_number_of_inputs(component):
 
 
 def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosity):
+
+    name = cipher.id + "_evaluate"
+    cipher_word_size = cipher.is_power_of_2_word_based()
+    if cipher_word_size:
+        if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o"):
+            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o", TII_C_LIB_PATH +
+                  f"generic_word_{cipher_word_size}_based_c_functions.o", "-D", f"word_size={cipher_word_size}"])
+
+        f = open(TII_C_LIB_PATH + name + ".c", "w+")
+        f.write(cipher.generate_word_based_c_code(cipher_word_size, intermediate_output, verbosity))
+        f.close()
+
+        call(["gcc",
+              "-w",
+              TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o",
+              TII_C_LIB_PATH + name + ".c",
+              "-o",
+              TII_C_LIB_PATH + name + ".o",
+              "-D",
+              f"word_size={cipher_word_size}"])
+        import ipdb; ipdb.set_trace()
+
+    else:
+        generic_bit_based_c_functions_o_file = "generic_bit_based_c_functions.o"
+        if not os.path.exists(TII_C_LIB_PATH + generic_bit_based_c_functions_o_file):
+            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_c_functions.c",
+                  "-o", TII_C_LIB_PATH + generic_bit_based_c_functions_o_file])
+
+        f = open(TII_C_LIB_PATH + name + ".c", "w+")
+        f.write(cipher.generate_bit_based_c_code(intermediate_output, verbosity))
+        f.close()
+
+        call(["gcc", "-w", TII_C_LIB_PATH + generic_bit_based_c_functions_o_file,
+              TII_C_LIB_PATH + name + ".c", "-o", TII_C_LIB_PATH + name + ".o"])
+
+def generate_evaluate_cuda_code_shared_library(cipher, intermediate_output, verbosity):
+
     name = cipher.id + "_evaluate"
     cipher_word_size = cipher.is_power_of_2_word_based()
     if cipher_word_size:
@@ -504,17 +586,17 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
               f"word_size={cipher_word_size}"])
 
     else:
-        generic_bit_based_c_functions_o_file = "generic_bit_based_c_functions.o"
-        if not os.path.exists(TII_C_LIB_PATH + generic_bit_based_c_functions_o_file):
-            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_c_functions.c",
-                  "-o", TII_C_LIB_PATH + generic_bit_based_c_functions_o_file])
+        generic_bit_based_cuda_functions_o_file = "generic_bit_based_c_functions.o"
+        if not os.path.exists(TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file):
+            call(["nvcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_c_functions.cu",
+                  "-o", TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file])
 
-        f = open(TII_C_LIB_PATH + name + ".c", "w+")
-        f.write(cipher.generate_bit_based_c_code(intermediate_output, verbosity))
+        f = open(TII_C_LIB_PATH + name + ".cu", "w+")
+        f.write(cipher.generate_bit_based_cuda_code(intermediate_output, verbosity))
         f.close()
 
-        call(["gcc", "-w", TII_C_LIB_PATH + generic_bit_based_c_functions_o_file,
-              TII_C_LIB_PATH + name + ".c", "-o", TII_C_LIB_PATH + name + ".o"])
+        call(["nvcc", "-w", TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file,
+              TII_C_LIB_PATH + name + ".cu", "-o", TII_C_LIB_PATH + name + ".o"])
 
 
 def generate_python_code_string(cipher, verbosity=False):

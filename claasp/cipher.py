@@ -276,6 +276,21 @@ class Cipher:
         """
         code_generator.delete_generated_evaluate_c_shared_library(self)
 
+    def delete_generated_evaluate_cuda_shared_library(self):
+        """
+        Delete the file named <id_cipher>_evaluate.c and the corresponding executable.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher as fancy
+            sage: fancy().delete_generated_evaluate_cuda_shared_library() # doctest: +SKIP
+        """
+        code_generator.delete_generated_evaluate_cuda_shared_library(self)
+
     def evaluate(self, cipher_input, intermediate_output=False, verbosity=False):
         """
         Return the output of the cipher.
@@ -317,6 +332,28 @@ class Cipher:
              'cipher_output': [7457252]}
         """
         return evaluator.evaluate_using_c(self, inputs, intermediate_output, verbosity)
+
+    def evaluate_using_cuda(self, inputs, intermediate_output=False, verbosity=False):
+        """
+        Return the output of the cipher.
+
+        INPUT:
+
+        - ``inputs``
+        - ``intermediate_output`` -- **boolean** (default: `False`); Set this flag to True in order to return a
+          dictionary with each intermediate output
+        - ``verbosity`` -- **boolean** (default: `False`); Set this flag to True in order to print the input/output of
+          each component
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher as fancy
+            sage: fancy(number_of_rounds=2).evaluate_using_c([0x012345,0x89ABCD], True) # random
+            {'round_key_output': [3502917, 73728],
+             'round_output': [9834215],
+             'cipher_output': [7457252]}
+        """
+        return evaluator.evaluate_using_cuda(self, inputs, intermediate_output, verbosity)
 
     def cipher_inverse(self):
         """
@@ -846,6 +883,26 @@ class Cipher:
         """
         return code_generator.generate_bit_based_c_code(self, intermediate_output, verbosity)
 
+    def generate_bit_based_cuda_code(self, intermediate_output=False, verbosity=False):
+        """
+        Return a string containing the C code that defines the self.evaluate() method.
+
+        INPUT:
+
+        - ``intermediate_output`` -- **boolean** (default: `False`); set this flag to True in order to return a
+          dictionary with each intermediate output
+        - ``verbosity`` -- **boolean** (default: `False`); set this flag to True in order to make the code print the
+          input/output of each component
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher as fancy
+            sage: s = fancy().generate_bit_based_c_code()
+            sage: s[:8] == '#include'
+            True
+        """
+        return code_generator.generate_bit_based_cuda_code(self, intermediate_output, verbosity)
+
     def generate_evaluate_c_code_shared_library(self, intermediate_output=False, verbosity=False):
         """
         Store the C code in a file named <id_cipher>_evaluate.c, and build the corresponding executable.
@@ -862,7 +919,25 @@ class Cipher:
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher as fancy
             sage: fancy().generate_evaluate_c_code_shared_library() # doctest: +SKIP
         """
-        code_generator.generate_evaluate_c_code_shared_library(self, intermediate_output, verbosity)
+        code_generator.generate_evaluate_cuda_code_shared_library(self, intermediate_output, verbosity)
+
+    def generate_evaluate_cuda_code_shared_library(self, intermediate_output=False, verbosity=False):
+        """
+        Store the cuda code in a file named <id_cipher>_evaluate.cu, and build the corresponding executable.
+
+        INPUT:
+
+        - ``intermediate_output`` -- **boolean** (default: `False`); set this flag to True in order to make the C code
+          print a dictionary with each intermediate output
+        - ``verbosity`` -- **boolean** (default: `False`); set this flag to True in order to make the C code print the
+          input/output of each component
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher as fancy
+            sage: fancy().generate_evaluate_c_code_shared_library() # doctest: +SKIP
+        """
+        code_generator.generate_evaluate_cuda_code_shared_library(self, intermediate_output, verbosity)
 
     def generate_word_based_c_code(self, word_size, intermediate_output=False, verbosity=False):
         """

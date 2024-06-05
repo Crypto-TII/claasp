@@ -38,6 +38,7 @@ def evaluate(cipher, cipher_input, intermediate_output=False, verbosity=False):
 
 
 def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
+
     cipher.generate_evaluate_c_code_shared_library(intermediate_output, verbosity)
     name = cipher.id + "_evaluate"
     c_cipher_inputs = [hex(value) for value in inputs]
@@ -77,6 +78,46 @@ def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
 
     return function_output
 
+def evaluate_using_cuda(cipher, inputs, intermediate_output, verbosity):
+
+    cipher.generate_evaluate_cuda_code_shared_library(intermediate_output, verbosity)
+    name = cipher.id + "_evaluate"
+    c_cipher_inputs = [hex(value) for value in inputs]
+    process = Popen([code_generator.TII_C_LIB_PATH + name + ".o"] + c_cipher_inputs, stdout=PIPE)
+    output = process.stdout
+
+    if verbosity and intermediate_output:
+        line = output.readline().decode('utf-8')
+
+        while line != '{\n':
+            print(line[:-1].decode('utf-8'))
+            line = output.readline().decode('utf-8')
+
+        dict_str = line
+
+        for line in output.readlines():
+            dict_str += line.decode('utf-8')
+
+        function_output = eval(dict_str)
+    elif verbosity and not intermediate_output:
+        output_lines = output.readlines()
+        for line in output_lines[:-1]:
+            print(line[:-1].decode('utf-8'))
+
+        function_output = int(output_lines[-1].decode('utf-8')[:-1], 16)
+    elif intermediate_output:
+        dict_str = ''
+
+        for line in output.readlines():
+            dict_str += line.decode('utf-8')
+
+        function_output = eval(dict_str)
+    else:
+        function_output = int(output.read().decode('utf-8')[:-1], 16)
+
+    code_generator.delete_generated_evaluate_cuda_shared_library(cipher)
+
+    return function_output
 
 def evaluate_vectorized(cipher, cipher_input, intermediate_output=False, verbosity=False, evaluate_api=False,
                         bit_based=False):
