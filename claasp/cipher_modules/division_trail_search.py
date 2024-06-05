@@ -30,7 +30,7 @@ class MilpDivisionTrailModel():
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_for_specific_output_bit(0, fixed_degree=1)
 
         sage: from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
         sage: cipher = GastonSboxPermutation(number_of_rounds=1)
@@ -55,6 +55,13 @@ class MilpDivisionTrailModel():
 
         sage: from claasp.ciphers.toys.toyand_v2 import ToyAND
         sage: cipher = ToyAND()
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.toys.toymodadd import ToyMODADD
+        sage: cipher = ToyMODADD()
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
@@ -142,7 +149,7 @@ class MilpDivisionTrailModel():
         model = Model()
         model.Params.LogToConsole = 0
         model.Params.Threads = 32 # best found experimentaly on ascon_sbox_2rounds
-        model.setParam("PoolSolutions", 200000000) # 200000000
+        model.setParam("PoolSolutions", 50) # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -231,6 +238,8 @@ class MilpDivisionTrailModel():
             for pos in component.input_bit_positions[index]:
                 input_vars_concat.append(self._variables[input_name][current][pos])
             self._variables[input_name]["current"] += 1
+        print("input_vars_concat : ")
+        print(input_vars_concat)
 
         B = BooleanPolynomialRing(component.input_bit_size,'x')
         x = B.variable_names()
@@ -240,6 +249,7 @@ class MilpDivisionTrailModel():
         # print(anfs)
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
+        print(copy_monomials_deg)
 
         for index, anf in enumerate(anfs):
             constr = 0
@@ -300,6 +310,88 @@ class MilpDivisionTrailModel():
                 self._model.addConstr(output_vars[i] == constr)
         self._model.update()
 
+
+    def create_copies(self, nb_copies, var_to_copy):
+        copies = self._model.addVars(list(range(nb_copies)), vtype=GRB.BINARY)
+        for i in range(nb_copies):
+            self._model.addConstr(var_to_copy >= copies[i])
+        self._model.addConstr(sum(copies[i] for i in range(nb_copies)) >= var_to_copy)
+        self._model.update()
+        return list(copies.values())
+
+
+    def add_modadd_constraints(self, component):
+        # constraints are taken from https://www.iacr.org/archive/asiacrypt2017/106240224/106240224.pdf
+        output_vars = []
+        for i in range(component.output_bit_size):
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+
+        input_vars_concat = []
+        for index, input_name in enumerate(component.input_id_links):
+            current = self._variables[input_name]["current"]
+            for pos in component.input_bit_positions[index]:
+                input_vars_concat.append(self._variables[input_name][current][pos])
+            self._variables[input_name]["current"] += 1
+        print(input_vars_concat)
+
+        len_concat = len(input_vars_concat)
+        n = int(len_concat/2)
+        print(f"n = {n}")
+        copies = {"a" : {}, "b" : {}}
+        copies["a"][n-1] = self.create_copies(2, input_vars_concat[n - 1])
+        copies["b"][n-1] = self.create_copies(2, input_vars_concat[len_concat - 1])
+        self._model.addConstr(output_vars[n - 1] == copies["a"][n-1][0] + copies["b"][n-1][0])
+
+        v = [self._model.addVar()]
+        self._model.addConstr(v[0] == copies["a"][n-1][1])
+        self._model.addConstr(v[0] == copies["b"][n-1][1])
+
+        g0, r0 = self.create_copies(2, v[0])
+        g = [g0]
+        r = [r0]
+        m = []
+        q = []
+        w = []
+
+        copies["a"][n-2] = self.create_copies(3, input_vars_concat[n - 2])
+        copies["b"][n-2] = self.create_copies(3, input_vars_concat[len_concat - 2])
+
+        for i in range(2, n-1):
+            self._model.addConstr(output_vars[n - i] == copies["a"][n-i][0] + copies["b"][n-i][0] + g[i-2])
+            v.append(self._model.addVar())
+            self._model.addConstr(v[i-1] == copies["a"][n-i][1])
+            self._model.addConstr(v[i-1] == copies["b"][n-i][1])
+            m.append(self._model.addVar())
+            self._model.addConstr(m[i-2] == copies["a"][n-i][2] + copies["b"][n-i][2])
+            q.append(self._model.addVar())
+            self._model.addConstr(q[i-2] == m[i-2])
+            self._model.addConstr(q[i-2] == r[i-2])
+            w.append(self._model.addVar())
+            self._model.addConstr(w[i-2] == v[i-1] + q[i-2])
+            g_i_1, r_i_1 = self.create_copies(2, w[i-2])
+            g.append(g_i_1)
+            r.append(r_i_1)
+            copies["a"][n-i-1] = self.create_copies(3, input_vars_concat[n-i-1])
+            copies["b"][n-i-1] = self.create_copies(3, input_vars_concat[len_concat-i-1])
+
+        print(copies)
+
+        self._model.addConstr(output_vars[1] == copies["a"][1][0] + copies["b"][1][0] + g[n-3])
+        v.append(self._model.addVar())
+        self._model.addConstr(v[n-2] == copies["a"][1][1])
+        self._model.addConstr(v[n-2] == copies["b"][1][1])
+        m.append(self._model.addVar())
+        self._model.addConstr(m[n-3] == copies["a"][1][2] + copies["b"][1][2])
+        q.append(self._model.addVar())
+        self._model.addConstr(q[n-3] == m[n-3])
+        self._model.addConstr(q[n-3] == r[n-3])
+        w.append(self._model.addVar())
+        self._model.addConstr(w[n-3] == v[n-2] + q[n-3])
+        self._model.addConstr(output_vars[0] == input_vars_concat[0] + input_vars_concat[n] + w[n-3])
+        self._model.update()
+
+
+
     def add_rotate_constraints(self, component):
         output_vars = []
         for i in range(component.output_bit_size):
@@ -347,7 +439,6 @@ class MilpDivisionTrailModel():
             for pos in component.input_bit_positions[index]:
                 input_vars_concat.append(self._variables[input_name][current][pos])
             self._variables[input_name]["current"] += 1
-        input_vars_concat
 
         for i in range(component.output_bit_size):
             self._model.addConstr(output_vars[i] >= input_vars_concat[i])
@@ -447,6 +538,8 @@ class MilpDivisionTrailModel():
                     self.add_and_constraints(component)
                 elif component.description[0] == "NOT":
                     self.add_not_constraints(component)
+                elif component.description[0] == "MODADD":
+                    self.add_modadd_constraints(component)
             else:
                 print(f"---> {component.id} not yet implemented")
 
@@ -794,4 +887,3 @@ def test():
             print("######## different")
             return 0
     print("######## equal")
-
