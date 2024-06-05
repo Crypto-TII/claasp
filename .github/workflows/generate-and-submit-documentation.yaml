@@ -34,7 +34,7 @@ jobs:
       uses: actions-js/push@master
       with:
         branch: 'test/runner_scale_sets_for_ci'
-        github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
+        github_token: ${{ github.token }}
         message: "Update documentation"
 
     - name: Update develop branch
