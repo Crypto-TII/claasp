@@ -17,7 +17,7 @@ concurrency:
 jobs:
   run-pytest:
     if: ${{ !github.event.repository.fork }}
-    runs-on:  self-hosted-dgx
+    runs-on:  self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v2
