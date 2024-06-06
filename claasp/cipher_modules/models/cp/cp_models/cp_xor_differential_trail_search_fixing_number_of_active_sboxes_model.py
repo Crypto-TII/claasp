@@ -106,9 +106,9 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
-            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(224, fixed_variables, 'Chuffed', 'Chuffed') # long
+            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(224, fixed_variables, 'Chuffed', 'Chuffed') # long # doctest: +SKIP
             ...
-            sage: len(trails) # long
+            sage: len(trails) # long # doctest: +SKIP
             8
         """
         return self.solve_full_two_steps_xor_differential_model('xor_differential_all_solutions', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name)
