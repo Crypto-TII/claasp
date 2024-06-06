@@ -38,8 +38,9 @@ jobs:
         message: "Update documentation"
 
     - name: Update develop branch
-      uses: devmasx/merge-branch@master
+      uses:  morbalint/git-merge-action@v1
       with:
-        target_branch: 'fix/generate-documentation-workflow-test-merge'
-        type: now
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        target: 'fix/generate-documentation-workflow-test-merge'
+        source: 'test/runner_scale_sets_for_ci'
+        strategy_options: 'ours'
+        token: ${{ secrets.GITHUB_TOKEN }}
