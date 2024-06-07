@@ -131,6 +131,19 @@ def generate_espresso_input(valid_points):
 
 
 def generate_product_of_sum_from_espresso(valid_points):
+    """
+
+    EXAMPLES::
+
+        sage: from itertools import product
+        sage: transitions = [(i1, i2, (i1 + i2) % 2) if (i1 < 2 and i2 < 2) else (i1, i2, 2) for i1, i2 in product(range(3),repeat=2)]
+        sage: from claasp.cipher_modules.models.milp.utils.utils import generate_product_of_sum_from_espresso
+        sage: bit_transitions = [ZZ(val[2]).digits(base=2, padto=2) + ZZ(val[1]).digits(base=2, padto=2) + ZZ(val[0]).digits(base=2, padto=2) for val in transitions]
+        sage: valid_points = ["".join(str(_) for _ in bit_transition[::-1]) for bit_transition in bit_transitions]
+        sage: espresso_inequalities = generate_product_of_sum_from_espresso(valid_points)
+        ...
+
+    """
 
     espresso_input = generate_espresso_input(valid_points)
     espresso_process = run(['espresso', '-epos', '-okiss'], input=espresso_input,
@@ -422,6 +435,7 @@ def milp_generalized_xor(input_var_list, output_bit):
         sage: var_list = [x[i] for i in range(2)]; b = x[2]
         sage: for i in milp_generalized_xor(var_list, b):
         ....:     mip.add_constraint(i)
+        ...
         sage: var_list
         [x_0, x_1]
     """
