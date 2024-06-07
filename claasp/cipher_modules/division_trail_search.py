@@ -6,6 +6,8 @@ from collections import Counter
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
+import networkx as nx
+from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_predecessors_subgraph
 
 class MilpDivisionTrailModel():
     """
@@ -19,7 +21,7 @@ class MilpDivisionTrailModel():
         sage: milp.find_anf_for_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation import AsconSboxSigmaNoMatrixPermutation
-        sage: cipher = AsconSboxSigmaNoMatrixPermutation(number_of_rounds=2)
+        sage: cipher = AsconSboxSigmaNoMatrixPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
@@ -45,6 +47,20 @@ class MilpDivisionTrailModel():
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(1)
+
+        sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
+        sage: cipher = ToySPN1(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0)], 1)
+
+        sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
+        sage: cipher = ToySPN1(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.check_presence_of_particular_monomial_in_all_anf([("plaintext", 0)])
 
         sage: from claasp.ciphers.toys.toyand import ToyAND
         sage: cipher = ToyAND()
@@ -102,20 +118,6 @@ class MilpDivisionTrailModel():
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(0)
 
-        sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
-        sage: cipher = ToySPN1(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
-        sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0)], 1)
-
-        sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
-        sage: cipher = ToySPN1(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
-        sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.check_presence_of_particular_monomial_in_all_anf([("plaintext", 0)])
-
         sage: from claasp.ciphers.toys.toyspn2 import ToySPN2
         sage: cipher = ToySPN2(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
@@ -125,6 +127,13 @@ class MilpDivisionTrailModel():
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
         sage: cipher = SimonBlockCipher(number_of_rounds=2)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: cipher = SpeckBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
@@ -149,7 +158,7 @@ class MilpDivisionTrailModel():
         model = Model()
         model.Params.LogToConsole = 0
         model.Params.Threads = 32 # best found experimentaly on ascon_sbox_2rounds
-        model.setParam("PoolSolutions", 50) # 200000000
+        model.setParam("PoolSolutions", 2000) # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -238,8 +247,6 @@ class MilpDivisionTrailModel():
             for pos in component.input_bit_positions[index]:
                 input_vars_concat.append(self._variables[input_name][current][pos])
             self._variables[input_name]["current"] += 1
-        print("input_vars_concat : ")
-        print(input_vars_concat)
 
         B = BooleanPolynomialRing(component.input_bit_size,'x')
         x = B.variable_names()
@@ -249,7 +256,6 @@ class MilpDivisionTrailModel():
         # print(anfs)
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
-        print(copy_monomials_deg)
 
         for index, anf in enumerate(anfs):
             constr = 0
@@ -332,11 +338,9 @@ class MilpDivisionTrailModel():
             for pos in component.input_bit_positions[index]:
                 input_vars_concat.append(self._variables[input_name][current][pos])
             self._variables[input_name]["current"] += 1
-        print(input_vars_concat)
 
         len_concat = len(input_vars_concat)
         n = int(len_concat/2)
-        print(f"n = {n}")
         copies = {"a" : {}, "b" : {}}
         copies["a"][n-1] = self.create_copies(2, input_vars_concat[n - 1])
         copies["b"][n-1] = self.create_copies(2, input_vars_concat[len_concat - 1])
@@ -373,8 +377,6 @@ class MilpDivisionTrailModel():
             r.append(r_i_1)
             copies["a"][n-i-1] = self.create_copies(3, input_vars_concat[n-i-1])
             copies["b"][n-i-1] = self.create_copies(3, input_vars_concat[len_concat-i-1])
-
-        print(copies)
 
         self._model.addConstr(output_vars[1] == copies["a"][1][0] + copies["b"][1][0] + g[n-3])
         v.append(self._model.addVar())
@@ -483,7 +485,7 @@ class MilpDivisionTrailModel():
         pos_second_input = self.find_index_second_input()
         print(f"pos_second_input = {pos_second_input}")
         l = []
-        if len(self._cipher.inputs_bit_size) > 1:
+        if ("plaintext" in list(occurences.keys())) and ("key" in list(occurences.keys())): # len(self._cipher.inputs_bit_size) > 1
             for monomial in monomials:
                 tmp = ""
                 if len(monomial) != 1:
@@ -616,11 +618,32 @@ class MilpDivisionTrailModel():
                                 self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][pos+1][i])
                             self._model.addConstr(sum(all_vars[component_id][pos+1][i] for pos in indexes) >= all_vars[component_id][0][i])
 
-        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_27")
-        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_30")
-        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_33")
-        # self._model.addVars(list(range(64)), vtype=GRB.BINARY, name="xor_0_36")
-        # self._model.addVars(list(range(5)), vtype=GRB.BINARY, name="sbox_0_2")
+        for comp_id in self._cipher.get_all_components_ids(): #[:4]
+            if comp_id not in list(occurences.keys()):
+                component = self._cipher.get_component_from_id(comp_id)
+                if component.type not in ["intermediate_output", "cipher_output"]:
+                    self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=comp_id)
+
+        self._model.update()
+        output_id = self.get_cipher_output_component_id()
+        G = create_networkx_graph_from_input_ids(self._cipher)
+        predecessors = _get_predecessors_subgraph(G, [output_id]) # output_id
+        for comp_id in self._cipher.get_all_components_ids(): #[:4]
+            if comp_id not in predecessors:
+                component = self._cipher.get_component_from_id(comp_id)
+                for i in range(component.output_bit_size):
+                    c = self._model.getVarByName(f"{comp_id}[{i}]")
+                    self._model.addConstr(c == 0)
+
+        for index, input_id in enumerate(self._cipher.inputs):
+            l = []
+            for sublist in occurences[input_id]:
+                l += sublist[0]
+            for bit in range(self._cipher.inputs_bit_size[index]):
+                if bit not in l:
+                    c = self._model.getVarByName(f"{input_id}[{bit}]")
+                    self._model.addConstr(c == 0)
+
         self._model.update()
         self._variables = all_vars
 
@@ -629,7 +652,7 @@ class MilpDivisionTrailModel():
         index = self._cipher.inputs_bit_size[0]
         # need_to_copy = False
         for input_bit_positions_indexes in occurences[self._cipher.inputs[0]]:
-            if len(input_bit_positions_indexes[1]) > 1:
+            if len(input_bit_positions_indexes[1]) >= 1:
                 # need_to_copy = True
                 index += len(input_bit_positions_indexes[0])*len(input_bit_positions_indexes[1])
         # if need_to_copy:
@@ -646,7 +669,7 @@ class MilpDivisionTrailModel():
             output_vars.append(self._model.getVarByName(f"{output_id}[{i}]")) # {output_id}
 
         ks = self._model.addVar()
-        self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size))) # self._cipher.output_bit_size
+        self._model.addConstr(ks == sum(output_vars[i] for i in range(16,32))) # self._cipher.output_bit_size
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[output_bit_index] == 1)
 
@@ -656,38 +679,17 @@ class MilpDivisionTrailModel():
                 plaintext_vars.append(self._model.getVarByName(f"plaintext[{i}]"))
             self._model.addConstr(sum(plaintext_vars[i] for i in range(self._cipher.inputs_bit_size[0])) == fixed_degree)
 
-        # Before linear layer
-        # for i in range(64): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"xor_0_20[{i}]")
+        # add this for simon/speck :
+        # for i in range(48): # self._cipher.output_bit_size
+        #     c = self._model.getVarByName(f"key[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(64): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"xor_0_21[{i}]")
+        # for i in range(16):
+        #     c = self._model.getVarByName(f"xor_0_4[{i}]")
         #     self._model.addConstr(c == 0)
 
-        # for i in range(64): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"xor_0_22[{i}]")
-        #     self._model.addConstr(c == 0)
-        ################
-
-        # for i in range(1,64): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"plaintext[{i}]")
-        #     self._model.addConstr(c == 0)
-
-        # for i in range(65,128): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"plaintext[{i}]")
-        #     self._model.addConstr(c == 0)
-
-        # for i in range(129, 192): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"plaintext[{i}]")
-        #     self._model.addConstr(c == 0)
-
-        # for i in range(193, 256): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"plaintext[{i}]")
-        #     self._model.addConstr(c == 0)
-
-        # for i in range(257, 320): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"plaintext[{i}]")
+        # for i in range(16):
+        #     c = self._model.getVarByName(f"rot_0_3[{i}]")
         #     self._model.addConstr(c == 0)
 
         self._model.update()
@@ -716,12 +718,6 @@ class MilpDivisionTrailModel():
         for sol in range(solCount):
             self._model.setParam(GRB.Param.SolutionNumber, sol)
             values = self._model.Xn
-            # print(values[:64])
-            # print(values[64:128])
-            # print(values[128:192])
-            # print(values[192:256])
-            # print(values[256:320])
-            # print("################")
 
             # Simon 1 round
             # print("plaintext")
@@ -734,17 +730,6 @@ class MilpDivisionTrailModel():
             # print(values[96:112])
             # print("key")
             # print(values[112:176])
-            # print("rots")
-            # print(values[224:240])
-            # print(values[240:256])
-            # print(values[256:272])
-            # print("and")
-            # print(values[272:288])
-            # print("xors")
-            # print(values[288:304])
-            # print(values[304:320])
-            # print("################")
-            # print(len(values))
 
             # tmp = []
             # for index, v in enumerate(values[:max_input_bit_pos]):
@@ -879,11 +864,24 @@ class MilpDivisionTrailModel():
 
 
 def test():
+    """
+    from claasp.cipher_modules.division_trail_search import *
+    test()
+    """
     circuit = ['p165p205', 'p69', 'p55p275', 'p40p115', 'p274p313', 'p15p33', 'p33p166', 'p58p205', 'p55p248', 'p33p234', 'p128p230', 'p107p313', 'p205', 'p100p230', 'p292p315', 'p276p315', 'p140p153', 'p128p153', 'p115p171', 'p107p141', 'p16p223', 'p314', 'p107p209', 'p33p292', 'p275p315', 'p15p55', 'p76p146', 'p82p171', 'p171p315', 'p166p314', 'p75p115', 'p40p205', 'p146p276', 'p205p274', 'p210p276', 'p141p166', 'p230p313', 'p55p171', 'p235p315', 'p15p230', 'p116p223', 'p209p292', 'p284', 'p33', 'p115p125', 'p165p314', 'p15p153', 'p116p146', 'p234p314', 'p15p181', 'p107p114', 'p58p314', 'p140', 'p15p115', 'p125p313', 'p115p234', 'p114p276', 'p153p315', 'p76p100', 'p54p75', 'p16p128', 'p16p33', 'p128p165', 'p146p153', 'p141p292', 'p100p165', 'p125p141', 'p171p181', 'p75p205', 'p210p230', 'p153p209', 'p54p171', 'p58p82', 'p140p235', 'p55p125', 'p54p76', 'p100p116', 'p141p234', 'p166p210', 'p209p235', 'p140p292', 'p55p76', 'p230p315', 'p114p153', 'p83', 'p58p140', 'p15p58', 'p115p166', 'p82p165', 'p165p181', 'p146p230', 'p153p181', 'p33p248', 'p33p153', 'p181', 'p125p315', 'p33p276', 'p230p267', 'p125p209', 'p82p116', 'p58p181', 'p181p274', 'p107p223', 'p54p116', 'p238', 'p16p314', 'p15p107', 'p76p209', 'p55p292', 'p82p234', 'p128p274', 'p115p292', 'p55p166', 'p100p274', 'p40p140', 'p116p313', 'p16p210', 'p209p276', 'p16p82', 'p55p234', 'p173', 'p248p314', 'p116p141', 'p16p55', 'p40p315', 'p55p235', 'p40p209', 'p223p234', 'p76p315', 'p192', 'p128p171', 'p141p276', 'p115p275', 'p76p141', 'p107p128', 'p54p166', 'p48', 'p115p248', 'p15p274', 'p116p267', 'p153p223', 'p75p140', 'p209p230', 'p54p234', 'p140p276', 'p267p275', 'p33p107', 'p107p314', 'p146p274', 'p58p146', 'p141p248', 'p210p274', 'p171p313', 'p75p315', 'p141p153', 'p33p58', 'p146', 'p235p313', 'p282', 'p15p140', 'p276p313', 'p76p114', 'p223p275', 'p116p210', 'p140p230', 'p114p274', 'p292p314', 'p115p153', 'p16p115', 'p166p205', 'p223p276', 'p275p313', 'p125p223', 'p40p146', 'p15p315', 'p125p128', 'p82p275', 'p15p209', 'p75p181', 'p54p275', 'p23', 'p33p274', 'p82p248', 'p275p314', 'p234p315', 'p107p210', 'p54p248', 'p100p171', 'p107p267', 'p205p234', 'p171p209', 'p55p153', 'p274p314', 'p223p248', 'p58p100', 'p16p205', 'p40p223', 'p33p235', 'p153p313', 'p75p146', 'p181p292', 'p100', 'p76p223', 'p82p125', 'p140p165', 'p58p313', 'p15p75', 'p179', 'p165p209', 'p58p141', 'p100p125', 'p181p234', 'p315', 'p107p115', 'p54p153', 'p166p181', 'p128p234', 'p166p315', 'p100p234', 'p40p100', 'p116p128', 'p205p275', 'p55p58', 'p181p275', 'p153p267', 'p116p205', 'p230p314', 'p125p267', 'p114p230', 'p40p313', 'p205p248', 'p141p235', 'p165p315', 'p76p313', 'p141p274', 'p15p165', 'p40p141', 'p76p128', 'p54p125', 'p58p315', 'p141', 'p58p209', 'p55p107', 'p15p116', 'p115p235', 'p16p140', 'p209', 'p140p274', 'p128p166', 'p33p75', 'p114', 'p146p165', 'p100p166', 'p40p54', 'p15p234', 'p15p223', 'p209p274', 'p75p100', 'p153p210', 'p125p210', 'p15p146', 'p115p276', 'p40p267', 'p15p40', 'p128p275', 'p75p313', 'p16p315', 'p76p267', 'p267p292', 'p82p292', 'p33p230', 'p171p223', 'p116p140', 'p75p141', 'p181p276', 'p114p165', 'p54p107', 'p84', 'p116p314', 'p82p166', 'p114p116', 'p55p274', 'p58p114', 'p223p235', 'p107p205', 'p33p165', 'p116p181', 'p223p292', 'p16p181', 'p33p116', 'p75p267', 'p165p223', 'p76p210', 'p82p235', 'p181p248', 'p54p235', 'p223', 'p100p275', 'p146p234', 'p75p209', 'p54p292', 'p141p230', 'p210p234', 'p128p248', 'p174', 'p33p40', 'p100p248', 'p40p114', 'p140p171', 'p82p276', 'p242', 'p2', 'p15p100', 'p115p230', 'p210p275', 'p55p276', 'p223p274', 'p15p313', 'p114p234', 'p205p235', 'p107p140', 'p165p313', 'p153p205', 'p58p223', 'p125p205', 'p15p141', 'p205p292', 'p15p275', 'p76p115', 'p234p313', 'p235p267', 'p128', 'p267p276', 'p114p275', 'p15p248', 'p107p181', 'p107p315', 'p75p114', 'p146p275', 'p100p153', 'p15p54', 'p16p146', 'p15p210', 'p171p314', 'p166p313', 'p235p314', 'p146p248', 'p15p267', 'p283', 'p223p230', 'p15p16', 'p210p248', 'p276p314', 'p40p128', 'p171p267', 'p55p75', 'p15p114', 'p82', 'p76p205', 'p58p128', 'p82p230', 'p274p315', 'p313', 'p115p165', 'p128p292', 'p15p171', 'p82p153', 'p15p76', 'p114p248', 'p153p314', 'p54p276', 'p24', 'p16p100', 'p55p230', 'p115p116', 'p125p314', 'p33p275', 'p114p171', 'p140p166', 'p209p234', 'p16p313', 'p141p165', 'p165p267', 'p146p171', 'p40p82', 'p171p210', 'p75p223', 'p181p235', 'p234p267', 'p54', 'p166p209', 'p210', 'p58p267', 'p55p165', 'p209p275', 'p267', 'p128p235', 'p248p313', 'p161', 'p55p116', 'p55', 'p15p125', 'p205p276', 'p100p107', 'p54p230', 'p16p54', 'p100p292', 'p166p267', 'p40p314', 'p125p140', 'p76p314', 'p16p267', 'p140p234', 'p165p210', 'p141p275', 'p115p274', 'p16p141', 'p15p205', 'p33p171', 'p54p165', 'p58p210', 'p125p181', 'p16p209', 'p75p128', 'p140p275', 'p76p82', 'p100p235', 'p82p107', 'p107p146', 'p114p125', 'p248p315', 'p54p58', 'p166p223', 'p128p276', 'p75p314', 'p100p276', 'p15p166', 'p116p315', 'p76p140', 'p33p125', 'p40p210', 'p15p128', 'p146p292', 'p210p292', 'p243', 'p141p171', 'p248p267', 'p33p76', 'p146p166', 'p75p82', 'p267p274', 'p76p181', 'p40p55', 'p205p230', 'p15p235', 'p58p115', 'p171p205', 'p181p230', 'p292p313', 'p300', 'p16p114', 'p140p248', 'p15p314', 'p15p292', 'p82p274', 'p114p235', 'p209p248', 'p54p274', 'p0', 'p146p235', 'p114p292', 'p15p276', 'p114p166', 'p125p146', 'p15p82', 'p40p181', 'p116p209', 'p75p210', 'p210p235']
     sbox = ['p165p205', 'p69', 'p55p275', 'p40p115', 'p274p313', 'p15p33', 'p33p166', 'p58p205', 'p55p248', 'p33p234', 'p128p230', 'p107p313', 'p205', 'p100p230', 'p292p315', 'p276p315', 'p140p153', 'p128p153', 'p115p171', 'p107p141', 'p16p223', 'p314', 'p107p209', 'p33p292', 'p275p315', 'p15p55', 'p76p146', 'p82p171', 'p171p315', 'p166p314', 'p75p115', 'p40p205', 'p146p276', 'p205p274', 'p210p276', 'p141p166', 'p230p313', 'p55p171', 'p235p315', 'p15p230', 'p116p223', 'p209p292', 'p284', 'p33', 'p115p125', 'p165p314', 'p15p153', 'p116p146', 'p234p314', 'p15p181', 'p107p114', 'p58p314', 'p140', 'p15p115', 'p125p313', 'p115p234', 'p114p276', 'p153p315', 'p76p100', 'p54p75', 'p16p128', 'p16p33', 'p128p165', 'p146p153', 'p141p292', 'p100p165', 'p125p141', 'p171p181', 'p75p205', 'p210p230', 'p153p209', 'p54p171', 'p58p82', 'p140p235', 'p55p125', 'p54p76', 'p100p116', 'p141p234', 'p166p210', 'p209p235', 'p140p292', 'p55p76', 'p230p315', 'p114p153', 'p83', 'p58p140', 'p15p58', 'p115p166', 'p82p165', 'p165p181', 'p146p230', 'p153p181', 'p33p248', 'p33p153', 'p181', 'p125p315', 'p33p276', 'p230p267', 'p125p209', 'p82p116', 'p58p181', 'p181p274', 'p107p223', 'p54p116', 'p238', 'p16p314', 'p15p107', 'p76p209', 'p55p292', 'p82p234', 'p128p274', 'p115p292', 'p55p166', 'p100p274', 'p40p140', 'p116p313', 'p16p210', 'p209p276', 'p16p82', 'p55p234', 'p173', 'p248p314', 'p116p141', 'p16p55', 'p40p315', 'p55p235', 'p40p209', 'p223p234', 'p76p315', 'p192', 'p128p171', 'p141p276', 'p115p275', 'p76p141', 'p107p128', 'p54p166', 'p48', 'p115p248', 'p15p274', 'p116p267', 'p153p223', 'p75p140', 'p209p230', 'p54p234', 'p140p276', 'p267p275', 'p33p107', 'p107p314', 'p146p274', 'p58p146', 'p141p248', 'p210p274', 'p141p153', 'p75p315', 'p171p313', 'p33p58', 'p146', 'p235p313', 'p282', 'p15p140', 'p276p313', 'p76p114', 'p223p275', 'p116p210', 'p140p230', 'p114p274', 'p292p314', 'p115p153', 'p16p115', 'p166p205', 'p223p276', 'p275p313', 'p125p223', 'p40p146', 'p15p315', 'p125p128', 'p82p275', 'p15p209', 'p75p181', 'p54p275', 'p23', 'p33p274', 'p82p248', 'p275p314', 'p234p315', 'p107p210', 'p54p248', 'p100p171', 'p107p267', 'p205p234', 'p171p209', 'p55p153', 'p274p314', 'p223p248', 'p58p100', 'p16p205', 'p40p223', 'p33p235', 'p153p313', 'p75p146', 'p181p292', 'p100', 'p76p223', 'p82p125', 'p140p165', 'p58p313', 'p15p75', 'p179', 'p165p209', 'p58p141', 'p100p125', 'p181p234', 'p315', 'p107p115', 'p54p153', 'p166p181', 'p128p234', 'p166p315', 'p100p234', 'p40p100', 'p116p128', 'p205p275', 'p55p58', 'p181p275', 'p153p267', 'p116p205', 'p230p314', 'p125p267', 'p114p230', 'p40p313', 'p205p248', 'p141p235', 'p165p315', 'p76p313', 'p141p274', 'p15p165', 'p40p141', 'p76p128', 'p54p125', 'p58p315', 'p141', 'p58p209', 'p55p107', 'p15p116', 'p115p235', 'p16p140', 'p209', 'p140p274', 'p128p166', 'p33p75', 'p114', 'p146p165', 'p100p166', 'p40p54', 'p15p234', 'p15p223', 'p209p274', 'p75p100', 'p153p210', 'p125p210', 'p15p146', 'p115p276', 'p40p267', 'p15p40', 'p128p275', 'p16p315', 'p75p313', 'p76p267', 'p267p292', 'p82p292', 'p33p230', 'p171p223', 'p116p140', 'p75p141', 'p181p276', 'p114p165', 'p54p107', 'p84', 'p116p314', 'p82p166', 'p114p116', 'p55p274', 'p58p114', 'p223p235', 'p107p205', 'p33p165', 'p116p181', 'p223p292', 'p16p181', 'p33p116', 'p75p267', 'p165p223', 'p76p210', 'p82p235', 'p181p248', 'p54p235', 'p223', 'p100p275', 'p146p234', 'p75p209', 'p54p292', 'p141p230', 'p210p234', 'p128p248', 'p174', 'p33p40', 'p100p248', 'p40p114', 'p140p171', 'p82p276', 'p242', 'p2', 'p15p100', 'p115p230', 'p210p275', 'p55p276', 'p223p274', 'p15p313', 'p114p234', 'p205p235', 'p107p140', 'p165p313', 'p153p205', 'p58p223', 'p125p205', 'p15p141', 'p205p292', 'p15p275', 'p76p115', 'p234p313', 'p235p267', 'p128', 'p267p276', 'p114p275', 'p15p248', 'p107p181', 'p107p315', 'p75p114', 'p146p275', 'p100p153', 'p15p54', 'p16p146', 'p15p210', 'p171p314', 'p166p313', 'p235p314', 'p146p248', 'p15p267', 'p283', 'p223p230', 'p15p16', 'p210p248', 'p276p314', 'p40p128', 'p171p267', 'p55p75', 'p15p114', 'p82', 'p76p205', 'p58p128', 'p82p230', 'p274p315', 'p313', 'p115p165', 'p128p292', 'p15p171', 'p82p153', 'p15p76', 'p114p248', 'p153p314', 'p54p276', 'p24', 'p16p100', 'p55p230', 'p115p116', 'p125p314', 'p33p275', 'p114p171', 'p140p166', 'p209p234', 'p16p313', 'p141p165', 'p165p267', 'p146p171', 'p40p82', 'p171p210', 'p75p223', 'p181p235', 'p234p267', 'p54', 'p166p209', 'p210', 'p58p267', 'p55p165', 'p209p275', 'p267', 'p128p235', 'p248p313', 'p161', 'p55p116', 'p55', 'p15p125', 'p205p276', 'p100p107', 'p54p230', 'p16p54', 'p100p292', 'p166p267', 'p40p314', 'p125p140', 'p76p314', 'p16p267', 'p140p234', 'p165p210', 'p141p275', 'p115p274', 'p16p141', 'p15p205', 'p33p171', 'p54p165', 'p58p210', 'p125p181', 'p16p209', 'p75p128', 'p140p275', 'p76p82', 'p100p235', 'p82p107', 'p107p146', 'p114p125', 'p248p315', 'p54p58', 'p166p223', 'p128p276', 'p75p314', 'p100p276', 'p15p166', 'p116p315', 'p76p140', 'p33p125', 'p40p210', 'p15p128', 'p146p292', 'p210p292', 'p243', 'p141p171', 'p248p267', 'p33p76', 'p146p166', 'p75p82', 'p267p274', 'p76p181', 'p40p55', 'p205p230', 'p15p235', 'p58p115', 'p171p205', 'p181p230', 'p300', 'p292p313', 'p16p114', 'p140p248', 'p15p314', 'p15p292', 'p82p274', 'p114p235', 'p209p248', 'p54p274', 'p0', 'p146p235', 'p114p292', 'p15p276', 'p114p166', 'p125p146', 'p15p82', 'p40p181', 'p116p209', 'p75p210', 'p210p235']
+    new = ['p165p205', 'p69', 'p55p275', 'p40p115', 'p274p313', 'p15p33', 'p33p166', 'p58p205', 'p55p248', 'p33p234', 'p128p230', 'p107p313', 'p205', 'p100p230', 'p292p315', 'p276p315', 'p140p153', 'p128p153', 'p115p171', 'p107p141', 'p16p223', 'p314', 'p107p209', 'p33p292', 'p275p315', 'p15p55', 'p76p146', 'p82p171', 'p171p315', 'p166p314', 'p75p115', 'p40p205', 'p146p276', 'p205p274', 'p210p276', 'p141p166', 'p230p313', 'p55p171', 'p235p315', 'p15p230', 'p116p223', 'p209p292', 'p284', 'p33', 'p115p125', 'p165p314', 'p15p153', 'p116p146', 'p234p314', 'p15p181', 'p107p114', 'p58p314', 'p140', 'p15p115', 'p125p313', 'p115p234', 'p114p276', 'p153p315', 'p76p100', 'p54p75', 'p16p128', 'p16p33', 'p128p165', 'p146p153', 'p141p292', 'p100p165', 'p125p141', 'p171p181', 'p75p205', 'p210p230', 'p153p209', 'p54p171', 'p58p82', 'p140p235', 'p55p125', 'p54p76', 'p100p116', 'p141p234', 'p166p210', 'p209p235', 'p140p292', 'p55p76', 'p230p315', 'p114p153', 'p83', 'p58p140', 'p15p58', 'p115p166', 'p82p165', 'p165p181', 'p146p230', 'p153p181', 'p33p248', 'p33p153', 'p181', 'p125p315', 'p33p276', 'p230p267', 'p125p209', 'p82p116', 'p58p181', 'p181p274', 'p107p223', 'p54p116', 'p238', 'p16p314', 'p15p107', 'p76p209', 'p55p292', 'p82p234', 'p128p274', 'p115p292', 'p55p166', 'p100p274', 'p40p140', 'p116p313', 'p16p210', 'p209p276', 'p16p82', 'p55p234', 'p173', 'p248p314', 'p116p141', 'p16p55', 'p40p315', 'p55p235', 'p40p209', 'p223p234', 'p76p315', 'p192', 'p128p171', 'p141p276', 'p115p275', 'p76p141', 'p107p128', 'p54p166', 'p48', 'p115p248', 'p15p274', 'p116p267', 'p153p223', 'p75p140', 'p209p230', 'p54p234', 'p140p276', 'p267p275', 'p33p107', 'p107p314', 'p146p274', 'p58p146', 'p141p248', 'p210p274', 'p141p153', 'p75p315', 'p171p313', 'p33p58', 'p146', 'p235p313', 'p282', 'p15p140', 'p276p313', 'p76p114', 'p223p275', 'p116p210', 'p140p230', 'p114p274', 'p292p314', 'p115p153', 'p16p115', 'p166p205', 'p223p276', 'p275p313', 'p125p223', 'p40p146', 'p15p315', 'p125p128', 'p82p275', 'p15p209', 'p75p181', 'p54p275', 'p23', 'p33p274', 'p82p248', 'p275p314', 'p234p315', 'p107p210', 'p54p248', 'p100p171', 'p107p267', 'p205p234', 'p171p209', 'p55p153', 'p274p314', 'p223p248', 'p58p100', 'p16p205', 'p40p223', 'p33p235', 'p153p313', 'p75p146', 'p181p292', 'p100', 'p76p223', 'p82p125', 'p140p165', 'p58p313', 'p15p75', 'p179', 'p165p209', 'p58p141', 'p100p125', 'p181p234', 'p315', 'p107p115', 'p54p153', 'p166p181', 'p128p234', 'p166p315', 'p100p234', 'p40p100', 'p116p128', 'p205p275', 'p55p58', 'p181p275', 'p153p267', 'p116p205', 'p230p314', 'p125p267', 'p114p230', 'p40p313', 'p205p248', 'p141p235', 'p165p315', 'p76p313', 'p141p274', 'p15p165', 'p40p141', 'p76p128', 'p54p125', 'p58p315', 'p141', 'p58p209', 'p55p107', 'p15p116', 'p115p235', 'p16p140', 'p209', 'p140p274', 'p128p166', 'p33p75', 'p114', 'p146p165', 'p100p166', 'p40p54', 'p15p234', 'p15p223', 'p209p274', 'p75p100', 'p153p210', 'p125p210', 'p15p146', 'p115p276', 'p40p267', 'p15p40', 'p128p275', 'p16p315', 'p75p313', 'p76p267', 'p267p292', 'p82p292', 'p33p230', 'p171p223', 'p116p140', 'p75p141', 'p181p276', 'p114p165', 'p54p107', 'p84', 'p116p314', 'p82p166', 'p114p116', 'p55p274', 'p58p114', 'p223p235', 'p107p205', 'p33p165', 'p116p181', 'p223p292', 'p16p181', 'p33p116', 'p75p267', 'p165p223', 'p76p210', 'p82p235', 'p181p248', 'p54p235', 'p223', 'p100p275', 'p146p234', 'p75p209', 'p54p292', 'p141p230', 'p210p234', 'p128p248', 'p174', 'p33p40', 'p100p248', 'p40p114', 'p140p171', 'p82p276', 'p242', 'p2', 'p15p100', 'p115p230', 'p210p275', 'p55p276', 'p223p274', 'p15p313', 'p114p234', 'p205p235', 'p107p140', 'p165p313', 'p153p205', 'p58p223', 'p125p205', 'p15p141', 'p205p292', 'p15p275', 'p76p115', 'p234p313', 'p235p267', 'p128', 'p267p276', 'p114p275', 'p15p248', 'p107p181', 'p107p315', 'p75p114', 'p146p275', 'p100p153', 'p15p54', 'p16p146', 'p15p210', 'p171p314', 'p166p313', 'p235p314', 'p146p248', 'p15p267', 'p283', 'p223p230', 'p15p16', 'p210p248', 'p276p314', 'p40p128', 'p171p267', 'p55p75', 'p15p114', 'p82', 'p76p205', 'p58p128', 'p82p230', 'p274p315', 'p313', 'p115p165', 'p128p292', 'p15p171', 'p82p153', 'p15p76', 'p114p248', 'p153p314', 'p54p276', 'p24', 'p16p100', 'p55p230', 'p115p116', 'p125p314', 'p33p275', 'p114p171', 'p140p166', 'p209p234', 'p16p313', 'p141p165', 'p165p267', 'p146p171', 'p40p82', 'p171p210', 'p75p223', 'p181p235', 'p234p267', 'p54', 'p166p209', 'p210', 'p58p267', 'p55p165', 'p209p275', 'p267', 'p128p235', 'p248p313', 'p161', 'p55p116', 'p55', 'p15p125', 'p205p276', 'p100p107', 'p54p230', 'p16p54', 'p100p292', 'p166p267', 'p40p314', 'p125p140', 'p76p314', 'p16p267', 'p140p234', 'p165p210', 'p141p275', 'p115p274', 'p16p141', 'p15p205', 'p33p171', 'p54p165', 'p58p210', 'p125p181', 'p16p209', 'p75p128', 'p140p275', 'p76p82', 'p100p235', 'p82p107', 'p107p146', 'p114p125', 'p248p315', 'p54p58', 'p166p223', 'p128p276', 'p75p314', 'p100p276', 'p15p166', 'p116p315', 'p76p140', 'p33p125', 'p40p210', 'p15p128', 'p146p292', 'p210p292', 'p243', 'p141p171', 'p248p267', 'p33p76', 'p146p166', 'p75p82', 'p267p274', 'p76p181', 'p40p55', 'p205p230', 'p15p235', 'p58p115', 'p171p205', 'p181p230', 'p300', 'p292p313', 'p16p114', 'p140p248', 'p15p314', 'p15p292', 'p82p274', 'p114p235', 'p209p248', 'p54p274', 'p0', 'p146p235', 'p114p292', 'p15p276', 'p114p166', 'p125p146', 'p15p82', 'p40p181', 'p116p209', 'p75p210', 'p210p235']
 
     for monomial in circuit:
-        if monomial not in sbox:
+        if monomial not in new:
             print("######## different")
             return 0
     print("######## equal")
+
+# ['p0', 'p128', 'p45', 'p173', 'p64p128', 'p36', 'p164', 'p45p109', 'p109', 'p36p100', 'p100', 'p109p173', 'p64', 'p100p164', 'p0p64']
+
+
+
+
+
+
