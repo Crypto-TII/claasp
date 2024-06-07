@@ -246,6 +246,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: variables, constraints = milp.input_wordwise_deterministic_truncated_xor_differential_constraints()
+            ...
             sage: variables # doctest: +SKIP
              ('x_class[key_word_0_class]', x_480),
              ('x_class[key_word_1_class]', x_481),
