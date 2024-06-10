@@ -802,6 +802,9 @@ class XOR(Component):
              1 <= 2 - x_30 - x_39]
 
         """
+        if model.word_size == 8:
+            return self.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(model)
+
         x = model.binary_variable
 
         num_of_inputs = int(self.description[1])
@@ -845,20 +848,20 @@ class XOR(Component):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_32")
+            sage: xor_component = cipher.get_component_from_id("xor_0_31")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(milp)
             sage: variables
-            [('x[xor_0_31_word_0_class_bit_0]', x_0),
-             ('x[xor_0_31_word_0_class_bit_1]', x_1),
+            [('x[sbox_0_26_word_0_class_bit_0]', x_0),
+            ('x[sbox_0_26_word_0_class_bit_1]', x_1),
              ...
-             ('x[xor_0_32_30]', x_118),
-             ('x[xor_0_32_31]', x_119)]
+            ('x[xor_0_31_30]', x_158),
+            ('x[xor_0_31_31]', x_159)]
             sage: constraints
-            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_81,
-             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_81,
+            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_161,
+             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_161,
             ...
-             1 <= 1 + x_31 - x_39,
-             1 <= 2 - x_30 - x_39]
+             1 <= 1 + x_111 - x_119,
+             1 <= 2 - x_110 - x_119]
 
 
         """
