@@ -83,23 +83,48 @@ class SatXorDifferentialModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-        if self._window_size_full_window_vars != None:
+        if self._window_size_full_window_vars is not None:
             self._variables_list.extend(self._window_size_full_window_vars)
 
-            if self._window_size_full_window_operator == 'at_least':
-                greater_or_equal = True
-            else:
-                greater_or_equal = False
-
             if self._window_size_number_of_full_window == 0:
-                all_ones_dummy_variables, all_ones_constraints = [], [f'-{variable}' for variable in self._window_size_full_window_vars]
-            else:
+                self._variables_list.extend([])
+                self._model_constraints.extend([f'-{variable}' for variable in self._window_size_full_window_vars])
+                return
+
+
+            if self._window_size_full_window_operator == 'at_least':
+                all_ones_dummy_variables, all_ones_constraints = self._sequential_counter_algorithm(
+                    self._window_size_full_window_vars,
+                    self._window_size_number_of_full_window - 1,
+                    'dummy_all_ones_at_least',
+                    greater_or_equal=True
+                )
+            elif self._window_size_full_window_operator == 'at_most':
                 all_ones_dummy_variables, all_ones_constraints = self._sequential_counter_algorithm(
                     self._window_size_full_window_vars,
                     self._window_size_number_of_full_window,
-                    'dummy_all_ones_0',
-                    greater_or_equal=greater_or_equal
+                    'dummy_all_ones_at_most',
+                    greater_or_equal=False
                 )
+            elif self._window_size_full_window_operator == 'exactly':
+                all_ones_dummy_variables1, all_ones_constraints1 = self._sequential_counter_algorithm(
+                    self._window_size_full_window_vars,
+                    self._window_size_number_of_full_window,
+                    'dummy_all_ones_at_least',
+                    greater_or_equal=True
+                )
+                all_ones_dummy_variables2, all_ones_constraints2 = self._sequential_counter_algorithm(
+                    self._window_size_full_window_vars,
+                    self._window_size_number_of_full_window,
+                    'dummy_all_ones_at_most',
+                    greater_or_equal=False
+                )
+                all_ones_dummy_variables = all_ones_dummy_variables1 + all_ones_dummy_variables2
+                all_ones_constraints = all_ones_constraints1 + all_ones_constraints2
+            else:
+                raise ValueError(f'Unknown operator {self._window_size_full_window_operator}')
+
+
             self._variables_list.extend(all_ones_dummy_variables)
             self._model_constraints.extend(all_ones_constraints)
 
@@ -473,6 +498,10 @@ class SatXorDifferentialModel(SatModel):
     @property
     def window_size_number_of_full_window(self):
         return self._window_size_number_of_full_window
+
+    @property
+    def window_size_full_window_vars(self):
+        return self._window_size_full_window_vars
 
     @property
     def window_size_by_round_values(self):
