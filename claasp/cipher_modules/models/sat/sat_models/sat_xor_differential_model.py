@@ -431,6 +431,7 @@ class SatXorDifferentialModel(SatModel):
             sage: sat = SatXorDifferentialModel(speck)
             sage: sat.set_window_size_heuristic_by_round([0, 0, 0])
             sage: trail = sat.find_one_xor_differential_trail_with_fixed_weight(3)
+            ...
             sage: trail['total_weight']
             3.0
 
