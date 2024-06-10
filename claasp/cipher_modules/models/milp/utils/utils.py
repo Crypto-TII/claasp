@@ -613,7 +613,7 @@ def milp_xor_truncated(model, input_1, input_2, output):
 
 def milp_xor_truncated_wordwise(model, input_1, input_2, output):
     """
-    Returns a list of variables and a list of constraints for the XOR for two input words
+    Returns a list of variables and a list of constraints for the XOR for two input bytes
     in deterministic truncated XOR differential model.
 
     This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
