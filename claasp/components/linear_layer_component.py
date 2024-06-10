@@ -607,12 +607,11 @@ class LinearLayer(Component):
              ('x[mix_column_0_21_14]', x_46),
              ('x[mix_column_0_21_15]', x_47)]
             sage: constraints
-            [1 <= 2 - x_6 - x_12 + x_25,
-             1 <= 3 - x_8 + x_9 + x_10 + x_11 - x_14 + x_15 + x_16 + x_17 + x_19 - x_25,
-             1 <= 3 + x_8 - x_9 + x_10 + x_11 + x_14 - x_15 + x_16 + x_17 + x_19 - x_25,
+            [1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_13 + x_18 + x_19 - x_25,
+             1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_12 + x_13 + x_19 - x_25,
             ...
-             1 <= 1 + x_1 - x_2,
-             1 <= 1 + x_7 - x_8]
+             1 <= 1 + x_7 - x_8,
+             1 <= 1 + x_1 - x_2]
 
         """
         x = model.binary_variable
