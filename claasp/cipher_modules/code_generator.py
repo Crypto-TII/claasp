@@ -83,7 +83,7 @@ def generate_bit_based_c_code(cipher, intermediate_output, verbosity):
 
 def generate_bit_based_cuda_code(cipher, intermediate_output, verbosity):
     code = ['#include <stdio.h>', '#include <stdbool.h>', '#include <stdlib.h>',
-            '#include "generic_bit_based_c_functions.cuh"\n']
+            '#include "generic_bit_based_cuda_functions.cuh"\n']
     function_args = []
     for cipher_input in cipher.inputs:
         function_args.append(f'BitString *{cipher_input}')
