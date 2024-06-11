@@ -23,6 +23,7 @@ def test_skinny_block_cipher():
     ciphertext = 0x4ced01d20a158953d0968f3a1ce190bc
     assert skinny.evaluate([plaintext, key]) == ciphertext
     assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    import ipdb; ipdb.set_trace()
     assert skinny.evaluate_using_cuda([0x012345, 0x89ABCD])  == ciphertext
 
     plaintext = 0xa3994b66ad85a3459f44e92b08f550cb
