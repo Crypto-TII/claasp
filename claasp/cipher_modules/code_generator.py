@@ -83,7 +83,7 @@ def generate_bit_based_c_code(cipher, intermediate_output, verbosity):
 
 def generate_bit_based_cuda_code(cipher, intermediate_output, verbosity):
     code = ['#include <stdio.h>', '#include <stdbool.h>', '#include <stdlib.h>',
-            '#include "generic_bit_based_c_functions.cuh"\n']
+            '#include "generic_bit_based_cuda_functions.cuh"\n']
     function_args = []
     for cipher_input in cipher.inputs:
         function_args.append(f'BitString *{cipher_input}')
@@ -588,7 +588,7 @@ def generate_evaluate_cuda_code_shared_library(cipher, intermediate_output, verb
     else:
         generic_bit_based_cuda_functions_o_file = "generic_bit_based_c_functions.o"
         if not os.path.exists(TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file):
-            call(["nvcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_c_functions.cu",
+            call(["nvcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_cuda_functions.cu",
                   "-o", TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file])
 
         f = open(TII_C_LIB_PATH + name + ".cu", "w+")

@@ -63,7 +63,9 @@ setup(
             'cipher_modules/generic_bit_based_c_functions.c',
             'cipher_modules/generic_bit_based_c_functions.h',
             'cipher_modules/generic_word_based_c_functions.c',
-            'cipher_modules/generic_word_based_c_functions.h'
+            'cipher_modules/generic_word_based_c_functions.h',
+            'cipher_modules/generic_bit_based_cuda_functions.cu',
+            'cipher_modules/generic_bit_based_cuda_functions.cuh',
         ]
     },
     classifiers=[
