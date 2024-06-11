@@ -83,7 +83,7 @@ def evaluate_using_cuda(cipher, inputs, intermediate_output, verbosity):
     cipher.generate_evaluate_cuda_code_shared_library(intermediate_output, verbosity)
     name = cipher.id + "_evaluate"
     c_cipher_inputs = [hex(value) for value in inputs]
-    import ipdb; ipdb.set_trace()
+
     process = Popen([code_generator.TII_C_LIB_PATH + name + ".o"] + c_cipher_inputs, stdout=PIPE)
     output = process.stdout
 
