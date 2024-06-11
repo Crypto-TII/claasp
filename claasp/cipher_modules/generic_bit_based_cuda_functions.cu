@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "generic_bit_based_c_functions.cuh"
+#include "generic_bit_based_cuda_functions.cuh"
 
 #define pow2(i) (1lu << i)
 #define byte_size(bit_size) (bit_size / 8 + (bit_size % 8 == 0 ? 0 : 1))
