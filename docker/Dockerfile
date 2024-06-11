@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS claasp-base
+FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 as claasp-base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG COPY_CLAASP_LIBRARY=false
