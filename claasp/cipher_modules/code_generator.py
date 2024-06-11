@@ -83,7 +83,7 @@ def generate_bit_based_c_code(cipher, intermediate_output, verbosity):
 
 def generate_bit_based_cuda_code(cipher, intermediate_output, verbosity):
     code = ['#include <stdio.h>', '#include <stdbool.h>', '#include <stdlib.h>',
-            '#include "generic_bit_based_cuda_functions.cuh"\n']
+            '#include "generic_bit_based_c_functions.cuh"\n']
     function_args = []
     for cipher_input in cipher.inputs:
         function_args.append(f'BitString *{cipher_input}')
@@ -114,11 +114,11 @@ def generate_bit_based_cuda_code(cipher, intermediate_output, verbosity):
 
 
 
-    print('\n'.join(code))
-    with open("./projects/pycu/skinny.cu", "w") as text_file:
-        text_file.write('\n'.join(code))
-    import ipdb;
-    ipdb.set_trace()
+    #print('\n'.join(code))
+    #with open("./projects/pycu/skinny.cu", "w") as text_file:
+    #    text_file.write('\n'.join(code))
+    #import ipdb;
+    #ipdb.set_trace()
     return '\n'.join(code)
 
 
@@ -567,6 +567,8 @@ def generate_evaluate_cuda_code_shared_library(cipher, intermediate_output, verb
 
     name = cipher.id + "_evaluate"
     cipher_word_size = cipher.is_power_of_2_word_based()
+    import ipdb;
+    ipdb.set_trace()
     if cipher_word_size:
         if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o"):
             call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o", TII_C_LIB_PATH +
@@ -597,6 +599,7 @@ def generate_evaluate_cuda_code_shared_library(cipher, intermediate_output, verb
 
         call(["nvcc", "-w", TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file,
               TII_C_LIB_PATH + name + ".cu", "-o", TII_C_LIB_PATH + name + ".o"])
+
 
 
 def generate_python_code_string(cipher, verbosity=False):
