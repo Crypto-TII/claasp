@@ -51,7 +51,7 @@ def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
         cc = "{0:b}".format(_[0])
         for i in range(len(cc)):
             if cc[i] == '1':  m = m + pow(y, len(cc) - 1 - i)
-        for i in _:
+        for i in _[1]:
             m = m * x[i]
         p += m
     return p
@@ -81,7 +81,7 @@ def _words_array_to_bits(word_array, word_gf):
         for j in range(len(coeffcients)):
             bits = coeffcients[j].polynomial().monomials()
             for b in bits:
-                output[i*bits_inside_word+b.degree()] += monomials[j]
+                output[i*bits_inside_word+(bits_inside_word-b.degree()-1)] += monomials[j]
 
     return output
 
