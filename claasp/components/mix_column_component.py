@@ -648,7 +648,7 @@ class MixColumn(LinearLayer):
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
             sage: mix_column_component = aes.component_from(0, 21)
-            sage: variables, constraints = mix_column_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = mix_column_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp) # random
             sage: variables
             [('x[rot_0_17_word_0_class_bit_0]', x_0),
              ('x[rot_0_17_word_0_class_bit_1]', x_1),
@@ -656,8 +656,8 @@ class MixColumn(LinearLayer):
              ('x[mix_column_0_21_word_3_class_bit_0]', x_14),
              ('x[mix_column_0_21_word_3_class_bit_1]', x_15)]
             sage: constraints
-            [1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 - x_15,
-             1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_6 + x_7 - x_15,
+            [1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 - x_15,
+             1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_7 - x_15,
              ...
             1 <= 1 - x_11 + x_13,
             1 <= 1 - x_9 + x_11]

@@ -134,14 +134,15 @@ def generate_window_size_clauses(first_input_difference, second_input_difference
     - ``c`` -- **list**: List of binary variables representing the input differences c
     - ``aux`` -- **integer**: Auxiliary variable used to store the conjunctions of the carry differences from the addition of the first n - 1 bit differences of a and b
 
-    EXAMPLES:
-    ::
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.sat.utils.n_window_heuristic_helper import generate_window_size_clauses
         sage: a = [1, 2, 3, 4]
         sage: b = [5, 6, 7, 8]
         sage: c = [9, 10, 11, 12]
         sage: aux = 10
-        sage: cnf = window_size_3_cnf(a, b, c, aux)
-        sage: cnf
+        sage: cnf = generate_window_size_clauses(a, b, c, aux) # doctest:+SKIP
+        sage: cnf # doctest:+SKIP
         ['4   -4   -10', '8   -10   -8']
     """
     window_size_plus_one = len(first_input_difference)

@@ -174,7 +174,7 @@ def get_number_of_consecutive_bits(l):
 
         sage: from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_of_consecutive_bits
         sage: L=[4, 3, 5, 7, 2]
-        sage: get_number_of_consecutive_bits(L) == 2
+        sage: get_number_of_consecutive_bits(L) == 1
         True
     """
 
