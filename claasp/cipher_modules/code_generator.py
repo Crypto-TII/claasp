@@ -87,7 +87,7 @@ def generate_bit_based_cuda_code(cipher, intermediate_output, verbosity):
     function_args = []
     for cipher_input in cipher.inputs:
         function_args.append(f'BitString *{cipher_input}')
-    function_declaration = f'BitString* evaluate({", ".join(function_args)}) {{'
+    function_declaration = f'__global__  void evaluate({", ".join(function_args)}, BitString* output) {{'
     code.append(function_declaration)
 
     code.append('\tBitString *input;')
@@ -105,7 +105,15 @@ def generate_bit_based_cuda_code(cipher, intermediate_output, verbosity):
         code.append(
             f'\tBitString* {cipher.inputs[i]} = '
             f'bitstring_from_hex_string(argv[{i + 1}], {cipher.inputs_bit_size[i]});')
-    code.append(f'\tBitString* output = evaluate({", ".join(evaluate_args)});')
+
+
+    code.append(f'\tBitString * output = (BitString *) malloc(sizeof(BitString));')
+    code.append(f'\tBitString * d_output;')
+    code.append(f'\tcudaMalloc((void **) & d_output, sizeof(BitString));')
+    code.append(f'\tcudaMemcpy(d_output, output, sizeof(BitString), cudaMemcpyHostToDevice);')
+    code.append(f'\tdim3 dimblock(16, 16);')
+    code.append(f'\tdim3 dimgrid(1, 1);')
+    code.append(f'\tevaluate<<<dimblock,dimgrid>>>({", ".join(evaluate_args)}, d_output);')
     if not intermediate_output:
         code.append('\tprint_bitstring(output, 16);')
     evaluate_args.append('output')
@@ -215,7 +223,7 @@ def get_cipher_output_component_bit_based_c_code(component, index, intermediate_
         cipher_output_code.append('\t}')
         cipher_output_code.append('\tprintf("}\\n");')
     cipher_output_code.append(f'\tdelete({", ".join(c_variables)});')
-    cipher_output_code.append('\treturn input;')
+    #cipher_output_code.append('\treturn input;')
     return cipher_output_code, index
 
 
@@ -567,8 +575,6 @@ def generate_evaluate_cuda_code_shared_library(cipher, intermediate_output, verb
 
     name = cipher.id + "_evaluate"
     cipher_word_size = cipher.is_power_of_2_word_based()
-    import ipdb;
-    ipdb.set_trace()
     if cipher_word_size:
         if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o"):
             call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o", TII_C_LIB_PATH +
@@ -590,14 +596,14 @@ def generate_evaluate_cuda_code_shared_library(cipher, intermediate_output, verb
     else:
         generic_bit_based_cuda_functions_o_file = "generic_bit_based_c_functions.o"
         if not os.path.exists(TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file):
-            call(["nvcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_cuda_functions.cu",
+            call(["nvcc", "--relocatable-device-code=true", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_cuda_functions.cu",
                   "-o", TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file])
 
         f = open(TII_C_LIB_PATH + name + ".cu", "w+")
         f.write(cipher.generate_bit_based_cuda_code(intermediate_output, verbosity))
         f.close()
 
-        call(["nvcc", "-w", TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file,
+        call(["nvcc", "--relocatable-device-code=true", "-w", TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file,
               TII_C_LIB_PATH + name + ".cu", "-o", TII_C_LIB_PATH + name + ".o"])
 
 
