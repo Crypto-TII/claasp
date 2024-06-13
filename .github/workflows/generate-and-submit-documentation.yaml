@@ -15,7 +15,7 @@ jobs:
         fetch-depth: 0
 
     - name: Generate documentation
-      run: make doc
+      run: sleep 600
 
 #    - name: Commit & Push changes
 #      run: |
@@ -30,17 +30,17 @@ jobs:
 #        git push origin fix/generate-documentation-workflow-test-commit
 #        git merge fix/generate-documentation-workflow-test-commit fix/generate-documentation-workflow-test-merge
 
-    - name: Commit & Push changes
-      uses: actions-js/push@master
-      with:
-        branch: 'test/runner_scale_sets_for_ci'
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        message: "Update documentation"
+    # - name: Commit & Push changes
+    #   uses: actions-js/push@master
+    #   with:
+    #     branch: 'test/runner_scale_sets_for_ci'
+    #     github_token: ${{ secrets.GITHUB_TOKEN }}
+    #     message: "Update documentation"
 
-    - name: Update develop branch
-      uses:  morbalint/git-merge-action@v1
-      with:
-        target: 'fix/generate-documentation-workflow-test-merge'
-        source: 'test/runner_scale_sets_for_ci'
-        strategy_options: 'ours'
-        token: ${{ secrets.GITHUB_TOKEN }}
+    # - name: Update develop branch
+    #   uses:  morbalint/git-merge-action@v1
+    #   with:
+    #     target: 'fix/generate-documentation-workflow-test-merge'
+    #     source: 'test/runner_scale_sets_for_ci'
+    #     strategy_options: 'ours'
+    #     token: ${{ secrets.GITHUB_TOKEN }}
