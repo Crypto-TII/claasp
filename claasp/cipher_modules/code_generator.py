@@ -81,14 +81,24 @@ def generate_bit_based_c_code(cipher, intermediate_output, verbosity):
 
     return '\n'.join(code)
 
-def generate_bit_based_cuda_code(cipher, intermediate_output, verbosity):
-    code = ['#include <stdio.h>', '#include <stdbool.h>', '#include <stdlib.h>',
-            '#include "generic_bit_based_cuda_functions.cuh"\n']
+def __generate_bit_based_cuda_evaluate_kernel(cipher, intermediate_output, verbosity):
+    code = []
+    cipher_outputs = cipher.get_all_components()
+    cipher_output_components = list(filter(lambda component: component.type == 'cipher_output', cipher_outputs))
+    cipher_output_args = []
+    for cipher_output_component in cipher_output_components:
+        cipher_output_args.append(f'uint8_t * arg_{cipher_output_component.id}')
+
     function_args = []
     for cipher_input in cipher.inputs:
-        function_args.append(f'BitString *{cipher_input}')
-    function_declaration = f'__global__  void evaluate({", ".join(function_args)}, BitString* output) {{'
+        function_args.append(f'uint8_t *arg_{cipher_input}')
+    function_declaration = f'__global__  void evaluate({", ".join(function_args)}, {", ".join(cipher_output_args)}) {{'
     code.append(function_declaration)
+
+    for cipher_input, cipher_bit_size in zip(cipher.inputs, cipher.inputs_bit_size):
+        code.append(f'\tBitString *{cipher_input} = (BitString *) malloc(sizeof(BitString));')
+        code.append(f'\t{cipher_input}->list = (uint8_t *) malloc({cipher_bit_size}*sizeof(uint8_t));')
+        code.append(f'\tmemcpy({cipher_input}->list, arg_{cipher_input}, {cipher_bit_size}*sizeof(uint8_t));')
 
     code.append('\tBitString *input;')
     code.append('\tBitString **input_id;')
@@ -97,38 +107,81 @@ def generate_bit_based_cuda_code(cipher, intermediate_output, verbosity):
     code.append('\tuint64_t *substitution_list;')
     code.append('\tuint8_t **linear_transformation;\n')
     code.extend(get_rounds_bit_based_c_code(cipher, intermediate_output, verbosity))
+    for cipher_input in cipher.inputs:
+        code.append(f'\tdelete_bitstring({cipher_input});')
     code.append('}')
+    return '\n'.join(code)
+
+def __generate_bit_based_cuda_main_method(cipher, intermediate_output, verbosity):
+    code = []
+    code.append("\n")
     code.append('int main(int argc, char *argv[]) {')
+    code.append("""
+    if (argc < 2) {
+                fprintf(stderr, "At least one argument required.\\n");
+        return -1;
+    }
+    """)
     evaluate_args = []
     for i in range(len(cipher.inputs)):
-        evaluate_args.append(cipher.inputs[i])
+        evaluate_args.append(f'd_{cipher.inputs[i]}_list')
         code.append(
             f'\tBitString* {cipher.inputs[i]} = '
             f'bitstring_from_hex_string(argv[{i + 1}], {cipher.inputs_bit_size[i]});')
+        code.append(f'\tuint8_t * d_{cipher.inputs[i]}_list;')
+        code.append(
+            f'\tcudaMalloc((void **) & d_{cipher.inputs[i]}_list, {cipher.inputs_bit_size[i]}*sizeof(uint8_t));')
+        code.append(
+            f'\tcudaMemcpy(d_{cipher.inputs[i]}_list, {cipher.inputs[i]}->list, {cipher.inputs_bit_size[i]}*sizeof(uint8_t), cudaMemcpyHostToDevice);')
 
+    cipher_outputs = cipher.get_all_components()
+    cipher_output_components = list(filter(lambda component: component.type == 'cipher_output', cipher_outputs))
 
-    code.append(f'\tBitString * output = (BitString *) malloc(sizeof(BitString));')
-    code.append(f'\tBitString * d_output;')
-    code.append(f'\tcudaMalloc((void **) & d_output, sizeof(BitString));')
-    code.append(f'\tcudaMemcpy(d_output, output, sizeof(BitString), cudaMemcpyHostToDevice);')
-    code.append(f'\tdim3 dimblock(16, 16);')
+    for cipher_output_component in cipher_output_components:
+        code.append(
+            f'\tBitString * cipher_output_{cipher_output_component.id} = (BitString *) malloc(sizeof(BitString));'
+        )
+        code.append(
+            f'\tcipher_output_{cipher_output_component.id}->list = (uint8_t *) malloc({cipher_output_component.output_bit_size}*sizeof(uint8_t));')
+        code.append(
+            f'\tcipher_output_{cipher_output_component.id}->bit_size = {cipher_output_component.output_bit_size};')
+        code.append(f'\tuint8_t * d_output_{cipher_output_component.id}_list;')
+        code.append(
+            f'\tcudaMalloc((void **) & d_output_{cipher_output_component.id}_list, {cipher_output_component.output_bit_size}*sizeof(uint8_t));')
+        evaluate_args.append(f'd_output_{cipher_output_component.id}_list')
+
+    code.append(f'\tdim3 dimblock(1, 1);')
     code.append(f'\tdim3 dimgrid(1, 1);')
-    code.append(f'\tevaluate<<<dimblock,dimgrid>>>({", ".join(evaluate_args)}, d_output);')
-    if not intermediate_output:
-        code.append('\tprint_bitstring(output, 16);')
-    evaluate_args.append('output')
-    code.append(f'\tdelete({", ".join(evaluate_args)});')
+    code.append(f'\tevaluate<<<dimblock,dimgrid>>>({", ".join(evaluate_args)});')
+    # if not intermediate_output:
+    #    code.append('\tprint_bitstring(output, 16);')
+    # evaluate_args.append('output')
+
+    for cipher_output_component in cipher_output_components:
+        code.append(
+            f'\tcudaMemcpy(cipher_output_{cipher_output_component.id}->list, d_output_{cipher_output_component.id}_list, {cipher_output_component.output_bit_size}*sizeof(uint8_t), cudaMemcpyDeviceToHost);')
+    for evaluate_arg in evaluate_args:
+        code.append(f'\tcudaFree({evaluate_arg});')
+    for cipher_input in cipher.inputs:
+        code.append(f'\tdelete_bitstring({cipher_input});')
+    for cipher_output_component in cipher_output_components:
+        code.append(f'\tprint_bitstring(cipher_output_{cipher_output_component.id}, 16);')
+        code.append(f'\tdelete_bitstring(cipher_output_{cipher_output_component.id});')
     code.append('}')
 
-
-
-    #print('\n'.join(code))
-    #with open("./projects/pycu/skinny.cu", "w") as text_file:
-    #    text_file.write('\n'.join(code))
-    #import ipdb;
-    #ipdb.set_trace()
     return '\n'.join(code)
 
+def generate_bit_based_cuda_code(cipher, intermediate_output, verbosity):
+    code = [
+        '#include <stdio.h>',
+        '#include <stdbool.h>',
+        '#include <stdlib.h>',
+        '#include "generic_bit_based_cuda_functions.cuh"\n',
+        "\n",
+        __generate_bit_based_cuda_evaluate_kernel(cipher, intermediate_output, verbosity),
+        __generate_bit_based_cuda_main_method(cipher, intermediate_output, verbosity)
+    ]
+    return '\n'.join(code)
 
 def get_rounds_bit_based_c_code(cipher, intermediate_output, verbosity):
     c_variables = []
@@ -222,8 +275,11 @@ def get_cipher_output_component_bit_based_c_code(component, index, intermediate_
         cipher_output_code.append('\t\tprintf("],\\n");')
         cipher_output_code.append('\t}')
         cipher_output_code.append('\tprintf("}\\n");')
-    cipher_output_code.append(f'\tdelete({", ".join(c_variables)});')
-    #cipher_output_code.append('\treturn input;')
+    for c_variable in c_variables:
+        cipher_output_code.append(f'\tdelete_bitstring({c_variable});')
+    #cipher_output_code.append(f'\tdelete({", ".join(c_variables)});')
+
+    cipher_output_code.append(f'\tmemcpy(arg_{component.id}, input->list, 128*sizeof(uint8_t));')
     return cipher_output_code, index
 
 
@@ -594,7 +650,7 @@ def generate_evaluate_cuda_code_shared_library(cipher, intermediate_output, verb
               f"word_size={cipher_word_size}"])
 
     else:
-        generic_bit_based_cuda_functions_o_file = "generic_bit_based_c_functions.o"
+        generic_bit_based_cuda_functions_o_file = "generic_bit_based_cuda_functions.o"
         if not os.path.exists(TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file):
             call(["nvcc", "--relocatable-device-code=true", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_cuda_functions.cu",
                   "-o", TII_C_LIB_PATH + generic_bit_based_cuda_functions_o_file])
