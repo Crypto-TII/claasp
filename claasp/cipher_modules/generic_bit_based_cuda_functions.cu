@@ -208,7 +208,7 @@ CUDA_HOSTDEV bool equals(BitString *b1, BitString *b2) {
 }
 
 //Constructors
-CUDA_HOSTDEV BitString* zero_bitstring(uint16_t bit_size) {
+/*CUDA_HOSTDEV BitString* zero_bitstring(uint16_t bit_size) {
     BitString *b = (BitString*)malloc(sizeof(BitString));
 
     if (b == NULL) {
@@ -217,6 +217,29 @@ CUDA_HOSTDEV BitString* zero_bitstring(uint16_t bit_size) {
     }
 
     b -> list = (uint8_t *)calloc(byte_size(bit_size), sizeof(uint8_t));
+
+    if (b -> list == NULL) {
+        printf("malloc() failed.");
+        free(b);
+        return NULL;
+    }
+
+    b -> bit_size = bit_size;
+
+    return b;
+}*/
+
+CUDA_HOSTDEV BitString* zero_bitstring(uint16_t bit_size) {
+    BitString *b = (BitString*)malloc(sizeof(BitString));
+
+    if (b == NULL) {
+        printf("malloc() failed.");
+        return NULL;
+    }
+    b -> list = (uint8_t *) malloc(byte_size(bit_size)*sizeof(uint8_t));
+    memset(b -> list, 0, byte_size(bit_size) * sizeof(uint8_t));
+
+    b -> list = calloc(byte_size(bit_size), sizeof(uint8_t));
 
     if (b -> list == NULL) {
         printf("malloc() failed.");
@@ -243,7 +266,7 @@ CUDA_HOSTDEV BitString* bitstring_from_binary_string(char *bits, uint16_t bit_si
     return result;
 }
 
-CUDA_HOSTDEV BitString* bitstring_from_hex_string(char *hex_digits, uint16_t bit_size) {
+/*CUDA_HOSTDEV BitString* bitstring_from_hex_string(char *hex_digits, uint16_t bit_size) {
     BitString *result = zero_bitstring(bit_size);
     uint16_t hex_length = strlen(hex_digits), j = byte_size(bit_size) - 1;;
     char app[2];
@@ -262,33 +285,62 @@ CUDA_HOSTDEV BitString* bitstring_from_hex_string(char *hex_digits, uint16_t bit
     }
 
     return result;
+}*/
+
+// Device function to calculate the length of a string
+CUDA_HOSTDEV size_t cuda_strlen(const char *str) {
+    const char *s = str;
+    while (*s) {
+        s++;
+    }
+    return s - str;
 }
 
-/*
-BitString* bitstring_from_hex_string(char *hex_digits, uint16_t bit_size) {
+CUDA_HOSTDEV int char_to_int(char c) {
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    } else if (c >= 'A' && c <= 'Z') {
+        return c - 'A' + 10;
+    } else if (c >= 'a' && c <= 'z') {
+        return c - 'a' + 10;
+    }
+    return -1;
+}
+
+CUDA_HOSTDEV unsigned long cuda_strtoul(const char *str, char **endptr, int base) {
+    unsigned long result = 0;
+    int digit;
+    while ((digit = char_to_int(*str)) >= 0 && digit < base) {
+        result = result * base + digit;
+        str++;
+    }
+    if (endptr) {
+        *endptr = (char *)str;
+    }
+    return result;
+}
+
+CUDA_HOSTDEV BitString* bitstring_from_hex_string(char *hex_digits, uint16_t bit_size) {
     BitString *result = zero_bitstring(bit_size);
-
+    uint16_t j = byte_size(bit_size) - 1;
+    uint16_t hex_length = cuda_strlen(hex_digits);
     char app[2];
-    uint16_t start_index = 0;
 
-    if (bit_size % 8 <= 4 && bit_size % 8 != 0) {
-        app[0] = '0';
-        app[1] = hex_digits[2];
+    for (int i = hex_length - 1; i >= 3; i -= 2) {
+        app[0] = hex_digits[i - 1];
+        app[1] = hex_digits[i];
 
-        result -> list[0] = strtoul(app, NULL, 16);
-
-        start_index = 1;
+        result -> list[j--] = cuda_strtoul(app, NULL, 16);
     }
 
-    for (int i = start_index; i < byte_size(bit_size); i++) {
-        app[0] = hex_digits[(i * 2) + 2];
-        app[1] = hex_digits[(i * 2) + 3];
-
-        result -> list[i] = strtoul(app, NULL, 16);
+    if ((hex_length - 2) % 2) {
+        app[0] = '0';
+        app[1] = hex_digits[2];
+        result -> list[j] = cuda_strtoul(app, NULL, 16);
     }
 
     return result;
-}*/
+}
 
 CUDA_HOSTDEV BitString* bitstring_from_int(uint64_t value, uint16_t bit_size) {
     BitString *b = zero_bitstring(bit_size);
