@@ -725,6 +725,8 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
 
     name = cipher.id + "_evaluate"
     cipher_word_size = cipher.is_power_of_2_word_based()
+    import ipdb;
+    ipdb.set_trace()
     if cipher_word_size:
         if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o"):
             call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o", TII_C_LIB_PATH +
@@ -760,22 +762,25 @@ def generate_evaluate_cuda_code_shared_library(cipher, intermediate_output, verb
     name = cipher.id + "_evaluate"
     cipher_word_size = cipher.is_power_of_2_word_based()
     if cipher_word_size:
-        if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o"):
-            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o", TII_C_LIB_PATH +
-                  f"generic_word_{cipher_word_size}_based_c_functions.o", "-D", f"word_size={cipher_word_size}"])
+        if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_cuda_functions.o"):
+            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_cuda_functions.cu", "-o", TII_C_LIB_PATH +
+                  f"generic_word_{cipher_word_size}_based_cuda_functions.o", "-D", f"word_size={cipher_word_size}"])
 
-        f = open(TII_C_LIB_PATH + name + ".c", "w+")
-        f.write(cipher.generate_word_based_c_code(cipher_word_size, intermediate_output, verbosity))
+        f = open(TII_C_LIB_PATH + name + ".cu", "w+")
+        f.write(cipher.generate_word_based_cuda_code(cipher_word_size, intermediate_output, verbosity))
         f.close()
-
-        call(["gcc",
+        import ipdb; ipdb.set_trace()
+        call([
+            "nvcc",
+            "--relocatable-device-code=true",
               "-w",
-              TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o",
-              TII_C_LIB_PATH + name + ".c",
+              TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_cu_functions.o",
+              TII_C_LIB_PATH + name + ".cu",
               "-o",
               TII_C_LIB_PATH + name + ".o",
               "-D",
-              f"word_size={cipher_word_size}"])
+              f"word_size={cipher_word_size}"
+        ])
 
     else:
         generic_bit_based_cuda_functions_o_file = "generic_bit_based_cuda_functions.o"
@@ -1108,6 +1113,40 @@ def build_continuous_diffusion_analysis_function_call(component):
 
 
 def generate_word_based_c_code(cipher, word_size, intermediate_output, verbosity):
+    code = ['#include <stdio.h>', '#include <stdbool.h>', '#include <stdlib.h>',
+            '#include "generic_word_based_c_functions.h"\n']
+    function_args = []
+    for cipher_input in cipher.inputs:
+        function_args.append(f'WordString *{cipher_input}')
+    function_declaration = f'WordString* evaluate({", ".join(function_args)}) {{'
+    code.append(function_declaration)
+    code.append('\tWordString input_struct = {')
+    code.append('\t\t.list = NULL,')
+    code.append('\t\t.string_size = 0')
+    code.append('\t};')
+    code.append('\tWordString *input = &input_struct;')
+    if verbosity:
+        code.append('\tchar *str;')
+    code.extend(get_rounds_word_based_c_code(cipher, intermediate_output, verbosity, word_size))
+    code.append('}')
+    code.append('int main(int argc, char *argv[]) {')
+    evaluate_args = []
+    for i in range(len(cipher.inputs)):
+        evaluate_args.append(cipher.inputs[i])
+        code.append(f'\tWordString* {cipher.inputs[i]} = '
+                    f'wordstring_from_hex_string(argv[{i + 1}], '
+                    f'{cipher.inputs_bit_size[i] // word_size});')
+    code.append(f'\tWordString* output = evaluate({", ".join(evaluate_args)});')
+    if not intermediate_output:
+        code.append('\tprint_wordstring(output, 16);')
+    evaluate_args.append('output')
+    code.append(f'\tdelete({", ".join(evaluate_args)});')
+    code.append('}')
+
+    return '\n'.join(code)
+
+
+def generate_word_based_cuda_code(cipher, word_size, intermediate_output, verbosity):
     code = ['#include <stdio.h>', '#include <stdbool.h>', '#include <stdlib.h>',
             '#include "generic_word_based_c_functions.h"\n']
     function_args = []

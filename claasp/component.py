@@ -590,15 +590,18 @@ class Component:
                 word_list.append(f'{self.input_id_links[i]} -> list[{position_list[j] // word_size}]')
 
             i += 1
-
+        len_word_list = len(word_list)
         if input:
-            code.append(f'\tinput -> list = (Word[]) {{{", ".join(word_list)}}};')
+            code.append(f'\tinput -> list = new Word[{len_word_list}] {{{", ".join(word_list)}}};')
+            #code.append(f'\tinput -> list = (Word[]) {{{", ".join(word_list)}}};')
             code.append(f'\tinput -> string_size = {len(word_list)};')
         else:
             code.append(f'\tWordString* {self.id} = create_wordstring({len(word_list)}, false);')
+            code.append(f'\tWord * temp_array_{self.id} = new Word[{len_word_list}]{{{", ".join(word_list)}}};')
             code.append(
                 f'\tmemcpy({self.id} -> '
-                f'list, (Word[]) {{{", ".join(word_list)}}}, {len(word_list)} * sizeof(Word));')
+                f'list, temp_array_{self.id}, {len(word_list)} * sizeof(Word));')
+            code.append(f'\tdelete [] temp_array_{self.id};')
 
     def set_id(self, id_string):
         self._id = id_string

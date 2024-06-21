@@ -905,6 +905,27 @@ class Cipher:
         """
         return code_generator.generate_word_based_c_code(self, word_size, intermediate_output, verbosity)
 
+    def generate_word_based_cuda_code(self, word_size, intermediate_output=False, verbosity=False):
+        """
+        Return a string containing the optimized C code that defines the self.evaluate() method.
+
+        INPUT:
+
+        - ``word_size`` -- **integer**; the size of the word
+        - ``intermediate_output`` -- **boolean** (default: `False`); set this flag to True in order to return a
+          dictionary with each intermediate output
+        - ``verbosity`` -- **boolean** (default: `False`); set this flag to True in order to make the code print the
+          input/output of each component
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
+            sage: word_based_c_code = speck().generate_word_based_c_code(20)
+            sage: word_based_c_code[:8] == '#include'
+            True
+        """
+        return code_generator.generate_word_based_cuda_code(self, word_size, intermediate_output, verbosity)
+
     def get_all_components(self):
         return self._rounds.get_all_components()
 
