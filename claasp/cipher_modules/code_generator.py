@@ -106,7 +106,7 @@ def __generate_bit_based_cuda_evaluate_kernel(cipher, intermediate_output, verbo
     code.append('\tuint64_t **matrix;')
     code.append('\tuint64_t *substitution_list;')
     code.append('\tuint8_t **linear_transformation;\n')
-    code.extend(get_rounds_bit_based_c_code(cipher, intermediate_output, verbosity))
+    code.extend(get_rounds_bit_based_cuda_code(cipher, intermediate_output, verbosity))
     for cipher_input in cipher.inputs:
         code.append(f'\tdelete_bitstring({cipher_input});')
     code.append('}')
@@ -222,6 +222,49 @@ def get_rounds_bit_based_c_code(cipher, intermediate_output, verbosity):
 
     return rounds_code
 
+def get_rounds_bit_based_cuda_code(cipher, intermediate_output, verbosity):
+    c_variables = []
+    string_dictionary = {}
+    list_sizes = []
+    index = 0
+    rounds_code = []
+    for round_number in cipher.rounds_as_list:
+        if verbosity:
+            rounds_code.append(f'\tprintf("\\nROUND {round_number.id}\\n\\n");\n')
+
+        for component in round_number.components:
+            if component.type in ['concatenate']:
+                rounds_code.extend(component.get_bit_based_c_code(verbosity))
+                c_variables.append(component.id)
+
+            elif component.type in ['mix_column', 'linear_layer', 'sbox', 'constant']:
+                rounds_code.extend(component.get_bit_based_cuda_code(verbosity))
+                c_variables.append(component.id)
+
+            elif component.type == 'word_operation':
+                rounds_code.extend(get_word_operation_component_bit_based_cuda_code(component, verbosity))
+                c_variables.append(component.id)
+
+            elif component.type == 'padding':
+                rounds_code.extend(get_padding_component_bit_based_c_code(component, verbosity))
+                c_variables.append(component.id)
+
+            elif component.type == 'intermediate_output':
+                intermediate_output_code, index = get_intermediate_output_component_bit_based_cuda_code(
+                    component, index, intermediate_output, list_sizes, string_dictionary, verbosity)
+                rounds_code.extend(intermediate_output_code)
+                c_variables.append(component.id)
+
+            elif component.type == 'cipher_output':
+                cipher_output_code, index = get_cipher_output_component_bit_based_cuda_code(
+                    component, index, intermediate_output, list_sizes, string_dictionary, c_variables, cipher)
+                rounds_code.extend(cipher_output_code)
+
+            else:
+                raise ValueError(f'Component {component.id} not implemented.')
+
+    return rounds_code
+
 
 def get_cipher_output_component_bit_based_c_code(component, index, intermediate_output, list_sizes, string_dictionary,
                                                  c_variables, cipher):
@@ -282,11 +325,86 @@ def get_cipher_output_component_bit_based_c_code(component, index, intermediate_
     cipher_output_code.append(f'\tmemcpy(arg_{component.id}, input->list, 128*sizeof(uint8_t));')
     return cipher_output_code, index
 
+def get_cipher_output_component_bit_based_cuda_code(component, index, intermediate_output, list_sizes, string_dictionary,
+                                                 c_variables, cipher):
+    cipher_output_code = []
+    component.select_bits_cuda(cipher_output_code)
+    if intermediate_output:
+        if component.description[0] in string_dictionary:
+            list_sizes[string_dictionary[component.description[0]]] += 1
+
+        else:
+            string_dictionary[component.description[0]] = index
+            list_sizes.append(1)
+            index += 1
+
+        s = [f'"{x}"' for x in string_dictionary.keys()]
+
+        number_of_descriptions = len(string_dictionary)
+
+        cipher_output_code.append(f'\tchar **output_list[{number_of_descriptions}];')
+
+        for i in range(len(list_sizes)):
+            cipher_output_code.append(f'\tchar *output_list_{i}[{list_sizes[i]}];')
+            cipher_output_code.append(f'\toutput_list[{i}] = output_list_{i};')
+
+        list_index = [0] * number_of_descriptions
+
+        for cipher_component in cipher.get_all_components():
+            if cipher_component.type == 'intermediate_output':
+                i = string_dictionary[cipher_component.description[0]]
+                cipher_output_code.append(
+                    f'\toutput_list[{i}][{list_index[i]}] = '
+                    f'bitstring_to_hex_string({cipher_component.id});')
+                list_index[i] += 1
+
+        i = index - 1
+
+        cipher_output_code.append(f'\toutput_list[{i}][{list_index[i]}] = bitstring_to_hex_string(input);')
+        list_index[i] += 1
+
+        cipher_output_code.append(f'\tchar *descriptions[] = {{{", ".join(s)}}};')
+        cipher_output_code.append(f'\tuint8_t lenghts[] = {{{", ".join([str(x) for x in list_index])}}};')
+
+        cipher_output_code.append('\tprintf("{\\n");')
+
+        cipher_output_code.append(f'\tfor (int i = 0; i < {number_of_descriptions}; i++) {{')
+        cipher_output_code.append('\t\tprintf("\\"%s\\" : [", descriptions[i]);')
+        cipher_output_code.append('\t\tfor (int j = 0; j < lenghts[i]; j++) {')
+        cipher_output_code.append('\t\t\tprintf("%s, ", output_list[i][j]);')
+        cipher_output_code.append('\t\t\tfree(output_list[i][j]);')
+        cipher_output_code.append('\t\t}')
+        cipher_output_code.append('\t\tprintf("],\\n");')
+        cipher_output_code.append('\t}')
+        cipher_output_code.append('\tprintf("}\\n");')
+    for c_variable in c_variables:
+        cipher_output_code.append(f'\tdelete_bitstring({c_variable});')
+    #cipher_output_code.append(f'\tdelete({", ".join(c_variables)});')
+
+    cipher_output_code.append(f'\tmemcpy(arg_{component.id}, input->list, 128*sizeof(uint8_t));')
+    return cipher_output_code, index
 
 def get_intermediate_output_component_bit_based_c_code(component, index, intermediate_output, list_sizes,
                                                        string_dictionary, verbosity):
     intermediate_output_code = []
     component.select_bits(intermediate_output_code)
+    intermediate_output_code.append(f'\tBitString *{component.id} = input;')
+    if intermediate_output:
+        if component.description[0] in string_dictionary:
+            list_sizes[string_dictionary[component.description[0]]] += 1
+
+        else:
+            string_dictionary[component.description[0]] = index
+            list_sizes.append(1)
+            index += 1
+    if verbosity:
+        component.print_values(intermediate_output_code)
+    return intermediate_output_code, index
+
+def get_intermediate_output_component_bit_based_cuda_code(component, index, intermediate_output, list_sizes,
+                                                       string_dictionary, verbosity):
+    intermediate_output_code = []
+    component.select_bits_cuda(intermediate_output_code)
     intermediate_output_code.append(f'\tBitString *{component.id} = input;')
     if intermediate_output:
         if component.description[0] in string_dictionary:
@@ -311,10 +429,9 @@ def get_padding_component_bit_based_c_code(component, verbosity):
 
     return padding_code
 
-
-def get_word_operation_component_bit_based_c_code(component, verbosity):
+def generate_word_operation_code(component, verbosity, select_bits_func):
     word_operation_code = []
-    component.select_bits(word_operation_code)
+    select_bits_func(word_operation_code)
     if component.description[0] in ['SHIFT', 'ROTATE', 'SHIFT_BY_VARIABLE_AMOUNT', 'ROTATE_BY_VARIABLE_AMOUNT']:
         word_operation_code.append(
             f'\tBitString *{component.id} = {component.description[0]}('
@@ -328,6 +445,13 @@ def get_word_operation_component_bit_based_c_code(component, verbosity):
     free_input(word_operation_code)
 
     return word_operation_code
+
+def get_word_operation_component_bit_based_c_code(component, verbosity):
+    return generate_word_operation_code(component, verbosity, component.select_bits)
+
+def get_word_operation_component_bit_based_cuda_code(component, verbosity):
+    return generate_word_operation_code(component, verbosity, component.select_bits_cuda)
+
 
 def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False,
                                                      verbosity=False, convert_output_to_bytes=False):
@@ -612,8 +736,6 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
               TII_C_LIB_PATH + name + ".o",
               "-D",
               f"word_size={cipher_word_size}"])
-        import ipdb; ipdb.set_trace()
-
     else:
         generic_bit_based_c_functions_o_file = "generic_bit_based_c_functions.o"
         if not os.path.exists(TII_C_LIB_PATH + generic_bit_based_c_functions_o_file):
