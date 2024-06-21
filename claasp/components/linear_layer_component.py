@@ -1,4 +1,3 @@
-import numpy as np
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -315,9 +314,9 @@ class LinearLayer(Component):
 
         return cp_declarations, cp_constraints
 
-    def get_bit_based_c_code(self, verbosity):
+    def get_bit_based_cuda_code(self, verbosity):
         linear_layer_code = []
-        self.select_bits(linear_layer_code)
+        self.select_bits_cuda(linear_layer_code)
         len_description_list = len(self.description)
         linear_layer_code.append(f'\tlinear_transformation = new uint8_t*[{len_description_list}];\n')
 
@@ -334,6 +333,24 @@ class LinearLayer(Component):
         for k, position_list in enumerate(self.input_bit_positions):
             linear_layer_code.append(f'\tdelete [] linear_transformation[{k}];')
         linear_layer_code.append(f'\tdelete [] linear_transformation;')
+
+        return linear_layer_code
+
+    def get_bit_based_c_code(self, verbosity):
+        linear_layer_code = []
+        self.select_bits(linear_layer_code)
+
+        linear_layer_code.append('\tlinear_transformation = (uint8_t*[]) {')
+        for row in self.description:
+            linear_layer_code.append(f'\t\t(uint8_t[]) {{{", ".join([str(x) for x in row])}}},')
+        linear_layer_code.append('\t};')
+
+        linear_layer_code.append(f'\tBitString* {self.id} = LINEAR_LAYER(input, linear_transformation);\n')
+
+        if verbosity:
+            self.print_values(linear_layer_code)
+
+        free_input(linear_layer_code)
 
         return linear_layer_code
 

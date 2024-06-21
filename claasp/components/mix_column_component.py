@@ -486,9 +486,9 @@ class MixColumn(LinearLayer):
         result = cp_declarations, cp_constraints
         return result
 
-    def get_bit_based_c_code(self, verbosity):
+    def get_bit_based_cuda_code(self, verbosity):
         mix_column_code = []
-        self.select_bits(mix_column_code)
+        self.select_bits_cuda(mix_column_code)
         len_description_list = len(self.description[0])
 
         mix_column_code.append(f'\tmatrix = new uint64_t*[{len_description_list}];\n')
@@ -506,6 +506,26 @@ class MixColumn(LinearLayer):
         for k, position_list in enumerate(self.description[0]):
             mix_column_code.append(f'\tdelete [] matrix[{k}];')
         mix_column_code.append(f'\tdelete [] matrix;')
+
+        if verbosity:
+            self.print_values(mix_column_code)
+
+        free_input(mix_column_code)
+
+        return mix_column_code
+
+    def get_bit_based_c_code(self, verbosity):
+        mix_column_code = []
+        self.select_bits(mix_column_code)
+
+        mix_column_code.append('\tmatrix = (uint64_t*[]) {')
+        for row in self.description[0]:
+            mix_column_code.append(f'\t\t(uint64_t[]) {{{", ".join([str(x) for x in row])}}},')
+        mix_column_code.append('\t};')
+
+        mix_column_code.append(
+            f'\tBitString* {self.id} = '
+            f'MIX_COLUMNS(input, matrix, {self.description[1]}, {self.description[2]});\n')
 
         if verbosity:
             self.print_values(mix_column_code)

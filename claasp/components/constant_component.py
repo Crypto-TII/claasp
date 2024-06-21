@@ -298,6 +298,9 @@ class Constant(Component):
 
         return constant_code
 
+    def get_bit_based_cuda_code(self, verbosity):
+        return self.get_bit_based_c_code(verbosity)
+
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         return [f'  {self.id} = np.array({constant_to_bitstring(self.description[0], self.output_bit_size)}, '
                 f'dtype=np.uint8).reshape({self.output_bit_size, 1})']

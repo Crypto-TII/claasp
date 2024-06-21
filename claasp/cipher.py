@@ -919,7 +919,7 @@ class Cipher:
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher as fancy
             sage: fancy().generate_evaluate_c_code_shared_library() # doctest: +SKIP
         """
-        code_generator.generate_evaluate_cuda_code_shared_library(self, intermediate_output, verbosity)
+        code_generator.generate_evaluate_c_code_shared_library(self, intermediate_output, verbosity)
 
     def generate_evaluate_cuda_code_shared_library(self, intermediate_output=False, verbosity=False):
         """

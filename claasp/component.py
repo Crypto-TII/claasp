@@ -550,23 +550,6 @@ class Component:
         code.append(f'\tprintf("{self.id}_output = ");')
         code.append(f'\tprint_wordstring({self.id}, 16);\n')
 
-    def select_bits(self, code):
-        n = len(self.input_id_links)
-        code.append(f'\tinput_id = new BitString*[{n}];\n')
-
-        for k, input_id in enumerate(self.input_id_links):
-            code.append(f'\tinput_id[{k}] = {input_id};\n')
-        code.append(f'\tinput_positions = new uint16_t*[{n}];\n')
-        for k, position_list in enumerate(self.input_bit_positions):
-            len_position_list = len(position_list)
-            code.append(f'\tinput_positions[{k}] = new uint16_t[{len_position_list+1}] {{{len_position_list}, {", ".join([str(p) for p in position_list])}}};\n')
-
-        code.append(f'\tinput = select_bits({n}, input_id, input_positions, {self.output_bit_size});')
-
-        for k, position_list in enumerate(self.input_bit_positions):
-            code.append(f'\tdelete [] input_positions[{k}];')
-        code.append(f'\tdelete [] input_positions;')
-
     def select_bits_cuda(self, code):
         n = len(self.input_id_links)
         code.append(f'\tinput_id = new BitString*[{n}];\n')
@@ -584,6 +567,19 @@ class Component:
             code.append(f'\tdelete [] input_positions[{k}];')
         code.append(f'\tdelete [] input_positions;')
 
+    def select_bits(self, code):
+        n = len(self.input_id_links)
+
+        code.append((f'\tinput_id = (BitString*[]) {{{", ".join(self.input_id_links)}}};\n'
+                     f'\tinput_positions = (uint16_t*[]) {{'))
+
+        for position_list in self.input_bit_positions:
+            code.append(
+                (f'\t\t(uint16_t[]) {{{len(position_list)}, {", ".join([str(p) for p in position_list])}}},'))
+
+        code.append('\t};')
+
+        code.append(f'\tinput = select_bits({n}, input_id, input_positions, {self.output_bit_size});')
 
     def select_words(self, code, word_size, input=True):
         word_list = []

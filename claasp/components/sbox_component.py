@@ -711,9 +711,9 @@ class SBOX(Component):
 
         return sbox_sign_lat
 
-    def get_bit_based_c_code(self, verbosity):
+    def get_bit_based_cuda_code(self, verbosity):
         sbox_code = []
-        self.select_bits(sbox_code)
+        self.select_bits_cuda(sbox_code)
         len_description_list = len(self.description)
         sbox_code.append(
             f'\tsubstitution_list = '
@@ -727,6 +727,24 @@ class SBOX(Component):
             self.print_values(sbox_code)
 
         sbox_code.append('\tdelete[] substitution_list;')
+        free_input(sbox_code)
+
+        return sbox_code
+
+    def get_bit_based_c_code(self, verbosity):
+        sbox_code = []
+        self.select_bits(sbox_code)
+
+        sbox_code.append(
+            f'\tsubstitution_list = '
+            f'(uint64_t[]) {{{", ".join([str(x) for x in self.description])}}};')
+        sbox_code.append(
+            f'\tBitString* {self.id} = '
+            f'SBOX(input, {self.output_bit_size}, substitution_list);\n')
+
+        if verbosity:
+            self.print_values(sbox_code)
+
         free_input(sbox_code)
 
         return sbox_code

@@ -116,7 +116,7 @@ def evaluate_using_cuda(cipher, inputs, intermediate_output, verbosity):
     else:
         function_output = int(output.read().decode('utf-8')[:-1], 16)
 
-    #code_generator.delete_generated_evaluate_cuda_shared_library(cipher)
+    code_generator.delete_generated_evaluate_cuda_shared_library(cipher)
 
     return function_output
 
