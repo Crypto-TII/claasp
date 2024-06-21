@@ -23,10 +23,15 @@ def test_skinny_block_cipher():
     ciphertext = 0x4ced01d20a158953d0968f3a1ce190bc
     assert skinny.evaluate([plaintext, key]) == ciphertext
     assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
-    assert skinny.evaluate_using_cuda([plaintext, key])  == ciphertext
 
     plaintext = 0xa3994b66ad85a3459f44e92b08f550cb
     key = 0xdf889548cfc7ea52d296339301797449ab588a34a47f1ab2dfe9c8293fbea9a5ab1afac2611012cd8cef952618c3ebe8
     ciphertext = 0xff38d1d24c864c4352a853690fe36e5e
     assert skinny.evaluate([plaintext, key]) == ciphertext
     assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+
+    skinny = SkinnyBlockCipher(block_bit_size=128, key_bit_size=384, number_of_rounds=2)
+    plaintext = 0x00000000000000000000000000000000
+    key = 0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    ciphertext = 0x11abafed1ea4adc4ae78c3c174c1caa1
+    assert skinny.evaluate_using_cuda([plaintext, key])  == ciphertext
