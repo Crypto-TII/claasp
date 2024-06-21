@@ -11,7 +11,7 @@ DOCKER_IMG_NAME=claasp
 CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 
 all: install
-	if [ $(CURRENT_BRANCH) == "master" ]; then\
+	if [ $(CURRENT_BRANCH) == "main" ]; then\
 		$(SAGE_BIN) setup.py testall;\
 	else\
 		$(SAGE_BIN) -t `{ git diff --name-only "*.py" ; git diff --name-only --staged "*.py"; } | uniq`;\

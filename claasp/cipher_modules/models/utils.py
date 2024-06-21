@@ -64,7 +64,7 @@ def convert_solver_solution_to_dictionary(cipher, model_type, solver_name, solve
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: speck = SpeckBlockCipher(number_of_rounds=4)
         sage: convert_solver_solution_to_dictionary(speck.id, 'xor_differential', 'z3', 0.239, 175.5, [], 0)
-        {'cipher_id': 'speck_p32_k64_o32_r4',
+        {'cipher': 'speck_p32_k64_o32_r4',
          'components_values': [],
          'memory_megabytes': 175.500000000000,
          'model_type': 'xor_differential',
