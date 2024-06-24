@@ -85,7 +85,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                     input_component = self.get_component_from_id(id_link, self.inverse_cipher)
                     if input_component not in backward_components and id_link not in key_ids + constant_ids:
                         components_to_invert.append(input_component)
-            inverse_variables, inverse_constraints = self.clean_inverse_impossible_variables_constraints(components_to_invert, inverse_variables, inverse_constraints)
+            inverse_variables, inverse_constraints = self.clean_inverse_impossible_variables_constraints_for_attack(components_to_invert, inverse_variables, inverse_constraints)
             
         return inverse_variables, inverse_constraints
     
@@ -113,7 +113,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
             
         return direct_variables, direct_constraints
         
-    def build_impossible_attack_model(self, fixed_variables, number_of_rounds, initial_round, middle_round, final_round, intermediate_components):
+    def build_impossible_attack_xor_differential_trail_model(self, fixed_variables, number_of_rounds, initial_round, middle_round, final_round, intermediate_components):
         self.initialise_model()
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
@@ -218,7 +218,8 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         self._variables_list.extend(direct_variables)
         deterministic_truncated_xor_differential.extend(direct_constraints)
 
-        inverse_variables, inverse_constraints = self.build_impossible_backward_model(backward_components)
+        inverse_variables, inverse_constraints = self.build_impossible_backward_model(backward_components, clean = False)
+        inverse_variables, inverse_constraints = self.clean_inverse_impossible_variables_constraints(backward_components, inverse_variables, inverse_constraints)
         self._variables_list.extend(inverse_variables)
         deterministic_truncated_xor_differential.extend(inverse_constraints)
 
@@ -265,6 +266,39 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         return model_constraints
             
     def clean_inverse_impossible_variables_constraints(self, backward_components, inverse_variables, inverse_constraints):
+        for component in backward_components:
+            for v in range(len(inverse_variables)):
+                start = 0
+                while component.id in inverse_variables[v][start:]:
+                    new_start = inverse_variables[v].index(component.id, start)
+                    inverse_variables[v] = inverse_variables[v][:new_start] + 'inverse_' + inverse_variables[v][new_start:]
+                    start = new_start + 9
+            for c in range(len(inverse_constraints)):
+                start = 0
+                while component.id in inverse_constraints[c][start:]:
+                    new_start = inverse_constraints[c].index(component.id, start)
+                    inverse_constraints[c] = inverse_constraints[c][:new_start] + 'inverse_' + inverse_constraints[c][new_start:]
+                    start = new_start + 9
+        for c in range(len(inverse_constraints)):
+            start = 0
+            while 'cipher_output' in inverse_constraints[c][start:]:
+                new_start = inverse_constraints[c].index('cipher_output', start)
+                inverse_constraints[c] = inverse_constraints[c][:new_start] + 'inverse_' + inverse_constraints[c][new_start:]
+                start = new_start + 9
+            start = 0
+            while 'inverse_inverse_' in inverse_constraints[c][start:]:
+                new_start = inverse_constraints[c].index('inverse_inverse_', start)
+                inverse_constraints[c] = inverse_constraints[c][:new_start] + inverse_constraints[c][new_start + 8:]
+                start = new_start
+        for v in range(len(inverse_variables)):
+            start = 0
+            while 'inverse_inverse_' in inverse_variables[v][start:]:
+                new_start = inverse_variables[v].index('inverse_inverse_', start)
+                inverse_variables[v] = inverse_variables[v][:new_start] + inverse_variables[v][new_start + 8:]
+                start = new_start
+        return inverse_variables, inverse_constraints
+        
+    def clean_inverse_impossible_variables_constraints_for_attack(self, backward_components, inverse_variables, inverse_constraints):
         key_components, key_ids = self.extract_key_schedule()
         constant_components, constant_ids = self.extract_constants()
         for component in backward_components:
@@ -703,7 +737,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
               'solving_time_seconds': 0.0,
               'total_weight': '0.0'}]
         """
-        self.build_impossible_attack_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
+        self.build_impossible_attack_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
         return self.solve('impossible_xor_differential_one_solution', solver_name, number_of_rounds, initial_round, middle_round, final_round, num_of_processors, timelimit)
     

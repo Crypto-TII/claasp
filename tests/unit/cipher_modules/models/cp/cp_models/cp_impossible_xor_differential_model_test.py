@@ -4,6 +4,18 @@ from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_mo
     CpImpossibleXorDifferentialModel
 
 
+def test_build_impossible_attack_xor_differential_trail_model():
+    speck = SpeckBlockCipher(number_of_rounds=6)
+    cp = CpImpossibleXorDifferentialModel(speck)
+    fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
+    cp.build_impossible_attack_xor_differential_trail_model(number_of_rounds=6, fixed_variables=fixed_variables, initial_round=2, middle_round=3, final_round=5, intermediate_components=False)
+
+    assert len(cp.model_constraints) == 1764
+    assert cp.model_constraints[99] == 'array[0..31] of var 0..2: inverse_plaintext;'
+    assert cp.model_constraints[3] == 'array[0..63] of var 0..2: key;'
+    assert cp.model_constraints[39] == 'array[0..31] of var 0..2: cipher_output_5_12;'
+
+
 def test_build_impossible_xor_differential_trail_model():
     speck = SpeckBlockCipher(number_of_rounds=5)
     cp = CpImpossibleXorDifferentialModel(speck)
@@ -72,3 +84,27 @@ def test_find_one_impossible_xor_differential_trail():
     
     assert trail['components_values']['xor_1_10']['value'] == '2222222222100022'
     assert trail['components_values']['inverse_rot_2_9']['value'] == '2222222210022222'
+
+
+def test_find_one_impossible_attack_xor_differential_trail():
+    speck = SpeckBlockCipher(number_of_rounds=6)
+    cp = CpImpossibleXorDifferentialModel(speck)
+    plaintext = set_fixed_variables(component_id='inverse_plaintext', constraint_type='not_equal',
+                                    bit_positions=range(32), bit_values=[0] * 32)
+    ciphertext = set_fixed_variables(component_id=speck.get_all_components_ids()[-1], constraint_type='not_equal',
+                                    bit_positions=range(32), bit_values=[0] * 32)
+    key = set_fixed_variables('key', constraint_type='equal',
+                                    bit_positions=range(64), bit_values=[0] * 64)
+    trail = cp.find_one_impossible_attack_xor_differential_trail(6, [plaintext, ciphertext, key], 'Chuffed', 2, 3, 5, True)
+
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r6'
+    assert trail['model_type'] == 'impossible_xor_differential_one_solution'
+    assert trail['solver_name'] == 'Chuffed'
+    
+    print(trail)
+
+    assert trail['components_values']['inverse_plaintext']['value'] == '22222220022222220000200000021200'
+    assert trail['components_values']['inverse_cipher_output_5_12']['value'] == '22222210000000002222221000000011'
+    
+    assert trail['components_values']['intermediate_output_2_12']['value'] == '22222222220000002222222222000022'
+    assert trail['components_values']['inverse_intermediate_output_2_12']['value'] == '22222222222222222222222222122222'
