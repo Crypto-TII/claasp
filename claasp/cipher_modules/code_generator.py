@@ -725,8 +725,6 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
 
     name = cipher.id + "_evaluate"
     cipher_word_size = cipher.is_power_of_2_word_based()
-    import ipdb;
-    ipdb.set_trace()
     if cipher_word_size:
         if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o"):
             call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o", TII_C_LIB_PATH +
@@ -763,18 +761,18 @@ def generate_evaluate_cuda_code_shared_library(cipher, intermediate_output, verb
     cipher_word_size = cipher.is_power_of_2_word_based()
     if cipher_word_size:
         if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_cuda_functions.o"):
-            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_cuda_functions.cu", "-o", TII_C_LIB_PATH +
+            call(["nvcc", "--relocatable-device-code=true", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_cuda_functions.cu", "-o", TII_C_LIB_PATH +
                   f"generic_word_{cipher_word_size}_based_cuda_functions.o", "-D", f"word_size={cipher_word_size}"])
 
         f = open(TII_C_LIB_PATH + name + ".cu", "w+")
         f.write(cipher.generate_word_based_cuda_code(cipher_word_size, intermediate_output, verbosity))
         f.close()
-        import ipdb; ipdb.set_trace()
+
         call([
             "nvcc",
             "--relocatable-device-code=true",
               "-w",
-              TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_cu_functions.o",
+              TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_cuda_functions.o",
               TII_C_LIB_PATH + name + ".cu",
               "-o",
               TII_C_LIB_PATH + name + ".o",
@@ -1136,7 +1134,7 @@ def generate_word_based_c_code(cipher, word_size, intermediate_output, verbosity
         code.append(f'\tWordString* {cipher.inputs[i]} = '
                     f'wordstring_from_hex_string(argv[{i + 1}], '
                     f'{cipher.inputs_bit_size[i] // word_size});')
-    code.append(f'\tWordString* output = evaluate({", ".join(evaluate_args)});')
+    code.append(f'\tevaluate<<<1,1>>>({", ".join(evaluate_args)});')
     if not intermediate_output:
         code.append('\tprint_wordstring(output, 16);')
     evaluate_args.append('output')
@@ -1148,33 +1146,104 @@ def generate_word_based_c_code(cipher, word_size, intermediate_output, verbosity
 
 def generate_word_based_cuda_code(cipher, word_size, intermediate_output, verbosity):
     code = ['#include <stdio.h>', '#include <stdbool.h>', '#include <stdlib.h>',
-            '#include "generic_word_based_c_functions.h"\n']
+            '#include "generic_word_based_cuda_functions.cuh"\n']
+
+
+    cipher_outputs = cipher.get_all_components()
+    cipher_output_components = list(filter(lambda component: component.type == 'cipher_output', cipher_outputs))
+    cipher_output_args = []
+    for cipher_output_component in cipher_output_components:
+        cipher_output_args.append(f'Word * arg_{cipher_output_component.id}')
+
     function_args = []
     for cipher_input in cipher.inputs:
-        function_args.append(f'WordString *{cipher_input}')
-    function_declaration = f'WordString* evaluate({", ".join(function_args)}) {{'
+        function_args.append(f'Word *arg_{cipher_input}')
+
+
+
+    function_declaration = f'__global__  void evaluate({", ".join(function_args)}, {", ".join(cipher_output_args)}) {{'
     code.append(function_declaration)
     code.append('\tWordString input_struct = {')
     code.append('\t\t.list = NULL,')
     code.append('\t\t.string_size = 0')
     code.append('\t};')
+
+    for cipher_input, cipher_bit_size in zip(cipher.inputs, cipher.inputs_bit_size):
+        code.append(f'\tWordString *{cipher_input} = (WordString *) malloc(sizeof(WordString));')
+        code.append(f'\t{cipher_input}->list = (Word *) malloc({(cipher_bit_size//word_size)}*sizeof(Word));')
+        code.append(f'\tmemcpy({cipher_input}->list, arg_{cipher_input}, {(cipher_bit_size//word_size)}*sizeof(Word));')
+
+
     code.append('\tWordString *input = &input_struct;')
     if verbosity:
         code.append('\tchar *str;')
-    code.extend(get_rounds_word_based_c_code(cipher, intermediate_output, verbosity, word_size))
+    code.extend(get_rounds_word_based_cuda_code(cipher, intermediate_output, verbosity, word_size))
+
+    for cipher_input in cipher.inputs:
+        code.append(f'\tdelete_wordstring({cipher_input});')
+
+
     code.append('}')
     code.append('int main(int argc, char *argv[]) {')
+
+    code.append("""
+    if (argc < 2) {
+                fprintf(stderr, "At least one argument required.\\n");
+        return -1;
+    }
+    """)
+
     evaluate_args = []
     for i in range(len(cipher.inputs)):
-        evaluate_args.append(cipher.inputs[i])
+        evaluate_args.append(f'd_{cipher.inputs[i]}_list')
         code.append(f'\tWordString* {cipher.inputs[i]} = '
                     f'wordstring_from_hex_string(argv[{i + 1}], '
                     f'{cipher.inputs_bit_size[i] // word_size});')
-    code.append(f'\tWordString* output = evaluate({", ".join(evaluate_args)});')
-    if not intermediate_output:
-        code.append('\tprint_wordstring(output, 16);')
-    evaluate_args.append('output')
-    code.append(f'\tdelete({", ".join(evaluate_args)});')
+
+        code.append(f'\tWord * d_{cipher.inputs[i]}_list;')
+        code.append(
+            f'\tcudaMalloc((void **) & d_{cipher.inputs[i]}_list, {cipher.inputs_bit_size[i]//word_size}*sizeof(Word));')
+        code.append(
+            f'\tcudaMemcpy(d_{cipher.inputs[i]}_list, {cipher.inputs[i]}->list, {cipher.inputs_bit_size[i]//word_size}*sizeof(Word), cudaMemcpyHostToDevice);')
+
+    cipher_outputs = cipher.get_all_components()
+    cipher_output_components = list(filter(lambda component: component.type == 'cipher_output', cipher_outputs))
+
+    for cipher_output_component in cipher_output_components:
+        code.append(
+            f'\tWordString * cipher_output_{cipher_output_component.id} = (WordString *) malloc(sizeof(WordString));'
+        )
+        code.append(
+            f'\tcipher_output_{cipher_output_component.id}->list = (Word *) malloc({cipher_output_component.output_bit_size// word_size}*sizeof(Word));')
+        code.append(
+            f'\tcipher_output_{cipher_output_component.id}->string_size = {cipher_output_component.output_bit_size// word_size};')
+        code.append(f'\tWord * d_output_{cipher_output_component.id}_list;')
+        code.append(
+            f'\tcudaMalloc((void **) & d_output_{cipher_output_component.id}_list, {cipher_output_component.output_bit_size// word_size}*sizeof(Word));')
+        evaluate_args.append(f'd_output_{cipher_output_component.id}_list')
+
+
+    code.append(f'\tevaluate<<<1,1>>>({", ".join(evaluate_args)});')
+    #if not intermediate_output:
+    #    code.append('\tprint_wordstring(output, 16);')
+    #evaluate_args.append('output')
+    #code.append(f'\tdelete({", ".join(evaluate_args)});')
+
+    for cipher_output_component in cipher_output_components:
+        code.append(
+            f'\tcudaMemcpy(cipher_output_{cipher_output_component.id}->list, d_output_{cipher_output_component.id}_list, {cipher_output_component.output_bit_size//word_size}*sizeof(Word), cudaMemcpyDeviceToHost);'
+        )
+
+    for evaluate_arg in evaluate_args:
+        code.append(f'\tcudaFree({evaluate_arg});')
+
+    for cipher_input in cipher.inputs:
+        code.append(f'\tdelete_wordstring({cipher_input});')
+
+    for cipher_output_component in cipher_output_components:
+        code.append(f'\tprint_wordstring(cipher_output_{cipher_output_component.id}, 16);')
+        code.append(f'\tdelete_wordstring(cipher_output_{cipher_output_component.id});')
+
     code.append('}')
 
     return '\n'.join(code)
@@ -1207,6 +1276,41 @@ def get_rounds_word_based_c_code(cipher, intermediate_output, verbosity, word_si
                 rounds_code.extend(component_code)
             elif component.type == 'cipher_output':
                 component_code, index = get_cipher_output_word_based_c_code(
+                    component, index, intermediate_output, intermediate_output_code, list_sizes,
+                    string_dictionary, verbosity, word_size, wordstring_variables)
+                rounds_code.extend(component_code)
+            else:
+                raise ValueError(f'Component {component.id} not available.')
+
+    return rounds_code
+
+def get_rounds_word_based_cuda_code(cipher, intermediate_output, verbosity, word_size):
+    rounds_code = []
+    wordstring_variables = []
+    string_dictionary = {}
+    list_sizes = []
+    intermediate_output_code = []
+    index = 0
+    for round_number in cipher.rounds_as_list:
+        if verbosity:
+            rounds_code.append(f'\tprintf("\\nROUND {round_number.id}\\n\\n");\n')
+        for component in round_number.components:
+            is_shift_or_rotate_component = component.type == 'word_operation' and \
+                                           component.description[0] in ['SHIFT', 'ROTATE',
+                                                                        'SHIFT_BY_VARIABLE_AMOUNT',
+                                                                        'ROTATE_BY_VARIABLE_AMOUNT']
+            if component.type in ['constant', 'sbox', 'concatenate'] or is_shift_or_rotate_component:
+                rounds_code.extend(component.get_word_based_c_code(verbosity, word_size, wordstring_variables))
+            elif component.type == 'word_operation':
+                rounds_code.extend(get_word_operation_word_based_c_code(component, verbosity,
+                                                                        word_size, wordstring_variables))
+            elif component.type == 'intermediate_output':
+                component_code, index = get_intermediate_output_word_based_c_code(
+                    component, index, intermediate_output, intermediate_output_code, list_sizes,
+                    string_dictionary, verbosity, word_size, wordstring_variables)
+                rounds_code.extend(component_code)
+            elif component.type == 'cipher_output':
+                component_code, index = get_cipher_output_word_based_cuda_code(
                     component, index, intermediate_output, intermediate_output_code, list_sizes,
                     string_dictionary, verbosity, word_size, wordstring_variables)
                 rounds_code.extend(component_code)
@@ -1254,6 +1358,47 @@ def get_cipher_output_word_based_c_code(component, index, intermediate_output, i
 
     return code, index
 
+def get_cipher_output_word_based_cuda_code(component, index, intermediate_output, intermediate_output_code,
+                                        list_sizes, string_dictionary, verbosity, word_size, wordstring_variables):
+    code = []
+    component.select_words(code, word_size, False)
+    output = component.id
+    if verbosity:
+        code.append(f'\tstr = wordstring_to_hex_string({component.id});')
+        code.append(f'\tprintf("{component.id} input: %s\\n", str);')
+        code.append(f'\tprintf("{component.id} output: %s\\n", str);')
+        code.append('\tfree(str);')
+    if intermediate_output:
+        update_intermediate_structure(string_dictionary, list_sizes, intermediate_output_code, component, index)
+        number_of_descriptions = len(string_dictionary)
+        description_list = [''] * number_of_descriptions
+        for description, index in string_dictionary.items():
+            description_list[index] = f'"{description}"'
+        code.append(f'\tchar **output_list[{number_of_descriptions}];')
+        for i in range(len(list_sizes)):
+            code.append(f'\tchar *output_list_{i}[{list_sizes[i]}];')
+            code.append(f'\toutput_list[{i}] = output_list_{i};')
+        code.extend(intermediate_output_code)
+        code.append(f'\tchar *descriptions[] = {{{", ".join(description_list)}}};')
+        code.append(f'\tuint8_t lenghts[] = {{{", ".join([str(x) for x in list_sizes])}}};')
+        code.append('\tprintf("{");')
+        code.append(f'\tfor (int i = 0; i < {number_of_descriptions}; i++) {{')
+        code.append('\t\tprintf("\\"%s\\" : [", descriptions[i]);')
+        code.append('\t\tfor (int j = 0; j < lenghts[i]; j++) {')
+        code.append('\t\t\tprintf("%s, ", output_list[i][j]);')
+        code.append('\t\t\tfree(output_list[i][j]);')
+        code.append('\t\t}')
+        code.append('\t\tprintf("],\\n");')
+        code.append('\t}')
+        code.append('\tprintf("}");')
+    for wordstring_variable in wordstring_variables:
+        code.append(f'\tdelete_wordstring({wordstring_variable});')
+
+    code.append(f'\tmemcpy(arg_{component.id}, {component.id}->list, {component.output_bit_size//word_size}*sizeof(Word));')
+    code.append(f'\tdelete_wordstring({component.id});')
+
+    return code, index
+
 
 def get_intermediate_output_word_based_c_code(component, index, intermediate_output, intermediate_output_code,
                                               list_sizes, string_dictionary, verbosity, word_size,
@@ -1277,6 +1422,7 @@ def get_word_operation_word_based_c_code(component, verbosity, word_size, wordst
     component.select_words(word_operation_code, word_size)
     wordstring_variables.append(component.id)
     word_operation_code.append(f'\tWordString *{component.id} = {component.description[0]}(input);')
+    word_operation_code.append(f'\tdelete [] input->list;')
     if verbosity:
         component.print_word_values(word_operation_code)
 

@@ -385,11 +385,13 @@ class SHIFT(Component):
         shift_code.append(
             f'\tWordString *{self.id} = '
             f'{direction}_{self.description[0]}(input, {abs(self.description[1])});')
+        shift_code.append(f"\tdelete [] input->list;")
 
         if verbosity:
             self.print_word_values(shift_code)
 
         return shift_code
+
 
     def get_word_operation_sign(self, sign, solution):
         output_id_link = self.id
