@@ -250,11 +250,6 @@ class Constant(Component):
         """
         output_size = int(self.output_bit_size)
         output_id_link = self.id
-        #new_declaration = f'array[0..{output_size - 1}] of var 0..1: ' \
-        #                  f'{output_id_link} = array1d(0..{output_size - 1}, [' \
-        #                  + ','.join('0' * output_size) + ']);'
-        #cp_declarations = [new_declaration]
-        #cp_constraints = []
         new_declaration = f'array[0..{int(output_size) - 1}] of var 0..2: {output_id_link};'
         cp_declarations = [new_declaration]
         cp_constraints = []
@@ -262,8 +257,6 @@ class Constant(Component):
             cp_constraints.append(f'constraint {output_id_link}[{i}] = 0;')
 
         return cp_declarations, cp_constraints
-        result = cp_declarations, cp_constraints
-        return result
 
     def cp_xor_linear_mask_propagation_constraints(self, model=None):
         """

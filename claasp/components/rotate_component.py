@@ -144,48 +144,6 @@ class Rotate(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_constraints()
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
-        r"""
-        Return lists declarations and constraints for XOR component CP wordwise deterministic truncated XOR differential model.
-
-        INPUT:
-
-        - ``model`` -- **model object**; a model instance
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
-            sage: aes = AESBlockCipher(number_of_rounds=5)
-            sage: cp = CpModel(aes)
-            sage: xor_component = aes.component_from(0, 0)
-            sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-            ([],
-             ['constraint temp_0_0_value = key_value[0] /\\ temp_0_0_active = key_active[0];',
-               ...
-              'constraint if temp_0_15_active + temp_1_15_active > 2 then xor_0_0_active[15] == 3 /\\ xor_0_0_value[15] = -2 elif temp_0_15_active + temp_1_15_active == 1 then xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = temp_0_15_value + temp_1_15_value elif temp_0_15_active + temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 elif temp_0_15_value + temp_1_15_value < 0 then xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elif temp_0_15_value == temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum[(((floor(temp_0_15_value/(2**j)) + floor(temp_1_15_value/(2**j))) mod 2) * (2**j)) | j in 0..log2(temp_0_15_value + temp_1_15_value)] endif;'])
-        """
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
-        cp_declarations = []
-        all_inputs_value = []
-        all_inputs_active = []
-        word_size = model.word_size
-        rot_amount = self.description[1] // word_size
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
-                                     for j in range(len(bit_positions) // word_size)])
-            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
-                                      for j in range(len(bit_positions) // word_size)])
-        input_len = len(all_inputs_value)
-        cp_constraints = []
-        for i in range(input_len):
-            cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[(i - rot_amount) % input_len]};')
-            cp_constraints.append(f'constraint {output_id_link}_value[{i}] = {all_inputs_value[(i - rot_amount) % input_len]};')
-        
-        return cp_declarations, cp_constraints
-
     def cp_inverse_constraints(self):
         """
         Return lists of declarations and constraints for ROTATE component for CP INVERSE CIPHER model.
@@ -225,60 +183,25 @@ class Rotate(Component):
         return cp_declarations, cp_constraints
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
-        """
-        Return lists of declarations and constraints for ROTATE CP deterministic truncated xor differential model.
-
-        INPUT:
-
-        - ``model`` -- **model object**; a model instance
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
-            sage: rotate_component = aes.component_from(0, 18)
-            sage: rotate_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-            ([],
-             ['constraint rot_0_18[0]_active = sbox_0_6_active[0];',
-              'constraint rot_0_18[1]_active = sbox_0_10_active[0];',
-                ...
-              'constraint rot_0_18[2]_value = sbox_0_14_value[0];',
-              'constraint rot_0_18[3]_value = sbox_0_2_value[0];'])
-        """
-        output_size = int(self.output_bit_size)
-        input_id_link = self.input_id_links
+        input_id_links = self.input_id_links
         output_id_link = self.id
         input_bit_positions = self.input_bit_positions
-        word_size = model.word_size
-        rot_amount = abs(self.description[1]) // word_size
-        all_inputs_active = []
-        all_inputs_value = []
         cp_declarations = []
-        for id_link, bit_positions in zip(input_id_link, input_bit_positions):
-            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
-                                      for j in range(len(bit_positions) // word_size)])
-        for id_link, bit_positions in zip(input_id_link, input_bit_positions):
+        all_inputs_value = []
+        all_inputs_active = []
+        word_size = model.word_size
+        rot_amount = self.description[1] // word_size
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
             all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
                                      for j in range(len(bit_positions) // word_size)])
-        input_len = len(all_inputs_active)
-
-        if rot_amount == self.description[1]:
-            cp_constraints = [
-                f'constraint {output_id_link}[{i}]_active = {all_inputs_active[(i - rot_amount) % input_len]};'
-                for i in range(output_size // word_size)]
-            cp_constraints.extend([
-                f'constraint {output_id_link}[{j}]_value = {all_inputs_value[(j - rot_amount) % input_len]};' for j in
-                range(output_size // word_size)])
-        else:
-            cp_constraints = [
-                f'constraint {output_id_link}[{i}]_active = {all_inputs_active[(i + rot_amount) % input_len]};'
-                for i in range(output_size // word_size)]
-            cp_constraints.extend([
-                f'constraint {output_id_link}[{j}]_value = {all_inputs_value[(j + rot_amount) % input_len]};' for j in
-                range(output_size // word_size)])
-
+            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
+                                      for j in range(len(bit_positions) // word_size)])
+        input_len = len(all_inputs_value)
+        cp_constraints = []
+        for i in range(input_len):
+            cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[(i - rot_amount) % input_len]};')
+            cp_constraints.append(f'constraint {output_id_link}_value[{i}] = {all_inputs_value[(i - rot_amount) % input_len]};')
+        
         return cp_declarations, cp_constraints
 
     def cp_xor_differential_first_step_constraints(self, model):

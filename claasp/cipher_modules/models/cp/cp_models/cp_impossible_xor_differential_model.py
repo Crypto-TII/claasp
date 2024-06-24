@@ -342,61 +342,6 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         constant_components, constant_ids = self.extract_constants()
         return self.build_impossible_forward_model(constant_components)
         
-    def extract_incompatibilities_from_output(self, components_values, initial_round = None, final_round = None):
-        cipher = self._cipher
-        inverse_cipher = self.inverse_cipher
-        if initial_round is None or initial_round == 1:
-            incompatibilities = {'plaintext': components_values['plaintext']}
-        else:
-            for component in cipher.get_components_in_round(initial_round - 2):
-                if 'output' in component.id and component.id in components_values.keys():
-                    incompatibilities = {component.id: components_values[component.id]}
-        for component in cipher.get_all_components():
-            if 'inverse_' + component.id in components_values.keys():
-                incompatibility = False
-                input_id_links = component.input_id_links
-                input_bit_positions = component.input_bit_positions
-                total_component_value = ''
-                todo = True
-                for id_link in input_id_links:
-                    if id_link not in components_values.keys():
-                        todo = False
-                if todo:
-                    for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                        for b in bit_positions:
-                            total_component_value += components_values[id_link]['value'][b]
-                    if len(total_component_value) == len(components_values['inverse_' + component.id]['value']):
-                        for i in range(len(total_component_value)):
-                            if int(total_component_value[i]) + int(components_values['inverse_' + component.id]['value'][i]) == 1:
-                                incompatibility = True
-                        if incompatibility:
-                            for id_link in input_id_links:
-                                incompatibilities[id_link] = components_values[id_link]
-                            incompatibilities['inverse_' + component.id] = components_values['inverse_' + component.id]
-                    else:
-                        l = len(components_values['inverse_' + component.id]['value'])
-                        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                            for inverse_component in inverse_cipher.get_all_components():
-                                if id_link == inverse_component.id and component.id in inverse_component.input_id_links and len(bit_positions) == l:
-                                    for i in range(l):
-                                        if int(components_values[id_link]['value'][i]) + int(components_values['inverse_' + component.id]['value'][i]) == 1:
-                                            incompatibility = True
-                            if incompatibility:
-                                for id_link in input_id_links:
-                                    incompatibilities[id_link] = components_values[id_link]
-                                incompatibilities['inverse_' + component.id] = components_values['inverse_' + component.id]
-                                incompatibility = False
-        if final_round is None or final_round == cipher.number_of_rounds:
-            incompatibilities['inverse_' + cipher.get_all_components_ids()[-1]] = components_values['inverse_' + cipher.get_all_components_ids()[-1]]
-        else:
-            for component in cipher.get_components_in_round(final_round - 1):
-                if 'output' in component.id and 'inverse_' + component.id in components_values.keys():
-                    incompatibilities['inverse_' + component.id] = components_values['inverse_' + component.id]
-        
-        solutions = {'solution1' : incompatibilities}
-                    
-        return solutions
-        
     def extract_constants(self):
         cipher = self._cipher
         constant_components_ids = []
@@ -1038,8 +983,6 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                                                            output_to_parse, solution_number, string)
                 elif '----------' in string:
                     solution_number += 1
-        #if 'impossible' in model_type and solution_number > 1:
-        #    components_values = self.extract_incompatibilities_from_output(components_values['solution1'], initial_round, final_round)
 
         return time, memory, components_values
             
@@ -1087,7 +1030,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         input_file_path = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, num_of_processors, timelimit)
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        #os.remove(input_file_path)
+        os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
@@ -1099,7 +1042,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                 solve_time, memory, components_values = self._parse_solver_output(solver_output, model_type, number_of_rounds, initial_round, middle_round, final_round)
                 total_weight = 0
             else:
-                solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type)
+                solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type, number_of_rounds, initial_round, middle_round, final_round)
             if components_values == {}:
                 solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name,
                                                                  solve_time, memory,

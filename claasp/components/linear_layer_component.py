@@ -266,7 +266,7 @@ class LinearLayer(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         r"""
         Return lists declarations and constraints for LINEAR LAYER CP deterministic truncated xor differential model.
 
@@ -293,6 +293,7 @@ class LinearLayer(Component):
         all_inputs_active = []
         matrix = self.description
         word_size = model.word_size
+        output_size = len(matrix) // word_size
         for id_link, bit_positions in zip(input_id_links, input_bit_positions):
             all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
                                      for j in range(len(bit_positions) // word_size)])

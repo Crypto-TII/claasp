@@ -620,7 +620,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
             input_file_path, model_type, solver_name, num_of_processors, timelimit
         )
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        os.remove(input_file_path)
+        #os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()

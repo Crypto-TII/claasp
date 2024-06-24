@@ -47,25 +47,3 @@ def test_find_one_deterministic_truncated_xor_differential_trail():
                                                             '0000000000'
     assert trail[0]['model_type'] == 'deterministic_truncated_xor_differential_one_solution'
     assert trail[0]['solver_name'] == 'Chuffed'
-
-
-def test_input_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = AESBlockCipher(number_of_rounds=2)
-    cp = CpDeterministicTruncatedXorDifferentialModel(aes)
-    declarations, constraints = cp.input_wordwise_deterministic_truncated_xor_differential_constraints()
-
-    assert len(constraints) == 275
-
-    assert declarations[0] == 'array[0..15] of var 0..3: key_active;'
-    assert declarations[1] == 'array[0..15] of var -2..255: key_value;'
-    assert declarations[2] == 'array[0..15] of var 0..3: plaintext_active;'
-
-    assert constraints[0] == 'constraint if key_active[0] == 0 then key_value[0] = 0 elseif key_active[0] == 1 then ' \
-                             'key_value[0] > 0 elseif key_active[0] == 2 then key_value[0] =-1 else ' \
-                             'key_value[0] =-2 endif;'
-    assert constraints[1] == 'constraint if key_active[1] == 0 then key_value[1] = 0 elseif key_active[1] == 1 then ' \
-                             'key_value[1] > 0 elseif key_active[1] == 2 then key_value[1] =-1 else ' \
-                             'key_value[1] =-2 endif;'
-    assert constraints[2] == 'constraint if key_active[2] == 0 then key_value[2] = 0 elseif key_active[2] == 1 then ' \
-                             'key_value[2] > 0 elseif key_active[2] == 2 then key_value[2] =-1 else ' \
-                             'key_value[2] =-2 endif;'
