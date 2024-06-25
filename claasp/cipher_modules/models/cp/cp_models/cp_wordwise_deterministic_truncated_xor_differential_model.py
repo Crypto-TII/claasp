@@ -70,10 +70,7 @@ class CpWordwiseDeterministicTruncatedXorDifferentialModel(CpDeterministicTrunca
             if component.type not in component_types or \
                     (component.type == WORD_OPERATION and operation not in operation_types):
                 print(f'{component.id} not yet implemented')
-            if component.type == SBOX:
-                variables, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
-            else:
-                variables, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
+            variables, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
             self._variables_list.extend(variables)
             deterministic_truncated_xor_differential.extend(constraints)
 
@@ -235,69 +232,3 @@ class CpWordwiseDeterministicTruncatedXorDifferentialModel(CpDeterministicTrunca
 
         return cp_declarations, cp_constraints
 
-    def format_component_value(self, component_id, string):
-        if f'{component_id}_i' in string:
-            value = string.replace(f'{component_id}_i', '')
-        elif f'{component_id}_o' in string:
-            value = string.replace(f'{component_id}_o', '')
-        elif f'inverse_{component_id}' in string:
-            value = string.replace(f'inverse_{component_id}', '')
-        elif f'{component_id}' in string:
-            value = string.replace(component_id, '')
-        value = value.replace('= [', '')
-        value = value.replace(']', '')
-        value = value.replace(',', '')
-        value = value.replace(' ', '')
-
-        return value
-        
-    def _parse_solver_output(self, output_to_parse, model_type):
-        """
-        Parse solver solution (if needed).
-
-        INPUT:
-
-        - ``output_to_parse`` -- **list**; strings that represents the solver output
-        - ``truncated`` -- **boolean** (default: `False`)
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import CpXorDifferentialTrailSearchModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, write_model_to_file
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = CpXorDifferentialTrailSearchModel(speck)
-            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
-            sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
-            sage: write_model_to_file(cp._model_constraints,'doctesting_file.mzn')
-            sage: command = ['minizinc', '--solver-statistics', '--solver', 'Chuffed', 'doctesting_file.mzn']
-            sage: import subprocess
-            sage: solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-            sage: os.remove('doctesting_file.mzn')
-            sage: solver_output = solver_process.stdout.splitlines()
-            sage: cp._parse_solver_output(solver_output) # random
-            (0.018,
-             ...
-             'cipher_output_3_12': {'value': '0', 'weight': 0}}},
-             ['0'])
-        """
-        components_values, memory, time = self.parse_solver_information(output_to_parse)
-        all_components = [*self._cipher.inputs, *self._cipher.get_all_components_ids()]
-        for component_id in all_components:
-            solution_number = 1
-            for j, string in enumerate(output_to_parse):
-                if f'{component_id}_active' in string or f'{component_id}_value' in string or f'{component_id}' in string or f'inverse_{component_id}' in string:
-                    value = self.format_component_value(component_id, string)
-                    component_solution = {}
-                    component_solution['value'] = value
-                    self.add_solution_to_components_values(component_id, component_solution, components_values, j,
-                                                           output_to_parse, solution_number, string)
-                elif '----------' in string:
-                    solution_number += 1
-        if 'impossible' in model_type and solution_number > 1:
-            for nsol in components_values.keys():
-                components_values[nsol] = self.extract_incompatibilities_from_output(components_values[nsol])
-
-        return time, memory, components_values
-            
