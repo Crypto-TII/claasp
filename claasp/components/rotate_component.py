@@ -312,7 +312,7 @@ class Rotate(Component):
         return [f'  {self.id} = bit_vector_ROTATE([{",".join(params)} ], {self.description[1]})']
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} = byte_vector_ROTATE({params}, {self.description[1]})']
+        return [f'  {self.id} = byte_vector_ROTATE({params}, {self.description[1]}, {self.input_bit_size})']
 
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):
         rotate_code = []

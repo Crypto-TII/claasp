@@ -645,8 +645,8 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: xor_component = cipher.get_component_from_id("xor_0_5")
@@ -658,8 +658,8 @@ class XOR(Component):
              ('x[xor_0_5_15_class_bit_0]', x_94),
              ('x[xor_0_5_15_class_bit_1]', x_95)]
             sage: constraints
-            [1 <= 1 - x_1 + x_33 + x_64 + x_65,
-             1 <= 1 + x_1 - x_33 + x_64 + x_65,
+            [x_96 == 2*x_0 + x_1,
+             x_97 == 2*x_2 + x_3,
              ...
              1 <= 1 - x_30 + x_94,
              1 <= 2 - x_62 - x_63]
@@ -672,7 +672,8 @@ class XOR(Component):
         input_id_tuples, output_id_tuples = self._get_input_output_variables_tuples()
         input_ids, output_ids = self._get_input_output_variables()
 
-        variables = [(f"x[{var_elt}]", x[var_elt]) for var_tuple in input_id_tuples + output_id_tuples for var_elt in var_tuple]
+        variables = [(f"x[{var_elt}]", x[var_elt]) for var_tuple in input_id_tuples + output_id_tuples for var_elt in
+                     var_tuple]
 
         linking_constraints = model.link_binary_tuples_to_integer_variables(input_id_tuples + output_id_tuples,
                                                                             input_ids + output_ids)
@@ -682,10 +683,11 @@ class XOR(Component):
         for i, output_id in enumerate(output_id_tuples):
             result_ids = [(f'temp_xor_{j}_{self.id}_{i}_0', f'temp_xor_{j}_{self.id}_{i}_1')
                           for j in range(number_of_inputs - 2)] + [output_id]
-            constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][0], input_id_tuples[i::output_bit_size][1], result_ids[0]))
+            constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][0],
+                                                             input_id_tuples[i::output_bit_size][1], result_ids[0]))
             for chunk in range(1, number_of_inputs - 1):
-                constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][chunk + 1], result_ids[chunk - 1], result_ids[chunk]))
-
+                constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][chunk + 1],
+                                                                 result_ids[chunk - 1], result_ids[chunk]))
 
         return variables, constraints
 
@@ -760,7 +762,6 @@ class XOR(Component):
 
         return variables, constraints
 
-
     def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints for XOR component
@@ -805,6 +806,9 @@ class XOR(Component):
              1 <= 2 - x_30 - x_39]
 
         """
+        if model.word_size == 8:
+            return self.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(model)
+
         x = model.binary_variable
 
         num_of_inputs = int(self.description[1])
@@ -828,7 +832,6 @@ class XOR(Component):
 
         return variables, constraints
 
-
     def milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints for XOR component
@@ -849,20 +852,20 @@ class XOR(Component):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_32")
+            sage: xor_component = cipher.get_component_from_id("xor_0_31")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(milp)
             sage: variables
-            [('x[xor_0_31_word_0_class_bit_0]', x_0),
-             ('x[xor_0_31_word_0_class_bit_1]', x_1),
+            [('x[sbox_0_26_word_0_class_bit_0]', x_0),
+            ('x[sbox_0_26_word_0_class_bit_1]', x_1),
              ...
-             ('x[xor_0_32_30]', x_118),
-             ('x[xor_0_32_31]', x_119)]
+            ('x[xor_0_31_30]', x_158),
+            ('x[xor_0_31_31]', x_159)]
             sage: constraints
-            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_81,
-             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_81,
+            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_161,
+             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_161,
             ...
-             1 <= 1 + x_31 - x_39,
-             1 <= 2 - x_30 - x_39]
+             1 <= 1 + x_111 - x_119,
+             1 <= 2 - x_110 - x_119]
 
 
         """
@@ -899,9 +902,9 @@ class XOR(Component):
         It follows a simplified model:
         if dX0 + dX1 > 2
             then dY = 3
-	    elif dX0<2 /\ dX1<2
-	        then zeta Y = zetaX0 ^ zetaX1
-	    else dY = 2
+        elif dX0<2 / dX1<2
+            then zeta Y = zetaX0 ^ zetaX1
+        else dY = 2
 
         INPUTS:
 
@@ -925,14 +928,12 @@ class XOR(Component):
 
         input_class_vars, output_class_vars = self._get_wordwise_input_output_linked_class(model)
 
-
         variables = [(f"x_class[{var}]", x_class[var]) for var in input_class_vars + output_class_vars]
 
         constraints = []
 
         input_vars = [x_class[var] for var in input_class_vars]
         output_vars = [x_class[var] for var in output_class_vars]
-
 
         for i in range(len(output_class_vars)):
             input_words = input_vars[i::len(output_class_vars)]
@@ -943,11 +944,11 @@ class XOR(Component):
             then_constraints_list = []
 
             # if dX0 + dX1 > 2 then dY = 3
-            a_b_greater_2, geq_2_constraints = milp_utils.milp_geq(model, input_a + input_b, 2, 2 * model._model.get_max(x_class) + 1)
+            a_b_greater_2, geq_2_constraints = milp_utils.milp_geq(model, input_a + input_b, 2,
+                                                                   2 * model._model.get_max(x_class) + 1)
             var_if_list.append(a_b_greater_2)
             constraints.extend(geq_2_constraints)
             then_constraints_list.append([output_c == 3])
-
 
             # elif dX0 < 2 /\ dX1 < 2 then zeta Y = zetaX0 ^ zetaX1
             a_less_2, a_less_2_constraints = milp_utils.milp_less(model, input_a, 2, model._model.get_max(x_class) + 1)
@@ -964,10 +965,10 @@ class XOR(Component):
             # else dY = 2
             else_constraints = [output_c == 2]
 
-            constraints.extend(milp_utils.milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraints, num_of_inputs * model._model.get_max(x_class)))
+            constraints.extend(milp_utils.milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraints,
+                                                            num_of_inputs * model._model.get_max(x_class)))
 
             return variables, constraints
-
 
     def minizinc_constraints(self, model):
         r"""

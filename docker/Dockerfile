@@ -1,7 +1,6 @@
 FROM ubuntu:22.04 AS claasp-base
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GUROBI_ARCH=linux64
 ARG COPY_CLAASP_LIBRARY=false
 ARG INSTALL_CLAASP_LIBRARY=false
 
@@ -30,11 +29,11 @@ COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
 WORKDIR /opt
 
-RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_${GUROBI_ARCH}.tar.gz \
-    && tar -xf gurobi10.0.0_${GUROBI_ARCH}.tar.gz \
-    && rm gurobi10.0.0_${GUROBI_ARCH}.tar.gz
+RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz \
+    && tar -xf gurobi10.0.0_linux64.tar.gz \
+    && rm gurobi10.0.0_linux64.tar.gz
 
-ENV GUROBI_HOME="/opt/gurobi1000/${GUROBI_ARCH}"
+ENV GUROBI_HOME="/opt/gurobi1000/linux64"
 ENV PATH="${PATH}:${GUROBI_HOME}/bin"
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
 
@@ -78,7 +77,7 @@ RUN sage -pip install bitstring==4.0.1 \
   pygments==2.12.0 \
   sage-package==0.0.7 \
   setuptools==59.6.0 \
-  sphinx==4.5.0 \
+  sphinx==5.0.0 \
   sphinxcontrib-bibtex==2.5.0 \
   tensorflow==2.13.0 \
   pytest==7.2.1 \
@@ -86,7 +85,8 @@ RUN sage -pip install bitstring==4.0.1 \
   pytest-xdist==3.2.0 \
   pytest-benchmark==4.0.0 \
   networkx==2.8.8 \
-  numpy==1.24.3
+  numpy==1.24.3 \
+  joblib==1.4.2
 
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
@@ -160,9 +160,11 @@ RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1
     && tar -xf glucose-syrup-4.1.tgz \
     && rm glucose-syrup-4.1.tgz
 
-RUN make glucose-syrup-4.1/simp
+RUN cd glucose-syrup-4.1/simp \
+    && make
 
-RUN make glucose-syrup-4.1/parallel
+RUN cd glucose-syrup-4.1/parallel \
+    && make
 
 WORKDIR /opt
 

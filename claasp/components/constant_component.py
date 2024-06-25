@@ -22,7 +22,7 @@ from claasp.component import Component
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.code_generator import constant_to_bitstring
-
+from claasp.cipher_modules.generic_functions_vectorized_byte import integer_array_to_evaluate_vectorized_input
 
 def constant_to_repr(val, output_size):
     _val = int(val, 0)
@@ -33,6 +33,8 @@ def constant_to_repr(val, output_size):
     ret = [(_val >> s - (8 * (i + 1))) & 0xff for i in range(s // 8)]
 
     return ret
+
+
 
 
 class Constant(Component):

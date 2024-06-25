@@ -40,27 +40,31 @@ class NeuralNetworkTests:
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
-            sage: NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2)).neural_network_blackbox_distinguisher_tests(nb_samples=10)
-                    {'input_parameters': {'test_name': 'neural_network_blackbox_distinguisher_tests',
-          'number_of_samples': 10,
-          'hidden_layers': [32, 32, 32],
-          'number_of_epochs': 10},
-         'test_results': {'plaintext': {'round_key_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0,
-               0.0],
-              'component_ids': ['intermediate_output_0_5',
-               'intermediate_output_1_11']}]},
-           'round_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [0.0],
-              'component_ids': ['intermediate_output_0_6']}]},
-           'cipher_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0],
-              'component_ids': ['cipher_output_1_12']}]}},
-          'key': {'round_key_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [0.0,
-               0.0],
-              'component_ids': ['intermediate_output_0_5',
-               'intermediate_output_1_11']}]},
-           'round_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [0.0],
-              'component_ids': ['intermediate_output_0_6']}]},
-           'cipher_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0],
-              'component_ids': ['cipher_output_1_12']}]}}}}
+            ...
+            sage: NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2)).neural_network_blackbox_distinguisher_tests(nb_samples=10) # random
+            ...
+            {'input_parameters': {'cipher': speck_p32_k64_o32_r2,
+              'hidden_layers': [32, 32, 32],
+              'number_of_epochs': 10,
+              'number_of_samples': 10,
+              'test_name': 'neural_network_blackbox_distinguisher_tests'},
+             'test_results': {'key': {'cipher_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [0.0],
+                  'component_ids': ['cipher_output_1_12']}]},
+               'round_key_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0,
+                   0.0],
+                  'component_ids': ['intermediate_output_0_5',
+                   'intermediate_output_1_11']}]},
+               'round_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0],
+                  'component_ids': ['intermediate_output_0_6']}]}},
+              'plaintext': {'cipher_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0],
+                  'component_ids': ['cipher_output_1_12']}]},
+               'round_key_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0,
+                   1.0],
+                  'component_ids': ['intermediate_output_0_5',
+                   'intermediate_output_1_11']}]},
+               'round_output': {'neural_network_blackbox_distinguisher': [{'accuracies': [1.0],
+                  'component_ids': ['intermediate_output_0_6']}]}}}}
+
         """
         results = {"input_parameters": {
             "test_name": "neural_network_blackbox_distinguisher_tests",
@@ -156,7 +160,7 @@ class NeuralNetworkTests:
         base_inputs_np[index] = random_inputs_for_index
         base_input_index_unpacked = np.unpackbits(base_inputs_np[index].transpose(), axis=1)
 
-        cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_outputs=True)
+        cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_output=True)
 
         for k in cipher_output:
             for j in range(len(cipher_output[k])):
@@ -221,37 +225,39 @@ class NeuralNetworkTests:
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
-            sage: NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2)).neural_network_differential_distinguisher_tests(nb_samples=10)
-                {'input_parameters': {'test_name': 'neural_network_differential_distinguisher_tests',
-      'number_of_samples': 10,
-      'input_differences': [[4194304], [10]],
-      'hidden_layers': [32, 32, 32],
-      'min_accuracy_value': 0,
-      'max_accuracy_value': 1,
-      'output_bit_size': 32,
-      'number_of_epochs': 10,
-      'plaintext_input_bit_size': 32,
-      'key_input_bit_size': 64},
-     'test_results': {'plaintext': {'round_key_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0,
-           1.0],
-          'component_ids': ['intermediate_output_0_5', 'intermediate_output_1_11'],
-          'input_difference_value': '0x400000'}]},
-       'round_output': {'neural_network_differential_distinguisher': [{'accuracies': [0.0],
-          'component_ids': ['intermediate_output_0_6'],
-          'input_difference_value': '0x400000'}]},
-       'cipher_output': {'neural_network_differential_distinguisher': [{'accuracies': [0.0],
-          'component_ids': ['cipher_output_1_12'],
-          'input_difference_value': '0x400000'}]}},
-      'key': {'round_key_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0,
-           1.0],
-          'component_ids': ['intermediate_output_0_5', 'intermediate_output_1_11'],
-          'input_difference_value': '0xa'}]},
-       'round_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0],
-          'component_ids': ['intermediate_output_0_6'],
-          'input_difference_value': '0xa'}]},
-       'cipher_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0],
-          'component_ids': ['cipher_output_1_12'],
-          'input_difference_value': '0xa'}]}}}}
+            sage: NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2)).neural_network_differential_distinguisher_tests(nb_samples=10) # random
+            ...
+            {'input_parameters': {'test_name': 'neural_network_differential_distinguisher_tests',
+              'cipher': speck_p32_k64_o32_r2,
+              'number_of_samples': 10,
+              'input_differences': [[4194304], [10]],
+              'hidden_layers': [32, 32, 32],
+              'min_accuracy_value': 0,
+              'max_accuracy_value': 1,
+              'output_bit_size': 32,
+              'number_of_epochs': 10,
+              'plaintext_input_bit_size': 32,
+              'key_input_bit_size': 64},
+             'test_results': {'plaintext': {'cipher_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0],
+                  'component_ids': ['cipher_output_1_12'],
+                  'input_difference_value': '0x400000'}]},
+               'round_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0],
+                  'component_ids': ['intermediate_output_0_6'],
+                  'input_difference_value': '0x400000'}]},
+               'round_key_output': {'neural_network_differential_distinguisher': [{'accuracies': [0.0,
+                   1.0],
+                  'component_ids': ['intermediate_output_0_5', 'intermediate_output_1_11'],
+                  'input_difference_value': '0x400000'}]}},
+              'key': {'cipher_output': {'neural_network_differential_distinguisher': [{'accuracies': [0.0],
+                  'component_ids': ['cipher_output_1_12'],
+                  'input_difference_value': '0xa'}]},
+               'round_output': {'neural_network_differential_distinguisher': [{'accuracies': [0.0],
+                  'component_ids': ['intermediate_output_0_6'],
+                  'input_difference_value': '0xa'}]},
+               'round_key_output': {'neural_network_differential_distinguisher': [{'accuracies': [1.0,
+                   1.0],
+                  'component_ids': ['intermediate_output_0_5', 'intermediate_output_1_11'],
+                  'input_difference_value': '0xa'}]}}}}
 
         """
         results = {"input_parameters": {
@@ -325,12 +331,12 @@ class NeuralNetworkTests:
 
         other_inputs_np = list(base_inputs_np)
 
-        d_array = np.array([b for b in int(d).to_bytes(input_lengths[index] // 8, byteorder='big')])
+        d_array = np.uint8([b for b in int(d).to_bytes(input_lengths[index] // 8, byteorder='big')])
         other_inputs_np[index] = other_inputs_np[index] ^ np.broadcast_to(d_array, (
             nb_samples, input_lengths[index] // 8)).transpose()
-
-        cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_outputs=True)
-        other_output = evaluator.evaluate_vectorized(self.cipher, other_inputs_np, intermediate_outputs=True)
+        print([(x.shape, x.dtype) for x in other_inputs_np])
+        cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_output=True)
+        other_output = evaluator.evaluate_vectorized(self.cipher, other_inputs_np, intermediate_output=True)
 
         for k in cipher_output:
             for j in range(len(cipher_output[k])):
@@ -365,17 +371,17 @@ class NeuralNetworkTests:
 
         if number_of_rounds < self.cipher.number_of_rounds:
             C0 = np.unpackbits(
-                self.cipher.evaluate_vectorized(inputs_0, intermediate_outputs=True)['round_output'][number_of_rounds - 1],
+                self.cipher.evaluate_vectorized(inputs_0, intermediate_output=True)['round_output'][number_of_rounds - 1],
                 axis=1)
             C1 = np.unpackbits(
-                self.cipher.evaluate_vectorized(inputs_1, intermediate_outputs=True)['round_output'][number_of_rounds - 1],
+                self.cipher.evaluate_vectorized(inputs_1, intermediate_output=True)['round_output'][number_of_rounds - 1],
                 axis=1)
         elif number_of_rounds == self.cipher.number_of_rounds:
             C0 = np.unpackbits(
-                self.cipher.evaluate_vectorized(inputs_0, intermediate_outputs=True)['cipher_output'][0],
+                self.cipher.evaluate_vectorized(inputs_0, intermediate_output=True)['cipher_output'][0],
                 axis=1)
             C1 = np.unpackbits(
-                self.cipher.evaluate_vectorized(inputs_1, intermediate_outputs=True)['cipher_output'][0],
+                self.cipher.evaluate_vectorized(inputs_1, intermediate_output=True)['cipher_output'][0],
                 axis=1)
         else:
             raise RoundNumberTooHigh("The number of rounds required for the differential dataset is larger than the number of rounds of the"
@@ -424,62 +430,64 @@ class NeuralNetworkTests:
 
         EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
-        sage: speck = SpeckBlockCipher()
-        sage: tester = NeuralNetworkTests(speck)
-        sage: input_differences = [0x400000, 0]
-        sage: data_generator = lambda nr, samples: tester.get_differential_dataset(input_differences, number_of_rounds = nr, samples = samples)
-        sage: neural_network = tester.get_neural_network('gohr_resnet', input_size = 64)
-        sage: tester.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network,
-        training_samples = 1000, testing_samples=1000)
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+            sage: speck = SpeckBlockCipher()
+            sage: tester = NeuralNetworkTests(speck)
+            sage: input_differences = [0x400000, 0]
+            sage: data_generator = lambda nr, samples: tester.get_differential_dataset(input_differences, number_of_rounds = nr, samples = samples)
+            sage: neural_network = tester.get_neural_network('gohr_resnet', input_size = 64)
+            ...
+            sage: tester.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 1000, testing_samples=1000) # random
             Epoch 1/5
-            1/1 [==============================] - 2s 2s/step - loss: 0.3249 - acc: 0.4930 - val_loss: 0.2640 - val_acc: 0.4950
-            Epoch 2/5
-            1/1 [==============================] - 0s 102ms/step - loss: 0.2797 - acc: 0.5570 - val_loss: 0.2624 - val_acc: 0.4950
-            Epoch 3/5
-            1/1 [==============================] - 0s 102ms/step - loss: 0.2435 - acc: 0.6080 - val_loss: 0.2609 - val_acc: 0.4950
-            Epoch 4/5
-            1/1 [==============================] - 0s 105ms/step - loss: 0.2142 - acc: 0.6640 - val_loss: 0.2595 - val_acc: 0.4930
-            Epoch 5/5
-            1/1 [==============================] - 0s 102ms/step - loss: 0.1896 - acc: 0.7090 - val_loss: 0.2583 - val_acc: 0.4930
-            Validation accuracy at 5 rounds :0.4950000047683716
-            {5: 0.4950000047683716}
-            sage:         sage: tester.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples=10**4)
-            Epoch 1/5
-            20/20 [==============================] - 7s 337ms/step - loss: 0.1979 - acc: 0.7259 - val_loss: 0.2284 - val_acc: 0.7019
-            Epoch 2/5
-            20/20 [==============================] - 7s 338ms/step - loss: 0.1586 - acc: 0.7936 - val_loss: 0.2274 - val_acc: 0.7083
-            Epoch 3/5
-            20/20 [==============================] - 7s 361ms/step - loss: 0.1260 - acc: 0.8389 - val_loss: 0.2298 - val_acc: 0.5813
-            Epoch 4/5
-            20/20 [==============================] - 7s 349ms/step - loss: 0.1089 - acc: 0.8560 - val_loss: 0.2334 - val_acc: 0.5309
-            Epoch 5/5
-            20/20 [==============================] - 7s 364ms/step - loss: 0.1040 - acc: 0.8633 - val_loss: 0.2320 - val_acc: 0.5244
-            Validation accuracy at 5 rounds :0.708299994468689
-            Epoch 1/5
-            20/20 [==============================] - 7s 363ms/step - loss: 0.2627 - acc: 0.6160 - val_loss: 0.2529 - val_acc: 0.5367
-            Epoch 2/5
-            20/20 [==============================] - 7s 362ms/step - loss: 0.2214 - acc: 0.6630 - val_loss: 0.2410 - val_acc: 0.6018
-            Epoch 3/5
-            20/20 [==============================] - 7s 360ms/step - loss: 0.2123 - acc: 0.6765 - val_loss: 0.2378 - val_acc: 0.6105
-            Epoch 4/5
-            20/20 [==============================] - 7s 331ms/step - loss: 0.2079 - acc: 0.6857 - val_loss: 0.2351 - val_acc: 0.6217
-            Epoch 5/5
-            20/20 [==============================] - 7s 331ms/step - loss: 0.2050 - acc: 0.6894 - val_loss: 0.2334 - val_acc: 0.6277
-            Validation accuracy at 6 rounds :0.6276999711990356
-            Epoch 1/5
-            20/20 [==============================] - 7s 337ms/step - loss: 0.2678 - acc: 0.4966 - val_loss: 0.2616 - val_acc: 0.4959
-            Epoch 2/5
-            20/20 [==============================] - 7s 335ms/step - loss: 0.2537 - acc: 0.5215 - val_loss: 0.2614 - val_acc: 0.4962
-            Epoch 3/5
-            20/20 [==============================] - 7s 342ms/step - loss: 0.2505 - acc: 0.5366 - val_loss: 0.2588 - val_acc: 0.4978
-            Epoch 4/5
-            20/20 [==============================] - 7s 357ms/step - loss: 0.2487 - acc: 0.5496 - val_loss: 0.2567 - val_acc: 0.4963
-            Epoch 5/5
-            20/20 [==============================] - 7s 354ms/step - loss: 0.2473 - acc: 0.5592 - val_loss: 0.2562 - val_acc: 0.4981
-            Validation accuracy at 7 rounds :0.49810001254081726
-            {5: 0.708299994468689, 6: 0.6276999711990356, 7: 0.49810001254081726}
+            1/1 [==============================] - 4s 4s/step - loss: 0.2834 - acc: 0.5010 - val_loss: 0.2524 - val_acc: 0.5110
+                Epoch 2/5
+            1/1 [==============================] - 0s 176ms/step - loss: 0.2291 - acc: 0.6300 - val_loss: 0.2518 - val_acc: 0.5180
+                Epoch 3/5
+            1/1 [==============================] - 0s 139ms/step - loss: 0.1872 - acc: 0.7500 - val_loss: 0.2512 - val_acc: 0.5270
+                Epoch 4/5
+            1/1 [==============================] - 0s 142ms/step - loss: 0.1558 - acc: 0.8230 - val_loss: 0.2507 - val_acc: 0.5410
+                Epoch 5/5
+            1/1 [==============================] - 0s 136ms/step - loss: 0.1320 - acc: 0.8790 - val_loss: 0.2502 - val_acc: 0.5530
+                Validation accuracy at 5 rounds :0.5529999732971191
+                {5: 0.5529999732971191}
+
+            sage: tester.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network, training_samples = 10**5, testing_samples=10**4) # random
+             Epoch 1/5
+            20/20 [==============================] - 3s 154ms/step - loss: 0.1911 - acc: 0.7253 - val_loss: 0.2402 - val_acc: 0.7036
+                Epoch 2/5
+            20/20 [==============================] - 3s 172ms/step - loss: 0.1573 - acc: 0.7893 - val_loss: 0.2400 - val_acc: 0.6793
+                Epoch 3/5
+            20/20 [==============================] - 3s 155ms/step - loss: 0.1312 - acc: 0.8268 - val_loss: 0.2398 - val_acc: 0.5701
+                Epoch 4/5
+            20/20 [==============================] - 3s 127ms/step - loss: 0.1128 - acc: 0.8528 - val_loss: 0.2463 - val_acc: 0.5010
+                Epoch 5/5
+            20/20 [==============================] - 2s 124ms/step - loss: 0.1061 - acc: 0.8620 - val_loss: 0.2522 - val_acc: 0.4992
+                Validation accuracy at 5 rounds :0.7035999894142151
+                Epoch 1/5
+            20/20 [==============================] - 3s 131ms/step - loss: 0.2619 - acc: 0.6157 - val_loss: 0.2505 - val_acc: 0.5325
+                Epoch 2/5
+            20/20 [==============================] - 2s 122ms/step - loss: 0.2218 - acc: 0.6634 - val_loss: 0.2442 - val_acc: 0.5950
+                Epoch 3/5
+            20/20 [==============================] - 3s 127ms/step - loss: 0.2121 - acc: 0.6788 - val_loss: 0.2419 - val_acc: 0.6051
+                Epoch 4/5
+            20/20 [==============================] - 3s 126ms/step - loss: 0.2073 - acc: 0.6881 - val_loss: 0.2396 - val_acc: 0.6086
+                Epoch 5/5
+            20/20 [==============================] - 2s 125ms/step - loss: 0.2043 - acc: 0.6933 - val_loss: 0.2372 - val_acc: 0.6131
+                Validation accuracy at 6 rounds :0.613099992275238
+                Epoch 1/5
+            20/20 [==============================] - 3s 164ms/step - loss: 0.2673 - acc: 0.4976 - val_loss: 0.2670 - val_acc: 0.4949
+                Epoch 2/5
+            20/20 [==============================] - 3s 125ms/step - loss: 0.2535 - acc: 0.5268 - val_loss: 0.2634 - val_acc: 0.4946
+                Epoch 3/5
+            20/20 [==============================] - 2s 117ms/step - loss: 0.2499 - acc: 0.5426 - val_loss: 0.2598 - val_acc: 0.4933
+                Epoch 4/5
+            20/20 [==============================] - 2s 125ms/step - loss: 0.2478 - acc: 0.5578 - val_loss: 0.2584 - val_acc: 0.4939
+                Epoch 5/5
+            20/20 [==============================] - 2s 112ms/step - loss: 0.2460 - acc: 0.5692 - val_loss: 0.2575 - val_acc: 0.4958
+                Validation accuracy at 7 rounds :0.4957999885082245
+                {5: 0.7035999894142151, 6: 0.613099992275238, 7: 0.4957999885082245}
+
         """
         acc = {}
         bs = 5000
@@ -525,11 +533,11 @@ class NeuralNetworkTests:
         sage: tester = NeuralNetworkTests(speck)
         sage: input_differences = [0x400000, 0]
         sage: number_of_rounds = 5
-        sage: tester.train_gohr_neural_distinguisher(input_differences, number_of_rounds, training_samples = 10**5, testing_samples = 10**4, number_of_epochs = 1)
-            Word size not specified for  gohr_resnet , defaulting to ciphertext size...
-            20/20 [==============================] - 8s 335ms/step - loss: 0.2041 - acc: 0.6909 - val_loss: 0.2476 - val_acc: 0.5528
-            Validation accuracy at 5 rounds :0.5527999997138977
-            {5: 0.5527999997138977}
+        sage: tester.train_gohr_neural_distinguisher(input_differences, number_of_rounds, training_samples = 10**5, testing_samples = 10**4, number_of_epochs = 1) # random
+        Word size not specified for  gohr_resnet , defaulting to ciphertext size...
+        20/20 [==============================] - 8s 335ms/step - loss: 0.2041 - acc: 0.6909 - val_loss: 0.2476 - val_acc: 0.5528
+        Validation accuracy at 5 rounds :0.5527999997138977
+        {5: 0.5527999997138977}
         """
 
         def data_generator(nr, samples):
@@ -567,34 +575,82 @@ class NeuralNetworkTests:
 
 
         EXAMPLES::
-        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
-        sage: speck = SpeckBlockCipher()
-        sage: tester = NeuralNetworkTests(speck)
-        sage: tester.run_autond_pipeline(difference_positions=[True, False], optimizer_samples=10 ** 3, optimizer_generations=5,
-                            training_samples=10 ** 5, testing_samples=10 ** 5, number_of_epochs=1, verbose=True,
-                            neural_net = 'dbitnet', save_prefix=None)
-                                Generation 0/5, 1625 nodes explored, 32 current, best is ['0x305ed470', '0x305e5470', '0x3e020058', '0x80fbf20'] with [0.42265625 0.468875   0.47771875 0.5191875 ]
-                                Generation 1/5, 2169 nodes explored, 32 current, best is ['0x100', '0x20000000', '0x2000000', '0x8000'] with [1.69571875 2.09790625 2.1274375  2.4663125 ]
-                                Generation 2/5, 2728 nodes explored, 32 current, best is ['0x40000000', '0x20000000', '0x2000000', '0x8000'] with [2.01571875 2.09790625 2.1274375  2.4663125 ]
-                                Generation 3/5, 3137 nodes explored, 32 current, best is ['0x2000000', '0x40000', '0x2000004', '0x8000'] with [2.1274375  2.12903125 2.22596875 2.4663125 ]
-                                Generation 4/5, 3383 nodes explored, 32 current, best is ['0x40000', '0x2000004', '0x8000', '0x200000'] with [2.12903125 2.22596875 2.4663125  2.54446875]
-                                The highest reached round was 5
-                                The best differences found by the optimizer are...
-                                0x200000 , with score 2.54446875
-                                0x8000 , with score 2.4663125000000004
-                                0x2000004 , with score 2.22596875
-                                0x40000 , with score 2.12903125
-                                0x2000000 , with score 2.1274375
-                                0x4000000 , with score 2.09978125
-                                0x20000000 , with score 2.0979062500000003
-                                0x10000 , with score 2.03634375
-                                0x40000000 , with score 2.0157187499999996
-                                0x40200000 , with score 1.75265625
-                                Training dbitnet on input difference ['0x200000', '0x0'] (['plaintext', 'key']), from round 2...
-                                20/20 [==============================] - 31s 1s/step - loss: 0.0884 - acc: 0.8838 - val_loss: 0.2889 - val_acc: 0.4993
-                                Validation accuracy at 2 rounds :0.49932000041007996
-                                {2: 0.49932000041007996}
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+            sage: speck = SpeckBlockCipher()
+            sage: tester = NeuralNetworkTests(speck)
+            sage: tester.run_autond_pipeline(difference_positions=[True, False], optimizer_samples=10 ** 3, optimizer_generations=5,\
+                                training_samples=10 ** 5, testing_samples=10 ** 5, number_of_epochs=1, verbose=True, neural_net = 'dbitnet', save_prefix=None) # random
+
+            Generation 0/5, 1614 nodes explored, 32 current, best is ['0x700090b', '0x3e08030', '0x3033f440', '0x7f9aa3fe'] with [0.4184375  0.41859375 0.41959375 0.436     ]
+            Generation 1/5, 2158 nodes explored, 32 current, best is ['0x100', '0x40', '0x4', '0x8'] with [1.66334375 1.72559375 1.72803125 1.75125   ]
+            Generation 2/5, 2711 nodes explored, 32 current, best is ['0x8', '0x20000', '0x4000000', '0x100000'] with [1.75125    2.09603125 2.1125625  2.1784375 ]
+            Generation 3/5, 3129 nodes explored, 32 current, best is ['0x20000', '0x4000000', '0x100000', '0x4000008'] with [2.09603125 2.1125625  2.1784375  2.1988125 ]
+            Generation 4/5, 3377 nodes explored, 32 current, best is ['0x20000', '0x4000000', '0x100000', '0x4000008'] with [2.09603125 2.1125625  2.1784375  2.1988125 ]
+            The highest reached round was 5
+            The best differences found by the optimizer are...
+            0x4000008 , with score 2.1988125
+            0x100000 , with score 2.1784375000000002
+            0x4000000 , with score 2.1125625
+            0x20000 , with score 2.0960312500000002
+            0x1000000 , with score 2.00075
+            0x10 , with score 1.79246875
+            0x200 , with score 1.77490625
+            0x8 , with score 1.7512500000000004
+            0x4 , with score 1.7280312500000001
+            0x40 , with score 1.7255937500000003
+            Training dbitnet on input difference ['0x4000008', '0x0'] (['plaintext', 'key']), from round 2...
+            20/20 [==============================] - 24s 846ms/step - loss: 0.1065 - acc: 0.8606 - val_loss: 0.2000 - val_acc: 0.7100
+            Validation accuracy at 2 rounds :0.7100499868392944
+            20/20 [==============================] - 15s 748ms/step - loss: 0.1077 - acc: 0.8740 - val_loss: 0.3309 - val_acc: 0.5004
+            Validation accuracy at 3 rounds :0.5003799796104431
+            {'input_parameters': {'test_name': 'neural_distinguisher_test',
+              'cipher': speck_p32_k64_o32_r22,
+              'optimizer_samples': 1000,
+              'optimizer_generations': 5,
+              'training_samples': 100000,
+              'testing_samples': 100000,
+              'number_of_epochs': 1,
+              'neural_net': 'dbitnet'},
+             'test_results': {'plaintext': {'cipher_output': {'neural_distinguisher_test': [{'accuracies': [0.7100499868392944,
+                   0.5003799796104431],
+                  'plaintext_diff': '0x4000008',
+                  'key_diff': '0x0'}],
+                'differences_scores': {'0x400000c': 1.30846875,
+                 '0x100040': 1.31015625,
+                 '0x4100000': 1.3121875,
+                 '0x20004': 1.3249375,
+                 '0x4020008': 1.33246875,
+                 '0x20100': 1.3404687500000003,
+                 '0xc': 1.3459062500000003,
+                 '0x300': 1.35553125,
+                 '0x18': 1.3560625000000002,
+                 '0x4010200': 1.38396875,
+                 '0x4000010': 1.3880000000000003,
+                 '0x40004': 1.3904062500000003,
+                 '0x600000c': 1.41065625,
+                 '0x4100008': 1.41415625,
+                 '0x1020000': 1.43640625,
+                 '0x100010': 1.45040625,
+                 '0x4020000': 1.4833124999999998,
+                 '0x4000018': 1.5420625000000001,
+                 '0x4000004': 1.5525625000000003,
+                 '0x20200': 1.55865625,
+                 '0x100': 1.66334375,
+                 '0x6000000': 1.6745937499999999,
+                 '0x40': 1.7255937500000003,
+                 '0x4': 1.7280312500000001,
+                 '0x8': 1.7512500000000004,
+                 '0x200': 1.77490625,
+                 '0x10': 1.79246875,
+                 '0x1000000': 2.00075,
+                 '0x20000': 2.0960312500000002,
+                 '0x4000000': 2.1125625,
+                 '0x100000': 2.1784375000000002,
+                 '0x4000008': 2.1988125}}},
+              'round_start': 2}}
+
         """
 
         neural_distinguisher_test_results = {
@@ -781,13 +837,31 @@ class NeuralNetworkTests:
             sage: from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
             sage: speck = SpeckBlockCipher()
             sage: tester = NeuralNetworkTests(speck)
-            sage: diff, scores, highest_round = tester.find_good_input_difference_for_neural_distinguisher([True, False], verbose = True, number_of_generations=5)
+            sage: diff, scores, highest_round = tester.find_good_input_difference_for_neural_distinguisher([True, False], verbose = True, number_of_generations=5) # random
+            Generation 0/5, 1623 nodes explored, 32 current, best is ['0x88580b10', '0x88582a10', '0xa1ffc14', '0xbf8184fe'] with [0.4386875  0.44759375 0.46746875 0.5376875 ]
+            Generation 1/5, 2164 nodes explored, 32 current, best is ['0x42840a85', '0x14220830', '0xbf8184fe', '0x2100'] with [0.4893125  0.50771875 0.5376875  0.85790625]
+            Generation 2/5, 2647 nodes explored, 32 current, best is ['0x20a018', '0x2100', '0x40', '0x2000000'] with [0.79275    0.85790625 1.7469375  2.04596875]
+            Generation 3/5, 3185 nodes explored, 32 current, best is ['0x2', '0x40', '0x2000000', '0x4000'] with [1.7279375  1.7469375  2.04596875 2.07025   ]
+            Generation 4/5, 3671 nodes explored, 32 current, best is ['0x4000000', '0x80000', '0x81000', '0x400000'] with [2.19903125 2.20821875 2.45065625 3.45453125]
+            The highest reached round was 6
+            The best differences found by the optimizer are...
+            0x400000 , with score 3.45453125
+            0x81000 , with score 2.4506562499999998
+            0x80000 , with score 2.2082187500000003
+            0x4000000 , with score 2.19903125
+            0x4000 , with score 2.07025
+            0x2000000 , with score 2.04596875
+            0x8 , with score 1.8199375000000002
+            0x6000000 , with score 1.7656562500000001
+            0x40 , with score 1.7469375
+            0x2 , with score 1.7279375000000001
+
         """
 
         # Initialisation
         input_lengths = self.cipher.inputs_bit_size
         input_tags = self.cipher.inputs
-        evaluate = lambda x: self.cipher.evaluate_vectorized(x, intermediate_outputs=True)
+        evaluate = lambda x: self.cipher.evaluate_vectorized(x, intermediate_output=True)
         threshold = 0.05
         # Generation of the baseline ciphertexts
         inputs0 = []

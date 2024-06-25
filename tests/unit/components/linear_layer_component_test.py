@@ -325,8 +325,8 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
 
     assert str(constraints[0]) == '1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_13 + x_18 + x_19 - x_25'
     assert str(constraints[1]) == '1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_12 + x_13 + x_19 - x_25'
-    assert str(constraints[-2]) == '1 <= 2 - x_6 - x_8'
-    assert str(constraints[-1]) == '1 <= 1 + x_7 - x_8'
+    assert str(constraints[-2]) == '1 <= 1 + x_7 - x_8'
+    assert str(constraints[-1]) == '1 <= 1 + x_1 - x_2'
 
     cipher = AESBlockCipher(number_of_rounds=2)
     cipher_inverse = cipher.cipher_inverse()

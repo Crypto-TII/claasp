@@ -173,14 +173,18 @@ class OR(MultiInputNonlinearLogicalOperator):
             sage: gift = GiftPermutation()
             sage: or_component = gift.component_from(39, 6)
             sage: cp = CpModel(gift)
-            sage: or_component.cp_xor_linear_mask_propagation_constraints(cp)
-            (['array[0..31] of var int: p_or_39_6;',
-              'array[0..63] of var 0..1:or_39_6_i;',
-              'array[0..31] of var 0..1:or_39_6_o;'],
-             ['constraint table(or_39_6_i[0]++or_39_6_i[32]++or_39_6_o[0]++p_or_39_6[0],and2inputs_LAT);',
-              ...
-              'constraint table(or_39_6_i[31]++or_39_6_i[63]++or_39_6_o[31]++p_or_39_6[31],and2inputs_LAT);',
-              'constraint p[0] = sum(p_or_39_6);'])
+            sage: declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
+            sage: declarations
+            ['array[0..31] of var 0..3200: p_or_39_6;',
+             'array[0..63] of var 0..1:or_39_6_i;',
+             'array[0..31] of var 0..1:or_39_6_o;']
+           sage: constraints
+           ['constraint table([or_39_6_i[0]]++[or_39_6_i[32]]++[or_39_6_o[0]]++[p_or_39_6[0]],and2inputs_LAT);',
+            'constraint table([or_39_6_i[1]]++[or_39_6_i[33]]++[or_39_6_o[1]]++[p_or_39_6[1]],and2inputs_LAT);',
+            ...
+            'constraint table([or_39_6_i[31]]++[or_39_6_i[63]]++[or_39_6_o[31]]++[p_or_39_6[31]],and2inputs_LAT);',
+            'constraint p[0] = sum(p_or_39_6);']
+
         """
         input_size = int(self.input_bit_size)
         output_size = int(self.output_bit_size)
@@ -189,7 +193,7 @@ class OR(MultiInputNonlinearLogicalOperator):
         cp_constraints = []
         num_add = self.description[1]
         input_len = input_size // num_add
-        cp_declarations.append(f'array[0..{output_size - 1}] of var int: p_{output_id_link};')
+        cp_declarations.append(f'array[0..{output_size - 1}] of var 0..{100 * output_size}: p_{output_id_link};')
         cp_declarations.append(f'array[0..{input_size - 1}] of var 0..1:{output_id_link}_i;')
         cp_declarations.append(f'array[0..{output_size - 1}] of var 0..1:{output_id_link}_o;')
         model.component_and_probability[output_id_link] = 0
@@ -197,8 +201,8 @@ class OR(MultiInputNonlinearLogicalOperator):
         for i in range(output_size):
             new_constraint = f'constraint table('
             for j in range(num_add):
-                new_constraint = new_constraint + f'{output_id_link}_i[{i + input_len * j}]++'
-            new_constraint = new_constraint + f'{output_id_link}_o[{i}]++p_{output_id_link}[{p_count}],and{num_add}inputs_LAT);'
+                new_constraint = new_constraint + f'[{output_id_link}_i[{i + input_len * j}]]++'
+            new_constraint = new_constraint + f'[{output_id_link}_o[{i}]]++[p_{output_id_link}[{p_count}]],and{num_add}inputs_LAT);'
             cp_constraints.append(new_constraint)
             p_count = p_count + 1
         cp_constraints.append(f'constraint p[{model.c}] = sum(p_{output_id_link});')

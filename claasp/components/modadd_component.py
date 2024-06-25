@@ -328,9 +328,9 @@ class MODADD(Modular):
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: modadd_component = speck.component_from(0, 1)
             sage: modadd_component.sat_constraints()
-            (['carry_modadd_0_1_0',
-              'carry_modadd_0_1_1',
-              'carry_modadd_0_1_2',
+            (['carry_0_modadd_0_1_0',
+              'carry_0_modadd_0_1_1',
+              'carry_0_modadd_0_1_2',
               ...
               'modadd_0_1_15 -rot_0_0_15 plaintext_31',
               'modadd_0_1_15 rot_0_0_15 -plaintext_31',

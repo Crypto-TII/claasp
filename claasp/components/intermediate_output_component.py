@@ -118,7 +118,11 @@ class IntermediateOutput(CipherOutput):
         return [f'  {self.id} = {params}[0]',
                 f'  if "{self.description[0]}" not in intermediateOutputs.keys():',
                 f'      intermediateOutputs["{self.description[0]}"] = []',
-                f'  intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())']
+                f'  if integers_inputs_and_outputs:',
+                #f'    intermediateOutputs["{self.description[0]}"].append(evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size}))',
+                f'    intermediateOutputs["{self.description[0]}"] = evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size})',
+                f'  else:',
+                f'    intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())']
 
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """
