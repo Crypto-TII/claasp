@@ -23,7 +23,7 @@ import itertools
 import subprocess
 
 from claasp.cipher_modules.models.cp.cp_model import solve_satisfy
-from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
+from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary, check_if_implemented_component
 from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
 
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
@@ -63,20 +63,10 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         key_components, key_ids = self.extract_key_schedule()
         constant_components, constant_ids = self.extract_constants()
         for component in backward_components:
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER,
-                               SBOX, MIX_COLUMN, WORD_OPERATION]
-            operation = component.description[0]
-            operation_types = ['AND', 'OR', 'MODADD', 'MODSUB', 'NOT', 'ROTATE', 'SHIFT', 'XOR']
-            if component.type not in component_types or \
-                    (component.type == WORD_OPERATION and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
-            if component.type == SBOX:
-                variables, constraints, sbox_mant = component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_mant)
-                self.sbox_mant = sbox_mant
-            else:
-                variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
-            inverse_variables.extend(variables)
-            inverse_constraints.extend(constraints)
+            if check_if_implemented_component(component):
+                variables, constraints = self.propagate_deterministically(component)
+                inverse_variables.extend(variables)
+                inverse_constraints.extend(constraints)
         
         if clean:
             components_to_invert = [backward_components[i] for i in range(len(backward_components))]
@@ -93,20 +83,10 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         direct_variables = []
         direct_constraints = []
         for component in forward_components:
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER,
-                               SBOX, MIX_COLUMN, WORD_OPERATION]
-            operation = component.description[0]
-            operation_types = ['AND', 'OR', 'MODADD', 'MODSUB', 'NOT', 'ROTATE', 'SHIFT', 'XOR']
-            if component.type not in component_types or \
-                    (component.type == WORD_OPERATION and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
-            if component.type == SBOX:
-                variables, constraints, sbox_mant = component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_mant)
-                self.sbox_mant = sbox_mant
-            else:
-                variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
-            direct_variables.extend(variables)
-            direct_constraints.extend(constraints)
+            if check_if_implemented_component(component):
+                variables, constraints = self.propagate_deterministically(component)
+                direct_variables.extend(variables)
+                direct_constraints.extend(constraints)
             
         if clean:
             direct_variables, direct_constraints = self.clean_inverse_impossible_variables_constraints(forward_components, direct_variables, direct_constraints)
@@ -173,7 +153,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
             if constraint not in cleaned_constraints:
                 cleaned_constraints.append(constraint)
         
-        self._model_constraints = cleaned_constraints #self.clean_constraints(set_of_constraints, initial_round, middle_round, final_round)
+        self._model_constraints = cleaned_constraints
     
     def build_impossible_xor_differential_trail_model(self, fixed_variables=[], number_of_rounds=None, initial_round = 1, middle_round=1, final_round = None, intermediate_components = True):
         """
@@ -267,35 +247,8 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
             
     def clean_inverse_impossible_variables_constraints(self, backward_components, inverse_variables, inverse_constraints):
         for component in backward_components:
-            for v in range(len(inverse_variables)):
-                start = 0
-                while component.id in inverse_variables[v][start:]:
-                    new_start = inverse_variables[v].index(component.id, start)
-                    inverse_variables[v] = inverse_variables[v][:new_start] + 'inverse_' + inverse_variables[v][new_start:]
-                    start = new_start + 9
-            for c in range(len(inverse_constraints)):
-                start = 0
-                while component.id in inverse_constraints[c][start:]:
-                    new_start = inverse_constraints[c].index(component.id, start)
-                    inverse_constraints[c] = inverse_constraints[c][:new_start] + 'inverse_' + inverse_constraints[c][new_start:]
-                    start = new_start + 9
-        for c in range(len(inverse_constraints)):
-            start = 0
-            while 'cipher_output' in inverse_constraints[c][start:]:
-                new_start = inverse_constraints[c].index('cipher_output', start)
-                inverse_constraints[c] = inverse_constraints[c][:new_start] + 'inverse_' + inverse_constraints[c][new_start:]
-                start = new_start + 9
-            start = 0
-            while 'inverse_inverse_' in inverse_constraints[c][start:]:
-                new_start = inverse_constraints[c].index('inverse_inverse_', start)
-                inverse_constraints[c] = inverse_constraints[c][:new_start] + inverse_constraints[c][new_start + 8:]
-                start = new_start
-        for v in range(len(inverse_variables)):
-            start = 0
-            while 'inverse_inverse_' in inverse_variables[v][start:]:
-                new_start = inverse_variables[v].index('inverse_inverse_', start)
-                inverse_variables[v] = inverse_variables[v][:new_start] + inverse_variables[v][new_start + 8:]
-                start = new_start
+            inverse_variables, inverse_constraints = self.set_inverse_component_id_in_constraints(component, inverse_variables, inverse_constraints)
+        inverse_variables, inverse_constraints = self.clean_repetitions_in_constraints(inverse_variables, inverse_constraints)
         return inverse_variables, inverse_constraints
         
     def clean_inverse_impossible_variables_constraints_for_attack(self, backward_components, inverse_variables, inverse_constraints):
@@ -303,18 +256,11 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         constant_components, constant_ids = self.extract_constants()
         for component in backward_components:
             if component.id not in key_ids + constant_ids:
-                for v in range(len(inverse_variables)):
-                    start = 0
-                    while component.id in inverse_variables[v][start:]:
-                        new_start = inverse_variables[v].index(component.id, start)
-                        inverse_variables[v] = inverse_variables[v][:new_start] + 'inverse_' + inverse_variables[v][new_start:]
-                        start = new_start + 9
-                for c in range(len(inverse_constraints)):
-                    start = 0
-                    while component.id in inverse_constraints[c][start:]:
-                        new_start = inverse_constraints[c].index(component.id, start)
-                        inverse_constraints[c] = inverse_constraints[c][:new_start] + 'inverse_' + inverse_constraints[c][new_start:]
-                        start = new_start + 9
+                inverse_variables, inverse_constraints = self.set_inverse_component_id_in_constraints(component, inverse_variables, inverse_constraints)
+        inverse_variables, inverse_constraints = self.clean_repetitions_in_constraints(inverse_variables, inverse_constraints)
+        return inverse_variables, inverse_constraints
+        
+    def clean_repetitions_in_constraints(self, inverse_variables, inverse_constraints):
         for c in range(len(inverse_constraints)):
             start = 0
             while 'cipher_output' in inverse_constraints[c][start:]:
@@ -332,6 +278,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                 new_start = inverse_variables[v].index('inverse_inverse_', start)
                 inverse_variables[v] = inverse_variables[v][:new_start] + inverse_variables[v][new_start + 8:]
                 start = new_start
+        
         return inverse_variables, inverse_constraints
         
     def constraints_for_constants(self):
@@ -986,6 +933,22 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
 
         return time, memory, components_values
             
+    def set_inverse_component_id_in_constraints(self, component, inverse_variables, inverse_constraints):
+        for v in range(len(inverse_variables)):
+            start = 0
+            while component.id in inverse_variables[v][start:]:
+                new_start = inverse_variables[v].index(component.id, start)
+                inverse_variables[v] = inverse_variables[v][:new_start] + 'inverse_' + inverse_variables[v][new_start:]
+                start = new_start + 9
+        for c in range(len(inverse_constraints)):
+            start = 0
+            while component.id in inverse_constraints[c][start:]:
+                new_start = inverse_constraints[c].index(component.id, start)
+                inverse_constraints[c] = inverse_constraints[c][:new_start] + 'inverse_' + inverse_constraints[c][new_start:]
+                start = new_start + 9
+        
+        return inverse_variables, inverse_constraints
+        
     def solve(self, model_type, solver_name=None, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None, num_of_processors=None, timelimit=None):
         """
         Return the solution of the model.

@@ -5,18 +5,6 @@ from claasp.cipher_modules.models.cp.cp_models.cp_wordwise_deterministic_truncat
     CpWordwiseDeterministicTruncatedXorDifferentialModel
 
 
-def test_build_wordwise_deterministic_truncated_xor_differential_trail_model():
-    aes = AESBlockCipher(number_of_rounds=2)
-    cp = CpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
-    fixed_variables = [set_fixed_variables('key_value', 'equal', range(16), integer_to_bit_list(0, 16, 'little'))]
-    cp.build_wordwise_deterministic_truncated_xor_differential_trail_model(fixed_variables)
-
-    assert len(cp.model_constraints) == 1361
-    assert cp.model_constraints[2] == 'array[0..15] of var 0..3: key_active;'
-    assert cp.model_constraints[3] == 'array[0..15] of var -2..255: key_value;'
-    assert cp.model_constraints[4] == 'array[0..15] of var 0..3: plaintext_active;'
-    assert cp.model_constraints[5] == 'array[0..15] of var -2..255: plaintext_value;'
-
 '''
 def test_find_one_wordwise_deterministic_truncated_xor_differential_trail():
     aes = AESBlockCipher(number_of_rounds=2)

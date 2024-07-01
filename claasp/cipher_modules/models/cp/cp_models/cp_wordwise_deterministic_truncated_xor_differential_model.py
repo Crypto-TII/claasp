@@ -34,53 +34,6 @@ class CpWordwiseDeterministicTruncatedXorDifferentialModel(CpDeterministicTrunca
     def __init__(self, cipher):
         super().__init__(cipher)
 
-    def build_wordwise_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[], number_of_rounds=None, minimize=False):
-        """
-        Build the CP model for the search of deterministic truncated XOR differential trails.
-
-        INPUT:
-
-        - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
-          format
-        - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: cp = CpDeterministicTruncatedXorDifferentialModel(speck)
-            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
-            sage: cp.build_deterministic_truncated_xor_differential_trail_model(fixed_variables)
-        """
-        self.initialise_model()
-        if number_of_rounds is None:
-            number_of_rounds = self._cipher.number_of_rounds
-
-        self._variables_list = []
-        constraints = self.fix_variables_value_constraints(fixed_variables)
-        deterministic_truncated_xor_differential = constraints
-
-        for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER,
-                               SBOX, MIX_COLUMN, WORD_OPERATION]
-            operation = component.description[0]
-            operation_types = ['AND', 'OR', 'MODADD', 'MODSUB', 'NOT', 'ROTATE', 'SHIFT', 'XOR']
-            if component.type not in component_types or \
-                    (component.type == WORD_OPERATION and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
-            variables, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
-            self._variables_list.extend(variables)
-            deterministic_truncated_xor_differential.extend(constraints)
-
-        variables, constraints = self.input_wordwise_deterministic_truncated_xor_differential_constraints()
-        self._model_prefix.extend(variables)
-        self._variables_list.extend(constraints)
-        deterministic_truncated_xor_differential.extend(
-            self.final_wordwise_deterministic_truncated_xor_differential_constraints(minimize))
-        self._model_constraints = self._model_prefix + self._variables_list + deterministic_truncated_xor_differential
-
     def final_wordwise_deterministic_truncated_xor_differential_constraints(self, minimize=False):
         """
         Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
@@ -170,7 +123,7 @@ class CpWordwiseDeterministicTruncatedXorDifferentialModel(CpDeterministicTrunca
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
 
-        self.build_wordwise_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds)
+        self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds, wordwise=True)
 
         return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name, num_of_processors, timelimit)
 

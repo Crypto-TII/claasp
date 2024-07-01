@@ -23,7 +23,7 @@ import itertools
 import subprocess
 
 from claasp.cipher_modules.models.cp.cp_model import CpModel, solve_satisfy
-from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
+from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary, check_if_implemented_component
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL)
 from claasp.cipher_modules.models.cp.solvers import MODEL_DEFAULT_PATH, SOLVER_DEFAULT
@@ -62,7 +62,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         elif f'{component_id} ' in string:
             components_values[f'solution{solution_number}'][f'{component_id}'] = component_solution
     
-    def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[], number_of_rounds=None, minimize=False):
+    def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[], number_of_rounds=None, minimize=False, wordwise=False):
         """
         Build the CP model for the search of deterministic truncated XOR differential trails.
 
@@ -91,20 +91,10 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
         deterministic_truncated_xor_differential = constraints
 
         for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER,
-                               SBOX, MIX_COLUMN, WORD_OPERATION]
-            operation = component.description[0]
-            operation_types = ['AND', 'OR', 'MODADD', 'MODSUB', 'NOT', 'ROTATE', 'SHIFT', 'XOR']
-            if component.type not in component_types or \
-                    (component.type == WORD_OPERATION and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
-            if component.type == SBOX:
-                variables, constraints, sbox_mant = component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_mant)
-                self.sbox_mant = sbox_mant
-            else:
-                variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
-            self._variables_list.extend(variables)
-            deterministic_truncated_xor_differential.extend(constraints)
+            if check_if_implemented_component(component):
+                variables, constraints = self.propagate_deterministically(component, wordwise)
+                self._variables_list.extend(variables)
+                deterministic_truncated_xor_differential.extend(constraints)
 
         variables, constraints = self.input_deterministic_truncated_xor_differential_constraints()
         self._model_prefix.extend(variables)
@@ -354,65 +344,6 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
 
         return cp_declarations, cp_constraints
 
-    def input_wordwise_deterministic_truncated_xor_differential_constraints(self):
-        """
-        Return a list of CP constraints for the inputs of the cipher for truncated deterministic xor differential model.
-
-        INPUT:
-
-        - None
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
-            sage: aes = AESBlockCipher(number_of_rounds = 2)
-            sage: cp = CpDeterministicTruncatedXorDifferentialModel(aes)
-            sage: cp.input_wordwise_deterministic_truncated_xor_differential_constraints()
-            (['array[0..15] of var 0..3: key_active;',
-              'array[0..15] of var -2..255: key_value;',
-               ...
-              'array[0..15] of var -2..255: cipher_output_1_32_value;'],
-             ['constraint if key_active[0] == 0 then key_value[0] = 0 elseif key_active[0] == 1 then key_value[0] > 0 elseif key_active[0] == 2 then key_value[0] =-1 else key_value[0] =-2 endif;',
-               ...
-              'constraint if cipher_output_1_32_active[15] == 0 then cipher_output_1_32_value[15] = 0 elseif cipher_output_1_32_active[15] == 1 then cipher_output_1_32_value[15] > 0 elseif cipher_output_1_32_active[15] == 2 then cipher_output_1_32_value[15] =-1 else cipher_output_1_32_value[15] =-2 endif;',
-              'constraint count(cipher_output_1_32_active,2) < 128;',
-              'constraint count(plaintext,1) > 0;',
-              'constraint count(plaintext,2) = 0;'])
-        """
-        cp_constraints = []
-        cp_declarations = []
-        for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-            cp_declarations.append(f'array[0..{bit_size // self.word_size - 1}] of var 0..3: {input_}_active;')
-            cp_declarations.append(
-                f'array[0..{bit_size // self.word_size - 1}] of var -2..{2 ** self.word_size - 1}: {input_}_value;')
-            for i in range(bit_size // self.word_size):
-                cp_constraints.append(f'constraint if {input_}_active[{i}] == 0 then {input_}_value[{i}] = 0 elseif '
-                                      f'{input_}_active[{i}] == 1 then {input_}_value[{i}] > 0 elseif '
-                                      f'{input_}_active[{i}] == 2 then {input_}_value[{i}] =-1 else '
-                                      f'{input_}_value[{i}] =-2 endif;')
-        for component in self._cipher.get_all_components():
-            if CONSTANT not in component.type:
-                output_id_link = component.id
-                output_size = int(component.output_bit_size)
-                cp_declarations.append(
-                    f'array[0..{output_size // self.word_size - 1}] of var 0..3: {output_id_link}_active;')
-                cp_declarations.append(
-                    f'array[0..{output_size // self.word_size - 1}] of var -2..{2 ** self.word_size - 1}: '
-                    f'{output_id_link}_value;')
-                for i in range(output_size // self.word_size):
-                    cp_constraints.append(
-                        f'constraint if {output_id_link}_active[{i}] == 0 then {output_id_link}_value[{i}] = 0 elseif '
-                        f'{output_id_link}_active[{i}] == 1 then {output_id_link}_value[{i}] > 0 elseif '
-                        f'{output_id_link}_active[{i}] == 2 then {output_id_link}_value[{i}] =-1 else '
-                        f'{output_id_link}_value[{i}] =-2 endif;')
-                if CIPHER_OUTPUT in component.type:
-                    cp_constraints.append(f'constraint count({output_id_link}_active,2) < {output_size};')
-        cp_constraints.append('constraint count(plaintext,1) > 0;')
-        cp_constraints.append('constraint count(plaintext,2) = 0;')
-
-        return cp_declarations, cp_constraints
-
     def output_constraints(self, component):
         """
         Return lists of declarations and constraints for CP output component (both intermediate and cipher).
@@ -570,6 +501,18 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
                 components_values[nsol] = self.extract_incompatibilities_from_output(components_values[nsol])
 
         return time, memory, components_values
+        
+    def propagate_deterministically(self, component, wordwise=False):
+        if not wordwise:
+            if component.type == SBOX:
+                variables, constraints, sbox_mant = component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_mant)
+                self.sbox_mant = sbox_mant
+            else:
+                variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
+        else:
+            variables, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
+            
+        return variables, constraints
             
     def solve(self, model_type, solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
@@ -620,7 +563,7 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
             input_file_path, model_type, solver_name, num_of_processors, timelimit
         )
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        #os.remove(input_file_path)
+        os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
