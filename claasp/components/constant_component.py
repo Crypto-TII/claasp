@@ -159,11 +159,11 @@ class Constant(Component):
         output_id_link = self.id
         description = self.description
         value = f'{int(description[0], 16):0{output_size}b}'
-        new_declaration = f'array[0..{int(output_size) - 1}] of var 0..1: ' \
-                          f'{output_id_link} = array1d(0..{int(output_size) - 1}, [' \
-                          + ','.join(value) + ']);'
+        new_declaration = f'array[0..{int(output_size) - 1}] of var 0..1: {output_id_link};'
         cp_declarations = [new_declaration]
         cp_constraints = []
+        for i in range(output_size):
+            cp_constraints.append(f'constraint {output_id_link}[{i}] = 0;')
 
         return cp_declarations, cp_constraints
 
@@ -252,13 +252,13 @@ class Constant(Component):
         """
         output_size = int(self.output_bit_size)
         output_id_link = self.id
-        new_declaration = f'array[0..{output_size - 1}] of var 0..1: ' \
-                          f'{output_id_link} = array1d(0..{output_size - 1}, [' \
-                          + ','.join('0' * output_size) + ']);'
+        new_declaration = f'array[0..{int(output_size) - 1}] of var 0..2: {output_id_link};'
         cp_declarations = [new_declaration]
         cp_constraints = []
-        result = cp_declarations, cp_constraints
-        return result
+        for i in range(output_size):
+            cp_constraints.append(f'constraint {output_id_link}[{i}] = 0;')
+
+        return cp_declarations, cp_constraints
 
     def cp_xor_linear_mask_propagation_constraints(self, model=None):
         """

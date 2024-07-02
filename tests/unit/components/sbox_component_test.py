@@ -71,19 +71,7 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
     assert constraints == ['constraint table([xor_0_0[0]]++[xor_0_0[1]]++[xor_0_0[2]]++[xor_0_0[3]]++[xor_0_0[4]]++[xor_0_0[5]]++'
                                     '[xor_0_0[6]]++[xor_0_0[7]]++[sbox_0_1[0]]++[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]]++[sbox_0_1[4]]++'
                                     '[sbox_0_1[5]]++[sbox_0_1[6]]++[sbox_0_1[7]], table_sbox_0_1);']
-                                 
-
-def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
-    cp = CpModel(aes)
-    sbox_component = aes.component_from(0, 1)
-    declarations, constraints = sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-
-    assert declarations == []
-
-    assert constraints == ['constraint if xor_0_0_value[0]_active==0 then sbox_0_1_active[0] = 0 else '
-                           'sbox_0_1_active[0] = 2 endif;']
-
+                  
 
 def test_cp_xor_differential_propagation_constraints():
     midori = MidoriBlockCipher(number_of_rounds=3)

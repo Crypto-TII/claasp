@@ -294,6 +294,7 @@ class CpModel:
                    'xor_linear_one_solution',
                    'deterministic_truncated_xor_differential_one_solution',
                    'impossible_xor_differential_one_solution',
+                   'impossible_xor_differential_attack',
                    'differential_pair_one_solution',
                    'evaluate_cipher']
         write_model_to_file(self._model_constraints, input_file_path)

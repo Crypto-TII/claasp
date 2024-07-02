@@ -77,7 +77,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
         self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
 
-    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT):
+    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1, num_of_processors=None, timelimit=None):
         """
         Return a list of solutions containing all the differential trails having the ``fixed_weight`` weight of correlation.
 
@@ -111,9 +111,9 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
             sage: len(trails) # long # doctest: +SKIP
             8
         """
-        return self.solve_full_two_steps_xor_differential_model('xor_differential_all_solutions', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name)
+        return self.solve_full_two_steps_xor_differential_model('xor_differential_all_solutions', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name, nmax, repetition, num_of_processors, timelimit)
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT):
+    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with the lowest weight.
 
@@ -152,9 +152,9 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
               ...
              'total_weight': '30.0'}
         """
-        return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', -1, fixed_values, first_step_solver_name, second_step_solver_name)
+        return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', -1, fixed_values, first_step_solver_name, second_step_solver_name, nmax, repetition, num_of_processors, timelimit)
 
-    def find_one_xor_differential_trail(self, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT):
+    def find_one_xor_differential_trail(self, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -186,9 +186,9 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
              'cipher_output_1_32':{'value': 'ffffffffffffffffffffffffffffffff', 'weight': 0.0}},
              'total_weight': '224.0'}
         """
-        return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', 0, fixed_values, first_step_solver_name, second_step_solver_name)
+        return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', 0, fixed_values, first_step_solver_name, second_step_solver_name, nmax, repetition, num_of_processors, timelimit)
 
-    def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT):
+    def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -222,7 +222,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
              'total_weight': '224.0',
              'building_time_seconds':  19.993147134780884}
         """
-        return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name)
+        return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name, nmax, repetition, num_of_processors, timelimit)
 
     def generate_table_of_solutions(self, solution, solver_name):
         """
@@ -308,7 +308,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         return cp_declarations, cp_constraints
 
     def solve_full_two_steps_xor_differential_model(self, model_type='xor_differential_one_solution', weight=-1, fixed_variables=[],
-                                                    first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1):
+                                                    first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1, num_of_processors=None, timelimit=None):
         """
         Return the solution of the model for an SPN cipher.
 
@@ -352,7 +352,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         self.build_xor_differential_trail_first_step_model(weight, fixed_variables, nmax, repetition, possible_sboxes)
         end = tm.time()
         build_time = end - start
-        first_step_solution, solve_time = self.solve_model('xor_differential_first_step', first_step_solver_name)
+        first_step_solution, solve_time = self.solve_model('xor_differential_first_step', first_step_solver_name, num_of_processors, timelimit)
         start = tm.time()
         self.build_xor_differential_trail_second_step_model(weight, fixed_variables)
         end = tm.time()
@@ -379,26 +379,25 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
                 command_options['keywords']['command']['input_file'].append(input_file_name)
                 command_options['keywords']['command']['output_file'].append(solution_file_name)
                 command_options['keywords']['command']['options'].insert(0, '-a')
-                command = []
-                for key in command_options['keywords']['command']['format']:
-                    command.extend(command_options['keywords']['command'][key])
             elif model_type == 'xor_differential_all_solutions':
                 self.generate_table_of_solutions(first_step_solution, first_step_solver_name)
                 
                 command_options['keywords']['command']['input_file'].append(input_file_name)
                 command_options['keywords']['command']['output_file'].append(solution_file_name)
                 command_options['keywords']['command']['options'].insert(0, '-a')
-                command = []
-                for key in command_options['keywords']['command']['format']:
-                    command.extend(command_options['keywords']['command'][key])
             else:
                 self.generate_table_of_solutions(first_step_solution, first_step_solver_name)
                 
                 command_options['keywords']['command']['input_file'].append(input_file_name)
                 command_options['keywords']['command']['output_file'].append(solution_file_name)
-                command = []
-                for key in command_options['keywords']['command']['format']:
-                    command.extend(command_options['keywords']['command'][key])
+            if num_of_processors is not None:
+                command_options['keywords']['command']['options'].insert(0, f'-p {num_of_processors}')
+            if timelimit is not None:
+                command_options['keywords']['command']['options'].append('--time-limit')
+                command_options['keywords']['command']['options'].append(str(timelimit))
+            command = []
+            for key in command_options['keywords']['command']['format']:
+                command.extend(command_options['keywords']['command'][key])
 
             solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
             if solver_process.returncode < 0:
@@ -418,7 +417,7 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
 
             return solutions
 
-    def solve_model(self, model_type, solver_name=None):
+    def solve_model(self, model_type, solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution of the model.
 
@@ -471,6 +470,11 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
                 write_model_to_file(self._first_step, input_file_name)
             else:
                 write_model_to_file(self._model_constraints, input_file_name)
+        if num_of_processors is not None:
+            command_options['keywords']['command']['options'].insert(0, f'-p {num_of_processors}')
+        if timelimit is not None:
+            command_options['keywords']['command']['options'].append('--time-limit')
+            command_options['keywords']['command']['options'].append(str(timelimit))
                 
         command = []
         for key in command_options['keywords']['command']['format']:

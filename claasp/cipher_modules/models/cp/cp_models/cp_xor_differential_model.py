@@ -311,7 +311,7 @@ class CpXorDifferentialModel(CpModel):
         else:
             return solutions['total_weight']
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name='Chuffed'):
+    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with the lowest probability weight.
         By default, the search is set in the single-key setting.
@@ -367,12 +367,12 @@ class CpXorDifferentialModel(CpModel):
         self.build_xor_differential_trail_model(-1, fixed_values)
         end = tm.time()
         build_time = end - start
-        solution = self.solve('xor_differential_one_solution', solver_name)
+        solution = self.solve('xor_differential_one_solution', solver_name, num_of_processors, timelimit)
         solution['building_time_seconds'] = build_time
         solution['test_name'] = "find_lowest_weight_xor_differential_trail"
         return solution
 
-    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with any weight.
         By default, the search is set in the single-key setting.
@@ -420,7 +420,7 @@ class CpXorDifferentialModel(CpModel):
         return solution
 
     def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[],
-                                                          solver_name=SOLVER_DEFAULT):
+                                                          solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with the weight of probability equal to ``fixed_weight``.
         By default, the search is set in the single-key setting.
