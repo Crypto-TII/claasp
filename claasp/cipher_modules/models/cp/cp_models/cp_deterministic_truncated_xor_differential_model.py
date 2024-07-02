@@ -95,12 +95,17 @@ class CpDeterministicTruncatedXorDifferentialModel(CpModel):
                 variables, constraints = self.propagate_deterministically(component, wordwise)
                 self._variables_list.extend(variables)
                 deterministic_truncated_xor_differential.extend(constraints)
-
-        variables, constraints = self.input_deterministic_truncated_xor_differential_constraints()
+        
+        if not wordwise:
+            variables, constraints = self.input_deterministic_truncated_xor_differential_constraints()
+        else:
+            variables, constraints = self.input_wordwise_deterministic_truncated_xor_differential_constraints()
         self._model_prefix.extend(variables)
         self._variables_list.extend(constraints)
-        deterministic_truncated_xor_differential.extend(
-            self.final_deterministic_truncated_xor_differential_constraints(minimize))
+        if not wordwise:
+            deterministic_truncated_xor_differential.extend(self.final_deterministic_truncated_xor_differential_constraints(minimize))
+        else:
+            deterministic_truncated_xor_differential.extend(self.final_wordwise_deterministic_truncated_xor_differential_constraints(minimize))
         self._model_constraints = self._model_prefix + self._variables_list + deterministic_truncated_xor_differential
 
     def final_deterministic_truncated_xor_differential_constraints(self, minimize=False):
