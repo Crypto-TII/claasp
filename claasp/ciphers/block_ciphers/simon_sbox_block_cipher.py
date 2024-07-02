@@ -74,25 +74,26 @@ class SimonSboxBlockCipher(Cipher):
         'intermediate_output_0_0'
     """
 
-    sbox = [0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3, 2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5, 5, 4,
-            0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3, 2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5, 5, 4,
-            8, 9, 8, 9, 10, 11, 11, 10, 8, 9, 8, 9, 10, 11, 11, 10, 12, 13, 12, 13, 14, 15, 15, 14, 14, 15,
-            14, 15, 12, 13, 13, 12, 12, 13, 12, 13, 14, 15, 15, 14, 12, 13, 12, 13, 14, 15, 15, 14, 8, 9,
-            8, 9, 10, 11, 11, 10, 10, 11, 10, 11, 8, 9, 9, 8, 0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3,
-            2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5, 5, 4, 0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3,
-            2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5, 5, 4, 8, 9, 8, 9, 10, 11, 11, 10, 8, 9, 8, 9, 10,
-            11, 11, 10, 12, 13, 12, 13, 14, 15, 15, 14, 14, 15, 14, 15, 12, 13, 13, 12, 12, 13, 12, 13, 14,
-            15, 15, 14, 12, 13, 12, 13, 14, 15, 15, 14, 8, 9, 8, 9, 10, 11, 11, 10, 10, 11, 10, 11, 8, 9,
-            9, 8, 0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3, 2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5,
-            5, 4, 0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3, 2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4, 5,
-            5, 4, 8, 9, 8, 9, 10, 11, 11, 10, 8, 9, 8, 9, 10, 11, 11, 10, 12, 13, 12, 13, 14, 15, 15, 14,
-            14, 15, 14, 15, 12, 13, 13, 12, 12, 13, 12, 13, 14, 15, 15, 14, 12, 13, 12, 13, 14, 15, 15, 14,
-            8, 9, 8, 9, 10, 11, 11, 10, 10, 11, 10, 11, 8, 9, 9, 8, 8, 9, 8, 9, 10, 11, 11, 10, 8, 9, 8, 9,
-            10, 11, 11, 10, 12, 13, 12, 13, 14, 15, 15, 14, 14, 15, 14, 15, 12, 13, 13, 12, 8, 9, 8, 9, 10,
-            11, 11, 10, 8, 9, 8, 9, 10, 11, 11, 10, 12, 13, 12, 13, 14, 15, 15, 14, 14, 15, 14, 15, 12, 13,
-            13, 12, 0, 1, 0, 1, 2, 3, 3, 2, 0, 1, 0, 1, 2, 3, 3, 2, 4, 5, 4, 5, 6, 7, 7, 6, 6, 7, 6, 7, 4,
-            5, 5, 4, 4, 5, 4, 5, 6, 7, 7, 6, 4, 5, 4, 5, 6, 7, 7, 6, 0, 1, 0, 1, 2, 3, 3, 2, 2, 3, 2, 3, 0,
-            1, 1, 0]
+    sbox = [0, 0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 0, 0, 0, 1, 0, 0, 2, 3, 8, 8, 8, 9, 12, 12, 14, 15, 0, 0,
+            0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 16, 16, 16, 17, 16, 16, 18, 19, 24, 24, 24, 25, 28, 28, 30,
+            31, 0, 0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 0, 0, 0, 1, 0, 0, 2, 3, 8, 8, 8, 9, 12, 12, 14, 15,
+            32, 32, 32, 33, 32, 32, 34, 35, 32, 32, 32, 33, 36, 36, 38, 39, 48, 48, 48, 49, 48, 48, 50, 51, 56, 56,
+            56, 57, 60, 60, 62, 63, 0, 0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 0, 0, 0, 1, 0, 0, 2, 3, 8, 8, 8,
+            9, 12, 12, 14, 15, 0, 0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 16, 16, 16, 17, 16, 16, 18, 19, 24,
+            24, 24, 25, 28, 28, 30, 31, 64, 64, 64, 65, 64, 64, 66, 67, 64, 64, 64, 65, 68, 68, 70, 71, 64, 64, 64,
+            65, 64, 64, 66, 67, 72, 72, 72, 73, 76, 76, 78, 79, 96, 96, 96, 97, 96, 96, 98, 99, 96, 96, 96, 97, 100,
+            100, 102, 103, 112, 112, 112, 113, 112, 112, 114, 115, 120, 120, 120, 121, 124, 124, 126, 127, 0, 0, 0,
+            1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 0, 0, 0, 1, 0, 0, 2, 3, 8, 8, 8, 9, 12, 12, 14, 15, 0, 0, 0, 1,
+            0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 16, 16, 16, 17, 16, 16, 18, 19, 24, 24, 24, 25, 28, 28, 30, 31, 0,
+            0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 0, 0, 0, 1, 0, 0, 2, 3, 8, 8, 8, 9, 12, 12, 14, 15, 32, 32,
+            32, 33, 32, 32, 34, 35, 32, 32, 32, 33, 36, 36, 38, 39, 48, 48, 48, 49, 48, 48, 50, 51, 56, 56, 56, 57,
+            60, 60, 62, 63, 128, 128, 128, 129, 128, 128, 130, 131, 128, 128, 128, 129, 132, 132, 134, 135, 128,
+            128, 128, 129, 128, 128, 130, 131, 136, 136, 136, 137, 140, 140, 142, 143, 128, 128, 128, 129, 128, 128,
+            130, 131, 128, 128, 128, 129, 132, 132, 134, 135, 144, 144, 144, 145, 144, 144, 146, 147, 152, 152, 152,
+            153, 156, 156, 158, 159, 192, 192, 192, 193, 192, 192, 194, 195, 192, 192, 192, 193, 196, 196, 198, 199,
+            192, 192, 192, 193, 192, 192, 194, 195, 200, 200, 200, 201, 204, 204, 206, 207, 224, 224, 224, 225, 224,
+            224, 226, 227, 224, 224, 224, 225, 228, 228, 230, 231, 240, 240, 240, 241, 240, 240, 242, 243, 248, 248,
+            248, 249, 252, 252, 254, 255]
 
     def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=[-1, -8, -2]):
         self.block_bit_size = block_bit_size
@@ -101,7 +102,7 @@ class SimonSboxBlockCipher(Cipher):
         self.rotation_amounts = rotation_amounts[:]
         self.z = z[wordsize2zindex[self.word_size][self.key_size_in_words]]
         self.c = 2**self.word_size - 4
-        self.number_of_sboxes = self.block_bit_size // 8
+        self.number_of_sboxes = self.block_bit_size // 16
 
         if number_of_rounds is None:
             for parameters in PARAMETERS_CONFIGURATION_LIST:
@@ -132,19 +133,37 @@ class SimonSboxBlockCipher(Cipher):
         self.add_cipher_output_component([x[0], y[0]], [x[1], y[1]], self.block_bit_size)
 
     def f(self, x):
-        # f(x) = ((x <<< 1) & (x <<< 8)) ⊕ (x <<< 2)
-        positions = [1, 8, 2, 9, 3, 10, 4, 11, 5]
-        sboxes_ids = []
+        # f(x) = (x <<< 1) & (x <<< 8)
+        input_positions_pattern = (1, 8, 15, 22, 29, 36, 43, 50, 57)
+        output_positions_pattern = (0, 7, 14, 21, 28, 35, 42, 49)
+        output_ids = [""] * self.word_size
+        output_positions = [0] * self.word_size
         for i in range(self.number_of_sboxes):
-            sbox_positions = [(position + 4*i) % self.word_size for position in positions]
-            sboxes_ids.append(self.add_SBOX_component([x[0]], [sbox_positions], 4, self.sbox).id)
+            sbox_input_positions = [(position + 8*i) % self.word_size for position in input_positions_pattern]
+            sbox_id = self.add_SBOX_component([x[0]], [sbox_input_positions], 8, self.sbox).id
+            sbox_output_positions = [(position + 8*i) % self.word_size for position in output_positions_pattern]
+            for j, sbox_output_position in enumerate(sbox_output_positions):
+                output_ids[sbox_output_position] = sbox_id
+                output_positions[sbox_output_position] = j
+        sboxes_ids = [output_ids[0]]
+        sboxes_positions = [[output_positions[0]]]
+        for i in range(1, self.word_size):
+            if output_ids[i] != sboxes_ids[-1]:
+                sboxes_ids.append(output_ids[i])
+                sboxes_positions.append([output_positions[i]])
+            else:
+                sboxes_positions[-1].append(output_positions[i])
 
-        return sboxes_ids, [list(range(4)) for _ in range(self.number_of_sboxes)]
+        s2_x_input_positions = list(map(int(self.word_size).__rmod__, range(2, 2 + self.word_size)))
+        feistel_id = self.add_XOR_component([*sboxes_ids, x[0]], [*sboxes_positions, s2_x_input_positions],
+                                            self.word_size).id
+
+        return feistel_id, list(range(self.word_size))
 
     def feistel_function(self, x, y, k):
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
-        sboxes = self.f(x)
-        new_x_id = self.add_XOR_component([y[0], *sboxes[0], k[0]], [y[1], *sboxes[1], k[1]],
+        feistel_id, feistel_positions = self.f(x)
+        new_x_id = self.add_XOR_component([y[0], feistel_id, k[0]], [y[1], feistel_positions, k[1]],
                                           self.word_size).id
 
         self.add_round_output_component([new_x_id, x[0]], [list(range(self.word_size)), x[1]],
