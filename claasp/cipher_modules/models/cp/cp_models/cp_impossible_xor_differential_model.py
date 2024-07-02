@@ -75,7 +75,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                     input_component = self.get_component_from_id(id_link, self.inverse_cipher)
                     if input_component not in backward_components and id_link not in key_ids + constant_ids:
                         components_to_invert.append(input_component)
-            inverse_variables, inverse_constraints = self.clean_inverse_impossible_variables_constraints_for_attack(components_to_invert, inverse_variables, inverse_constraints)
+            inverse_variables, inverse_constraints = self.clean_inverse_impossible_variables_constraints_with_extensions(components_to_invert, inverse_variables, inverse_constraints)
             
         return inverse_variables, inverse_constraints
     
@@ -93,7 +93,30 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
             
         return direct_variables, direct_constraints
         
-    def build_impossible_attack_xor_differential_trail_model(self, fixed_variables, number_of_rounds, initial_round, middle_round, final_round, intermediate_components):
+    def build_impossible_xor_differential_trail_with_extensions_model(self, fixed_variables, number_of_rounds, initial_round, middle_round, final_round, intermediate_components):
+        """
+        Build the CP model for the search of deterministic truncated XOR differential trails with extensions for key recovery.
+
+        INPUT:
+
+        - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+          format
+        - ``number_of_rounds`` -- **integer** ; number of rounds
+        - ``initial_round`` -- **integer** ; initial round of the impossible differential trail
+        - ``middle_round`` -- **integer** ; incosistency round of the impossible differential trail
+        - ``final_round`` -- **integer** ; final round of the impossible differential trail
+        - ``intermediate_components`` -- **Boolean** ; check inconsistency on intermediate components of the inconsistency round or only on outputs
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=5)
+            sage: cp = CpImpossibleXorDifferentialModel(speck)
+            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
+            sage: cp.build_impossible_xor_differential_trail_with_extensions_model(fixed_variables, 5, 2, 3, 4, False)
+        """
         self.initialise_model()
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
@@ -125,7 +148,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                             if input_component.id == id_link:
                                 components_to_link.append([self.get_inverse_component_correspondance(input_component), id_link])
                                 
-        link_constraints = self.link_constraints_for_attack_trail(components_to_link)
+        link_constraints = self.link_constraints_for_trail_with_extensions(components_to_link)
         key_schedule_variables, key_schedule_constraints = self.constraints_for_key_schedule()
         constants_variables, constants_constraints = self.constraints_for_constants()
         
@@ -139,13 +162,13 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         self._variables_list.extend(key_schedule_variables)
         self._variables_list.extend(constants_variables)
         deterministic_truncated_xor_differential.extend(constraints)
-        variables, constraints = self.input_impossible_attack_constraints(number_of_rounds, initial_round, middle_round, final_round)
+        variables, constraints = self.input_impossible_constraints_with_extensions(number_of_rounds, initial_round, middle_round, final_round)
         self._model_prefix.extend(variables)
         self._variables_list.extend(constraints)
         deterministic_truncated_xor_differential.extend(link_constraints)
         deterministic_truncated_xor_differential.extend(key_schedule_constraints)
         deterministic_truncated_xor_differential.extend(constants_constraints)
-        deterministic_truncated_xor_differential.extend(self.final_impossible_attack_constraints(number_of_rounds, initial_round, middle_round, final_round, intermediate_components))
+        deterministic_truncated_xor_differential.extend(self.final_impossible_constraints_with_extensions(number_of_rounds, initial_round, middle_round, final_round, intermediate_components))
         set_of_constraints = self._variables_list + deterministic_truncated_xor_differential
         
         cleaned_constraints = []
@@ -164,16 +187,20 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
           format
         - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
+        - ``initial_round`` -- **integer** (default: `1`); initial round of the impossible differential
+        - ``middle_round`` -- **integer** (default: `1`); incosistency round of the impossible differential
+        - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
+        - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
 
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
             sage: cp = CpImpossibleXorDifferentialModel(speck)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
-            sage: cp.build_impossible_xor_differential_trail_model(fixed_variables)
+            sage: cp.build_impossible_xor_differential_trail_model(fixed_variables, 4, 1, 3, 4, False)
         """
         self.initialise_model()
         if number_of_rounds is None:
@@ -251,7 +278,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         inverse_variables, inverse_constraints = self.clean_repetitions_in_constraints(inverse_variables, inverse_constraints)
         return inverse_variables, inverse_constraints
         
-    def clean_inverse_impossible_variables_constraints_for_attack(self, backward_components, inverse_variables, inverse_constraints):
+    def clean_inverse_impossible_variables_constraints_with_extensions(self, backward_components, inverse_variables, inverse_constraints):
         key_components, key_ids = self.extract_key_schedule()
         constant_components, constant_ids = self.extract_constants()
         for component in backward_components:
@@ -281,11 +308,11 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         
         return inverse_variables, inverse_constraints
         
-    def constraints_for_constants(self):
+    def constraints_for_key_schedule(self):
         key_components, key_ids = self.extract_key_schedule()
         return self.build_impossible_forward_model(key_components)
         
-    def constraints_for_key_schedule(self):
+    def constraints_for_constants(self):
         constant_components, constant_ids = self.extract_constants()
         return self.build_impossible_forward_model(constant_components)
         
@@ -333,22 +360,26 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                     
         return key_schedule_components, key_schedule_components_ids
 
-    def final_impossible_attack_constraints(self, number_of_rounds, initial_round, middle_round, final_round, intermediate_components):
+    def final_impossible_constraints_with_extensions(self, number_of_rounds, initial_round, middle_round, final_round, intermediate_components):
         """
-        Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
+        Constraints for output and incompatibility.
 
         INPUT:
 
-        - ``number_of_rounds`` -- **integer**; number of rounds
+        - ``number_of_rounds`` -- **integer** ; number of rounds
+        - ``initial_round`` -- **integer** ; initial round of the impossible differential trail
+        - ``middle_round`` -- **integer** ; incosistency round of the impossible differential trail
+        - ``final_round`` -- **integer** ; final round of the impossible differential trail
+        - ``intermediate_components`` -- **Boolean** ; check inconsistency on intermediate components of the inconsistency round or only on outputs
 
         EXAMPLES::
 
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=2)
-            sage: cp = CpDeterministicTruncatedXorDifferentialModel(speck)
-            sage: cp.final_impossible_constraints(2)[:-2]
-            ['solve satisfy;']
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=5)
+            sage: cp = CpImpossibleXorDifferentialModel(speck)
+            sage: cp.final_impossible_cnstraints_with_extensions(5, 2, 3, 4, False)
         """
         key_schedule_components, key_schedule_components_ids = self.extract_key_schedule()
         cipher_inputs = self._cipher.inputs
@@ -402,20 +433,24 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
     
     def final_impossible_constraints(self, number_of_rounds, initial_round, middle_round, final_round, intermediate_components):
         """
-        Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
+        Constraints for output and incompatibility.
 
         INPUT:
 
-        - ``number_of_rounds`` -- **integer**; number of rounds
+        - ``number_of_rounds`` -- **integer** ; number of rounds
+        - ``initial_round`` -- **integer** ; initial round of the impossible differential trail
+        - ``middle_round`` -- **integer** ; incosistency round of the impossible differential trail
+        - ``final_round`` -- **integer** ; final round of the impossible differential trail
+        - ``intermediate_components`` -- **Boolean** ; check inconsistency on intermediate components of the inconsistency round or only on outputs
 
         EXAMPLES::
 
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=2)
-            sage: cp = CpDeterministicTruncatedXorDifferentialModel(speck)
-            sage: cp.final_impossible_constraints(2)[:-2]
-            ['solve satisfy;']
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=5)
+            sage: cp = CpImpossibleXorDifferentialModel(speck)
+            sage: cp.final_impossible_constraints(3, 2, 3, 4, False)
         """
         if initial_round == 1:
             cipher_inputs = self._cipher.inputs
@@ -479,45 +514,31 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         
     def find_all_impossible_xor_differential_trails(self, number_of_rounds, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None):
         """
-        Return the solution representing a differential trail with any weight.
+        Search for all impossible XOR differential trails of a cipher.
 
         INPUT:
 
-        - ``number_of_rounds`` -- **integer**; number of rounds
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `None`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
+        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+          format
+        - ``initial_round`` -- **integer** (default: `1`); initial round of the impossible differential
+        - ``middle_round`` -- **integer** (default: `1`); incosistency round of the impossible differential
+        - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
+        - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
+        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
+        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: cp = CpDeterministicTruncatedXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=[0]*32)
-            sage: key = set_fixed_variables(
-            ....:         component_id='key',
-            ....:         constraint_type='equal',
-            ....:         bit_positions=range(64),
-            ....:         bit_values=[0]*64)
-            sage: cp.find_all_deterministic_truncated_xor_differential_trail(3, [plaintext,key], 'Chuffed') # random
-            [{'cipher_id': 'speck_p32_k64_o32_r3',
-              'components_values': {'cipher_output_2_12': {'value': '22222222222222202222222222222222',
-                'weight': 0},
-              ...
-              'memory_megabytes': 0.02,
-              'model_type': 'deterministic_truncated_xor_differential',
-              'solver_name': 'Chuffed',
-              'solving_time_seconds': 0.002,
-              'total_weight': '0.0'}]
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: cp = CpImpossibleXorDifferentialModel(speck)
+            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
+            sage: fixed_variables.append([set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))])
+            sage: fixed_variables.append([set_fixed_variables('inverse_{self._cipher.get_all_components_ids()[-1]}', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))])
+            sage: cp.find_all_impossible_xor_differential_trails(fixed_variables, 4, 1, 3, 4, False)
         """
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
@@ -525,163 +546,97 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
 
     def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None):
         """
-        Return the solution representing a differential trail with any weight.
+        Search for the impossible XOR differential trail of a cipher with the highest number of known bits in plaintext and ciphertext difference.
 
         INPUT:
 
         - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+          format
+        - ``initial_round`` -- **integer** (default: `1`); initial round of the impossible differential
+        - ``middle_round`` -- **integer** (default: `1`); incosistency round of the impossible differential
+        - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
+        - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
+        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
+        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=1)
-            sage: cp = CpDeterministicTruncatedXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=[0]*32)
-            sage: key = set_fixed_variables(
-            ....:         component_id='key',
-            ....:         constraint_type='equal',
-            ....:         bit_positions=range(64),
-            ....:         bit_values=[0]*64)
-            sage: cp.find_one_deterministic_truncated_xor_differential_trail(1, [plaintext,key], 'Chuffed') # random
-            [{'cipher_id': 'speck_p32_k64_o32_r1',
-              'components_values': {'cipher_output_0_6': {'value': '22222222222222212222222222222220',
-                'weight': 0},
-               'intermediate_output_0_5': {'value': '0000000000000000', 'weight': 0},
-               'key': {'value': '0000000000000000000000000000000000000000000000000000000000000000',
-               'weight': 0},
-               'modadd_0_1': {'value': '2222222222222221', 'weight': 0},
-               'plaintext': {'value': '11111111011111111111111111111111', 'weight': 0},
-               'rot_0_0': {'value': '1111111111111110', 'weight': 0},
-               'rot_0_3': {'value': '1111111111111111', 'weight': 0},
-               'xor_0_2': {'value': '2222222222222221', 'weight': 0},
-               'xor_0_4': {'value': '2222222222222220', 'weight': 0}},
-              'memory_megabytes': 0.01,
-              'model_type': 'deterministic_truncated_xor_differential_one_solution',
-              'solver_name': 'Chuffed',
-              'solving_time_seconds': 0.0,
-              'total_weight': '0.0'}]
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: cp = CpImpossibleXorDifferentialModel(speck)
+            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
+            sage: fixed_variables.append([set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))])
+            sage: fixed_variables.append([set_fixed_variables('inverse_{self._cipher.get_all_components_ids()[-1]}', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))])
+            sage: cp.find_lowest_complexity_impossible_xor_differential_trail(fixed_variables, 4, 1, 3, 4, False)
         """
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
         self._model_constraints.remove(f'solve satisfy;')
-        self._model_constraints.append(f'solve maximize count(plaintext, 0) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 0);')
+        self._model_constraints.append(f'solve minimize count(plaintext, 2) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 2);')
 
         return self.solve('impossible_xor_differential_one_solution', solver_name, number_of_rounds, initial_round, middle_round, final_round, num_of_processors, timelimit)
       
-    def find_one_impossible_attack_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None):
+    def find_one_impossible_xor_differential_trail_with_extensions(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None):
         """
-        Return the solution representing a differential trail with any weight.
+        Search for one impossible XOR differential trail of a cipher with forward and backward deterministic extensions for key recovery.
 
         INPUT:
 
         - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+          format
+        - ``initial_round`` -- **integer** (default: `1`); initial round of the impossible differential
+        - ``middle_round`` -- **integer** (default: `1`); incosistency round of the impossible differential
+        - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
+        - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
+        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
+        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=1)
-            sage: cp = CpDeterministicTruncatedXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=[0]*32)
-            sage: key = set_fixed_variables(
-            ....:         component_id='key',
-            ....:         constraint_type='equal',
-            ....:         bit_positions=range(64),
-            ....:         bit_values=[0]*64)
-            sage: cp.find_one_deterministic_truncated_xor_differential_trail(1, [plaintext,key], 'Chuffed') # random
-            [{'cipher_id': 'speck_p32_k64_o32_r1',
-              'components_values': {'cipher_output_0_6': {'value': '22222222222222212222222222222220',
-                'weight': 0},
-               'intermediate_output_0_5': {'value': '0000000000000000', 'weight': 0},
-               'key': {'value': '0000000000000000000000000000000000000000000000000000000000000000',
-               'weight': 0},
-               'modadd_0_1': {'value': '2222222222222221', 'weight': 0},
-               'plaintext': {'value': '11111111011111111111111111111111', 'weight': 0},
-               'rot_0_0': {'value': '1111111111111110', 'weight': 0},
-               'rot_0_3': {'value': '1111111111111111', 'weight': 0},
-               'xor_0_2': {'value': '2222222222222221', 'weight': 0},
-               'xor_0_4': {'value': '2222222222222220', 'weight': 0}},
-              'memory_megabytes': 0.01,
-              'model_type': 'deterministic_truncated_xor_differential_one_solution',
-              'solver_name': 'Chuffed',
-              'solving_time_seconds': 0.0,
-              'total_weight': '0.0'}]
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: cp = CpImpossibleXorDifferentialModel(speck)
+            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
+            sage: fixed_variables.append([set_fixed_variables('inverse_plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))])
+            sage: fixed_variables.append([set_fixed_variables('{self._cipher.get_all_components_ids()[-1]}', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))])
+            sage: cp.find_one_impossible_xor_differential_trail_with_extensions(fixed_variables, 4, 1, 3, 4, False)
         """
-        self.build_impossible_attack_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
+        self.build_impossible_xor_differential_trail_model_with_extensions(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
         return self.solve('impossible_xor_differential_one_solution', solver_name, number_of_rounds, initial_round, middle_round, final_round, num_of_processors, timelimit)
     
     def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None):
         """
-        Return the solution representing a differential trail with any weight.
+        Search for one impossible XOR differential trail of a cipher.
 
         INPUT:
 
         - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+          format
+        - ``initial_round`` -- **integer** (default: `1`); initial round of the impossible differential
+        - ``middle_round`` -- **integer** (default: `1`); incosistency round of the impossible differential
+        - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
+        - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
+        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
+        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_deterministic_truncated_xor_differential_model import CpDeterministicTruncatedXorDifferentialModel
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=1)
-            sage: cp = CpDeterministicTruncatedXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:         component_id='plaintext',
-            ....:         constraint_type='not_equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=[0]*32)
-            sage: key = set_fixed_variables(
-            ....:         component_id='key',
-            ....:         constraint_type='equal',
-            ....:         bit_positions=range(64),
-            ....:         bit_values=[0]*64)
-            sage: cp.find_one_deterministic_truncated_xor_differential_trail(1, [plaintext,key], 'Chuffed') # random
-            [{'cipher_id': 'speck_p32_k64_o32_r1',
-              'components_values': {'cipher_output_0_6': {'value': '22222222222222212222222222222220',
-                'weight': 0},
-               'intermediate_output_0_5': {'value': '0000000000000000', 'weight': 0},
-               'key': {'value': '0000000000000000000000000000000000000000000000000000000000000000',
-               'weight': 0},
-               'modadd_0_1': {'value': '2222222222222221', 'weight': 0},
-               'plaintext': {'value': '11111111011111111111111111111111', 'weight': 0},
-               'rot_0_0': {'value': '1111111111111110', 'weight': 0},
-               'rot_0_3': {'value': '1111111111111111', 'weight': 0},
-               'xor_0_2': {'value': '2222222222222221', 'weight': 0},
-               'xor_0_4': {'value': '2222222222222220', 'weight': 0}},
-              'memory_megabytes': 0.01,
-              'model_type': 'deterministic_truncated_xor_differential_one_solution',
-              'solver_name': 'Chuffed',
-              'solving_time_seconds': 0.0,
-              'total_weight': '0.0'}]
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: cp = CpImpossibleXorDifferentialModel(speck)
+            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
+            sage: fixed_variables.append([set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))])
+            sage: fixed_variables.append([set_fixed_variables('inverse_{self._cipher.get_all_components_ids()[-1]}', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))])
+            sage: cp.find_one_impossible_xor_differential_trail(fixed_variables, 4, 1, 3, 4, False)
         """
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
@@ -748,7 +703,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                         
         return key_bits
        
-    def input_impossible_attack_constraints(self, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None):
+    def input_impossible_constraints_with_extensions(self, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None):
     
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
@@ -867,7 +822,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
                 return True
         return False
          
-    def link_constraints_for_attack_trail(self, components_to_link):
+    def link_constraints_for_trail_with_extensions(self, components_to_link):
         linking_constraints = []                        
         for pairs in components_to_link:
             linking_constraints.append(f'constraint {pairs[0]} = inverse_{pairs[1]};')
@@ -875,36 +830,6 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         return linking_constraints
         
     def _parse_solver_output(self, output_to_parse, model_type, number_of_rounds, initial_round, middle_round, final_round):
-        """
-        Parse solver solution (if needed).
-
-        INPUT:
-
-        - ``output_to_parse`` -- **list**; strings that represents the solver output
-        - ``truncated`` -- **boolean** (default: `False`)
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import CpXorDifferentialModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, write_model_to_file
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = CpXorDifferentialModel(speck)
-            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
-            sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
-            sage: write_model_to_file(cp._model_constraints,'doctesting_file.mzn')
-            sage: command = ['minizinc', '--solver-statistics', '--solver', 'Chuffed', 'doctesting_file.mzn']
-            sage: import subprocess
-            sage: solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-            sage: os.remove('doctesting_file.mzn')
-            sage: solver_output = solver_process.stdout.splitlines()
-            sage: cp._parse_solver_output(solver_output) # random
-            (0.018,
-             ...
-             'cipher_output_3_12': {'value': '0', 'weight': 0}}},
-             ['0'])
-        """
         components_values, memory, time = self.parse_solver_information(output_to_parse)
         all_components = [*self._cipher.inputs]
         for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
@@ -950,45 +875,6 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         return inverse_variables, inverse_constraints
         
     def solve(self, model_type, solver_name=None, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None, num_of_processors=None, timelimit=None):
-        """
-        Return the solution of the model.
-
-        INPUT:
-
-        - ``model_type`` -- **string**; the model to solve:
-
-          * 'cipher'
-          * 'xor_differential'
-          * 'xor_differential_one_solution'
-          * 'xor_linear'
-          * 'xor_linear_one_solution'
-          * 'deterministic_truncated_xor_differential'
-          * 'deterministic_truncated_xor_differential_one_solution'
-          * 'impossible_xor_differential'
-        - ``solver_name`` -- **string** (default: `None`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_model import CpXorDifferentialTrailSearchModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = CpXorDifferentialTrailSearchModel(speck)
-            sage: fixed_variables = [set_fixed_variables('key', 'equal', list(range(64)), integer_to_bit_list(0, 64, 'little')), set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
-            sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
-            sage: cp.solve('xor_differential', 'Chuffed') # random
-            [{'cipher_id': 'speck_p32_k64_o32_r4',
-              ...
-              'total_weight': '7'},
-             {'cipher_id': 'speck_p32_k64_o32_r4',
-               ...
-              'total_weight': '5'}]
-        """
-        
         cipher_name = self.cipher_id
         input_file_path = f'{cipher_name}_Cp_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, num_of_processors, timelimit)
