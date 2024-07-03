@@ -12,8 +12,8 @@ implemented using [Python3](https://www.python.org/) and [Cython](https://www.cy
 Download the source from the git repository:
 
 ```
-     $ git clone https://github.com/Crypto-TII/claasp.git
-     $ cd tii-claasp/
+    $ git clone https://github.com/Crypto-TII/claasp.git
+    $ cd claasp/
 ```
 
 CLAASP library is built on the top of SageMath, and it will try to pick the `sage` binary from `PATH`
@@ -46,15 +46,17 @@ After the installation, we need to enter to the sage terminal with the command:
 After that we are ready to go and can use the library as specified in the [usage](#usage) section.
 
 ### Manual installation
+
 To install the dependencies manually, you can do it through make command or executing a script from the 
-root directory of the project.
+root directory of the project. Before doing this, make sure that you have set up `locale` correctly.
 
 #### Make command
-You need to have `make` installed for this execution. Run ```make local-installation```
+
+You need to have `make` installed for this execution. Run ```make local-installation```.
 
 #### Script execution
-- For m1 macs, run ```./configure.sh armlinux64```
-- For other machines, run ```./configure.sh```
+
+Alternatively, you can run ```./configure.sh```.
 
 ## Documentation
 
@@ -98,4 +100,4 @@ Once the package is installed, you can use it in Sage with:
 
 ## Contributing the library
 
-To contribute to the library, please follow the instructions in `docs/DEVELOPER_GUIDE.md` file.
+To contribute to the library, please follow the instructions in `docs/CONTRIBUTING.md` file.

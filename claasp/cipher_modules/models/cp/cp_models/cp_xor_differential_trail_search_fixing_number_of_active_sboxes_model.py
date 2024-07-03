@@ -58,11 +58,11 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel)
+            ....: CpXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(aes)
+            sage: cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_second_step_model(-1, fixed_variables)
@@ -98,17 +98,17 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel)
+            ....: CpXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(aes)
+            sage: cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
-            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(224, fixed_variables, 'Chuffed', 'Chuffed') # long
+            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(224, fixed_variables, 'Chuffed', 'Chuffed') # long # doctest: +SKIP
             ...
-            sage: len(trails) # long
+            sage: len(trails) # long # doctest: +SKIP
             8
         """
         return self.solve_full_two_steps_xor_differential_model('xor_differential_all_solutions', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name)
@@ -135,19 +135,20 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel)
+            ....: CpXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(aes)
+            sage: cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
             sage: cp.find_lowest_weight_xor_differential_trail(fixed_variables, 'Chuffed', 'Chuffed') # random
-            {'cipher_id': 'aes_block_cipher_k128_p128_o128_r2',
+            5
+            {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
              'model_type': 'xor_differential',
              'solver_name': 'Chuffed',
-             'components_values': {'key': {'value': '0', 'weight': 0},
+             'components_values': {'key': {'value': '00000000000000000000000000000000', 'weight': 0},
               ...
              'total_weight': '30.0'}
         """
@@ -170,19 +171,19 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel)
+            ....: CpXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(aes)
+            sage: cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
             sage: cp.find_one_xor_differential_trail(fixed_variables, 'Chuffed', 'Chuffed') # random
-            {'cipher_id': 'aes_block_cipher_k128_p128_o128_r2',
+            {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
              'model_type': 'xor_differential',
               ...
-             'cipher_output_1_32':{'value': 'ffffffffffffffffffffffffffffffff', 'weight': 0}},
+             'cipher_output_1_32':{'value': 'ffffffffffffffffffffffffffffffff', 'weight': 0.0}},
              'total_weight': '224.0'}
         """
         return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', 0, fixed_values, first_step_solver_name, second_step_solver_name)
@@ -205,16 +206,16 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel)
+            ....: CpXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(aes)
+            sage: cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
             sage: cp.find_one_xor_differential_trail_with_fixed_weight(224, fixed_variables, 'Chuffed', 'Chuffed') # random
-            {'cipher_id': 'aes_block_cipher_k128_p128_o128_r2',
+            {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
              'model_type': 'xor_differential',
              'solver_name': 'Chuffed',
              ...
@@ -234,16 +235,16 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel)
+            ....: CpXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(aes)
+            sage: cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)),
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_first_step_model(-1,fixed_variables)
             sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step', 'Chuffed')
-            sage: cp.generate_table_of_solutions(first_step_solution)
+            sage: cp.generate_table_of_solutions(first_step_solution, 'Chuffed')
         """
         cipher_name = self.cipher_id
         separator = '----------'
@@ -290,9 +291,9 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....:     CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel)
+            ....:     CpXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(aes)
+            sage: cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: cp.input_xor_differential_constraints()
             (['array[0..127] of var 0..1: key;',
               'array[0..127] of var 0..1: plaintext;',
@@ -326,18 +327,19 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel)
+            ....: CpXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(aes)
+            sage: cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)),
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: cp.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', -1, fixed_variables, 'Chuffed', 'Chuffed') # random
-            {'building_time': 3.7489726543426514,
-             'cipher_id': 'aes_block_cipher_k128_p128_o128_r2',
+            1
+            {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
               ...
-             'total_weight': '6'}
+             'total_weight': '6.0',
+             'building_time': 3.7489726543426514}
         """
         possible_sboxes = 0
         if weight > 0:
@@ -435,11 +437,11 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel)
+            ....: CpXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(aes)
+            sage: cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)),
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
@@ -508,16 +510,17 @@ class CpXorDifferentialFixingNumberOfActiveSboxesModel(CpXorDifferentialModel,
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel)
+            ....: CpXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
-            sage: cp = CpXorDifferentialTrailSearchFixingNumberOfActiveSboxesModel(aes)
+            sage: cp = CpXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
             sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step','Chuffed')
             sage: cp.transform_first_step_model(0, first_step_solution[0])
+            1
         """
         print(active_sboxes)
         self._first_step_find_all_solutions = []

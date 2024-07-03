@@ -116,7 +116,7 @@ class CpXorDifferentialModel(CpModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
             sage: cp = CpXorDifferentialModel(speck)
-            sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
+            sage: cp.build_xor_differential_trail_model()
         """
         self.initialise_model()
         self.c = 0
@@ -338,12 +338,19 @@ class CpXorDifferentialModel(CpModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: cp = CpXorDifferentialModel(speck)
             sage: cp.find_lowest_weight_xor_differential_trail(solver_name='Chuffed') # random
-            {'building_time': 0.007165431976318359,
-             'cipher_id': 'speck_p32_k64_o32_r4',
-             'components_values': {'cipher_output_4_12': {'value': '850a9520',
-             'weight': 0},
+            {'cipher': speck_p32_k64_o32_r5,
+             'model_type': 'xor_differential_one_solution',
+             'solver_name': 'Chuffed',
+             'solving_time_seconds': 120.349,
+             'memory_megabytes': 0.28,
+             'components_values': {'plaintext': {'value': '28000010', 'weight': 0},
+              'key': {'value': '0000000000000000', 'weight': 0},
               ...
-             'total_weight': '9.0'}
+              'cipher_output_4_12': {'value': '850a9520', 'weight': 0.0}},
+             'total_weight': '9.0',
+             'status': 'SATISFIABLE',
+             'building_time_seconds': 0.0021665096282958984,
+             'test_name': 'find_lowest_weight_xor_differential_trail'}
 
             # related-key setting
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import (CpXorDifferentialModel)
@@ -386,7 +393,7 @@ class CpXorDifferentialModel(CpModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=2)
             sage: cp = CpXorDifferentialModel(speck)
-            sage: cp.find_one_xor_differential_trail(solver_name=Chuffed') # random
+            sage: cp.find_one_xor_differential_trail(solver_name='Chuffed') # random
             {'cipher_id': 'speck_p32_k64_o32_r2',
              'model_type': 'xor_differential_one_solution',
               ...

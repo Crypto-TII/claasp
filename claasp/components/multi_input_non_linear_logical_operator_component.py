@@ -242,9 +242,9 @@ class MultiInputNonlinearLogicalOperator(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpModel(simon)
+            sage: milp = MilpXorDifferentialModel(simon)
             sage: milp.init_model_in_sage_milp_class()
             sage: and_component = simon.get_component_from_id("and_0_4")
             sage: variables, constraints = and_component.milp_xor_differential_propagation_constraints(milp)
@@ -300,9 +300,9 @@ class MultiInputNonlinearLogicalOperator(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
             sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpModel(simon)
+            sage: milp = MilpXorLinearModel(simon)
             sage: milp.init_model_in_sage_milp_class()
             sage: and_component = simon.get_component_from_id("and_0_4")
             sage: variables, constraints = and_component.milp_xor_linear_mask_propagation_constraints(milp)

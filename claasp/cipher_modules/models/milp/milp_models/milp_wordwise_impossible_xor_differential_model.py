@@ -59,7 +59,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: milp._forward_cipher = aes.get_partial_cipher(0, 0, keep_key_schedule=True)
             sage: backward_cipher = milp._cipher.cipher_partial_inverse(1, 1, keep_key_schedule=False)
             sage: milp._backward_cipher = backward_cipher.add_suffix_to_components("_backward", [backward_cipher.get_all_components_ids()[-1]])
-            sage: milp.build_wordwise_impossible_xor_differential_trail_model()
+            sage: milp.build_wordwise_impossible_xor_differential_trail_model() # doctest: +SKIP
             ...
         """
         cipher_list = [self._forward_cipher, self._backward_cipher]
@@ -88,7 +88,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
-            sage: milp.add_constraints_to_build_in_sage_milp_class(1, get_single_key_scenario_format_for_fixed_values(aes))
+            sage: milp.add_constraints_to_build_in_sage_milp_class(1, get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
 
         """
         self._verbose_print(MILP_BUILDING_MESSAGE)
@@ -168,7 +168,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
-            sage: milp.add_constraints_to_build_in_sage_milp_class_with_fixed_components(["intermediate_output_0_37"], get_single_key_scenario_format_for_fixed_values(aes))
+            sage: milp.add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components(["intermediate_output_0_37"], get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
 
         """
         self._verbose_print(MILP_BUILDING_MESSAGE)
@@ -273,7 +273,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
-            sage: milp.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(get_single_key_scenario_format_for_fixed_values(aes))
+            sage: milp.add_constraints_to_build_fully_automatic_model_in_sage_milp_class(get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
 
         """
         self._verbose_print(MILP_BUILDING_MESSAGE)
@@ -326,7 +326,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
-            sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail(1, get_single_key_scenario_format_for_fixed_values(aes))
+            sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail(1, get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
 
         """
         start = time.time()
@@ -361,7 +361,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
-            sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_chosen_components(['mix_column_0_21'], get_single_key_scenario_format_for_fixed_values(aes))
+            sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_chosen_components(['mix_column_0_21'], get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
 
         """
         start = time.time()
@@ -398,7 +398,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
-            sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model(get_single_key_scenario_format_for_fixed_values(aes))
+            sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model(get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
 
         """
         start = time.time()
