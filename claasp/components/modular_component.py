@@ -878,15 +878,21 @@ class Modular(Component):
         component_round_number = model._cipher.get_round_from_component_id(self.id)
 
         from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
-        if type(model) == SatXorDifferentialModel and model.window_size_by_round_values is not None:
+        if type(model) is SatXorDifferentialModel and model.window_size_by_round_values is not None:
             window_size = model.window_size_by_round_values[component_round_number]
-            extend_constraints_for_window_size(model, output_bit_len, window_size, input_bit_ids, output_bit_ids, constraints)
+            if window_size != -1:
+                extend_constraints_for_window_size(
+                    model, output_bit_len, window_size, input_bit_ids, output_bit_ids, constraints
+                )
 
-        if type(model) == SatXorDifferentialModel and model.window_size_by_component_id_values is not None:
+        if type(model) is SatXorDifferentialModel and model.window_size_by_component_id_values is not None:
             if self.id not in model.window_size_by_component_id_values:
                 raise ValueError(f"component with id {self.id} is not in the list window_size_by_component_id")
             window_size = model.window_size_by_component_id_values[self.id]
-            extend_constraints_for_window_size(model, output_bit_len, window_size, input_bit_ids, output_bit_ids, constraints)
+            if window_size != -1:
+                extend_constraints_for_window_size(
+                    model, output_bit_len, window_size, input_bit_ids, output_bit_ids, constraints
+                )
 
         variables = output_bit_ids + dummy_bit_ids + hw_bit_ids
 
