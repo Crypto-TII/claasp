@@ -1,7 +1,7 @@
 from claasp.ciphers.block_ciphers.simon_sbox_block_cipher import SimonSboxBlockCipher
 
 
-def test_simon_block_cipher():
+def test_simon_sbox_block_cipher():
     simon = SimonSboxBlockCipher()
     assert simon.type == 'block_cipher'
     assert simon.family_name == 'simon'

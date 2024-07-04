@@ -94,7 +94,7 @@ class SimonSboxBlockCipher(Cipher):
         'intermediate_output_0_0'
     """
 
-    def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=32, rotation_amounts=(-1, -8, -2)):
+    def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-1, -8, -2)):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
         self.word_size = self.block_bit_size // 2
@@ -103,6 +103,15 @@ class SimonSboxBlockCipher(Cipher):
         self.z = Z[WORDSIZE_TO_ZINDEX[self.word_size][self.number_of_key_words]]
         self.c = 2**self.word_size - 4
         self.number_of_sboxes = self.word_size // 8
+
+        if number_of_rounds is None:
+            for parameters in PARAMETERS_CONFIGURATION_LIST:
+                if parameters['block_bit_size'] == self.block_bit_size and \
+                        parameters['key_bit_size'] == self.key_bit_size:
+                    number_of_rounds = parameters['number_of_rounds']
+                    break
+            if number_of_rounds is None:
+                raise ValueError("No available number of rounds for the given parameters.")
 
         super().__init__(family_name="simon",
                          cipher_type="block_cipher",
