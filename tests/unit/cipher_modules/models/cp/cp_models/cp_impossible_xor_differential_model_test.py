@@ -4,11 +4,11 @@ from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_mo
     CpImpossibleXorDifferentialModel
 
 
-def test_build_impossible_xor_differential_trail_model_with_extensions():
+def test_build_impossible_xor_differential_trail_with_extensions_model():
     speck = SpeckBlockCipher(number_of_rounds=6)
     cp = CpImpossibleXorDifferentialModel(speck)
     fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
-    cp.build_impossible_xor_differential_trail_model_with_extensions(number_of_rounds=6, fixed_variables=fixed_variables, initial_round=2, middle_round=3, final_round=5, intermediate_components=False)
+    cp.build_impossible_xor_differential_trail_with_extensions_model(number_of_rounds=6, fixed_variables=fixed_variables, initial_round=2, middle_round=3, final_round=5, intermediate_components=False)
 
     assert len(cp.model_constraints) == 1764
     assert cp.model_constraints[99] == 'array[0..31] of var 0..2: inverse_plaintext;'
@@ -57,10 +57,10 @@ def test_find_lowest_complexity_impossible_xor_differential_trail():
     assert trail['model_type'] == 'impossible_xor_differential_one_solution'
     assert trail['solver_name'] == 'Chuffed'
 
-    assert trail['components_values']['plaintext']['value'] == '00000000000000000010000000000000'
+    assert trail['components_values']['plaintext']['value'] == '00000000010000000000000000000000'
     assert trail['components_values']['inverse_cipher_output_5_12']['value'] == '10000000000000001000000000000010'
     
-    assert trail['components_values']['xor_1_10']['value'] == '2222222221000022'
+    assert trail['components_values']['xor_1_10']['value'] == '2222222100000010'
     assert trail['components_values']['inverse_rot_2_9']['value'] == '2222222210022222'
 
 
@@ -103,7 +103,7 @@ def test_find_one_impossible_xor_differential_trail_with_extensions():
     
     print(trail)
 
-    assert trail['components_values']['inverse_plaintext']['value'] == '22222220022222220000200000021200'
+    assert trail['components_values']['inverse_plaintext']['value'] == '22222220022222220000100000022200'
     assert trail['components_values']['inverse_cipher_output_5_12']['value'] == '22222210000000002222221000000011'
     
     assert trail['components_values']['intermediate_output_2_12']['value'] == '22222222220000002222222222000022'

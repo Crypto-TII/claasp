@@ -69,6 +69,7 @@ class CpWordwiseDeterministicTruncatedXorDifferentialModel(CpDeterministicTrunca
         return cp_constraints
 
     def find_one_wordwise_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
           
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds

@@ -606,7 +606,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
             sage: fixed_variables.append([set_fixed_variables('{self._cipher.get_all_components_ids()[-1]}', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))])
             sage: cp.find_one_impossible_xor_differential_trail_with_extensions(fixed_variables, 4, 1, 3, 4, False)
         """
-        self.build_impossible_xor_differential_trail_model_with_extensions(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
+        self.build_impossible_xor_differential_trail_with_extensions_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
         return self.solve('impossible_xor_differential_one_solution', solver_name, number_of_rounds, initial_round, middle_round, final_round, num_of_processors, timelimit)
     
