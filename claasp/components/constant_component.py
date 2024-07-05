@@ -262,7 +262,7 @@ class Constant(Component):
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
             sage: constant_component = speck.component_from(2, 0)
             sage: constant_component.cp_xor_differential_propagation_constraints()
-            (['array[0..15] of var 0..1: constant_2_0;'],
+            (['array[0..15] of var 0..2: constant_2_0;'],
              ['constraint constant_2_0[0] = 0;',
              'constraint constant_2_0[1] = 0;',
              'constraint constant_2_0[2] = 0;',
