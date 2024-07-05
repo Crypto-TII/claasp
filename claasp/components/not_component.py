@@ -178,7 +178,7 @@ class NOT(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: from claasp.cipher_modules.models.cp import CpModel
+            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
             sage: gift = GiftPermutation(number_of_rounds=3)
             sage: cp = CpModel(gift)
             sage: not_component = gift.component_from(0, 8)
