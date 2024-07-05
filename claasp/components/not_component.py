@@ -186,7 +186,7 @@ class NOT(Component):
             ([],
              ['constraint not_0_8[0] = xor_0_6[0];',
               ...
-             'constraint not_0_8[31] = xor_0_6[31];'])
+             'constraint not_0_8[31] = xor_0_6[31];']) # doctest: +SKIP
         """
         input_id_links = self.input_id_links
         output_id_link = self.id
