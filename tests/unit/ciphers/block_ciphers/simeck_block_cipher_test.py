@@ -25,3 +25,9 @@ def test_simeck_block_cipher():
     key = 0x1a19181211100a0908020100
     ciphertext = 0xf3cf25e33b36
     assert simeck.evaluate([plaintext, key]) == ciphertext
+
+    simeck = SimeckBlockCipher(block_bit_size=64, key_bit_size=128)
+    plaintext = 0x656b696c20646e75
+    key = 0x1b1a1918131211100b0a090803020100
+    ciphertext = 0x45ce69025f7ab7ed
+    assert simeck.evaluate([plaintext, key]) == ciphertext

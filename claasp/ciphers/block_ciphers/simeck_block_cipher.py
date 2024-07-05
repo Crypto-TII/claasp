@@ -54,12 +54,12 @@ class SimeckBlockCipher(Cipher):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.simeck_block_cipher import SimeckBlockCipher
-        sage: simon = SimeckBlockCipher()
+        sage: simeck = SimeckBlockCipher()
         sage: simeck.number_of_rounds
         32
 
         sage: simeck.component_from(0, 0).id
-        'intermediate_output_0_0'
+        'rot_0_0'
     """
 
     def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-5, -1)):
