@@ -152,8 +152,23 @@ class Constant(Component):
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: constant_component = speck.component_from(2, 0)
             sage: constant_component.cp_constraints()
-            (['array[0..15] of var 0..1: constant_2_0 = array1d(0..15, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]);'],
-             [])
+            (['array[0..15] of var 0..1: constant_2_0;'],
+             ['constraint constant_2_0[0] = 0;',
+             'constraint constant_2_0[1] = 0;',
+             'constraint constant_2_0[2] = 0;',
+             'constraint constant_2_0[3] = 0;',
+             'constraint constant_2_0[4] = 0;',
+             'constraint constant_2_0[5] = 0;',
+             'constraint constant_2_0[6] = 0;',
+             'constraint constant_2_0[7] = 0;',
+             'constraint constant_2_0[8] = 0;',
+             'constraint constant_2_0[9] = 0;',
+             'constraint constant_2_0[10] = 0;',
+             'constraint constant_2_0[11] = 0;',
+             'constraint constant_2_0[12] = 0;',
+             'constraint constant_2_0[13] = 0;',
+             'constraint constant_2_0[14] = 0;',
+             'constraint constant_2_0[15] = 0;'])
         """
         output_size = self.output_bit_size
         output_id_link = self.id
@@ -247,8 +262,23 @@ class Constant(Component):
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
             sage: constant_component = speck.component_from(2, 0)
             sage: constant_component.cp_xor_differential_propagation_constraints()
-            (['array[0..15] of var 0..1: constant_2_0 = array1d(0..15, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);'],
-             [])
+            (['array[0..15] of var 0..1: constant_2_0;'],
+             ['constraint constant_2_0[0] = 0;',
+             'constraint constant_2_0[1] = 0;',
+             'constraint constant_2_0[2] = 0;',
+             'constraint constant_2_0[3] = 0;',
+             'constraint constant_2_0[4] = 0;',
+             'constraint constant_2_0[5] = 0;',
+             'constraint constant_2_0[6] = 0;',
+             'constraint constant_2_0[7] = 0;',
+             'constraint constant_2_0[8] = 0;',
+             'constraint constant_2_0[9] = 0;',
+             'constraint constant_2_0[10] = 0;',
+             'constraint constant_2_0[11] = 0;',
+             'constraint constant_2_0[12] = 0;',
+             'constraint constant_2_0[13] = 0;',
+             'constraint constant_2_0[14] = 0;',
+             'constraint constant_2_0[15] = 0;'])
         """
         output_size = int(self.output_bit_size)
         output_id_link = self.id

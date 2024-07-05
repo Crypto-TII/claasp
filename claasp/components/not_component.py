@@ -167,7 +167,7 @@ class NOT(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists of declarations and constraints for NOT for CP deterministic truncated xor differential model.
 
