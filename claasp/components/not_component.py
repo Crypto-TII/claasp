@@ -178,9 +178,9 @@ class NOT(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_wordwise_deterministic_truncated_xor_differential_model import CpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp import CpModel
             sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: cp = CpWordwiseDeterministicTruncatedXorDifferentialModel(gift)
+            sage: cp = CpModel(gift)
             sage: not_component = gift.component_from(0, 8)
             sage: not_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             ([],

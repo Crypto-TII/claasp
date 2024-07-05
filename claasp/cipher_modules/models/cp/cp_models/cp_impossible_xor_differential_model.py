@@ -544,7 +544,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_{self._cipher.get_all_components_ids()[-1]}', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_all_impossible_xor_differential_trails(4, fixed_variables, 4, 1, 3, 4, False)
+            sage: trail = cp.find_all_impossible_xor_differential_trails(4, fixed_variables, 'Chuffed', 1, 3, 4, False)
         """
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
@@ -576,7 +576,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_{self._cipher.get_all_components_ids()[-1]}', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_lowest_complexity_impossible_xor_differential_trail(4, fixed_variables, 4, 1, 3, 4, False)
+            sage: trail = cp.find_lowest_complexity_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 3, 4, False)
         """
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
         self._model_constraints.remove(f'solve satisfy;')
@@ -605,12 +605,12 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
             sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=5)
             sage: cp = CpImpossibleXorDifferentialModel(speck)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_{self._cipher.get_all_components_ids()[-1]}', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_one_impossible_xor_differential_trail_with_extensions(4, fixed_variables, 4, 1, 3, 4, False)
+            sage: trail = cp.find_one_impossible_xor_differential_trail_with_extensions(5, fixed_variables, 'Chuffed', 2, 3, 4, False)
         """
         self.build_impossible_xor_differential_trail_with_extensions_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
@@ -642,7 +642,7 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_{self._cipher.get_all_components_ids()[-1]}', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_one_impossible_xor_differential_trail(4, fixed_variables, 4, 1, 3, 4, False)
+            sage: trail = cp.find_one_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 3, 4, False)
         """
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
