@@ -168,26 +168,6 @@ class NOT(Component):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
-        """
-        Return lists of declarations and constraints for NOT for CP deterministic truncated xor differential model.
-
-        INPUT:
-
-        - ``inverse`` -- **boolean** (default: `False`)
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: cp = CpModel(gift)
-            sage: not_component = gift.component_from(0, 8)
-            sage: not_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-            ([],
-             ['constraint not_0_8[0] = xor_0_6[0];',
-              ...
-             'constraint not_0_8[31] = xor_0_6[31];']) #doctest: +SKIP
-        """
         input_id_links = self.input_id_links
         output_id_link = self.id
         input_bit_positions = self.input_bit_positions

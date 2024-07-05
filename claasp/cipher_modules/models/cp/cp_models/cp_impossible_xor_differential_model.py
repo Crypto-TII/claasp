@@ -361,29 +361,6 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         return key_schedule_components, key_schedule_components_ids
 
     def final_impossible_constraints_with_extensions(self, number_of_rounds, initial_round, middle_round, final_round, intermediate_components):
-        """
-        Constraints for output and incompatibility.
-
-        INPUT:
-
-        - ``number_of_rounds`` -- **integer** ; number of rounds
-        - ``initial_round`` -- **integer** ; initial round of the impossible differential trail
-        - ``middle_round`` -- **integer** ; incosistency round of the impossible differential trail
-        - ``final_round`` -- **integer** ; final round of the impossible differential trail
-        - ``intermediate_components`` -- **Boolean** ; check inconsistency on intermediate components of the inconsistency round or only on outputs
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=5)
-            sage: cp = CpImpossibleXorDifferentialModel(speck)
-            sage: cp.final_impossible_constraints_with_extensions(5, 2, 3, 4, False)
-            ['solve satisfy;',
-             ...
-             'output["plaintext = "++ show(plaintext) ++ "\\n" ++"key = "++ show(key) ++ "\\n" ++"inverse_plaintext = "++ show(inverse_plaintext) ++ "\\n" ++"inverse_intermediate_output_0_6 = "++ show(inverse_intermediate_output_0_6)++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_1_12 = "++ show(intermediate_output_1_12)++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_2_12 = "++ show(intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_2_12 = "++ show(inverse_intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_3_12 = "++ show(inverse_intermediate_output_3_12)++ "\\n" ++ "0" ++ "\\n" ++"cipher_output_4_12 = "++ show(cipher_output_4_12)++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_2_12 = "++ show(intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_2_12 = "++ show(inverse_intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ];'] #doctest: +SKIP
-        """
         key_schedule_components, key_schedule_components_ids = self.extract_key_schedule()
         cipher_inputs = self._cipher.inputs
         cipher = self._cipher
@@ -435,29 +412,6 @@ class CpImpossibleXorDifferentialModel(CpDeterministicTruncatedXorDifferentialMo
         return cp_constraints
     
     def final_impossible_constraints(self, number_of_rounds, initial_round, middle_round, final_round, intermediate_components):
-        """
-        Constraints for output and incompatibility.
-
-        INPUT:
-
-        - ``number_of_rounds`` -- **integer** ; number of rounds
-        - ``initial_round`` -- **integer** ; initial round of the impossible differential trail
-        - ``middle_round`` -- **integer** ; incosistency round of the impossible differential trail
-        - ``final_round`` -- **integer** ; final round of the impossible differential trail
-        - ``intermediate_components`` -- **Boolean** ; check inconsistency on intermediate components of the inconsistency round or only on outputs
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_impossible_xor_differential_model import CpImpossibleXorDifferentialModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=5)
-            sage: cp = CpImpossibleXorDifferentialModel(speck)
-            sage: cp.final_impossible_constraints(3, 2, 3, 4, False)
-            ['solve satisfy;',
-             ...
-             'output["key = "++ show(key) ++ "\\n" ++"intermediate_output_0_5 = "++ show(intermediate_output_0_5) ++ "\\n" ++"intermediate_output_0_6 = "++ show(intermediate_output_0_6) ++ "\\n" ++"inverse_key = "++ show(inverse_key) ++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_3_12 = "++ show(inverse_intermediate_output_3_12) ++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_0_6 = "++ show(intermediate_output_0_6)++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_1_12 = "++ show(intermediate_output_1_12)++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_2_12 = "++ show(intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_2_12 = "++ show(inverse_intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_3_12 = "++ show(inverse_intermediate_output_3_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_cipher_output_4_12 = "++ show(inverse_cipher_output_4_12)++ "\\n" ++ "0" ++ "\\n" ];'] #doctest: +SKIP
-        """
         if initial_round == 1:
             cipher_inputs = self._cipher.inputs
         else:
