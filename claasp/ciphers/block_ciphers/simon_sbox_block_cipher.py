@@ -113,7 +113,7 @@ class SimonSboxBlockCipher(Cipher):
             if number_of_rounds is None:
                 raise ValueError("No available number of rounds for the given parameters.")
 
-        super().__init__(family_name="simon",
+        super().__init__(family_name="simon_sbox",
                          cipher_type="block_cipher",
                          cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
                          cipher_inputs_bit_size=[self.block_bit_size, key_bit_size],

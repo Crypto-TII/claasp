@@ -4,14 +4,14 @@ from claasp.ciphers.block_ciphers.simon_sbox_block_cipher import SimonSboxBlockC
 def test_simon_sbox_block_cipher():
     simon = SimonSboxBlockCipher()
     assert simon.type == 'block_cipher'
-    assert simon.family_name == 'simon'
+    assert simon.family_name == 'simon_sbox'
     assert simon.number_of_rounds == 32
-    assert simon.id == 'simon_p32_k64_o32_r32'
+    assert simon.id == 'simon_sbox_p32_k64_o32_r32'
     assert simon.component_from(0, 0).id == 'intermediate_output_0_0'
 
     simon = SimonSboxBlockCipher(number_of_rounds=4)
     assert simon.number_of_rounds == 4
-    assert simon.id == 'simon_p32_k64_o32_r4'
+    assert simon.id == 'simon_sbox_p32_k64_o32_r4'
     assert simon.component_from(3, 0).id == 'intermediate_output_3_0'
 
     simon = SimonSboxBlockCipher()
