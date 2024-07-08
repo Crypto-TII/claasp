@@ -103,11 +103,11 @@ class SimeckBlockCipher(Cipher):
 
     def feistel_function(self, left, right, round_key):
         # f(x) = (x & x <<< 5) ⊕ x <<< 1
-        s5x = self.add_rotate_component([left[0]], [left[1]], self.word_size, self.rotation_amounts[0]).id
-        x_and_s5x = self.add_AND_component([left[0], s5x], [list(range(self.word_size))] * 2, self.word_size).id
-        s1x = self.add_rotate_component([left[0]], [left[1]], self.word_size, self.rotation_amounts[1]).id
+        s5x_id = self.add_rotate_component([left[0]], [left[1]], self.word_size, self.rotation_amounts[0]).id
+        x_and_s5x_id = self.add_AND_component([left[0], s5x_id], [list(range(self.word_size))] * 2, self.word_size).id
+        s1x_id = self.add_rotate_component([left[0]], [left[1]], self.word_size, self.rotation_amounts[1]).id
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
-        f_id = self.add_XOR_component([x_and_s5x, s1x], [list(range(self.word_size))] * 2, self.word_size).id
+        f_id = self.add_XOR_component([x_and_s5x_id, s1x_id], [list(range(self.word_size))] * 2, self.word_size).id
         new_left_id = self.add_XOR_component([right[0], f_id, round_key[0]],
                                              [right[1], list(range(self.word_size)), round_key[1]],
                                              self.word_size).id

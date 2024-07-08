@@ -4,14 +4,14 @@ from claasp.ciphers.block_ciphers.simeck_sbox_block_cipher import SimeckSboxBloc
 def test_simeck_sbox_block_cipher():
     simeck = SimeckSboxBlockCipher()
     assert simeck.type == 'block_cipher'
-    assert simeck.family_name == 'simeck'
+    assert simeck.family_name == 'simeck_sbox'
     assert simeck.number_of_rounds == 32
-    assert simeck.id == 'simeck_p32_k64_o32_r32'
+    assert simeck.id == 'simeck_sbox_p32_k64_o32_r32'
     assert simeck.component_from(0, 0).id == 'sbox_0_0'
 
     simeck = SimeckSboxBlockCipher(number_of_rounds=4)
     assert simeck.number_of_rounds == 4
-    assert simeck.id == 'simeck_p32_k64_o32_r4'
+    assert simeck.id == 'simeck_sbox_p32_k64_o32_r4'
     assert simeck.component_from(3, 0).id == 'sbox_3_0'
 
     simeck = SimeckSboxBlockCipher()
