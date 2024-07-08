@@ -138,6 +138,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_thre
     assert int(result['total_weight']) == int(30.0)
     assert computed_number_of_full_windows == number_of_full_windows
 
+
 def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_one_full_3_window():
     speck = SpeckBlockCipher(number_of_rounds=10)
     sat = SatXorDifferentialModel(speck)
@@ -150,9 +151,9 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_one_
 
     plaintext = set_fixed_variables(
         component_id='plaintext',
-        constraint_type='not_equal',
+        constraint_type='equal',
         bit_positions=range(32),
-        bit_values=integer_to_bit_list(0, 32, 'big'))
+        bit_values=[1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0])
     key = set_fixed_variables(
         component_id='key',
         constraint_type='equal',
