@@ -139,7 +139,7 @@ class Modular(Component):
         result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
         return result
 
-    def cp_deterministic_truncated_xor_differential_constraints(self, inverse=False):
+    def cp_deterministic_truncated_xor_differential_constraints(self):
         """
         Return lists of variables and constraints for Modular Addition/Substraction in CP deterministic truncated XOR differential model.
 
@@ -161,19 +161,12 @@ class Modular(Component):
               'constraint modular_addition_word(pre_modadd_0_1_1, pre_modadd_0_1_0, modadd_0_1);'])
         """
         input_id_links = self.input_id_links
-        if inverse:
-            output_id_link = self.id + '_inverse'
-        else:
-            output_id_link = self.id
+        output_id_link = self.id
         input_bit_positions = self.input_bit_positions
         num_add = self.description[1]
         all_inputs = []
-        if inverse:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}_inverse[{position}]' for position in bit_positions])
-        else:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         input_len = len(all_inputs) // num_add
         cp_declarations = []
         cp_constraints = []
@@ -211,6 +204,56 @@ class Modular(Component):
                               f'1 then (sum([{input_1}[j], {input_2}[j], {out}[j]]) mod 2) = Shi_{input_2}[j] else '
                               f'true endif) /\\ p[{c}] = {input_length}-sum(eq_{out});')
 
+        return cp_declarations, cp_constraints
+        
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Return lists declarations and constraints for XOR component CP wordwise deterministic truncated XOR differential model.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: aes = AESBlockCipher(number_of_rounds=5)
+            sage: cp = CpModel(aes)
+            sage: xor_component = aes.component_from(0, 0)
+            sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
+            (['var -2..255: xor_0_0_temp_0_0_value;',
+              ...
+              'var 0..9: xor_0_0_bound_value_0_15 = if xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value > 0 then ceil(log2(xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value)) else 0 endif;'],
+             ['constraint xor_0_0_temp_0_0_value = key_value[0] /\\ xor_0_0_temp_0_0_active = key_active[0];',
+              ...
+              'constraint if xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active > 2 then xor_0_0_active[15] == 3 /\\ xor_0_0_value[15] = -2 elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 1 then xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 elseif xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value < 0 then xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elseif xor_0_0_temp_0_15_value == xor_0_0_temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum([(((floor(xor_0_0_temp_0_15_value/pow(2,j)) + floor(xor_0_0_temp_1_15_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..xor_0_0_bound_value_0_15]) endif;'])
+        """
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        cp_declarations = []
+        all_inputs_value = []
+        all_inputs_active = []
+        numadd = self.description[1]
+        word_size = model.word_size
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
+                                     for j in range(len(bit_positions) // word_size)])
+            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
+                                      for j in range(len(bit_positions) // word_size)])
+        input_len = len(all_inputs_value) // numadd
+        cp_constraints = []
+        cp_declarations.append(f'array[0..{input_len}] of var 0..2: carry_{output_id_link};')
+        cp_constraints.append(f'constraint carry_{output_id_link}[0] = 0;')
+        for i in range(input_len):
+            new_constraint = f'constraint if '
+            operation = f' == 0 /\\ '.join(all_inputs_active[i::num_add])
+            new_constraint += operation
+            new_constraint += f' == 0 /\\ carry_{output_id_link}[{i}] == 0 then {output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 /\\ carry_{output_id_link}[{i + 1}] = 0 else '\
+                              f'{output_id_link}_active[{i}] = 3 /\\ {output_id_link}_value[{i}] = -2 /\\ carry_{output_id_link}[{i + 1}] = 3 endif;'
+            cp_constraints.append(new_constraint)
+        
         return cp_declarations, cp_constraints
         
     def cp_xor_differential_propagation_constraints(self, model):
