@@ -512,7 +512,7 @@ class SBOX(Component):
             sage: sbox_component = aes.component_from(0, 1)
             sage: sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             ([],
-             ['constraint if xor_0_0_value[0]_active==0 then sbox_0_1_active[0] = 0 else sbox_0_1_active[0] = 2 endif;'])
+             ['constraint if xor_0_0_value[0]==0 then sbox_0_1_active[0] = 0 else sbox_0_1_active[0] = 2 endif;'])
         """
         input_id_links = self.input_id_links
         output_id_link = self.id
@@ -526,7 +526,7 @@ class SBOX(Component):
                                for j in range(len(bit_positions) // word_size)])
         for i, input_ in enumerate(all_inputs):
             cp_constraints.append(
-                f'constraint if {input_}_active==0 then {output_id_link}_active[{i}] = 0'
+                f'constraint if {input_}==0 then {output_id_link}_active[{i}] = 0'
                 f' else {output_id_link}_active[{i}] = 2 endif;')
 
         return cp_declarations, cp_constraints
