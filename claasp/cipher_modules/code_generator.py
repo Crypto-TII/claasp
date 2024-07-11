@@ -393,7 +393,13 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
     elif CIPHER_INVERSE_SUFFIX in cipher.id:
-        code.append('  return intermediateOutputs["plaintext"]')
+        # full inversion
+        if 'plaintext' in cipher.get_all_components_ids():
+            code.append('  return intermediateOutputs["plaintext"]')
+        # in partial inversion
+        else:
+            code.append('  last_inter_output = [output for output in list(intermediateOutputs.keys()) if \'intermediate_output\' in output][0]')
+            code.append('  return intermediateOutputs[last_inter_output]')
     else:
         code.append('  return intermediateOutputs["cipher_output"]')
    # print('\n'.join(code))

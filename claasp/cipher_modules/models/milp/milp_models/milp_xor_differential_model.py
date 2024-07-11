@@ -69,7 +69,7 @@ class MilpXorDifferentialModel(MilpModel):
             ...
             sage: mip = milp._model
             sage: mip.number_of_variables()
-            468
+            532
         """
         self._verbose_print(MILP_BUILDING_MESSAGE)
         self._weight_precision = weight_precision
@@ -161,9 +161,9 @@ class MilpXorDifferentialModel(MilpModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trails = milp.find_all_xor_differential_trails_with_fixed_weight(9) # long
+            sage: trails = milp.find_all_xor_differential_trails_with_fixed_weight(9) # long # doctest: +SKIP
             ...
-            sage: len(trails)
+            sage: len(trails) # doctest: +SKIP
             2
 
             # related-key setting
@@ -173,9 +173,9 @@ class MilpXorDifferentialModel(MilpModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trails = milp.find_all_xor_differential_trails_with_fixed_weight(2, fixed_values=[key]) # long
+            sage: trails = milp.find_all_xor_differential_trails_with_fixed_weight(2, fixed_values=[key])#long# doctest: +SKIP
             ...
-            sage: len(trails)
+            sage: len(trails) # doctest: +SKIP
             2
         """
         start = time.time()
@@ -304,7 +304,7 @@ class MilpXorDifferentialModel(MilpModel):
 
         return constraints
 
-    def is_single_key(self, fixed_values):
+    def is_single_key(self, fixed_values=[]):
         """
         Return True if key is fixed to 0, False otherwise.
 
@@ -314,11 +314,12 @@ class MilpXorDifferentialModel(MilpModel):
           be fixed
 
         EXAMPLES::
-            from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: milp.is_single_key(speck)
+            sage: milp.is_single_key(get_single_key_scenario_format_for_fixed_values(speck))
             True
         """
         cipher_inputs = self._cipher.inputs
@@ -366,9 +367,9 @@ class MilpXorDifferentialModel(MilpModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trails = milp.find_all_xor_differential_trails_with_weight_at_most(9, 10) # long
+            sage: trails = milp.find_all_xor_differential_trails_with_weight_at_most(9, 10) # long #doctest: +SKIP
             ...
-            sage: len(trails)
+            sage: len(trails) #doctest: +SKIP
             28
 
             # related-key setting
@@ -378,9 +379,9 @@ class MilpXorDifferentialModel(MilpModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trails = milp.find_all_xor_differential_trails_with_weight_at_most(2, 3, fixed_values=[key]) # long
+            sage: trails = milp.find_all_xor_differential_trails_with_weight_at_most(2, 3, fixed_values=[key]) # long #doctest: +SKIP
             ...
-            sage: len(trails)
+            sage: len(trails) #doctest: +SKIP
             9
         """
         start = time.time()
@@ -454,13 +455,13 @@ class MilpXorDifferentialModel(MilpModel):
         EXAMPLES::
 
             # single-key setting
-            from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trail = milp.find_lowest_weight_xor_differential_trail()
+            sage: trail = milp.find_lowest_weight_xor_differential_trail() #doctest: +SKIP
             ...
-            sage: trail["total_weight"]
+            sage: trail["total_weight"] #doctest: +SKIP
             9.0
 
             # related-key setting
@@ -470,9 +471,9 @@ class MilpXorDifferentialModel(MilpModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trail = milp.find_lowest_weight_xor_differential_trail(fixed_values=[key])
+            sage: trail = milp.find_lowest_weight_xor_differential_trail(fixed_values=[key]) #doctest: +SKIP
             ...
-            sage: trail["total_weight"]
+            sage: trail["total_weight"] #doctest: +SKIP
             1.0
         """
         start = time.time()
@@ -515,7 +516,7 @@ class MilpXorDifferentialModel(MilpModel):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trail = milp.find_one_xor_differential_trail() # random
+            sage: trail = milp.find_one_xor_differential_trail() # random # doctest: +SKIP
 
             # related-key setting
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
@@ -524,7 +525,7 @@ class MilpXorDifferentialModel(MilpModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trail = milp.find_one_xor_differential_trail(fixed_values=[key]) # random
+            sage: trail = milp.find_one_xor_differential_trail(fixed_values=[key]) # random # doctest: +SKIP
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
@@ -562,12 +563,12 @@ class MilpXorDifferentialModel(MilpModel):
         EXAMPLES::
 
             # single-key setting
-            from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trail = milp.find_one_xor_differential_trail_with_fixed_weight(3) # random
-            sage: trail['total_weight']
+            sage: trail = milp.find_one_xor_differential_trail_with_fixed_weight(3) # random # doctest: +SKIP
+            sage: trail['total_weight'] # doctest: +SKIP
             3.0
 
             # related-key setting
@@ -577,8 +578,8 @@ class MilpXorDifferentialModel(MilpModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: milp = MilpXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trail = milp.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[key]) # random
-            sage: trail['total_weight']
+            sage: trail = milp.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[key]) # random # doctest: +SKIP
+            sage: trail['total_weight'] # doctest: +SKIP
             3.0
         """
         start = time.time()

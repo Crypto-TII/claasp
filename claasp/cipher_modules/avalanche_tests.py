@@ -483,6 +483,7 @@ class AvalancheTests:
             sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
             sage: from claasp.cipher_modules.avalanche_tests import AvalancheTests
             sage: plot = AvalancheTests(cipher).generate_3D_plot(number_of_samples=100)
+            graph can be plot with the build-in method plot.show()
             sage: type(plot)
             <class 'module'>
 
@@ -490,6 +491,7 @@ class AvalancheTests:
             sage: cipher = ChachaPermutation(number_of_rounds=5)
             sage: from claasp.cipher_modules.avalanche_tests import AvalancheTests
             sage: plot = AvalancheTests(cipher).generate_3D_plot(number_of_samples=100)
+            graph can be plot with the build-in method plot.show()
             sage: type(plot)
             <class 'module'>
 

@@ -132,7 +132,7 @@ class Report:
                 ....:         bit_positions=range(64),
                 ....:         bit_values=(0,)*64)
                 sage: trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
-                sage: report = Report(speck, trail)
+                sage: report = Report(trail)
 
         """
 
@@ -857,11 +857,12 @@ class Report:
             EXAMPLES:
 
                 sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+                sage: from claasp.cipher_modules.avalanche_tests import AvalancheTests
                 sage: from claasp.cipher_modules.report import Report
                 sage: speck = SpeckBlockCipher(number_of_rounds=5)
-                sage: avalanche_test_results = speck.diffusion_tests()
-                sage: report = Report(speck, avalanche_test_results)
-                sage: report.save_as_image()
+                sage: avalanche_test_results = AvalancheTests(speck).avalanche_tests()
+                sage: report = Report(avalanche_test_results)
+                sage: report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output', fixed_input_difference='average') # random
 
         """
         time = '_date:' + 'time:'.join(str(datetime.now()).split(' '))

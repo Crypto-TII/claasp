@@ -77,7 +77,7 @@ RUN sage -pip install bitstring==4.0.1 \
   pygments==2.12.0 \
   sage-package==0.0.7 \
   setuptools==59.6.0 \
-  sphinx==4.5.0 \
+  sphinx==5.0.0 \
   sphinxcontrib-bibtex==2.5.0 \
   tensorflow==2.13.0 \
   pytest==7.2.1 \
