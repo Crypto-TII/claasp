@@ -45,7 +45,6 @@ from claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trai
     get_dictionary_that_contains_inequalities_for_small_sboxes)
 
 
-
 def check_table_feasibility(table, table_type, solver):
     occurrences = set(abs(value) for row in table.rows() for value in set(row)) - {0}
     for occurrence in occurrences:
@@ -140,6 +139,7 @@ def milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_var
     constraints.append(p[f"{component_id}_probability"] == constraint_compute_proba)
 
     return constraints
+
 
 def milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq, input_vars,
                                                          output_vars, proba, sbox_input_size, sbox_output_size, x):
@@ -277,8 +277,7 @@ class SBOX(Component):
 
     def get_ddt_with_undisturbed_transitions(self):
         """
-        Returns a list of all truncated input/outputs tuples that have undisturbed differential bits
-        (see https://link.springer.com/chapter/10.1007/978-3-031-26553-2_3)
+        Returns a list of all truncated input/outputs tuples that have undisturbed differential bits (see [CZZ2023]_)
 
         INPUT:
 
@@ -433,7 +432,7 @@ class SBOX(Component):
         return cp_declarations, cp_constraints
 
     def cp_deterministic_truncated_xor_differential_constraints(self, sbox_mant, inverse=False):
-        r"""
+        """
         Return lists of declarations and constraints for SBOX component for CP deterministic truncated xor differential.
 
         INPUT:
@@ -747,8 +746,7 @@ class SBOX(Component):
 
         .. NOTE::
 
-            This is for MILP large xor differential probability. Constraints extracted from
-          https://tosc.iacr.org/index.php/ToSC/article/view/805/759.
+        This is for MILP large xor differential probability. Constraints extracted from [ASTTY2017]_.
 
         INPUT:
 
@@ -806,8 +804,7 @@ class SBOX(Component):
 
         .. NOTE::
 
-            This is for MILP large xor linear probability. Constraints extracted from
-          https://tosc.iacr.org/index.php/ToSC/article/view/805/759.
+        This is for MILP large xor linear probability. Constraints extracted from [ASTTY2017]_.
 
         INPUT:
 
@@ -864,10 +861,10 @@ class SBOX(Component):
         """
         Return a list of variables and a list of constrains modeling a component of type SBOX.
 
-         NOTE::
+        NOTE::
 
-          This is for MILP small xor differential probability. Constraints extracted from
-          https://eprint.iacr.org/2014/747.pdf and https://tosc.iacr.org/index.php/ToSC/article/view/805/759
+        This is for MILP small xor differential probability. Constraints extracted from
+        [SHW+2014]_ and [ASTTY2017]_.
 
         INPUT:
 
@@ -948,9 +945,8 @@ class SBOX(Component):
 
         .. NOTE::
 
-            This is for MILP small xor linear probability. Constraints extracted from
-          https://eprint.iacr.org/2014/747.pdf (Appendix A) and
-          https://tosc.iacr.org/index.php/ToSC/article/view/805/759
+        This is for MILP small xor linear probability. Constraints extracted from
+        [SHW+2014]_ (Appendix A) and [ASTTY2017]_.
 
         INPUT:
 
@@ -1113,8 +1109,8 @@ class SBOX(Component):
 
     def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
-        Models the wordwise Sbox component according to Model 4 from
-        https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
+        Models the wordwise Sbox component according to Model 4 from [SGWW2020]_
+
         The valid set for the input output pair (x, y) is {(0, 0), (1, 2), (2, 2), (3, 3)}
 
         6 inequalities can enforce these transitions. They can either be computer using
@@ -1180,8 +1176,8 @@ class SBOX(Component):
 
     def milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(self, model):
         """
-        Models the wordwise Sbox component according to a simplified version of Model 4 from
-        https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
+        Models the wordwise Sbox component according to a simplified version of Model 4 from [SGWW2020]_
+        
         The valid set for the input output pair (x, y) is {(0, 0), (1, 2), (2, 2), (3, 3)}
 
         if dX = 1
@@ -1233,7 +1229,7 @@ class SBOX(Component):
 
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
-         Models the wordwise Sbox component.
+        Models the wordwise Sbox component.
 
         INPUTS:
 
@@ -1282,8 +1278,7 @@ class SBOX(Component):
 
     def milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
-         Models the wordwise Sbox component, with added undisturbed bits information, as mentioned in
-         https://link.springer.com/chapter/10.1007/978-3-031-26553-2_3
+        Models the wordwise Sbox component, with added undisturbed bits information, as mentioned in [CZZ2023]_
 
         INPUTS:
 
@@ -1401,7 +1396,7 @@ class SBOX(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for a generic S-BOX in SAT deterministic truncated XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses for a generic S-BOX in SAT deterministic truncated XOR DIFFERENTIAL model
 
         INPUT:
 
@@ -1450,7 +1445,15 @@ class SBOX(Component):
 
     def sat_xor_differential_propagation_constraints(self, model):
         """
-        Return a list of variables and a list of clauses for a generic S-BOX in SAT XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses for a generic S-BOX in SAT XOR DIFFERENTIAL model
+
+        The DDT is encoded in CNF using the following method: for every ``(input_difference, output_difference)`` pair,
+        we compute the ``weight``, i.e. the ``-log2(p)``. Then every tuple ``(input_difference, output_difference, weight)``
+        will be the minterm of the Sum Of Products (SOP) form of the DDT. Note that both ``input_difference`` and
+        ``output_difference`` are binary representation, instead weight has unary representation.
+
+        The SOP is then processed by Espresso and the resulting form is the CNF of the DDT. This approach is the same
+        contained in [SW2023]_.
 
         INPUT:
 
