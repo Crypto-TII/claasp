@@ -1380,17 +1380,16 @@ class SBOX(Component):
         """
         input_bit_len, input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        sbox_values = self.description
+        sbox_outputs = self.description
         constraints = []
-        for i in range(2 ** input_bit_len):
-            input_minus = ['-' * (i >> j & 1) for j in reversed(range(input_bit_len))]
-            current_input_bit_ids = [f'{input_minus[j]}{input_bit_ids[j]}' for j in range(input_bit_len)]
-            output_minus = ['-' * ((sbox_values[i] >> j & 1) ^ 1) for j in reversed(range(output_bit_len))]
-            current_output_bit_ids = [f'{output_minus[j]}{output_bit_ids[j]}' for j in range(output_bit_len)]
+        for sbox_input, sbox_output in enumerate(sbox_outputs):
+            input_signs = ('-' * (sbox_input >> j & 1) for j in reversed(range(input_bit_len)))
+            current_input_bit_ids = (f'{sign}{bit_id}' for sign, bit_id in zip(input_signs, input_bit_ids))
+            output_signs = ('-' * ((sbox_output >> j & 1) ^ 1) for j in reversed(range(output_bit_len)))
+            current_output_bit_ids = (f'{sign}{bit_id}' for sign, bit_id in zip(output_signs, output_bit_ids))
             input_constraint = ' '.join(current_input_bit_ids)
-            for j in range(output_bit_len):
-                constraint = f'{input_constraint} {current_output_bit_ids[j]}'
-                constraints.append(constraint)
+            current_constraints = (f'{input_constraint} {bit_id}' for bit_id in current_output_bit_ids)
+            constraints.extend(current_constraints)
 
         return output_bit_ids, constraints
 
@@ -1502,7 +1501,13 @@ class SBOX(Component):
 
     def sat_xor_linear_mask_propagation_constraints(self, model):
         """
-        Return a list of variables and a list of clauses for S-BOX in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses for S-BOX in SAT XOR LINEAR model
+
+        The approach used here is very similar to the one in :meth:`SBOX.sat_xor_differential_propagation_constraints`.
+        The only difference is that we encode here the absolute value of the correlation instead of weight.
+
+        The SOP is then processed by Espresso and the resulting form is the CNF of the DDT. This approach is the same
+        contained in [SW2023]_.
 
         .. SEEALSO::
 
@@ -1556,7 +1561,10 @@ class SBOX(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts for S-BOX in SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts for S-BOX in SMT CIPHER model
+
+        The approach used here is very similar to the one in :meth:`SBOX.sat_constraints`.
+        The only difference is in the consequent. It is just the whole representation of the output value.
 
         INPUT:
 
@@ -1598,7 +1606,9 @@ class SBOX(Component):
 
     def smt_xor_differential_propagation_constraints(self, model):
         """
-        Return a variable list and SMT-LIB list asserts for S-BOX in SMT XOR DIFFERENTIAL model [AK2019]_.
+        Return a variable list and SMT-LIB list asserts for S-BOX in SMT XOR DIFFERENTIAL model
+
+        The approach is described in detail in :meth:`SBOX.sat_xor_differential_propagation_constraints`.
 
         INPUT:
 
@@ -1647,7 +1657,9 @@ class SBOX(Component):
 
     def smt_xor_linear_mask_propagation_constraints(self, model):
         """
-        Return a variable list and SMT-LIB list asserts for S-BOX in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts for S-BOX in SMT XOR LINEAR model
+
+        The approach is described in detail in :meth:`SBOX.sat_xor_linear_mask_propagation_constraints`.
 
         INPUT:
 
