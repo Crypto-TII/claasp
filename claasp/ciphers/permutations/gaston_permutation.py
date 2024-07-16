@@ -76,7 +76,7 @@ class GastonPermutation(Cipher):
         sage: gaston = GastonPermutation(number_of_rounds=12)
         sage: plaintext = 0x0
         sage: ciphertext = 0x88B326096BEBC6356CA8FB64BC5CE6CAF1CE3840D819071354D70067438689B5F17FE863F958F32B
-        sage: print(gaston.evaluate([plaintext]))==ciphertext)
+        sage: print(gaston.evaluate([plaintext])==ciphertext)
         True
 
         sage: plaintext=0x1F4AD9906DA6A2544B84D7F83F2BDDFA468A0853578A00E36C05A0506DF7F66E4EFB22112453C964

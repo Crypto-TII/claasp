@@ -280,10 +280,10 @@ class NISTStatisticalTests:
         EXAMPLES::
 
             sage: import os
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
             sage: if not os.path.exists(f'test_reports/statistical_tests/experiments'):
             ....:     os.makedirs(f'test_reports/statistical_tests/experiments')
-            sage: result = StatisticalTests._run_nist_statistical_tests_tool(
+            sage: result = NISTStatisticalTests._run_nist_statistical_tests_tool(
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example',
             ....:     10000, 10, 1)
                  Statistical Testing In Progress.........
@@ -347,8 +347,8 @@ class NISTStatisticalTests:
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: dict = StatisticalTests._parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
+            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
+            sage: dict = NISTStatisticalTests._parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
             Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is in progress.
             Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is finished.
         """

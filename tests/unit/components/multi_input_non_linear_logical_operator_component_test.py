@@ -1,5 +1,7 @@
 from claasp.cipher_modules.models.cp.cp_model import CpModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
+from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 
@@ -45,7 +47,7 @@ def test_cp_xor_differential_propagation_constraints():
 
 def test_milp_xor_differential_propagation_constraints():
     simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpModel(simon)
+    milp = MilpXorDifferentialModel(simon)
     milp.init_model_in_sage_milp_class()
     and_component = simon.get_component_from_id("and_0_4")
     variables, constraints = and_component.milp_xor_differential_propagation_constraints(milp)
@@ -57,14 +59,14 @@ def test_milp_xor_differential_propagation_constraints():
 
     assert str(constraints[0]) == "0 <= -1*x_32 + x_48"
     assert str(constraints[1]) == "0 <= -1*x_33 + x_49"
-    assert str(constraints[-1]) == f"x_64 == 10*x_48 + 10*x_49 + 10*x_50 + 10*x_51 + 10*x_52 + 10*x_53 + 10*x_54 + " \
-                                   f"10*x_55 + 10*x_56 + 10*x_57 + 10*x_58 + 10*x_59 + 10*x_60 + 10*x_61 + " \
-                                   f"10*x_62 + 10*x_63"
+    assert str(constraints[-1]) == f"x_64 == 100*x_48 + 100*x_49 + 100*x_50 + 100*x_51 + 100*x_52 + 100*x_53 + 100*x_54 + " \
+                                   f"100*x_55 + 100*x_56 + 100*x_57 + 100*x_58 + 100*x_59 + 100*x_60 + 100*x_61 + " \
+                                   f"100*x_62 + 100*x_63"
 
 
 def test_milp_xor_linear_mask_propagation_constraints():
     simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpModel(simon)
+    milp = MilpXorLinearModel(simon)
     milp.init_model_in_sage_milp_class()
     and_component = simon.get_component_from_id("and_0_4")
     variables, constraints = and_component.milp_xor_linear_mask_propagation_constraints(milp)
@@ -79,7 +81,7 @@ def test_milp_xor_linear_mask_propagation_constraints():
     assert str(constraints[-3]) == "0 <= -1*x_15 + x_47"
     assert str(constraints[-2]) == "x_48 == x_32 + x_33 + x_34 + x_35 + x_36 + x_37 + x_38 + x_39 + x_40 + x_41 + " \
                                    "x_42 + x_43 + x_44 + x_45 + x_46 + x_47"
-    assert str(constraints[-1]) == "x_49 == 10*x_48"
+    assert str(constraints[-1]) == "x_49 == 100*x_48"
 
 
 def test_sat_constraints():

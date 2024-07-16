@@ -11,8 +11,10 @@ def test_lblock_block_cipher():
     key = 0
     ciphertext = 0xC218185308E75BCD
     assert lblock.evaluate([plaintext, key]) == ciphertext
+    assert lblock.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
 
     plaintext = 0x0123456789abcdef
     key = 0x0123456789abcdeffedc
     ciphertext = 0x4B7179D8EBEE0C26
     assert lblock.evaluate([plaintext, key]) == ciphertext
+    assert lblock.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext

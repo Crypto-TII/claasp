@@ -19,3 +19,4 @@ def test_des_exact_key_length_block_cipher():
     plaintext = 0x0123456789ABCDEF
     ciphertext = 0x85E813540F0AB405
     assert des_cipher.evaluate([key, plaintext]) == ciphertext
+    assert des_cipher.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext

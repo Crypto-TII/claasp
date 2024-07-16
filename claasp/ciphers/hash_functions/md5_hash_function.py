@@ -28,7 +28,7 @@ symmetric cipher whose plaintext is the initial state and key is the input.
 """
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_KEY
+from claasp.name_mappings import INPUT_MESSAGE
 
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 32, "number_of_rounds": 64}]
 
@@ -51,9 +51,9 @@ class MD5HashFunction(Cipher):
 
         sage: from claasp.ciphers.hash_functions.md5_hash_function import MD5HashFunction
         sage: md5 = MD5HashFunction()
-        sage: plaintext = 0x5175656c2066657a20736768656d626f20636f70726520646176616e74692e8000000000000000000000000000000000000000000000000000000000000000f8
-        sage: ciphertext = 0x3956fba8c05053e5a27040b8ab9a7545
-        sage: md5.evaluate([plaintext]) == ciphertext
+        sage: message = 0x5175656c2066657a20736768656d626f20636f70726520646176616e74692e8000000000000000000000000000000000000000000000000000000000000000f8
+        sage: digest = 0x3956fba8c05053e5a27040b8ab9a7545
+        sage: md5.evaluate([message]) == digest
         True
     """
 
@@ -63,7 +63,7 @@ class MD5HashFunction(Cipher):
 
         super().__init__(family_name="MD5",
                          cipher_type="hash_function",
-                         cipher_inputs=[INPUT_KEY],
+                         cipher_inputs=[INPUT_MESSAGE],
                          cipher_inputs_bit_size=[word_size * 16],
                          cipher_output_bit_size=64)
 
@@ -87,10 +87,10 @@ class MD5HashFunction(Cipher):
         for i in range(unit_len * 3, -1, -unit_len):
             swap_little_big_positions.extend(tuple(range(i, i + unit_len)))
 
-        X = [ComponentState(INPUT_KEY, [list(map(lambda p: p + i * self.word_size, swap_little_big_positions))])
+        X = [ComponentState(INPUT_MESSAGE, [list(map(lambda p: p + i * self.word_size, swap_little_big_positions))])
              for i in range(14)]
-        X += [ComponentState(INPUT_KEY, [list(range(15 * self.word_size, 16 * self.word_size))]),
-              ComponentState(INPUT_KEY, [list(range(14 * self.word_size, 15 * self.word_size))])]
+        X += [ComponentState(INPUT_MESSAGE, [list(range(15 * self.word_size, 16 * self.word_size))]),
+              ComponentState(INPUT_MESSAGE, [list(range(14 * self.word_size, 15 * self.word_size))])]
 
         self.add_round()
 

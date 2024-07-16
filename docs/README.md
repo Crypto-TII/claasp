@@ -33,5 +33,5 @@ be documented. When a file do not need to be documented, it has to be added in
 
 ## Methods excluded
 
-Remeber that methods whose name starts with at least one `_` are not
+Remember that methods whose name starts with at least one `_` are not
 automatically documented.

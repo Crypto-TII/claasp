@@ -25,3 +25,4 @@ def test_spongent_pi_permutation():
     plaintext = 0x0123456789abcdef0123456789abcdef0123456789ab
     ciphertext = 0x04adf4b51546dc10694325ff73b1352f141d8023da08
     assert spongentpi.evaluate([plaintext]) == ciphertext
+    assert spongentpi.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext

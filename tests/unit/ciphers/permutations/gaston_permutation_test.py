@@ -18,3 +18,4 @@ def test_gaston_permutation():
     plaintext = 0xFFFFFFFFFFFFFFFF0123456789ABCDEFFEDCBA9876543210AAAAAAAAAAAAAAAA0101010101010101
     ciphertext = 0x3117D51B14937067338F17F773C13F79DFB86E0868D252AB0D461D35EB863DE708BCE3E354C7231A
     assert gaston.evaluate([plaintext]) == ciphertext
+    assert gaston.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext

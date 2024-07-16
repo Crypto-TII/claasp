@@ -47,3 +47,4 @@ def test_keccak_invertible_permutation():
                      '01000000000000000000000000000010000000000000000000000000000000100000000040000000000000000000000'
                      '0000000004', 16)
     assert keccak.evaluate([plaintext]) == ciphertext
+    assert keccak.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext

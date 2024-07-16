@@ -22,8 +22,8 @@ import sys
 import math
 from copy import deepcopy
 
-from claasp.name_mappings import CONSTANT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, INPUT_KEY, INPUT_PLAINTEXT, \
-    INPUT_MESSAGE, INPUT_STATE
+from claasp.name_mappings import CONSTANT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN, \
+    INPUT_KEY, INPUT_PLAINTEXT, INPUT_MESSAGE, INPUT_STATE
 
 
 def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids):
@@ -37,6 +37,18 @@ def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_o
                 arcs[previous_output_bit_ids[i]] = []
             arcs[previous_output_bit_ids[i]].append(curr_input_bit_ids[i])
 
+
+def check_if_implemented_component(component):
+    component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER,
+                       SBOX, MIX_COLUMN, WORD_OPERATION]
+    operation = component.description[0]
+    operation_types = ['AND', 'OR', 'MODADD', 'MODSUB', 'NOT', 'ROTATE', 'SHIFT', 'XOR']
+    if component.type not in component_types or \
+            (component.type == WORD_OPERATION and operation not in operation_types):
+        print(f'{component.id} not yet implemented')
+        return False
+    return True
+            
 
 def convert_solver_solution_to_dictionary(cipher, model_type, solver_name, solve_time, memory,
                                           components_values, total_weight):
@@ -64,7 +76,7 @@ def convert_solver_solution_to_dictionary(cipher, model_type, solver_name, solve
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: speck = SpeckBlockCipher(number_of_rounds=4)
         sage: convert_solver_solution_to_dictionary(speck.id, 'xor_differential', 'z3', 0.239, 175.5, [], 0)
-        {'cipher_id': 'speck_p32_k64_o32_r4',
+        {'cipher': 'speck_p32_k64_o32_r4',
          'components_values': [],
          'memory_megabytes': 175.500000000000,
          'model_type': 'xor_differential',

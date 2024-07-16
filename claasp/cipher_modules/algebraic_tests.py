@@ -32,12 +32,12 @@ class AlgebraicTests:
             sage: alg_test = AlgebraicTests(toyspn)
             sage: alg_test.algebraic_tests(timeout_in_seconds=10)
             {'input_parameters': {'cipher': toyspn1_p6_k6_o6_r2,
-              'timeout_in_seconds': 10,
-              'test_name': 'algebraic_tests'},
-             'test_results': {'number_of_variables': [24, 42],
+              'test_name': 'algebraic_tests',
+              'timeout_in_seconds': 10},
+             'test_results': {'max_degree_of_equations': [2, 2],
               'number_of_equations': [34, 74],
               'number_of_monomials': [54, 102],
-              'max_degree_of_equations': [2, 2],
+              'number_of_variables': [24, 42],
               'test_passed': [False, False]}}
 
             sage: from claasp.cipher_modules.algebraic_tests import AlgebraicTests
@@ -46,12 +46,12 @@ class AlgebraicTests:
             sage: alg_test = AlgebraicTests(speck)
             sage: alg_test.algebraic_tests(timeout_in_seconds=30)
             {'input_parameters': {'cipher': speck_p32_k64_o32_r1,
-              'timeout_in_seconds': 30,
-              'test_name': 'algebraic_tests'},
-             'test_results': {'number_of_variables': [112],
+              'test_name': 'algebraic_tests',
+              'timeout_in_seconds': 30},
+             'test_results': {'max_degree_of_equations': [2],
               'number_of_equations': [64],
               'number_of_monomials': [157],
-              'max_degree_of_equations': [2],
+              'number_of_variables': [112],
               'test_passed': [True]}}
 
     """

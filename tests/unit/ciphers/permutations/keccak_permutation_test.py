@@ -41,3 +41,4 @@ def test_keccak_permutation():
                      '46611b87c5a554fd00ecb8c3ee88a1ccf32c8940c7922ae3a26141841f924a2c509e416f53526e70465c275f644e97f'
                      '30a13beaf1ff7b5ceca249', 16)
     assert keccak.evaluate([plaintext]) == ciphertext
+    assert keccak.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext

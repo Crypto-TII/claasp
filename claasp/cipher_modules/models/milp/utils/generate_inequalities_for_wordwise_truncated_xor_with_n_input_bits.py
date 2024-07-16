@@ -100,6 +100,7 @@ def get_valid_points_for_wordwise_xor(delta_in_1, zeta_in_1, delta_in_2, zeta_in
     zeta_out = 0
     if delta_in_1 + delta_in_2 > 2:
         delta_out = 3
+        zeta_out = -2
     elif delta_in_1 + delta_in_2 == 1:
         delta_out = 1
         zeta_out = zeta_in_1 + zeta_in_2
@@ -107,6 +108,7 @@ def get_valid_points_for_wordwise_xor(delta_in_1, zeta_in_1, delta_in_2, zeta_in
         delta_out = 0
     elif zeta_in_1 + zeta_in_2 < 0:
         delta_out = 2
+        zeta_out = -1
     elif zeta_in_1 == zeta_in_2:
         delta_out = 0
     else:
@@ -169,6 +171,7 @@ def generate_valid_points_for_xor_between_n_input_words(wordsize=4, number_of_wo
                                                                                               zeta[summand + 1])
 
         delta_output, zeta_output = get_valid_points_for_wordwise_xor(tmp_delta[-1], tmp_zeta[-1], delta[-1], zeta[-1])
+        zeta_output = max(0, zeta_output)
         if delta.count(3) == 0 and delta.count(2) == 1 and delta.count(1) > 1:
             only_fixed_patterns = [i[1] for i in enumerate(zeta) if delta[i[0]] == 1]
             if len(only_fixed_patterns) > 1:

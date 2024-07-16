@@ -20,7 +20,10 @@ import re
 from subprocess import run
 
 from bitstring import BitArray
+from sage.arith.misc import is_power_of_two
 
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import \
+    get_dictionary_that_contains_inequalities_for_large_sboxes
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
     output_dictionary_that_contains_xor_inequalities,
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits)
@@ -31,6 +34,7 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITW
     MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_BACKWARD_SUFFIX, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE, \
     MILP_XOR_DIFFERENTIAL_OBJECTIVE, MILP_BITWISE_IMPOSSIBLE, MILP_WORDWISE_IMPOSSIBLE, MILP_BITWISE_IMPOSSIBLE_AUTO, \
     MILP_WORDWISE_IMPOSSIBLE_AUTO
+from claasp.name_mappings import SBOX
 
 
 ### -------------------------External solver parsing methods------------------------- ###
@@ -97,7 +101,7 @@ def _parse_external_solver_output(model, solver_specs, model_type, solution_file
         else:
             components_variables = _get_variables_value(model.binary_variable, read_file)
             objective_variables = _get_variables_value(model.integer_variable, read_file)
-            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / 10.
+            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / float(10 ** model.weight_precision)
 
         components_values = model._get_component_values(objective_variables, components_variables)
 
@@ -127,6 +131,19 @@ def generate_espresso_input(valid_points):
 
 
 def generate_product_of_sum_from_espresso(valid_points):
+    """
+
+    EXAMPLES::
+
+        sage: from itertools import product
+        sage: transitions = [(i1, i2, (i1 + i2) % 2) if (i1 < 2 and i2 < 2) else (i1, i2, 2) for i1, i2 in product(range(3),repeat=2)]
+        sage: from claasp.cipher_modules.models.milp.utils.utils import generate_product_of_sum_from_espresso
+        sage: bit_transitions = [ZZ(val[2]).digits(base=2, padto=2) + ZZ(val[1]).digits(base=2, padto=2) + ZZ(val[0]).digits(base=2, padto=2) for val in transitions]
+        sage: valid_points = ["".join(str(_) for _ in bit_transition[::-1]) for bit_transition in bit_transitions]
+        sage: espresso_inequalities = generate_product_of_sum_from_espresso(valid_points)
+        ...
+
+    """
 
     espresso_input = generate_espresso_input(valid_points)
     espresso_process = run(['espresso', '-epos', '-okiss'], input=espresso_input,
@@ -160,6 +177,7 @@ def milp_less(model, a, b, big_m):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        sage: from claasp.cipher_modules.models.milp.utils.utils import milp_less
         sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
         sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
         sage: M = MilpModel(cipher)
@@ -168,10 +186,14 @@ def milp_less(model, a, b, big_m):
         sage: x = M._integer_variable; d = M._binary_variable
         sage: mip.set_max(x,2); mip.set_min(x,0)
         sage: a = x[0]; b = x[1]; big_m = 4
-        sage: dummy, constraints = M.milp_less(M, a, b, big_m)
+        sage: dummy, constraints = milp_less(M, a, b, big_m)
         sage: for i in constraints:
         ....:     mip.add_constraint(i)
-        ...
+        sage: dummy
+        x_2
+        sage: constraints
+        [x_0 <= 3 + x_1 - 4*x_2, x_1 - 4*x_2 <= x_0]
+
     """
     d = model.binary_variable
     a_less_b = d[str(a) + "_less_" + str(b) + "_dummy"]
@@ -248,6 +270,7 @@ def milp_generalized_and(model, var_list):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        sage: from claasp.cipher_modules.models.milp.utils.utils import milp_generalized_and
         sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
         sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
         sage: M = MilpModel(cipher)
@@ -255,10 +278,18 @@ def milp_generalized_and(model, var_list):
         sage: mip = M._model
         sage: d = M._binary_variable
         sage: var_list = [d[i] for i in range(4)]
-        sage: general_and, constraints = M.milp_generalized_and(var_list)
+        sage: general_and, constraints = milp_generalized_and(M, var_list)
         sage: for i in constraints:
         ....:     mip.add_constraint(i)
-        ...
+        sage: general_and
+        x_4
+        sage: constraints
+        [-3 + x_0 + x_1 + x_2 + x_3 <= x_4,
+         x_4 <= x_0,
+         x_4 <= x_1,
+         x_4 <= x_2,
+         x_4 <= x_3]
+
 
     """
     d = model.binary_variable
@@ -283,6 +314,7 @@ def milp_eq(model, a, b, big_m):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        sage: from claasp.cipher_modules.models.milp.utils.utils import milp_eq
         sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
         sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
         sage: M = MilpModel(cipher)
@@ -290,10 +322,19 @@ def milp_eq(model, a, b, big_m):
         sage: mip = M._model
         sage: x = M._integer_variable; d = M._binary_variable
         sage: a = x[0]; b = 2; big_m = 4
-        sage: dummy, constraints = M.milp_eq(M, a, b, big_m)
+        sage: dummy, constraints = milp_eq(M, a, b, big_m)
         sage: for i in constraints:
         ....:     mip.add_constraint(i)
-        ...
+        sage: dummy
+        x_3
+        sage: constraints
+        [x_0 <= 6 - 4*x_1,
+         3 - 4*x_1 <= x_0,
+         2 <= 4 + x_0 - 4*x_2,
+         1 + x_0 - 4*x_2 <= 2,
+         -1 + x_1 + x_2 <= x_3,
+         x_3 <= x_1,
+         x_3 <= x_2]
     """
     constraints = []
 
@@ -315,6 +356,7 @@ def milp_neq(model, a, b, big_m):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        sage: from claasp.cipher_modules.models.milp.utils.utils import milp_neq
         sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
         sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
         sage: M = MilpModel(cipher)
@@ -322,9 +364,19 @@ def milp_neq(model, a, b, big_m):
         sage: mip = M._model
         sage: x = M._integer_variable; d = M._binary_variable
         sage: a = x[0]; b = 2; big_m = 4
-        sage: dummy, constraints = M.milp_neq(M, a, b, big_m)
+        sage: dummy, constraints = milp_neq(M, a, b, big_m)
         sage: for i in constraints:
         ....:     mip.add_constraint(i)
+        sage: dummy
+        x_3
+        sage: constraints
+        [x_0 <= 5 - 4*x_1,
+         2 - 4*x_1 <= x_0,
+         2 <= 3 + x_0 - 4*x_2,
+         x_0 - 4*x_2 <= 2,
+         x_3 <= x_1 + x_2,
+         x_1 <= x_3,
+         x_2 <= x_3]
     """
     constraints = []
 
@@ -345,6 +397,7 @@ def milp_xor(a, b, c):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        sage: from claasp.cipher_modules.models.milp.utils.utils import milp_xor
         sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
         sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
         sage: M = MilpModel(cipher)
@@ -352,9 +405,10 @@ def milp_xor(a, b, c):
         sage: mip = M._model
         sage: x = M._binary_variable
         sage: a = x[0]; b = x[1]; c = x[2]
-        sage: for i in M.milp_xor(M,a,b,c):
+        sage: for i in milp_xor(a,b,c):
         ....:     mip.add_constraint(i)
-        ...
+        sage: a
+        x_0
     """
     constraints = [a + b >= c,
                    a + c >= b,
@@ -370,7 +424,7 @@ def milp_generalized_xor(input_var_list, output_bit):
 
     EXAMPLES::
 
-        sage: from claasp.cipher_modules.models.milp.utils import utils
+        sage: from claasp.cipher_modules.models.milp.utils.utils import milp_generalized_xor
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
         sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
         sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
@@ -379,9 +433,11 @@ def milp_generalized_xor(input_var_list, output_bit):
         sage: mip = M._model
         sage: x = M._binary_variable
         sage: var_list = [x[i] for i in range(2)]; b = x[2]
-        sage: for i in utils.milp_generalized_xor(M, var_list, b):
+        sage: for i in milp_generalized_xor(var_list, b):
         ....:     mip.add_constraint(i)
         ...
+        sage: var_list
+        [x_0, x_1]
     """
     constraints = []
     number_of_inputs = len(input_var_list)
@@ -540,6 +596,7 @@ def milp_xor_truncated(model, input_1, input_2, output):
 
     Espresso was used to reduce the number of constraints to 10 inequalities:
 
+    sage: from claasp.cipher_modules.models.milp.utils.utils import generate_product_of_sum_from_espresso
     sage: bit_transitions = [ZZ(val[2]).digits(base=2, padto=2) + ZZ(val[1]).digits(base=2, padto=2) + ZZ(val[0]).digits(base=2, padto=2) for val in transitions]
     sage: valid_points = ["".join(str(_) for _ in bit_transition[::-1]) for bit_transition in bit_transitions]
     sage: espresso_inequalities = generate_product_of_sum_from_espresso(valid_points)
@@ -556,7 +613,7 @@ def milp_xor_truncated(model, input_1, input_2, output):
 
 def milp_xor_truncated_wordwise(model, input_1, input_2, output):
     """
-    Returns a list of variables and a list of constraints for the XOR for two input words
+    Returns a list of variables and a list of constraints for the XOR for two input bytes
     in deterministic truncated XOR differential model.
 
     This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
@@ -715,3 +772,22 @@ def _filter_fixed_variables(fixed_values, fixed_variable, id):
             bit_index = fixed_variable["bit_positions"].index(bit)
             del fixed_variable["bit_values"][bit_index]
             del fixed_variable["bit_positions"][bit_index]
+            
+def _set_weight_precision(model, analysis_type):
+    if any(SBOX in item for item in model.non_linear_component_id):
+        dict_product_of_sum = get_dictionary_that_contains_inequalities_for_large_sboxes(analysis=analysis_type)
+        for id in model.non_linear_component_id:
+            sb = tuple(model._cipher.get_component_from_id(id).description)
+            for proba in dict_product_of_sum[str(sb)].keys():
+                if not is_power_of_two(proba):
+                    model._has_non_integer_weight = True
+                    break
+            else:
+                continue
+            break
+
+    if model._has_non_integer_weight:
+        step = 1 / float(10 ** model.weight_precision)
+    else:
+        step = 1
+    return step

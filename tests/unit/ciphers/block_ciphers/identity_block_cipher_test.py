@@ -20,9 +20,11 @@ def test_identity_block_cipher():
     key = 0xffffffff
     ciphertext = 0x00000000
     assert identity.evaluate([plaintext, key]) == ciphertext
+    assert identity.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
 
     identity = IdentityBlockCipher(block_bit_size=32, key_bit_size=16)
     plaintext = 0xffffffff
     key = 0xffff
     ciphertext = 0xffffffff
     assert identity.evaluate([plaintext, key]) == ciphertext
+    assert identity.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext

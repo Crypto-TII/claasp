@@ -31,3 +31,4 @@ def test_ascon_sbox_sigma_no_matrix_permutation():
     plaintext = 0x78ea7ae5cfebb1089b9bfb8513b560f76937f83e03d11a503fe53f36f2c1178c045d648e4def12c9
     ciphertext = 0x0e87fa7d4b40022e94f14f2525499af530a1d1621866701c4b419cf3ae4c9962b11ce0a087175b71
     assert ascon.evaluate([plaintext]) == ciphertext
+    assert ascon.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext

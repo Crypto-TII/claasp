@@ -45,7 +45,7 @@ class CipherComponentsAnalysis:
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: components_analysis = CipherComponentsAnalysis(fancy).component_analysis_tests()
-            sage: len(components_analysis)
+            sage: len(components_analysis['test_results'])
             9
 
         """
@@ -798,7 +798,7 @@ class CipherComponentsAnalysis:
             sage: from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: e0 = BluetoothStreamCipherE0(keystream_bit_len=2)
-            sage: dictionary = CipherComponentsAnalysis(e0).component_analysis_tests()
+            sage: dictionary = CipherComponentsAnalysis(e0).component_analysis_tests()['test_results']
             sage: assert dictionary[8]["number_of_registers"] == 4
             sage: dictionary[8]["lfsr_connection_polynomials"][0] == 'x^25 + x^20 + x^12 + x^8 + 1' # first lfsr
             True
@@ -807,7 +807,7 @@ class CipherComponentsAnalysis:
 
             sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
             sage: triv = TriviumStreamCipher(keystream_bit_len=1)
-            sage: dictionary = CipherComponentsAnalysis(triv).component_analysis_tests()
+            sage: dictionary = CipherComponentsAnalysis(triv).component_analysis_tests()['test_results']
             sage: dictionary[0]["type_of_registers"] == ['non-linear', 'non-linear', 'non-linear']
             True
 
@@ -1030,7 +1030,7 @@ def get_inverse_matrix_in_integer_representation(component):
         sage: mix_column_component = midori.get_component_from_id('mix_column_0_20')
         sage: m = get_inverse_matrix_in_integer_representation(mix_column_component)
         sage: m.dimensions()
-        (16,16)
+        (16, 16)
 
     """
     if component.type != MIX_COLUMN:
@@ -1149,7 +1149,7 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
         sage: mix_column_component = midori.get_component_from_id('mix_column_0_20')
         sage: description = mix_column_component.description
         sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
-                                                         mix_column_component.input_bit_size, mix_column_component.output_bit_size)
+        ....: mix_column_component.input_bit_size, mix_column_component.output_bit_size)
 
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import instantiate_matrix_over_correct_field
@@ -1157,7 +1157,7 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
         sage: mix_column_component = midori.get_component_from_id('mix_column_0_21')
         sage: description = mix_column_component.description
         sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
-                                                         mix_column_component.input_bit_size, mix_column_component.output_bit_size)
+        ....: mix_column_component.input_bit_size, mix_column_component.output_bit_size)
 
     """
     G = PolynomialRing(GF(2), 'x')
@@ -1195,7 +1195,7 @@ def field_element_matrix_to_integer_matrix(matrix):
         sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
         sage: description = mix_column_component.description
         sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
-                                                         mix_column_component.input_bit_size, mix_column_component.output_bit_size)
+        ....: mix_column_component.input_bit_size, mix_column_component.output_bit_size)
         sage: mc_matrix
         [    a a + 1     1     1]
         [    1     a a + 1     1]

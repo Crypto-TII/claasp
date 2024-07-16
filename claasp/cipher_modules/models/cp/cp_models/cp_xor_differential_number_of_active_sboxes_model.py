@@ -287,7 +287,7 @@ class CpXorDifferentialNumberOfActiveSboxesModel(CpModel):
 
         return all_inputs
 
-    def input_xor_differential_first_step_constraints(self, possible_sboxes):
+    def input_xor_differential_first_step_constraints(self, possible_sboxes=0):
         """
         Return a list of CP constraints for the inputs of the cipher for the first step model.
 

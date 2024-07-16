@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY
+from claasp.name_mappings import INPUT_MESSAGE
 
 PARAMETERS_CONFIGURATION_LIST = [{'word_size': 8, 'state_size': 8, 'number_of_rounds': 10}]
 
@@ -39,9 +39,9 @@ class WhirlpoolHashFunction(Cipher):
     EXAMPLES :
         sage: from claasp.ciphers.hash_functions.whirlpool_hash_function import WhirlpoolHashFunction
         sage: whirlpool = WhirlpoolHashFunction()
-        sage: key = 0x61626380000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018
-        sage: ciphertext = 0x4e2448a4c6f486bb16b6562c73b4020bf3043e3a731bce721ae1b303d97e6d4c7181eebdb6c57e277d0e34957114cbd6c797fc9d95d8b582d225292076d4eef5
-        sage: whirlpool.evaluate([key]) == ciphertext
+        sage: message = 0x61626380000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018
+        sage: digest = 0x4e2448a4c6f486bb16b6562c73b4020bf3043e3a731bce721ae1b303d97e6d4c7181eebdb6c57e277d0e34957114cbd6c797fc9d95d8b582d225292076d4eef5
+        sage: whirlpool.evaluate([message]) == digest
         True
     """
 
@@ -74,7 +74,7 @@ class WhirlpoolHashFunction(Cipher):
 
         super().__init__(family_name="whirlpool_hash_function",
                          cipher_type="hash_function",
-                         cipher_inputs=[INPUT_KEY],
+                         cipher_inputs=[INPUT_MESSAGE],
                          cipher_inputs_bit_size=[self.CIPHER_BLOCK_SIZE],
                          cipher_output_bit_size=self.CIPHER_BLOCK_SIZE)
 
@@ -102,7 +102,7 @@ class WhirlpoolHashFunction(Cipher):
 
         round_key = self.add_constant_component(self.CIPHER_BLOCK_SIZE, 0x00)  # Initial Key value
 
-        add_round_key = self.add_XOR_component([INPUT_KEY, round_key.id],
+        add_round_key = self.add_XOR_component([INPUT_MESSAGE, round_key.id],
                                                [[i for i in range(self.CIPHER_BLOCK_SIZE)],
                                                 [i for i in range(self.CIPHER_BLOCK_SIZE)]],
                                                self.CIPHER_BLOCK_SIZE)
@@ -142,7 +142,7 @@ class WhirlpoolHashFunction(Cipher):
             if round_number != number_of_rounds - 1:
                 self.add_round()
 
-        output = self.add_XOR_component([INPUT_KEY, add_round_key.id],
+        output = self.add_XOR_component([INPUT_MESSAGE, add_round_key.id],
                                         [[i for i in range(self.CIPHER_BLOCK_SIZE)] for _ in range(2)],
                                         self.CIPHER_BLOCK_SIZE)
 
