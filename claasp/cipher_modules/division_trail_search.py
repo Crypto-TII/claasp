@@ -734,7 +734,7 @@ class MilpDivisionTrailModel():
         start = time.time()
 
         output_id = self.get_cipher_output_component_id()
-        # output_id = "xor_0_22"
+        # output_id = "modadd_1_7"
         component = self._cipher.get_component_from_id(output_id)
         pivot = 0
         new_output_bit_index = output_bit_index
@@ -746,8 +746,8 @@ class MilpDivisionTrailModel():
             pivot += len(block)
             new_output_bit_index -= len(block)
 
-        # input_id_link_needed = "xor_0_19"
-        # block_needed = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]
+        # input_id_link_needed = "rot_1_6"
+        # block_needed = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 
         G = create_networkx_graph_from_input_ids(self._cipher)
         predecessors = list(_get_predecessors_subgraph(G, [input_id_link_needed]))
@@ -930,6 +930,10 @@ class MilpDivisionTrailModel():
 
     # Simon y0 round 2 checked by hand:
     # ['p3p24', 'p2p9p24', 'p0p9p17', 'k50', 'p0p3p9', 'k32', 'p18', 'p2p9p10', 'p24k49', 'p0', 'p10k49', 'k49k56', 'p17k56', 'p0p2p9', 'p4', 'p10p17', 'p2p9k56', 'p17p24', 'p0p9k49', 'p3k56']
+
+    # Speck y15 round 2 is working because:
+    # y8_round1 = ['p2p3p5p8p27p29p30p31', 'p3p5p7p8p25p27p29p31', 'p2p5p8p26p27p29p30p31', 'p2p3p6p27p28p29', 'p2p3p5p6p8p27p30p31', 'p5p6p7p25p26p27p30', 'p2p5p6p26p27p29', 'p2p4p26p27', 'p2p4p8p26p28p29p30p31', 'k56', 'p3p5p6p7p25p27p30', 'p2p3p4p5p7p29p30', 'p2p5p6p8p26p27p30p31', 'p3p4p5p6p7p8p25p31', 'p4p6p7p25p26p28p30', 'p24', 'p8p25p26p27p28p29p30p31', 'p2p3p4p6p8p28p30p31', 'p3p4p5p7p8p25p29p31', 'p5p6p25p26p27p29', 'p6p7p8p25p26p27p28p31', 'p2p5p26p27p28', 'p4p6p25p26p28p29', 'p2p4p7p26p28p29p30', 'p3p5p6p8p25p27p30p31', 'p2p3p5p6p27p29', 'p4p7p25p26p28p29p30', 'p3p5p25p27p28', 'p6p7p25p26p27p28p30', 'p2p6p8p26p27p28p30p31', 'p2p3p5p27p28', 'p2p4p6p26p28p29', 'p4p8p25p26p28p29p30p31', 'p3p4p25p27', 'p3p4p5p8p25p29p30p31', 'p2p3p6p8p27p28p30p31', 'p2p5p7p26p27p29p30', 'p2p3p4p5p28', 'p3p4p6p25p28p29', 'p2p3p4p6p7p28p30', 'p2p6p26p27p28p29', 'p2p3p7p8p27p28p29p31', 'p3p4p7p8p25p28p29p31', 'p2p4p5p6p8p26p30p31', 'p2p3p4p6p7p8p28p31', 'p2p4p5p6p7p8p26p31', 'p3p4p5p6p7p25p30', 'p2p3p4p5p7p8p29p31', 'p2p3p4p5p6p7p30', 'p2p3p4p5p8p29p30p31', 'p6p8p25p26p27p28p30p31', 'p3p6p7p8p25p27p28p31', 'p2p3p6p7p8p27p28p31', 'p4p6p7p8p25p26p28p31', 'p2p3p4p7p8p28p29p31', 'p3p7p25p27p28p29p30', 'p2p3p5p6p7p27p30', 'p2p4p5p6p7p26p30', 'p5p6p8p25p26p27p30p31', 'p3p5p6p7p8p25p27p31', 'p3p25p26', 'p2p4p6p7p26p28p30', 'p4p5p25p26p28', 'p2p6p7p26p27p28p30', 'p2p3p6p7p27p28p30', 'p3p7p8p25p27p28p29p31', 'p2p6p7p8p26p27p28p31', 'p2p4p6p8p26p28p30p31', 'p3p4p6p8p25p28p30p31', 'p4p5p6p7p8p25p26p31', 'p3p6p8p25p27p28p30p31', 'p2p3p5p7p27p29p30', 'p4p5p7p8p25p26p29p31', 'p2p5p6p7p26p27p30', 'p2p4p6p7p8p26p28p31', 'p2p3p5p7p8p27p29p31', 'p2p4p7p8p26p28p29p31', 'p4p5p6p25p26p29', 'p2p4p5p8p26p29p30p31', 'p3p6p25p27p28p29', 'p2p3p7p27p28p29p30', 'p5p6p7p8p25p26p27p31', 'p2p3p4p7p28p29p30', 'p2p3p8p27p28p29p30p31', 'p2p4p5p7p26p29p30', 'p2p4p5p6p26p29', 'p3p4p8p25p28p29p30p31', 'p3p4p5p6p8p25p30p31', 'p3p8p25p27p28p29p30p31', 'p2p5p7p8p26p27p29p31', 'p2p8p26p27p28p29p30p31', 'p3p5p8p25p27p29p30p31', 'p4p25p26p27', 'p2p7p8p26p27p28p29p31', 'p5p7p25p26p27p29p30', 'p3p4p5p25p28', 'p2p3p4p5p6p29', 'p5p25p26p27p28', 'p2p3p4p8p28p29p30p31', 'p4p5p6p7p25p26p30', 'p3p5p6p25p27p29', 'p5p8p25p26p27p29p30p31', 'p2p3p4p27', 'p7p25p26p27p28p29p30', 'p3p4p6p7p8p25p28p31', 'p2p4p5p26p28', 'p4p6p8p25p26p28p30p31', 'p3p4p5p7p25p29p30', 'p2p3p4p5p6p7p8p31', 'p2p5p6p7p8p26p27p31', 'p4p5p8p25p26p29p30p31', 'p3p4p7p25p28p29p30', 'p3p4p5p6p25p29', 'p2p3p5p6p7p8p27p31', 'p4p5p7p25p26p29p30', 'p2p7p26p27p28p29p30', 'p2p3p4p5p6p8p30p31', 'p4p7p8p25p26p28p29p31', 'p2p3p4p6p28p29', 'p7p8p25p26p27p28p29p31', 'p3p4p6p7p25p28p30', 'p3p5p7p25p27p29p30', 'p6p25p26p27p28p29', 'p2p4p5p7p8p26p29p31', 'p2p3p26', 'p4p5p6p8p25p26p30p31', 'p1', 'p3p6p7p25p27p28p30', 'p5p7p8p25p26p27p29p31', 'p2p25']
+    # y15_round2 = k40 + k49 + y31_round1 + y8_round1
 
     def find_degree_of_specific_anf(self, output_bit_index):
         start = time.time()
