@@ -77,6 +77,13 @@ class MilpDivisionTrailModel():
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(0)
 
+        sage: from claasp.ciphers.toys.toyand_v3 import ToyAND
+        sage: cipher = ToyAND()
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
         sage: from claasp.ciphers.toys.toymodadd import ToyMODADD
         sage: cipher = ToyMODADD()
         sage: from claasp.cipher_modules.division_trail_search import *
@@ -307,6 +314,30 @@ class MilpDivisionTrailModel():
                 else:
                     input_vars_concat.append(self._variables[input_name][current][pos])
             self._variables[input_name]["current"] += 1
+
+        # input_vars_concat = []
+        # constant_flag = []
+        # for index, input_name in enumerate(component.input_id_links):
+        #     current = self._variables[input_name]["current"]
+        #     if len(component.input_bit_positions[index]) > component.output_bit_size:
+        #         nb_blocks = int(len(component.input_bit_positions[index]) / component.output_bit_size)
+        #         len_block = int(len(component.input_bit_positions[index]) / nb_blocks)
+        #         for i in range(nb_blocks):
+        #             for pos in component.input_bit_positions[index][i*len_block: (i+1)*len_block]:
+        #                 if input_name[:8] == "constant":
+        #                     const_comp = self._cipher.get_component_from_id(input_name)
+        #                     constant_flag.append((int(const_comp.description[0], 16) >> (const_comp.output_bit_size - 1 - pos)) & 1)
+        #                 else:
+        #                     input_vars_concat.append(self._variables[input_name][current][pos])
+        #             self._variables[input_name]["current"] += 1
+        #     else:
+        #         for pos in component.input_bit_positions[index]:
+        #             if input_name[:8] == "constant":
+        #                 const_comp = self._cipher.get_component_from_id(input_name)
+        #                 constant_flag.append((int(const_comp.description[0], 16) >> (const_comp.output_bit_size - 1 - pos)) & 1)
+        #             else:
+        #                 input_vars_concat.append(self._variables[input_name][current][pos])
+        #         self._variables[input_name]["current"] += 1
 
         block_size = component.output_bit_size
         nb_blocks = component.description[1]
@@ -565,6 +596,12 @@ class MilpDivisionTrailModel():
                     ## if we want to check the occurences of each bit
                     # occurences[name] += component.input_bit_positions[index]
                     for index in indexes:
+                        # if len(component.input_bit_positions[index]) > component.output_bit_size:
+                        #     nb_blocks = int(len(component.input_bit_positions[index]) / component.output_bit_size)
+                        #     len_block = int(len(component.input_bit_positions[index]) / nb_blocks)
+                        #     for i in range(nb_blocks):
+                        #         occurences[name].append(component.input_bit_positions[index][i*len_block: (i+1)*len_block])
+                        # else:
                         occurences[name].append(component.input_bit_positions[index])
         if input_id_link_needed in self._cipher.inputs:
             occurences[input_id_link_needed] = [block_needed]
@@ -621,16 +658,33 @@ class MilpDivisionTrailModel():
                                 sum(all_vars[component_id][pos + 1][i] for pos in indexes) >= all_vars[component_id][0][
                                     i])
             else:
+                # # # DOES NOT gives correct result for y0 round 2 of Simon
+                # index = self._cipher.inputs.index(component_id)
+                # input_size = self._cipher.inputs_bit_size[index]
+                # all_vars[component_id][0] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY, name=component_id)
+                # for input_bit_positions_indexes in occurences[component_id]:
+                #     input_bit_positions = input_bit_positions_indexes[0]
+                #     indexes = input_bit_positions_indexes[1]
+                #     if (len(indexes) > 1) or (len(occurences[component_id]) > 1):
+                #         all_vars[component_id]["current"] = 1
+                #         for pos in indexes:
+                #             all_vars[component_id][pos+1] = self._model.addVars(input_bit_positions, vtype=GRB.BINARY, name="copy_"+component_id+f"_{pos}")
+                #         for i in input_bit_positions:
+                #             for pos in indexes:
+                #                 self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][pos+1][i])
+                #             self._model.addConstr(sum(all_vars[component_id][pos+1][i] for pos in indexes) >= all_vars[component_id][0][i])
+
+                # gives correct result for y0 round 2 of Simon
                 index = self._cipher.inputs.index(component_id)
                 input_size = self._cipher.inputs_bit_size[index]
                 all_vars[component_id][0] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY,
                                                                 name=component_id)
+                self._model.update()
+                all_vars[component_id]["current"] = 1
                 for input_bit_positions_indexes in occurences[component_id]:
                     input_bit_positions = input_bit_positions_indexes[0]
                     indexes = input_bit_positions_indexes[1]
-                    nb_occurence_for_this_input_bit_positions = len(indexes)
-                    if (len(indexes) > 1) or (len(occurences[component_id]) > 1):
-                        all_vars[component_id]["current"] = 1
+                    if len(indexes) > 1:
                         for pos in indexes:
                             all_vars[component_id][pos + 1] = self._model.addVars(input_bit_positions, vtype=GRB.BINARY,
                                                                                   name="copy_" + component_id + f"_{pos}")
@@ -641,23 +695,11 @@ class MilpDivisionTrailModel():
                             self._model.addConstr(
                                 sum(all_vars[component_id][pos + 1][i] for pos in indexes) >= all_vars[component_id][0][
                                     i])
-
-        # for comp_id in self._cipher.get_all_components_ids(): #[:4]
-        #     if comp_id not in list(occurences.keys()):
-        #         component = self._cipher.get_component_from_id(comp_id)
-        #         if component.type not in ["intermediate_output", "cipher_output"]:
-        #             self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=comp_id)
-
-        # self._model.update()
-        # output_id = self.get_cipher_output_component_id()
-        # G = create_networkx_graph_from_input_ids(self._cipher)
-        # predecessors = _get_predecessors_subgraph(G, [output_id]) # output_id
-        # for comp_id in self._cipher.get_all_components_ids(): #[:4]
-        #     if comp_id not in predecessors:
-        #         component = self._cipher.get_component_from_id(comp_id)
-        #         for i in range(component.output_bit_size):
-        #             c = self._model.getVarByName(f"{comp_id}[{i}]")
-        #             self._model.addConstr(c == 0)
+                    else:
+                        tmp = {}
+                        for i in input_bit_positions:
+                            tmp[i] = self._model.getVarByName(f"{component_id}[{i}]")
+                        all_vars[component_id][indexes[0] + 1] = tmp
 
         self._model.update()
         print("all_vars")
@@ -681,7 +723,7 @@ class MilpDivisionTrailModel():
         index = self._cipher.inputs_bit_size[0]
         # need_to_copy = False
         for input_bit_positions_indexes in occurences[self._cipher.inputs[0]]:
-            if len(input_bit_positions_indexes[1]) >= 1:
+            if len(input_bit_positions_indexes[1]) > 1:
                 # need_to_copy = True
                 index += len(input_bit_positions_indexes[0]) * len(input_bit_positions_indexes[1])
         # if need_to_copy:
@@ -692,6 +734,7 @@ class MilpDivisionTrailModel():
         start = time.time()
 
         output_id = self.get_cipher_output_component_id()
+        # output_id = "xor_0_22"
         component = self._cipher.get_component_from_id(output_id)
         pivot = 0
         new_output_bit_index = output_bit_index
@@ -702,6 +745,9 @@ class MilpDivisionTrailModel():
                 break
             pivot += len(block)
             new_output_bit_index -= len(block)
+
+        # input_id_link_needed = "xor_0_19"
+        # block_needed = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]
 
         G = create_networkx_graph_from_input_ids(self._cipher)
         predecessors = list(_get_predecessors_subgraph(G, [input_id_link_needed]))
@@ -790,23 +836,14 @@ class MilpDivisionTrailModel():
             self._model.setParam(GRB.Param.SolutionNumber, sol)
             values = self._model.Xn
 
-            # Simon 1 round
+            # Speck 2 rounds
             # print("plaintext")
             # print(values[:32])
             # print("copy plaintext")
             # print(values[32:48])
             # print(values[48:64])
-            # print(values[64:80])
-            # print(values[80:96])
-            # print(values[96:112])
             # print("key")
-            # print(values[112:176])
-
-            # tmp = []
-            # for index, v in enumerate(values[:max_input_bit_pos]):
-            #     if v == 1:
-            #         tmp.append(index)
-            # monomials.append(tmp)
+            # print(values[64:128])
 
             tmp = []
             for index, v in enumerate(values[:max_input_bit_pos]):
@@ -890,6 +927,9 @@ class MilpDivisionTrailModel():
     # ['p64p256', 'p45', 'p64p128', 'p36', 'p45p109', 'p0p64', 'p192', 'p128', 'p64', 'p100p164', 'p0', 'p100p292', 'p109p301', 'p109p173', 'p237', 'p173', 'p228', 'p164', 'p36p100', 'p109', 'p100']
     # # Ascon circuit version, checked by hand for y256
     # ['p64p256', 'p215', 'p313', 'p64', 'p249', 'p279', 'p87p279', 'p256', 'p121p313', 'p87', 'p0p64', 'p121', 'p23p87', 'p192', 'p57p121']
+
+    # Simon y0 round 2 checked by hand:
+    # ['p3p24', 'p2p9p24', 'p0p9p17', 'k50', 'p0p3p9', 'k32', 'p18', 'p2p9p10', 'p24k49', 'p0', 'p10k49', 'k49k56', 'p17k56', 'p0p2p9', 'p4', 'p10p17', 'p2p9k56', 'p17p24', 'p0p9k49', 'p3k56']
 
     def find_degree_of_specific_anf(self, output_bit_index):
         start = time.time()
@@ -1102,6 +1142,7 @@ def test():
     print("######## equal")
 
 # ['p0', 'p128', 'p45', 'p173', 'p64p128', 'p36', 'p164', 'p45p109', 'p109', 'p36p100', 'p100', 'p109p173', 'p64', 'p100p164', 'p0p64']
+
 
 
 
