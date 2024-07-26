@@ -299,45 +299,20 @@ class MilpDivisionTrailModel():
     def add_xor_constraints(self, component):
         output_vars = []
         for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+            output_vars.append(self._model.getVarByName(f"{component.id}_{i}"))
 
         input_vars_concat = []
         constant_flag = []
         for index, input_name in enumerate(component.input_id_links):
-            current = self._variables[input_name]["current"]
             for pos in component.input_bit_positions[index]:
+                current = self._variables[input_name][pos]["current"]
                 if input_name[:8] == "constant":
                     const_comp = self._cipher.get_component_from_id(input_name)
-                    # constant_flag.append((int(const_comp.description[0], 16) & (1 << const_comp.output_bit_size-pos)) >> const_comp.output_bit_size-pos)
                     constant_flag.append(
                         (int(const_comp.description[0], 16) >> (const_comp.output_bit_size - 1 - pos)) & 1)
                 else:
-                    input_vars_concat.append(self._variables[input_name][current][pos])
-            self._variables[input_name]["current"] += 1
-
-        # input_vars_concat = []
-        # constant_flag = []
-        # for index, input_name in enumerate(component.input_id_links):
-        #     current = self._variables[input_name]["current"]
-        #     if len(component.input_bit_positions[index]) > component.output_bit_size:
-        #         nb_blocks = int(len(component.input_bit_positions[index]) / component.output_bit_size)
-        #         len_block = int(len(component.input_bit_positions[index]) / nb_blocks)
-        #         for i in range(nb_blocks):
-        #             for pos in component.input_bit_positions[index][i*len_block: (i+1)*len_block]:
-        #                 if input_name[:8] == "constant":
-        #                     const_comp = self._cipher.get_component_from_id(input_name)
-        #                     constant_flag.append((int(const_comp.description[0], 16) >> (const_comp.output_bit_size - 1 - pos)) & 1)
-        #                 else:
-        #                     input_vars_concat.append(self._variables[input_name][current][pos])
-        #             self._variables[input_name]["current"] += 1
-        #     else:
-        #         for pos in component.input_bit_positions[index]:
-        #             if input_name[:8] == "constant":
-        #                 const_comp = self._cipher.get_component_from_id(input_name)
-        #                 constant_flag.append((int(const_comp.description[0], 16) >> (const_comp.output_bit_size - 1 - pos)) & 1)
-        #             else:
-        #                 input_vars_concat.append(self._variables[input_name][current][pos])
-        #         self._variables[input_name]["current"] += 1
+                    input_vars_concat.append(self._variables[input_name][pos][current])
+                    self._variables[input_name][pos]["current"] += 1
 
         block_size = component.output_bit_size
         nb_blocks = component.description[1]
@@ -430,14 +405,14 @@ class MilpDivisionTrailModel():
     def add_rotate_constraints(self, component):
         output_vars = []
         for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+            output_vars.append(self._model.getVarByName(f"{component.id}_{i}"))
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
-            current = self._variables[input_name]["current"]
             for pos in component.input_bit_positions[index]:
-                input_vars_concat.append(self._variables[input_name][current][pos])
-            self._variables[input_name]["current"] += 1
+                current = self._variables[input_name][pos]["current"]
+                input_vars_concat.append(self._variables[input_name][pos][current])
+                self._variables[input_name][pos]["current"] += 1
 
         rotate_offset = component.description[1]
         for i in range(component.output_bit_size):
@@ -448,14 +423,14 @@ class MilpDivisionTrailModel():
         # Constraints taken from Misuse-free paper
         output_vars = []
         for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+            output_vars.append(self._model.getVarByName(f"{component.id}_{i}"))
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
-            current = self._variables[input_name]["current"]
             for pos in component.input_bit_positions[index]:
-                input_vars_concat.append(self._variables[input_name][current][pos])
-            self._variables[input_name]["current"] += 1
+                current = self._variables[input_name][pos]["current"]
+                input_vars_concat.append(self._variables[input_name][pos][current])
+                self._variables[input_name][pos]["current"] += 1
 
         block_size = int(len(input_vars_concat) // component.description[1])
         for i in range(component.output_bit_size):
@@ -466,14 +441,14 @@ class MilpDivisionTrailModel():
     def add_not_constraints(self, component):
         output_vars = []
         for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+            output_vars.append(self._model.getVarByName(f"{component.id}_{i}"))
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
-            current = self._variables[input_name]["current"]
             for pos in component.input_bit_positions[index]:
-                input_vars_concat.append(self._variables[input_name][current][pos])
-            self._variables[input_name]["current"] += 1
+                current = self._variables[input_name][pos]["current"]
+                input_vars_concat.append(self._variables[input_name][pos][current])
+                self._variables[input_name][pos]["current"] += 1
 
         for i in range(component.output_bit_size):
             self._model.addConstr(output_vars[i] >= input_vars_concat[i])
@@ -482,11 +457,10 @@ class MilpDivisionTrailModel():
     def add_constant_constraints(self, component):
         output_vars = []
         for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+            output_vars.append(self._model.getVarByName(f"{component.id}_{i}"))
 
         const = int(component.description[0], 16)
         for i in range(component.output_bit_size):
-            # self._model.addConstr(output_vars[i] == (const & (1 << component.output_bit_size-i)) >> component.output_bit_size-i)
             self._model.addConstr(output_vars[i] == (const >> (component.output_bit_size - 1 - i)) & 1)
         self._model.update()
 
@@ -584,9 +558,9 @@ class MilpDivisionTrailModel():
 
     def get_where_component_is_used(self, predecessors, input_id_link_needed, block_needed):
         occurences = {}
-        ids = self._cipher.inputs + predecessors  # self._cipher.get_all_components_ids() # [:2]
+        ids = self._cipher.inputs + predecessors
         for name in ids:
-            for component_id in predecessors:  # self._cipher.get_all_components(): # [:2]
+            for component_id in predecessors:
                 component = self._cipher.get_component_from_id(component_id)
                 if (name in component.input_id_links) and (
                         component.type not in ["intermediate_output", "cipher_output"]):
@@ -596,18 +570,13 @@ class MilpDivisionTrailModel():
                     ## if we want to check the occurences of each bit
                     # occurences[name] += component.input_bit_positions[index]
                     for index in indexes:
-                        # if len(component.input_bit_positions[index]) > component.output_bit_size:
-                        #     nb_blocks = int(len(component.input_bit_positions[index]) / component.output_bit_size)
-                        #     len_block = int(len(component.input_bit_positions[index]) / nb_blocks)
-                        #     for i in range(nb_blocks):
-                        #         occurences[name].append(component.input_bit_positions[index][i*len_block: (i+1)*len_block])
-                        # else:
                         occurences[name].append(component.input_bit_positions[index])
         if input_id_link_needed in self._cipher.inputs:
             occurences[input_id_link_needed] = [block_needed]
         else:
             component = self._cipher.get_component_from_id(input_id_link_needed)
             occurences[input_id_link_needed] = [[i for i in range(component.output_bit_size)]]
+
         print("occurences")
         print(occurences)
         occurences_final = {}
@@ -620,86 +589,32 @@ class MilpDivisionTrailModel():
         return occurences_final
 
     def find_copy_indexes(self, input_bit_positions):
-        already_visited = []
-        l = []
+        l = {}
         for input_bit_position in input_bit_positions:
-            if input_bit_position not in already_visited:
-                already_visited.append(input_bit_position)
-                indexes = [i for i, j in enumerate(input_bit_positions) if j == input_bit_position]
-                l.append([input_bit_position, indexes])
+            for pos in input_bit_position:
+                if pos not in l.keys():
+                    l[pos] = 0
+                l[pos] += 1
         return l
 
     def create_gurobi_vars_from_all_components(self, predecessors, input_id_link_needed, block_needed):
         occurences = self.get_where_component_is_used(predecessors, input_id_link_needed, block_needed)
-        # print("occurences")
-        # print(occurences)
         all_vars = {}
         for component_id in occurences.keys():
             all_vars[component_id] = {}
-            all_vars[component_id]["current"] = 0
-            if component_id not in self._cipher.inputs:
-                component = self._cipher.get_component_from_id(component_id)
-                all_vars[component_id][0] = self._model.addVars(list(range(component.output_bit_size)),
-                                                                vtype=GRB.BINARY, name=component.id)
-                for input_bit_positions_indexes in occurences[component_id]:
-                    input_bit_positions = input_bit_positions_indexes[0]
-                    indexes = input_bit_positions_indexes[1]
-                    nb_occurence_for_this_input_bit_positions = len(indexes)
-                    if (len(indexes) > 1) or (len(occurences[component_id]) > 1):
-                        all_vars[component_id]["current"] = 1
-                        for pos in indexes:
-                            all_vars[component_id][pos + 1] = self._model.addVars(input_bit_positions, vtype=GRB.BINARY,
-                                                                                  name="copy_" + component_id + f"_{pos}")
-                        for i in input_bit_positions:
-                            for pos in indexes:
-                                self._model.addConstr(
-                                    all_vars[component_id][0][i] >= all_vars[component_id][pos + 1][i])
-                            self._model.addConstr(
-                                sum(all_vars[component_id][pos + 1][i] for pos in indexes) >= all_vars[component_id][0][
-                                    i])
-            else:
-                # # # DOES NOT gives correct result for y0 round 2 of Simon
-                # index = self._cipher.inputs.index(component_id)
-                # input_size = self._cipher.inputs_bit_size[index]
-                # all_vars[component_id][0] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY, name=component_id)
-                # for input_bit_positions_indexes in occurences[component_id]:
-                #     input_bit_positions = input_bit_positions_indexes[0]
-                #     indexes = input_bit_positions_indexes[1]
-                #     if (len(indexes) > 1) or (len(occurences[component_id]) > 1):
-                #         all_vars[component_id]["current"] = 1
-                #         for pos in indexes:
-                #             all_vars[component_id][pos+1] = self._model.addVars(input_bit_positions, vtype=GRB.BINARY, name="copy_"+component_id+f"_{pos}")
-                #         for i in input_bit_positions:
-                #             for pos in indexes:
-                #                 self._model.addConstr(all_vars[component_id][0][i] >= all_vars[component_id][pos+1][i])
-                #             self._model.addConstr(sum(all_vars[component_id][pos+1][i] for pos in indexes) >= all_vars[component_id][0][i])
-
-                # gives correct result for y0 round 2 of Simon
-                index = self._cipher.inputs.index(component_id)
-                input_size = self._cipher.inputs_bit_size[index]
-                all_vars[component_id][0] = self._model.addVars(list(range(input_size)), vtype=GRB.BINARY,
-                                                                name=component_id)
-                self._model.update()
-                all_vars[component_id]["current"] = 1
-                for input_bit_positions_indexes in occurences[component_id]:
-                    input_bit_positions = input_bit_positions_indexes[0]
-                    indexes = input_bit_positions_indexes[1]
-                    if len(indexes) > 1:
-                        for pos in indexes:
-                            all_vars[component_id][pos + 1] = self._model.addVars(input_bit_positions, vtype=GRB.BINARY,
-                                                                                  name="copy_" + component_id + f"_{pos}")
-                        for i in input_bit_positions:
-                            for pos in indexes:
-                                self._model.addConstr(
-                                    all_vars[component_id][0][i] >= all_vars[component_id][pos + 1][i])
-                            self._model.addConstr(
-                                sum(all_vars[component_id][pos + 1][i] for pos in indexes) >= all_vars[component_id][0][
-                                    i])
-                    else:
-                        tmp = {}
-                        for i in input_bit_positions:
-                            tmp[i] = self._model.getVarByName(f"{component_id}[{i}]")
-                        all_vars[component_id][indexes[0] + 1] = tmp
+            for pos in list(occurences[component_id].keys()):
+                all_vars[component_id][pos] = {}
+                all_vars[component_id][pos][0] = self._model.addVar(name=component_id + f"_{pos}")
+                all_vars[component_id][pos]["current"] = 0
+                nb_copies_needed = occurences[component_id][pos]
+                if nb_copies_needed >= 2:
+                    all_vars[component_id][pos]["current"] = 1
+                    for i in range(nb_copies_needed):
+                        all_vars[component_id][pos][i + 1] = self._model.addVar(
+                            name=f"copy_{i + 1}_" + component_id + f"_{pos}")
+                        self._model.addConstr(all_vars[component_id][pos][0] >= all_vars[component_id][pos][i + 1])
+                    self._model.addConstr(sum(all_vars[component_id][pos][i + 1] for i in range(nb_copies_needed)) >=
+                                          all_vars[component_id][pos][0])
 
         self._model.update()
         print("all_vars")
@@ -707,12 +622,10 @@ class MilpDivisionTrailModel():
 
         for index, input_id in enumerate(self._cipher.inputs):
             if input_id in list(occurences.keys()):
-                l = []
-                for sublist in occurences[input_id]:
-                    l += sublist[0]
+                l = list(occurences[input_id].keys())
                 for bit in range(self._cipher.inputs_bit_size[index]):
                     if bit not in l:
-                        c = self._model.getVarByName(f"{input_id}[{bit}]")
+                        c = self._model.getVarByName(f"{input_id}_{bit}")
                         self._model.addConstr(c == 0)
 
         self._model.update()
@@ -720,15 +633,10 @@ class MilpDivisionTrailModel():
 
     def find_index_second_input(self):
         occurences = self._occurences
-        index = self._cipher.inputs_bit_size[0]
-        # need_to_copy = False
-        for input_bit_positions_indexes in occurences[self._cipher.inputs[0]]:
-            if len(input_bit_positions_indexes[1]) > 1:
-                # need_to_copy = True
-                index += len(input_bit_positions_indexes[0]) * len(input_bit_positions_indexes[1])
-        # if need_to_copy:
-        # index += self._cipher.inputs_bit_size[0]
-        return index
+        count = 0
+        for pos in list(occurences[self._cipher.inputs[0]].keys()):
+            count += occurences[self._cipher.inputs[0]][pos]
+        return count
 
     def find_anf_for_specific_output_bit(self, output_bit_index, fixed_degree=None):
         start = time.time()
@@ -756,7 +664,6 @@ class MilpDivisionTrailModel():
         for input_id in self._cipher.inputs + ['']:
             if input_id in predecessors:
                 predecessors.remove(input_id)
-        # predecessors.remove('')
 
         print("input_id_link_needed")
         print(input_id_link_needed)
@@ -766,7 +673,7 @@ class MilpDivisionTrailModel():
 
         var_from_block_needed = []
         for i in range(len(block_needed)):
-            var_from_block_needed.append(self._model.getVarByName(f"{input_id_link_needed}[{i}]"))
+            var_from_block_needed.append(self._model.getVarByName(f"{input_id_link_needed}_{i}"))
         print("var_from_block_needed")
         print(var_from_block_needed)
 
@@ -779,13 +686,8 @@ class MilpDivisionTrailModel():
         for i in range(len(block_needed)):
             self._model.addConstr(output_vars[i] == var_from_block_needed[i])
 
-        # output_vars = []
-        # for i in range(self._cipher.output_bit_size): # self._cipher.output_bit_size
-        #     output_vars.append(self._model.getVarByName(f"{output_id}[{i}]")) # {output_id}
-
         ks = self._model.addVar()
-        self._model.addConstr(
-            ks == sum(output_vars[i] for i in range(len(block_needed))))  # self._cipher.output_bit_size
+        self._model.addConstr(ks == sum(output_vars[i] for i in range(len(block_needed))))
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[new_output_bit_index] == 1)
 
@@ -795,19 +697,6 @@ class MilpDivisionTrailModel():
                 plaintext_vars.append(self._model.getVarByName(f"plaintext[{i}]"))
             self._model.addConstr(
                 sum(plaintext_vars[i] for i in range(self._cipher.inputs_bit_size[0])) == fixed_degree)
-
-        # add this for simon/speck :
-        # for i in range(48): # self._cipher.output_bit_size
-        #     c = self._model.getVarByName(f"key[{i}]")
-        #     self._model.addConstr(c == 0)
-
-        # for i in range(16):
-        #     c = self._model.getVarByName(f"xor_0_4[{i}]")
-        #     self._model.addConstr(c == 0)
-
-        # for i in range(16):
-        #     c = self._model.getVarByName(f"rot_0_3[{i}]")
-        #     self._model.addConstr(c == 0)
 
         self._model.update()
         self._model.write("division_trail_model_toy_cipher.lp")
