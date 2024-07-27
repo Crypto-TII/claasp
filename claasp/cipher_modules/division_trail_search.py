@@ -602,16 +602,19 @@ class MilpDivisionTrailModel():
         all_vars = {}
         for component_id in occurences.keys():
             all_vars[component_id] = {}
+            # We need the inputs vars to be the first ones defined by gurobi in order to find their values with X.values method.
+            # That's why we split the following loop: we first created the original vars, and then the copies vars when necessary.
             for pos in list(occurences[component_id].keys()):
                 all_vars[component_id][pos] = {}
-                all_vars[component_id][pos][0] = self._model.addVar(name=component_id + f"_{pos}")
+                all_vars[component_id][pos][0] = self._model.addVar(vtype=GRB.BINARY, name=component_id + f"_{pos}")
                 all_vars[component_id][pos]["current"] = 0
+            for pos in list(occurences[component_id].keys()):
                 nb_copies_needed = occurences[component_id][pos]
                 if nb_copies_needed >= 2:
                     all_vars[component_id][pos]["current"] = 1
                     for i in range(nb_copies_needed):
-                        all_vars[component_id][pos][i + 1] = self._model.addVar(
-                            name=f"copy_{i + 1}_" + component_id + f"_{pos}")
+                        all_vars[component_id][pos][i + 1] = self._model.addVar(vtype=GRB.BINARY,
+                                                                                name=f"copy_{i + 1}_" + component_id + f"_{pos}")
                         self._model.addConstr(all_vars[component_id][pos][0] >= all_vars[component_id][pos][i + 1])
                     self._model.addConstr(sum(all_vars[component_id][pos][i + 1] for i in range(nb_copies_needed)) >=
                                           all_vars[component_id][pos][0])
@@ -635,7 +638,10 @@ class MilpDivisionTrailModel():
         occurences = self._occurences
         count = 0
         for pos in list(occurences[self._cipher.inputs[0]].keys()):
-            count += occurences[self._cipher.inputs[0]][pos]
+            if occurences[self._cipher.inputs[0]][pos] > 1:
+                count += occurences[self._cipher.inputs[0]][pos] + 1
+            else:
+                count += occurences[self._cipher.inputs[0]][pos]
         return count
 
     def find_anf_for_specific_output_bit(self, output_bit_index, fixed_degree=None):
@@ -1029,13 +1035,19 @@ def test():
            'p140p248', 'p15p314', 'p15p292', 'p82p274', 'p114p235', 'p209p248', 'p54p274', 'p0', 'p146p235', 'p114p292',
            'p15p276', 'p114p166', 'p125p146', 'p15p82', 'p40p181', 'p116p209', 'p75p210', 'p210p235']
 
-    for monomial in circuit:
-        if monomial not in new:
+    new_ascon = ['p256', 'p45p109', 'p0p64', 'p192', 'p128', 'p45', 'p36', 'p45p237', 'p36p292', 'p301', 'p237', 'p292',
+                 'p173', 'p36p228', 'p45p301', 'p228', 'p164', 'p0', 'p36p100', 'p0p256', 'p0p192']
+    checked_by_hand_ascon = ['p64p256', 'p45', 'p64p128', 'p36', 'p45p109', 'p0p64', 'p192', 'p128', 'p64', 'p100p164',
+                             'p0', 'p100p292', 'p109p301', 'p109p173', 'p237', 'p173', 'p228', 'p164', 'p36p100',
+                             'p109', 'p100']
+
+    for monomial in new_ascon:
+        if monomial not in checked_by_hand_ascon:
             print("######## different")
             return 0
     print("######## equal")
 
-# ['p0', 'p128', 'p45', 'p173', 'p64p128', 'p36', 'p164', 'p45p109', 'p109', 'p36p100', 'p100', 'p109p173', 'p64', 'p100p164', 'p0p64']
+
 
 
 
