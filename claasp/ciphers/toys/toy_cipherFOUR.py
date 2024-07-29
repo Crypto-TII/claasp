@@ -28,8 +28,8 @@ PARAMETERS_CONFIGURATION_LIST = [
 class ToyCipherFOUR(Cipher):
     """
     Construct an instance of the ToyCipherFOUR class.
-    This class implements CipherFOUR,
-    with a default block size of 16 bits and a key size of 80 bits.
+    This class implements CipherFOUR [Knudsen2011TheBC]_,
+    with a default block size of 16 bits and a key size of 96 bits.
     This toy block cipher splits the key into multiple round keys.
 
     REFERENCES:
