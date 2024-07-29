@@ -344,10 +344,10 @@ class MilpDivisionTrailModel():
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
-            current = self._variables[input_name]["current"]
             for pos in component.input_bit_positions[index]:
-                input_vars_concat.append(self._variables[input_name][current][pos])
-            self._variables[input_name]["current"] += 1
+                current = self._variables[input_name][pos]["current"]
+                input_vars_concat.append(self._variables[input_name][pos][current])
+                self._variables[input_name][pos]["current"] += 1
 
         len_concat = len(input_vars_concat)
         n = int(len_concat / 2)
@@ -488,10 +488,10 @@ class MilpDivisionTrailModel():
 
     def pretty_print(self, monomials):
         occurences = self._occurences
+        print(monomials)
         pos_second_input = self.find_index_second_input()
         print(f"pos_second_input = {pos_second_input}")
         l = []
-        print(monomials)
         nb_inputs_used = 0
         for input_id in self._cipher.inputs:
             if input_id in list(self._occurences.keys()):
@@ -499,6 +499,8 @@ class MilpDivisionTrailModel():
         if nb_inputs_used > 1:  # ("plaintext" in list(occurences.keys())) and ("key" in list(occurences.keys())):
             first_input_bit_positions = list(self._occurences[self._cipher.inputs[0]].keys())
             second_input_bit_positions = list(self._occurences[self._cipher.inputs[1]].keys())
+            print(first_input_bit_positions)
+            print(second_input_bit_positions)
             for monomial in monomials:
                 tmp = ""
                 if len(monomial) != 1:
@@ -507,7 +509,8 @@ class MilpDivisionTrailModel():
                             tmp += self._cipher.inputs[0][0] + str(first_input_bit_positions[var])
                         elif pos_second_input <= var < pos_second_input + len(
                                 list(self._occurences[self._cipher.inputs[1]].keys())):
-                            tmp += self._cipher.inputs[1][0] + str(second_input_bit_positions[pos_second_input - var])
+                            tmp += self._cipher.inputs[1][0] + str(
+                                second_input_bit_positions[abs(pos_second_input - var)])
                         # if var is not in this range, it belongs to the copies, so no need to print
                 else:
                     tmp += str(1)
@@ -516,6 +519,7 @@ class MilpDivisionTrailModel():
                 l.append(tmp)
         else:
             first_input_bit_positions = list(self._occurences[self._cipher.inputs[0]].keys())
+            print(first_input_bit_positions)
             for monomial in monomials:
                 tmp = ""
                 if len(monomial) != 1:
@@ -755,7 +759,7 @@ class MilpDivisionTrailModel():
             tmp = []
             for index, v in enumerate(values[:max_input_bit_pos]):
                 if v == 1:
-                    if len(self._cipher.inputs_bit_size) > 1:
+                    if nb_inputs_used > 1:
                         if index < len(list(self._occurences[self._cipher.inputs[0]].keys())):
                             tmp.append(index)
                         elif index_second_input <= index < index_second_input + len(
@@ -832,9 +836,7 @@ class MilpDivisionTrailModel():
             self.check_presence_of_particular_monomial_in_specific_anf(monomial, i)
 
     # # Ascon circuit version, checked by hand for y0
-    # ['p64p256', 'p45', 'p64p128', 'p36', 'p45p109', 'p0p64', 'p192', 'p128', 'p64', 'p100p164', 'p0', 'p100p292', 'p109p301', 'p109p173', 'p237', 'p173', 'p228', 'p164', 'p36p100', 'p109', 'p100']
-    # # Ascon circuit version, checked by hand for y256
-    # ['p64p256', 'p215', 'p313', 'p64', 'p249', 'p279', 'p87p279', 'p256', 'p121p313', 'p87', 'p0p64', 'p121', 'p23p87', 'p192', 'p57p121']
+    # ['p64p256', 'p109p301', 'p128', 'p109p45', 'p64p0', 'p192', 'p0', 'p109', 'p100', 'p100p164', 'p45', 'p173', 'p237', 'p164', 'p228', 'p109p173', 'p100p292', 'p64', 'p100p36', 'p64p128', 'p36']
 
     # Simon y0 round 2 checked by hand:
     # ['p3p24', 'p2p9p24', 'p0p9p17', 'k50', 'p0p3p9', 'k32', 'p18', 'p2p9p10', 'p24k49', 'p0', 'p10k49', 'k49k56', 'p17k56', 'p0p2p9', 'p4', 'p10p17', 'p2p9k56', 'p17p24', 'p0p9k49', 'p3k56']
@@ -1048,23 +1050,16 @@ def test():
            'p140p248', 'p15p314', 'p15p292', 'p82p274', 'p114p235', 'p209p248', 'p54p274', 'p0', 'p146p235', 'p114p292',
            'p15p276', 'p114p166', 'p125p146', 'p15p82', 'p40p181', 'p116p209', 'p75p210', 'p210p235']
 
-    new_ascon = ['p256', 'p45p109', 'p0p64', 'p192', 'p128', 'p45', 'p36', 'p45p237', 'p36p292', 'p301', 'p237', 'p292',
-                 'p173', 'p36p228', 'p45p301', 'p228', 'p164', 'p0', 'p36p100', 'p0p256', 'p0p192']
-    checked_by_hand_ascon = ['p64p256', 'p45', 'p64p128', 'p36', 'p45p109', 'p0p64', 'p192', 'p128', 'p64', 'p100p164',
-                             'p0', 'p100p292', 'p109p301', 'p109p173', 'p237', 'p173', 'p228', 'p164', 'p36p100',
-                             'p109', 'p100']
+    new_ascon = ['p64p256', 'p109p301', 'p0', 'p109p173', 'p64p128', 'p192', 'p128', 'p109', 'p100', 'p100p36', 'p173',
+                 'p45', 'p237', 'p36', 'p228', 'p109p45', 'p100p292', 'p64', 'p100p164', 'p64p0', 'p164']
+    checked_by_hand_ascon = ['p64p256', 'p109p301', 'p128', 'p109p45', 'p64p0', 'p192', 'p0', 'p109', 'p100',
+                             'p100p164', 'p45', 'p173', 'p237', 'p164', 'p228', 'p109p173', 'p100p292', 'p64',
+                             'p100p36', 'p64p128', 'p36']
 
     for monomial in new_ascon:
         if monomial not in checked_by_hand_ascon:
             print("######## different")
             return 0
     print("######## equal")
-
-
-
-
-
-
-
 
 
