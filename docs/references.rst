@@ -311,6 +311,12 @@
         signature schemes* : In Advances in Cryptology EUROCRYPT99, pages
         206–222, Berlin, Heidelberg, 1999. Springer BerlinHeidelberg.
 
+.. [Knudsen2011TheBC]
+        Knudsen, L. R., & Robshaw, M. J. B., : *The Block Cipher Companion* :
+        Information Security and Cryptography, 2011.
+        https://link.springer.com/book/10.1007/978-3-642-17342-4
+
+
 .. _claasp-ref-L:
 
 .. only:: html

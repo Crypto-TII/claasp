@@ -34,7 +34,7 @@ class ToyCipherFOUR(Cipher):
 
     REFERENCES:
 
-    Knudsen, L. R., & Robshaw, M. J. B. (2011). *The Block Cipher Companion*. Springer.
+    Knudsen, L. R., & Robshaw, M. J. B. (2011). *The Block Cipher Companion*. Springer [Knudsen2011TheBC]_.
 
 
     INPUT:
