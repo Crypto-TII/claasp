@@ -299,7 +299,7 @@ class MilpDivisionTrailModel():
     def add_xor_constraints(self, component):
         output_vars = []
         for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}_{i}"))
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
         constant_flag = []
@@ -405,7 +405,7 @@ class MilpDivisionTrailModel():
     def add_rotate_constraints(self, component):
         output_vars = []
         for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}_{i}"))
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -423,7 +423,7 @@ class MilpDivisionTrailModel():
         # Constraints taken from Misuse-free paper
         output_vars = []
         for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}_{i}"))
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -441,7 +441,7 @@ class MilpDivisionTrailModel():
     def add_not_constraints(self, component):
         output_vars = []
         for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}_{i}"))
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -457,7 +457,7 @@ class MilpDivisionTrailModel():
     def add_constant_constraints(self, component):
         output_vars = []
         for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}_{i}"))
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         const = int(component.description[0], 16)
         for i in range(component.output_bit_size):
@@ -491,16 +491,23 @@ class MilpDivisionTrailModel():
         pos_second_input = self.find_index_second_input()
         print(f"pos_second_input = {pos_second_input}")
         l = []
-        if ("plaintext" in list(occurences.keys())) and (
-                "key" in list(occurences.keys())):  # len(self._cipher.inputs_bit_size) > 1
+        print(monomials)
+        nb_inputs_used = 0
+        for input_id in self._cipher.inputs:
+            if input_id in list(self._occurences.keys()):
+                nb_inputs_used += 1
+        if nb_inputs_used > 1:  # ("plaintext" in list(occurences.keys())) and ("key" in list(occurences.keys())):
+            first_input_bit_positions = list(self._occurences[self._cipher.inputs[0]].keys())
+            second_input_bit_positions = list(self._occurences[self._cipher.inputs[1]].keys())
             for monomial in monomials:
                 tmp = ""
                 if len(monomial) != 1:
                     for var in monomial[:-1]:  # [:1] to remove the occurences
-                        if var < self._cipher.inputs_bit_size[0]:
-                            tmp += self._cipher.inputs[0][0] + str(var)
-                        elif pos_second_input <= var < pos_second_input + self._cipher.inputs_bit_size[1]:
-                            tmp += self._cipher.inputs[1][0] + str(abs(pos_second_input - var))
+                        if var < len(list(self._occurences[self._cipher.inputs[0]].keys())):
+                            tmp += self._cipher.inputs[0][0] + str(first_input_bit_positions[var])
+                        elif pos_second_input <= var < pos_second_input + len(
+                                list(self._occurences[self._cipher.inputs[1]].keys())):
+                            tmp += self._cipher.inputs[1][0] + str(second_input_bit_positions[pos_second_input - var])
                         # if var is not in this range, it belongs to the copies, so no need to print
                 else:
                     tmp += str(1)
@@ -508,12 +515,13 @@ class MilpDivisionTrailModel():
                 # l.append((tmp, monomial[-1]))
                 l.append(tmp)
         else:
+            first_input_bit_positions = list(self._occurences[self._cipher.inputs[0]].keys())
             for monomial in monomials:
                 tmp = ""
                 if len(monomial) != 1:
                     for var in monomial[:-1]:  # [:1] to remove the occurences
-                        if var < self._cipher.inputs_bit_size[0]:
-                            tmp += self._cipher.inputs[0][0] + str(var)
+                        if var < len(list(self._occurences[self._cipher.inputs[0]].keys())):
+                            tmp += self._cipher.inputs[0][0] + str(first_input_bit_positions[var])
                         # if var is not in this range, it belongs to the copies, so no need to print
                 else:
                     tmp += str(1)
@@ -606,7 +614,7 @@ class MilpDivisionTrailModel():
             # That's why we split the following loop: we first created the original vars, and then the copies vars when necessary.
             for pos in list(occurences[component_id].keys()):
                 all_vars[component_id][pos] = {}
-                all_vars[component_id][pos][0] = self._model.addVar(vtype=GRB.BINARY, name=component_id + f"_{pos}")
+                all_vars[component_id][pos][0] = self._model.addVar(vtype=GRB.BINARY, name=component_id + f"[{pos}]")
                 all_vars[component_id][pos]["current"] = 0
             for pos in list(occurences[component_id].keys()):
                 nb_copies_needed = occurences[component_id][pos]
@@ -614,7 +622,7 @@ class MilpDivisionTrailModel():
                     all_vars[component_id][pos]["current"] = 1
                     for i in range(nb_copies_needed):
                         all_vars[component_id][pos][i + 1] = self._model.addVar(vtype=GRB.BINARY,
-                                                                                name=f"copy_{i + 1}_" + component_id + f"_{pos}")
+                                                                                name=f"copy_{i + 1}_" + component_id + f"[{pos}]")
                         self._model.addConstr(all_vars[component_id][pos][0] >= all_vars[component_id][pos][i + 1])
                     self._model.addConstr(sum(all_vars[component_id][pos][i + 1] for i in range(nb_copies_needed)) >=
                                           all_vars[component_id][pos][0])
@@ -623,13 +631,14 @@ class MilpDivisionTrailModel():
         print("all_vars")
         print(all_vars)
 
-        for index, input_id in enumerate(self._cipher.inputs):
-            if input_id in list(occurences.keys()):
-                l = list(occurences[input_id].keys())
-                for bit in range(self._cipher.inputs_bit_size[index]):
-                    if bit not in l:
-                        c = self._model.getVarByName(f"{input_id}_{bit}")
-                        self._model.addConstr(c == 0)
+        # for index, input_id in enumerate(self._cipher.inputs):
+        #     if input_id in list(occurences.keys()):
+        #         l = list(occurences[input_id].keys())
+        #         for bit in range(self._cipher.inputs_bit_size[index]):
+        #             if bit not in l:
+        #                 c = self._model.getVarByName(f"{input_id}[{pos}]")
+        #                 print(c)
+        #                 self._model.addConstr(c == 0)
 
         self._model.update()
         self._variables = all_vars
@@ -679,7 +688,7 @@ class MilpDivisionTrailModel():
 
         var_from_block_needed = []
         for i in range(len(block_needed)):
-            var_from_block_needed.append(self._model.getVarByName(f"{input_id_link_needed}_{i}"))
+            var_from_block_needed.append(self._model.getVarByName(f"{input_id_link_needed}[{i}]"))
         print("var_from_block_needed")
         print(var_from_block_needed)
 
@@ -710,10 +719,13 @@ class MilpDivisionTrailModel():
         building_time = end - start
         print(f"building_time : {building_time}")
 
-        occurences = self._occurences
         index_second_input = self.find_index_second_input()
-        if len(self._cipher.inputs_bit_size) > 1:
-            max_input_bit_pos = index_second_input + self._cipher.inputs_bit_size[1]
+        nb_inputs_used = 0
+        for input_id in self._cipher.inputs:
+            if input_id in list(self._occurences.keys()):
+                nb_inputs_used += 1
+        if nb_inputs_used == 2:
+            max_input_bit_pos = index_second_input + len(list(self._occurences[self._cipher.inputs[1]].keys()))
         else:
             max_input_bit_pos = index_second_input
         print(f"max_input_bit_pos = {max_input_bit_pos}")
@@ -744,12 +756,13 @@ class MilpDivisionTrailModel():
             for index, v in enumerate(values[:max_input_bit_pos]):
                 if v == 1:
                     if len(self._cipher.inputs_bit_size) > 1:
-                        if index < self._cipher.inputs_bit_size[0]:
+                        if index < len(list(self._occurences[self._cipher.inputs[0]].keys())):
                             tmp.append(index)
-                        elif index_second_input <= index < index_second_input + self._cipher.inputs_bit_size[1]:
+                        elif index_second_input <= index < index_second_input + len(
+                                list(self._occurences[self._cipher.inputs[1]].keys())):
                             tmp.append(index)
                     else:
-                        if index < self._cipher.inputs_bit_size[0]:
+                        if index < len(list(self._occurences[self._cipher.inputs[0]].keys())):
                             tmp.append(index)
             monomials.append(tmp)
 
