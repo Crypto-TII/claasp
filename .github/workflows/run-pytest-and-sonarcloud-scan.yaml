@@ -17,12 +17,7 @@ concurrency:
 jobs:
   run-pytest:
     if: ${{ !github.event.repository.fork }}
-    runs-on:  self-hosted-dind
-    container:
-      image: tiicrc/claasp-base:13062024
-      credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_USER }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+    runs-on:  self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
