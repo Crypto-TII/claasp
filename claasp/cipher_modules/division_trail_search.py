@@ -145,7 +145,7 @@ class MilpDivisionTrailModel():
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_for_specific_output_bit(15)
 
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
@@ -161,12 +161,51 @@ class MilpDivisionTrailModel():
         self._variables = None
         self._model = None
         self._occurences = None
+        self._used_variables = []
+        self._variables_as_list = []
+        self._unused_variables = []
+
+    def get_all_variables_as_list(self):
+        for component_id in list(self._variables.keys())[:-1]:
+            # print(component_id)
+            for bit_position in self._variables[component_id].keys():
+                # print(bit_position)
+                for value in self._variables[component_id][bit_position].keys():
+                    # print(value)
+                    if value != "current":
+                        self._variables_as_list.append(self._variables[component_id][bit_position][value].VarName)
+
+        # cipher_output_id = self.get_cipher_output_component_id()
+        # for bit_position in self._variables[cipher_output_id].keys():
+
+    def get_unused_variables(self):
+        self.get_all_variables_as_list()
+        for variable in self._variables_as_list:
+            # print(variable)
+            if variable not in self._used_variables:
+                # print("out")
+                self._unused_variables.append(variable)
+            # else:
+            # print("in")
+
+    def set_unused_variables_to_zero(self):
+        self.get_unused_variables()
+        for name in self._unused_variables:
+            var = self._model.getVarByName(name)
+            self._model.addConstr(var == 0)
+
+    def set_as_used_variables(self, variables):
+        for v in variables:
+            if v.VarName not in self._used_variables:
+                self._used_variables.append(v.VarName)
+                if "copy" in v.VarName.split("_"):
+                    self._used_variables.append(v.VarName.split("_")[-1])
 
     def build_gurobi_model(self):
         model = Model()
         model.Params.LogToConsole = 0
         model.Params.Threads = 32  # best found experimentaly on ascon_sbox_2rounds
-        model.setParam("PoolSolutions", 2000)  # 200000000
+        model.setParam("PoolSolutions", 1000)  # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -209,21 +248,33 @@ class MilpDivisionTrailModel():
                             monomials_degree_based[1][deg1_monomial] = 0
                         monomials_degree_based[1][deg1_monomial] += monomials_degree_based[deg][monomial]
 
-        return monomials_degree_based
+        sorted_monomials_degree_based = {1: {}}
+        for xi in B.variable_names():
+            if B(xi) not in monomials_degree_based[1].keys():
+                sorted_monomials_degree_based[1][B(xi)] = 0
+            else:
+                sorted_monomials_degree_based[1][B(xi)] = monomials_degree_based[1][B(xi)]
+        for deg in range(sbox.max_degree() + 1):
+            if deg != 1:
+                sorted_monomials_degree_based[deg] = monomials_degree_based[deg]
+
+        return sorted_monomials_degree_based
 
     def create_gurobi_vars_sbox(self, component, input_vars_concat):
         monomial_occurences = self.get_monomial_occurences(component)
-        # print(monomial_occurences)
+        print(monomial_occurences)
         B = BooleanPolynomialRing(component.input_bit_size, 'x')
         x = B.variable_names()
 
         copy_xi = {}
-        for index, xi in enumerate(monomial_occurences[1].keys()):  # enumerate(x):
+        for index, xi in enumerate(monomial_occurences[1].keys()):
             nb_occurence_xi = monomial_occurences[1][B(xi)]
             if nb_occurence_xi != 0:
                 copy_xi[B(xi)] = self._model.addVars(list(range(nb_occurence_xi)), vtype=GRB.BINARY,
-                                                     name=input_vars_concat[index].VarName + "_" + str(xi))
+                                                     name="copy_" + input_vars_concat[index].VarName + "_as_" + str(xi))
                 self._model.update()
+                self.set_as_used_variables(list(copy_xi[B(xi)].values()))
+                self.set_as_used_variables([input_vars_concat[index]])
                 for i in range(nb_occurence_xi):
                     self._model.addConstr(input_vars_concat[index] >= copy_xi[B(xi)][i])
                 self._model.addConstr(
@@ -253,8 +304,8 @@ class MilpDivisionTrailModel():
         output_vars = []
         for i in list(self._occurences[component.id].keys()):
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-        # print(output_vars)
-        # print("###########")
+        print("###########")
+        print(output_vars)
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -262,45 +313,48 @@ class MilpDivisionTrailModel():
                 current = self._variables[input_name][pos]["current"]
                 input_vars_concat.append(self._variables[input_name][pos][current])
                 self._variables[input_name][pos]["current"] += 1
-        # print(input_vars_concat)
+        print(input_vars_concat)
 
         B = BooleanPolynomialRing(component.input_bit_size, 'x')
         x = B.variable_names()
         anfs = self.get_anfs_from_sbox(component)
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
         anfs.reverse()
-        # print(anfs)
+        print(anfs)
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
-        # print(copy_monomials_deg)
+        print(copy_monomials_deg)
+        print(self._occurences[component.id])
 
-        for index, anf in enumerate(anfs):
-            if index in list(self._occurences[component.id].keys()):
-                constr = 0
-                equality = True
-                monomials = anf.monomials()
-                # print(monomials)
-                for monomial in monomials:
-                    deg = monomial.degree()
-                    if deg == 1:
-                        current = copy_monomials_deg[deg][monomial]["current"]
-                        constr += copy_monomials_deg[deg][monomial][current]
-                        copy_monomials_deg[deg][monomial]["current"] += 1
-                    elif deg >= 2:
-                        current = copy_monomials_deg[deg]["current"]
-                        for deg1_monomial in monomial.variables():
-                            current_deg1 = copy_monomials_deg[1][deg1_monomial]["current"]
-                            self._model.addConstr(
-                                copy_monomials_deg[deg][current] == copy_monomials_deg[1][deg1_monomial][current_deg1])
-                            copy_monomials_deg[1][deg1_monomial]["current"] += 1
-                        constr += copy_monomials_deg[deg][current]
-                        copy_monomials_deg[deg]["current"] += 1
-                    elif deg == 0:
-                        equality = False
-                if equality:
-                    self._model.addConstr(output_vars[index] == constr)
-                else:
-                    self._model.addConstr(output_vars[index] >= constr)
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):  # index, anf in enumerate(anfs):
+            # if index in list(self._occurences[component.id].keys()):
+            constr = 0
+            equality = True
+            monomials = anfs[bit_pos].monomials()
+            # print(monomials)
+            for monomial in monomials:
+                deg = monomial.degree()
+                if deg == 1:
+                    current = copy_monomials_deg[deg][monomial]["current"]
+                    constr += copy_monomials_deg[deg][monomial][current]
+                    copy_monomials_deg[deg][monomial]["current"] += 1
+                elif deg >= 2:
+                    current = copy_monomials_deg[deg]["current"]
+                    for deg1_monomial in monomial.variables():
+                        current_deg1 = copy_monomials_deg[1][deg1_monomial]["current"]
+                        self._model.addConstr(
+                            copy_monomials_deg[deg][current] == copy_monomials_deg[1][deg1_monomial][current_deg1])
+                        self.set_as_used_variables([copy_monomials_deg[deg][current]])
+                        copy_monomials_deg[1][deg1_monomial]["current"] += 1
+                    constr += copy_monomials_deg[deg][current]
+                    copy_monomials_deg[deg]["current"] += 1
+                elif deg == 0:
+                    equality = False
+            if equality:
+                self._model.addConstr(output_vars[index] == constr)
+            else:
+                self._model.addConstr(output_vars[index] >= constr)
+            self.set_as_used_variables([output_vars[index]])
 
         self._model.update()
 
@@ -330,10 +384,12 @@ class MilpDivisionTrailModel():
             constr = 0
             for j in range(nb_blocks):
                 constr += input_vars_concat[i + block_size * j]
+                self.set_as_used_variables([input_vars_concat[i + block_size * j]])
             if (constant_flag != []) and (constant_flag[i]):
                 self._model.addConstr(output_vars[i] >= constr)
             else:
                 self._model.addConstr(output_vars[i] == constr)
+            self.set_as_used_variables([output_vars[i]])
         self._model.update()
 
     def create_copies(self, nb_copies, var_to_copy):
@@ -356,6 +412,7 @@ class MilpDivisionTrailModel():
                 current = self._variables[input_name][pos]["current"]
                 input_vars_concat.append(self._variables[input_name][pos][current])
                 self._variables[input_name][pos]["current"] += 1
+                self.set_as_used_variables([self._variables[input_name][pos][current]])
 
         len_concat = len(input_vars_concat)
         n = int(len_concat / 2)
@@ -425,6 +482,8 @@ class MilpDivisionTrailModel():
         rotate_offset = component.description[1]
         for i in range(component.output_bit_size):
             self._model.addConstr(output_vars[i] == input_vars_concat[(i - rotate_offset) % component.output_bit_size])
+            self.set_as_used_variables([output_vars[i]])
+            self.set_as_used_variables([input_vars_concat[(i - rotate_offset) % component.output_bit_size]])
         self._model.update()
 
     def add_and_constraints(self, component):
@@ -444,6 +503,7 @@ class MilpDivisionTrailModel():
         for i in range(component.output_bit_size):
             self._model.addConstr(output_vars[i] == input_vars_concat[i])
             self._model.addConstr(output_vars[i] == input_vars_concat[i + block_size])
+            self.set_as_used_variables([output_vars[i], input_vars_concat[i], input_vars_concat[i + block_size]])
         self._model.update()
 
     def add_not_constraints(self, component):
@@ -460,6 +520,7 @@ class MilpDivisionTrailModel():
 
         for i in range(component.output_bit_size):
             self._model.addConstr(output_vars[i] >= input_vars_concat[i])
+            self.set_as_used_variables([output_vars[i], input_vars_concat[i]])
         self._model.update()
 
     def add_constant_constraints(self, component):
@@ -553,7 +614,8 @@ class MilpDivisionTrailModel():
                 # self.add_cipher_output_constraints(component)
                 continue
             elif component.type == "constant":
-                self.add_constant_constraints(component)
+                # self.add_constant_constraints(component)
+                continue
             elif component.type == "intermediate_output":
                 continue
             elif component.type == "word_operation":
@@ -598,8 +660,8 @@ class MilpDivisionTrailModel():
         occurences_final = {}
         for component_id in occurences.keys():
             occurences_final[component_id] = self.find_copy_indexes(occurences[component_id])
-        # print("occurences_final")
-        # print(occurences_final)
+        print("occurences_final")
+        print(occurences_final)
 
         self._occurences = occurences_final
         return occurences_final
@@ -708,6 +770,7 @@ class MilpDivisionTrailModel():
 
         for i in range(len(block_needed)):
             self._model.addConstr(output_vars[i] == var_from_block_needed[i])
+            self.set_as_used_variables([output_vars[i], var_from_block_needed[i]])
 
         ks = self._model.addVar()
         self._model.addConstr(ks == sum(output_vars[i] for i in range(len(block_needed))))
@@ -721,6 +784,7 @@ class MilpDivisionTrailModel():
             self._model.addConstr(
                 sum(plaintext_vars[i] for i in range(self._cipher.inputs_bit_size[0])) == fixed_degree)
 
+        self.set_unused_variables_to_zero()
         self._model.update()
         self._model.write("division_trail_model_toy_cipher.lp")
         end = time.time()
@@ -740,6 +804,7 @@ class MilpDivisionTrailModel():
 
         start = time.time()
         # self._model.setObjective(0)
+        self._model.update()
         self._model.optimize()
         end = time.time()
         solving_time = end - start
@@ -1067,3 +1132,14 @@ def test():
     print("######## equal")
 
 
+# Ascon circuit :
+y0 = ['p128', 'p109p301', 'p64p256', 'p0', 'p192', 'p109', 'p100', 'p109p45', 'p100p164', 'p173', 'p45', 'p164', 'p237',
+      'p100p36', 'p109p173', 'p36', 'p228', 'p64', 'p100p292', 'p64p128', 'p64p0']  # 21
+y64 = ['p192', 'p3', 'p153p217', 'p67p195', 'p128', 'p67p131', 'p256', 'p0', 'p128p192', 'p67', 'p89', 'p89p217',
+       'p89p153', 'p195', 'p217', 'p131p195', 'p131', 'p259', 'p64', 'p64p192', 'p153', 'p64p128', 'p281', 'p25']  # 24
+y128 = ['p64', 'p122', 'p256', 'p314p250', 'p256p192', 'p319p255', 'p128', 'p314', 'p191', 'p186', 'p127',
+        'p319']  # 12
+y192 = ['p128', 'p310', 'p239p47', 'p246p54', 'p0', 'p64', 'p303', 'p246', 'p239', 'p303p47', 'p182', 'p256', 'p256p0',
+        'p54', 'p118', 'p175', 'p47', 'p192', 'p310p54', 'p192p0', 'p111']  # 21
+y256 = ['p256', 'p313', 'p313p121', 'p279', 'p192', 'p279p87', 'p121', 'p87', 'p57p121', 'p0p64', 'p23p87', 'p215',
+        'p256p64', 'p249', 'p64']  # 15
