@@ -18,7 +18,7 @@ def test_build_impossible_xor_differential_trail_with_extensions_model():
 
 def test_build_impossible_xor_differential_trail_model():
     speck = SpeckBlockCipher(number_of_rounds=5)
-    cp = MinizincImpossibleXorDifferentialModel(speck)
+    minizinc = MinizincImpossibleXorDifferentialModel(speck)
     fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
     minizinc.build_impossible_xor_differential_trail_model(number_of_rounds=5, fixed_variables=fixed_variables, middle_round=3)
 
@@ -101,6 +101,8 @@ def test_find_one_impossible_xor_differential_trail_with_extensions():
     assert trail['model_type'] == 'impossible_xor_differential_one_solution'
     assert trail['solver_name'] == 'Chuffed'
     
+    print(trail)
+
     assert trail['components_values']['inverse_plaintext']['value'] == '22222220022222220000100000022200'
     assert trail['components_values']['inverse_cipher_output_5_12']['value'] == '22222210000000002222221000000011'
     
