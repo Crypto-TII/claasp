@@ -333,94 +333,55 @@ class Modular(Component):
             sage: constraints[6]
             'constraint modular_addition_word(array1d(0..6-1, [modadd_1_9_x0,modadd_1_9_x1,modadd_1_9_x2,modadd_1_9_x3,modadd_1_9_x4,modadd_1_9_x5]),array1d(0..6-1, [modadd_1_9_x6,modadd_1_9_x7,modadd_1_9_x8,modadd_1_9_x9,modadd_1_9_x10,modadd_1_9_x11]),array1d(0..6-1, [modadd_1_9_y0_0,modadd_1_9_y1_0,modadd_1_9_y2_0,modadd_1_9_y3_0,modadd_1_9_y4_0,modadd_1_9_y5_0]), p_modadd_1_9_0, dummy_modadd_1_9_0, -1)=1;\n'
         """
-        def create_block_of_modadd_constraints(input_vars_1_temp, input_vars_2_temp,
-                                               output_varstrs_temp, i, round_number):
-            mzn_input_array_1 = self._create_minizinc_1d_array_from_list(input_vars_1_temp)
-            mzn_input_array_2 = self._create_minizinc_1d_array_from_list(input_vars_2_temp)
-            mzn_output_array = self._create_minizinc_1d_array_from_list(output_varstrs_temp)
-            dummy_declaration = f'var {model.data_type}: dummy_{component_id}_{i};\n'
-            mzn_probability_var = f'p_{component_id}_{i}'
-            model.probability_vars.append(mzn_probability_var)
-            pr_declaration = (f'array [0..{noutput_bits}-2] of var {model.data_type}:'
-                              f'{mzn_probability_var};\n')
-            model.probability_modadd_vars_per_round[round_number - 1].append(mzn_probability_var)
-            mzn_block_variables = ""
-            dummy_id = ""
-
-            if model.sat_or_milp == "milp":
-                mzn_block_variables += dummy_declaration
-                dummy_id += f'dummy_{component_id}_{i},'
-            mzn_block_variables += pr_declaration
-
-            if model.window_size_list:
-                round_window_size = model.window_size_list[round_number - 1]
-                mzn_block_constraints = (f'constraint modular_addition_word('
-                                         f'{mzn_input_array_1},{mzn_input_array_2},{mzn_output_array},'
-                                         f' p_{component_id}_{i},'
-                                         f' {dummy_id}'
-                                         f' {round_window_size}'
-                                         f')={model.true_value};\n')
-            else:
-                mzn_block_constraints = (f'constraint modular_addition_word('
-                                         f'{mzn_input_array_1},{mzn_input_array_2},{mzn_output_array},'
-                                         f' p_{component_id}_{i},'
-                                         f' {dummy_id}'
-                                         f' -1'
-                                         f')={model.true_value};\n')
-
-            mzn_carry_var = f'carry_{component_id}_{i}'
-            modadd_carries_definition = (f'array [0..{noutput_bits}-1] of var {model.data_type}:'
-                                         f'{mzn_carry_var};\n')
-            mzn_block_variables += modadd_carries_definition
-            model.carries_vars.append({'mzn_carry_array_name': mzn_carry_var, 'mzn_carry_array_size': noutput_bits})
-            mzn_block_constraints_carries = (f'constraint {mzn_carry_var} = '
-                                             f'XOR3('
-                                             f'{mzn_input_array_1},{mzn_input_array_2},'
-                                             f'{mzn_output_array});\n')
-            mzn_block_constraints += mzn_block_constraints_carries
-
-            model.mzn_carries_output_directives.append(f'output ["carries {component_id}:"++show(XOR3('
-                                                       f'{mzn_input_array_1},{mzn_input_array_2},'
-                                                       f'{mzn_output_array}))++"\\n"];')
-
-
-            return mzn_block_variables, mzn_block_constraints
-
-        if self.description[0].lower() not in ["modadd", "modsub"]:
-            raise ValueError("component must be modular addition, or modular substraction")
-
-        round_number = model.cipher.get_round_from_component_id(self.id)
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
-        mzn_constraints = []
-        component_id = self.id
-        ninput_words = self.description[1]
-        ninput_bits = self.input_bit_size
-        noutput_bits = self.output_bit_size
-        input_varstrs = [component_id + "_" + model.input_postfix + str(i) for i in range(ninput_bits)]
-        output_varstrs = [component_id + "_" + model.output_postfix + str(i) for i in range(noutput_bits)]
-        word_chunk = int(ninput_bits / ninput_words)
-        new_output_vars = []
-
-        for i in range(ninput_words - 2):
-            new_output_vars_temp = []
-            for output_var in output_varstrs:
-                mzn_constraints += [f'var {model.data_type}: {output_var}_{i};']
-                new_output_vars_temp.append(output_var + "_" + str(i))
-            new_output_vars.append(new_output_vars_temp)
-
-        for i in range(ninput_words - 1):
-            input_vars_1 = input_varstrs[i * word_chunk:i * word_chunk + word_chunk]
-            input_vars_2 = input_varstrs[i * word_chunk + word_chunk:i * word_chunk + word_chunk + word_chunk]
-            if i == ninput_words - 2:
-                mzn_variables_and_constraints = create_block_of_modadd_constraints(input_vars_1, input_vars_2,
-                                                                                   output_varstrs, i, round_number)
-            else:
-                mzn_variables_and_constraints = create_block_of_modadd_constraints(input_vars_1, input_vars_2,
-                                                                                   new_output_vars[i], i, round_number)
-            var_names += [mzn_variables_and_constraints[0]]
-            mzn_constraints += [mzn_variables_and_constraints[1]]
-
-        return var_names, mzn_constraints
+        output_size = int(self.output_bit_size)
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        num_add = self.description[1]
+        
+        if num_add > 2:
+            return self.cp_xor_differential_propagation_constraints(model)
+        
+        all_inputs = []
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        input_len = len(all_inputs) // num_add
+        cp_declarations = []
+        cp_constraints = []
+        cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: dummy_{output_id_link};')
+        cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: x1_{output_id_link};')
+        cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: x2_{output_id_link};')
+        
+        for i in range(input_len):
+            cp_constraints.append(f'constraint x1_{output_id_link}[{i}] = {input_id_links[0]}[{input_bit_positions[0][i]}];')
+            cp_constraints.append(f'constraint x2_{output_id_link}[{i}] = {input_id_links[1]}[{input_bit_positions[1][i]}];')
+        
+        cp_constraints.append(f'constraint x2_{output_id_link}[{input_len - 1}] + x1_{output_id_link}[{input_len - 1}] + {output_id_link}[{input_len - 1}] <= 2;')
+        cp_constraints.append(f'constraint x2_{output_id_link}[{input_len - 1}] + x1_{output_id_link}[{input_len - 1}] + {output_id_link}[{input_len - 1}] - 2*dummy_{output_id_link}[{input_len - 1}] >= 0;')
+        cp_constraints.append(f'constraint dummy_{output_id_link}[{input_len - 1}] - x2_{output_id_link}[{input_len - 1}] >= 0;')
+        cp_constraints.append(f'constraint dummy_{output_id_link}[{input_len - 1}] - x1_{output_id_link}[{input_len - 1}] >= 0;')
+        cp_constraints.append(f'constraint dummy_{output_id_link}[{input_len - 1}] - {output_id_link}[{input_len - 1}] >= 0;')
+        
+        for i in range(input_len - 1):
+            cp_constraints.append(f'constraint x1_{output_id_link}[{i+1}] - {output_id_link}[{i+1}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint x2_{output_id_link}[{i+1}] - x1_{output_id_link}[{i+1}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint {output_id_link}[{i+1}] - x2_{output_id_link}[{i+1}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint x2_{output_id_link}[{i+1}] + x1_{output_id_link}[{i+1}] + {output_id_link}[{i+1}] + dummy_{output_id_link}[{i}] <= 3;')
+            cp_constraints.append(f'constraint x2_{output_id_link}[{i+1}] + x1_{output_id_link}[{i+1}] + {output_id_link}[{i+1}] - dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint - x1_{output_id_link}[{i+1}] + x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint x1_{output_id_link}[{i+1}] + x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint x1_{output_id_link}[{i+1}] - x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint x2_{output_id_link}[{i+1}] + x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint {output_id_link}[{i+1}] - x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+            cp_constraints.append(f'constraint - x1_{output_id_link}[{i+1}] + x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+            cp_constraints.append(f'constraint - x1_{output_id_link}[{i+1}] - x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+            cp_constraints.append(f'constraint - x1_{output_id_link}[{i+1}] - x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+        
+        cp_constraints.append(f'constraint p[{model.c}] = sum([if (x1_{output_id_link}[i+1] = x2_{output_id_link}[i+1]) /\\ (x1_{output_id_link}[i+1] = {output_id_link}[i+1]) then 0 else 100 endif | i in 0..{input_len - 2}]);')
+        
+        model.c += 1
+        result = cp_declarations, cp_constraints
+        return result
 
     def cp_xor_linear_mask_propagation_constraints(self, model):
         """

@@ -99,7 +99,7 @@ class MinizincXorDifferentialModel(MinizincModel):
         self._cp_xor_differential_constraints = []
         super().__init__(cipher)
 
-    def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
+    def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[], milp_modadd=False):
         """
         Build the CP model for the search of XOR differential trails.
 
@@ -124,14 +124,14 @@ class MinizincXorDifferentialModel(MinizincModel):
         self.input_sbox = []
         self.component_and_probability = {}
         self.table_of_solutions_length = 0
-        self.build_xor_differential_trail_model_template(weight, fixed_variables)
+        self.build_xor_differential_trail_model_template(weight, fixed_variables, milp_modadd)
         variables, constraints = self.input_xor_differential_constraints()
         self._model_prefix.extend(variables)
         self._model_constraints.extend(constraints)
-        self._model_constraints.extend(self.final_xor_differential_constraints(weight))
+        self._model_constraints.extend(self.final_xor_differential_constraints(weight, milp_modadd))
         self._variables_list = self._model_prefix + self._variables_list
 
-    def build_xor_differential_trail_model_template(self, weight, fixed_variables):
+    def build_xor_differential_trail_model_template(self, weight, fixed_variables, milp_modadd):
         variables = []
         self._variables_list = []
         if fixed_variables == []:
@@ -146,6 +146,8 @@ class MinizincXorDifferentialModel(MinizincModel):
             if component.type not in component_types or (
                     WORD_OPERATION == component.type and operation not in operation_types):
                 print(f'{component.id} not yet implemented')
+            elif operation in ('MODADD', 'MODSUB') and milp_modadd:
+                variables, constraints = component.cp_xor_differential_propagation_constraints_arx_optimized(self)
             else:
                 variables, constraints = component.cp_xor_differential_propagation_constraints(self)
 
@@ -157,7 +159,7 @@ class MinizincXorDifferentialModel(MinizincModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def final_xor_differential_constraints(self, weight):
+    def final_xor_differential_constraints(self, weight, milp_modadd):
         """
         Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
 
@@ -190,7 +192,7 @@ class MinizincXorDifferentialModel(MinizincModel):
                     f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ ' \
                     f'show(p[{self.component_and_probability[component.id]}]/100) ++ \"\\n\" ++'
             elif WORD_OPERATION in component.type:
-                new_constraint = self.get_word_operation_xor_differential_constraints(component, new_constraint)
+                new_constraint = self.get_word_operation_xor_differential_constraints(component, new_constraint, milp_modadd)
             else:
                 new_constraint = new_constraint + f'\"{component.id} = \"++ ' \
                                                   f'show({component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
@@ -199,7 +201,7 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         return cp_constraints
 
-    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT, solve_with_API=False):
+    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT, solve_with_API=False, milp_modadd=False):
         """
         Return a list of solutions containing all the differential trails having the ``fixed_weight`` weight.
         By default, the search is set in the single-key setting.
@@ -237,7 +239,7 @@ class MinizincXorDifferentialModel(MinizincModel):
             2
         """
         start = tm.time()
-        self.build_xor_differential_trail_model(fixed_weight, fixed_values)
+        self.build_xor_differential_trail_model(fixed_weight, fixed_values, milp_modadd)
         end = tm.time()
         build_time = end - start
         if solve_with_API:
@@ -250,7 +252,7 @@ class MinizincXorDifferentialModel(MinizincModel):
         return solutions
 
     def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight=64, fixed_values=[],
-                                                             solver_name=SOLVER_DEFAULT, solve_with_API=False):
+                                                             solver_name=SOLVER_DEFAULT, solve_with_API=False, milp_modadd=False):
         """
         Return a list of solutions containing all the differential trails.
         By default, the search is set in the single-key setting.
@@ -291,7 +293,7 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         """
         start = tm.time()
-        self.build_xor_differential_trail_model(0, fixed_values)
+        self.build_xor_differential_trail_model(0, fixed_values, milp_modadd)
         self._model_constraints.append(f'constraint weight >= {100 * min_weight} /\\ weight <= {100 * max_weight} ')
         end = tm.time()
         build_time = end - start
@@ -305,9 +307,9 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         return solutions
 
-    def find_differential_weight(self, fixed_values=[], solver_name=SOLVER_DEFAULT, solve_with_API=False):
+    def find_differential_weight(self, fixed_values=[], solver_name=SOLVER_DEFAULT, solve_with_API=False, milp_modadd=False):
         probability = 0
-        self.build_xor_differential_trail_model(-1, fixed_values)
+        self.build_xor_differential_trail_model(-1, fixed_values, milp_modadd)
         if solve_with_API:
             solutions = self.solve_with_API(solver_name = solver_name, all_solutions_ = True)
         else:
@@ -320,7 +322,7 @@ class MinizincXorDifferentialModel(MinizincModel):
         else:
             return solutions['total_weight']
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name='Chuffed', solve_with_API=False):
+    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, solve_with_API=False, milp_modadd=False, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a differential trail with the lowest probability weight.
         By default, the search is set in the single-key setting.
@@ -366,18 +368,18 @@ class MinizincXorDifferentialModel(MinizincModel):
             '1.0'
         """
         start = tm.time()
-        self.build_xor_differential_trail_model(-1, fixed_values)
+        self.build_xor_differential_trail_model(-1, fixed_values, milp_modadd)
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solution = self.solve_with_API(solver_name = solver_name)
+            solution = self.solve_with_API(solver_name, timelimit, num_of_processors)
         else:
-            solution = self.solve('xor_differential_one_solution', solver_name)
+            solution = self.solve('xor_differential_one_solution', solver_name, num_of_processors, timelimit)
             solution['building_time_seconds'] = build_time
             solution['test_name'] = "find_lowest_weight_xor_differential_trail"
         return solution
 
-    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, solve_with_API=False):
+    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, solve_with_API=False, milp_modadd=False):
         """
         Return the solution representing a differential trail with any weight.
         By default, the search is set in the single-key setting.
@@ -416,7 +418,7 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         """
         start = tm.time()
-        self.build_xor_differential_trail_model(0, fixed_values)
+        self.build_xor_differential_trail_model(0, fixed_values, milp_modadd)
         end = tm.time()
         build_time = end - start
         if solve_with_API:
@@ -428,7 +430,7 @@ class MinizincXorDifferentialModel(MinizincModel):
         return solution
 
     def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[],
-                                                          solver_name=SOLVER_DEFAULT, solve_with_API=False):
+                                                          solver_name=SOLVER_DEFAULT, solve_with_API=False, milp_modadd=False):
         """
         Return the solution representing a differential trail with the weight of probability equal to ``fixed_weight``.
         By default, the search is set in the single-key setting.
@@ -466,7 +468,7 @@ class MinizincXorDifferentialModel(MinizincModel):
             '3.0'
         """
         start = tm.time()
-        self.build_xor_differential_trail_model(fixed_weight, fixed_values)
+        self.build_xor_differential_trail_model(fixed_weight, fixed_values, milp_modadd)
         end = tm.time()
         build_time = end - start
         if solve_with_API:
@@ -478,8 +480,8 @@ class MinizincXorDifferentialModel(MinizincModel):
 
         return solution
 
-    def get_word_operation_xor_differential_constraints(self, component, new_constraint):
-        if 'AND' in component.description[0] or 'MODADD' in component.description[0]:
+    def get_word_operation_xor_differential_constraints(self, component, new_constraint, milp_modadd):
+        if 'AND' in component.description[0] or ('MODADD' in component.description[0] and not milp_modadd):
             new_constraint = new_constraint + f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ show('
             for i in range(len(self.component_and_probability[component.id])):
                 new_constraint = new_constraint + f'p[{self.component_and_probability[component.id][i]}]/100+'

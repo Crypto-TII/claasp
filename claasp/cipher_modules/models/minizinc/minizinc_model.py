@@ -31,10 +31,10 @@ from datetime import timedelta
 from minizinc import Instance, Model, Solver
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
-from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
+from claasp.cipher_modules.models.minizinc.minizinc_utils import usefulfunctions
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import SBOX
-from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
+from claasp.cipher_modules.models.minizinc.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 solve_satisfy = 'solve satisfy;'
 constraint_type_error = 'Constraint type not defined'
@@ -594,7 +594,7 @@ class MinizincModel:
             input_file_path, model_type, solver_name, num_of_processors, timelimit
         )
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        os.remove(input_file_path)
+        #os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
@@ -603,7 +603,7 @@ class MinizincModel:
                 solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name,
                                                                  solve_time, memory,
                                                                  components_values, total_weight)
-                if 'UNSATISFIABLE' in solver_output[0]:
+                if '=====UNSATISFIABLE=====' in solver_output:
                     solution['status'] = 'UNSATISFIABLE'
                 else:
                     solution['status'] = 'SATISFIABLE'
@@ -683,8 +683,13 @@ class MinizincModel:
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
         instance = Instance(solver_name_mzn, bit_mzn_model)
-        result = instance.solve(processes=processes_, timeout=timedelta(seconds=int(timeout_in_seconds_)),
+        if processes_ != None and timeout_in_seconds_ != None:
+            result = instance.solve(processes=processes_, timeout=timedelta(seconds=int(timeout_in_seconds_)),
                                 nr_solutions=nr_solutions_, random_seed=random_seed_, all_solutions=all_solutions_,
+                                intermediate_solutions=intermediate_solutions_, free_search=free_search_,
+                                optimisation_level=optimisation_level_)
+        else:
+            result = instance.solve(nr_solutions=nr_solutions_, random_seed=random_seed_, all_solutions=all_solutions_,
                                 intermediate_solutions=intermediate_solutions_, free_search=free_search_,
                                 optimisation_level=optimisation_level_)
 
