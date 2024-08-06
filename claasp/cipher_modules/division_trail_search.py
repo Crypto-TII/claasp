@@ -215,12 +215,13 @@ class MilpDivisionTrailModel():
             anf = sbox.component_function(1 << i).algebraic_normal_form()
             anf = anf.subs(d)  # x0 was msb, now it is the lsb
             anfs.append(anf)
+        anfs.reverse()
         return anfs
 
     def get_monomial_occurences(self, component):
         B = BooleanPolynomialRing(component.input_bit_size, 'x')
         anfs = self.get_anfs_from_sbox(component)
-        anfs.reverse()
+        # anfs.reverse()
 
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
         monomials = []
@@ -309,7 +310,7 @@ class MilpDivisionTrailModel():
         x = B.variable_names()
         anfs = self.get_anfs_from_sbox(component)
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
-        anfs.reverse()
+        # anfs.reverse()
         # print(anfs)
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
@@ -736,7 +737,7 @@ class MilpDivisionTrailModel():
         self.add_constraints(predecessors, input_id_link_needed, block_needed)
 
         var_from_block_needed = []
-        for i in range(len(block_needed)):
+        for i in block_needed:
             var_from_block_needed.append(self._model.getVarByName(f"{input_id_link_needed}[{i}]"))
         # print("var_from_block_needed")
         # print(var_from_block_needed)
@@ -1149,8 +1150,8 @@ y192 = 471
 y256 = 479
 # Gaston 1 round sbox:
 y0 = 479
-y64 = 479
-y128 = 479
-y192 = 479
+y64 = 481
+y128 = 481
+y192 = 471
 y256 = 479
 
