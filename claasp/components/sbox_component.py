@@ -506,9 +506,9 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: sbox_component = aes.component_from(0, 1)
             sage: sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             ([],
@@ -542,9 +542,9 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: sbox_component = aes.component_from(0, 1)
             sage: sbox_component.cp_xor_differential_first_step_constraints(cp)
             (['array[0..0] of var 0..1: sbox_0_1;'],
@@ -583,9 +583,9 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: midori = MidoriBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(midori)
+            sage: cp = MznModel(midori)
             sage: sbox_component = midori.component_from(0, 5)
             sage: sbox_component.cp_xor_differential_propagation_constraints(cp)[1:]
             (['constraint table([xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]++[sbox_0_5[0]]++[sbox_0_5[1]]++[sbox_0_5[2]]++[sbox_0_5[3]]++[p[0]], DDT_sbox_0_5);'],)
@@ -644,9 +644,9 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: midori = MidoriBlockCipher()
-            sage: cp = CpModel(midori)
+            sage: cp = MznModel(midori)
             sage: sbox_component = midori.component_from(0, 5)
             sage: sbox_component.cp_xor_linear_mask_propagation_constraints(cp)[1:]
             (['constraint table([sbox_0_5_i[0]]++[sbox_0_5_i[1]]++[sbox_0_5_i[2]]++[sbox_0_5_i[3]]++[sbox_0_5_o[0]]++[sbox_0_5_o[1]]++[sbox_0_5_o[2]]++[sbox_0_5_o[3]]++[p[0]],LAT_sbox_0_5);'],)

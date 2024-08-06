@@ -126,10 +126,10 @@ class MultiInputNonlinearLogicalOperator(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.and_component import AND
             sage: aes = AESBlockCipher()
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: and_component = AND(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
             sage: and_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             ([],
@@ -173,9 +173,9 @@ class MultiInputNonlinearLogicalOperator(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: fancy = FancyBlockCipher()
-            sage: cp = CpModel(fancy)
+            sage: cp = MznModel(fancy)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.cp_xor_differential_propagation_constraints(cp)
             ([],

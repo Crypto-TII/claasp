@@ -169,10 +169,10 @@ class OR(MultiInputNonlinearLogicalOperator):
         EXAMPLES::
 
             sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: gift = GiftPermutation()
             sage: or_component = gift.component_from(39, 6)
-            sage: cp = CpModel(gift)
+            sage: cp = MznModel(gift)
             sage: declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
             sage: declarations
             ['array[0..31] of var 0..3200: p_or_39_6;',

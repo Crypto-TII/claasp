@@ -319,9 +319,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=5)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(0, 0)
             sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             (['var -2..255: xor_0_0_temp_0_0_value;',
@@ -419,9 +419,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp..mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(2, 31)
             sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_list)
             (['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);'],

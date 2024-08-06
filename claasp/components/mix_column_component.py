@@ -381,9 +381,9 @@ class MixColumn(LinearLayer):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: mix_column_component = aes.component_from(0, 21)
             sage: mix_column_component.cp_xor_differential_propagation_first_step_constraints(cp)
             (['array[0..3] of var 0..1: mix_column_0_21;',
