@@ -29,11 +29,11 @@ class MilpDivisionTrailModel():
         sage: milp.find_anf_for_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
-        sage: cipher = GastonPermutation(number_of_rounds=2)
+        sage: cipher = GastonPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0, fixed_degree=1)
+        sage: milp.find_anf_for_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
         sage: cipher = GastonSboxPermutation(number_of_rounds=1)
@@ -197,7 +197,7 @@ class MilpDivisionTrailModel():
         model = Model()
         model.Params.LogToConsole = 0
         model.Params.Threads = 32  # best found experimentaly on ascon_sbox_2rounds
-        model.setParam("PoolSolutions", 200)  # 200000000
+        model.setParam("PoolSolutions", 200000000)  # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -294,6 +294,7 @@ class MilpDivisionTrailModel():
         output_vars = []
         for i in list(self._occurences[component.id].keys()):
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        # print(output_vars)
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -301,12 +302,15 @@ class MilpDivisionTrailModel():
                 current = self._variables[input_name][pos]["current"]
                 input_vars_concat.append(self._variables[input_name][pos][current])
                 self._variables[input_name][pos]["current"] += 1
+        # print(input_vars_concat)
+        # print(self._occurences[component.id])
 
         B = BooleanPolynomialRing(component.input_bit_size, 'x')
         x = B.variable_names()
         anfs = self.get_anfs_from_sbox(component)
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
         anfs.reverse()
+        # print(anfs)
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
 
@@ -342,8 +346,10 @@ class MilpDivisionTrailModel():
 
     def add_xor_constraints(self, component):
         output_vars = []
-        for i in range(component.output_bit_size):
+        # print(self._occurences[component.id])
+        for i in list(self._occurences[component.id].keys()):
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        # print(output_vars)
 
         input_vars_concat = []
         constant_flag = []
@@ -357,20 +363,21 @@ class MilpDivisionTrailModel():
                 else:
                     input_vars_concat.append(self._variables[input_name][pos][current])
                     self._variables[input_name][pos]["current"] += 1
+        # print(input_vars_concat)
 
         block_size = component.output_bit_size
         nb_blocks = component.description[1]
         if constant_flag != []:
             nb_blocks -= 1
-        for i in range(block_size):
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
             constr = 0
             for j in range(nb_blocks):
-                constr += input_vars_concat[i + block_size * j]
-                self.set_as_used_variables([input_vars_concat[i + block_size * j]])
-            if (constant_flag != []) and (constant_flag[i]):
-                self._model.addConstr(output_vars[i] >= constr)
+                constr += input_vars_concat[index + block_size * j]
+                self.set_as_used_variables([input_vars_concat[index + block_size * j]])
+            if (constant_flag != []) and (constant_flag[index]):
+                self._model.addConstr(output_vars[index] >= constr)
             else:
-                self._model.addConstr(output_vars[i] == constr)
+                self._model.addConstr(output_vars[index] == constr)
         self._model.update()
 
     def create_copies(self, nb_copies, var_to_copy):
@@ -450,8 +457,9 @@ class MilpDivisionTrailModel():
 
     def add_rotate_constraints(self, component):
         output_vars = []
-        for i in range(component.output_bit_size):
+        for i in list(self._occurences[component.id].keys()):
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        # print(output_vars)
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -459,17 +467,20 @@ class MilpDivisionTrailModel():
                 current = self._variables[input_name][pos]["current"]
                 input_vars_concat.append(self._variables[input_name][pos][current])
                 self._variables[input_name][pos]["current"] += 1
+        # print(input_vars_concat)
+        # print(self._occurences[component.id])
 
         rotate_offset = component.description[1]
-        for i in range(component.output_bit_size):
-            self._model.addConstr(output_vars[i] == input_vars_concat[(i - rotate_offset) % component.output_bit_size])
-            self.set_as_used_variables([input_vars_concat[(i - rotate_offset) % component.output_bit_size]])
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+            self._model.addConstr(
+                output_vars[index] == input_vars_concat[(index - rotate_offset) % component.output_bit_size])
+            self.set_as_used_variables([input_vars_concat[(index - rotate_offset) % component.output_bit_size]])
         self._model.update()
 
     def add_and_constraints(self, component):
         # Constraints taken from Misuse-free paper
         output_vars = []
-        for i in range(component.output_bit_size):
+        for i in list(self._occurences[component.id].keys()):
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
@@ -480,15 +491,15 @@ class MilpDivisionTrailModel():
                 self._variables[input_name][pos]["current"] += 1
 
         block_size = int(len(input_vars_concat) // component.description[1])
-        for i in range(component.output_bit_size):
-            self._model.addConstr(output_vars[i] == input_vars_concat[i])
-            self._model.addConstr(output_vars[i] == input_vars_concat[i + block_size])
-            self.set_as_used_variables([input_vars_concat[i], input_vars_concat[i + block_size]])
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+            self._model.addConstr(output_vars[index] == input_vars_concat[index])
+            self._model.addConstr(output_vars[index] == input_vars_concat[index + block_size])
+            self.set_as_used_variables([input_vars_concat[index], input_vars_concat[index + block_size]])
         self._model.update()
 
     def add_not_constraints(self, component):
         output_vars = []
-        for i in range(component.output_bit_size):
+        for i in list(self._occurences[component.id].keys()):
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
@@ -498,9 +509,9 @@ class MilpDivisionTrailModel():
                 input_vars_concat.append(self._variables[input_name][pos][current])
                 self._variables[input_name][pos]["current"] += 1
 
-        for i in range(component.output_bit_size):
-            self._model.addConstr(output_vars[i] >= input_vars_concat[i])
-            self.set_as_used_variables([input_vars_concat[i]])
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+            self._model.addConstr(output_vars[index] >= input_vars_concat[index])
+            self.set_as_used_variables([input_vars_concat[index]])
         self._model.update()
 
     def add_constant_constraints(self, component):
@@ -1104,7 +1115,7 @@ def test():
     print("######## equal")
 
 
-# Ascon circuit matchs sbox:
+# Ascon 1 round circuit matchs sbox:
 y0 = ['p128', 'p109p301', 'p64p256', 'p0', 'p192', 'p109', 'p100', 'p109p45', 'p100p164', 'p173', 'p45', 'p164', 'p237',
       'p100p36', 'p109p173', 'p36', 'p228', 'p64', 'p100p292', 'p64p128', 'p64p0']  # 21
 y64 = ['p192', 'p3', 'p153p217', 'p67p195', 'p128', 'p67p131', 'p256', 'p0', 'p128p192', 'p67', 'p89', 'p89p217',
@@ -1115,3 +1126,31 @@ y192 = ['p128', 'p310', 'p239p47', 'p246p54', 'p0', 'p64', 'p303', 'p246', 'p239
         'p54', 'p118', 'p175', 'p47', 'p192', 'p310p54', 'p192p0', 'p111']  # 21
 y256 = ['p256', 'p313', 'p313p121', 'p279', 'p192', 'p279p87', 'p121', 'p87', 'p57p121', 'p0p64', 'p23p87', 'p215',
         'p256p64', 'p249', 'p64']  # 15
+
+# anfs = [x0*x1 + x0 + x1*x2 + x1*x4 + x1 + x2 + x3, x0 + x1*x2 + x1*x3 + x1 + x2*x3 + x2 + x3 + x4, x1 + x2 + x3*x4 + x4 + 1, x0*x3 + x0*x4 + x0 + x1 + x2 + x3 + x4, x0*x1 + x1*x4 + x1 + x3 + x4]
+# Ascon 2 rounds circuit:
+y0 = 2595
+y64 = 2141
+y128 = 966
+y192 = 1963
+y256 = 1897
+# Ascon 2 rounds sbox:
+y0 = 2593
+y64 = 2143
+y128 = 966
+y192 = 1963
+y256 = 1897
+
+# Gaston 1 rounds circuit:
+y0 = 479
+y64 = 481
+y128 = 481
+y192 = 471
+y256 = 479
+# Gaston 1 round sbox:
+y0 = 479
+y64 = 479
+y128 = 479
+y192 = 479
+y256 = 479
+
