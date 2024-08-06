@@ -223,6 +223,8 @@ class MODSUB(Modular):
         """
         Return a list of variables and a list of clauses for Modular Subtraction in SAT CIPHER model.
 
+        The list of contraints models the two's complement addtion.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.

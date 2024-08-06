@@ -703,6 +703,8 @@ class MixColumn(LinearLayer):
         """
         Return a list of variables and a list of clauses for MIX COLUMN in SAT CIPHER model.
 
+        The model is generated converting the mix column compoment into a linear layer.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -740,6 +742,8 @@ class MixColumn(LinearLayer):
         Return a list of variables and a list of clauses for MIX COLUMN in SAT
         DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
 
+        The model is generated converting the mix column compoment into a linear layer.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -766,12 +770,19 @@ class MixColumn(LinearLayer):
         self.set_description(original_description)
         return out_ids, constraints
 
-    def sat_xor_differential_propagation_constraints(self, model):
+    def sat_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses for MIX COLUMN in SAT XOR DIFFERENTIAL model.
+
+        Since it is a linear component, it is just an alias for :py:meth:`sat_constraints`
+        """
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses for MIX COLUMN in SAT XOR LINEAR model.
+
+        The model is generated converting the mix column compoment into a linear layer.
 
         .. SEEALSO::
 

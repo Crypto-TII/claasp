@@ -946,6 +946,11 @@ class Modular(Component):
         Return a list of variables and a list of clauses for Modular Addition
         in DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
 
+        The model is built using the pivot constraint. The constraints are:
+            - 0, for both the inputs and the output on the right of the pivot;
+            - the usual XOR differential constraint in the pivot position;
+            - ? (unknown), for both the inputs and the output on the left of the pivot.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.

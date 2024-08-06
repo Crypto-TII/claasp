@@ -1397,6 +1397,8 @@ class SBOX(Component):
         """
         Return a list of variables and a list of clauses for a generic S-BOX in SAT deterministic truncated XOR DIFFERENTIAL model
 
+        This method implements the undisturbed bits idea from [CZZ2023]_.
+
         INPUT:
 
         - ``model`` -- **model object**; a model instance

@@ -249,7 +249,9 @@ class OR(MultiInputNonlinearLogicalOperator):
         """
         Return a list of variables and a list of clauses for OR operation in SAT CIPHER model.
 
-        This method support AND operation using more than two operands.
+        This method translates in CNF the constraint ``z = x | y``. It becomes in prefixed notation:
+        ``And(Or(z, Not(x)), Or(z, Not(y)), Or(x, y, Not(z)))``.
+        This method support OR operation using more than two operands.
 
         .. SEEALSO::
 

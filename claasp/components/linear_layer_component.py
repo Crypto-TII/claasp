@@ -738,6 +738,9 @@ class LinearLayer(Component):
         Return a list of variables and a list of clauses for LINEAR LAYER in
         SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
 
+        Note that when the constraints do not involve an XOR operation (e.g. permutation matrices),
+        they are modeled as equalities.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
