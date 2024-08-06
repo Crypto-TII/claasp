@@ -167,26 +167,16 @@ class MilpDivisionTrailModel():
 
     def get_all_variables_as_list(self):
         for component_id in list(self._variables.keys())[:-1]:
-            # print(component_id)
             for bit_position in self._variables[component_id].keys():
-                # print(bit_position)
                 for value in self._variables[component_id][bit_position].keys():
-                    # print(value)
                     if value != "current":
                         self._variables_as_list.append(self._variables[component_id][bit_position][value].VarName)
-
-        # cipher_output_id = self.get_cipher_output_component_id()
-        # for bit_position in self._variables[cipher_output_id].keys():
 
     def get_unused_variables(self):
         self.get_all_variables_as_list()
         for variable in self._variables_as_list:
-            # print(variable)
             if variable not in self._used_variables:
-                # print("out")
                 self._unused_variables.append(variable)
-            # else:
-            # print("in")
 
     def set_unused_variables_to_zero(self):
         self.get_unused_variables()
@@ -199,13 +189,15 @@ class MilpDivisionTrailModel():
             if v.VarName not in self._used_variables:
                 self._used_variables.append(v.VarName)
                 if "copy" in v.VarName.split("_"):
-                    self._used_variables.append(v.VarName.split("_")[-1])
+                    tmp1 = v.VarName.split("_")[2:]
+                    tmp2 = "_".join(tmp1)
+                    self._used_variables.append(tmp2)
 
     def build_gurobi_model(self):
         model = Model()
         model.Params.LogToConsole = 0
         model.Params.Threads = 32  # best found experimentaly on ascon_sbox_2rounds
-        model.setParam("PoolSolutions", 1000)  # 200000000
+        model.setParam("PoolSolutions", 200)  # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -262,7 +254,6 @@ class MilpDivisionTrailModel():
 
     def create_gurobi_vars_sbox(self, component, input_vars_concat):
         monomial_occurences = self.get_monomial_occurences(component)
-        print(monomial_occurences)
         B = BooleanPolynomialRing(component.input_bit_size, 'x')
         x = B.variable_names()
 
@@ -284,8 +275,7 @@ class MilpDivisionTrailModel():
         for deg in list(monomial_occurences.keys()):
             if deg >= 2:  # here you are looking at only deg 2, what if deg 3 or more?
                 nb_monomials = sum(monomial_occurences[2].values())
-                copy_monomials_deg[deg] = self._model.addVars(list(range(nb_monomials)),
-                                                              vtype=GRB.BINARY)  # name="copy_deg2"
+                copy_monomials_deg[deg] = self._model.addVars(list(range(nb_monomials)), vtype=GRB.BINARY)
                 self._model.update()
 
         copy_monomials_deg[1] = copy_xi
@@ -304,8 +294,6 @@ class MilpDivisionTrailModel():
         output_vars = []
         for i in list(self._occurences[component.id].keys()):
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-        print("###########")
-        print(output_vars)
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -313,25 +301,19 @@ class MilpDivisionTrailModel():
                 current = self._variables[input_name][pos]["current"]
                 input_vars_concat.append(self._variables[input_name][pos][current])
                 self._variables[input_name][pos]["current"] += 1
-        print(input_vars_concat)
 
         B = BooleanPolynomialRing(component.input_bit_size, 'x')
         x = B.variable_names()
         anfs = self.get_anfs_from_sbox(component)
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
         anfs.reverse()
-        print(anfs)
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
-        print(copy_monomials_deg)
-        print(self._occurences[component.id])
 
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):  # index, anf in enumerate(anfs):
-            # if index in list(self._occurences[component.id].keys()):
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
             constr = 0
             equality = True
             monomials = anfs[bit_pos].monomials()
-            # print(monomials)
             for monomial in monomials:
                 deg = monomial.degree()
                 if deg == 1:
@@ -354,7 +336,7 @@ class MilpDivisionTrailModel():
                 self._model.addConstr(output_vars[index] == constr)
             else:
                 self._model.addConstr(output_vars[index] >= constr)
-            self.set_as_used_variables([output_vars[index]])
+            # self.set_as_used_variables([output_vars[index]])
 
         self._model.update()
 
@@ -389,7 +371,6 @@ class MilpDivisionTrailModel():
                 self._model.addConstr(output_vars[i] >= constr)
             else:
                 self._model.addConstr(output_vars[i] == constr)
-            self.set_as_used_variables([output_vars[i]])
         self._model.update()
 
     def create_copies(self, nb_copies, var_to_copy):
@@ -482,7 +463,6 @@ class MilpDivisionTrailModel():
         rotate_offset = component.description[1]
         for i in range(component.output_bit_size):
             self._model.addConstr(output_vars[i] == input_vars_concat[(i - rotate_offset) % component.output_bit_size])
-            self.set_as_used_variables([output_vars[i]])
             self.set_as_used_variables([input_vars_concat[(i - rotate_offset) % component.output_bit_size]])
         self._model.update()
 
@@ -503,7 +483,7 @@ class MilpDivisionTrailModel():
         for i in range(component.output_bit_size):
             self._model.addConstr(output_vars[i] == input_vars_concat[i])
             self._model.addConstr(output_vars[i] == input_vars_concat[i + block_size])
-            self.set_as_used_variables([output_vars[i], input_vars_concat[i], input_vars_concat[i + block_size]])
+            self.set_as_used_variables([input_vars_concat[i], input_vars_concat[i + block_size]])
         self._model.update()
 
     def add_not_constraints(self, component):
@@ -520,7 +500,7 @@ class MilpDivisionTrailModel():
 
         for i in range(component.output_bit_size):
             self._model.addConstr(output_vars[i] >= input_vars_concat[i])
-            self.set_as_used_variables([output_vars[i], input_vars_concat[i]])
+            self.set_as_used_variables([input_vars_concat[i]])
         self._model.update()
 
     def add_constant_constraints(self, component):
@@ -564,7 +544,7 @@ class MilpDivisionTrailModel():
         for input_id in self._cipher.inputs:
             if input_id in list(self._occurences.keys()):
                 nb_inputs_used += 1
-        if nb_inputs_used > 1:  # ("plaintext" in list(occurences.keys())) and ("key" in list(occurences.keys())):
+        if nb_inputs_used > 1:
             first_input_bit_positions = list(self._occurences[self._cipher.inputs[0]].keys())
             second_input_bit_positions = list(self._occurences[self._cipher.inputs[1]].keys())
             for monomial in monomials:
@@ -605,7 +585,7 @@ class MilpDivisionTrailModel():
         self.create_gurobi_vars_from_all_components(predecessors, input_id_link_needed, block_needed)
         word_operations_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
-        for component_id in predecessors:  # [:5]
+        for component_id in predecessors:
             component = self._cipher.get_component_from_id(component_id)
             print(f"---------> {component.id}")
             if component.type == SBOX:
@@ -655,13 +635,11 @@ class MilpDivisionTrailModel():
             component = self._cipher.get_component_from_id(input_id_link_needed)
             occurences[input_id_link_needed] = [[i for i in range(component.output_bit_size)]]
 
-        # print("occurences")
-        # print(occurences)
         occurences_final = {}
         for component_id in occurences.keys():
             occurences_final[component_id] = self.find_copy_indexes(occurences[component_id])
-        print("occurences_final")
-        print(occurences_final)
+        # print("occurences_final")
+        # print(occurences_final)
 
         self._occurences = occurences_final
         return occurences_final
@@ -700,16 +678,6 @@ class MilpDivisionTrailModel():
         self._model.update()
         # print("all_vars")
         # print(all_vars)
-
-        # for index, input_id in enumerate(self._cipher.inputs):
-        #     if input_id in list(occurences.keys()):
-        #         l = list(occurences[input_id].keys())
-        #         for bit in range(self._cipher.inputs_bit_size[index]):
-        #             if bit not in l:
-        #                 c = self._model.getVarByName(f"{input_id}[{pos}]")
-        #                 print(c)
-        #                 self._model.addConstr(c == 0)
-
         self._model.update()
         self._variables = all_vars
 
@@ -784,9 +752,13 @@ class MilpDivisionTrailModel():
             self._model.addConstr(
                 sum(plaintext_vars[i] for i in range(self._cipher.inputs_bit_size[0])) == fixed_degree)
 
+        # for i in range(64):
+        #     c = self._model.getVarByName(f"xor_0_1[{i}]")
+        #     self._model.addConstr(c == 0)
+
         self.set_unused_variables_to_zero()
         self._model.update()
-        self._model.write("division_trail_model_toy_cipher.lp")
+        self._model.write("division_trail_model.lp")
         end = time.time()
         building_time = end - start
         print(f"building_time : {building_time}")
@@ -1132,7 +1104,7 @@ def test():
     print("######## equal")
 
 
-# Ascon circuit :
+# Ascon circuit matchs sbox:
 y0 = ['p128', 'p109p301', 'p64p256', 'p0', 'p192', 'p109', 'p100', 'p109p45', 'p100p164', 'p173', 'p45', 'p164', 'p237',
       'p100p36', 'p109p173', 'p36', 'p228', 'p64', 'p100p292', 'p64p128', 'p64p0']  # 21
 y64 = ['p192', 'p3', 'p153p217', 'p67p195', 'p128', 'p67p131', 'p256', 'p0', 'p128p192', 'p67', 'p89', 'p89p217',
