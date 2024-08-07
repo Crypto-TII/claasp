@@ -42,6 +42,34 @@ class MilpDivisionTrailModel():
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_for_specific_output_bit(0)
 
+        sage: from claasp.ciphers.permutations.xoodoo_sbox_permutation import XoodooSboxPermutation
+        sage: cipher = XoodooSboxPermutation(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.permutations.xoodoo_permutation import XoodooPermutation
+        sage: cipher = XoodooPermutation(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
+        sage: cipher = KeccakPermutation(number_of_rounds=1, word_size=64)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
+        sage: from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
+        sage: cipher = KeccakSboxPermutation(number_of_rounds=1, word_size=64)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
         sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
         sage: cipher = ToySPN1(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
@@ -154,6 +182,13 @@ class MilpDivisionTrailModel():
         sage: boolean_polynomial_ring = CipherComponentsAnalysis(cipher)._generate_boolean_polynomial_ring_from_cipher()
         sage: boolean_polynomials = CipherComponentsAnalysis(cipher)._MODADD_as_boolean_function(modadd_component, boolean_polynomial_ring)
 
+        sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
+        sage: cipher = LBlockBlockCipher(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_for_specific_output_bit(0)
+
     """
 
     def __init__(self, cipher):
@@ -203,8 +238,8 @@ class MilpDivisionTrailModel():
 
     def get_anfs_from_sbox(self, component):
         anfs = []
-        B = BooleanPolynomialRing(5, 'x')
-        C = BooleanPolynomialRing(5, 'x')
+        B = BooleanPolynomialRing(component.output_bit_size, 'x')
+        C = BooleanPolynomialRing(component.output_bit_size, 'x')
         var_names = [f"x{i}" for i in range(component.output_bit_size)]
         d = {}
         for i in range(component.output_bit_size):
@@ -221,7 +256,6 @@ class MilpDivisionTrailModel():
     def get_monomial_occurences(self, component):
         B = BooleanPolynomialRing(component.input_bit_size, 'x')
         anfs = self.get_anfs_from_sbox(component)
-        # anfs.reverse()
 
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
         monomials = []
@@ -274,8 +308,8 @@ class MilpDivisionTrailModel():
 
         copy_monomials_deg = {}
         for deg in list(monomial_occurences.keys()):
-            if deg >= 2:  # here you are looking at only deg 2, what if deg 3 or more?
-                nb_monomials = sum(monomial_occurences[2].values())
+            if deg >= 2:
+                nb_monomials = sum(monomial_occurences[deg].values())
                 copy_monomials_deg[deg] = self._model.addVars(list(range(nb_monomials)), vtype=GRB.BINARY)
                 self._model.update()
 
@@ -348,7 +382,7 @@ class MilpDivisionTrailModel():
     def add_xor_constraints(self, component):
         output_vars = []
         # print(self._occurences[component.id])
-        for i in list(self._occurences[component.id].keys()):
+        for i in range(len(list(self._occurences[component.id].keys()))):
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
         # print(output_vars)
 
@@ -542,6 +576,22 @@ class MilpDivisionTrailModel():
             self._model.addConstr(output_vars[i] == input_vars_concat[i])
         self._model.update()
 
+    def add_intermediate_output_constraints(self, component):
+        output_vars = []
+        for i in list(self._occurences[component.id].keys()):
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+
+        input_vars_concat = []
+        for index, input_name in enumerate(component.input_id_links):
+            for pos in component.input_bit_positions[index]:
+                current = self._variables[input_name][pos]["current"]
+                input_vars_concat.append(self._variables[input_name][pos][current])
+                self._variables[input_name][pos]["current"] += 1
+
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+            self._model.addConstr(output_vars[index] == input_vars_concat[index])
+        self._model.update()
+
     def get_cipher_output_component_id(self):
         for component in self._cipher.get_all_components():
             if component.type == "cipher_output":
@@ -597,32 +647,33 @@ class MilpDivisionTrailModel():
         self.create_gurobi_vars_from_all_components(predecessors, input_id_link_needed, block_needed)
         word_operations_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
-        for component_id in predecessors:
-            component = self._cipher.get_component_from_id(component_id)
-            print(f"---------> {component.id}")
-            if component.type == SBOX:
-                self.add_sbox_constraints(component)
-            elif component.type == "cipher_output":
-                # self.add_cipher_output_constraints(component)
-                continue
-            elif component.type == "constant":
-                # self.add_constant_constraints(component)
-                continue
-            elif component.type == "intermediate_output":
-                continue
-            elif component.type == "word_operation":
-                if component.description[0] == "XOR":
-                    self.add_xor_constraints(component)
-                elif component.description[0] == "ROTATE":
-                    self.add_rotate_constraints(component)
-                elif component.description[0] == "AND":
-                    self.add_and_constraints(component)
-                elif component.description[0] == "NOT":
-                    self.add_not_constraints(component)
-                elif component.description[0] == "MODADD":
-                    self.add_modadd_constraints(component)
-            else:
-                print(f"---> {component.id} not yet implemented")
+        for component_id in list(self._occurences.keys()):  # predecessors:
+            if component_id not in self._cipher.inputs:
+                component = self._cipher.get_component_from_id(component_id)
+                print(f"---------> {component.id}")
+                if component.type == SBOX:
+                    self.add_sbox_constraints(component)
+                elif component.type == "cipher_output":
+                    # self.add_cipher_output_constraints(component)
+                    continue
+                elif component.type == "constant":
+                    # self.add_constant_constraints(component)
+                    continue
+                elif component.type == "intermediate_output":
+                    self.add_intermediate_output_constraints(component)
+                elif component.type == "word_operation":
+                    if component.description[0] == "XOR":
+                        self.add_xor_constraints(component)
+                    elif component.description[0] == "ROTATE":
+                        self.add_rotate_constraints(component)
+                    elif component.description[0] == "AND":
+                        self.add_and_constraints(component)
+                    elif component.description[0] == "NOT":
+                        self.add_not_constraints(component)
+                    elif component.description[0] == "MODADD":
+                        self.add_modadd_constraints(component)
+                else:
+                    print(f"---> {component.id} not yet implemented")
 
         return self._model
 
@@ -632,8 +683,7 @@ class MilpDivisionTrailModel():
         for name in ids:
             for component_id in predecessors:
                 component = self._cipher.get_component_from_id(component_id)
-                if (name in component.input_id_links) and (
-                        component.type not in ["intermediate_output", "cipher_output"]):
+                if (name in component.input_id_links) and (component.type not in ["cipher_output"]):
                     indexes = [i for i, j in enumerate(component.input_id_links) if j == name]
                     if name not in occurences.keys():
                         occurences[name] = []
@@ -1128,7 +1178,13 @@ y192 = ['p128', 'p310', 'p239p47', 'p246p54', 'p0', 'p64', 'p303', 'p246', 'p239
 y256 = ['p256', 'p313', 'p313p121', 'p279', 'p192', 'p279p87', 'p121', 'p87', 'p57p121', 'p0p64', 'p23p87', 'p215',
         'p256p64', 'p249', 'p64']  # 15
 
-# anfs = [x0*x1 + x0 + x1*x2 + x1*x4 + x1 + x2 + x3, x0 + x1*x2 + x1*x3 + x1 + x2*x3 + x2 + x3 + x4, x1 + x2 + x3*x4 + x4 + 1, x0*x3 + x0*x4 + x0 + x1 + x2 + x3 + x4, x0*x1 + x1*x4 + x1 + x3 + x4]
+# Ascon_anfs = [
+# x0*x1 + x0 + x1*x2 + x1*x4 + x1 + x2 + x3,
+# x0 + x1*x2 + x1*x3 + x1 + x2*x3 + x2 + x3 + x4,
+# x1 + x2 + x3*x4 + x4 + 1,
+# x0*x3 + x0*x4 + x0 + x1 + x2 + x3 + x4,
+# x0*x1 + x1*x4 + x1 + x3 + x4]
+
 # Ascon 2 rounds circuit:
 y0 = 2595
 y64 = 2141
@@ -1154,4 +1210,3 @@ y64 = 481
 y128 = 481
 y192 = 471
 y256 = 479
-
