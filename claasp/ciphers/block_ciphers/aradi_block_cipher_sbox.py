@@ -25,9 +25,9 @@ input_types = [INPUT_KEY, INPUT_PLAINTEXT]
 PARAMETERS_CONFIGURATION_LIST = [{'block_bit_size': 128, 'key_bit_size': 256, 'number_of_rounds': 16}]
 
 
-class AradiBlockCipher(Cipher):
+class AradiBlockCipherSBox(Cipher):
     """
-    Construct an instance of the AradiBlockCipher class.
+    Construct an instance of the AradiBlockCipher class using an SBox component.
 
     This class is used to store compact representations of a cipher,
     used to generate the corresponding cipher.
@@ -43,8 +43,8 @@ class AradiBlockCipher(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
-        sage: aradi = AradiBlockCipher(number_of_rounds=16)
+        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
+        sage: aradi = AradiBlockCipherSBox(number_of_rounds=16)
         sage: aradi.evaluate([0, 0x1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100])
         0x3f09abf400e3bd7403260defb7c53912
     """
@@ -160,3 +160,5 @@ class AradiBlockCipher(Cipher):
         state = self.add_round_output_component([wl, wr, xl, xr, yl, yr, zl, zr], [list(range(16)) for _ in range(8)],
                                                 128)
         return state.id
+
+
