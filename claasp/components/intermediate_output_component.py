@@ -124,6 +124,7 @@ class IntermediateOutput(CipherOutput):
                 f'  else:',
                 f'    intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())']
 
+
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """
         Return a list of variables and a list of constraints for OUTPUT component for MILP xor linear.
