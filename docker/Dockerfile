@@ -233,7 +233,7 @@ RUN wget https://github.com/google/or-tools/releases/download/v9.2/or-tools_amd6
     && tar -xf or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz \
     && rm or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz
 
-RUN mkdir -p ~/.minizinc/solvers/s
+RUN mkdir -p /opt/minizinc/solvers/s
 
 RUN echo '\
 { \n\
@@ -257,7 +257,7 @@ RUN echo '\
 "supportsMzn": false, \n\
 "supportsNL": false, \n\
 "version": "8.2" } \
-' > ~/.minizinc/solvers/Xor.msc
+' > /opt/minizinc/solvers/Xor.msc
 
 # Installing Choco
 
@@ -292,7 +292,9 @@ RUN echo '\
   "needsStdlibDir": false, \n\
   "isGUIApplication": false \n\
 } \
-' > ~/.minizinc/solvers/choco.msc
+' > /opt/minizinc/solvers/choco.msc
+
+ENV MZN_SOLVER_PATH="/opt/minizinc/solvers"
 
 ENV LD_LIBRARY_PATH="/opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib:${LD_LIBRARY_PATH}"
 
