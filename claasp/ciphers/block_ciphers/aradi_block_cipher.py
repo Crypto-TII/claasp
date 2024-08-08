@@ -46,7 +46,7 @@ class AradiBlockCipher(Cipher):
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: aradi = AradiBlockCipher(number_of_rounds=16)
         sage: aradi.evaluate([0, 0x1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100])
-        0x3f09abf400e3bd7403260defb7c53912
+        83791582030165712186104466959690447122
     """
 
     def __init__(self, number_of_rounds=16):
