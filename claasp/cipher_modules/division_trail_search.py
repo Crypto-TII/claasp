@@ -327,7 +327,10 @@ class MilpDivisionTrailModel():
 
     def add_sbox_constraints(self, component):
         output_vars = []
-        for i in list(self._occurences[component.id].keys()):
+        # for i in list(self._occurences[component.id].keys()):
+        tmp = list(self._occurences[component.id].keys())
+        tmp.sort()
+        for i in tmp:
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
         # print(output_vars)
 
@@ -344,7 +347,6 @@ class MilpDivisionTrailModel():
         x = B.variable_names()
         anfs = self.get_anfs_from_sbox(component)
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
-        # anfs.reverse()
         # print(anfs)
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
@@ -382,7 +384,9 @@ class MilpDivisionTrailModel():
     def add_xor_constraints(self, component):
         output_vars = []
         # print(self._occurences[component.id])
-        for i in range(len(list(self._occurences[component.id].keys()))):
+        tmp = list(self._occurences[component.id].keys())  # cannot use range(len()) because of xoodoo
+        tmp.sort()
+        for i in tmp:
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
         # print(output_vars)
 
@@ -404,6 +408,8 @@ class MilpDivisionTrailModel():
         nb_blocks = component.description[1]
         if constant_flag != []:
             nb_blocks -= 1
+        # print(list(self._occurences[component.id].keys()))
+        # print(len(list(self._occurences[component.id].keys())))
         for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
             constr = 0
             for j in range(nb_blocks):
@@ -426,7 +432,10 @@ class MilpDivisionTrailModel():
     def add_modadd_constraints(self, component):
         # constraints are taken from https://www.iacr.org/archive/asiacrypt2017/106240224/106240224.pdf
         output_vars = []
-        for i in range(component.output_bit_size):
+        # for i in range(component.output_bit_size):
+        tmp = list(self._occurences[component.id].keys())
+        tmp.sort()
+        for i in tmp:
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
@@ -492,9 +501,12 @@ class MilpDivisionTrailModel():
 
     def add_rotate_constraints(self, component):
         output_vars = []
-        for i in list(self._occurences[component.id].keys()):
+        # for i in list(self._occurences[component.id].keys()):
+        tmp = list(self._occurences[component.id].keys())
+        tmp.sort()
+        for i in tmp:
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-        # print(output_vars)
+        print(output_vars)
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -502,7 +514,7 @@ class MilpDivisionTrailModel():
                 current = self._variables[input_name][pos]["current"]
                 input_vars_concat.append(self._variables[input_name][pos][current])
                 self._variables[input_name][pos]["current"] += 1
-        # print(input_vars_concat)
+        print(input_vars_concat)
         # print(self._occurences[component.id])
 
         rotate_offset = component.description[1]
@@ -515,7 +527,10 @@ class MilpDivisionTrailModel():
     def add_and_constraints(self, component):
         # Constraints taken from Misuse-free paper
         output_vars = []
-        for i in list(self._occurences[component.id].keys()):
+        # for i in list(self._occurences[component.id].keys()):
+        tmp = list(self._occurences[component.id].keys())
+        tmp.sort()
+        for i in tmp:
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
@@ -534,7 +549,10 @@ class MilpDivisionTrailModel():
 
     def add_not_constraints(self, component):
         output_vars = []
-        for i in list(self._occurences[component.id].keys()):
+        # for i in list(self._occurences[component.id].keys()):
+        tmp = list(self._occurences[component.id].keys())
+        tmp.sort()
+        for i in tmp:
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
@@ -578,7 +596,10 @@ class MilpDivisionTrailModel():
 
     def add_intermediate_output_constraints(self, component):
         output_vars = []
-        for i in list(self._occurences[component.id].keys()):
+        # for i in list(self._occurences[component.id].keys()):
+        tmp = list(self._occurences[component.id].keys())
+        tmp.sort()
+        for i in tmp:
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
 
         input_vars_concat = []
@@ -590,6 +611,7 @@ class MilpDivisionTrailModel():
 
         for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
             self._model.addConstr(output_vars[index] == input_vars_concat[index])
+            self.set_as_used_variables([input_vars_concat[index]])
         self._model.update()
 
     def get_cipher_output_component_id(self):
@@ -1210,3 +1232,4 @@ y64 = 481
 y128 = 481
 y192 = 471
 y256 = 479
+
