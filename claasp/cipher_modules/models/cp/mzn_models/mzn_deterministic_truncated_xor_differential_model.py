@@ -22,6 +22,8 @@ import math
 import itertools
 import subprocess
 
+from minizinc import Instance, Model, Solver, Status
+
 from claasp.cipher_modules.models.cp.mzn_model import MznModel, solve_satisfy
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary, check_if_implemented_component
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
@@ -35,7 +37,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         super().__init__(cipher)
 
     def add_solutions_from_components_values(self, components_values, memory, model_type, solutions, solve_time,
-                                             solver_name, solver_output):
+                                             solver_name, solver_output, total_weight, solve_external = False):
         for nsol in components_values.keys():
             solution = convert_solver_solution_to_dictionary(
                 self.cipher_id,
@@ -45,10 +47,16 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                 memory,
                 components_values[nsol],
                 0)
-            if 'UNSATISFIABLE' in solver_output[0]:
-                solution['status'] = 'UNSATISFIABLE'
+            if solve_external:
+                if 'UNSATISFIABLE' in solver_output[0]:
+                    solution['status'] = 'UNSATISFIABLE'
+                else:
+                    solution['status'] = 'SATISFIABLE'
             else:
-                solution['status'] = 'SATISFIABLE'
+                if solver_output.status not in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+                    solution['status'] = 'UNSATISFIABLE'
+                else:
+                    solution['status'] = 'SATISFIABLE'
             solutions.append(solution)
 
     def add_solution_to_components_values(self, component_id, component_solution, components_values, j, output_to_parse,
@@ -62,6 +70,10 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         elif f'{component_id} ' in string:
             components_values[f'solution{solution_number}'][f'{component_id}'] = component_solution
     
+    def add_solution_to_components_values_internal(self, component_solution, components_values, component_weight,
+                                          solution_number, component):
+        components_values[f'solution{solution_number}'][f'{component}'] = component_solution
+
     def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[], number_of_rounds=None, minimize=False, wordwise=False):
         """
         Build the CP model for the search of deterministic truncated XOR differential trails.
@@ -95,7 +107,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                 variables, constraints = self.propagate_deterministically(component, wordwise)
                 self._variables_list.extend(variables)
                 deterministic_truncated_xor_differential.extend(constraints)
-        
+                
         if not wordwise:
             variables, constraints = self.input_deterministic_truncated_xor_differential_constraints()
         else:
@@ -106,6 +118,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
             deterministic_truncated_xor_differential.extend(self.final_deterministic_truncated_xor_differential_constraints(minimize))
         else:
             deterministic_truncated_xor_differential.extend(self.final_wordwise_deterministic_truncated_xor_differential_constraints(minimize))
+            
         self._model_constraints = self._model_prefix + self._variables_list + deterministic_truncated_xor_differential
 
     def final_deterministic_truncated_xor_differential_constraints(self, minimize=False):
@@ -144,7 +157,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         return cp_constraints
 
     def find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
-                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False):
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -200,11 +213,11 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds, minimize = True)
 
         if solve_with_API:
-            return self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
-        return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name, num_of_processors, timelimit)
+            return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+        return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
 
-    def find_all_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
-                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_all_deterministic_truncated_xor_differential_trails(self, number_of_rounds=None,
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -235,7 +248,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
             ....:         constraint_type='equal',
             ....:         bit_positions=range(64),
             ....:         bit_values=[0]*64)
-            sage: cp.find_all_deterministic_truncated_xor_differential_trail(3, [plaintext,key], 'Chuffed') # random
+            sage: cp.find_all_deterministic_truncated_xor_differential_trails(3, [plaintext,key], 'Chuffed') # random
             [{'cipher_id': 'speck_p32_k64_o32_r3',
               'components_values': {'cipher_output_2_12': {'value': '22222222222222202222222222222222',
                 'weight': 0},
@@ -252,11 +265,11 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds)
 
         if solve_with_API:
-            return self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
-        return self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name, num_of_processors, timelimit)
+            return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
+        return self.solve('deterministic_truncated_xor_differential', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True, solve_external = solve_external)
 
     def find_one_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
-                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False):
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -312,8 +325,8 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds)
 
         if solve_with_API:
-            return self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
-        return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name, num_of_processors, timelimit)
+            return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+        return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
 
     def input_deterministic_truncated_xor_differential_constraints(self):
         """
@@ -421,7 +434,20 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                           for i in range(output_size)]
 
         return cp_declarations, cp_constraints
-        
+
+    def propagate_deterministically(self, component, wordwise=False):
+        if not wordwise:
+            if component.type == SBOX:
+                variables, constraints, sbox_mant = component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_mant)
+                self.sbox_mant = sbox_mant
+            else:
+                variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
+        else:
+            variables, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
+            
+        return variables, constraints
+
+'''       
     def format_component_value(self, component_id, string):
         if f'{component_id}_i' in string:
             value = string.replace(f'{component_id}_i', '')
@@ -512,19 +538,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                 components_values[nsol] = self.extract_incompatibilities_from_output(components_values[nsol])
 
         return time, memory, components_values
-        
-    def propagate_deterministically(self, component, wordwise=False):
-        if not wordwise:
-            if component.type == SBOX:
-                variables, constraints, sbox_mant = component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_mant)
-                self.sbox_mant = sbox_mant
-            else:
-                variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
-        else:
-            variables, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
-            
-        return variables, constraints
-            
+          
     def solve(self, model_type, solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution of the model.
@@ -605,4 +619,4 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                 return solutions[0]
             else:
                 return solutions
-                
+'''        

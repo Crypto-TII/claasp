@@ -1,4 +1,4 @@
-from claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_boomerang_model_arx_optimized import MinizincBoomerangModelARXOptimized
+from claasp.cipher_modules.models.cp.mzn_models.mzn_boomerang_model_arx_optimized import MznBoomerangModelARXOptimized
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.name_mappings import BOOMERANG_XOR_DIFFERENTIAL
@@ -128,7 +128,7 @@ def test_build_boomerang_model_speck_single_key():
         "modadd_4_7",
     ]
 
-    minizinc_bct_model = MinizincBoomerangModelARXOptimized(speck, top_cipher_end, bottom_cipher_start, sboxes)
+    mzn_bct_model = MznBoomerangModelARXOptimized(speck, top_cipher_end, bottom_cipher_start, sboxes)
 
     fixed_variables_for_top_cipher = [
         {'component_id': 'plaintext', 'constraint_type': 'sum', 'bit_positions': [i for i in range(32)],
@@ -160,15 +160,15 @@ def test_build_boomerang_model_speck_single_key():
          'bit_positions': [i for i in range(16)], 'bit_values': [0 for _ in range(16)]},
     ]
 
-    minizinc_bct_model.create_boomerang_model(fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher)
-    result = minizinc_bct_model.solve(solver_name='Xor')
-    total_weight = MinizincBoomerangModelARXOptimized._get_total_weight(result)
-    parsed_result = minizinc_bct_model.bct_parse_result(result, 'Xor', total_weight, BOOMERANG_XOR_DIFFERENTIAL)
+    mzn_bct_model.create_boomerang_model(fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher)
+    result = mzn_bct_model.solve_for_ARX(solver_name='Xor')
+    total_weight = MznBoomerangModelARXOptimized._get_total_weight(result)
+    parsed_result = mzn_bct_model.bct_parse_result(result, 'Xor', total_weight, BOOMERANG_XOR_DIFFERENTIAL)
     filename = '.'
-    minizinc_bct_model.write_minizinc_model_to_file(filename)
+    mzn_bct_model.write_minizinc_model_to_file(filename)
 
-    assert os.path.exists(minizinc_bct_model.filename), "File was not created"
-    os.remove(minizinc_bct_model.filename)
+    assert os.path.exists(mzn_bct_model.filename), "File was not created"
+    os.remove(mzn_bct_model.filename)
     assert total_weight == parsed_result['total_weight']
     input_difference = split_32bit_to_16bit(int(parsed_result['component_values']['plaintext']['value'], 16))
     output_difference = split_32bit_to_16bit(int(parsed_result['component_values']['cipher_output_7_12']['value'], 16))
@@ -224,7 +224,7 @@ def test_build_boomerang_model_chacha():
         "modadd_4_12",
         "modadd_4_18"
     ]
-    minizinc_bct_model = MinizincBoomerangModelARXOptimized(chacha, top_cipher_end, bottom_cipher_start, sboxes)
+    mzn_bct_model = MznBoomerangModelARXOptimized(chacha, top_cipher_end, bottom_cipher_start, sboxes)
 
     fixed_variables_for_top_cipher = [
         {'component_id': 'plaintext', 'constraint_type': 'sum', 'bit_positions': [i for i in range(512)],
@@ -243,12 +243,12 @@ def test_build_boomerang_model_chacha():
         {'component_id': 'new_rot_3_17', 'constraint_type': 'sum', 'bit_positions': [i for i in range(32)],
          'operator': '>', 'value': '0'}]
 
-    minizinc_bct_model.create_boomerang_model(fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher)
-    result = minizinc_bct_model.solve(solver_name='Xor')
-    total_weight = MinizincBoomerangModelARXOptimized._get_total_weight(result)
-    parsed_result = minizinc_bct_model.bct_parse_result(result, 'Xor', total_weight, BOOMERANG_XOR_DIFFERENTIAL)
+    mzn_bct_model.create_boomerang_model(fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher)
+    result = mzn_bct_model.solve_for_ARX(solver_name='Xor')
+    total_weight = MznBoomerangModelARXOptimized._get_total_weight(result)
+    parsed_result = mzn_bct_model.bct_parse_result(result, 'Xor', total_weight, BOOMERANG_XOR_DIFFERENTIAL)
     filename = '.'
-    minizinc_bct_model.write_minizinc_model_to_file(filename)
-    assert os.path.exists(minizinc_bct_model.filename), "File was not created"
-    os.remove(minizinc_bct_model.filename)
+    mzn_bct_model.write_minizinc_model_to_file(filename)
+    assert os.path.exists(mzn_bct_model.filename), "File was not created"
+    os.remove(mzn_bct_model.filename)
     assert total_weight == parsed_result['total_weight']

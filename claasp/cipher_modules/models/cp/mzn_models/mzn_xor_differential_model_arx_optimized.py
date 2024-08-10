@@ -75,7 +75,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         parsed_solution = {}
         if result_status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
             dict_of_solutions = solution_dict
-            probability_vars_weights = MinizincXorDifferentialModel.parse_probability_vars(
+            probability_vars_weights = MznXorDifferentialModelARXOptimized.parse_probability_vars(
                 result, solution, probability_vars
             )
             solution_total_weight = sum(item['weight'] for item in probability_vars_weights.values())
@@ -116,7 +116,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
                 parsed_solution = {'total_weight': None, 'component_values': {}}
                 parsed_solution_temp = {}
                 if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
-                    parsed_solution_temp = MinizincXorDifferentialModel._parse_solution(
+                    parsed_solution_temp = MznXorDifferentialModelARXOptimized._parse_solution(
                         result, solution, list_of_vars, probability_vars, result.status, solution.__dict__
                     )
                 parsed_solution['status'] = str(result.status)
@@ -128,7 +128,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             parsed_solution = {'total_weight': None, 'component_values': {}}
             parsed_solution_temp = {}
             if result.status in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
-                parsed_solution_temp = MinizincXorDifferentialModel._parse_solution(
+                parsed_solution_temp = MznXorDifferentialModelARXOptimized._parse_solution(
                     result, result.solution, list_of_vars, probability_vars, result.status,
                     result.solution.__dict__, result.statistics
                 )
@@ -216,7 +216,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             ....:     'operator': '=',
             ....:     'value': '0' })
             sage: minizinc.build_lowest_weight_xor_differential_trail_model(fixed_variables)
-            sage: result = minizinc.solve_with_API'Xor')
+            sage: result = minizinc.solve_for_ARX('Xor')
             sage: result.statistics['nSolutions'] > 1
             True
         """
@@ -254,7 +254,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             ....:     'operator': '=',
             ....:     'value': '0' })
             sage: minizinc.build_lowest_weight_xor_differential_trail_model(fixed_variables)
-            sage: result = minizinc.solve_with_API'Xor')
+            sage: result = minizinc.solve_for_ARX('Xor')
             sage: result.statistics['nSolutions'] > 1
             True
         """
@@ -293,7 +293,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             sage: minizinc.build_lowest_xor_differential_trails_with_at_most_weight(
             ....:     100, fixed_variables
             ....: )
-            sage: result = minizinc.solve_with_API'Xor')
+            sage: result = minizinc.solve_for_ARX('Xor')
             sage: result.statistics['nSolutions'] > 1
             True
         """
@@ -378,9 +378,9 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         """
         self.build_xor_differential_trail_model(-1, fixed_values)
         self._model_constraints.extend(self.weight_constraints(fixed_weight, "="))
-        result = self.solve_with_APIsolver_name=solver_name, all_solutions_=True)
-        total_weight = MinizincXorDifferentialModel._get_total_weight(result)
-        parsed_result = MinizincXorDifferentialModel._parse_result(
+        result = self.solve_for_ARX(solver_name=solver_name, all_solutions_=True)
+        total_weight = MznXorDifferentialModelARXOptimized._get_total_weight(result)
+        parsed_result = MznXorDifferentialModelARXOptimized._parse_result(
             result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
             self.probability_vars
         )
@@ -429,8 +429,8 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         self.build_xor_differential_trail_model(-1, fixed_values)
         self._model_constraints.extend(
             self.weight_constraints(min_weight, ">", max_weight))
-        result = self.solve_with_APIsolver_name=solver_name, all_solutions_=True)
-        total_weight = MinizincXorDifferentialModel._get_total_weight(result)
+        result = self.solve_for_ARX(solver_name=solver_name, all_solutions_=True)
+        total_weight = MznXorDifferentialModelARXOptimized._get_total_weight(result)
         parsed_result = self._parse_result(
             result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
             self.probability_vars
@@ -446,9 +446,9 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         self._model_constraints.extend(self.objective_generator(strategy='min_max_key_schedule_permutation'))
         self._model_constraints.extend(self.weight_constraints())
 
-        result = self.solve_with_APIsolver_name=solver_name)
+        result = self.solve_for_ARX(solver_name=solver_name)
         total_weight = self._get_total_weight(result)
-        parsed_result = MinizincXorDifferentialModel._parse_result(
+        parsed_result = MznXorDifferentialModelARXOptimized._parse_result(
             result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
             self.probability_vars
         )
@@ -498,8 +498,8 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         self.build_xor_differential_trail_model(-1, fixed_values)
         self._model_constraints.extend(self.objective_generator())
         self._model_constraints.extend(self.weight_constraints())
-        result = self.solve_with_APIsolver_name=solver_name)
-        total_weight = MinizincXorDifferentialModel._get_total_weight(result)
+        result = self.solve_for_ARX(solver_name=solver_name)
+        total_weight = MznXorDifferentialModelARXOptimized._get_total_weight(result)
         parsed_result = self._parse_result(
             result, solver_name, total_weight, 'xor_differential', self._variables_list, self.cipher_id,
             self.probability_vars
@@ -514,7 +514,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
                                 for j in range(self._cipher.inputs_bit_size[i])]
             output_string_for_cipher_input = \
                 "output [\"cipher_input:" + self._cipher.inputs[i] + ":\" ++ show(" + \
-                MinizincXorDifferentialModel._create_minizinc_1d_array_from_list(var_names_inputs) + ")++\"\\n\"];\n"
+                MznXorDifferentialModelARXOptimized._create_minizinc_1d_array_from_list(var_names_inputs) + ")++\"\\n\"];\n"
             output_string_for_cipher_inputs.append(output_string_for_cipher_input)
 
             for ii in range(len(var_names_inputs)):

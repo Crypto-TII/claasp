@@ -131,7 +131,7 @@ class MznXorDifferentialModel(MznModel):
         self._model_constraints.extend(self.final_xor_differential_constraints(weight, milp_modadd))
         self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
 
-    def build_xor_differential_trail_model_template(self, weight, fixed_variables, milp_modadd):
+    def build_xor_differential_trail_model_template(self, weight, fixed_variables, milp_modadd=False):
         variables = []
         self._variables_list = []
         if fixed_variables == []:
@@ -159,7 +159,7 @@ class MznXorDifferentialModel(MznModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def final_xor_differential_constraints(self, weight, milp_modadd):
+    def final_xor_differential_constraints(self, weight, milp_modadd = False):
         """
         Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
 
@@ -201,7 +201,7 @@ class MznXorDifferentialModel(MznModel):
 
         return cp_constraints
 
-    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False):
+    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
         """
         Return a list of solutions containing all the differential trails having the ``fixed_weight`` weight.
         By default, the search is set in the single-key setting.
@@ -243,16 +243,17 @@ class MznXorDifferentialModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solutions = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
+            solutions = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
         else:
-            solutions = self.solve(XOR_DIFFERENTIAL, solver_name)
-            for solution in solutions:
-                solution['building_time_seconds'] = build_time
-                solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
+            solutions = self.solve(XOR_DIFFERENTIAL, solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True, solve_external = solve_external)
+            if solve_external:
+                for solution in solutions:
+                    solution['building_time_seconds'] = build_time
+                    solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
         return solutions
 
     def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight=64, fixed_values=[],
-                                                             solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False):
+                                                             solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
         """
         Return a list of solutions containing all the differential trails.
         By default, the search is set in the single-key setting.
@@ -298,22 +299,22 @@ class MznXorDifferentialModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solutions = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
+            solutions = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
         else:
-            solutions = self.solve(XOR_DIFFERENTIAL, solver_name)
+            solutions = self.solve(XOR_DIFFERENTIAL, solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True, solve_external = solve_external)
             for solution in solutions:
                 solution['building_time_seconds'] = build_time
                 solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
 
         return solutions
 
-    def find_differential_weight(self, fixed_values=[], solver_name=SOLVER_DEFAULT, solve_with_API=False, milp_modadd=False):
+    def find_differential_weight(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
         probability = 0
         self.build_xor_differential_trail_model(-1, fixed_values, milp_modadd)
         if solve_with_API:
-            solutions = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
+            solutions = self.solve_for_ARX(solver_name = solver_name, all_solutions_ = True)
         else:
-            solutions = self.solve(XOR_DIFFERENTIAL, solver_name)
+            solutions = self.solve(XOR_DIFFERENTIAL, solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
         if isinstance(solutions, list):
             for solution in solutions:
                 weight = solution['total_weight']
@@ -322,7 +323,7 @@ class MznXorDifferentialModel(MznModel):
         else:
             return solutions['total_weight']
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False):
+    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
         """
         Return the solution representing a differential trail with the lowest probability weight.
         By default, the search is set in the single-key setting.
@@ -379,14 +380,14 @@ class MznXorDifferentialModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solution = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+            solution = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         else:
-            solution = self.solve('xor_differential_one_solution', solver_name, num_of_processors, timelimit)
+            solution = self.solve('xor_differential_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
             solution['building_time_seconds'] = build_time
             solution['test_name'] = "find_lowest_weight_xor_differential_trail"
         return solution
 
-    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False):
+    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
         """
         Return the solution representing a differential trail with any weight.
         By default, the search is set in the single-key setting.
@@ -429,15 +430,15 @@ class MznXorDifferentialModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solution = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+            solution = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         else:
-            solution = self.solve('xor_differential_one_solution', solver_name)
+            solution = self.solve('xor_differential_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
             solution['building_time_seconds'] = build_time
             solution['test_name'] = "find_one_xor_differential_trail"
         return solution
 
     def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[],
-                                                          solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False):
+                                                          solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
         """
         Return the solution representing a differential trail with the weight of probability equal to ``fixed_weight``.
         By default, the search is set in the single-key setting.
@@ -479,15 +480,16 @@ class MznXorDifferentialModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solution = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+            solution = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         else:
-            solution = self.solve('xor_differential_one_solution', solver_name)
-            solution['building_time_seconds'] = build_time
-            solution['test_name'] = "find_one_xor_differential_trail_with_fixed_weight"
+            solution = self.solve('xor_differential_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
+            if solve_external:
+                solution['building_time_seconds'] = build_time
+                solution['test_name'] = "find_one_xor_differential_trail_with_fixed_weight"
 
         return solution
 
-    def get_word_operation_xor_differential_constraints(self, component, new_constraint, milp_modadd):
+    def get_word_operation_xor_differential_constraints(self, component, new_constraint, milp_modadd = False):
         if 'AND' in component.description[0] or ('MODADD' in component.description[0] and not milp_modadd):
             new_constraint = new_constraint + f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ show('
             for i in range(len(self.component_and_probability[component.id])):

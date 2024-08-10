@@ -21,6 +21,7 @@ import os
 import math
 import itertools
 import subprocess
+from copy import deepcopy
 
 from claasp.cipher_modules.models.cp.mzn_model import solve_satisfy
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary, check_if_implemented_component
@@ -28,7 +29,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_
 
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, IMPOSSIBLE_XOR_DIFFERENTIAL)
-from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, SOLVER_DEFAULT
 
 
 class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferentialModel):
@@ -518,7 +519,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
 
         return cp_constraints
         
-    def find_all_impossible_xor_differential_trails(self, number_of_rounds, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_all_impossible_xor_differential_trails(self, number_of_rounds, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Search for all impossible XOR differential trails of a cipher.
 
@@ -550,10 +551,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
         if solve_with_API:
-            return self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
-        return self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name, number_of_rounds, initial_round, middle_round, final_round, num_of_processors, timelimit)
+            return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
+        return self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True, solve_external = solve_external)
 
-    def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Search for the impossible XOR differential trail of a cipher with the highest number of known bits in plaintext and ciphertext difference.
 
@@ -586,10 +587,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self._model_constraints.append(f'solve minimize count(plaintext, 2) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 2);')
 
         if solve_with_API:
-            return self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
-        return self.solve('impossible_xor_differential_one_solution', solver_name, number_of_rounds, initial_round, middle_round, final_round, num_of_processors, timelimit)
+            return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+        return self.solve('impossible_xor_differential_one_solution', solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
       
-    def find_one_impossible_xor_differential_trail_with_extensions(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_one_impossible_xor_differential_trail_with_extensions(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Search for one impossible XOR differential trail of a cipher with forward and backward deterministic extensions for key recovery.
 
@@ -620,10 +621,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self.build_impossible_xor_differential_trail_with_extensions_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
         if solve_with_API:
-            return self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
-        return self.solve('impossible_xor_differential_one_solution', solver_name, number_of_rounds, initial_round, middle_round, final_round, num_of_processors, timelimit)
+            return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+        return self.solve('impossible_xor_differential_one_solution', solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
     
-    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Search for one impossible XOR differential trail of a cipher.
 
@@ -654,8 +655,8 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
         
         if solve_with_API:
-            return self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
-        return self.solve('impossible_xor_differential_one_solution', solver_name, number_of_rounds, initial_round, middle_round, final_round, num_of_processors, timelimit)
+            return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+        return self.solve('impossible_xor_differential_one_solution', solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
     
     def get_component_from_id(self, id_link, curr_cipher):
         for component in curr_cipher.get_all_components():
@@ -678,9 +679,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                 return inverse_component
                     
     def get_inverse_component_correspondance(self, backward_component):
-        key_components, key_ids = self.extract_key_schedule()
-        constant_components, constant_ids = self.extract_constants()
-
+        
         for component in self._cipher.get_all_components():
             if backward_component.id == component.id:
                 direct_inputs = component.input_id_links
@@ -844,8 +843,8 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             
         return linking_constraints
         
-    def _parse_solver_output(self, output_to_parse, model_type, number_of_rounds, initial_round, middle_round, final_round):
-        components_values, memory, time = self.parse_solver_information(output_to_parse)
+    def _parse_solver_output(self, output_to_parse, number_of_rounds, initial_round, middle_round, final_round):
+        components_values, memory, time = self.parse_solver_information(output_to_parse, True, True)
         all_components = [*self._cipher.inputs]
         for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
             all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
@@ -888,11 +887,11 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                 start = new_start + 9
         
         return inverse_variables, inverse_constraints
-        
-    def solve(self, model_type, solver_name=None, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None, num_of_processors=None, timelimit=None):
+ 
+    def solve(self, model_type, solver_name=None, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None, processes_=None, timeout_in_seconds_=None, all_solutions_=False, solve_external = True):
         cipher_name = self.cipher_id
         input_file_path = f'{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
-        command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, num_of_processors, timelimit)
+        command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, processes_, timeout_in_seconds_)
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
         os.remove(input_file_path)
         if solver_process.returncode >= 0:
@@ -903,10 +902,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                               'impossible_xor_differential',
                               'impossible_xor_differential_one_solution',
                               'impossible_xor_differential_attack']:
-                solve_time, memory, components_values = self._parse_solver_output(solver_output, model_type, number_of_rounds, initial_round, middle_round, final_round)
+                solve_time, memory, components_values = self._parse_solver_output(solver_output, number_of_rounds, initial_round, middle_round, final_round)
                 total_weight = 0
             else:
-                solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type, number_of_rounds, initial_round, middle_round, final_round)
+                solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, number_of_rounds, initial_round, middle_round, final_round)
             if components_values == {}:
                 solution = convert_solver_solution_to_dictionary(self.cipher_id, model_type, solver_name,
                                                                  solve_time, memory,
@@ -918,12 +917,11 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                 solutions.append(solution)
             else:
                 self.add_solutions_from_components_values(components_values, memory, model_type, solutions, solve_time,
-                                                          solver_name, solver_output)
+                                                          solver_name, solver_output, 0, solve_external)
             if model_type in ['xor_differential_one_solution',
                               'xor_linear_one_solution',
                               'deterministic_truncated_one_solution',
                               'impossible_xor_differential_one_solution']:
                 return solutions[0]
             else:
-                return solutions
-
+                return solutions      

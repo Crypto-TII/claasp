@@ -71,7 +71,7 @@ class MznWordwiseDeterministicTruncatedXorDifferentialModel(MznDeterministicTrun
         return cp_constraints
 
     def find_one_wordwise_deterministic_truncated_xor_differential_trail(self, number_of_rounds=None,
-                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False):
+                                                                fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
           
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
@@ -79,8 +79,8 @@ class MznWordwiseDeterministicTruncatedXorDifferentialModel(MznDeterministicTrun
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds, wordwise=True)
 
         if solve_with_API:
-            return self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
-        return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name, num_of_processors, timelimit)
+            return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+        return self.solve('deterministic_truncated_xor_differential_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
 
     def input_wordwise_deterministic_truncated_xor_differential_constraints(self):
         

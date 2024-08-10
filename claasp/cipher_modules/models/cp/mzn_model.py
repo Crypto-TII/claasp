@@ -28,7 +28,7 @@ from sage.crypto.sbox import SBox
 
 from datetime import timedelta
 
-from minizinc import Instance, Model, Solver
+from minizinc import Instance, Model, Solver, Status
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
@@ -116,7 +116,7 @@ class MznModel:
         self.mzn_output_directives.append(f'output [\"Comment: {comment}\", \"\\n\"];')
 
     def add_solutions_from_components_values(self, components_values, memory, model_type, solutions, solve_time,
-                                             solver_name, solver_output, total_weight):
+                                             solver_name, solver_output, total_weight, solve_external):
         for i in range(len(total_weight)):
             solution = convert_solver_solution_to_dictionary(
                 self._cipher,
@@ -126,10 +126,16 @@ class MznModel:
                 memory,
                 components_values[f'solution{i + 1}'],
                 total_weight[i])
-            if 'UNSATISFIABLE' in solver_output[0]:
-                solution['status'] = 'UNSATISFIABLE'
+            if solve_external:
+                if 'UNSATISFIABLE' in solver_output[0]:
+                    solution['status'] = 'UNSATISFIABLE'
+                else:
+                    solution['status'] = 'SATISFIABLE'
             else:
-                solution['status'] = 'SATISFIABLE'
+                if solver_output.status not in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+                    solution['status'] = 'UNSATISFIABLE'
+                else:
+                    solution['status'] = 'SATISFIABLE'
             solutions.append(solution)
 
     def add_solution_to_components_values(self, component_id, component_solution, components_values, j, output_to_parse,
@@ -146,6 +152,11 @@ class MznModel:
         elif f'{component_id} ' in string:
             component_solution['weight'] = float(output_to_parse[j + 1])
             components_values[f'solution{solution_number}'][f'{component_id}'] = component_solution
+
+    def add_solution_to_components_values_internal(self, component_solution, components_values, component_weight,
+                                          solution_number, component):
+        component_solution['weight'] = component_weight
+        components_values[f'solution{solution_number}'][f'{component}'] = component_solution
 
     def build_mix_column_truncated_table(self, component):
         """
@@ -400,7 +411,9 @@ class MznModel:
             value = string.replace(f'{component_id}_i', '')
         elif f'{component_id}_o' in string:
             value = string.replace(f'{component_id}_o', '')
-        elif f'{component_id} ' in string:
+        elif f'inverse_{component_id}' in string:
+            value = string.replace(f'inverse_{component_id}', '')
+        elif f'{component_id}' in string:
             value = string.replace(component_id, '')
         value = value.replace('= [', '')
         value = value.replace(']', '')
@@ -416,7 +429,7 @@ class MznModel:
                    'impossible_xor_differential_one_solution',
                    'differential_pair_one_solution',
                    'evaluate_cipher']
-        write_model_to_file(self._variables_list + self._model_constraints, input_file_path)
+        write_model_to_file(self._model_constraints, input_file_path)
         for i in range(len(CP_SOLVERS_EXTERNAL)):
             if solver_name == CP_SOLVERS_EXTERNAL[i]['solver_name']:
                 command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
@@ -459,39 +472,43 @@ class MznModel:
             self.mzn_output_directives.append(f'output ["\\n"++"Probability {mzn_probability_vars_per_round}:'
                                               f' "++show(sum({mzn_probability_vars_per_round}))++"\\n"];')
 
-    def parse_solver_information(self, output_to_parse, truncated):
+    def parse_solver_information(self, output_to_parse, truncated=False, solve_external = True):
+
         memory = -1
         time = -1
         string_total_weight = []
         components_values = {}
         number_of_solutions = 1
-        for string in output_to_parse:
-            if 'time=' in string:
-                time_string = string
-                time = float(time_string.replace("%%%mzn-stat: time=", ""))
-            elif 'solveTime=' in string:
-                time_string = string
-                time = float(time_string.replace("%%%mzn-stat: solveTime=", ""))
-            elif 'trailMem=' in string:
-                memory_string = string
-                memory = float(memory_string.replace("%%%mzn-stat: trailMem=", ""))
-            elif 'Trail weight' in string and not truncated:
-                string_total_weight.append(float(string.replace("Trail weight = ", "")))
-                components_values[f'solution{number_of_solutions}'] = {}
-                number_of_solutions += 1
-            elif '----------' in string and truncated:
-                string_total_weight.append("0")
-                components_values[f'solution{number_of_solutions}'] = {}
-                number_of_solutions += 1
-            elif 'UNSATISFIABLE' in string:
-                string_total_weight = None
-        total_weight = self.get_total_weight(string_total_weight)
+        if solve_external:
+            for string in output_to_parse:
+                if 'time=' in string:
+                    time_string = string
+                    time = float(time_string.replace("%%%mzn-stat: time=", ""))
+                elif 'solveTime=' in string:
+                    time_string = string
+                    time = float(time_string.replace("%%%mzn-stat: solveTime=", ""))
+                elif 'trailMem=' in string:
+                    memory_string = string
+                    memory = float(memory_string.replace("%%%mzn-stat: trailMem=", ""))
+                elif 'Trail weight' in string and not truncated:
+                    string_total_weight.append(float(string.replace("Trail weight = ", "")))
+                    components_values[f'solution{number_of_solutions}'] = {}
+                    number_of_solutions += 1
+                elif '----------' in string and truncated:
+                    string_total_weight.append("0")
+                    components_values[f'solution{number_of_solutions}'] = {}
+                    number_of_solutions += 1
+                elif 'UNSATISFIABLE' in string:
+                    string_total_weight = None
         if number_of_solutions == 1:
             components_values = {}
+        total_weight = self.get_total_weight(string_total_weight)
 
+        if truncated:
+            return components_values, memory, time
         return components_values, memory, time, total_weight
 
-    def _parse_solver_output(self, output_to_parse, truncated=False):
+    def _parse_solver_output(self, output_to_parse, model_type, truncated = False, solve_external = True, solver_name = SOLVER_DEFAULT):
         """
         Parse solver solution (if needed).
 
@@ -522,20 +539,70 @@ class MznModel:
              'cipher_output_3_12': {'value': '0', 'weight': 0}}},
              ['0'])
         """
-        components_values, memory, time, total_weight = self.parse_solver_information(output_to_parse, truncated)
-        all_components = [*self._cipher.inputs, *self._cipher.get_all_components_ids()]
-        for component_id in all_components:
-            solution_number = 1
-            for j, string in enumerate(output_to_parse):
-                if f'{component_id} ' in string or f'{component_id}_i' in string or f'{component_id}_o' in string:
-                    value = self.format_component_value(component_id, string)
-                    component_solution = {}
-                    self.set_component_solution_value(component_solution, truncated, value)
-                    self.add_solution_to_components_values(component_id, component_solution, components_values, j,
-                                                           output_to_parse, solution_number, string)
-                elif '----------' in string:
-                    solution_number += 1
-
+        def set_solution_values_internal(solution):
+            components_values = {}
+            values = solution.__dict__['_output_item'].splitlines()
+            total_weight = 0
+            for i in range(len(values)):
+                curr_val = values[i]
+                if 'Trail weight' in curr_val:
+                    total_weight = str(int(curr_val[curr_val.index('=') + 2:])/100.0)
+                elif '[' in curr_val:
+                    component_id = curr_val[:curr_val.index('=') - 1]
+                    value = ''.join(curr_val[curr_val.index('[') + 1:-1].split(', '))
+                    components_values[component_id] = {}
+                    self.set_component_solution_value(components_values[component_id], truncated, value)
+                    if '=' not in values[i+1]:
+                        components_values[component_id]['weight'] = float(values[i+1])
+                    else:
+                        components_values[component_id]['weight'] = 0
+            return components_values, total_weight
+        
+        if solve_external:
+            if truncated:
+                components_values, memory, time = self.parse_solver_information(output_to_parse, truncated, solve_external)
+            else:
+                components_values, memory, time, total_weight = self.parse_solver_information(output_to_parse, truncated, solve_external)
+            all_components = [*self._cipher.inputs, *self._cipher.get_all_components_ids()]
+            for component_id in all_components:
+                solution_number = 1
+                for j, string in enumerate(output_to_parse):
+                    if f'{component_id} ' in string or f'{component_id}_i' in string or f'{component_id}_o' in string:
+                        value = self.format_component_value(component_id, string)
+                        component_solution = {}
+                        self.set_component_solution_value(component_solution, truncated, value)
+                        self.add_solution_to_components_values(component_id, component_solution, components_values, j,
+                                                               output_to_parse, solution_number, string)
+                    elif '----------' in string:
+                        solution_number += 1
+        else:
+            time = output_to_parse.statistics['solveTime'].total_seconds()
+            memory = output_to_parse.statistics['trailMem']
+            if output_to_parse.status not in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+                solutions = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, time, memory, {}, '0')
+                solutions['status'] = 'UNSATISFIABLE'
+            else:
+                if output_to_parse.statistics['nSolutions'] == 1 or type(output_to_parse.solution) != list:
+                    components_values, total_weight = set_solution_values_internal(output_to_parse.solution)
+                    solutions = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, time, memory, components_values, total_weight)
+                    if output_to_parse.status not in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+                        solutions['status'] = 'UNSATISFIABLE'
+                    else:
+                        solutions['status'] = 'SATISFIABLE'
+                else:
+                    solutions = []
+                    for solution in output_to_parse.solution:
+                        components_values, total_weight = set_solution_values_internal(solution)
+                        solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, time, memory, components_values, total_weight)
+                        if output_to_parse.status not in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
+                            solution['status'] = 'UNSATISFIABLE'
+                        else:
+                            solution['status'] = 'SATISFIABLE'
+                        solutions.append(solution)
+            return solutions
+                    
+        if truncated:
+            return time, memory, components_values
         return time, memory, components_values, total_weight
 
     def set_component_solution_value(self, component_solution, truncated, value):
@@ -547,7 +614,10 @@ class MznModel:
         else:
             component_solution['value'] = value
 
-    def solve(self, model_type, solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
+    def solve(self, model_type, solver_name=SOLVER_DEFAULT, solve_external=True, timeout_in_seconds_=None,
+              processes_=None, nr_solutions_=None, random_seed_=None,
+              all_solutions_=False, intermediate_solutions_=False,
+              free_search_=False, optimisation_level_=None):
         """
         Return the solution of the model.
 
@@ -588,38 +658,67 @@ class MznModel:
                ...
               'total_weight': '5'}]
         """
-        cipher_name = self.cipher_id
-        input_file_path = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
-        command = self.get_command_for_solver_process(
-            input_file_path, model_type, solver_name, num_of_processors, timelimit
-        )
-        solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        os.remove(input_file_path)
-        if solver_process.returncode >= 0:
-            solutions = []
-            solver_output = solver_process.stdout.splitlines()
-            solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output)
-            if components_values == {}:
-                solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name,
-                                                                 solve_time, memory,
-                                                                 components_values, total_weight)
-                if '=====UNSATISFIABLE=====' in solver_output:
-                    solution['status'] = 'UNSATISFIABLE'
-                else:
-                    solution['status'] = 'SATISFIABLE'
-                solutions.append(solution)
+        truncated = False
+        if model_type in ['deterministic_truncated_xor_differential',
+                          'deterministic_truncated_xor_differential_one_solution',
+                          'impossible_xor_differential',
+                          'impossible_xor_differential_one_solution',
+                          'impossible_xor_differential_attack']:
+            truncated = True
+        solutions = []
+        if solve_external:
+            cipher_name = self.cipher_id
+            input_file_path = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
+            command = self.get_command_for_solver_process(
+                input_file_path, model_type, solver_name, processes_, timeout_in_seconds_
+            )
+            solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+            os.remove(input_file_path)
+            if solver_process.returncode >= 0:
+                solver_output = solver_process.stdout.splitlines()
+        else:
+            constraints = self._model_constraints
+            mzn_model_string = "\n".join(constraints)
+            solver_name_mzn = Solver.lookup(solver_name)
+            bit_mzn_model = Model()
+            bit_mzn_model.add_string(mzn_model_string)
+            instance = Instance(solver_name_mzn, bit_mzn_model)
+            if processes_ != None and timeout_in_seconds_ != None:
+                solver_output = instance.solve(processes=processes_, timeout=timedelta(seconds=int(timeout_in_seconds_)),
+                                    nr_solutions=nr_solutions_, random_seed=random_seed_, all_solutions=all_solutions_,
+                                    intermediate_solutions=intermediate_solutions_, free_search=free_search_,
+                                    optimisation_level=optimisation_level_)
             else:
-                self.add_solutions_from_components_values(components_values, memory, model_type, solutions, solve_time,
-                                                          solver_name, solver_output, total_weight)
-            if model_type in ['xor_differential_one_solution',
-                              'xor_linear_one_solution',
-                              'deterministic_truncated_one_solution',
-                              'impossible_xor_differential_one_solution']:
-                return solutions[0]
+                solver_output = instance.solve(nr_solutions=nr_solutions_, random_seed=random_seed_, all_solutions=all_solutions_,
+                                    intermediate_solutions=intermediate_solutions_, free_search=free_search_,
+                                    optimisation_level=optimisation_level_)
+            return self._parse_solver_output(solver_output, model_type, truncated = truncated, solve_external = solve_external, solver_name=solver_name)
+        if truncated:
+            solve_time, memory, components_values = self._parse_solver_output(solver_output, model_type, truncated = True, solve_external = solve_external)
+            total_weight = 0
+        else:
+            solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type, solve_external = solve_external, solver_name=solver_name)
+        if components_values == {}:
+            solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name,
+                                                             solve_time, memory,
+                                                             components_values, total_weight)
+            if '=====UNSATISFIABLE=====' in solver_output:
+                solution['status'] = 'UNSATISFIABLE'
             else:
-                return solutions
+                solution['status'] = 'SATISFIABLE'
+            solutions.append(solution)
+        else:
+            self.add_solutions_from_components_values(components_values, memory, model_type, solutions, solve_time,
+                                                      solver_name, solver_output, total_weight, solve_external)
+        if model_type in ['xor_differential_one_solution',
+                          'xor_linear_one_solution',
+                          'deterministic_truncated_one_solution',
+                          'impossible_xor_differential_one_solution']:
+            return solutions[0]
+        else:
+            return solutions
                 
-    def solve_with_API(self, solver_name=None, timeout_in_seconds_=30,
+    def solve_for_ARX(self, solver_name=None, timeout_in_seconds_=30,
               processes_=4, nr_solutions_=None, random_seed_=None,
               all_solutions_=False, intermediate_solutions_=False,
               free_search_=False, optimisation_level_=None):
@@ -672,7 +771,7 @@ class MznModel:
             ....:     'operator': '=',
             ....:     'value': '0' })
             sage: minizinc.build_xor_differential_trail_model(-1, fixed_variables)
-            sage: result = minizinc.solve_with_API('Xor')
+            sage: result = minizinc.solve_for_ARX('Xor')
             sage: result.statistics['nSolutions']
             1
         """

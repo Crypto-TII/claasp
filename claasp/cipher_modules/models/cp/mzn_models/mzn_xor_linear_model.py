@@ -216,7 +216,7 @@ class MznXorLinearModel(MznModel):
 
         return cp_constraints
 
-    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Return a list of solutions containing all the linear trails having the ``fixed_weight`` weight of correlation.
         By default, the search removes the key schedule, if any.
@@ -257,16 +257,16 @@ class MznXorLinearModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solutions = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
+            solutions = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
         else:
-            solutions = self.solve(XOR_LINEAR, solver_name, num_of_processors, timelimit)
+            solutions = self.solve(XOR_LINEAR, solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True, solve_external = solve_external)
             for solution in solutions:
                 solution['building_time_seconds'] = build_time
                 solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
         return solutions
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight=64,
-                                                       fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False):
+                                                       fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Return a list of solutions containing all the linear trails having the weight of correlation lying in the interval ``[min_weight, max_weight]``.
         By default, the search removes the key schedule, if any.
@@ -309,16 +309,16 @@ class MznXorLinearModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solutions = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
+            solutions = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
         else:
-            solutions = self.solve(XOR_LINEAR, solver_name, num_of_processors, timelimit)
+            solutions = self.solve(XOR_LINEAR, solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True, solve_external = solve_external)
             for solution in solutions:
                 solution['building_time_seconds'] = build_time
                 solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
 
         return solutions
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Return the solution representing a linear trail with the lowest weight of correlation.
         By default, the search removes the key schedule, if any.
@@ -363,15 +363,15 @@ class MznXorLinearModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solution = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+            solution = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         else:
-            solution = self.solve('xor_linear_one_solution', solver_name, num_of_processors, timelimit)
+            solution = self.solve('xor_linear_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
             solution['building_time_seconds'] = build_time
             solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
-    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Return the solution representing a linear trail with any weight of correlation.
         By default, the search removes the key schedule, if any.
@@ -407,15 +407,15 @@ class MznXorLinearModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solution = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+            solution = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         else:
-            solution = self.solve('xor_linear_one_solution', solver_name, num_of_processors, timelimit)
+            solution = self.solve('xor_linear_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
             solution['building_time_seconds'] = build_time
             solution['test_name'] = "find_one_xor_linear_trail"
 
         return solution
 
-    def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
         """
         Return the solution representing a linear trail with the weight of correlation equal to ``fixed_weight``.
         By default, the search removes the key schedule, if any.
@@ -456,9 +456,9 @@ class MznXorLinearModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solution = self.solve_with_API(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+            solution = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         else:
-            solution = self.solve('xor_linear_one_solution', solver_name, num_of_processors, timelimit)
+            solution = self.solve('xor_linear_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
             solution['building_time_seconds'] = build_time
             solution['test_name'] = "find_one_xor_linear_trail_with_fixed_weight"
 

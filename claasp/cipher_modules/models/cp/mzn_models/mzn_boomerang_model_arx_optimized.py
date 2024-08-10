@@ -18,10 +18,10 @@ from copy import deepcopy
 from minizinc import Status
 
 from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
-from claasp.cipher_modules.models.cp.minizinc_utils.utils.mzn_bct_predicates import get_bct_operations
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import get_bct_operations
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import \
     MznXorDifferentialModelARXOptimized
-from claasp.cipher_modules.models.cp.utils.utils import group_strings_by_pattern
+from claasp.cipher_modules.models.cp.minizinc_utils.utils import group_strings_by_pattern
 
 
 class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
@@ -51,14 +51,14 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
     @staticmethod
     def reduce_cipher(new_cipher, original_cipher, graph):
         for round_number in range(new_cipher.number_of_rounds):
-            MinizincBoomerangModel.remove_components_not_in_graph(new_cipher, original_cipher, round_number, graph)
+            MznBoomerangModelARXOptimized.remove_components_not_in_graph(new_cipher, original_cipher, round_number, graph)
 
     @staticmethod
     def remove_components_not_in_graph(new_cipher, original_cipher, round_number, graph):
         round_object = original_cipher.rounds.round_at(round_number)
         for component in round_object.components:
             if component.id not in graph.nodes:
-                MinizincBoomerangModel.remove_component(new_cipher, component)
+                MznBoomerangModelARXOptimized.remove_component(new_cipher, component)
 
     @staticmethod
     def remove_component(new_cipher, component):
@@ -117,18 +117,18 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         self.bottom_cipher = self.create_bottom_cipher(self.original_cipher)
 
     def create_bottom_cipher(self, original_cipher):
-        bottom_cipher = MinizincBoomerangModel.initialize_bottom_cipher(original_cipher)
+        bottom_cipher = MznBoomerangModelARXOptimized.initialize_bottom_cipher(original_cipher)
         self.setup_bottom_cipher_inputs(bottom_cipher, original_cipher)
-        MinizincBoomerangModel.reduce_cipher(bottom_cipher, original_cipher, self.bottom_graph)
-        MinizincBoomerangModel.remove_empty_rounds(bottom_cipher)
-        MinizincBoomerangModel.reset_round_ids(bottom_cipher)
+        MznBoomerangModelARXOptimized.reduce_cipher(bottom_cipher, original_cipher, self.bottom_graph)
+        MznBoomerangModelARXOptimized.remove_empty_rounds(bottom_cipher)
+        MznBoomerangModelARXOptimized.reset_round_ids(bottom_cipher)
         return bottom_cipher
 
     def create_top_cipher(self, original_cipher):
         top_cipher = deepcopy(original_cipher)
         top_cipher._id = f'{original_cipher.id}_top'
-        MinizincBoomerangModel.reduce_cipher(top_cipher, original_cipher, self.top_graph)
-        MinizincBoomerangModel.remove_empty_rounds(top_cipher)
+        MznBoomerangModelARXOptimized.reduce_cipher(top_cipher, original_cipher, self.top_graph)
+        MznBoomerangModelARXOptimized.remove_empty_rounds(top_cipher)
         return top_cipher
 
     @staticmethod
@@ -150,7 +150,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         return objective_string
 
     def create_boomerang_model(self, fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher):
-        self.differential_model_top_cipher = MinizincXorDifferentialModel(
+        self.differential_model_top_cipher = MznXorDifferentialModelARXOptimized(
             self.top_cipher, window_size_list=[0 for _ in range(self.top_cipher.number_of_rounds)],
             sat_or_milp='sat', include_word_operations_mzn_file=False
         )
@@ -158,7 +158,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             -1, fixed_variables_for_top_cipher
         )
 
-        self.differential_model_bottom_cipher = MinizincXorDifferentialModel(
+        self.differential_model_bottom_cipher = MznXorDifferentialModelARXOptimized(
             self.bottom_cipher, window_size_list=[0 for _ in range(self.bottom_cipher.number_of_rounds)],
             sat_or_milp='sat', include_word_operations_mzn_file=False
         )
@@ -172,7 +172,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             self.differential_model_bottom_cipher.add_constraint_from_str(bct_mzn_model)
 
         self.differential_model_bottom_cipher.extend_model_constraints(
-            MinizincBoomerangModel.objective_generator(self.differential_model_top_cipher,
+            MznBoomerangModelARXOptimized.objective_generator(self.differential_model_top_cipher,
                                                        self.differential_model_bottom_cipher)
         )
         self.differential_model_bottom_cipher.extend_model_constraints(
