@@ -1,5 +1,6 @@
 import pytest
 
+from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
@@ -43,6 +44,48 @@ def test_fix_variables_value_constraints():
     assert sat.fix_variables_value_constraints(fixed_variables) == [
         'plaintext_0', '-plaintext_1', 'plaintext_2', 'plaintext_3',
         '-ciphertext_0 -ciphertext_1 -ciphertext_2 ciphertext_3']
+
+
+def test_build_generic_sat_model_from_dictionary():
+    component_model_types = []
+    speck = SpeckBlockCipher(number_of_rounds=3)
+
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='equal',
+        bit_positions=range(32),
+        bit_values=integer_to_bit_list(0x00400000, 32, 'big')
+    )
+
+    cipher_output = set_fixed_variables(
+        component_id='cipher_output_2_12',
+        constraint_type='equal',
+        bit_positions=range(32),
+        bit_values=integer_to_bit_list(0x8000840a, 32, 'big')
+    )
+
+    key = set_fixed_variables(
+        component_id='key',
+        constraint_type='equal',
+        bit_positions=range(64),
+        bit_values=(0,) * 64)
+
+    for component in speck.get_all_components():
+        component_model_type = {
+            "component_id": component.id,
+            "component_object": component,
+            "model_type": "sat_xor_differential_propagation_constraints"
+        }
+        component_model_types.append(component_model_type)
+    sat_model = SatCipherModel(speck)
+    sat_model.build_generic_sat_model_from_dictionary([plaintext, key, cipher_output], component_model_types)
+    variables, constraints = sat_model.weight_constraints(3)
+    sat_model._variables_list.extend(variables)
+    sat_model._model_constraints.extend(constraints)
+    result = sat_model._solve_with_external_sat_solver(
+        "xor_differential", "PARKISSAT_EXT", ["-c=6"]
+    )
+    assert result['status'] == 'SATISFIABLE'
 
 
 def test_model_constraints():
