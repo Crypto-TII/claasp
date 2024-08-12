@@ -843,7 +843,8 @@ class MilpDivisionTrailModel():
 
         if fixed_degree != None:
             plaintext_vars = []
-            for i in range(self._cipher.inputs_bit_size[0]):
+            for i in range(
+                    self._cipher.inputs_bit_size[0]):  # Carreful, here we are assuming that input[0] is the plaintext
                 plaintext_vars.append(self._model.getVarByName(f"plaintext[{i}]"))
             self._model.addConstr(
                 sum(plaintext_vars[i] for i in range(self._cipher.inputs_bit_size[0])) == fixed_degree)
@@ -899,7 +900,7 @@ class MilpDivisionTrailModel():
         self.pretty_print(monomials_even_occurences_removed)
 
     def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None):
-        self.build_generic_model_for_specific_output_bit(output_bit_index)
+        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree)
 
         start = time.time()
         self._model.optimize()
@@ -911,7 +912,7 @@ class MilpDivisionTrailModel():
         return self._model
 
     def check_presence_of_particular_monomial_in_specific_anf(self, monomial, output_bit_index, fixed_degree=None):
-        self.build_generic_model_for_specific_output_bit(output_bit_index)
+        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree)
         for term in monomial:
             var_term = self._model.getVarByName(f"{term[0]}[{term[1]}]")
             self._model.addConstr(var_term == 1)
@@ -927,13 +928,13 @@ class MilpDivisionTrailModel():
         self.get_solutions()
         return self._model
 
-    def check_presence_of_particular_monomial_in_all_anf(self, monomial):
+    def check_presence_of_particular_monomial_in_all_anf(self, monomial, fixed_degree=None):
         s = ""
         for term in monomial:
             s += term[0][0] + str(term[1])
         for i in range(self._cipher.output_bit_size):
             print(f"\nSearch of {s} in anf {i} :")
-            self.check_presence_of_particular_monomial_in_specific_anf(monomial, i)
+            self.check_presence_of_particular_monomial_in_specific_anf(monomial, i, fixed_degree)
 
     # # Ascon circuit version, checked by hand for y0
     # ['p64p256', 'p109p301', 'p128', 'p109p45', 'p64p0', 'p192', 'p0', 'p109', 'p100', 'p100p164', 'p45', 'p173', 'p237', 'p164', 'p228', 'p109p173', 'p100p292', 'p64', 'p100p36', 'p64p128', 'p36']
@@ -946,31 +947,21 @@ class MilpDivisionTrailModel():
     # y_round2[15] = k40 + k49 + y_round1[31] + y_round1[8]
     # Note that rot_1_6[6] = y_round1[15] = p8 + p31 + k63
 
-    def old_find_degree_of_specific_anf(self, output_bit_index):
-        start = time.time()
-        self.add_constraints()
-        output_id = self.get_cipher_output_component_id()
-        output_vars = []
-        for i in range(self._cipher.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{output_id}[{i}]"))
-        ks = self._model.addVar()
-        self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size)))
-        self._model.addConstr(ks == 1)
-        self._model.addConstr(output_vars[output_bit_index] == 1)
+    def find_degree_of_specific_anf(self, output_bit_index):
+        fixed_degree = None
+        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree)
 
         index_plaintext = self._cipher.inputs.index("plaintext")
         plaintext_bit_size = self._cipher.inputs_bit_size[index_plaintext]
         p = []
-        for i in range(plaintext_bit_size):
+        nb_plaintext_bits_used = len(list(self._occurences["plaintext"].keys()))
+        for i in range(nb_plaintext_bits_used):
             p.append(self._model.getVarByName(f"plaintext[{i}]"))
-        self._model.setObjective(sum(p[i] for i in range(plaintext_bit_size)), GRB.MAXIMIZE)
-
-        self._model.write("division_trail_model_toy_cipher.lp")
+        print(p)
+        self._model.setObjective(sum(p[i] for i in range(nb_plaintext_bits_used)), GRB.MAXIMIZE)
 
         self._model.update()
-        end = time.time()
-        building_time = end - start
-        print(f"building_time : {building_time}")
+        self._model.write("division_trail_model.lp")
 
         start = time.time()
         self._model.optimize()
@@ -982,10 +973,19 @@ class MilpDivisionTrailModel():
         degree = self._model.getObjective().getValue()
         return degree
 
-    def old_find_degree_of_all_anfs(self):
-        for i in range(5):  # self._cipher.output_bit_size
+    def re_init(self):
+        self._variables = None
+        self._model = None
+        self._occurences = None
+        self._used_variables = []
+        self._variables_as_list = []
+        self._unused_variables = []
+
+    def find_degree_of_all_anfs(self):
+        for i in range(self._cipher.output_bit_size):
+            self.re_init()
             degree = self.find_degree_of_specific_anf(i)
-            print(f"Degree of anf {i} = {degree}\n")
+            print(f"Degree of anf corresponding to output bit at position {i} = {degree}\n")
 
 
 def test():
@@ -1207,9 +1207,4 @@ y64 = 481
 y128 = 481
 y192 = 471
 y256 = 479
-
-
-
-
-
 
