@@ -19,56 +19,56 @@ class MilpDivisionTrailModel():
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation import AsconSboxSigmaNoMatrixPermutation
         sage: cipher = AsconSboxSigmaNoMatrixPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
         sage: cipher = GastonPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
         sage: cipher = GastonSboxPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.xoodoo_sbox_permutation import XoodooSboxPermutation
         sage: cipher = XoodooSboxPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.xoodoo_permutation import XoodooPermutation
         sage: cipher = XoodooPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
         sage: cipher = KeccakPermutation(number_of_rounds=1, word_size=64)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
         sage: cipher = KeccakSboxPermutation(number_of_rounds=1, word_size=64)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
         sage: cipher = ToySPN1(number_of_rounds=1)
@@ -165,29 +165,41 @@ class MilpDivisionTrailModel():
         sage: cipher = SimonBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0)
+
+        sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        sage: cipher = SimonBlockCipher(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0)], 1)
 
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: cipher = SpeckBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(15)
-
-        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
-        sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=1)
-        sage: modadd_component = cipher.get_component_from_id('modadd_0_1')
-        sage: boolean_polynomial_ring = CipherComponentsAnalysis(cipher)._generate_boolean_polynomial_ring_from_cipher()
-        sage: boolean_polynomials = CipherComponentsAnalysis(cipher)._MODADD_as_boolean_function(modadd_component, boolean_polynomial_ring)
+        sage: milp.find_anf_of_specific_output_bit(15)
 
         sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
         sage: cipher = LBlockBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0)
+
+        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
+        sage: cipher = AradiBlockCipher(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_of_specific_output_bit(0)
+
+        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
+        sage: cipher = AradiBlockCipherSBox(number_of_rounds=1)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.build_gurobi_model()
+        sage: milp.find_anf_of_specific_output_bit(0)
 
     """
 
@@ -506,7 +518,7 @@ class MilpDivisionTrailModel():
         tmp.sort()
         for i in tmp:
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-        print(output_vars)
+        # print(output_vars)
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -514,7 +526,7 @@ class MilpDivisionTrailModel():
                 current = self._variables[input_name][pos]["current"]
                 input_vars_concat.append(self._variables[input_name][pos][current])
                 self._variables[input_name][pos]["current"] += 1
-        print(input_vars_concat)
+        # print(input_vars_concat)
         # print(self._occurences[component.id])
 
         rotate_offset = component.description[1]
@@ -775,7 +787,7 @@ class MilpDivisionTrailModel():
                 count += occurences[self._cipher.inputs[0]][pos]
         return count
 
-    def find_anf_for_specific_output_bit(self, output_bit_index, fixed_degree=None):
+    def build_generic_model_for_specific_output_bit(self, output_bit_index, fixed_degree=None):
         start = time.time()
 
         output_id = self.get_cipher_output_component_id()
@@ -836,17 +848,15 @@ class MilpDivisionTrailModel():
             self._model.addConstr(
                 sum(plaintext_vars[i] for i in range(self._cipher.inputs_bit_size[0])) == fixed_degree)
 
-        # for i in range(64):
-        #     c = self._model.getVarByName(f"xor_0_1[{i}]")
-        #     self._model.addConstr(c == 0)
-
         self.set_unused_variables_to_zero()
         self._model.update()
         self._model.write("division_trail_model.lp")
         end = time.time()
         building_time = end - start
         print(f"building_time : {building_time}")
+        self._model.update()
 
+    def get_solutions(self):
         index_second_input = self.find_index_second_input()
         nb_inputs_used = 0
         for input_id in self._cipher.inputs:
@@ -858,28 +868,12 @@ class MilpDivisionTrailModel():
             max_input_bit_pos = index_second_input
         print(f"max_input_bit_pos = {max_input_bit_pos}")
 
-        start = time.time()
-        # self._model.setObjective(0)
-        self._model.update()
-        self._model.optimize()
-        end = time.time()
-        solving_time = end - start
-        print(f"solving_time : {solving_time}")
         solCount = self._model.SolCount
         print('Number of solutions (might cancel each other) found: ' + str(solCount))
         monomials = []
         for sol in range(solCount):
             self._model.setParam(GRB.Param.SolutionNumber, sol)
             values = self._model.Xn
-
-            # Speck 2 rounds
-            # print("plaintext")
-            # print(values[:32])
-            # print("copy plaintext")
-            # print(values[32:48])
-            # print(values[48:64])
-            # print("key")
-            # print(values[64:128])
 
             tmp = []
             for index, v in enumerate(values[:max_input_bit_pos]):
@@ -903,30 +897,9 @@ class MilpDivisionTrailModel():
         monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
         # print(monomials_even_occurences_removed)
         self.pretty_print(monomials_even_occurences_removed)
-        return self._model
 
-    def check_presence_of_particular_monomial_in_specific_anf(self, monomial, output_bit_index):
-        start = time.time()
-        self.add_constraints()
-        output_id = self.get_cipher_output_component_id()
-        output_vars = []
-        for i in range(self._cipher.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{output_id}[{i}]"))
-        ks = self._model.addVar()
-        self._model.addConstr(ks == sum(output_vars[i] for i in range(self._cipher.output_bit_size)))
-        self._model.addConstr(ks == 1)
-        self._model.addConstr(output_vars[output_bit_index] == 1)
-
-        for term in monomial:
-            var_term = self._model.getVarByName(f"{term[0]}[{term[1]}]")
-            self._model.addConstr(var_term == 1)
-
-        self._model.write("division_trail_model_toy_cipher.lp")
-
-        self._model.update()
-        end = time.time()
-        building_time = end - start
-        print(f"building_time : {building_time}")
+    def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None):
+        self.build_generic_model_for_specific_output_bit(output_bit_index)
 
         start = time.time()
         self._model.optimize()
@@ -934,22 +907,24 @@ class MilpDivisionTrailModel():
         solving_time = end - start
         print(f"solving_time : {solving_time}")
 
-        solCount = self._model.SolCount
-        print('Number of solutions/monomials found: ' + str(solCount))
-        monomials = []
-        for sol in range(solCount):
-            self._model.setParam(GRB.Param.SolutionNumber, sol)
-            values = self._model.Xn
-            tmp = []
-            for index, v in enumerate(values[:12]):
-                if v == 1:
-                    tmp.append(index)
-            monomials.append(tmp)
+        self.get_solutions()
+        return self._model
 
-        monomials_with_occurences = [x + [monomials.count(x)] for x in monomials]
-        monomials_duplicates_removed = list(set(tuple(i) for i in monomials_with_occurences))
-        monomials_even_occurences_removed = [x for x in monomials_duplicates_removed if x[-1] % 2 == 1]
-        self.pretty_print(monomials_even_occurences_removed)
+    def check_presence_of_particular_monomial_in_specific_anf(self, monomial, output_bit_index, fixed_degree=None):
+        self.build_generic_model_for_specific_output_bit(output_bit_index)
+        for term in monomial:
+            var_term = self._model.getVarByName(f"{term[0]}[{term[1]}]")
+            self._model.addConstr(var_term == 1)
+        self._model.update()
+        self._model.write("division_trail_model.lp")
+
+        start = time.time()
+        self._model.optimize()
+        end = time.time()
+        solving_time = end - start
+        print(f"solving_time : {solving_time}")
+
+        self.get_solutions()
         return self._model
 
     def check_presence_of_particular_monomial_in_all_anf(self, monomial):
@@ -971,7 +946,7 @@ class MilpDivisionTrailModel():
     # y_round2[15] = k40 + k49 + y_round1[31] + y_round1[8]
     # Note that rot_1_6[6] = y_round1[15] = p8 + p31 + k63
 
-    def find_degree_of_specific_anf(self, output_bit_index):
+    def old_find_degree_of_specific_anf(self, output_bit_index):
         start = time.time()
         self.add_constraints()
         output_id = self.get_cipher_output_component_id()
@@ -1007,7 +982,7 @@ class MilpDivisionTrailModel():
         degree = self._model.getObjective().getValue()
         return degree
 
-    def find_degree_of_all_anfs(self):
+    def old_find_degree_of_all_anfs(self):
         for i in range(5):  # self._cipher.output_bit_size
             degree = self.find_degree_of_specific_anf(i)
             print(f"Degree of anf {i} = {degree}\n")
@@ -1232,4 +1207,9 @@ y64 = 481
 y128 = 481
 y192 = 471
 y256 = 479
+
+
+
+
+
 
