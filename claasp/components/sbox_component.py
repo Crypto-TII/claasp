@@ -1349,7 +1349,7 @@ class SBOX(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for S-BOX in SAT CIPHER model
+        Return a list of variables and a list of clauses representing S-BOX for SAT CIPHER model
 
         The underlying logic is: for every (input, output) pair of the S-boxes build the implication
         ``(i0, i1, ..., in) -> oj`` for every bit in the binary representation of the output. The ``i``s
@@ -1395,7 +1395,7 @@ class SBOX(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for a generic S-BOX in SAT deterministic truncated XOR DIFFERENTIAL model
+        Return a list of variables and a list of clauses representing S-BOX for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
         This method implements the undisturbed bits idea from [CZZ2023]_.
 
@@ -1411,9 +1411,12 @@ class SBOX(Component):
             sage: sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['sbox_0_2_0_0',
               'sbox_0_2_1_0',
-              'sbox_0_2_2_0',
               ...
-              '-xor_0_0_6_0 sbox_0_2_3_0',
+              'sbox_0_2_2_1',
+              'sbox_0_2_3_1'],
+             ['-xor_0_0_4_1 -xor_0_0_7_1 sbox_0_2_3_0 -sbox_0_2_3_1',
+              '-xor_0_0_4_1 sbox_0_2_2_0',
+              ...
               '-xor_0_0_5_0 sbox_0_2_3_0',
               '-xor_0_0_4_0 sbox_0_2_3_0'])
         """
@@ -1446,7 +1449,7 @@ class SBOX(Component):
 
     def sat_xor_differential_propagation_constraints(self, model):
         """
-        Return a list of variables and a list of clauses for a generic S-BOX in SAT XOR DIFFERENTIAL model
+        Return a list of variables and a list of clauses representing S-BOX for SAT XOR DIFFERENTIAL model
 
         The DDT is encoded in CNF using the following method: for every ``(input_difference, output_difference)`` pair,
         we compute the ``weight``, i.e. the ``-log2(p)``. Then every tuple ``(input_difference, output_difference, weight)``
@@ -1470,9 +1473,12 @@ class SBOX(Component):
             sage: sbox_component.sat_xor_differential_propagation_constraints(sat)
             (['sbox_0_2_0',
               'sbox_0_2_1',
-              'sbox_0_2_2',
               ...
-              'hw_sbox_0_2_2 -hw_sbox_0_2_3',
+              'hw_sbox_0_2_2',
+              'hw_sbox_0_2_3'],
+             ['xor_0_0_4 xor_0_0_6 sbox_0_2_0 sbox_0_2_1 sbox_0_2_3 -hw_sbox_0_2_1',
+              'xor_0_0_5 xor_0_0_6 -sbox_0_2_0 -sbox_0_2_2 -hw_sbox_0_2_1',
+              ...
               'xor_0_0_5 xor_0_0_6 sbox_0_2_0 sbox_0_2_2 -hw_sbox_0_2_1',
               '-hw_sbox_0_2_0'])
         """
@@ -1503,7 +1509,7 @@ class SBOX(Component):
 
     def sat_xor_linear_mask_propagation_constraints(self, model):
         """
-        Return a list of variables and a list of clauses for S-BOX in SAT XOR LINEAR model
+        Return a list of variables and a list of clauses representing S-BOX for SAT XOR LINEAR model
 
         The approach used here is very similar to the one in :meth:`SBOX.sat_xor_differential_propagation_constraints`.
         The only difference is that we encode here the absolute value of the correlation instead of weight.
@@ -1529,9 +1535,12 @@ class SBOX(Component):
             sage: sbox_component.sat_xor_linear_mask_propagation_constraints(sat)
             (['sbox_0_2_0_i',
               'sbox_0_2_1_i',
-              'sbox_0_2_2_i',
               ...
-              '-sbox_0_2_0_i -sbox_0_2_1_i sbox_0_2_2_i sbox_0_2_1_o -hw_sbox_0_2_2_o',
+              'hw_sbox_0_2_2_o',
+              'hw_sbox_0_2_3_o'],
+             ['sbox_0_2_0_i sbox_0_2_1_i sbox_0_2_2_i -sbox_0_2_0_o sbox_0_2_1_o',
+              'sbox_0_2_2_i sbox_0_2_3_i sbox_0_2_0_o sbox_0_2_1_o -sbox_0_2_3_o hw_sbox_0_2_2_o',
+              ...
               '-hw_sbox_0_2_1_o',
               '-hw_sbox_0_2_0_o'])
         """
@@ -1563,10 +1572,10 @@ class SBOX(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts for S-BOX in SMT CIPHER model
+        Return a variable list and SMT-LIB list asserts representing S-BOX for SMT CIPHER model
 
         The approach used here is very similar to the one in :meth:`SBOX.sat_constraints`.
-        The only difference is in the consequent. It is just the whole representation of the output value.
+        The only difference is in the consequent, that is here the whole representation of the output value.
 
         INPUT:
 
@@ -1608,7 +1617,7 @@ class SBOX(Component):
 
     def smt_xor_differential_propagation_constraints(self, model):
         """
-        Return a variable list and SMT-LIB list asserts for S-BOX in SMT XOR DIFFERENTIAL model
+        Return a variable list and SMT-LIB list asserts representing S-BOX for SMT XOR DIFFERENTIAL model
 
         The approach is described in detail in :meth:`SBOX.sat_xor_differential_propagation_constraints`.
 
@@ -1659,7 +1668,7 @@ class SBOX(Component):
 
     def smt_xor_linear_mask_propagation_constraints(self, model):
         """
-        Return a variable list and SMT-LIB list asserts for S-BOX in SMT XOR LINEAR model
+        Return a variable list and SMT-LIB list asserts representing S-BOX for SMT XOR LINEAR model
 
         The approach is described in detail in :meth:`SBOX.sat_xor_linear_mask_propagation_constraints`.
 

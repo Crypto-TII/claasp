@@ -1047,7 +1047,7 @@ class XOR(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for XOR operation in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing XOR for SAT CIPHER model
 
         .. SEEALSO::
 
@@ -1065,9 +1065,12 @@ class XOR(Component):
             sage: xor_component.sat_constraints()
             (['xor_0_2_0',
               'xor_0_2_1',
-              'xor_0_2_2',
               ...
-              'xor_0_2_15 -modadd_0_1_15 key_63',
+              'xor_0_2_14',
+              'xor_0_2_15'],
+             ['-xor_0_2_0 modadd_0_1_0 key_48',
+              'xor_0_2_0 -modadd_0_1_0 key_48',
+              ...
               'xor_0_2_15 modadd_0_1_15 -key_63',
               '-xor_0_2_15 -modadd_0_1_15 -key_63'])
         """
@@ -1083,8 +1086,7 @@ class XOR(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for XOR in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing XOR for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
         .. SEEALSO::
 
@@ -1102,9 +1104,12 @@ class XOR(Component):
             sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['xor_0_2_0_0',
               'xor_0_2_1_0',
-              'xor_0_2_2_0',
               ...
-              'modadd_0_1_15_1 xor_0_2_15_0 xor_0_2_15_1 -key_63_1',
+              'xor_0_2_14_1',
+              'xor_0_2_15_1'],
+             ['xor_0_2_0_0 -modadd_0_1_0_0',
+              'xor_0_2_0_0 -key_48_0',
+              ...
               'key_63_1 xor_0_2_15_0 xor_0_2_15_1 -modadd_0_1_15_1',
               'xor_0_2_15_0 -modadd_0_1_15_1 -key_63_1 -xor_0_2_15_1'])
         """
@@ -1122,15 +1127,38 @@ class XOR(Component):
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for XOR in SAT XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing XOR for SAT XOR DIFFERENTIAL model
 
-        Since it is a linear component, it is just an alias for :py:meth:`sat_constraints`.
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: xor_component = speck.component_from(0, 2)
+            sage: xor_component.sat_xor_differential_propagation_constraints()
+            (['xor_0_2_0',
+              'xor_0_2_1',
+              ...
+              'xor_0_2_14',
+              'xor_0_2_15'],
+             ['-xor_0_2_0 modadd_0_1_0 key_48',
+              'xor_0_2_0 -modadd_0_1_0 key_48',
+              ...
+              'xor_0_2_15 modadd_0_1_15 -key_63',
+              '-xor_0_2_15 -modadd_0_1_15 -key_63'])
         """
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for XOR operation in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing XOR for SAT XOR LINEAR model
 
         .. SEEALSO::
 
@@ -1148,9 +1176,12 @@ class XOR(Component):
             sage: xor_component.sat_xor_linear_mask_propagation_constraints()
             (['xor_0_2_0_i',
               'xor_0_2_1_i',
-              'xor_0_2_2_i',
               ...
-              'xor_0_2_15_i -xor_0_2_15_o',
+              'xor_0_2_14_o',
+              'xor_0_2_15_o'],
+             ['xor_0_2_0_i -xor_0_2_0_o',
+              'xor_0_2_16_i -xor_0_2_0_i',
+              ...
               'xor_0_2_31_i -xor_0_2_15_i',
               'xor_0_2_15_o -xor_0_2_31_i'])
         """
@@ -1167,7 +1198,7 @@ class XOR(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing XOR operation for SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing XOR for SMT CIPHER model
 
         INPUT:
 
@@ -1201,11 +1232,35 @@ class XOR(Component):
         return output_bit_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a variable list and SMT-LIB list asserts representing XOR for SMT XOR DIFFERENTIAL model
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: xor_component = speck.component_from(0, 2)
+            sage: xor_component.smt_xor_differential_propagation_constraints()
+            (['xor_0_2_0',
+              'xor_0_2_1',
+              ...
+              'xor_0_2_14',
+              'xor_0_2_15'],
+             ['(assert (= xor_0_2_0 (xor modadd_0_1_0 key_48)))',
+              '(assert (= xor_0_2_1 (xor modadd_0_1_1 key_49)))',
+              ...
+              '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))',
+              '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'])
+        """
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for XOR operation in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing XOR for SMT XOR LINEAR model
 
         INPUT:
 

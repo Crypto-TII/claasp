@@ -170,7 +170,7 @@ class IntermediateOutput(CipherOutput):
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of constraints for OUTPUT component for SAT XOR linear.
+        Return a list of variables and a list of clauses representing INTERMEDIATE OUTPUT for SAT XOR LINEAR model
 
         INPUT:
 
@@ -184,15 +184,17 @@ class IntermediateOutput(CipherOutput):
             sage: speck_without_key_schedule = speck.remove_key_schedule()
             sage: sat = SatXorLinearModel(speck_without_key_schedule)
             sage: intermediate_component = speck.get_component_from_id("intermediate_output_0_6")
-            sage: variables, constraints = intermediate_component.sat_xor_linear_mask_propagation_constraints(sat)
-            sage: constraints
-            ['intermediate_output_0_6_0_i -intermediate_output_0_6_0_o',
-             'intermediate_output_0_6_0_o -intermediate_output_0_6_0_i',
-             'intermediate_output_0_6_1_i -intermediate_output_0_6_1_o',
-             ...
-             'xor_0_4_14_o -intermediate_output_0_6_30_i',
-             'intermediate_output_0_6_31_i -xor_0_4_15_o',
-             'xor_0_4_15_o -intermediate_output_0_6_31_i']
+            sage: intermediate_component.sat_xor_linear_mask_propagation_constraints(sat)
+            (['intermediate_output_0_6_0_i',
+              'intermediate_output_0_6_1_i',
+              ...
+              'intermediate_output_0_6_30_o',
+              'intermediate_output_0_6_31_o'],
+             ['intermediate_output_0_6_0_i -intermediate_output_0_6_0_o',
+              'intermediate_output_0_6_0_o -intermediate_output_0_6_0_i',
+              ...
+              'intermediate_output_0_6_31_i -xor_0_4_15_o',
+              'xor_0_4_15_o -intermediate_output_0_6_31_i'])
         """
         variables, constraints = super().sat_xor_linear_mask_propagation_constraints(model)
         bit_bindings = model.bit_bindings_for_intermediate_output[self.id]
@@ -210,7 +212,7 @@ class IntermediateOutput(CipherOutput):
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of constraints for OUTPUT component for SMT XOR linear.
+        Return a variable list and SMT-LIB list asserts representing INTERMEDIATE OUTPUT for SMT XOR LINEAR model
 
         INPUT:
 
@@ -224,15 +226,17 @@ class IntermediateOutput(CipherOutput):
             sage: speck_without_key_schedule = speck.remove_key_schedule()
             sage: smt = SmtXorLinearModel(speck_without_key_schedule)
             sage: intermediate_component = speck.get_component_from_id("intermediate_output_0_6")
-            sage: variables, constraints = intermediate_component.smt_xor_linear_mask_propagation_constraints(smt)
-            sage: constraints
-            ['(assert (= intermediate_output_0_6_0_i intermediate_output_0_6_0_o))',
-             '(assert (= intermediate_output_0_6_1_i intermediate_output_0_6_1_o))',
-             '(assert (= intermediate_output_0_6_2_i intermediate_output_0_6_2_o))',
-             ...
-             '(assert (= intermediate_output_0_6_29_i xor_0_4_13_o))',
-             '(assert (= intermediate_output_0_6_30_i xor_0_4_14_o))',
-             '(assert (= intermediate_output_0_6_31_i xor_0_4_15_o))']
+            sage: intermediate_component.smt_xor_linear_mask_propagation_constraints(smt)
+            (['intermediate_output_0_6_0_o',
+              'intermediate_output_0_6_1_o',
+              ...
+              'intermediate_output_0_6_30_i',
+              'intermediate_output_0_6_31_i'],
+             ['(assert (= intermediate_output_0_6_0_i intermediate_output_0_6_0_o))',
+              '(assert (= intermediate_output_0_6_1_i intermediate_output_0_6_1_o))',
+              ...
+              '(assert (= intermediate_output_0_6_30_i xor_0_4_14_o))',
+              '(assert (= intermediate_output_0_6_31_i xor_0_4_15_o))'])
         """
         variables, constraints = super().smt_xor_linear_mask_propagation_constraints(model)
         bit_bindings = model.bit_bindings_for_intermediate_output[self.id]

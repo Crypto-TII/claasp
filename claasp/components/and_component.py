@@ -334,11 +334,11 @@ class AND(MultiInputNonlinearLogicalOperator):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for AND operation in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing AND for SAT CIPHER model
 
-        This method translates in CNF the constraint ``z = x & y``. It becomes in prefixed notation:
+        This method translates in CNF the constraint ``z = x & y``. In prefixed notation, it becomes:
         ``And(Or(x, Not(z)), Or(y, Not(z)), Or(z, Not(x), Not(y)))``.
-        This method support AND operation using more than two operands.
+        This method supports AND operation using more than two operands.
 
         .. SEEALSO::
 
@@ -356,9 +356,12 @@ class AND(MultiInputNonlinearLogicalOperator):
             sage: and_component.sat_constraints()
             (['and_0_8_0',
               'and_0_8_1',
-              'and_0_8_2',
               ...
-              '-and_0_8_11 xor_0_7_11',
+              'and_0_8_10',
+              'and_0_8_11'],
+             ['-and_0_8_0 xor_0_7_0',
+              '-and_0_8_0 key_12',
+              ...
               '-and_0_8_11 key_23',
               'and_0_8_11 -xor_0_7_11 -key_23'])
         """
@@ -372,8 +375,10 @@ class AND(MultiInputNonlinearLogicalOperator):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing AND operation FOR SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing AND for SMT CIPHER model
 
+        Since the AND operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
+        builtin operation, e.g. ``z = x & y`` becomes ``(assert (= z (and x y)))``.
         This method support AND operation using more than two operands.
 
         INPUT:

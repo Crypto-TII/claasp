@@ -605,7 +605,7 @@ class Rotate(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for ROTATION in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing ROTATION for SAT CIPHER model
 
         .. SEEALSO::
 
@@ -623,9 +623,12 @@ class Rotate(Component):
             sage: rotate_component.sat_constraints()
             (['rot_1_1_0',
               'rot_1_1_1',
-              'rot_1_1_2',
               ...
-              'key_39 -rot_1_1_14',
+              'rot_1_1_14',
+              'rot_1_1_15'],
+             ['rot_1_1_0 -key_41',
+              'key_41 -rot_1_1_0',
+              ...
               'rot_1_1_15 -key_40',
               'key_40 -rot_1_1_15'])
         """
@@ -641,8 +644,7 @@ class Rotate(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for ROTATION in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing ROTATION for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
         .. SEEALSO::
 
@@ -660,9 +662,12 @@ class Rotate(Component):
             sage: rotate_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['rot_1_1_0_0',
               'rot_1_1_1_0',
-              'rot_1_1_2_0',
               ...
-              'key_39_1 -rot_1_1_14_1',
+              'rot_1_1_14_1',
+              'rot_1_1_15_1'],
+             ['rot_1_1_0_0 -key_41_0',
+              'key_41_0 -rot_1_1_0_0',
+              ...
               'rot_1_1_15_1 -key_40_1',
               'key_40_1 -rot_1_1_15_1'])
         """
@@ -681,15 +686,38 @@ class Rotate(Component):
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for XOR in SAT XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing ROTATION for SAT XOR DIFFERENTIAL model
 
-        Since it is a linear component, it is just an alias for :py:meth:`sat_constraints`.
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: rotate_component = speck.component_from(1, 1)
+            sage: rotate_component.sat_xor_differential_propagation_constraints()
+            (['rot_1_1_0',
+              'rot_1_1_1',
+              ...
+              'rot_1_1_14',
+              'rot_1_1_15'],
+             ['rot_1_1_0 -key_41',
+              'key_41 -rot_1_1_0',
+              ...
+              'rot_1_1_15 -key_40',
+              'key_40 -rot_1_1_15'])
         """
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for ROTATION in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing ROTATION for SAT XOR LINEAR model
 
         .. SEEALSO::
 
@@ -707,9 +735,12 @@ class Rotate(Component):
             sage: rotate_component.sat_xor_linear_mask_propagation_constraints()
             (['rot_1_1_0_i',
               'rot_1_1_1_i',
-              'rot_1_1_2_i',
               ...
-              'rot_1_1_7_i -rot_1_1_14_o',
+              'rot_1_1_14_o',
+              'rot_1_1_15_o'],
+             ['rot_1_1_0_o -rot_1_1_9_i',
+              'rot_1_1_9_i -rot_1_1_0_o',
+              ...
               'rot_1_1_15_o -rot_1_1_8_i',
               'rot_1_1_8_i -rot_1_1_15_o'])
         """
@@ -727,7 +758,7 @@ class Rotate(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing ROTATION for SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing ROTATION for SMT CIPHER model
 
         INPUT:
 
@@ -762,11 +793,35 @@ class Rotate(Component):
         return output_bit_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a variable list and SMT-LIB list asserts representing ROTATION for SMT CIPHER model
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: rotate_component = speck.component_from(0, 0)
+            sage: rotate_component.smt_xor_differential_propagation_constraints()
+            (['rot_0_0_0',
+              'rot_0_0_1',
+              ...
+              'rot_0_0_14',
+              'rot_0_0_15'],
+             ['(assert (= rot_0_0_0 plaintext_9))',
+              '(assert (= rot_0_0_1 plaintext_10))',
+              ...
+              '(assert (= rot_0_0_14 plaintext_7))',
+              '(assert (= rot_0_0_15 plaintext_8))'])
+        """
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for rotate in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing ROTATION for SMT XOR LINEAR model
 
         INPUT:
 

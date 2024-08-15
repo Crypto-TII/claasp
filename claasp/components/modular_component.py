@@ -844,7 +844,7 @@ class Modular(Component):
 
     def sat_xor_differential_propagation_constraints(self, model):
         """
-        Return a list of variables and a list of clauses for Modular Addition/Substraction in SAT XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing MODULAR ADDITION/SUBTRACTION for SAT XOR DIFFERENTIAL model
 
         .. SEEALSO::
 
@@ -868,9 +868,12 @@ class Modular(Component):
             sage: modadd_component.sat_xor_differential_propagation_constraints(sat)
             (['modadd_0_1_0',
               'modadd_0_1_1',
-              'modadd_0_1_2',
               ...
-              'modadd_0_1_15 -rot_0_0_15 plaintext_31',
+              'hw_modadd_0_1_14',
+              'hw_modadd_0_1_15'],
+             ['rot_0_0_1 -modadd_0_1_1 hw_modadd_0_1_0',
+              'plaintext_17 -rot_0_0_1 hw_modadd_0_1_0',
+              ...
               'modadd_0_1_15 rot_0_0_15 -plaintext_31',
               '-modadd_0_1_15 -rot_0_0_15 -plaintext_31'])
         """
@@ -943,8 +946,7 @@ class Modular(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for Modular Addition
-        in DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing MODULAR ADDITION/SUBTRACTION for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
         The model is built using the pivot constraint. The constraints are:
             - 0, for both the inputs and the output on the right of the pivot;
@@ -967,9 +969,12 @@ class Modular(Component):
             sage: modadd_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['modadd_0_1_0_0',
               'modadd_0_1_1_0',
-              'modadd_0_1_2_0',
               ...
-              'rot_0_0_15_1 modadd_0_1_15_0 modadd_0_1_15_1 -plaintext_31_1',
+              'carry_modadd_0_1_14_1_1',
+              'carry_modadd_0_1_15_1_1'],
+             ['-carry_modadd_0_1_15_0_0 -carry_modadd_0_1_15_1_1',
+              'modadd_0_1_0_0 -carry_modadd_0_1_0_0_0',
+              ...
               'plaintext_31_1 modadd_0_1_15_0 modadd_0_1_15_1 -rot_0_0_15_1',
               'modadd_0_1_15_0 -rot_0_0_15_1 -plaintext_31_1 -modadd_0_1_15_1'])
         """
@@ -997,7 +1002,7 @@ class Modular(Component):
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for fixing variables in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing MODULAR ADDITION/SUBTRACTION for SAT XOR LINEAR model
 
         .. SEEALSO::
 
@@ -1019,9 +1024,12 @@ class Modular(Component):
             sage: modadd_component.sat_xor_linear_mask_propagation_constraints()
             (['modadd_0_1_0_i',
               'modadd_0_1_1_i',
-              'modadd_0_1_2_i',
               ...
-              'hw_modadd_0_1_14_o -modadd_0_1_14_o modadd_0_1_30_i',
+              'hw_modadd_0_1_14_o',
+              'hw_modadd_0_1_15_o'],
+             ['-hw_modadd_0_1_0_o',
+              '-hw_modadd_0_1_1_o modadd_0_1_0_o modadd_0_1_0_i modadd_0_1_16_i',
+              ...
               'hw_modadd_0_1_15_o modadd_0_1_15_o -modadd_0_1_31_i',
               'hw_modadd_0_1_15_o -modadd_0_1_15_o modadd_0_1_31_i'])
         """
@@ -1053,7 +1061,11 @@ class Modular(Component):
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for Modular Addition/Substraction in SMT XOR DIFFERENTIAL model [LM2001]_.
+        Return a variable list and SMT-LIB list asserts representing MODULAR ADDITION/SUBTRACTION for SMT XOR DIFFERENTIAL model
+
+        .. SEEALSO::
+
+            The algorithm is found in [LM2001]_.
 
         .. WARNING::
 
@@ -1077,7 +1089,6 @@ class Modular(Component):
              ['(assert (= (not hw_modadd_0_1_0) (= shift_0_0_1 key_1 modadd_0_1_1)))',
               '(assert (= (not hw_modadd_0_1_1) (= shift_0_0_2 key_2 modadd_0_1_2)))',
               ...
-              '(assert (or hw_modadd_0_1_29 (not (xor shift_0_0_29 key_29 modadd_0_1_29 key_30))))',
               '(assert (or hw_modadd_0_1_30 (not (xor shift_0_0_30 key_30 modadd_0_1_30 key_31))))',
               '(assert (not (xor modadd_0_1_31 shift_0_0_31 key_31)))'])
         """
@@ -1111,7 +1122,11 @@ class Modular(Component):
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for Modular Addition/Substraction in SMT XOR LINEAR model [LWR2016]_.
+        Return a variable list and SMT-LIB list asserts representing MODULAR ADDITION/SUBTRACTION for SMT XOR LINEAR model
+
+        .. SEEALSO::
+
+            The algorithm is found in [LWR2016]_.
 
         .. WARNING::
 
@@ -1134,7 +1149,6 @@ class Modular(Component):
               'hw_modadd_0_1_31_o'],
              ['(assert (not hw_modadd_0_1_0_o))',
               '(assert (= hw_modadd_0_1_1_o (xor modadd_0_1_0_o modadd_0_1_0_i modadd_0_1_32_i)))',
-              '(assert (= hw_modadd_0_1_2_o (xor hw_modadd_0_1_1_o modadd_0_1_1_o modadd_0_1_1_i modadd_0_1_33_i)))',
               ...
               '(assert (=> (xor modadd_0_1_30_o modadd_0_1_62_i) hw_modadd_0_1_30_o))',
               '(assert (=> (xor modadd_0_1_31_o modadd_0_1_63_i) hw_modadd_0_1_31_o))'])
@@ -1144,9 +1158,7 @@ class Modular(Component):
         output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         constraints = [smt_utils.smt_assert(smt_utils.smt_not(hw_bit_ids[0]))]
-        operation = smt_utils.smt_xor((output_bit_ids[0],
-                                       input_bit_ids[0],
-                                       input_bit_ids[output_bit_len]))
+        operation = smt_utils.smt_xor((output_bit_ids[0], input_bit_ids[0], input_bit_ids[output_bit_len]))
         equation = smt_utils.smt_equivalent((hw_bit_ids[1], operation))
         constraints.append(smt_utils.smt_assert(equation))
         for i in range(2, output_bit_len):

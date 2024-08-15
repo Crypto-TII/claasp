@@ -202,7 +202,7 @@ class VariableShift(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for SHIFT BY VARIABLE AMOUNT in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing SHIFT BY VARIABLE AMOUNT for SAT CIPHER model
 
         .. SEEALSO::
 
@@ -220,9 +220,12 @@ class VariableShift(Component):
             sage: variable_shift_component.sat_constraints()
             (['var_shift_0_2_0',
               'var_shift_0_2_1',
-              'var_shift_0_2_2',
               ...
-              '-var_shift_0_2_31 state_3_var_shift_0_2_31',
+              'var_shift_0_2_30',
+              'var_shift_0_2_31'],
+             ['-state_0_var_shift_0_2_0 key_0 key_95',
+              'state_0_var_shift_0_2_0 -key_0 key_95',
+              ...
               '-var_shift_0_2_31 -key_91',
               'var_shift_0_2_31 -state_3_var_shift_0_2_31 key_91'])
         """
@@ -259,7 +262,7 @@ class VariableShift(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts for SHIFT BY VARIABLE AMOUNT in SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing SHIFT BY VARIABLE AMOUNT for SMT CIPHER model
 
         INPUT:
 
