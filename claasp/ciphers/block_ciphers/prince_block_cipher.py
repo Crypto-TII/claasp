@@ -96,6 +96,23 @@ inverse_sbox = [0xB, 0x7, 0x3, 0x2, 0xF, 0xD, 0x8, 0x9, 0xa, 0x6, 0x4, 0x0, 0x5,
 
 
 class PrinceBlockCipher(Cipher):
+    """
+    Return a cipher object of Prince Block Cipher.
+
+    INPUT:
+
+    - ``number_of_rounds`` -- **integer** (default: `12`); number of rounds of the cipher. Must be greater or equal than 1.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.prince_block_cipher import PrinceBlockCipher
+        sage: prince = PrinceBlockCipher()
+        sage: key = 0xffffffffffffffff0000000000000000
+        sage: plaintext = 0x0000000000000000
+        sage: ciphertext = 0x9fb51935fc3df524
+        sage: prince.evaluate([key, plaintext, tweak]) == ciphertext
+        True
+    """
 
     def generate_first_rounds(self, current_state, number_of_rounds):
         for round_idx in range(1, number_of_rounds // 2):
