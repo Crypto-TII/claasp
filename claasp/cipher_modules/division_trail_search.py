@@ -107,22 +107,25 @@ class MilpDivisionTrailModel():
         sage: cipher = AradiBlockCipherSBox(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0, fixed_degree=1)
+
+        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
+        sage: cipher = AradiBlockCipher(number_of_rounds=2)
+        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: milp = MilpDivisionTrailModel(cipher)
+        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0), ("plaintext", 32), ("plaintext", 64), ("plaintext", 96)], 0)
 
     """
 
@@ -451,6 +454,8 @@ class MilpDivisionTrailModel():
                 self._variables[input_name][pos]["current"] += 1
         # print(input_vars_concat)
         # print(self._occurences[component.id])
+        # print(list(self._occurences[component.id].keys()))
+        # print(len(list(self._occurences[component.id].keys())))
 
         rotate_offset = component.description[1]
         for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
@@ -643,7 +648,8 @@ class MilpDivisionTrailModel():
         for name in ids:
             for component_id in predecessors:
                 component = self._cipher.get_component_from_id(component_id)
-                if (name in component.input_id_links) and (component.type not in ["cipher_output"]):
+                if (name in component.input_id_links) and (
+                        component.type not in ["cipher_output"]):  # "intermediate_output"
                     indexes = [i for i, j in enumerate(component.input_id_links) if j == name]
                     if name not in occurences.keys():
                         occurences[name] = []
@@ -717,7 +723,7 @@ class MilpDivisionTrailModel():
         start = time.time()
 
         output_id = self.get_cipher_output_component_id()
-        # output_id = "modadd_1_7"
+        # output_id = "xor_1_69"
         component = self._cipher.get_component_from_id(output_id)
         pivot = 0
         new_output_bit_index = output_bit_index
@@ -731,8 +737,8 @@ class MilpDivisionTrailModel():
         # print("new_output_bit_index")
         # print(new_output_bit_index)
 
-        # input_id_link_needed = "rot_1_6"
-        # block_needed = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        # input_id_link_needed = "rot_1_68"
+        # block_needed = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63] #[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 
         G = create_networkx_graph_from_input_ids(self._cipher)
         predecessors = list(_get_predecessors_subgraph(G, [input_id_link_needed]))
@@ -836,7 +842,9 @@ class MilpDivisionTrailModel():
         #     self._model.addConstr(v == 0)
         # self._model.update()
         # self._model.write("division_trail_model.lp")
+        # ########################
 
+        print(self._model)
         start = time.time()
         self._model.optimize()
         end = time.time()
@@ -854,6 +862,7 @@ class MilpDivisionTrailModel():
         self._model.update()
         self._model.write("division_trail_model.lp")
 
+        print(self._model)
         start = time.time()
         self._model.optimize()
         end = time.time()
@@ -892,17 +901,17 @@ class MilpDivisionTrailModel():
         nb_plaintext_bits_used = len(list(self._occurences["plaintext"].keys()))
         for i in range(nb_plaintext_bits_used):
             p.append(self._model.getVarByName(f"plaintext[{i}]"))
-        print(p)
         self._model.setObjective(sum(p[i] for i in range(nb_plaintext_bits_used)), GRB.MAXIMIZE)
 
-        # Specific to Aradi analysis:
-        for i in range(128):
-            v = self._model.getVarByName(f"plaintext[{i}]")
-            self._model.addConstr(v == 0)
+        # # Specific to Aradi analysis:
+        # for i in range(96):
+        #     v = self._model.getVarByName(f"plaintext[{i}]")
+        #     self._model.addConstr(v == 0)
+        # self._model.update()
+        # self._model.write("division_trail_model.lp")
+        # ########################
 
-        self._model.update()
-        self._model.write("division_trail_model.lp")
-
+        print(self._model)
         start = time.time()
         self._model.optimize()
         end = time.time()
@@ -1153,3 +1162,4 @@ y256 = 479
 # x0*x2 + x1,
 # x0*x1*x2 + x0*x2 + x0*x3 + x2,
 # x0*x2 + x1*x2 + x3]
+
