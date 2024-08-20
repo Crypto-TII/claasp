@@ -46,7 +46,7 @@ def test_fix_variables_value_constraints():
         '-ciphertext_0 -ciphertext_1 -ciphertext_2 ciphertext_3']
 
 
-def test_build_generic_sat_model_from_dictionary():
+def test_build_xor_differential_sat_model_from_dictionary():
     component_model_types = []
     speck = SpeckBlockCipher(number_of_rounds=3)
 
@@ -71,6 +71,7 @@ def test_build_generic_sat_model_from_dictionary():
         bit_values=(0,) * 64)
 
     for component in speck.get_all_components():
+        print(component.id)
         component_model_type = {
             "component_id": component.id,
             "component_object": component,
@@ -84,6 +85,63 @@ def test_build_generic_sat_model_from_dictionary():
     sat_model._model_constraints.extend(constraints)
     result = sat_model._solve_with_external_sat_solver(
         "xor_differential", "PARKISSAT_EXT", ["-c=6"]
+    )
+    assert result['status'] == 'SATISFIABLE'
+
+
+def test_build_generic_sat_model_from_dictionary():
+    component_model_types = []
+    speck = SpeckBlockCipher(number_of_rounds=3)
+
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='equal',
+        bit_positions=range(32),
+        bit_values=integer_to_bit_list(0x00400000, 32, 'big')
+    )
+
+    cipher_output = set_fixed_variables(
+        component_id='cipher_output_2_12',
+        constraint_type='equal',
+        bit_positions=range(32),
+        bit_values=integer_to_bit_list(0x8000840a, 32, 'big')
+    )
+
+    key = set_fixed_variables(
+        component_id='key',
+        constraint_type='equal',
+        bit_positions=range(64),
+        bit_values=(0,) * 64
+    )
+
+    xor_2_5 = set_fixed_variables(
+        component_id='xor_2_5',
+        constraint_type='equal',
+        bit_positions=range(16),
+        bit_values=integer_to_bit_list(0x7780, 16, 'big')
+    )
+    for component in speck.get_all_components():
+        component_model_type = {
+            "component_id": component.id,
+            "component_object": component,
+            "model_type": "sat_xor_differential_propagation_constraints"
+        }
+        component_model_types.append(component_model_type)
+
+    for component_model_type in component_model_types:
+        if component_model_type["component_id"] in ['xor_2_10',
+            'rot_2_9', 'xor_2_8', 'modadd_2_7', 'rot_2_6', 'xor_2_5', 'rot_2_4', 'xor_2_3', 'modadd_2_2', 'rot_2_1',
+            'constant_2_0', 'cipher_output_2_12', 'intermediate_output_2_11'
+        ]:
+            component_model_type["model_type"] = "sat_bitwise_deterministic_truncated_xor_differential_constraints"
+
+    sat_model = SatCipherModel(speck)
+    sat_model.build_generic_sat_model_from_dictionary([plaintext, key], component_model_types)
+    #variables, constraints = sat_model.weight_constraints(3)
+    #sat_model._variables_list.extend(variables)
+    #sat_model._model_constraints.extend(constraints)
+    result = sat_model._solve_with_external_sat_solver(
+        "xor_differential", "KISSAT_EXT", []
     )
     assert result['status'] == 'SATISFIABLE'
 

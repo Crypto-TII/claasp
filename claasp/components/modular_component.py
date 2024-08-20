@@ -920,6 +920,7 @@ class Modular(Component):
               'modadd_0_1_15_0 -rot_0_0_15_1 -plaintext_31_1 -modadd_0_1_15_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        #print(in_ids_0, in_ids_1)
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
         carry_ids_0 = [f'carry_{out_id}_0' for out_id in out_ids_0]
         carry_ids_1 = [f'carry_{out_id}_1' for out_id in out_ids_1]
@@ -938,8 +939,19 @@ class Modular(Component):
                                                           (in_ids_0[out_len-1], in_ids_1[out_len-1]),
                                                           (in_ids_0[2*out_len-1], in_ids_1[2*out_len-1]),
                                                           (carry_ids_0[-2], carry_ids_1[-2])))
-
-        return out_ids_0 + out_ids_1 + carry_ids_0 + carry_ids_1, constraints
+        input_id_link = self.input_id_links
+        input_bit_positions = self.input_bit_positions
+        input_bit_ids = []
+        for link, positions in zip(input_id_link, input_bit_positions):
+            #constraints.append(f'{input_id[i]} = {out_ids_0[i]}')
+            #constraints.append(f'{input_id[i + out_len]} = {out_ids_1[i]}')
+            input_bit_ids.extend([f'{link}_{j}' for j in positions])
+            #sat_utils.cnf_enforce(f'input_id_{}')
+            #constraints.append()
+        for input_id in input_bit_ids:
+            constraints.extend(sat_utils.get_cnf_bitwise_truncate_constraints(input_id, f'{input_id}_1', f'{input_id}_0'))
+        import ipdb; ipdb.set_trace()
+        return input_bit_ids + out_ids_0 + out_ids_1 + carry_ids_0 + carry_ids_1, constraints
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """

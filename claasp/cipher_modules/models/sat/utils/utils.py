@@ -653,6 +653,14 @@ def cnf_xor_truncated_seq(results, variables):
     return model
 
 
+def get_cnf_bitwise_truncate_constraints(a, a_0, a_1):
+    return [
+        f'{a} -{a_0}',
+        f'{a} -{a_1}',
+        f'-{a} -{a_0}',
+        f'-{a} {a_1}'
+    ]
+
 def modadd_truncated_lsb(result, variable_0, variable_1, next_carry):
     return [f'{next_carry[0]} -{next_carry[1]}',
             f'{next_carry[0]} -{variable_1[1]}',

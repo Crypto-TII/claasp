@@ -712,7 +712,20 @@ class Rotate(Component):
         for out_id, in_id in zip(out_ids_1, in_ids_1_rotated):
             constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
 
-        return out_ids_0 + out_ids_1, constraints
+        input_id_link = self.input_id_links
+        input_bit_positions = self.input_bit_positions
+        input_bit_ids = []
+        for link, positions in zip(input_id_link, input_bit_positions):
+            #constraints.append(f'{input_id[i]} = {out_ids_0[i]}')
+            #constraints.append(f'{input_id[i + out_len]} = {out_ids_1[i]}')
+            input_bit_ids.extend([f'{link}_{j}' for j in positions])
+            #sat_utils.cnf_enforce(f'input_id_{}')
+            #constraints.append()
+        for input_id in input_bit_ids:
+            constraints.extend(sat_utils.get_cnf_bitwise_truncate_constraints(input_id, f'{input_id}_1', f'{input_id}_0'))
+
+
+        return input_bit_ids+ out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         return self.sat_constraints()
