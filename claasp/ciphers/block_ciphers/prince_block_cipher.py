@@ -110,7 +110,7 @@ class PrinceBlockCipher(Cipher):
         sage: key = 0xffffffffffffffff0000000000000000
         sage: plaintext = 0x0000000000000000
         sage: ciphertext = 0x9fb51935fc3df524
-        sage: prince.evaluate([key, plaintext, tweak]) == ciphertext
+        sage: prince.evaluate([plaintext, key]) == ciphertext
         True
     """
 
