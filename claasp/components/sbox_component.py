@@ -211,7 +211,7 @@ def smt_get_sbox_probability_constraints(bit_ids, template):
 
 
 def _to_int(bits):
-    return int("".join(str(bit) for bit in bits), 2)
+    return int("".join(map(str, bits)), 2)
 
 
 def _combine_truncated(input_1, input_2):
@@ -512,7 +512,7 @@ class SBOX(Component):
             sage: sbox_component = aes.component_from(0, 1)
             sage: sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             ([],
-             ['constraint if xor_0_0_value[0]_active==0 then sbox_0_1_active[0] = 0 else sbox_0_1_active[0] = 2 endif;'])
+             ['constraint if xor_0_0_value[0]==0 then sbox_0_1_active[0] = 0 else sbox_0_1_active[0] = 2 endif;'])
         """
         input_id_links = self.input_id_links
         output_id_link = self.id
@@ -526,7 +526,7 @@ class SBOX(Component):
                                for j in range(len(bit_positions) // word_size)])
         for i, input_ in enumerate(all_inputs):
             cp_constraints.append(
-                f'constraint if {input_}_active==0 then {output_id_link}_active[{i}] = 0'
+                f'constraint if {input_}==0 then {output_id_link}_active[{i}] = 0'
                 f' else {output_id_link}_active[{i}] = 2 endif;')
 
         return cp_declarations, cp_constraints
@@ -1384,12 +1384,9 @@ class SBOX(Component):
         constraints = []
         for i in range(2 ** input_bit_len):
             input_minus = ['-' * (i >> j & 1) for j in reversed(range(input_bit_len))]
-            current_input_bit_ids = [f'{input_minus[j]}{input_bit_ids[j]}'
-                                     for j in range(input_bit_len)]
-            output_minus = ['-' * ((sbox_values[i] >> j & 1) ^ 1)
-                            for j in reversed(range(output_bit_len))]
-            current_output_bit_ids = [f'{output_minus[j]}{output_bit_ids[j]}'
-                                      for j in range(output_bit_len)]
+            current_input_bit_ids = [f'{input_minus[j]}{input_bit_ids[j]}' for j in range(input_bit_len)]
+            output_minus = ['-' * ((sbox_values[i] >> j & 1) ^ 1) for j in reversed(range(output_bit_len))]
+            current_output_bit_ids = [f'{output_minus[j]}{output_bit_ids[j]}' for j in range(output_bit_len)]
             input_constraint = ' '.join(current_input_bit_ids)
             for j in range(output_bit_len):
                 constraint = f'{input_constraint} {current_output_bit_ids[j]}'
@@ -1482,10 +1479,8 @@ class SBOX(Component):
 
             check_table_feasibility(ddt, 'DDT', 'SAT')
 
-            get_hamming_weight_function = (
-                    lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
-            template = sat_build_table_template(
-                    ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
+            get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
+            template = sat_build_table_template(ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
             sboxes_ddt_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -1538,10 +1533,8 @@ class SBOX(Component):
 
             check_table_feasibility(lat, 'LAT', 'SAT')
 
-            get_hamming_weight_function = (
-                    lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
-            template = sat_build_table_template(
-                    lat, get_hamming_weight_function, input_bit_len, output_bit_len)
+            get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
+            template = sat_build_table_template(lat, get_hamming_weight_function, input_bit_len, output_bit_len)
             sboxes_lat_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -1624,7 +1617,7 @@ class SBOX(Component):
         """
         input_bit_len, input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(input_bit_len)]
+        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         sbox_values = self.description
         sboxes_ddt_templates = model.sboxes_ddt_templates
 
@@ -1634,10 +1627,8 @@ class SBOX(Component):
 
             check_table_feasibility(ddt, 'DDT', 'SMT')
 
-            get_hamming_weight_function = (
-                    lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
-            template = smt_build_table_template(
-                    ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
+            get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
+            template = smt_build_table_template(ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
             sboxes_ddt_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -1686,10 +1677,8 @@ class SBOX(Component):
 
             check_table_feasibility(lat, 'LAT', 'SMT')
 
-            get_hamming_weight_function = (
-                    lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
-            template = smt_build_table_template(
-                    lat, get_hamming_weight_function, input_bit_len, output_bit_len)
+            get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
+            template = smt_build_table_template(lat, get_hamming_weight_function, input_bit_len, output_bit_len)
             sboxes_lat_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
