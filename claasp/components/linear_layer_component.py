@@ -706,6 +706,8 @@ class LinearLayer(Component):
         """
         Return a list of variables and a list of clauses representing LINEAR LAYER for SAT CIPHER model
 
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -737,8 +739,7 @@ class LinearLayer(Component):
         """
         Return a list of variables and a list of clauses representing LINEAR LAYER for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
-        Note that when the constraints do not involve an XOR operation (e.g. permutation matrices),
-        they are modeled as equalities.
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
 
         .. SEEALSO::
 
@@ -779,8 +780,7 @@ class LinearLayer(Component):
         """
         Return a list of variables and a list of clauses representing LINEAR LAYER for SAT XOR DIFFERENTIAL model
 
-        Note that when the constraints do not involve an XOR operation (e.g. permutation matrices),
-        they are modeled as equalities.
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
 
         .. SEEALSO::
 
@@ -805,8 +805,7 @@ class LinearLayer(Component):
         """
         Return a list of variables and a list of clauses representing LINEAR LAYER for SAT XOR LINEAR model
 
-        Note that when the constraints do not involve an XOR operation (e.g. permutation matrices),
-        they are modeled as equalities.
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
 
         .. SEEALSO::
 
@@ -849,6 +848,8 @@ class LinearLayer(Component):
         """
         Return a variable list and SMT-LIB list asserts representing LINEAR LAYER for SMT CIPHER model
 
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
+
         INPUT:
 
         - None
@@ -881,6 +882,8 @@ class LinearLayer(Component):
         """
         Return a variable list and SMT-LIB list asserts representing LINEAR LAYER for SMT XOR DIFFERENTIAL model
 
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
+
         INPUT:
 
         - None
@@ -899,6 +902,8 @@ class LinearLayer(Component):
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a variable list and SMT-LIB list asserts representing LINEAR LAYER for SMT XOR LINEAR model.
+
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
 
         INPUT:
 
