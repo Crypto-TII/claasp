@@ -30,7 +30,14 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_REGISTRY_USER }}
         password: ${{  secrets.DOCKER_REGISTRY_PASSWORD }}
-
+    - name: Clean space in the hosted machine
+      run: |
+        df -h
+        sudo swapoff -a
+        sudo rm -f /swapfile
+        sudo apt clean
+        docker rmi $(docker image ls -aq)
+        df -h
     - name: Build & Push
       uses: docker/build-push-action@v4
       id: built-image
