@@ -33,7 +33,8 @@ jobs:
     - name: Check space in machine
       run: |
         df -h
-        df -h /dev/root
+        sudo du -h --max-depth=1 /
+
     - name: Build & Push
       uses: docker/build-push-action@v4
       id: built-image
@@ -47,7 +48,7 @@ jobs:
     - name: Check space in machine after build
       run: |
         df -h
-        df -h /dev/root
+        sudo du -h --max-depth=1 /
     - name: Move cache
       run: |
         rm -rf /tmp/.buildx-cache
