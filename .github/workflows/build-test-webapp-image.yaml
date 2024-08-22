@@ -38,6 +38,10 @@ jobs:
         sudo du -h --max-depth=1 /usr/local
         sudo du -h --max-depth=1 /var/lib
 
+    - name: Clean docker
+      run: |
+        docker system prune -a --volumes
+
     - name: Build & Push
       uses: docker/build-push-action@v4
       id: built-image
@@ -55,6 +59,7 @@ jobs:
         sudo du -h --max-depth=1 /usr/share
         sudo du -h --max-depth=1 /usr/local
         sudo du -h --max-depth=1 /var/lib
+
     - name: Move cache
       run: |
         rm -rf /tmp/.buildx-cache
