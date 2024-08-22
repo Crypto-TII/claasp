@@ -33,7 +33,6 @@ jobs:
     - name: Check space in machine
       run: |
         df -h
-        sudo du -h --max-depth=1 /
 
     - name: Build & Push
       uses: docker/build-push-action@v4
