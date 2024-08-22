@@ -165,7 +165,7 @@ class Report:
              show_shift=False, show_linear_layer=False, show_xor=False, show_modadd=False,
              show_and=False,
              show_or=False, show_not=False, show_plaintext=True, show_key=True,
-             show_intermediate_output=True, show_cipher_output=True, show_input=True, show_output=True):
+             show_intermediate_output=True, show_cipher_output=True, show_input=True, show_output=True, show_graph=True):
 
         if 'trail' in self.test_name:
             if show_as_hex == True and (word_size / 4).is_integer() == False:
@@ -214,7 +214,7 @@ class Report:
                 print('The input difference value has to be one of the following :', end='')
                 print(input_diff_values)
                 return
-        self._produce_graph(show_graph=True, fixed_input=fixed_input, fixed_output=fixed_output,
+        self._produce_graph(show_graph=show_graph, fixed_input=fixed_input, fixed_output=fixed_output,
                             fixed_input_difference=fixed_input_difference, test_name=test_name)
 
     def _export(self, file_format, output_dir, fixed_input=None, fixed_output=None, fixed_test=None):
@@ -720,19 +720,19 @@ class Report:
                 for dict in self.test_report['test_results']:
                     DieharderTests._generate_chart_round(dict,
                                                          output_directory,
-                                                         show_graph=True)
+                                                         show_graph=show_graph)
                 DieharderTests._generate_chart_all(self.test_report['test_results'],
                                                    output_directory,
-                                                   show_graph=True)
+                                                   show_graph=show_graph)
 
             elif 'nist' in self.test_name:
                 for dict in self.test_report['test_results']:
                     NISTStatisticalTests._generate_chart_round(dict,
                                                                output_directory,
-                                                               show_graph=True)
+                                                               show_graph=show_graph)
                 NISTStatisticalTests._generate_chart_all(self.test_report['test_results'],
                                                          output_directory,
-                                                         show_graph=True)
+                                                         show_graph=show_graph)
 
         elif 'algebraic' in self.test_name:
 
