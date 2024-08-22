@@ -40,7 +40,7 @@ jobs:
 
     - name: Clean docker
       run: |
-        docker system prune -a --volumes
+        docker system prune -a --volumes -f
 
     - name: Build & Push
       uses: docker/build-push-action@v4
