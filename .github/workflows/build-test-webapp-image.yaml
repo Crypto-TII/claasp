@@ -32,6 +32,7 @@ jobs:
         password: ${{  secrets.DOCKER_REGISTRY_PASSWORD }}
     - name: Check space in machine
       run: |
+        ghcup --version
         df -h
         sudo du -h --max-depth=1 /usr/lib
         sudo du -h --max-depth=1 /usr/share
