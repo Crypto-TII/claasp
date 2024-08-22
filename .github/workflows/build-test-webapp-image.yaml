@@ -30,13 +30,8 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_REGISTRY_USER }}
         password: ${{  secrets.DOCKER_REGISTRY_PASSWORD }}
-    - name: Clean space in the hosted machine
+    - name: Check space in machine
       run: |
-        df -h
-        sudo swapoff -a
-        sudo rm -f /swapfile
-        sudo apt clean
-        docker rmi $(docker image ls -aq)
         df -h
     - name: Build & Push
       uses: docker/build-push-action@v4
@@ -48,7 +43,9 @@ jobs:
         tags: tiicrc/claasp-lib-staging:test
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-
+    - name: Check space in machine after build
+      run: |
+        df -h
     - name: Move cache
       run: |
         rm -rf /tmp/.buildx-cache
