@@ -16,131 +16,116 @@ class MilpDivisionTrailModel():
 
         sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
         sage: cipher = AsconPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation import AsconSboxSigmaNoMatrixPermutation
         sage: cipher = AsconSboxSigmaNoMatrixPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
         sage: cipher = GastonPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
         sage: cipher = GastonSboxPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.xoodoo_sbox_permutation import XoodooSboxPermutation
         sage: cipher = XoodooSboxPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.xoodoo_permutation import XoodooPermutation
         sage: cipher = XoodooPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
         sage: cipher = KeccakPermutation(number_of_rounds=1, word_size=64)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
         sage: cipher = KeccakSboxPermutation(number_of_rounds=1, word_size=64)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
         sage: cipher = ToySPN1(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
-        sage: milp.find_anf_for_specific_output_bit(1)
+        sage: milp.find_anf_of_specific_output_bit(1)
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
         sage: cipher = SimonBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-        sage: cipher = SimonBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: cipher = SimonBlockCipher(number_of_rounds=2)
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0)], 1)
+        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0)], 0)
 
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: cipher = SpeckBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(15)
 
         sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
         sage: cipher = LBlockBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
         sage: cipher = AradiBlockCipherSBox(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
-        sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.find_degree_of_specific_anf(0)
-
-        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
-        sage: cipher = AradiBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.find_anf_of_specific_output_bit(0, fixed_degree=1)
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=2)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0), ("plaintext", 32), ("plaintext", 64), ("plaintext", 96)], 0)
-
-        from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
-        from claasp.cipher_modules.algebraic_tests import AlgebraicTests
-        from claasp.cipher_modules.report import Report
-        aradi = AradiBlockCipherSBox(number_of_rounds=2)
-        test = AlgebraicTests(aradi)
-        result=test.algebraic_tests(timeout_in_seconds=30)
-        report = Report(result)
-        report.show()
 
     """
 
@@ -184,7 +169,7 @@ class MilpDivisionTrailModel():
     def build_gurobi_model(self):
         model = Model()
         model.Params.LogToConsole = 0
-        model.Params.Threads = 16  # best found experimentaly on ascon_sbox_2rounds
+        model.Params.Threads = 32  # best found experimentaly on ascon_sbox_2rounds
         model.setParam("PoolSolutions", 200000000)  # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
@@ -454,33 +439,29 @@ class MilpDivisionTrailModel():
 
     def add_rotate_constraints(self, component):
         output_vars = []
-        # tmp = list(self._occurences[component.id].keys())
-        # tmp.sort()
-        # for i in tmp:
-        #     output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        # for i in list(self._occurences[component.id].keys()):
+        tmp = list(self._occurences[component.id].keys())
+        tmp.sort()
+        for i in tmp:
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
         # print(output_vars)
 
-        # for pos in list(self._occurences[component.id].keys()):
-        #     current = self._variables[component.id][pos]["current"]
-        #     output_vars.append(self._variables[component.id][pos][current])
-        #     self._variables[component.id][pos]["current"] += 1
-        # print(output_vars)
-
-        # input_vars_concat = []
-        # for index, input_name in enumerate(component.input_id_links):
-        #     for pos in component.input_bit_positions[index]:
-        #         current = self._variables[input_name][pos]["current"]
-        #         input_vars_concat.append(self._variables[input_name][pos][current])
-        #         # self._variables[input_name][pos]["current"] += 1
+        input_vars_concat = []
+        for index, input_name in enumerate(component.input_id_links):
+            for pos in component.input_bit_positions[index]:
+                current = self._variables[input_name][pos]["current"]
+                input_vars_concat.append(self._variables[input_name][pos][current])
+                self._variables[input_name][pos]["current"] += 1
         # print(input_vars_concat)
-        # # print(self._occurences[component.id])
-        # # print(list(self._occurences[component.id].keys()))
-        # # print(len(list(self._occurences[component.id].keys())))
+        # print(self._occurences[component.id])
+        # print(list(self._occurences[component.id].keys()))
+        # print(len(list(self._occurences[component.id].keys())))
 
-        # rotate_offset = component.description[1]
-        # for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
-        #     self._model.addConstr(output_vars[index] == input_vars_concat[(index-rotate_offset) % component.output_bit_size])
-        #     self.set_as_used_variables([input_vars_concat[(index-rotate_offset) % component.output_bit_size]])
+        rotate_offset = component.description[1]
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+            self._model.addConstr(
+                output_vars[index] == input_vars_concat[(index - rotate_offset) % component.output_bit_size])
+            self.set_as_used_variables([input_vars_concat[(index - rotate_offset) % component.output_bit_size]])
         self._model.update()
 
     def add_and_constraints(self, component):
@@ -555,25 +536,25 @@ class MilpDivisionTrailModel():
 
     def add_intermediate_output_constraints(self, component):
         output_vars = []
-        # # for i in list(self._occurences[component.id].keys()):
-        # tmp = list(self._occurences[component.id].keys())
-        # tmp.sort()
-        # for i in tmp:
-        #     output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-        # # print(output_vars)
+        # for i in list(self._occurences[component.id].keys()):
+        tmp = list(self._occurences[component.id].keys())
+        tmp.sort()
+        for i in tmp:
+            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        # print(output_vars)
 
-        # input_vars_concat = []
-        # for index, input_name in enumerate(component.input_id_links):
-        #     for pos in component.input_bit_positions[index]:
-        #         current = self._variables[input_name][pos]["current"]
-        #         input_vars_concat.append(self._variables[input_name][pos][current])
-        #         self._variables[input_name][pos]["current"] += 1
-        # # print(input_vars_concat)
+        input_vars_concat = []
+        for index, input_name in enumerate(component.input_id_links):
+            for pos in component.input_bit_positions[index]:
+                current = self._variables[input_name][pos]["current"]
+                input_vars_concat.append(self._variables[input_name][pos][current])
+                self._variables[input_name][pos]["current"] += 1
+        # print(input_vars_concat)
 
-        # # print(list(self._occurences[component.id].keys()))
-        # for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
-        #     self._model.addConstr(output_vars[index] == input_vars_concat[bit_pos])
-        #     self.set_as_used_variables([input_vars_concat[bit_pos]])
+        # print(list(self._occurences[component.id].keys()))
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+            self._model.addConstr(output_vars[index] == input_vars_concat[bit_pos])
+            self.set_as_used_variables([input_vars_concat[bit_pos]])
         self._model.update()
 
     def get_cipher_output_component_id(self):
@@ -628,7 +609,7 @@ class MilpDivisionTrailModel():
 
     def add_constraints(self, predecessors, input_id_link_needed, block_needed):
         self.build_gurobi_model()
-        self.improved_create_gurobi_vars_from_all_components(predecessors, input_id_link_needed, block_needed)
+        self.create_gurobi_vars_from_all_components(predecessors, input_id_link_needed, block_needed)
         word_operations_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
         for component_id in list(self._occurences.keys()):  # predecessors:
@@ -682,8 +663,6 @@ class MilpDivisionTrailModel():
             component = self._cipher.get_component_from_id(input_id_link_needed)
             occurences[input_id_link_needed] = [[i for i in range(component.output_bit_size)]]
 
-        # print("occurences")
-        # print(occurences)
         occurences_final = {}
         for component_id in occurences.keys():
             occurences_final[component_id] = self.find_copy_indexes(occurences[component_id])
@@ -723,183 +702,6 @@ class MilpDivisionTrailModel():
                         self._model.addConstr(all_vars[component_id][pos][0] >= all_vars[component_id][pos][i + 1])
                     self._model.addConstr(sum(all_vars[component_id][pos][i + 1] for i in range(nb_copies_needed)) >=
                                           all_vars[component_id][pos][0])
-
-        self._model.update()
-        # print("all_vars")
-        # print(all_vars)
-        self._model.update()
-        self._variables = all_vars
-
-    # def improved_create_gurobi_vars_from_all_components(self, predecessors, input_id_link_needed, block_needed):
-    #     occurences = self.get_where_component_is_used(predecessors, input_id_link_needed, block_needed)
-    #     all_vars = {}
-    #     visited_ids = []
-    #     remaining_ids = list(occurences.keys())
-    #     print(list(occurences.keys()))
-    #     while len(visited_ids) != len(list(occurences.keys())):
-    #         tmp = []
-    #         for component_id in remaining_ids:
-    #             all_vars[component_id] = {}
-    #             # We need the inputs vars to be the first ones defined by gurobi in order to find their values with X.values method.
-    #             # That's why we split the following loop: we first created the original vars, and then the copies vars when necessary.
-    #             print(component_id)
-    #             try:
-    #                 if component_id[:3] == "rot":
-    #                     component = self._cipher.get_component_from_id(component_id)
-    #                     rotate_offset = component.description[1]
-    #                     for index, input_id_link in enumerate(component.input_id_links):
-    #                         for j, pos in enumerate(component.input_bit_positions[index]):
-    #                             all_vars[component_id][j] = {}
-    #                             minim = min(component.input_bit_positions[index])
-    #                             current = all_vars[input_id_link][((pos-rotate_offset) % component.output_bit_size)+minim]["current"]
-    #                             all_vars[component_id][j][0] = all_vars[input_id_link][((pos-rotate_offset) % component.output_bit_size)+minim][current]
-    #                             # self.set_as_used_variables(all_vars[input_id_link][((pos-rotate_offset) % component.output_bit_size)+minim][current])
-    #                             all_vars[component_id][j]["current"] = 0
-    #                             all_vars[input_id_link][((pos-rotate_offset) % component.output_bit_size)+minim]["current"] += 1
-    #                     for pos in list(occurences[component_id].keys()):
-    #                         nb_copies_needed = occurences[component_id][pos]
-    #                         if nb_copies_needed >=2:
-    #                             all_vars[component_id][pos]["current"] = 1
-    #                             for i in range(nb_copies_needed):
-    #                                 all_vars[component_id][pos][i+1] = self._model.addVar(vtype=GRB.BINARY, name=f"copy_{i+1}_"+component_id+f"[{pos}]")
-    #                                 self._model.addConstr(all_vars[component_id][pos][0] >= all_vars[component_id][pos][i+1])
-    #                             self._model.addConstr(sum(all_vars[component_id][pos][i+1] for i in range(nb_copies_needed)) >= all_vars[component_id][pos][0])
-    #                 else:
-    #                     for pos in list(occurences[component_id].keys()):
-    #                         all_vars[component_id][pos] = {}
-    #                         all_vars[component_id][pos][0] = self._model.addVar(vtype=GRB.BINARY, name=component_id+f"[{pos}]")
-    #                         all_vars[component_id][pos]["current"] = 0
-    #                     for pos in list(occurences[component_id].keys()):
-    #                         nb_copies_needed = occurences[component_id][pos]
-    #                         if nb_copies_needed >=2:
-    #                             all_vars[component_id][pos]["current"] = 1
-    #                             for i in range(nb_copies_needed):
-    #                                 all_vars[component_id][pos][i+1] = self._model.addVar(vtype=GRB.BINARY, name=f"copy_{i+1}_"+component_id+f"[{pos}]")
-    #                                 self._model.addConstr(all_vars[component_id][pos][0] >= all_vars[component_id][pos][i+1])
-    #                             self._model.addConstr(sum(all_vars[component_id][pos][i+1] for i in range(nb_copies_needed)) >= all_vars[component_id][pos][0])
-    #                 # print("success")
-    #                 visited_ids.append(component_id)
-    #                 tmp.append(component_id)
-    #                 # print(visited_ids)
-    #                 self._model.update()
-    #                 print(all_vars[component_id])
-    #             except:
-    #                 # print("not now")
-    #                 continue
-    #         for visited_id in tmp:
-    #             remaining_ids.remove(visited_id)
-
-    #     self._model.update()
-    #     # print("all_vars")
-    #     # print(all_vars)
-    #     self._model.update()
-    #     self._variables = all_vars
-
-    def order_predecessors(self, used_predecessors):
-        for component_id in self._cipher.inputs:
-            if component_id in list(self._occurences.keys()):
-                used_predecessors.remove(component_id)
-        tmp = {}
-        final = {}
-        for r in range(self._cipher.number_of_rounds):
-            tmp[r] = {}
-            for component_id in used_predecessors:
-                if int(component_id.split("_")[-2]) == r:
-                    tmp[r][component_id] = int(component_id.split("_")[-1])
-            final[r] = {k: v for k, v in sorted(tmp[r].items(), key=lambda item: item[1])}
-
-        used_predecessors_sorted = []
-        for r in range(self._cipher.number_of_rounds):
-            used_predecessors_sorted += list(final[r].keys())
-
-        l = []
-        for component_id in self._cipher.inputs:
-            if component_id in list(self._occurences.keys()):
-                l.append(component_id)
-        used_predecessors_sorted = l + used_predecessors_sorted
-        return used_predecessors_sorted
-
-    def improved_create_gurobi_vars_from_all_components(self, predecessors, input_id_link_needed, block_needed):
-        occurences = self.get_where_component_is_used(predecessors, input_id_link_needed, block_needed)
-        all_vars = {}
-        # print(list(occurences.keys()))
-        used_predecessors_sorted = self.order_predecessors(list(occurences.keys()))
-        print("used_predecessors_sorted")
-        print(used_predecessors_sorted)
-        for component_id in used_predecessors_sorted:
-            all_vars[component_id] = {}
-            # We need the inputs vars to be the first ones defined by gurobi in order to find their values with X.values method.
-            # That's why we split the following loop: we first created the original vars, and then the copies vars when necessary.
-            # print(component_id)
-            if component_id[:3] == "rot":
-                component = self._cipher.get_component_from_id(component_id)
-                rotate_offset = component.description[1]
-                for index, input_id_link in enumerate(component.input_id_links):
-                    for j, pos in enumerate(component.input_bit_positions[index]):
-                        all_vars[component_id][j] = {}
-                        minim = min(component.input_bit_positions[index])
-                        current = all_vars[input_id_link][((pos - rotate_offset) % component.output_bit_size) + minim][
-                            "current"]
-                        all_vars[component_id][j][0] = \
-                        all_vars[input_id_link][((pos - rotate_offset) % component.output_bit_size) + minim][current]
-                        self.set_as_used_variables([all_vars[input_id_link][
-                                                        ((pos - rotate_offset) % component.output_bit_size) + minim][
-                                                        current]])
-                        all_vars[component_id][j]["current"] = 0
-                        all_vars[input_id_link][((pos - rotate_offset) % component.output_bit_size) + minim][
-                            "current"] += 1
-                for pos in list(occurences[component_id].keys()):
-                    nb_copies_needed = occurences[component_id][pos]
-                    if nb_copies_needed >= 2:
-                        all_vars[component_id][pos]["current"] = 1
-                        for i in range(nb_copies_needed):
-                            all_vars[component_id][pos][i + 1] = self._model.addVar(vtype=GRB.BINARY,
-                                                                                    name=f"copy_{i + 1}_" + component_id + f"[{pos}]")
-                            self._model.addConstr(all_vars[component_id][pos][0] >= all_vars[component_id][pos][i + 1])
-                        self._model.addConstr(
-                            sum(all_vars[component_id][pos][i + 1] for i in range(nb_copies_needed)) >=
-                            all_vars[component_id][pos][0])
-            elif component_id[:5] == "inter":
-                component = self._cipher.get_component_from_id(component_id)
-                for index, input_id_link in enumerate(component.input_id_links):
-                    for j, pos in enumerate(component.input_bit_positions[index]):
-                        new_index = j + index * len(component.input_bit_positions[index])
-                        all_vars[component_id][new_index] = {}
-                        current = all_vars[input_id_link][pos]["current"]
-                        all_vars[component_id][new_index][0] = all_vars[input_id_link][pos][current]
-                        # self.set_as_used_variables([all_vars[input_id_link][pos][current]])
-                        all_vars[component_id][new_index]["current"] = 0
-                        all_vars[input_id_link][pos]["current"] += 1
-                for pos in list(occurences[component_id].keys()):
-                    nb_copies_needed = occurences[component_id][pos]
-                    if nb_copies_needed >= 2:
-                        all_vars[component_id][pos]["current"] = 1
-                        for i in range(nb_copies_needed):
-                            all_vars[component_id][pos][i + 1] = self._model.addVar(vtype=GRB.BINARY,
-                                                                                    name=f"copy_{i + 1}_" + component_id + f"[{pos}]")
-                            self._model.addConstr(all_vars[component_id][pos][0] >= all_vars[component_id][pos][i + 1])
-                        self._model.addConstr(
-                            sum(all_vars[component_id][pos][i + 1] for i in range(nb_copies_needed)) >=
-                            all_vars[component_id][pos][0])
-            else:
-                for pos in list(occurences[component_id].keys()):
-                    all_vars[component_id][pos] = {}
-                    all_vars[component_id][pos][0] = self._model.addVar(vtype=GRB.BINARY,
-                                                                        name=component_id + f"[{pos}]")
-                    all_vars[component_id][pos]["current"] = 0
-                for pos in list(occurences[component_id].keys()):
-                    nb_copies_needed = occurences[component_id][pos]
-                    if nb_copies_needed >= 2:
-                        all_vars[component_id][pos]["current"] = 1
-                        for i in range(nb_copies_needed):
-                            all_vars[component_id][pos][i + 1] = self._model.addVar(vtype=GRB.BINARY,
-                                                                                    name=f"copy_{i + 1}_" + component_id + f"[{pos}]")
-                            self._model.addConstr(all_vars[component_id][pos][0] >= all_vars[component_id][pos][i + 1])
-                        self._model.addConstr(
-                            sum(all_vars[component_id][pos][i + 1] for i in range(nb_copies_needed)) >=
-                            all_vars[component_id][pos][0])
-            self._model.update()
-            # print(all_vars[component_id])
 
         self._model.update()
         # print("all_vars")
@@ -1101,13 +903,13 @@ class MilpDivisionTrailModel():
             p.append(self._model.getVarByName(f"plaintext[{i}]"))
         self._model.setObjective(sum(p[i] for i in range(nb_plaintext_bits_used)), GRB.MAXIMIZE)
 
-        # Specific to Aradi analysis:
-        for i in range(96):
-            v = self._model.getVarByName(f"plaintext[{i}]")
-            self._model.addConstr(v == 0)
-        self._model.update()
-        self._model.write("division_trail_model.lp")
-        ########################
+        # # Specific to Aradi analysis:
+        # for i in range(96):
+        #     v = self._model.getVarByName(f"plaintext[{i}]")
+        #     self._model.addConstr(v == 0)
+        # self._model.update()
+        # self._model.write("division_trail_model.lp")
+        # ########################
 
         print(self._model)
         start = time.time()
@@ -1360,4 +1162,3 @@ y256 = 479
 # x0*x2 + x1,
 # x0*x1*x2 + x0*x2 + x0*x3 + x2,
 # x0*x2 + x1*x2 + x3]
-
