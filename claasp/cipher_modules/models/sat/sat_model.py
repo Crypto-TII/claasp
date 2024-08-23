@@ -69,16 +69,13 @@ from claasp.name_mappings import SBOX
 
 
 class SatModel:
-    def __init__(self, cipher, window_size_weight_pr_vars=-1,
-                 counter='sequential',
-                 compact=False):
+    def __init__(self, cipher, counter='sequential', compact=False):
         """
         Initialise the sat model.
 
         INPUT:
 
         - ``cipher`` -- **Cipher object**; an instance of the cipher.
-        - ``window_size_weight_pr_vars`` -- **integer** (default: `-1`)
         - ``counter`` -- **string** (default: `sequential`)
         - ``compact`` -- **boolean** (default: False); set to True for using a simplified cipher (it will remove
           rotations and permutations)
@@ -100,7 +97,6 @@ class SatModel:
         self._model_constraints = []
         self._sboxes_ddt_templates = {}
         self._sboxes_lat_templates = {}
-        self.window_size_weight_pr_vars = window_size_weight_pr_vars
 
     def _add_clauses_to_solver(self, numerical_cnf, solver):
         """

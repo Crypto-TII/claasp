@@ -27,9 +27,8 @@ from claasp.name_mappings import (CIPHER, WORD_OPERATION, CIPHER_OUTPUT, CONSTAN
 
 
 class SatCipherModel(SatModel):
-    def __init__(self, cipher,  window_size_weight_pr_vars=-1,
-                 counter='sequential', compact=False):
-        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
+    def __init__(self, cipher, counter='sequential', compact=False):
+        super().__init__(cipher, counter, compact)
 
     def build_cipher_model(self, fixed_variables=[]):
         """

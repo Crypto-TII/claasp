@@ -27,8 +27,8 @@ from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, DETERMINISTIC_TRUNCAT
 
 
 class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
-    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False):
-        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
+    def __init__(self, cipher, counter='sequential', compact=False):
+        super().__init__(cipher, counter, compact)
 
     def build_bitwise_deterministic_truncated_xor_differential_trail_model(self, number_of_unknown_variables=None,
                                                                            fixed_variables=[]):

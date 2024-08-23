@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2024-08-23
+
+### Added
+
+- Added prince cipher.
+- Implement s-box version of simeck cipher.
+- Implement simeck cipher.
+- Testing.
+- Working model for impossible xor differential trail extension for key recovery.
+- Find lowest varied deterministic truncated xor differential trail search for cp.
+- Cp impossible wordwise model and impossible trails extension.
+- Allow sat s-boxes to handle rectangular case.
+- Create new version of simon cipher.
+
+### Changed
+
+- Rename hash input from key to message.
+- Improved incompatibility search in intermediate components.
+- Window_size heuristic.
+
+### Fixed
+
+- Correct the incorrect show_graph paramter settings.
+- Continuous diffusion analysis.
+- Manipulate correctly rectangular s-boxes in smt.
+- Doctests.
+- Window_size heuristic. adding check for window -1.
+- Codes duplications.
+- Adressed slow pytests for lowmc cipher and milp xor differential trail search.
+- Code smells.
+- Removed the empty input_id_link that could occur in some cases of the partial inversion.
+- 'plaintext' key error when using vectorized evaluation on a partially inverted cipher.
+- Update sphinx version.
+- Impossible attack extension model for cp.
+
 ## [2.5.0] - 2024-05-22
 
 ### Added
@@ -183,6 +218,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything! First public release.
 
+[2.6.0]: https://github.com/Crypto-TII/claasp/compare/v2.6.0..v2.5.0
 [2.5.0]: https://github.com/Crypto-TII/claasp/compare/v2.5.0..v2.4.0
 [2.4.0]: https://github.com/Crypto-TII/claasp/compare/v2.4.0..v2.3.0
 [2.3.0]: https://github.com/Crypto-TII/claasp/compare/v2.3.0..v2.1.0
