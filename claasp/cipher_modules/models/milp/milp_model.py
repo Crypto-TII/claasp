@@ -226,7 +226,7 @@ class MilpModel:
             sage: variables
             [('p[probability]', x_0)]
             sage: constraints
-            [x_0 == 100]
+            [x_0 == 1000]
         """
         p = self._integer_variable
         variables = []

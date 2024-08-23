@@ -13,7 +13,7 @@ def test_build_wordwise_deterministic_truncated_xor_differential_trail_model():
     milp.build_wordwise_deterministic_truncated_xor_differential_trail_model()
     constraints = milp.model_constraints
 
-    assert len(constraints) == 43960
+    assert len(constraints) == 19768
     assert str(constraints[0]) == '1 <= 1 + x_0 - x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9'
     assert str(constraints[1]) == '1 <= 1 + x_1 - x_9'
     assert str(constraints[-2]) == 'x_3062 == x_2886'

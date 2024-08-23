@@ -40,7 +40,7 @@ class RC5BlockCipher(Cipher):
 
             sage: from claasp.ciphers.block_ciphers.rc5_block_cipher import RC5BlockCipher
             sage: rc5 = RC5BlockCipher()
-            sage: key = 0x0x0001020304050607
+            sage: key = 0x0001020304050607
             sage: plaintext = 0x00010203
             sage: ciphertext = 0x23a8d72e
             sage: rc5.evaluate([key, plaintext]) == ciphertext

@@ -23,7 +23,9 @@ To contribute to this project, please, follow the following conventions.
   - [Single underscore VS double underscore](#single-underscore-vs-double-underscore)
   - [C code](#c-code)
 - [Testing](#testing)
-  - [Running tests](#running-tests)
+  - [Creating pytests](#creating-pytests)
+  - [Running pytests](#running-pytests)
+  - [Running doctests](#running-doctests)
   - [Deprecation warnings](#deprecation-warnings)
 - [Code analysis with SonarCloud](#code-analysis-with-sonarcloud)
   - [Project overview](#project-overview)
@@ -647,6 +649,7 @@ children.
 [C implementation of Python](https://peps.python.org/pep-0007/).
 
 # Testing
+## Creating pytests
 The project uses **`Pytest` as it’s testing framework**. We can forget to write the example Docstrings as they will 
 still be part of the documentation.
 Our tests are stored in the `tests` folder that mimics the folder structure of `claasp`.
@@ -688,8 +691,8 @@ def test_aes_block_cipher():
 As you can see above, the `assert` keyword is the one that will check if our result is the one we expected. 
 Apart from that, the structure of the test is very similar.
 
-## Running tests
-To run all the project test you can run `make pytest command`, but if you want to run specific things you can do:
+## Running pytests
+To run all the project test you can run `make pytest` command, but if you want to run specific things you can do:
 - **Run specific file:**
 ```bash
 pytest -v tests/cipher_test.py
@@ -721,6 +724,18 @@ def test_aes_block_cipher():
     plaintext = 0x6bc1bee22e409f96e93d7e117393172a
     ciphertext = 0x3ad77bb40d7a3660a89ecaf32466ef97
     assert aes.evaluate([key, plaintext]) == ciphertext
+```
+## Running doctests
+If you want to run all doctests you need to execute `make test` command. 
+
+If you want to execute a **specific module** you can execute:
+```bash
+sage -t claasp
+```
+
+And if you want to execute a **specific file test** you can execute:
+```bash
+sage -t claasp/cipher.py
 ```
 
 ## Deprecation warnings
