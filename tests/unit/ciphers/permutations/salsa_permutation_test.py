@@ -33,3 +33,4 @@ def test_salsa_permutation():
     output = int('0xccaaf67223d960f79153e63acd9a60d050440492f07cad19ae344aa0df4cfdfcca531c298e7943dbac1680cdd503'
                  'ca00a74b2ad6bc331c5c1dda24c7ee928277', 16)
     assert salsa.evaluate([plaintext], verbosity=False) == output
+    assert salsa.evaluate_vectorized([plaintext], evaluate_api=True) == output

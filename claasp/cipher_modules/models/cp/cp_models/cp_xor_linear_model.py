@@ -216,7 +216,7 @@ class CpXorLinearModel(CpModel):
 
         return cp_constraints
 
-    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return a list of solutions containing all the linear trails having the ``fixed_weight`` weight of correlation.
         By default, the search removes the key schedule, if any.
@@ -256,14 +256,14 @@ class CpXorLinearModel(CpModel):
         self.build_xor_linear_trail_model(fixed_weight, fixed_values)
         end = tm.time()
         build_time = end - start
-        solutions = self.solve(XOR_LINEAR, solver_name)
+        solutions = self.solve(XOR_LINEAR, solver_name, num_of_processors, timelimit)
         for solution in solutions:
             solution['building_time_seconds'] = build_time
             solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
         return solutions
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight=64,
-                                                       fixed_values=[], solver_name=SOLVER_DEFAULT):
+                                                       fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return a list of solutions containing all the linear trails having the weight of correlation lying in the interval ``[min_weight, max_weight]``.
         By default, the search removes the key schedule, if any.
@@ -305,14 +305,14 @@ class CpXorLinearModel(CpModel):
         self._model_constraints.append(f'constraint weight >= {100 * min_weight} /\\ weight <= {100 * max_weight} ')
         end = tm.time()
         build_time = end - start
-        solutions = self.solve(XOR_LINEAR, solver_name)
+        solutions = self.solve(XOR_LINEAR, solver_name, num_of_processors, timelimit)
         for solution in solutions:
             solution['building_time_seconds'] = build_time
             solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
 
         return solutions
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a linear trail with the lowest weight of correlation.
         By default, the search removes the key schedule, if any.
@@ -356,13 +356,13 @@ class CpXorLinearModel(CpModel):
         self.build_xor_linear_trail_model(-1, fixed_values)
         end = tm.time()
         build_time = end - start
-        solution = self.solve('xor_linear_one_solution', solver_name)
+        solution = self.solve('xor_linear_one_solution', solver_name, num_of_processors, timelimit)
         solution['building_time_seconds'] = build_time
         solution['test_name'] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
-    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a linear trail with any weight of correlation.
         By default, the search removes the key schedule, if any.
@@ -397,13 +397,13 @@ class CpXorLinearModel(CpModel):
         self.build_xor_linear_trail_model(0, fixed_values)
         end = tm.time()
         build_time = end - start
-        solution = self.solve('xor_linear_one_solution', solver_name)
+        solution = self.solve('xor_linear_one_solution', solver_name, num_of_processors, timelimit)
         solution['building_time_seconds'] = build_time
         solution['test_name'] = "find_one_xor_linear_trail"
 
         return solution
 
-    def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
         Return the solution representing a linear trail with the weight of correlation equal to ``fixed_weight``.
         By default, the search removes the key schedule, if any.
@@ -443,7 +443,7 @@ class CpXorLinearModel(CpModel):
         self.build_xor_linear_trail_model(fixed_weight, fixed_values)
         end = tm.time()
         build_time = end - start
-        solution = self.solve('xor_linear_one_solution', solver_name)
+        solution = self.solve('xor_linear_one_solution', solver_name, num_of_processors, timelimit)
         solution['building_time_seconds'] = build_time
         solution['test_name'] = "find_one_xor_linear_trail_with_fixed_weight"
 
@@ -613,8 +613,9 @@ class CpXorLinearModel(CpModel):
             for i in range(sbox_lat.nrows()):
                 set_of_occurrences = set(sbox_lat.rows()[i])
                 set_of_occurrences -= {0}
-                valid_probabilities.update({round(100 * math.log2(2 ** input_size / abs(occurrence)))
-                                            for occurrence in set_of_occurrences})
+                valid_probabilities.update(
+                    {round(100 * math.log2(abs(pow(2, input_size - 1) / occurence))) for occurence in
+                     set_of_occurrences})
             self.sbox_mant.append((description, output_id_link))
 
     def weight_xor_linear_constraints(self, weight):

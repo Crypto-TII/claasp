@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2024-05-22
+
+### Added
+
+- Non rectangular s-boxes support for milp models.
+- Solvers options and modularity.
+- Cp solvers names and method.
+
+### Changed
+
+- Processing of intermediate outputs fixed for partial cipher creation method.
+- Rearrange smt solver specifications.
+- Rearrange sat solver specifications.
+- Window size feature.
+
+### Fixed
+
+- Fix create_bash_script.py for local installation after distribution change.
+- Fix platform and gurobi version for m1.
+- Or component cp linear propagation declarations.
+- Remove concatenate component in kasumi.
+
 ## [2.4.0] - 2024-04-06
 
 ### Added
@@ -161,6 +183,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything! First public release.
 
+[2.5.0]: https://github.com/Crypto-TII/claasp/compare/v2.5.0..v2.4.0
 [2.4.0]: https://github.com/Crypto-TII/claasp/compare/v2.4.0..v2.3.0
 [2.3.0]: https://github.com/Crypto-TII/claasp/compare/v2.3.0..v2.1.0
 [2.1.0]: https://github.com/Crypto-TII/claasp/compare/v2.1.0..v2.0.0

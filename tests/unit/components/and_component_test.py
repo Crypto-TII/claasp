@@ -36,9 +36,9 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
 
     assert declarations == []
 
-    assert constraints[0] == 'constraint if sbox_0_2[0] == 0 then and_0_18_active[0] = 0 /\\ and_0_18_value[0] = 0 ' \
+    assert constraints[0] == 'constraint if sbox_0_2_active[0] == 0 then and_0_18_active[0] = 0 /\\ and_0_18_value[0] = 0 ' \
                              'else and_0_18_active[0] = 3 /\\ and_0_18_value[0] = -2 endif;'
-    assert constraints[-1] == 'constraint if sbox_0_14[0] == 0 then and_0_18_active[3] = 0 /\\ and_0_18_value[3] = 0' \
+    assert constraints[-1] == 'constraint if sbox_0_14_active[0] == 0 then and_0_18_active[3] = 0 /\\ and_0_18_value[3] = 0' \
                               ' else and_0_18_active[3] = 3 /\\ and_0_18_value[3] = -2 endif;'
 
 

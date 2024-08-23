@@ -11,7 +11,7 @@ DOCKER_IMG_NAME=claasp
 CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 
 all: install
-	if [ $(CURRENT_BRANCH) == "master" ]; then\
+	if [ $(CURRENT_BRANCH) == "main" ]; then\
 		$(SAGE_BIN) setup.py testall;\
 	else\
 		$(SAGE_BIN) -t `{ git diff --name-only "*.py" ; git diff --name-only --staged "*.py"; } | uniq`;\
@@ -25,7 +25,7 @@ rundocker: builddocker
 	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
 
 builddocker-m1:
-	docker build --build-arg="GUROBI_ARCH=armlinux64" -f docker/Dockerfile --platform linux/aarch64 --target claasp-base -t $(DOCKER_IMG_NAME) .
+	docker build -f docker/Dockerfile --platform linux/x86_64 --target claasp-base -t $(DOCKER_IMG_NAME) .
 
 rundocker-m1: builddocker-m1
 	docker run -i -p 8888:8888 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
@@ -95,6 +95,3 @@ copyright: install
 
 local-installation:
 	./configure.sh
-
-local-installation-m1:
-	./configure.sh armlinux64

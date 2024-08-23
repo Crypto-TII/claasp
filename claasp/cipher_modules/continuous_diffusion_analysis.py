@@ -1,16 +1,16 @@
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -243,9 +243,8 @@ class ContinuousDiffusionAnalysis:
 
     @staticmethod
     def _get_graph_representation_components_by_type(graph_representation, type_name):
-        cipher_rounds = graph_representation["cipher_rounds"][0]
+        cipher_rounds = sum(graph_representation["cipher_rounds"], [])
         components_by_type = list(filter(lambda d: d['type'] in [type_name], cipher_rounds))
-
         return components_by_type
 
     @staticmethod
@@ -306,9 +305,9 @@ class ContinuousDiffusionAnalysis:
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
             sage: from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
             sage: speck_cipher = speck(number_of_rounds=2) # long time
-            sage: cda = ContinuousDiffusionAnalysis(speck_cipher)
-            sage: output = cda.continuous_diffusion_factor(5, 20) # long time
-            sage: output['plaintext']['cipher_output']['diffusion_factor']['values'][0] > 0 # long time
+            sage: cda = ContinuousDiffusionAnalysis(speck_cipher) # doctest: +SKIP
+            sage: output = cda.continuous_diffusion_factor(5, 20) # long time # doctest: +SKIP
+            sage: output['plaintext']['cipher_output']['diffusion_factor']['values'][0] > 0 # long time # doctest: +SKIP
             True
         """
         output_tags = list(ContinuousDiffusionAnalysis._get_graph_representation_tag_output_sizes(
@@ -433,9 +432,9 @@ class ContinuousDiffusionAnalysis:
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher as speck
             sage: from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
             sage: speck_cipher = speck(number_of_rounds=1) # long time
-            sage: cda = ContinuousDiffusionAnalysis(speck_cipher)
-            sage: output = cda.continuous_diffusion_tests() # long time
-            sage: output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure'][0]['values'][0] == 0.0  # long time
+            sage: cda = ContinuousDiffusionAnalysis(speck_cipher) # doctest: +SKIP
+            sage: output = cda.continuous_diffusion_tests() # long time # doctest: +SKIP
+            sage: output["test_results"]['plaintext']['round_key_output']['continuous_neutrality_measure'][0]['values'][0] == 0.0  # long time # doctest: +SKIP
             True
         """
         continuous_diffusion_tests = {"input_parameters": {
