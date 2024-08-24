@@ -50,9 +50,8 @@ from claasp.name_mappings import (CONSTANT, SBOX, INTERMEDIATE_OUTPUT, CIPHER_OU
 
 class CmsSatCipherModel(SatCipherModel):
 
-    def __init__(self, cipher, window_size_weight_pr_vars=-1,
-                 counter='sequential', compact=False):
-        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
+    def __init__(self, cipher, counter='sequential', compact=False):
+        super().__init__(cipher, counter, compact)
 
     def _add_clauses_to_solver(self, numerical_cnf, solver):
         """
