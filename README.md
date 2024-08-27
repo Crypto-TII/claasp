@@ -1,3 +1,8 @@
+
+<div align="center">
+    <img src="https://github.com/Crypto-TII/claasp/assets/63452003/e226b467-adaa-486c-9558-45526c62d6e8" alt="claasp-logo"></img>
+</div>
+
 # CLAASP: A Cryptographic Library for the Automated Analysis of Symmetric Primitives
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Crypto-TII_claasp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Crypto-TII_claasp)
