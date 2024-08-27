@@ -1049,6 +1049,10 @@ class XOR(Component):
         """
         Return a list of variables and a list of clauses representing XOR for SAT CIPHER model
 
+        This method translates in CNF the constraint ``z = Xor(x, y)``. In prefixed notation, it becomes:
+        ``And(Or(z, Not(x), y), Or(z, x, Not(y)), Or(z, Not(x), Not(y)), Or(z, x, y))``.
+        This method supports XOR operation using more than two operands.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -1090,7 +1094,8 @@ class XOR(Component):
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
 
         INPUT:
 
@@ -1131,7 +1136,8 @@ class XOR(Component):
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
 
         INPUT:
 
@@ -1162,7 +1168,7 @@ class XOR(Component):
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            :ref:`sat-standard` for the format, [LWR2016]_ for the algorithm.
 
         INPUT:
 
@@ -1200,6 +1206,10 @@ class XOR(Component):
         """
         Return a variable list and SMT-LIB list asserts representing XOR for SMT CIPHER model
 
+        Since the XOR operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
+        builtin operation, e.g. ``z = XOR(x, y)`` becomes ``(assert (= z (xor x y)))``.
+        This method support XOR operation using more than two inputs.
+
         INPUT:
 
         - None
@@ -1235,6 +1245,10 @@ class XOR(Component):
         """
         Return a variable list and SMT-LIB list asserts representing XOR for SMT XOR DIFFERENTIAL model
 
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+
         INPUT:
 
         - None
@@ -1261,6 +1275,10 @@ class XOR(Component):
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a variable list and SMT-LIB list asserts representing XOR for SMT XOR LINEAR model
+
+        .. SEEALSO::
+
+            [LWR2016]_ for the algorithm.
 
         INPUT:
 

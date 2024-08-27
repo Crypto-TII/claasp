@@ -511,6 +511,11 @@ class NOT(Component):
         """
         Return a list of variables and a list of clauses representing NOT for SAT CIPHER model
 
+        The list of clauses encodes inequalities ensuring that input variables are correctly negated in the output
+        during the NOT operation. Each clause represents a logical condition where the output variable is the inverse of
+        the corresponding input variable, enforcing the correct negation. These constraints ensure that the output
+        accurately reflects the NOT operation applied to the input.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -547,6 +552,11 @@ class NOT(Component):
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses representing NOT for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
+
+        The list of clauses encodes equalities ensuring that input variables are correctly mapped in the output ones
+        during the NOT operation. Note that when performing XOR differential analysis we need equalities.
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires two variables per each symbol.
 
         .. SEEALSO::
 
@@ -588,6 +598,9 @@ class NOT(Component):
         """
         Return a list of variables and a list of clauses representing NOT for SAT XOR DIFFERENTIAL model
 
+        The list of clauses encodes equalities ensuring that input variables are correctly mapped in the output ones
+        during the NOT operation. Note that when performing XOR differential analysis we need equalities.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -624,6 +637,11 @@ class NOT(Component):
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing NOT for SAT XOR LINEAR model
+
+        The list of clauses encodes equalities ensuring that input variables are correctly mapped in the output ones
+        during the NOT operation. Note that when performing XOR linear analysis we need equalities.
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires different encodings for input and ouput variables.
 
         .. SEEALSO::
 
@@ -663,6 +681,11 @@ class NOT(Component):
         """
         Return a variable list and SMT-LIB list asserts representing NOT for SMT CIPHER model
 
+        The list of asserts encodes inequalities ensuring that input variables are correctly negated in the output
+        during the NOT operation. Each clause represents a logical condition where the output variable is the inverse of
+        the corresponding input variable, enforcing the correct negation. These constraints ensure that the output
+        accurately reflects the NOT operation applied to the input.
+
         INPUT:
 
         - None
@@ -697,6 +720,9 @@ class NOT(Component):
         """
         Return a variable list and SMT-LIB list asserts representing NOT for SMT XOR DIFFERENTIAL model
 
+        The list of clauses encodes equalities ensuring that input variables are correctly mapped in the output ones
+        during the NOT operation. Note that when performing XOR differential analysis we need equalities.
+
         INPUT:
 
         - ``model`` -- **model object** (default: `None`); a model instance
@@ -730,6 +756,9 @@ class NOT(Component):
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a variable list and SMT-LIB list asserts representing NOT for SMT XOR LINEAR model
+
+        The list of clauses encodes equalities ensuring that input variables are correctly mapped in the output ones
+        during the NOT operation. Note that when performing XOR linear analysis we need equalities.
 
         INPUT:
 

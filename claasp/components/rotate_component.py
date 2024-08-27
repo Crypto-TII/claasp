@@ -607,6 +607,10 @@ class Rotate(Component):
         """
         Return a list of variables and a list of clauses representing ROTATION for SAT CIPHER model
 
+        The list of clauses encodes equalities ensuring that input variables are correctly positioned in the output.
+        Each clause represents a logical condition where input variables are mapped to their corresponding output
+        positions through rotation.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -646,9 +650,13 @@ class Rotate(Component):
         """
         Return a list of variables and a list of clauses representing ROTATION for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires two variables per each symbol.
+
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.rotate_component.Rotate.sat_constraints>` for the model.
 
         INPUT:
 
@@ -690,7 +698,8 @@ class Rotate(Component):
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.rotate_component.Rotate.sat_constraints>` for the model.
 
         INPUT:
 
@@ -719,9 +728,13 @@ class Rotate(Component):
         """
         Return a list of variables and a list of clauses representing ROTATION for SAT XOR LINEAR model
 
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires different encodings for input and ouput variables.
+
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.rotate_component.Rotate.sat_constraints>` for the model.
 
         INPUT:
 
@@ -760,6 +773,10 @@ class Rotate(Component):
         """
         Return a variable list and SMT-LIB list asserts representing ROTATION for SMT CIPHER model
 
+        The list of asserts encodes equalities ensuring that input variables are correctly positioned in the output.
+        Each assert represents a condition where input variables are mapped to their corresponding output
+        positions through rotation.
+
         INPUT:
 
         - None
@@ -796,6 +813,10 @@ class Rotate(Component):
         """
         Return a variable list and SMT-LIB list asserts representing ROTATION for SMT CIPHER model
 
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.rotate_component.Rotate.smt_constraints>` for the model.
+
         INPUT:
 
         - None
@@ -822,6 +843,13 @@ class Rotate(Component):
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a variable list and SMT-LIB list asserts representing ROTATION for SMT XOR LINEAR model
+
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires different encodings for input and ouput variables.
+
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.rotate_component.Rotate.smt_constraints>` for the model.
 
         INPUT:
 

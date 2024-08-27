@@ -665,6 +665,11 @@ class SHIFT(Component):
         """
         Return a list of variables and a list of clauses representing SHIFT for SAT CIPHER model.
 
+        The list of clauses encodes equalities ensuring that input variables are correctly positioned in the output
+        during the shift operation. Each clause represents a logical condition where input variables are mapped to their
+        corresponding output positions through the shift. Additionally, output variables that do not correspond to an
+        input variable are constrained to zero, ensuring a valid state in the resulting configuration.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -712,9 +717,13 @@ class SHIFT(Component):
         """
         Return a list of variables and a list of clauses representing SHIFT for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires two variables per each symbol.
+
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
 
         INPUT:
 
@@ -765,7 +774,8 @@ class SHIFT(Component):
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
 
         INPUT:
 
@@ -794,9 +804,13 @@ class SHIFT(Component):
         """
         Return a list of variables and a list of clauses representing SHIFT for SAT XOR LINEAR model
 
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires different encodings for input and ouput variables.
+
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
 
         INPUT:
 
@@ -841,6 +855,12 @@ class SHIFT(Component):
     def smt_constraints(self):
         """
         Return a variable list and SMT-LIB list asserts representing SHIFT for SMT CIPHER model
+
+        The list of asserts encodes equalities ensuring that input variables are correctly positioned in the output
+        during the shift operation. Each clause represents a logical condition where input variables are mapped to their
+        corresponding output positions through the shift. Additionally, output variables that do not correspond to an
+        input variable are constrained to zero, ensuring a valid state in the resulting configuration. Note that, it is
+        not an equality using boolean False, instead, it has been encoded in a CNF fashion.
 
         INPUT:
 
@@ -887,6 +907,10 @@ class SHIFT(Component):
         """
         Return a variable list and SMT-LIB list asserts representing SHIFT for SMT XOR DIFFERENTIAL model
 
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.shift_component.SHIFT.smt_constraints>`.
+
         INPUT:
 
         - None
@@ -913,6 +937,13 @@ class SHIFT(Component):
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a variable list and SMT-LIB list asserts representing SHIFT for SMT XOR LINEAR model
+
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires different encodings for input and ouput variables.
+
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.shift_component.SHIFT.smt_constraints>`.
 
         INPUT:
 

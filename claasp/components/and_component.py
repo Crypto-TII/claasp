@@ -336,9 +336,9 @@ class AND(MultiInputNonlinearLogicalOperator):
         """
         Return a list of variables and a list of clauses representing AND for SAT CIPHER model
 
-        This method translates in CNF the constraint ``z = x & y``. In prefixed notation, it becomes:
+        This method translates in CNF the constraint ``z = And(x, y)``. In prefixed notation, it becomes:
         ``And(Or(x, Not(z)), Or(y, Not(z)), Or(z, Not(x), Not(y)))``.
-        This method supports AND operation using more than two operands.
+        This method supports AND operation using more than two inputs.
 
         .. SEEALSO::
 
@@ -378,8 +378,8 @@ class AND(MultiInputNonlinearLogicalOperator):
         Return a variable list and SMT-LIB list asserts representing AND for SMT CIPHER model
 
         Since the AND operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
-        builtin operation, e.g. ``z = x & y`` becomes ``(assert (= z (and x y)))``.
-        This method support AND operation using more than two operands.
+        builtin operation, e.g. ``z = And(x, y)`` becomes ``(assert (= z (and x y)))``.
+        This method support AND operation using more than two inputs.
 
         INPUT:
 

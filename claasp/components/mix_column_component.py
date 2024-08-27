@@ -704,7 +704,8 @@ class MixColumn(LinearLayer):
         Return a list of variables and a list of clauses representing MIX COLUMN for SAT CIPHER model
 
         The model is generated converting the MIX COLUMN compoment into a
-        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer.sat_constraints>`.
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.sat_constraints>`.
 
         .. SEEALSO::
 
@@ -737,7 +738,8 @@ class MixColumn(LinearLayer):
         Return a list of variables and a list of clauses representing MIX COLUMN for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
         The model is generated converting the MIX COLUMN compoment into a
-        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer.sat_bitwise_deterministic_truncated_xor_differential_constraints>`.
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.sat_bitwise_deterministic_truncated_xor_differential_constraints>`.
 
         .. SEEALSO::
 
@@ -769,7 +771,8 @@ class MixColumn(LinearLayer):
         Return a list of variables and a list of clauses representing MIX COLUMN for SAT XOR DIFFERENTIAL model
 
         The model is generated converting the MIX COLUMN compoment into a
-        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer.sat_xor_differential_propagation_constraints>`.
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.sat_xor_differential_propagation_constraints>`.
 
         .. SEEALSO::
 
@@ -795,7 +798,8 @@ class MixColumn(LinearLayer):
         Return a list of variables and a list of clauses representing MIX COLUMN for SAT XOR LINEAR model
 
         The model is generated converting the MIX COLUMN compoment into a
-        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer.sat_xor_linear_mask_propagation_constraints>`.
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.sat_xor_linear_mask_propagation_constraints>`.
 
         .. SEEALSO::
 
@@ -828,7 +832,8 @@ class MixColumn(LinearLayer):
         Return a variable list and SMT-LIB list asserts representing MIX COLUMN for SMT CIPHER model
 
         The model is generated converting the MIX COLUMN compoment into a
-        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer.smt_constraints>`.
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.smt_constraints>`.
 
         INPUT:
 
@@ -857,7 +862,8 @@ class MixColumn(LinearLayer):
         Return a variable list and SMT-LIB list asserts representing MIX COLUMN for SMT XOR DIFFERENTIAL model
 
         The model is generated converting the MIX COLUMN compoment into a
-        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer.smt_xor_differential_propagation_constraints>`.
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.smt_xor_differential_propagation_constraints>`.
 
         INPUT:
 
@@ -879,7 +885,8 @@ class MixColumn(LinearLayer):
         Return a variable list and SMT-LIB list asserts representing MIX COLUMN for SMT XOR LINEAR model
 
         The model is generated converting the MIX COLUMN compoment into a
-        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer.smt_xor_linear_mask_propagation_constraints>`.
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.smt_xor_linear_mask_propagation_constraints>`.
 
         INPUT:
 

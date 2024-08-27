@@ -249,9 +249,9 @@ class OR(MultiInputNonlinearLogicalOperator):
         """
         Return a list of variables and a list of clauses representing OR for SAT CIPHER model
 
-        This method translates in CNF the constraint ``z = x | y``. It becomes in prefixed notation:
+        This method translates in CNF the constraint ``z = Or(x, y)``. It becomes in prefixed notation:
         ``And(Or(z, Not(x)), Or(z, Not(y)), Or(x, y, Not(z)))``.
-        This method support OR operation using more than two operands.
+        This method support OR operation using more than two inputs.
 
         .. SEEALSO::
 
@@ -290,7 +290,9 @@ class OR(MultiInputNonlinearLogicalOperator):
         """
         Return a variable list and SMT-LIB list asserts representing OR for SMT CIPHER model
 
-        This method support OR operation using more than two operands.
+        Since the OR operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
+        builtin operation, e.g. ``z = Or(x, y)`` becomes ``(assert (= z (or x y)))``.
+        This method support OR operation using more than two inputs.
 
         INPUT:
 

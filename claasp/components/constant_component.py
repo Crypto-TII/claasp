@@ -521,6 +521,8 @@ class Constant(Component):
         """
         Return a list of variables and a list of clauses representing CONSTANT for SAT CIPHER model
 
+        The list of the constraints is just the binary representation of the value of the constant.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -558,6 +560,10 @@ class Constant(Component):
         """
         Return a list of variables and a list of clauses representing CONSTANT for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
+        The list of the constraints is just the binary representation of the value of the constant.
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires two variables per each symbol.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -590,6 +596,8 @@ class Constant(Component):
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing CONSTANT for SAT XOR DIFFERENTIAL model
+
+        The value encoded is always zero for any constant since its contribute to the difference is null.
 
         .. SEEALSO::
 
@@ -625,6 +633,8 @@ class Constant(Component):
         """
         Return a list of variables and a list of clauses representing CONSTANT for SAT XOR LINEAR model
 
+        The list of the clauses is empty since in XOR linear analysis any constant flip the sign if needed.
+
         .. SEEALSO::
 
             :ref:`sat-standard` for the format.
@@ -655,6 +665,8 @@ class Constant(Component):
     def smt_constraints(self):
         """
         Return a variable list and SMT-LIB list asserts representing CONSTANT for SMT CIPHER model
+
+        The list of the constraints is just the binary representation of the value of the constant.
 
         INPUT:
 
@@ -689,6 +701,8 @@ class Constant(Component):
         """
         Return a variable list and SMT-LIB list asserts representing CONSTANT for SMT XOR DIFFERENTIAL model
 
+        The value encoded is always zero for any constant since its contribute to the difference is null.
+
         INPUT:
 
         - ``model`` -- **model object** (default: `None`); a model instance
@@ -719,6 +733,8 @@ class Constant(Component):
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a variable list and SMT-LIB list asserts representing CONSTANT for SMT XOR LINEAR model
+
+        The list of the clauses is empty since in XOR linear analysis any constant flip the sign if needed.
 
         INPUT:
 
