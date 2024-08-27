@@ -5,7 +5,7 @@ def test_twine_block_cipher():
     assert twine.type == 'block_cipher'
     assert twine.family_name == 'twine'
     assert twine.number_of_rounds == 36
-    assert twine.id == 'twine_p64_k80_o64_r32'
+    assert twine.id == 'twine_p64_k80_o64_r36'
     plaintext = 0
     key = 0
     ciphertext = 0x7393C133CDE3F8DB
