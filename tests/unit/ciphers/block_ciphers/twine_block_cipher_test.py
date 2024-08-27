@@ -18,7 +18,7 @@ def test_twine_block_cipher():
     assert twine.evaluate([plaintext, key]) == ciphertext
     assert twine.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
 
-    twine = TwineBlockCipher(key_bit_size=80, number_of_rounds=36)
+    twine = TwineBlockCipher(key_bit_size=128, number_of_rounds=36)
     key = 0x00112233445566778899AABBCCDDEEFF
     ciphertext = 0x979FF9B379B5A9B8
     assert twine.evaluate([plaintext, key]) == ciphertext
