@@ -1,13 +1,15 @@
 import time
-from gurobipy import *
+# from gurobipy import *
 from sage.crypto.sbox import SBox
-from sage.crypto.boolean_function import BooleanFunction
 from collections import Counter
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
-from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
-                                  WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
-import networkx as nx
 from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_predecessors_subgraph
+
+"""
+IMPORTANT:
+This module can only be used if the user possesses a Gurobi license.
+In that case, please uncomment the gurobipy import.
+"""
 
 
 class MilpDivisionTrailModel():
