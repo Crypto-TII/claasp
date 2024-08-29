@@ -16,114 +16,114 @@ class MilpDivisionTrailModel():
 
         sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
         sage: cipher = AsconPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation import AsconSboxSigmaNoMatrixPermutation
         sage: cipher = AsconSboxSigmaNoMatrixPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
         sage: cipher = GastonPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
         sage: cipher = GastonSboxPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.xoodoo_sbox_permutation import XoodooSboxPermutation
         sage: cipher = XoodooSboxPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.xoodoo_permutation import XoodooPermutation
         sage: cipher = XoodooPermutation(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
         sage: cipher = KeccakPermutation(number_of_rounds=1, word_size=64)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
         sage: cipher = KeccakSboxPermutation(number_of_rounds=1, word_size=64)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
         sage: cipher = ToySPN1(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(1)
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
         sage: cipher = SimonBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
         sage: cipher = SimonBlockCipher(number_of_rounds=2)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0)], 0)
 
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: cipher = SpeckBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(15)
 
         sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
         sage: cipher = LBlockBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.build_gurobi_model()
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
         sage: cipher = AradiBlockCipherSBox(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.find_anf_of_specific_output_bit(0)
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.find_anf_of_specific_output_bit(0, fixed_degree=1)
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=2)
-        sage: from claasp.cipher_modules.division_trail_search_back_to_working_version import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0), ("plaintext", 32), ("plaintext", 64), ("plaintext", 96)], 0)
 
@@ -610,7 +610,6 @@ class MilpDivisionTrailModel():
     def add_constraints(self, predecessors, input_id_link_needed, block_needed):
         self.build_gurobi_model()
         self.create_gurobi_vars_from_all_components(predecessors, input_id_link_needed, block_needed)
-        word_operations_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
 
         for component_id in list(self._occurences.keys()):  # predecessors:
             if component_id not in self._cipher.inputs:
@@ -836,14 +835,6 @@ class MilpDivisionTrailModel():
     def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None):
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree)
 
-        # # Specific to Aradi analysis:
-        # for i in range(96):
-        #     v = self._model.getVarByName(f"plaintext[{i}]")
-        #     self._model.addConstr(v == 0)
-        # self._model.update()
-        # self._model.write("division_trail_model.lp")
-        # ########################
-
         print(self._model)
         start = time.time()
         self._model.optimize()
@@ -880,36 +871,16 @@ class MilpDivisionTrailModel():
             print(f"\nSearch of {s} in anf {i} :")
             self.check_presence_of_particular_monomial_in_specific_anf(monomial, i, fixed_degree)
 
-    # # Ascon circuit version, checked by hand for y0
-    # ['p64p256', 'p109p301', 'p128', 'p109p45', 'p64p0', 'p192', 'p0', 'p109', 'p100', 'p100p164', 'p45', 'p173', 'p237', 'p164', 'p228', 'p109p173', 'p100p292', 'p64', 'p100p36', 'p64p128', 'p36']
-
-    # Simon y0 round 2 checked by hand:
-    # ['p3p24', 'p2p9p24', 'p0p9p17', 'k50', 'p0p3p9', 'k32', 'p18', 'p2p9p10', 'p24k49', 'p0', 'p10k49', 'k49k56', 'p17k56', 'p0p2p9', 'p4', 'p10p17', 'p2p9k56', 'p17p24', 'p0p9k49', 'p3k56']
-
-    # Speck y_round2[15]:
-    # y_round1[8] = ['p2p3p5p8p27p29p30p31', 'p3p5p7p8p25p27p29p31', 'p2p5p8p26p27p29p30p31', 'p2p3p6p27p28p29', 'p2p3p5p6p8p27p30p31', 'p5p6p7p25p26p27p30', 'p2p5p6p26p27p29', 'p2p4p26p27', 'p2p4p8p26p28p29p30p31', 'k56', 'p3p5p6p7p25p27p30', 'p2p3p4p5p7p29p30', 'p2p5p6p8p26p27p30p31', 'p3p4p5p6p7p8p25p31', 'p4p6p7p25p26p28p30', 'p24', 'p8p25p26p27p28p29p30p31', 'p2p3p4p6p8p28p30p31', 'p3p4p5p7p8p25p29p31', 'p5p6p25p26p27p29', 'p6p7p8p25p26p27p28p31', 'p2p5p26p27p28', 'p4p6p25p26p28p29', 'p2p4p7p26p28p29p30', 'p3p5p6p8p25p27p30p31', 'p2p3p5p6p27p29', 'p4p7p25p26p28p29p30', 'p3p5p25p27p28', 'p6p7p25p26p27p28p30', 'p2p6p8p26p27p28p30p31', 'p2p3p5p27p28', 'p2p4p6p26p28p29', 'p4p8p25p26p28p29p30p31', 'p3p4p25p27', 'p3p4p5p8p25p29p30p31', 'p2p3p6p8p27p28p30p31', 'p2p5p7p26p27p29p30', 'p2p3p4p5p28', 'p3p4p6p25p28p29', 'p2p3p4p6p7p28p30', 'p2p6p26p27p28p29', 'p2p3p7p8p27p28p29p31', 'p3p4p7p8p25p28p29p31', 'p2p4p5p6p8p26p30p31', 'p2p3p4p6p7p8p28p31', 'p2p4p5p6p7p8p26p31', 'p3p4p5p6p7p25p30', 'p2p3p4p5p7p8p29p31', 'p2p3p4p5p6p7p30', 'p2p3p4p5p8p29p30p31', 'p6p8p25p26p27p28p30p31', 'p3p6p7p8p25p27p28p31', 'p2p3p6p7p8p27p28p31', 'p4p6p7p8p25p26p28p31', 'p2p3p4p7p8p28p29p31', 'p3p7p25p27p28p29p30', 'p2p3p5p6p7p27p30', 'p2p4p5p6p7p26p30', 'p5p6p8p25p26p27p30p31', 'p3p5p6p7p8p25p27p31', 'p3p25p26', 'p2p4p6p7p26p28p30', 'p4p5p25p26p28', 'p2p6p7p26p27p28p30', 'p2p3p6p7p27p28p30', 'p3p7p8p25p27p28p29p31', 'p2p6p7p8p26p27p28p31', 'p2p4p6p8p26p28p30p31', 'p3p4p6p8p25p28p30p31', 'p4p5p6p7p8p25p26p31', 'p3p6p8p25p27p28p30p31', 'p2p3p5p7p27p29p30', 'p4p5p7p8p25p26p29p31', 'p2p5p6p7p26p27p30', 'p2p4p6p7p8p26p28p31', 'p2p3p5p7p8p27p29p31', 'p2p4p7p8p26p28p29p31', 'p4p5p6p25p26p29', 'p2p4p5p8p26p29p30p31', 'p3p6p25p27p28p29', 'p2p3p7p27p28p29p30', 'p5p6p7p8p25p26p27p31', 'p2p3p4p7p28p29p30', 'p2p3p8p27p28p29p30p31', 'p2p4p5p7p26p29p30', 'p2p4p5p6p26p29', 'p3p4p8p25p28p29p30p31', 'p3p4p5p6p8p25p30p31', 'p3p8p25p27p28p29p30p31', 'p2p5p7p8p26p27p29p31', 'p2p8p26p27p28p29p30p31', 'p3p5p8p25p27p29p30p31', 'p4p25p26p27', 'p2p7p8p26p27p28p29p31', 'p5p7p25p26p27p29p30', 'p3p4p5p25p28', 'p2p3p4p5p6p29', 'p5p25p26p27p28', 'p2p3p4p8p28p29p30p31', 'p4p5p6p7p25p26p30', 'p3p5p6p25p27p29', 'p5p8p25p26p27p29p30p31', 'p2p3p4p27', 'p7p25p26p27p28p29p30', 'p3p4p6p7p8p25p28p31', 'p2p4p5p26p28', 'p4p6p8p25p26p28p30p31', 'p3p4p5p7p25p29p30', 'p2p3p4p5p6p7p8p31', 'p2p5p6p7p8p26p27p31', 'p4p5p8p25p26p29p30p31', 'p3p4p7p25p28p29p30', 'p3p4p5p6p25p29', 'p2p3p5p6p7p8p27p31', 'p4p5p7p25p26p29p30', 'p2p7p26p27p28p29p30', 'p2p3p4p5p6p8p30p31', 'p4p7p8p25p26p28p29p31', 'p2p3p4p6p28p29', 'p7p8p25p26p27p28p29p31', 'p3p4p6p7p25p28p30', 'p3p5p7p25p27p29p30', 'p6p25p26p27p28p29', 'p2p4p5p7p8p26p29p31', 'p2p3p26', 'p4p5p6p8p25p26p30p31', 'p1', 'p3p6p7p25p27p28p30', 'p5p7p8p25p26p27p29p31', 'p2p25']
-    # y_round2[15] = k40 + k49 + y_round1[31] + y_round1[8]
-    # Note that rot_1_6[6] = y_round1[15] = p8 + p31 + k63
-
     def find_degree_of_specific_anf(self, output_bit_index):
         fixed_degree = None
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree)
 
         index_plaintext = self._cipher.inputs.index("plaintext")
-        plaintext_bit_size = self._cipher.inputs_bit_size[index_plaintext]
         p = []
         nb_plaintext_bits_used = len(list(self._occurences["plaintext"].keys()))
         for i in range(nb_plaintext_bits_used):
             p.append(self._model.getVarByName(f"plaintext[{i}]"))
         self._model.setObjective(sum(p[i] for i in range(nb_plaintext_bits_used)), GRB.MAXIMIZE)
-
-        # # Specific to Aradi analysis:
-        # for i in range(96):
-        #     v = self._model.getVarByName(f"plaintext[{i}]")
-        #     self._model.addConstr(v == 0)
-        # self._model.update()
-        # self._model.write("division_trail_model.lp")
-        # ########################
 
         print(self._model)
         start = time.time()
@@ -935,230 +906,3 @@ class MilpDivisionTrailModel():
             self.re_init()
             degree = self.find_degree_of_specific_anf(i)
             print(f"Degree of anf corresponding to output bit at position {i} = {degree}\n")
-
-
-def test():
-    """
-    from claasp.cipher_modules.division_trail_search import *
-    test()
-    """
-    circuit = ['p165p205', 'p69', 'p55p275', 'p40p115', 'p274p313', 'p15p33', 'p33p166', 'p58p205', 'p55p248',
-               'p33p234', 'p128p230', 'p107p313', 'p205', 'p100p230', 'p292p315', 'p276p315', 'p140p153', 'p128p153',
-               'p115p171', 'p107p141', 'p16p223', 'p314', 'p107p209', 'p33p292', 'p275p315', 'p15p55', 'p76p146',
-               'p82p171', 'p171p315', 'p166p314', 'p75p115', 'p40p205', 'p146p276', 'p205p274', 'p210p276', 'p141p166',
-               'p230p313', 'p55p171', 'p235p315', 'p15p230', 'p116p223', 'p209p292', 'p284', 'p33', 'p115p125',
-               'p165p314', 'p15p153', 'p116p146', 'p234p314', 'p15p181', 'p107p114', 'p58p314', 'p140', 'p15p115',
-               'p125p313', 'p115p234', 'p114p276', 'p153p315', 'p76p100', 'p54p75', 'p16p128', 'p16p33', 'p128p165',
-               'p146p153', 'p141p292', 'p100p165', 'p125p141', 'p171p181', 'p75p205', 'p210p230', 'p153p209', 'p54p171',
-               'p58p82', 'p140p235', 'p55p125', 'p54p76', 'p100p116', 'p141p234', 'p166p210', 'p209p235', 'p140p292',
-               'p55p76', 'p230p315', 'p114p153', 'p83', 'p58p140', 'p15p58', 'p115p166', 'p82p165', 'p165p181',
-               'p146p230', 'p153p181', 'p33p248', 'p33p153', 'p181', 'p125p315', 'p33p276', 'p230p267', 'p125p209',
-               'p82p116', 'p58p181', 'p181p274', 'p107p223', 'p54p116', 'p238', 'p16p314', 'p15p107', 'p76p209',
-               'p55p292', 'p82p234', 'p128p274', 'p115p292', 'p55p166', 'p100p274', 'p40p140', 'p116p313', 'p16p210',
-               'p209p276', 'p16p82', 'p55p234', 'p173', 'p248p314', 'p116p141', 'p16p55', 'p40p315', 'p55p235',
-               'p40p209', 'p223p234', 'p76p315', 'p192', 'p128p171', 'p141p276', 'p115p275', 'p76p141', 'p107p128',
-               'p54p166', 'p48', 'p115p248', 'p15p274', 'p116p267', 'p153p223', 'p75p140', 'p209p230', 'p54p234',
-               'p140p276', 'p267p275', 'p33p107', 'p107p314', 'p146p274', 'p58p146', 'p141p248', 'p210p274', 'p171p313',
-               'p75p315', 'p141p153', 'p33p58', 'p146', 'p235p313', 'p282', 'p15p140', 'p276p313', 'p76p114',
-               'p223p275', 'p116p210', 'p140p230', 'p114p274', 'p292p314', 'p115p153', 'p16p115', 'p166p205',
-               'p223p276', 'p275p313', 'p125p223', 'p40p146', 'p15p315', 'p125p128', 'p82p275', 'p15p209', 'p75p181',
-               'p54p275', 'p23', 'p33p274', 'p82p248', 'p275p314', 'p234p315', 'p107p210', 'p54p248', 'p100p171',
-               'p107p267', 'p205p234', 'p171p209', 'p55p153', 'p274p314', 'p223p248', 'p58p100', 'p16p205', 'p40p223',
-               'p33p235', 'p153p313', 'p75p146', 'p181p292', 'p100', 'p76p223', 'p82p125', 'p140p165', 'p58p313',
-               'p15p75', 'p179', 'p165p209', 'p58p141', 'p100p125', 'p181p234', 'p315', 'p107p115', 'p54p153',
-               'p166p181', 'p128p234', 'p166p315', 'p100p234', 'p40p100', 'p116p128', 'p205p275', 'p55p58', 'p181p275',
-               'p153p267', 'p116p205', 'p230p314', 'p125p267', 'p114p230', 'p40p313', 'p205p248', 'p141p235',
-               'p165p315', 'p76p313', 'p141p274', 'p15p165', 'p40p141', 'p76p128', 'p54p125', 'p58p315', 'p141',
-               'p58p209', 'p55p107', 'p15p116', 'p115p235', 'p16p140', 'p209', 'p140p274', 'p128p166', 'p33p75', 'p114',
-               'p146p165', 'p100p166', 'p40p54', 'p15p234', 'p15p223', 'p209p274', 'p75p100', 'p153p210', 'p125p210',
-               'p15p146', 'p115p276', 'p40p267', 'p15p40', 'p128p275', 'p75p313', 'p16p315', 'p76p267', 'p267p292',
-               'p82p292', 'p33p230', 'p171p223', 'p116p140', 'p75p141', 'p181p276', 'p114p165', 'p54p107', 'p84',
-               'p116p314', 'p82p166', 'p114p116', 'p55p274', 'p58p114', 'p223p235', 'p107p205', 'p33p165', 'p116p181',
-               'p223p292', 'p16p181', 'p33p116', 'p75p267', 'p165p223', 'p76p210', 'p82p235', 'p181p248', 'p54p235',
-               'p223', 'p100p275', 'p146p234', 'p75p209', 'p54p292', 'p141p230', 'p210p234', 'p128p248', 'p174',
-               'p33p40', 'p100p248', 'p40p114', 'p140p171', 'p82p276', 'p242', 'p2', 'p15p100', 'p115p230', 'p210p275',
-               'p55p276', 'p223p274', 'p15p313', 'p114p234', 'p205p235', 'p107p140', 'p165p313', 'p153p205', 'p58p223',
-               'p125p205', 'p15p141', 'p205p292', 'p15p275', 'p76p115', 'p234p313', 'p235p267', 'p128', 'p267p276',
-               'p114p275', 'p15p248', 'p107p181', 'p107p315', 'p75p114', 'p146p275', 'p100p153', 'p15p54', 'p16p146',
-               'p15p210', 'p171p314', 'p166p313', 'p235p314', 'p146p248', 'p15p267', 'p283', 'p223p230', 'p15p16',
-               'p210p248', 'p276p314', 'p40p128', 'p171p267', 'p55p75', 'p15p114', 'p82', 'p76p205', 'p58p128',
-               'p82p230', 'p274p315', 'p313', 'p115p165', 'p128p292', 'p15p171', 'p82p153', 'p15p76', 'p114p248',
-               'p153p314', 'p54p276', 'p24', 'p16p100', 'p55p230', 'p115p116', 'p125p314', 'p33p275', 'p114p171',
-               'p140p166', 'p209p234', 'p16p313', 'p141p165', 'p165p267', 'p146p171', 'p40p82', 'p171p210', 'p75p223',
-               'p181p235', 'p234p267', 'p54', 'p166p209', 'p210', 'p58p267', 'p55p165', 'p209p275', 'p267', 'p128p235',
-               'p248p313', 'p161', 'p55p116', 'p55', 'p15p125', 'p205p276', 'p100p107', 'p54p230', 'p16p54', 'p100p292',
-               'p166p267', 'p40p314', 'p125p140', 'p76p314', 'p16p267', 'p140p234', 'p165p210', 'p141p275', 'p115p274',
-               'p16p141', 'p15p205', 'p33p171', 'p54p165', 'p58p210', 'p125p181', 'p16p209', 'p75p128', 'p140p275',
-               'p76p82', 'p100p235', 'p82p107', 'p107p146', 'p114p125', 'p248p315', 'p54p58', 'p166p223', 'p128p276',
-               'p75p314', 'p100p276', 'p15p166', 'p116p315', 'p76p140', 'p33p125', 'p40p210', 'p15p128', 'p146p292',
-               'p210p292', 'p243', 'p141p171', 'p248p267', 'p33p76', 'p146p166', 'p75p82', 'p267p274', 'p76p181',
-               'p40p55', 'p205p230', 'p15p235', 'p58p115', 'p171p205', 'p181p230', 'p292p313', 'p300', 'p16p114',
-               'p140p248', 'p15p314', 'p15p292', 'p82p274', 'p114p235', 'p209p248', 'p54p274', 'p0', 'p146p235',
-               'p114p292', 'p15p276', 'p114p166', 'p125p146', 'p15p82', 'p40p181', 'p116p209', 'p75p210', 'p210p235']
-    sbox = ['p165p205', 'p69', 'p55p275', 'p40p115', 'p274p313', 'p15p33', 'p33p166', 'p58p205', 'p55p248', 'p33p234',
-            'p128p230', 'p107p313', 'p205', 'p100p230', 'p292p315', 'p276p315', 'p140p153', 'p128p153', 'p115p171',
-            'p107p141', 'p16p223', 'p314', 'p107p209', 'p33p292', 'p275p315', 'p15p55', 'p76p146', 'p82p171',
-            'p171p315', 'p166p314', 'p75p115', 'p40p205', 'p146p276', 'p205p274', 'p210p276', 'p141p166', 'p230p313',
-            'p55p171', 'p235p315', 'p15p230', 'p116p223', 'p209p292', 'p284', 'p33', 'p115p125', 'p165p314', 'p15p153',
-            'p116p146', 'p234p314', 'p15p181', 'p107p114', 'p58p314', 'p140', 'p15p115', 'p125p313', 'p115p234',
-            'p114p276', 'p153p315', 'p76p100', 'p54p75', 'p16p128', 'p16p33', 'p128p165', 'p146p153', 'p141p292',
-            'p100p165', 'p125p141', 'p171p181', 'p75p205', 'p210p230', 'p153p209', 'p54p171', 'p58p82', 'p140p235',
-            'p55p125', 'p54p76', 'p100p116', 'p141p234', 'p166p210', 'p209p235', 'p140p292', 'p55p76', 'p230p315',
-            'p114p153', 'p83', 'p58p140', 'p15p58', 'p115p166', 'p82p165', 'p165p181', 'p146p230', 'p153p181',
-            'p33p248', 'p33p153', 'p181', 'p125p315', 'p33p276', 'p230p267', 'p125p209', 'p82p116', 'p58p181',
-            'p181p274', 'p107p223', 'p54p116', 'p238', 'p16p314', 'p15p107', 'p76p209', 'p55p292', 'p82p234',
-            'p128p274', 'p115p292', 'p55p166', 'p100p274', 'p40p140', 'p116p313', 'p16p210', 'p209p276', 'p16p82',
-            'p55p234', 'p173', 'p248p314', 'p116p141', 'p16p55', 'p40p315', 'p55p235', 'p40p209', 'p223p234', 'p76p315',
-            'p192', 'p128p171', 'p141p276', 'p115p275', 'p76p141', 'p107p128', 'p54p166', 'p48', 'p115p248', 'p15p274',
-            'p116p267', 'p153p223', 'p75p140', 'p209p230', 'p54p234', 'p140p276', 'p267p275', 'p33p107', 'p107p314',
-            'p146p274', 'p58p146', 'p141p248', 'p210p274', 'p141p153', 'p75p315', 'p171p313', 'p33p58', 'p146',
-            'p235p313', 'p282', 'p15p140', 'p276p313', 'p76p114', 'p223p275', 'p116p210', 'p140p230', 'p114p274',
-            'p292p314', 'p115p153', 'p16p115', 'p166p205', 'p223p276', 'p275p313', 'p125p223', 'p40p146', 'p15p315',
-            'p125p128', 'p82p275', 'p15p209', 'p75p181', 'p54p275', 'p23', 'p33p274', 'p82p248', 'p275p314', 'p234p315',
-            'p107p210', 'p54p248', 'p100p171', 'p107p267', 'p205p234', 'p171p209', 'p55p153', 'p274p314', 'p223p248',
-            'p58p100', 'p16p205', 'p40p223', 'p33p235', 'p153p313', 'p75p146', 'p181p292', 'p100', 'p76p223', 'p82p125',
-            'p140p165', 'p58p313', 'p15p75', 'p179', 'p165p209', 'p58p141', 'p100p125', 'p181p234', 'p315', 'p107p115',
-            'p54p153', 'p166p181', 'p128p234', 'p166p315', 'p100p234', 'p40p100', 'p116p128', 'p205p275', 'p55p58',
-            'p181p275', 'p153p267', 'p116p205', 'p230p314', 'p125p267', 'p114p230', 'p40p313', 'p205p248', 'p141p235',
-            'p165p315', 'p76p313', 'p141p274', 'p15p165', 'p40p141', 'p76p128', 'p54p125', 'p58p315', 'p141', 'p58p209',
-            'p55p107', 'p15p116', 'p115p235', 'p16p140', 'p209', 'p140p274', 'p128p166', 'p33p75', 'p114', 'p146p165',
-            'p100p166', 'p40p54', 'p15p234', 'p15p223', 'p209p274', 'p75p100', 'p153p210', 'p125p210', 'p15p146',
-            'p115p276', 'p40p267', 'p15p40', 'p128p275', 'p16p315', 'p75p313', 'p76p267', 'p267p292', 'p82p292',
-            'p33p230', 'p171p223', 'p116p140', 'p75p141', 'p181p276', 'p114p165', 'p54p107', 'p84', 'p116p314',
-            'p82p166', 'p114p116', 'p55p274', 'p58p114', 'p223p235', 'p107p205', 'p33p165', 'p116p181', 'p223p292',
-            'p16p181', 'p33p116', 'p75p267', 'p165p223', 'p76p210', 'p82p235', 'p181p248', 'p54p235', 'p223',
-            'p100p275', 'p146p234', 'p75p209', 'p54p292', 'p141p230', 'p210p234', 'p128p248', 'p174', 'p33p40',
-            'p100p248', 'p40p114', 'p140p171', 'p82p276', 'p242', 'p2', 'p15p100', 'p115p230', 'p210p275', 'p55p276',
-            'p223p274', 'p15p313', 'p114p234', 'p205p235', 'p107p140', 'p165p313', 'p153p205', 'p58p223', 'p125p205',
-            'p15p141', 'p205p292', 'p15p275', 'p76p115', 'p234p313', 'p235p267', 'p128', 'p267p276', 'p114p275',
-            'p15p248', 'p107p181', 'p107p315', 'p75p114', 'p146p275', 'p100p153', 'p15p54', 'p16p146', 'p15p210',
-            'p171p314', 'p166p313', 'p235p314', 'p146p248', 'p15p267', 'p283', 'p223p230', 'p15p16', 'p210p248',
-            'p276p314', 'p40p128', 'p171p267', 'p55p75', 'p15p114', 'p82', 'p76p205', 'p58p128', 'p82p230', 'p274p315',
-            'p313', 'p115p165', 'p128p292', 'p15p171', 'p82p153', 'p15p76', 'p114p248', 'p153p314', 'p54p276', 'p24',
-            'p16p100', 'p55p230', 'p115p116', 'p125p314', 'p33p275', 'p114p171', 'p140p166', 'p209p234', 'p16p313',
-            'p141p165', 'p165p267', 'p146p171', 'p40p82', 'p171p210', 'p75p223', 'p181p235', 'p234p267', 'p54',
-            'p166p209', 'p210', 'p58p267', 'p55p165', 'p209p275', 'p267', 'p128p235', 'p248p313', 'p161', 'p55p116',
-            'p55', 'p15p125', 'p205p276', 'p100p107', 'p54p230', 'p16p54', 'p100p292', 'p166p267', 'p40p314',
-            'p125p140', 'p76p314', 'p16p267', 'p140p234', 'p165p210', 'p141p275', 'p115p274', 'p16p141', 'p15p205',
-            'p33p171', 'p54p165', 'p58p210', 'p125p181', 'p16p209', 'p75p128', 'p140p275', 'p76p82', 'p100p235',
-            'p82p107', 'p107p146', 'p114p125', 'p248p315', 'p54p58', 'p166p223', 'p128p276', 'p75p314', 'p100p276',
-            'p15p166', 'p116p315', 'p76p140', 'p33p125', 'p40p210', 'p15p128', 'p146p292', 'p210p292', 'p243',
-            'p141p171', 'p248p267', 'p33p76', 'p146p166', 'p75p82', 'p267p274', 'p76p181', 'p40p55', 'p205p230',
-            'p15p235', 'p58p115', 'p171p205', 'p181p230', 'p300', 'p292p313', 'p16p114', 'p140p248', 'p15p314',
-            'p15p292', 'p82p274', 'p114p235', 'p209p248', 'p54p274', 'p0', 'p146p235', 'p114p292', 'p15p276',
-            'p114p166', 'p125p146', 'p15p82', 'p40p181', 'p116p209', 'p75p210', 'p210p235']
-    new = ['p165p205', 'p69', 'p55p275', 'p40p115', 'p274p313', 'p15p33', 'p33p166', 'p58p205', 'p55p248', 'p33p234',
-           'p128p230', 'p107p313', 'p205', 'p100p230', 'p292p315', 'p276p315', 'p140p153', 'p128p153', 'p115p171',
-           'p107p141', 'p16p223', 'p314', 'p107p209', 'p33p292', 'p275p315', 'p15p55', 'p76p146', 'p82p171', 'p171p315',
-           'p166p314', 'p75p115', 'p40p205', 'p146p276', 'p205p274', 'p210p276', 'p141p166', 'p230p313', 'p55p171',
-           'p235p315', 'p15p230', 'p116p223', 'p209p292', 'p284', 'p33', 'p115p125', 'p165p314', 'p15p153', 'p116p146',
-           'p234p314', 'p15p181', 'p107p114', 'p58p314', 'p140', 'p15p115', 'p125p313', 'p115p234', 'p114p276',
-           'p153p315', 'p76p100', 'p54p75', 'p16p128', 'p16p33', 'p128p165', 'p146p153', 'p141p292', 'p100p165',
-           'p125p141', 'p171p181', 'p75p205', 'p210p230', 'p153p209', 'p54p171', 'p58p82', 'p140p235', 'p55p125',
-           'p54p76', 'p100p116', 'p141p234', 'p166p210', 'p209p235', 'p140p292', 'p55p76', 'p230p315', 'p114p153',
-           'p83', 'p58p140', 'p15p58', 'p115p166', 'p82p165', 'p165p181', 'p146p230', 'p153p181', 'p33p248', 'p33p153',
-           'p181', 'p125p315', 'p33p276', 'p230p267', 'p125p209', 'p82p116', 'p58p181', 'p181p274', 'p107p223',
-           'p54p116', 'p238', 'p16p314', 'p15p107', 'p76p209', 'p55p292', 'p82p234', 'p128p274', 'p115p292', 'p55p166',
-           'p100p274', 'p40p140', 'p116p313', 'p16p210', 'p209p276', 'p16p82', 'p55p234', 'p173', 'p248p314',
-           'p116p141', 'p16p55', 'p40p315', 'p55p235', 'p40p209', 'p223p234', 'p76p315', 'p192', 'p128p171', 'p141p276',
-           'p115p275', 'p76p141', 'p107p128', 'p54p166', 'p48', 'p115p248', 'p15p274', 'p116p267', 'p153p223',
-           'p75p140', 'p209p230', 'p54p234', 'p140p276', 'p267p275', 'p33p107', 'p107p314', 'p146p274', 'p58p146',
-           'p141p248', 'p210p274', 'p141p153', 'p75p315', 'p171p313', 'p33p58', 'p146', 'p235p313', 'p282', 'p15p140',
-           'p276p313', 'p76p114', 'p223p275', 'p116p210', 'p140p230', 'p114p274', 'p292p314', 'p115p153', 'p16p115',
-           'p166p205', 'p223p276', 'p275p313', 'p125p223', 'p40p146', 'p15p315', 'p125p128', 'p82p275', 'p15p209',
-           'p75p181', 'p54p275', 'p23', 'p33p274', 'p82p248', 'p275p314', 'p234p315', 'p107p210', 'p54p248', 'p100p171',
-           'p107p267', 'p205p234', 'p171p209', 'p55p153', 'p274p314', 'p223p248', 'p58p100', 'p16p205', 'p40p223',
-           'p33p235', 'p153p313', 'p75p146', 'p181p292', 'p100', 'p76p223', 'p82p125', 'p140p165', 'p58p313', 'p15p75',
-           'p179', 'p165p209', 'p58p141', 'p100p125', 'p181p234', 'p315', 'p107p115', 'p54p153', 'p166p181', 'p128p234',
-           'p166p315', 'p100p234', 'p40p100', 'p116p128', 'p205p275', 'p55p58', 'p181p275', 'p153p267', 'p116p205',
-           'p230p314', 'p125p267', 'p114p230', 'p40p313', 'p205p248', 'p141p235', 'p165p315', 'p76p313', 'p141p274',
-           'p15p165', 'p40p141', 'p76p128', 'p54p125', 'p58p315', 'p141', 'p58p209', 'p55p107', 'p15p116', 'p115p235',
-           'p16p140', 'p209', 'p140p274', 'p128p166', 'p33p75', 'p114', 'p146p165', 'p100p166', 'p40p54', 'p15p234',
-           'p15p223', 'p209p274', 'p75p100', 'p153p210', 'p125p210', 'p15p146', 'p115p276', 'p40p267', 'p15p40',
-           'p128p275', 'p16p315', 'p75p313', 'p76p267', 'p267p292', 'p82p292', 'p33p230', 'p171p223', 'p116p140',
-           'p75p141', 'p181p276', 'p114p165', 'p54p107', 'p84', 'p116p314', 'p82p166', 'p114p116', 'p55p274', 'p58p114',
-           'p223p235', 'p107p205', 'p33p165', 'p116p181', 'p223p292', 'p16p181', 'p33p116', 'p75p267', 'p165p223',
-           'p76p210', 'p82p235', 'p181p248', 'p54p235', 'p223', 'p100p275', 'p146p234', 'p75p209', 'p54p292',
-           'p141p230', 'p210p234', 'p128p248', 'p174', 'p33p40', 'p100p248', 'p40p114', 'p140p171', 'p82p276', 'p242',
-           'p2', 'p15p100', 'p115p230', 'p210p275', 'p55p276', 'p223p274', 'p15p313', 'p114p234', 'p205p235',
-           'p107p140', 'p165p313', 'p153p205', 'p58p223', 'p125p205', 'p15p141', 'p205p292', 'p15p275', 'p76p115',
-           'p234p313', 'p235p267', 'p128', 'p267p276', 'p114p275', 'p15p248', 'p107p181', 'p107p315', 'p75p114',
-           'p146p275', 'p100p153', 'p15p54', 'p16p146', 'p15p210', 'p171p314', 'p166p313', 'p235p314', 'p146p248',
-           'p15p267', 'p283', 'p223p230', 'p15p16', 'p210p248', 'p276p314', 'p40p128', 'p171p267', 'p55p75', 'p15p114',
-           'p82', 'p76p205', 'p58p128', 'p82p230', 'p274p315', 'p313', 'p115p165', 'p128p292', 'p15p171', 'p82p153',
-           'p15p76', 'p114p248', 'p153p314', 'p54p276', 'p24', 'p16p100', 'p55p230', 'p115p116', 'p125p314', 'p33p275',
-           'p114p171', 'p140p166', 'p209p234', 'p16p313', 'p141p165', 'p165p267', 'p146p171', 'p40p82', 'p171p210',
-           'p75p223', 'p181p235', 'p234p267', 'p54', 'p166p209', 'p210', 'p58p267', 'p55p165', 'p209p275', 'p267',
-           'p128p235', 'p248p313', 'p161', 'p55p116', 'p55', 'p15p125', 'p205p276', 'p100p107', 'p54p230', 'p16p54',
-           'p100p292', 'p166p267', 'p40p314', 'p125p140', 'p76p314', 'p16p267', 'p140p234', 'p165p210', 'p141p275',
-           'p115p274', 'p16p141', 'p15p205', 'p33p171', 'p54p165', 'p58p210', 'p125p181', 'p16p209', 'p75p128',
-           'p140p275', 'p76p82', 'p100p235', 'p82p107', 'p107p146', 'p114p125', 'p248p315', 'p54p58', 'p166p223',
-           'p128p276', 'p75p314', 'p100p276', 'p15p166', 'p116p315', 'p76p140', 'p33p125', 'p40p210', 'p15p128',
-           'p146p292', 'p210p292', 'p243', 'p141p171', 'p248p267', 'p33p76', 'p146p166', 'p75p82', 'p267p274',
-           'p76p181', 'p40p55', 'p205p230', 'p15p235', 'p58p115', 'p171p205', 'p181p230', 'p300', 'p292p313', 'p16p114',
-           'p140p248', 'p15p314', 'p15p292', 'p82p274', 'p114p235', 'p209p248', 'p54p274', 'p0', 'p146p235', 'p114p292',
-           'p15p276', 'p114p166', 'p125p146', 'p15p82', 'p40p181', 'p116p209', 'p75p210', 'p210p235']
-
-    new_ascon = ['p228', 'p173', 'p164', 'p109', 'p109p301', 'p0', 'p173p109', 'p164p100', 'p100p292', 'p45p109',
-                 'p100', 'p128', 'p192', 'p64p256', 'p45', 'p128p64', 'p36p100', 'p237', 'p0p64', 'p64', 'p36']
-    checked_by_hand_ascon = ['p64p256', 'p109p301', 'p128', 'p109p45', 'p64p0', 'p192', 'p0', 'p109', 'p100',
-                             'p100p164', 'p45', 'p173', 'p237', 'p164', 'p228', 'p109p173', 'p100p292', 'p64',
-                             'p100p36', 'p64p128', 'p36']
-
-    for monomial in new_ascon:
-        if monomial not in checked_by_hand_ascon:
-            print(f"######## different : {monomial}")
-            return 0
-    print("######## equal")
-
-
-# Ascon 1 round circuit matchs sbox:
-y0 = ['p128', 'p109p301', 'p64p256', 'p0', 'p192', 'p109', 'p100', 'p109p45', 'p100p164', 'p173', 'p45', 'p164', 'p237',
-      'p100p36', 'p109p173', 'p36', 'p228', 'p64', 'p100p292', 'p64p128', 'p64p0']  # 21
-y64 = ['p192', 'p3', 'p153p217', 'p67p195', 'p128', 'p67p131', 'p256', 'p0', 'p128p192', 'p67', 'p89', 'p89p217',
-       'p89p153', 'p195', 'p217', 'p131p195', 'p131', 'p259', 'p64', 'p64p192', 'p153', 'p64p128', 'p281', 'p25']  # 24
-y128 = ['p64', 'p122', 'p256', 'p314p250', 'p256p192', 'p319p255', 'p128', 'p314', 'p191', 'p186', 'p127',
-        'p319']  # 12
-y192 = ['p128', 'p310', 'p239p47', 'p246p54', 'p0', 'p64', 'p303', 'p246', 'p239', 'p303p47', 'p182', 'p256', 'p256p0',
-        'p54', 'p118', 'p175', 'p47', 'p192', 'p310p54', 'p192p0', 'p111']  # 21
-y256 = ['p256', 'p313', 'p313p121', 'p279', 'p192', 'p279p87', 'p121', 'p87', 'p57p121', 'p0p64', 'p23p87', 'p215',
-        'p256p64', 'p249', 'p64']  # 15
-
-# Ascon_anfs = [
-# x0*x1 + x0 + x1*x2 + x1*x4 + x1 + x2 + x3,
-# x0 + x1*x2 + x1*x3 + x1 + x2*x3 + x2 + x3 + x4,
-# x1 + x2 + x3*x4 + x4 + 1,
-# x0*x3 + x0*x4 + x0 + x1 + x2 + x3 + x4,
-# x0*x1 + x1*x4 + x1 + x3 + x4]
-
-# Ascon 2 rounds circuit:
-y0 = 2595
-y64 = 2141
-y128 = 966
-y192 = 1963
-y256 = 1897
-# Ascon 2 rounds sbox:
-y0 = 2593
-y64 = 2143
-y128 = 966
-y192 = 1963
-y256 = 1897
-
-# Gaston 1 rounds circuit:
-y0 = 479
-y64 = 481
-y128 = 481
-y192 = 471
-y256 = 479
-# Gaston 1 round sbox:
-y0 = 479
-y64 = 481
-y128 = 481
-y192 = 471
-y256 = 479
-
-# Aradi sbox = [
-# x0*x2*x3 + x0*x2 + x0 + x1*x2 + x1*x3,
-# x0*x2 + x1,
-# x0*x1*x2 + x0*x2 + x0*x3 + x2,
-# x0*x2 + x1*x2 + x3]
