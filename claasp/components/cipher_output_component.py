@@ -519,7 +519,7 @@ class CipherOutput(Component):
         for out_id, in_id in zip(out_ids_1, in_ids_1):
             constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
 
-        return out_ids_0 + out_ids_0 + out_ids_1, constraints
+        return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model):
         return self.sat_constraints()
