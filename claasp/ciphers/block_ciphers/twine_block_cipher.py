@@ -29,7 +29,9 @@ def get_word_bit_indexes(word_index):
 
 class TwineBlockCipher(Cipher):
     """
-    Construct an instance of the TwineBlockCipher class.
+    Construct an instance of the TwineBlockCipher class, based on the specifications (available at
+    https://www.nec.com/en/global/rd/tg/code/symenc/pdf/twine_LC11.pdf).
+
 
     This class is used to store compact representations of a cipher,
     used to generate the corresponding cipher.
@@ -44,6 +46,9 @@ class TwineBlockCipher(Cipher):
     - ``transformations_flag`` -- **boolean** (default: `True`)
 
     EXAMPLES::
+
+        # Test vectors taken from the specifications, Table 11, available at
+        # https://www.nec.com/en/global/rd/tg/code/symenc/pdf/twine_LC11.pdf
 
         sage: from claasp.ciphers.block_ciphers.twine_block_cipher import TwineBlockCipher
         sage: twine = TwineBlockCipher(key_bit_size=80, number_of_rounds=36)
