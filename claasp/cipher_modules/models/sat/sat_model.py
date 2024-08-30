@@ -244,8 +244,13 @@ class SatModel:
         else:
             minus = '-'
         dummy_variables = [[f'{dummy_id}_{i}_{j}' for j in range(weight)] for i in range(n - 1)]
-        constraints = [f'{minus}{hw_list[0]} {dummy_variables[0][0]}']
+
+        try:
+            constraints = [f'{minus}{hw_list[0]} {dummy_variables[0][0]}']
+        except IndexError:
+            import ipdb; ipdb.set_trace()
         constraints.extend([f'-{dummy_variables[0][j]}' for j in range(1, weight)])
+
         for i in range(1, n - 1):
             constraints.append(f'{minus}{hw_list[i]} {dummy_variables[i][0]}')
             constraints.append(f'-{dummy_variables[i - 1][0]} {dummy_variables[i][0]}')
@@ -256,6 +261,8 @@ class SatModel:
             constraints.append(f'{minus}{hw_list[i]} -{dummy_variables[i - 1][weight - 1]}')
         constraints.append(f'{minus}{hw_list[n - 1]} -{dummy_variables[n - 2][weight - 1]}')
         dummy_variables = [d for dummy_list in dummy_variables for d in dummy_list]
+
+
 
         return dummy_variables, constraints
 

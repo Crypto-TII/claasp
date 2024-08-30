@@ -1119,19 +1119,19 @@ class XOR(Component):
             constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::out_len]))
 
 
-        input_id_link = self.input_id_links
-        input_bit_positions = self.input_bit_positions
-        input_bit_ids = []
-        for link, positions in zip(input_id_link, input_bit_positions):
-            #constraints.append(f'{input_id[i]} = {out_ids_0[i]}')
-            #constraints.append(f'{input_id[i + out_len]} = {out_ids_1[i]}')
-            input_bit_ids.extend([f'{link}_{j}' for j in positions])
-            #sat_utils.cnf_enforce(f'input_id_{}')
-            #constraints.append()
-        for input_id in input_bit_ids:
-            constraints.extend(sat_utils.get_cnf_bitwise_truncate_constraints(input_id, f'{input_id}_1', f'{input_id}_0'))
+        #input_id_link = self.input_id_links
+        #input_bit_positions = self.input_bit_positions
+        #input_bit_ids = []
+        #for link, positions in zip(input_id_link, input_bit_positions):
+        #    #constraints.append(f'{input_id[i]} = {out_ids_0[i]}')
+        #    #constraints.append(f'{input_id[i + out_len]} = {out_ids_1[i]}')
+        #    input_bit_ids.extend([f'{link}_{j}' for j in positions])
+        #    #sat_utils.cnf_enforce(f'input_id_{}')
+        #    #constraints.append()
+        #for input_id in input_bit_ids:
+        #    constraints.extend(sat_utils.get_cnf_bitwise_truncate_constraints(input_id, f'{input_id}_0', f'{input_id}_1'))
 
-        return input_bit_ids + out_ids_0 + out_ids_1, constraints
+        return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         return self.sat_constraints()

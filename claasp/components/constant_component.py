@@ -580,6 +580,7 @@ class Constant(Component):
         """
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = [f'-{out_id}' for out_id in out_ids_0] + [f'-{out_id}' for out_id in out_ids_1]
+        #import ipdb; ipdb.set_trace()
         return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):

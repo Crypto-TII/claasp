@@ -921,7 +921,7 @@ class Modular(Component):
                 for i in range(output_bit_len - model.window_size_weight_pr_vars):
                     constraints.extend(sat_utils.cnf_n_window_heuristic_on_w_vars(
                         hw_bit_ids[i: i + (model.window_size_weight_pr_vars + 1)]))
-        component_round_number = model._cipher.get_round_from_component_id(self.id)
+        component_round_number = model.cipher.get_round_from_component_id(self.id)
 
         if type(model) is SatXorDifferentialModel and model.window_size_by_round_values is not None:
             window_size = model.window_size_by_round_values[component_round_number]
@@ -990,19 +990,10 @@ class Modular(Component):
                                                           (in_ids_0[out_len-1], in_ids_1[out_len-1]),
                                                           (in_ids_0[2*out_len-1], in_ids_1[2*out_len-1]),
                                                           (carry_ids_0[-2], carry_ids_1[-2])))
-        input_id_link = self.input_id_links
-        input_bit_positions = self.input_bit_positions
-        input_bit_ids = []
-        for link, positions in zip(input_id_link, input_bit_positions):
-            #constraints.append(f'{input_id[i]} = {out_ids_0[i]}')
-            #constraints.append(f'{input_id[i + out_len]} = {out_ids_1[i]}')
-            input_bit_ids.extend([f'{link}_{j}' for j in positions])
-            #sat_utils.cnf_enforce(f'input_id_{}')
-            #constraints.append()
-        for input_id in input_bit_ids:
-            constraints.extend(sat_utils.get_cnf_bitwise_truncate_constraints(input_id, f'{input_id}_1', f'{input_id}_0'))
-        import ipdb; ipdb.set_trace()
-        return input_bit_ids + out_ids_0 + out_ids_1 + carry_ids_0 + carry_ids_1, constraints
+        #if (self.id == 'modadd_2_2'):
+        #    import ipdb; ipdb.set_trace()
+
+        return out_ids_0 + out_ids_1 + carry_ids_0 + carry_ids_1, constraints
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
