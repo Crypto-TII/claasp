@@ -11,7 +11,6 @@ This module can only be used if the user possesses a Gurobi license.
 In that case, please uncomment the gurobipy import.
 """
 
-
 class MilpDivisionTrailModel():
     """
     EXAMPLES::
@@ -20,114 +19,103 @@ class MilpDivisionTrailModel():
         sage: cipher = AsconPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.permutations.ascon_sbox_sigma_no_matrix_permutation import AsconSboxSigmaNoMatrixPermutation
         sage: cipher = AsconSboxSigmaNoMatrixPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
         sage: cipher = GastonPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
         sage: cipher = GastonSboxPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.permutations.xoodoo_sbox_permutation import XoodooSboxPermutation
         sage: cipher = XoodooSboxPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.permutations.xoodoo_permutation import XoodooPermutation
         sage: cipher = XoodooPermutation(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
         sage: cipher = KeccakPermutation(number_of_rounds=1, word_size=64)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
         sage: cipher = KeccakSboxPermutation(number_of_rounds=1, word_size=64)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
         sage: cipher = ToySPN1(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(1)
+        sage: milp.find_anf_of_specific_output_bit(1) #SKIP
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
         sage: cipher = SimonBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
         sage: cipher = SimonBlockCipher(number_of_rounds=2)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0)], 0)
+        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0)], 0) #SKIP
 
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: cipher = SpeckBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(15)
+        sage: milp.find_anf_of_specific_output_bit(15) #SKIP
 
         sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
         sage: cipher = LBlockBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.build_gurobi_model()
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
         sage: cipher = AradiBlockCipherSBox(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_anf_of_specific_output_bit(0) #SKIP
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=1)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.find_anf_of_specific_output_bit(0, fixed_degree=1)
+        sage: milp.find_anf_of_specific_output_bit(0, fixed_degree=1) #SKIP
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=2)
         sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0), ("plaintext", 32), ("plaintext", 64), ("plaintext", 96)], 0)
+        sage: milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 0), ("plaintext", 32), ("plaintext", 64), ("plaintext", 96)], 0) #SKIP
 
     """
 
