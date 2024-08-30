@@ -64,7 +64,7 @@ class NISTStatisticalTests:
                                round_start=0,
                                round_end=0,
                                nist_report_folder_prefix="nist_statistics_report",
-                               statistical_test_option_list='1' + 14 * '0'
+                               statistical_test_option_list=15 * '1'
                                ):
         """
 
@@ -145,7 +145,7 @@ class NISTStatisticalTests:
             if bits_in_one_sequence == 'default':
                 bits_in_one_sequence = 1048576
             if number_of_sequences == 'default':
-                number_of_sequences = 384
+                number_of_sequences = 128
 
             number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence / self.cipher.output_bit_size)
             self.number_of_sequences = number_of_sequences
@@ -164,7 +164,7 @@ class NISTStatisticalTests:
             if bits_in_one_sequence == 'default':
                 bits_in_one_sequence = 1048576
             if number_of_sequences == 'default':
-                number_of_sequences = 384
+                number_of_sequences = 300
 
             number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence / self.cipher.output_bit_size)
             self.number_of_sequences = number_of_sequences
@@ -200,7 +200,7 @@ class NISTStatisticalTests:
             if bits_in_one_sequence == 'default':
                 bits_in_one_sequence = 1056896
             if number_of_sequences == 'default':
-                number_of_sequences = 1
+                number_of_sequences = 128
 
             number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence / self.cipher.output_bit_size)
             self.number_of_sequences = number_of_sequences
@@ -220,7 +220,7 @@ class NISTStatisticalTests:
             if bits_in_one_sequence == 'default':
                 bits_in_one_sequence = 1056896
             if number_of_sequences == 'default':
-                number_of_sequences = 1
+                number_of_sequences = 128
 
             number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence / self.cipher.output_bit_size)
             self.number_of_sequences = number_of_sequences
@@ -612,7 +612,7 @@ class NISTStatisticalTests:
                 sts_report_dict = self._parse_report(
                     os.path.join(report_folder_round, "AlgorithmTesting/finalAnalysisReport.txt"))
                 sts_report_dict['data_type'] = f'{self.cipher.inputs[self.input_index]}_{self.dataset_type.value}'
-                sts_report_dict["cipher_name"] = self.cipher.id
+                sts_report_dict["cipher_name"] = f'{self.cipher.id}'
                 sts_report_dict["round"] = round_number
                 sts_report_dict["rounds"] = self.cipher.number_of_rounds
                 sts_report_dicts.append(sts_report_dict)
