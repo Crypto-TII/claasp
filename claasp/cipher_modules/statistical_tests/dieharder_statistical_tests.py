@@ -142,7 +142,7 @@ class DieharderTests:
             if bits_in_one_sequence_dieharder == 'default':
                 bits_in_one_sequence_dieharder = 1048576
             if number_of_sequences_dieharder == 'default':
-                number_of_sequences_dieharder = 384
+                number_of_sequences_dieharder = 128
 
             number_of_blocks_in_one_sample_dieharder = math.ceil(
                 bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
@@ -163,7 +163,7 @@ class DieharderTests:
             if bits_in_one_sequence_dieharder == 'default':
                 bits_in_one_sequence_dieharder = 1048576
             if number_of_sequences_dieharder == 'default':
-                number_of_sequences_dieharder = 384
+                number_of_sequences_dieharder = 300
 
             number_of_blocks_in_one_sample_dieharder = math.ceil(
                 bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
@@ -203,7 +203,7 @@ class DieharderTests:
             if bits_in_one_sequence_dieharder == 'default':
                 bits_in_one_sequence_dieharder = 1056896
             if number_of_sequences_dieharder == 'default':
-                number_of_sequences_dieharder = 1
+                number_of_sequences_dieharder = 128
 
             number_of_blocks_in_one_sample_dieharder = math.ceil(
                 bits_in_one_sequence_dieharder / self.cipher.output_bit_size)
