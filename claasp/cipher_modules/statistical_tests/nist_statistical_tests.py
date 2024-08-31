@@ -523,7 +523,7 @@ class NISTStatisticalTests:
         random_round = -1
         for r in range(report_dict_list[0]["rounds"]):
             if report_dict_list[r]["passed_tests"] > len(report_dict_list[0]['randomness_test'])*0.98:
-                random_round = report_dict_list[r]["round"]
+                random_round = report_dict_list[r]["round"] + 1
                 break
 
         plt.clf()
@@ -540,7 +540,8 @@ class NISTStatisticalTests:
         plt.ylabel('Tests passed')
         plt.xticks([i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2) + 1)],
                    [i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2 + 1))])
-        plt.yticks(list(range(math.ceil(len(report_dict_list[0]['randomness_test'])*0.98))))
+        plt.yticks([i * 10 for i in range(int(len(report_dict_list[0]["randomness_test"]) / 10) + 1)],
+                   [i * 10 for i in range(int(len(report_dict_list[0]["randomness_test"]) / 10 + 1))])
         chart_filename = f'nist_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
 
         if show_graph == False:
