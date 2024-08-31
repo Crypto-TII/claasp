@@ -921,7 +921,7 @@ class Modular(Component):
                 for i in range(output_bit_len - model.window_size_weight_pr_vars):
                     constraints.extend(sat_utils.cnf_n_window_heuristic_on_w_vars(
                         hw_bit_ids[i: i + (model.window_size_weight_pr_vars + 1)]))
-        component_round_number = model.cipher.get_round_from_component_id(self.id)
+        component_round_number = model._cipher.get_round_from_component_id(self.id)
 
         if type(model) is SatXorDifferentialModel and model.window_size_by_round_values is not None:
             window_size = model.window_size_by_round_values[component_round_number]
@@ -971,7 +971,6 @@ class Modular(Component):
               'modadd_0_1_15_0 -rot_0_0_15_1 -plaintext_31_1 -modadd_0_1_15_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        #print(in_ids_0, in_ids_1)
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
         carry_ids_0 = [f'carry_{out_id}_0' for out_id in out_ids_0]
         carry_ids_1 = [f'carry_{out_id}_1' for out_id in out_ids_1]
@@ -990,8 +989,6 @@ class Modular(Component):
                                                           (in_ids_0[out_len-1], in_ids_1[out_len-1]),
                                                           (in_ids_0[2*out_len-1], in_ids_1[2*out_len-1]),
                                                           (carry_ids_0[-2], carry_ids_1[-2])))
-        #if (self.id == 'modadd_2_2'):
-        #    import ipdb; ipdb.set_trace()
 
         return out_ids_0 + out_ids_1 + carry_ids_0 + carry_ids_1, constraints
 
