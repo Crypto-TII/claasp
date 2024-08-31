@@ -244,13 +244,8 @@ class SatModel:
         else:
             minus = '-'
         dummy_variables = [[f'{dummy_id}_{i}_{j}' for j in range(weight)] for i in range(n - 1)]
-
-        try:
-            constraints = [f'{minus}{hw_list[0]} {dummy_variables[0][0]}']
-        except IndexError:
-            import ipdb; ipdb.set_trace()
+        constraints = [f'{minus}{hw_list[0]} {dummy_variables[0][0]}']
         constraints.extend([f'-{dummy_variables[0][j]}' for j in range(1, weight)])
-
         for i in range(1, n - 1):
             constraints.append(f'{minus}{hw_list[i]} {dummy_variables[i][0]}')
             constraints.append(f'-{dummy_variables[i - 1][0]} {dummy_variables[i][0]}')
@@ -262,12 +257,10 @@ class SatModel:
         constraints.append(f'{minus}{hw_list[n - 1]} -{dummy_variables[n - 2][weight - 1]}')
         dummy_variables = [d for dummy_list in dummy_variables for d in dummy_list]
 
-
-
         return dummy_variables, constraints
 
-    def _sequential_counter(self, hw_list, weight):
-        return self._sequential_counter_algorithm(hw_list, weight, 'dummy_hw_0')
+    def _sequential_counter(self, hw_list, weight, dummy_id='dummy_hw_0'):
+        return self._sequential_counter_algorithm(hw_list, weight, dummy_id)
 
     def _sequential_counter_greater_or_equal(self, weight, dummy_id):
         hw_list = [variable_id for variable_id in self._variables_list if variable_id.startswith('hw_')]
