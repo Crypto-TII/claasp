@@ -15,9 +15,9 @@ class MilpDivisionTrailModel():
     """
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
+        sage: from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
         sage: from claasp.cipher_modules.division_trail_search import *
-        sage: cipher = GastonPermutation(number_of_rounds=1)
+        sage: cipher = GastonSboxPermutation(number_of_rounds=1)
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: component = cipher.get_component_from_id('sbox_0_30')
         sage: anfs = milp.get_anfs_from_sbox(component)
