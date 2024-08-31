@@ -131,7 +131,6 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
                 false_sign = '-' * is_equal
                 true_sign = '-' * (not is_equal)
                 if value == 0:
-                    #import ipdb; ipdb.set_trace()
                     variables_ids.append(f'{false_sign}{component_id}_{position}_0')
                     variables_ids.append(f'{false_sign}{component_id}_{position}_1')
                 elif value == 1:
@@ -285,5 +284,3 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             components_solutions[f'{component.id}'] = component_solution
 
         return components_solutions, None
-
-
