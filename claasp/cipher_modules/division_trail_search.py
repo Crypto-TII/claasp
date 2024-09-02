@@ -160,23 +160,10 @@ class MilpDivisionTrailModel():
         self._model.update()
         return copy_monomials_deg
 
-    def add_sbox_constraints(self, component):
-        output_vars = []
-        # for i in list(self._occurences[component.id].keys()):
-        tmp = list(self._occurences[component.id].keys())
-        tmp.sort()
-        for i in tmp:
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-        # print(output_vars)
 
-        input_vars_concat = []
-        for index, input_name in enumerate(component.input_id_links):
-            for pos in component.input_bit_positions[index]:
-                current = self._variables[input_name][pos]["current"]
-                input_vars_concat.append(self._variables[input_name][pos][current])
-                self._variables[input_name][pos]["current"] += 1
-        # print(input_vars_concat)
-        # print(self._occurences[component.id])
+    def add_sbox_constraints(self, component):
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
 
         B = BooleanPolynomialRing(component.input_bit_size, 'x')
         x = B.variable_names()
@@ -217,13 +204,7 @@ class MilpDivisionTrailModel():
         self._model.update()
 
     def add_xor_constraints(self, component):
-        output_vars = []
-        # print(self._occurences[component.id])
-        tmp = list(self._occurences[component.id].keys())  # cannot use range(len()) because of xoodoo
-        tmp.sort()
-        for i in tmp:
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-        # print(output_vars)
+        output_vars = self.get_output_vars(component)
 
         input_vars_concat = []
         constant_flag = []
@@ -264,14 +245,30 @@ class MilpDivisionTrailModel():
         self._model.update()
         return list(copies.values())
 
-    def add_modadd_constraints(self, component):
-        # constraints are taken from https://www.iacr.org/archive/asiacrypt2017/106240224/106240224.pdf
+    def get_output_vars(self, component):
         output_vars = []
-        # for i in range(component.output_bit_size):
+        # for i in list(self._occurences[component.id].keys()):
         tmp = list(self._occurences[component.id].keys())
         tmp.sort()
         for i in tmp:
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        # print(output_vars)
+        return output_vars
+
+    def get_input_vars(self, component):
+        input_vars_concat = []
+        for index, input_name in enumerate(component.input_id_links):
+            for pos in component.input_bit_positions[index]:
+                current = self._variables[input_name][pos]["current"]
+                input_vars_concat.append(self._variables[input_name][pos][current])
+                self._variables[input_name][pos]["current"] += 1
+        # print(input_vars_concat)
+        # print(self._occurences[component.id])
+        return input_vars_concat
+
+    def add_modadd_constraints(self, component):
+        # constraints are taken from https://www.iacr.org/archive/asiacrypt2017/106240224/106240224.pdf
+        output_vars = self.get_output_vars(component)
 
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -363,19 +360,8 @@ class MilpDivisionTrailModel():
 
     def add_and_constraints(self, component):
         # Constraints taken from Misuse-free paper
-        output_vars = []
-        # for i in list(self._occurences[component.id].keys()):
-        tmp = list(self._occurences[component.id].keys())
-        tmp.sort()
-        for i in tmp:
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-
-        input_vars_concat = []
-        for index, input_name in enumerate(component.input_id_links):
-            for pos in component.input_bit_positions[index]:
-                current = self._variables[input_name][pos]["current"]
-                input_vars_concat.append(self._variables[input_name][pos][current])
-                self._variables[input_name][pos]["current"] += 1
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
 
         block_size = int(len(input_vars_concat) // component.description[1])
         for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
@@ -385,68 +371,17 @@ class MilpDivisionTrailModel():
         self._model.update()
 
     def add_not_constraints(self, component):
-        output_vars = []
-        # for i in list(self._occurences[component.id].keys()):
-        tmp = list(self._occurences[component.id].keys())
-        tmp.sort()
-        for i in tmp:
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-
-        input_vars_concat = []
-        for index, input_name in enumerate(component.input_id_links):
-            for pos in component.input_bit_positions[index]:
-                current = self._variables[input_name][pos]["current"]
-                input_vars_concat.append(self._variables[input_name][pos][current])
-                self._variables[input_name][pos]["current"] += 1
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
 
         for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
             self._model.addConstr(output_vars[index] >= input_vars_concat[index])
             self.set_as_used_variables([input_vars_concat[index]])
         self._model.update()
 
-    def add_constant_constraints(self, component):
-        output_vars = []
-        for i in range(component.output_bit_size):
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-
-        const = int(component.description[0], 16)
-        for i in range(component.output_bit_size):
-            self._model.addConstr(output_vars[i] == (const >> (component.output_bit_size - 1 - i)) & 1)
-        self._model.update()
-
-    def add_cipher_output_constraints(self, component):
-        input_vars = {}
-        for index, input_name in enumerate(component.input_id_links):
-            if input_name not in input_vars.keys():
-                input_vars[input_name] = []
-            for i in component.input_bit_positions[index]:
-                input_vars[input_name].append(self._model.getVarByName(input_name + f"[{i}]"))
-        output_vars = self._model.addVars(list(range(component.output_bit_size)), vtype=GRB.BINARY, name=component.id)
-
-        input_vars_concat = []
-        for key in input_vars.keys():
-            input_vars_concat += input_vars[key]
-
-        for i in range(component.output_bit_size):
-            self._model.addConstr(output_vars[i] == input_vars_concat[i])
-        self._model.update()
-
     def add_intermediate_output_constraints(self, component):
-        output_vars = []
-        # for i in list(self._occurences[component.id].keys()):
-        tmp = list(self._occurences[component.id].keys())
-        tmp.sort()
-        for i in tmp:
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-        # print(output_vars)
-
-        input_vars_concat = []
-        for index, input_name in enumerate(component.input_id_links):
-            for pos in component.input_bit_positions[index]:
-                current = self._variables[input_name][pos]["current"]
-                input_vars_concat.append(self._variables[input_name][pos][current])
-                self._variables[input_name][pos]["current"] += 1
-        # print(input_vars_concat)
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
 
         # print(list(self._occurences[component.id].keys()))
         for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
@@ -514,11 +449,7 @@ class MilpDivisionTrailModel():
                 print(f"---------> {component.id}")
                 if component.type == SBOX:
                     self.add_sbox_constraints(component)
-                elif component.type == "cipher_output":
-                    # self.add_cipher_output_constraints(component)
-                    continue
-                elif component.type == "constant":
-                    # self.add_constant_constraints(component)
+                elif component.type in ["cipher_output", "constant"]:
                     continue
                 elif component.type == "intermediate_output":
                     self.add_intermediate_output_constraints(component)
@@ -729,9 +660,7 @@ class MilpDivisionTrailModel():
         # print(monomials_even_occurences_removed)
         self.pretty_print(monomials_even_occurences_removed)
 
-    def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None):
-        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree)
-
+    def optimize_model(self):
         print(self._model)
         start = time.time()
         self._model.optimize()
@@ -739,6 +668,9 @@ class MilpDivisionTrailModel():
         solving_time = end - start
         print(f"solving_time : {solving_time}")
 
+    def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None):
+        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree)
+        self.optimize_model()
         self.get_solutions()
         return self._model
 
@@ -750,13 +682,7 @@ class MilpDivisionTrailModel():
         self._model.update()
         self._model.write("division_trail_model.lp")
 
-        print(self._model)
-        start = time.time()
-        self._model.optimize()
-        end = time.time()
-        solving_time = end - start
-        print(f"solving_time : {solving_time}")
-
+        self.optimize_model()
         self.get_solutions()
         return self._model
 
@@ -779,13 +705,7 @@ class MilpDivisionTrailModel():
             p.append(self._model.getVarByName(f"plaintext[{i}]"))
         self._model.setObjective(sum(p[i] for i in range(nb_plaintext_bits_used)), GRB.MAXIMIZE)
 
-        print(self._model)
-        start = time.time()
-        self._model.optimize()
-        end = time.time()
-        solving_time = end - start
-        print(f"solving_time : {solving_time}")
-
+        self.optimize_model()
         # get degree
         degree = self._model.getObjective().getValue()
         return degree
