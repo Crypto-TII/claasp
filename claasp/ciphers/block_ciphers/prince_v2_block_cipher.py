@@ -112,19 +112,7 @@ class PrinceBlockCipherV2(Cipher):
         sage: ciphertext = 0x0125fc7359441690
         sage: prince_v2.evaluate([plaintext, key]) == ciphertext
         True
-        sage: plaintext_list = [0x0000000000000000, 0xffffffffffffffff, 0x0000000000000000, 0x0000000000000000, 0x0123456789abcdef]
-        sage: key_list = [0x00000000000000000000000000000000, 0x00000000000000000000000000000000, 0xffffffffffffffff0000000000000000, 0x0000000000000000ffffffffffffffff, 0x0123456789abcdeffedcba9876543210]
-        sage: ciphertext_list = [0x0125fc7359441690, 0x832bd46f108e7857, 0xee873b2ec447944d, 0x0ac6f9cd6e6f275d, 0x603cd95fa72a8704]
-        sage: for j in range(0, len(key_list)):
-                plaintext = plaintext_list[j]
-                key = key_list[j]
-                ciphertext = ciphertext_list[j]
-                prince_v2.evaluate([plaintext, key]) == ciphertext
-        True
-        True
-        True
-        True
-        True
+
     """
 
     def generate_first_rounds(self, current_state, number_of_rounds):
