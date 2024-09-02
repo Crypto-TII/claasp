@@ -15,13 +15,13 @@ def test_princeV2_block_cipher():
 
     prince_v2 = PrinceBlockCipherV2()
     plaintext = 0x0000000000000000
-    key = 0x0000000000000000ffffffffffffffff
+    key = 0xffffffffffffffff0000000000000000
     ciphertext = 0xee873b2ec447944d
     assert prince_v2.evaluate([plaintext, key]) == ciphertext
 
     prince_v2 = PrinceBlockCipherV2()
     plaintext = 0x0000000000000000
-    key = 0xffffffffffffffff0000000000000000
+    key =  0x0000000000000000ffffffffffffffff
     ciphertext = 0x0ac6f9cd6e6f275d
     assert prince_v2.evaluate([plaintext, key]) == ciphertext
 
