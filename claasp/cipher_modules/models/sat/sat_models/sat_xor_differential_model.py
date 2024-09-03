@@ -28,13 +28,14 @@ from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, 
 
 
 class SatXorDifferentialModel(SatModel):
-    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False):
+    def __init__(self, cipher, counter='sequential', compact=False):
         self._window_size_by_component_id_values = None
         self._window_size_by_round_values = None
         self._window_size_full_window_vars = None
         self._window_size_number_of_full_window = None
         self._window_size_full_window_operator = None
-        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
+        self._window_size_weight_pr_vars = -1
+        super().__init__(cipher, counter, compact)
 
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
         """
@@ -60,7 +61,7 @@ class SatXorDifferentialModel(SatModel):
         """
         variables = []
         self._variables_list = []
-        if fixed_variables == []:
+        if not fixed_variables:
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_constraints(fixed_variables)
         self._model_constraints = constraints
@@ -90,7 +91,6 @@ class SatXorDifferentialModel(SatModel):
                 self._variables_list.extend([])
                 self._model_constraints.extend([f'-{variable}' for variable in self._window_size_full_window_vars])
                 return
-
 
             if self._window_size_full_window_operator == 'at_least':
                 all_ones_dummy_variables, all_ones_constraints = self._sequential_counter_algorithm(
@@ -123,7 +123,6 @@ class SatXorDifferentialModel(SatModel):
                 all_ones_constraints = all_ones_constraints1 + all_ones_constraints2
             else:
                 raise ValueError(f'Unknown operator {self._window_size_full_window_operator}')
-
 
             self._variables_list.extend(all_ones_dummy_variables)
             self._model_constraints.extend(all_ones_constraints)
@@ -495,6 +494,13 @@ class SatXorDifferentialModel(SatModel):
             self._window_size_full_window_vars = []
             self._window_size_number_of_full_window = number_of_full_windows
             self._window_size_full_window_operator = full_window_operator
+
+    def set_window_size_weight_pr_vars(self, window_size_weight_pr_vars):
+        self._window_size_weight_pr_vars = window_size_weight_pr_vars
+
+    @property
+    def window_size_weight_pr_vars(self):
+        return self._window_size_weight_pr_vars
 
     @property
     def window_size_number_of_full_window(self):

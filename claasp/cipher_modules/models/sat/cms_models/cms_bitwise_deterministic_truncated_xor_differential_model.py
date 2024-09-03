@@ -51,9 +51,8 @@ from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_trunc
 
 class CmsSatDeterministicTruncatedXorDifferentialModel(SatBitwiseDeterministicTruncatedXorDifferentialModel):
 
-    def __init__(self, cipher, window_size_weight_pr_vars=-1,
-                 counter='sequential', compact=False):
-        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
+    def __init__(self, cipher, counter='sequential', compact=False):
+        super().__init__(cipher, counter, compact)
 
         print("\n*** WARNING ***\n"
               "At the best of the authors knowldege, deterministic truncated XOR differential model "
