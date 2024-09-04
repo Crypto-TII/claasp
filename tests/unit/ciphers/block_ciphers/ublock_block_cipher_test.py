@@ -11,7 +11,7 @@ def test_ublock_block_cipher():
 
     ublock = UblockBlockCipher(number_of_rounds=4)
     assert ublock.number_of_rounds == 4
-    assert ublock.id == 'speck_p128_k128_o128_r4'
+    assert ublock.id == 'ublock_p128_k128_o128_r4'
     assert ublock.component_from(3, 0).id == 'xor_3_0'
 
     ublock = UblockBlockCipher(block_bit_size=128, key_bit_size=128)
