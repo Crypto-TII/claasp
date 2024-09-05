@@ -81,7 +81,7 @@ class AradiBlockCipherSBoxAndCompactLinearMap(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox_compact_linear_map import AradiBlockCipherSBoxAndCompactLinearMap
+        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox_and_compact_linear_map import AradiBlockCipherSBoxAndCompactLinearMap
         sage: aradi = AradiBlockCipherSBoxAndCompactLinearMap(number_of_rounds=16)
         sage: aradi.evaluate([0, 0x1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100])
         83791582030165712186104466959690447122
