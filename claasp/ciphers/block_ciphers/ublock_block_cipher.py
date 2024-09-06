@@ -33,7 +33,7 @@ SBOX_TK = [0x0, 0x2, 0x4, 0x6, 0x8, 0xa, 0xc, 0xe, 0x3, 0x1, 0x7, 0x5, 0xb, 0x9,
 SBOX_SIZE = 4
 PL = [
     [1, 3, 4, 6, 0, 2, 7, 5],
-    [13, 10, 3, 4, 8, 1, 15, 6, 7, 0, 14, 9, 11, 2, 12, 5]
+    [2, 7, 8, 13, 3, 6, 9, 12, 1, 4, 15, 10, 14, 11, 5, 0]
 ]
 PR = [
     [2, 7, 5, 0, 1, 6, 4, 3],
@@ -44,7 +44,7 @@ PK = [
     [6, 0, 8, 13, 1, 15, 5, 10, 4, 9, 12, 2, 11, 3, 7, 14],
     [10, 5, 15, 0, 2, 7, 8, 13, 14, 6, 4, 12, 1, 3, 11, 9, 24, 25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22,
      23],
-    [10, 5, 15, 0, 2, 7, 8, 13, 14, 6, 4, 12, 1, 3, 11, 9, 24, 25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22,
+    [10, 5, 15, 0, 2, 7, 8, 13, 1, 14, 4, 12, 9, 11, 3, 6, 24, 25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22,
      23]
 ]
 PK_WORD_SIZE = 4
@@ -116,8 +116,7 @@ class UblockBlockCipher(Cipher):
         # cipher output and round key output
         self.add_XOR_component(state_left.id+state_right.id+round_key.id,
                                state_left.input_bit_positions+state_right.input_bit_positions+round_key.input_bit_positions,
-                               self.block_bit_size
-                               )
+                               self.block_bit_size)
         cipher_output = ComponentState([self.get_current_component_id()], [list(range(self.block_bit_size))])
         self.add_round_key_output_component(round_key.id, round_key.input_bit_positions, self.block_bit_size)
         self.add_cipher_output_component(cipher_output.id, cipher_output.input_bit_positions, self.block_bit_size)
@@ -296,7 +295,7 @@ class UblockBlockCipher(Cipher):
             key_0_left = ComponentState(key_0.id, [list(range(RC_SIZE))])
             key_0_right = ComponentState(key_0.id, [list(range(RC_SIZE, self.key_block_size))])
             self.add_XOR_component(key_0_left.id + round_constant.id, key_0_left.input_bit_positions + round_constant.input_bit_positions, RC_SIZE)
-            temp = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])
+            temp = ComponentState([self.get_current_component_id()], [list(range(RC_SIZE))])
             id = []
             window_size = SBOX_SIZE
             n = int(RC_SIZE / window_size)
@@ -310,7 +309,6 @@ class UblockBlockCipher(Cipher):
                                         window_size, SBOX)
                 id.append(self.get_current_component_id())
             temp = ComponentState(id, [list(range(window_size))] * int(self.key_block_size/window_size))
-
         self.add_XOR_component(key_2.id + temp.id, key_2.input_bit_positions + temp.input_bit_positions, self.key_block_size)
         key_2 = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])
 
