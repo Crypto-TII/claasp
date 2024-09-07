@@ -44,7 +44,7 @@ class AradiBlockCipherSBox(Cipher):
     - ``transformations_flag`` -- **boolean** (default: `True`)
 
     EXAMPLES::
-
+        sage: # The following test vector was taken from [GreMW24].
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
         sage: aradi = AradiBlockCipherSBox(number_of_rounds=16)
         sage: aradi.evaluate([0, 0x1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100])
