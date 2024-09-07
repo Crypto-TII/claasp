@@ -38,8 +38,7 @@ class AradiBlockCipherSBox(Cipher):
 
     - ``block_bit_size`` -- **integer** (default: `64`); the bit size of the cipher's input and output blocks.
     - ``key_bit_size`` -- **integer** (default: `128`); cipher key bit size of the cipher
-    - ``number_of_rounds`` -- **integer** (default: `0`); number of rounds of the cipher. The cipher uses the
-      corresponding amount given the other parameters (if available) when number_of_rounds is 0
+    - ``number_of_rounds`` -- **integer** (default: `0`); number of rounds of the cipher.
     - ``sub_keys_zero`` -- **boolean** (default: `False`)
     - ``transformations_flag`` -- **boolean** (default: `True`)
 
