@@ -1,3 +1,19 @@
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
 from claasp.cipher import Cipher
 import numpy as np
 
@@ -95,9 +111,10 @@ sbox = [0xB, 0xF, 0x3, 0x2, 0xA, 0xC, 0x9, 0x1, 0x6, 0x7, 0x8, 0x0, 0xE, 0x5, 0x
 inverse_sbox = [0xB, 0x7, 0x3, 0x2, 0xF, 0xD, 0x8, 0x9, 0xa, 0x6, 0x4, 0x0, 0x5, 0xe, 0xc, 0x1]
 
 
-class PrinceBlockCipherV2(Cipher):
+class PrinceV2BlockCipher(Cipher):
     """
     Return a cipher object of PrinceV2 Block Cipher.
+    The technical specifications along with the test vectors can be found here: https://eprint.iacr.org/2020/1269.pdf
 
     INPUT:
 
@@ -105,8 +122,8 @@ class PrinceBlockCipherV2(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.prince_v2_block_cipher import PrinceBlockCipherV2
-        sage: prince_v2 = PrinceBlockCipherV2()
+        sage: from claasp.ciphers.block_ciphers.prince_v2_block_cipher import PrinceV2BlockCipher
+        sage: prince_v2 = PrinceV2BlockCipher()
         sage: key = 0x00000000000000000000000000000000
         sage: plaintext = 0x0000000000000000
         sage: ciphertext = 0x0125fc7359441690
