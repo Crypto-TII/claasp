@@ -268,6 +268,11 @@
         Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
 * : In Advances in Cryptology – CRYPTO 2019
 
+.. [GreMW24]
+        Greene P., Motley M., Weeks B.: *ARADI and LLAMA: Low-Latency Cryptography for
+        Memory Encryption*. IACR Cryptol. ePrint Arch., 2024, 1240.
+        Available at https://eprint.iacr.org/2024/1240.
+
 .. _claasp-ref-H:
 
 .. only:: html
