@@ -268,6 +268,11 @@
         Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
 * : In Advances in Cryptology – CRYPTO 2019
 
+.. [GreMW24]
+        Greene P., Motley M., Weeks B.: *ARADI and LLAMA: Low-Latency Cryptography for
+        Memory Encryption*. IACR Cryptol. ePrint Arch., 2024, 1240.
+        Available at https://eprint.iacr.org/2024/1240.
+
 .. _claasp-ref-H:
 
 .. only:: html
@@ -310,6 +315,12 @@
         Kipnis A., Patarin J., Goubin L. : *Unbalanced oil and vinegar
         signature schemes* : In Advances in Cryptology EUROCRYPT99, pages
         206–222, Berlin, Heidelberg, 1999. Springer BerlinHeidelberg.
+
+.. [Knudsen2011TheBC]
+        Knudsen, L. R., & Robshaw, M. J. B., : *The Block Cipher Companion* :
+        Information Security and Cryptography, 2011.
+        https://link.springer.com/book/10.1007/978-3-642-17342-4
+
 
 .. _claasp-ref-L:
 

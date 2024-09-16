@@ -983,13 +983,15 @@ class Modular(Component):
         constraints.extend(sat_utils.cnf_xor(output_bit_ids[output_bit_len - 1],
                                              [input_bit_ids[output_bit_len - 1],
                                               input_bit_ids[2 * output_bit_len - 1]]))
-        if model.window_size_weight_pr_vars != -1:
-            for i in range(output_bit_len - model.window_size_weight_pr_vars):
-                constraints.extend(sat_utils.cnf_n_window_heuristic_on_w_vars(
-                    hw_bit_ids[i: i + (model.window_size_weight_pr_vars + 1)]))
-        component_round_number = model._cipher.get_round_from_component_id(self.id)
 
         from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+        if type(model) is SatXorDifferentialModel and model.window_size_by_round_values is not None:
+            if model.window_size_weight_pr_vars != -1:
+                for i in range(output_bit_len - model.window_size_weight_pr_vars):
+                    constraints.extend(sat_utils.cnf_n_window_heuristic_on_w_vars(
+                        hw_bit_ids[i: i + (model.window_size_weight_pr_vars + 1)]))
+        component_round_number = model._cipher.get_round_from_component_id(self.id)
+
         if type(model) is SatXorDifferentialModel and model.window_size_by_round_values is not None:
             window_size = model.window_size_by_round_values[component_round_number]
             if window_size != -1:
