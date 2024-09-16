@@ -21,8 +21,9 @@ jobs:
       uses: actions-js/push@master
       with:
         branch: 'main'
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
         message: "Update documentation"
+        force: true
 
     - name: Update develop branch
       uses: morbalint/git-merge-action@v1
@@ -30,4 +31,4 @@ jobs:
         target: 'develop'
         source: 'main'
         strategy_options: 'ours'
-        token: ${{ secrets.WORKFLOW_TOKEN }}
+        token: ${{ secrets.AUTHORIZATION_TOKEN }}
