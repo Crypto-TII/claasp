@@ -1,5 +1,5 @@
 from claasp.components.shift_component import SHIFT
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
@@ -66,7 +66,7 @@ def test_cp_inverse_constraints():
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
     aes = AESBlockCipher(number_of_rounds=3)
-    cp = CpModel(aes)
+    cp = MznModel(aes)
     shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                             [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                              [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
@@ -80,7 +80,7 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
 
 def test_cp_xor_differential_first_step_constraints():
     aes = AESBlockCipher(number_of_rounds=3)
-    cp = CpModel(aes)
+    cp = MznModel(aes)
     shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                             [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                              [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
