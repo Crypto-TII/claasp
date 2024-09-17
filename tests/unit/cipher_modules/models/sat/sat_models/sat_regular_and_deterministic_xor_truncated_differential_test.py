@@ -1,7 +1,4 @@
-from os import urandom
-
 import numpy as np
-
 from claasp.cipher_modules.models.sat.sat_models.sat_regular_and_deterministic_xor_truncated_differential import \
     SatRegularAndDeterministicXorTruncatedDifferential
 from claasp.cipher_modules.models.utils import set_fixed_variables
@@ -110,11 +107,12 @@ def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight():
     )
     assert result["status"] == "SATISFIABLE"
 
+
 def extract_bits(columns, positions):
     num_positions = len(positions)
     num_columns = columns.shape[1]
     bit_size = columns.shape[0] * 8
-    # Initialize the result array
+
     result = np.zeros((num_positions, num_columns), dtype=np.uint8)
 
     # Loop to fill the result array with the required bits
@@ -125,16 +123,13 @@ def extract_bits(columns, positions):
             result[i, j] = get_k_th_bit(columns[:, j][byte_index], bit_index)
     return result
 
+
 def extract_bit_positions(binary_str):
-    #binary_str = bin(hex_number)[2:]  # bin() converts to binary, [2:] strips the '0b' prefix
-
-    # Reverse the binary string to make the least significant bit at index 0
     binary_str = binary_str[::-1]
-
-    # Find positions of '1's or 0's
     positions = [i for i, bit in enumerate(binary_str) if bit == '1' or bit == '0']
 
     return positions
+
 
 def repeat_input_difference(input_difference_, number_of_samples_, number_of_bytes_):
     bytes_array = input_difference_.to_bytes(number_of_bytes_, 'big')
@@ -142,14 +137,21 @@ def repeat_input_difference(input_difference_, number_of_samples_, number_of_byt
     column_array = np_array.reshape(-1, 1)
     return np.tile(column_array, (1, number_of_samples_))
 
+
 def test_differential_in_single_key_scenario_speck3264():
-    speck = SpeckBlockCipher(number_of_rounds=2)
+    """
+    This test is checking the resulting probability after combining two differential, one regular and one truncated.
+    The regular one occurs with probability 2^-12 and the truncated one occurs with probability 1. The regular differential
+    start with a fixed input difference of 0xfe2ecdf8 and the output difference is 007ce000. The truncated differential
+    starts with a fixed input difference of 007ce000 and the output difference is ????100000000000????100000000011. The
+    expected probability for the resulting differential is approximately 2^-12.
+    """
+    speck = SpeckBlockCipher(number_of_rounds=3)
     rng = np.random.default_rng(seed=42)
-    number_of_samples = 2**16
-    input_difference = 0x81020106
-    output_difference = "00000000011000000000000000000000"
+    number_of_samples = 2**14
+    input_difference = 0xfe2ecdf8
+    output_difference = "????100000000000????100000000011"
     input_difference_data = repeat_input_difference(input_difference, number_of_samples, 4)
-    #output_difference_data = repeat_input_difference(output_difference, number_of_samples, 4)
     key_data = rng.integers(low=0, high=256, size=(8, number_of_samples), dtype=np.uint8)
     plaintext_data1 = rng.integers(low=0, high=256, size=(4, number_of_samples), dtype=np.uint8)
     plaintext_data2 = plaintext_data1 ^ input_difference_data
@@ -157,25 +159,23 @@ def test_differential_in_single_key_scenario_speck3264():
     ciphertext2 = speck.evaluate_vectorized([plaintext_data2, key_data])
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
     bit_positions_ciphertext = extract_bit_positions(output_difference)
-    ccc = extract_bits(ciphertext3.T, bit_positions_ciphertext)
-    other = []
+    known_bit_positions = extract_bits(ciphertext3.T, bit_positions_ciphertext)
     inv_output_difference = output_difference[::-1]
 
     inv_output_difference_only_filled = [int(symbol) for symbol in inv_output_difference if symbol in ["0", "1"]]
     total = 0
-    for idx in range(len(ccc[0])):
-        if (np.all(ccc[:, idx] == inv_output_difference_only_filled)):
+    for idx in range(len(known_bit_positions[0])):
+        if (np.all(known_bit_positions[:, idx] == inv_output_difference_only_filled)):
             total += 1
-
-
     import math
     total_prob_weight = math.log(total/number_of_samples, 2)
-    assert 2 > abs(total_prob_weight) > 0
+    assert 14 > abs(total_prob_weight) > 11
+
 
 def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_4_rounds():
     component_model_types = []
     speck = SpeckBlockCipher(number_of_rounds=4)
-    # speck.print()
+
     plaintext = set_fixed_variables(
         component_id='plaintext',
         constraint_type='not_equal',
@@ -225,19 +225,6 @@ def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_4_r
         'xor_3_10',
         'intermediate_output_3_11',
         'intermediate_output_3_12',
-        # 'constant_4_0',
-        # 'rot_4_1',
-        # 'modadd_4_2',
-        # 'xor_4_3',
-        # 'rot_4_4',
-        # 'xor_4_5',
-        # 'rot_4_6',
-        # 'modadd_4_7',
-        # 'xor_4_8',
-        # 'rot_4_9',
-        # 'xor_4_10',
-        # 'intermediate_output_4_11',
-        # 'intermediate_output_4_12',
         'cipher_output_3_12'
     ]
     # sat_bitwise_deterministic_truncated_components = []
@@ -245,13 +232,13 @@ def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_4_r
         if component_model_type["component_id"] in sat_bitwise_deterministic_truncated_components:
             component_model_type["model_type"] = "sat_bitwise_deterministic_truncated_xor_differential_constraints"
     sat_heterogeneous_model = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
-    result = sat_heterogeneous_model.find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
+    trail = sat_heterogeneous_model.find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
         8,
         31,
         [intermediate_output_1_12, key, plaintext],
         "CRYPTOMINISAT_EXT"
     )
-    print(result)
+    assert trail['components_values']['cipher_output_3_12']['value'] == '????????00000000????????000000?1'
 
 
 def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_5_rounds():
@@ -336,7 +323,6 @@ def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_5_r
     trail = sat_heterogeneous_model.find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
             8, 31, [intermediate_output_1_12, key, plaintext], "CRYPTOMINISAT_EXT"
         )
-    print(trail['components_values']['plaintext']['value'])
     assert trail['components_values']['cipher_output_4_12']['value'] == '???????????????0????????????????'
 
 
