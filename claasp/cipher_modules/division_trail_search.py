@@ -4,6 +4,8 @@ from sage.crypto.sbox import SBox
 from collections import Counter
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_predecessors_subgraph
+from gurobipy import Model, GRB
+import os
 
 """
 IMPORTANT:
@@ -190,7 +192,12 @@ class MilpDivisionTrailModel():
                     self._used_variables.append(tmp2)
 
     def build_gurobi_model(self):
-        model = Model()
+        env = gurobipy.Env(empty=True)
+        env.setParam('ComputeServer', os.getenv('GUROBI_COMPUTE_SERVER'))
+        env.start()
+        # Create a new model
+        model = Model("basic_model", env=env)
+        # model = Model()
         model.Params.LogToConsole = 0
         model.Params.Threads = 16  # best found experimentaly on ascon_sbox_2rounds
         model.setParam("PoolSolutions", 200000000)  # 200000000
