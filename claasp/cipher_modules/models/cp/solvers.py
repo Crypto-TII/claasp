@@ -18,7 +18,7 @@
 
 import os
 
-SOLVER_DEFAULT = 'Chuffed'
+SOLVER_DEFAULT = 'chuffed'
 MODEL_DEFAULT_PATH = os.getcwd()
 
 CP_SOLVERS_INTERNAL = [{'solver_brand_name': 'Choco', 'solver_name': 'choco'},
