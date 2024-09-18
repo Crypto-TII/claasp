@@ -341,7 +341,8 @@ class SatModel:
 
         return solution
 
-    def fix_variables_value_constraints(self, fixed_variables=[]):
+    @staticmethod
+    def fix_variables_value_constraints(fixed_variables=[]):
         """
         Return lists of variables and clauses for fixing variables in CIPHER model.
 
@@ -370,7 +371,7 @@ class SatModel:
             ....:    'bit_positions': [0, 1, 2, 3],
             ....:    'bit_values': [1, 1, 1, 0]
             ....: }]
-            sage: sat.fix_variables_value_constraints(fixed_variables)
+            sage: SatModel.fix_variables_value_constraints(fixed_variables)
             ['plaintext_0',
              '-plaintext_1',
              'plaintext_2',
@@ -485,9 +486,8 @@ class SatModel:
         return self._counter(hw_list, weight)
 
     def build_generic_sat_model_from_dictionary(self, fixed_variables, component_and_model_types):
-        constraints = self.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
-        self._model_constraints = constraints
+        self._model_constraints = []
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
         operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
 
@@ -504,7 +504,6 @@ class SatModel:
                     variables, constraints = sat_xor_differential_propagation_constraints()
                 else:
                     variables, constraints = sat_xor_differential_propagation_constraints(self)
-
                 self._model_constraints.extend(constraints)
                 self._variables_list.extend(variables)
 

@@ -38,6 +38,7 @@ def speck32_64_decrypt(ciphertext, ks):
         c0 = (c0 - c1) & MASK_VAL
         c0 = speck32_64_rol(c0, speck32_64_alpha())
         return c0, c1
+
     x, y = ciphertext
     for subkey in reversed(ks):
         x, y = dec_one_round((x, y), subkey)
@@ -64,7 +65,6 @@ def speck32_64_expand_key(k, t):
 
 
 def speck32_64_encrypt(p, ks):
-
     x, y = p
     for k in ks:
         x, y = speck32_64_enc_one_round((x, y), k)
@@ -115,10 +115,9 @@ def extract_bits(columns, positions):
 
     result = np.zeros((num_positions, num_columns), dtype=np.uint8)
 
-    # Loop to fill the result array with the required bits
     for i in range(num_positions):
         for j in range(num_columns):
-            byte_index = (bit_size - positions[i] -1) // 8
+            byte_index = (bit_size - positions[i] - 1) // 8
             bit_index = positions[i] % 8
             result[i, j] = get_k_th_bit(columns[:, j][byte_index], bit_index)
     return result
@@ -140,7 +139,7 @@ def repeat_input_difference(input_difference_, number_of_samples_, number_of_byt
 
 def test_differential_in_single_key_scenario_speck3264():
     """
-    This test is checking the resulting probability after combining two differential, one regular and one truncated.
+    This test is checking the resulting probability after combining two differentials, one regular and one truncated.
     The regular one occurs with probability 2^-12 and the truncated one occurs with probability 1. The regular differential
     start with a fixed input difference of 0xfe2ecdf8 and the output difference is 007ce000. The truncated differential
     starts with a fixed input difference of 007ce000 and the output difference is ????100000000000????100000000011. The
@@ -148,7 +147,7 @@ def test_differential_in_single_key_scenario_speck3264():
     """
     speck = SpeckBlockCipher(number_of_rounds=3)
     rng = np.random.default_rng(seed=42)
-    number_of_samples = 2**14
+    number_of_samples = 2 ** 14
     input_difference = 0xfe2ecdf8
     output_difference = "????100000000000????100000000011"
     input_difference_data = repeat_input_difference(input_difference, number_of_samples, 4)
@@ -165,10 +164,10 @@ def test_differential_in_single_key_scenario_speck3264():
     inv_output_difference_only_filled = [int(symbol) for symbol in inv_output_difference if symbol in ["0", "1"]]
     total = 0
     for idx in range(len(known_bit_positions[0])):
-        if (np.all(known_bit_positions[:, idx] == inv_output_difference_only_filled)):
+        if np.all(known_bit_positions[:, idx] == inv_output_difference_only_filled):
             total += 1
     import math
-    total_prob_weight = math.log(total/number_of_samples, 2)
+    total_prob_weight = math.log(total / number_of_samples, 2)
     assert 14 > abs(total_prob_weight) > 11
 
 
@@ -184,8 +183,8 @@ def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_4_r
     intermediate_output_1_12 = set_fixed_variables(component_id='intermediate_output_1_12', constraint_type='equal',
                                                    bit_positions=range(32),
                                                    bit_values=(
-                                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+                                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
     key = set_fixed_variables(
         component_id='key',
         constraint_type='equal',
@@ -321,9 +320,107 @@ def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_5_r
 
     sat_heterogeneous_model = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
     trail = sat_heterogeneous_model.find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
-            8, 31, [intermediate_output_1_12, key, plaintext], "CRYPTOMINISAT_EXT"
-        )
+        8, 31, [intermediate_output_1_12, key, plaintext], "CRYPTOMINISAT_EXT"
+    )
     assert trail['components_values']['cipher_output_4_12']['value'] == '???????????????0????????????????'
 
 
+def test_wrong_fixed_variables_assignment():
+    component_model_types = []
+    speck = SpeckBlockCipher(number_of_rounds=5)
 
+    key = set_fixed_variables(
+        component_id='key',
+        constraint_type='equal',
+        bit_positions=range(64),
+        bit_values=(0,) * 64
+    )
+
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='not_equal',
+        bit_positions=range(32),
+        bit_values=[0] * 32
+    )
+
+    intermediate_output_1_12 = set_fixed_variables(
+        component_id='intermediate_output_1_12',
+        constraint_type='equal',
+        bit_positions=range(32),
+        bit_values=(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    )
+
+    modadd_1_2 = set_fixed_variables(
+        component_id='modadd_1_2',
+        constraint_type='equal',
+        bit_positions=range(32),
+        bit_values=(
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        )
+    )
+
+    for component in speck.get_all_components():
+        component_model_type = {
+            "component_id": component.id,
+            "component_object": component,
+            "model_type": "sat_xor_differential_propagation_constraints"
+        }
+        component_model_types.append(component_model_type)
+
+    sat_bitwise_deterministic_truncated_components = [
+        'constant_2_0',
+        'rot_2_1',
+        'modadd_2_2',
+        'xor_2_3',
+        'rot_2_4',
+        'xor_2_5',
+        'rot_2_6',
+        'modadd_2_7',
+        'xor_2_8',
+        'rot_2_9',
+        'xor_2_10',
+        'intermediate_output_2_11',
+        'intermediate_output_2_12',
+        'constant_3_0',
+        'rot_3_1',
+        'modadd_3_2',
+        'xor_3_3',
+        'rot_3_4',
+        'xor_3_5',
+        'rot_3_6',
+        'modadd_3_7',
+        'xor_3_8',
+        'rot_3_9',
+        'xor_3_10',
+        'intermediate_output_3_11',
+        'intermediate_output_3_12',
+        'constant_4_0',
+        'rot_4_1',
+        'modadd_4_2',
+        'xor_4_3',
+        'rot_4_4',
+        'xor_4_5',
+        'rot_4_6',
+        'modadd_4_7',
+        'xor_4_8',
+        'rot_4_9',
+        'xor_4_10',
+        'intermediate_output_4_11',
+        'intermediate_output_4_12',
+        'cipher_output_4_12'
+    ]
+    for component_model_type in component_model_types:
+        if component_model_type["component_id"] in sat_bitwise_deterministic_truncated_components:
+            component_model_type["model_type"] = "sat_bitwise_deterministic_truncated_xor_differential_constraints"
+
+    sat_heterogeneous_model = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
+
+    import pytest
+    with pytest.raises(ValueError) as exc_info:
+        sat_heterogeneous_model.find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
+            8,
+            31,
+            [intermediate_output_1_12, key, plaintext, modadd_1_2],
+            "CRYPTOMINISAT_EXT"
+        )
+        assert str(exc_info.value) == "The fixed value in a model for a regular XOR differential component cannot be 2"

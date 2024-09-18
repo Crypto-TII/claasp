@@ -1,6 +1,8 @@
 import time
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
+from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import \
+    SatBitwiseDeterministicTruncatedXorDifferentialModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import INPUT_PLAINTEXT
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
@@ -83,6 +85,26 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
             self._model_constraints.extend(constraints)
         self.get_connecting_constraints()
 
+    @staticmethod
+    def fix_variables_value_constraints(fixed_variables, regular_components=None, truncated_components=None):
+        truncated_fixed_variables = []
+        regular_fixed_variables = []
+        for fixed_variable in fixed_variables:
+            component_id = fixed_variable["component_id"]
+            if component_id in [regular_component["component_id"] for regular_component in regular_components] \
+                    and (2 in fixed_variable['bit_values']):
+                raise ValueError("The fixed value in a model for a regular XOR differential component cannot be 2")
+            if component_id in \
+                    [truncated_component["component_id"] for truncated_component in truncated_components]:
+                truncated_fixed_variables.append(fixed_variable)
+            else:
+                regular_fixed_variables.append(fixed_variable)
+
+        fix_values_regular_constraints = SatModel.fix_variables_value_constraints(regular_fixed_variables)
+        fix_values_truncated_constraints = SatBitwiseDeterministicTruncatedXorDifferentialModel.\
+            fix_variables_value_constraints(truncated_fixed_variables)
+        return fix_values_regular_constraints + fix_values_truncated_constraints
+
     def _parse_solver_output(self, variable2value):
         out_suffix = ''
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
@@ -107,6 +129,9 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
         self.build_xor_regular_and_deterministic_truncated_differential_model(
             weight, number_of_unknown_vars, fixed_variables=fixed_values
         )
+        constraints = SatRegularAndDeterministicXorTruncatedDifferential.fix_variables_value_constraints(
+            fixed_values, self.regular_components, self.truncated_components)
+        self.model_constraints.extend(constraints)
         end_building_time = time.time()
         solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
         solution['building_time_seconds'] = end_building_time - start_building_time

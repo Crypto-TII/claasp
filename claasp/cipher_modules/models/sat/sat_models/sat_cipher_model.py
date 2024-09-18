@@ -51,7 +51,7 @@ class SatCipherModel(SatModel):
             sage: sat.build_cipher_model()
         """
         variables = []
-        constraints = self.fix_variables_value_constraints(fixed_variables)
+        constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
@@ -70,7 +70,7 @@ class SatCipherModel(SatModel):
 
     def build_generic_sat_model_from_dictionary(self, fixed_variables, component_and_model_types):
         variables = []
-        constraints = self.fix_variables_value_constraints(fixed_variables)
+        constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]

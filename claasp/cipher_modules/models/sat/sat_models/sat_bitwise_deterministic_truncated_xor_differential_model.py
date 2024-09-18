@@ -56,7 +56,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             ...
         """
         variables = []
-        constraints = self.fix_variables_value_constraints(fixed_variables)
+        constraints = SatBitwiseDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
         component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
@@ -77,7 +77,8 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def fix_variables_value_constraints(self, fixed_variables=[]):
+    @staticmethod
+    def fix_variables_value_constraints(fixed_variables=[]):
         """
         Return constraints for fixed variables
 
@@ -109,7 +110,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             ....:    'bit_positions': [0, 1, 2, 3],
             ....:    'bit_values': [2, 1, 1, 0]
             ....: }]
-            sage: sat.fix_variables_value_constraints(fixed_variables)
+            sage: SatBitwiseDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints(fixed_variables)
             ['-plaintext_0_0',
              'plaintext_0_1',
              '-plaintext_1_0',

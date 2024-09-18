@@ -41,7 +41,7 @@ def test_fix_variables_value_constraints():
                         'constraint_type': 'not_equal',
                         'bit_positions': [0, 1, 2, 3],
                         'bit_values': [1, 1, 1, 0]}]
-    assert sat.fix_variables_value_constraints(fixed_variables) == [
+    assert SatModel.fix_variables_value_constraints(fixed_variables) == [
         'plaintext_0', '-plaintext_1', 'plaintext_2', 'plaintext_3',
         '-ciphertext_0 -ciphertext_1 -ciphertext_2 ciphertext_3']
 
