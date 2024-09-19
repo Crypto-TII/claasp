@@ -18,7 +18,7 @@ class MilpDivisionTrailModel():
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search_in_PR import *
+        sage: from claasp.cipher_modules.division_trail_search import *
         sage: milp = MilpDivisionTrailModel(cipher)
         sage: milp.find_degree_of_specific_output_bit(0)
         3
