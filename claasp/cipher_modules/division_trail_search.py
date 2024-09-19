@@ -12,7 +12,6 @@ IMPORTANT:
 This module can only be used if the user possesses a Gurobi license.
 """
 
-
 class MilpDivisionTrailModel():
     """
     EXAMPLES::
