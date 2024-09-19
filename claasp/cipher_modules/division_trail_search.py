@@ -24,7 +24,6 @@ class MilpDivisionTrailModel():
         3
 
     """
-
     def __init__(self, cipher):
         self._cipher = cipher
         self._variables = None
