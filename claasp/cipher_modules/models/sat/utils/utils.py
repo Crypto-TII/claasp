@@ -659,6 +659,12 @@ def get_cnf_bitwise_truncate_constraints(a, a_0, a_1):
     ]
 
 
+def get_cnf_truncated_linear_constraints(a, a_0):
+    return [
+        f'-{a}   -{a_0}'
+    ]
+
+
 def modadd_truncated_lsb(result, variable_0, variable_1, next_carry):
     return [f'{next_carry[0]} -{next_carry[1]}',
             f'{next_carry[0]} -{variable_1[1]}',

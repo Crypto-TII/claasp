@@ -453,6 +453,61 @@ class SatXorLinearModel(SatModel):
 
         return constraints
 
+    @staticmethod
+    def fix_variables_value_xor_linear_constraints1(fixed_variables=[]):
+        """
+        Return lists variables and clauses for fixing variables in XOR LINEAR model.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format
+
+        INPUT:
+
+        - ``fixed_variables`` -- **list** (default: `[]`); variables in default format
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: sat = SatXorLinearModel(speck)
+            sage: fixed_variables = [{
+            ....:    'component_id': 'plaintext',
+            ....:    'constraint_type': 'equal',
+            ....:    'bit_positions': [0, 1, 2, 3],
+            ....:    'bit_values': [1, 0, 1, 1]
+            ....: }, {
+            ....:    'component_id': 'ciphertext',
+            ....:    'constraint_type': 'not_equal',
+            ....:    'bit_positions': [0, 1, 2, 3],
+            ....:    'bit_values': [1, 1, 1, 0]
+            ....: }]
+            sage: sat.fix_variables_value_xor_linear_constraints(fixed_variables)
+            ['plaintext_0_o',
+             '-plaintext_1_o',
+             'plaintext_2_o',
+             'plaintext_3_o',
+             '-ciphertext_0_o -ciphertext_1_o -ciphertext_2_o ciphertext_3_o']
+        """
+        constraints = []
+        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
+        for variable in fixed_variables:
+            component_id = variable['component_id']
+            is_equal = (variable['constraint_type'] == 'equal')
+            bit_positions = variable['bit_positions']
+            bit_values = variable['bit_values']
+            variables_ids = []
+            for position, value in zip(bit_positions, bit_values):
+                is_negative = '-' * (value ^ is_equal)
+                variables_ids.append(f'{is_negative}{component_id}_{position}{out_suffix}')
+            if is_equal:
+                constraints.extend(variables_ids)
+            else:
+                constraints.append(' '.join(variables_ids))
+
+        return constraints
+
     def weight_xor_linear_constraints(self, weight):
         return self.weight_constraints(weight)
 
