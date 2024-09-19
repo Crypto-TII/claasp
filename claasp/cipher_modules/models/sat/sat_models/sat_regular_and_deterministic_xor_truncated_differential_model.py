@@ -199,7 +199,8 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
         RETURN:
         - **tuple**; a tuple containing the dictionary of component solutions and the total weight.
         """
-        components_solutions = self._get_cipher_inputs_components_solutions_double_ids(variable2value)
+        out_suffix = ''
+        components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
 
         for component in self._cipher.get_all_components():
@@ -254,14 +255,14 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
         - **dict**; Solution with the trail and metadata (weight, time, memory usage).
         """
         current_weight = 0
-        start_time = time.time()
-
+        start_building_time = time.time()
         self.build_xor_regular_and_deterministic_truncated_differential_model(current_weight)
         constraints = self.fix_variables_value_constraints(fixed_values, self.regular_components,
                                                            self.truncated_components)
+        end_building_time = time.time()
         self.model_constraints.extend(constraints)
-
         solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
+        solution['building_time_seconds'] = end_building_time - start_building_time
         total_time = solution['solving_time_seconds']
         max_memory = solution['memory_megabytes']
 
