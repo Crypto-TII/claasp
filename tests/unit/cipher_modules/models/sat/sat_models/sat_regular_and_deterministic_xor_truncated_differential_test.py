@@ -222,7 +222,7 @@ def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_4_r
 
     sat_heterogeneous_model = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
     trail = sat_heterogeneous_model.find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
-        weight=8, fixed_values=[intermediate_output_1_12, key, plaintext], solver_name="CRYPTOMINISAT_EXT"
+        weight=8, num_unknown_vars=31, fixed_values=[intermediate_output_1_12, key, plaintext], solver_name="CRYPTOMINISAT_EXT"
     )
 
     assert trail['components_values']['cipher_output_3_12']['value'] == '????????00000000????????000000?1'
@@ -269,7 +269,54 @@ def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_5_r
 
     sat_heterogeneous_model = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
     trail = sat_heterogeneous_model.find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
-        weight=8, fixed_values=[intermediate_output_1_12, key, plaintext], solver_name="CRYPTOMINISAT_EXT"
+        weight=8, num_unknown_vars=31, fixed_values=[intermediate_output_1_12, key, plaintext], solver_name="CRYPTOMINISAT_EXT"
+    )
+
+    assert trail['components_values']['cipher_output_4_12']['value'] == '???????????????0????????????????'
+
+
+def test_find_lowest_xor_regular_truncated_differential_trail_with_fixed_weight_5_rounds():
+    """Test for finding a XOR regular truncated differential trail with fixed weight for 5 rounds."""
+    speck = SpeckBlockCipher(number_of_rounds=5)
+
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='not_equal',
+        bit_positions=range(32),
+        bit_values=[0] * 32
+    )
+
+    intermediate_output_1_12 = set_fixed_variables(
+        component_id='intermediate_output_1_12',
+        constraint_type='equal',
+        bit_positions=range(32),
+        bit_values=(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    )
+
+    key = set_fixed_variables(
+        component_id='key',
+        constraint_type='equal',
+        bit_positions=range(64),
+        bit_values=(0,) * 64
+    )
+
+    component_model_types = generate_component_model_types(speck)
+    truncated_components = [
+        'constant_2_0', 'rot_2_1', 'modadd_2_2', 'xor_2_3', 'rot_2_4',
+        'xor_2_5', 'rot_2_6', 'modadd_2_7', 'xor_2_8', 'rot_2_9', 'xor_2_10',
+        'intermediate_output_2_11', 'intermediate_output_2_12',
+        'constant_3_0', 'rot_3_1', 'modadd_3_2', 'xor_3_3', 'rot_3_4',
+        'xor_3_5', 'rot_3_6', 'modadd_3_7', 'xor_3_8', 'rot_3_9', 'xor_3_10',
+        'intermediate_output_3_11', 'intermediate_output_3_12',
+        'constant_4_0', 'rot_4_1', 'modadd_4_2', 'xor_4_3', 'rot_4_4',
+        'xor_4_5', 'rot_4_6', 'modadd_4_7', 'xor_4_8', 'rot_4_9', 'xor_4_10',
+        'intermediate_output_4_11', 'intermediate_output_4_12', 'cipher_output_4_12'
+    ]
+    update_component_model_types_for_truncated_components(component_model_types, truncated_components)
+
+    sat_heterogeneous_model = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
+    trail = sat_heterogeneous_model.find_lowest_weight_xor_regular_truncated_differential_trail(
+        fixed_values=[intermediate_output_1_12, key, plaintext], solver_name="CRYPTOMINISAT_EXT"
     )
 
     assert trail['components_values']['cipher_output_4_12']['value'] == '???????????????0????????????????'

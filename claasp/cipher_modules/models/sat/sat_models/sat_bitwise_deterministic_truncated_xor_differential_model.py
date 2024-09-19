@@ -50,7 +50,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
 
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import SatBitwiseDeterministicTruncatedXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=22)
+            sage: speck = SpeckBlockCipher(number_of_rounds=2)
             sage: sat = SatBitwiseDeterministicTruncatedXorDifferentialModel(speck)
             sage: sat.build_bitwise_deterministic_truncated_xor_differential_trail_model()
             ...
@@ -219,6 +219,10 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             sage: trail = S.find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(get_single_key_scenario_format_for_fixed_values(speck))
             sage: trail['status']
             'SATISFIABLE'
+
+        .. SEEALSO::
+
+            :ref:`sat-solvers`
         """
         current_unknowns_count = 1
         start_building_time = time.time()
