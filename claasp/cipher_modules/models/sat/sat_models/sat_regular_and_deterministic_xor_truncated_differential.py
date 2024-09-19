@@ -241,33 +241,6 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
 
         return solution
 
-    def _get_cipher_inputs_components_solutions_double_ids(self, variable2value):
-        """
-        Returns the solutions for cipher input components using double IDs.
-
-        INPUT:
-        - ``variable2value`` -- **dict**; mapping of solver's variables to their values.
-
-        RETURN:
-        - **dict**; Dictionary of input component solutions.
-        """
-        components_solutions = {}
-
-        for cipher_input, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-            values = []
-            for i in range(bit_size):
-                value = 0
-                if f'{cipher_input}_{i}_0' in variable2value:
-                    value ^= variable2value[f'{cipher_input}_{i}_0'] << 1
-                if f'{cipher_input}_{i}_1' in variable2value:
-                    value ^= variable2value[f'{cipher_input}_{i}_1']
-                values.append(str(value))
-
-            component_solution = set_component_solution(''.join(values).replace('2', '?').replace('3', '?'))
-            components_solutions[cipher_input] = component_solution
-
-        return components_solutions
-
     @property
     def cipher(self):
         """
