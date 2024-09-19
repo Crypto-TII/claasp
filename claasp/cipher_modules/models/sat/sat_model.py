@@ -485,7 +485,7 @@ class SatModel:
 
         return self._counter(hw_list, weight)
 
-    def build_generic_sat_model_from_dictionary(self, fixed_variables, component_and_model_types):
+    def build_generic_sat_model_from_dictionary(self, component_and_model_types):
         self._variables_list = []
         self._model_constraints = []
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
