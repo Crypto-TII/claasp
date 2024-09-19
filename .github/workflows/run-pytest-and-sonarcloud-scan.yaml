@@ -41,7 +41,7 @@ jobs:
             make remote-pytest
 
     - name: Upload Coverage.xml to artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: coverage-report
         path: /home/runner/_work/claasp/coverage.xml
