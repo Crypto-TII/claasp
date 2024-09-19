@@ -247,9 +247,11 @@ class OR(MultiInputNonlinearLogicalOperator):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for OR operation in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing OR for SAT CIPHER model
 
-        This method support AND operation using more than two operands.
+        This method translates in CNF the constraint ``z = Or(x, y)``. It becomes in prefixed notation:
+        ``And(Or(z, Not(x)), Or(z, Not(y)), Or(x, y, Not(z)))``.
+        This method support OR operation using more than two inputs.
 
         .. SEEALSO::
 
@@ -267,9 +269,12 @@ class OR(MultiInputNonlinearLogicalOperator):
             sage: or_component.sat_constraints()
             (['or_0_4_0',
               'or_0_4_1',
-              'or_0_4_2',
               ...
-              'or_0_4_31 -xor_0_3_31',
+              'or_0_4_30',
+              'or_0_4_31'],
+             ['or_0_4_0 -xor_0_3_0',
+              'or_0_4_0 -xor_0_1_0',
+              ...
               'or_0_4_31 -xor_0_1_31',
               '-or_0_4_31 xor_0_3_31 xor_0_1_31'])
         """
@@ -283,9 +288,11 @@ class OR(MultiInputNonlinearLogicalOperator):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts for OR operation in SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing OR for SMT CIPHER model
 
-        This method support OR operation using more than two operands.
+        Since the OR operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
+        builtin operation, e.g. ``z = Or(x, y)`` becomes ``(assert (= z (or x y)))``.
+        This method support OR operation using more than two inputs.
 
         INPUT:
 

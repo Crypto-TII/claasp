@@ -31,9 +31,7 @@ class MultiInputNonlinearLogicalOperator(Component):
                  input_id_links, input_bit_positions, output_bit_size, operation):
         component_id = f'{operation}_{current_round_number}_{current_round_number_of_components}'
         component_type = 'word_operation'
-        input_len = 0
-        for bits in input_bit_positions:
-            input_len = input_len + len(bits)
+        input_len = sum(len(bits) for bits in input_bit_positions)
         description = [operation.upper(), int(input_len / output_bit_size)]
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
@@ -406,46 +404,9 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         return result
 
-    def sat_constraints(self):
-        """
-        Return a list of variables and a list of clauses for AND operation in SAT CIPHER model.
-
-        This method support AND operation using more than two operands.
-
-        .. SEEALSO::
-
-            :ref:`sat-standard` for the format.
-
-        INPUT:
-
-        - None
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: and_component = fancy.component_from(0, 8)
-            sage: and_component.sat_constraints()
-            (['and_0_8_0',
-              'and_0_8_1',
-              'and_0_8_2',
-              ...
-              '-and_0_8_11 xor_0_7_11',
-              '-and_0_8_11 key_23',
-              'and_0_8_11 -xor_0_7_11 -key_23'])
-        """
-        _, input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_and(output_bit_ids[i], input_bit_ids[i::output_bit_len]))
-
-        return output_bit_ids, constraints
-
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for AND/OR in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing AND/OR for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
         .. SEEALSO::
 
@@ -463,9 +424,12 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: and_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['and_0_8_0_0',
               'and_0_8_1_0',
-              'and_0_8_2_0',
               ...
-              'and_0_8_11_0 -key_23_1',
+              'and_0_8_10_1',
+              'and_0_8_11_1'],
+             ['and_0_8_0_0 -xor_0_7_0_0',
+              'and_0_8_0_0 -key_12_0',
+              ...
               'and_0_8_11_0 -and_0_8_11_1',
               'xor_0_7_11_0 key_23_0 xor_0_7_11_1 key_23_1 -and_0_8_11_0'])
         """
@@ -483,7 +447,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for AND operation in SAT XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing AND/OR for SAT XOR DIFFERENTIAL model
 
         .. SEEALSO::
 
@@ -501,9 +465,12 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: and_component.sat_xor_differential_propagation_constraints()
             (['and_0_8_0',
               'and_0_8_1',
-              'and_0_8_2',
               ...
-              'xor_0_7_11 key_23 -hw_and_0_8_11',
+              'hw_and_0_8_10',
+              'hw_and_0_8_11'],
+             ['-and_0_8_0 hw_and_0_8_0',
+              'xor_0_7_0 key_12 -hw_and_0_8_0',
+              ...
               '-xor_0_7_11 hw_and_0_8_11',
               '-key_23 hw_and_0_8_11'])
         """
@@ -520,7 +487,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for AND operation in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing AND/OR for SAT XOR LINEAR model
 
         .. SEEALSO::
 
@@ -534,9 +501,12 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: and_component.sat_xor_linear_mask_propagation_constraints()
             (['and_0_8_0_i',
               'and_0_8_1_i',
-              'and_0_8_2_i',
               ...
-              '-and_0_8_23_i hw_and_0_8_11_o',
+              'hw_and_0_8_10_o',
+              'hw_and_0_8_11_o'],
+             ['-and_0_8_0_i hw_and_0_8_0_o',
+              '-and_0_8_12_i hw_and_0_8_0_o',
+              ...
               '-and_0_8_11_o hw_and_0_8_11_o',
               'and_0_8_11_o -hw_and_0_8_11_o'])
         """
@@ -554,7 +524,11 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for AND peration in SMT XOR DIFFERENTIAL model [ALLW2014]_.
+        Return a variable list and SMT-LIB list asserts representing AND/OR for SMT XOR DIFFERENTIAL model
+
+        .. SEEALSO::
+
+            The algorithm can be found in [ALLW2014]_.
 
         .. WARNING::
 
@@ -600,7 +574,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for AND operation in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing AND/OR for SMT XOR LINEAR model
 
         INPUT:
 
