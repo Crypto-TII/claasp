@@ -24,7 +24,7 @@ def test_final_xor_linear_constraints():
 def test_find_all_xor_linear_trails_with_fixed_weight():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=3)
     mzn = MznXorLinearModel(speck)
-    trails = mzn.find_all_xor_linear_trails_with_fixed_weight(1, solve_external=True)
+    trails = mzn.find_all_xor_linear_trails_with_fixed_weight(1, solve_external=False)
 
     assert len(trails) == 12
 
@@ -36,7 +36,7 @@ def test_find_all_xor_linear_trails_with_fixed_weight():
 def test_find_all_xor_linear_trails_with_weight_at_most():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=3)
     mzn = MznXorLinearModel(speck)
-    trails = mzn.find_all_xor_linear_trails_with_weight_at_most(0, 1, solve_external=True)
+    trails = mzn.find_all_xor_linear_trails_with_weight_at_most(0, 1, solve_external=False)
 
     assert len(trails) == 13
 
@@ -48,7 +48,7 @@ def test_find_all_xor_linear_trails_with_weight_at_most():
 def test_find_lowest_weight_xor_linear_trail():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
     mzn = MznXorLinearModel(speck)
-    trail = mzn.find_lowest_weight_xor_linear_trail(solve_external=True)
+    trail = mzn.find_lowest_weight_xor_linear_trail(solve_external=False)
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert eval('0x' + trail['components_values']['cipher_output_3_12_o']['value']) >= 0
@@ -64,7 +64,7 @@ def test_find_lowest_weight_xor_linear_trail():
 def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
     mzn = MznXorLinearModel(speck)
-    trail = mzn.find_one_xor_linear_trail(solve_external=True)
+    trail = mzn.find_one_xor_linear_trail(solve_external=False)
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['components_values']['plaintext']['weight'] == 0
@@ -84,7 +84,7 @@ def test_find_one_xor_linear_trail():
 def test_find_one_xor_linear_trail_with_fixed_weight():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
     mzn = MznXorLinearModel(speck)
-    trail = mzn.find_one_xor_linear_trail_with_fixed_weight(3, solve_external=True)
+    trail = mzn.find_one_xor_linear_trail_with_fixed_weight(3, solve_external=False)
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['model_type'] == 'xor_linear_one_solution'

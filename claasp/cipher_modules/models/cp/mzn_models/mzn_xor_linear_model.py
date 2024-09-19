@@ -203,7 +203,7 @@ class MznXorLinearModel(MznModel):
                                   f'\"{component.id}_o = \"++ show({component.id}_o)++ \"\\n\" ++ ' \
                                   f'show(p[{self.component_and_probability[component.id]}]) ++ \"\\n\" ++'
             elif CIPHER_OUTPUT in component.type:
-                new_constraint += f'\"{component.id}_o= \"++ ' \
+                new_constraint += f'\"{component.id}_o = \"++ ' \
                                   f'show({component.id}_i)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
             elif WORD_OPERATION in component.type:
                 new_constraint = self.get_word_operation_final_xor_linear_constraints(component, new_constraint)
