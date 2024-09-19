@@ -19,9 +19,10 @@ class MilpDivisionTrailModel():
 
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
         sage: cipher = AradiBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
+        sage: from claasp.cipher_modules.division_trail_search_in_PR import *
         sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.find_anf_of_specific_output_bit(0)
+        sage: milp.find_degree_of_specific_output_bit(0)
+        3
 
     """
 
@@ -757,7 +758,7 @@ class MilpDivisionTrailModel():
         # Specific to Aradi analysis:
         for i in range(128):
             v = self._model.getVarByName(f"plaintext[{i}]")
-            if 16 <= i < 32:  # free vars
+            if 0 <= i < 128:  # free vars
                 self._model.addConstr(v >= 0)
             else:
                 self._model.addConstr(v == 0)
