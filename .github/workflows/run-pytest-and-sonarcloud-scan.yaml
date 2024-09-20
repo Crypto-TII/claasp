@@ -18,8 +18,6 @@ jobs:
   run-pytest:
     if: ${{ !github.event.repository.fork }}
     runs-on: self-hosted
-    env:
-      GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -41,6 +39,8 @@ jobs:
       run: |
             cd /home/runner/_work/claasp
             make remote-pytest
+      env:
+        GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
 
     - name: Upload Coverage.xml to artifacts
       uses: actions/upload-artifact@v4

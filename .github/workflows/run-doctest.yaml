@@ -14,8 +14,6 @@ concurrency:
 jobs:
   run-doctest:
     runs-on: self-hosted
-    env:
-      GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -37,3 +35,5 @@ jobs:
       run: |
             cd /home/runner/_work/claasp
             make test
+      env:
+        GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
