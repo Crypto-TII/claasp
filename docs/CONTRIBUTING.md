@@ -709,6 +709,10 @@ pytest -vv tests/cipher_test.py
 ```bash
 pytest -s tests/cipher_test.py
 ```
+- **Run the tests in parallel:**
+```bash
+pytest -v -n=auto tests/cipher_test.py
+ ```
 
 If we want a **specific test to be skipped** we will need to `import pytest` to the top of the file and add this 
 following command with the reason of the test being skipped as the argument `@pytest.mark.skip("Takes to long")`:

@@ -21,8 +21,8 @@ from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
 round_constants = [
     0x0000000000000000, 0x13198a2e03707344, 0xa4093822299f31d0, 0x082efa98ec4e6c89,
-    0x452821e638d01377, 0xbe5466cf34e90c6c, 0x7ef84f78fd955cb1, 0x85840851f1ac43aa,
-    0xc882d32f25323c54, 0x64a51195e0e3610d, 0xd3b5a399ca0c2399, 0xc0ac29b7c97c50dd
+    0x452821e638d01377, 0xbe5466cf34e90c6c, 0x7ef84f78fd955cb1, 0x7aacf4538d971a60,
+    0xc882d32f25323c54, 0x9b8ded979cd838c7, 0xd3b5a399ca0c2399, 0x3f84d5b5b5470917
 ]
 
 
@@ -111,9 +111,10 @@ sbox = [0xB, 0xF, 0x3, 0x2, 0xA, 0xC, 0x9, 0x1, 0x6, 0x7, 0x8, 0x0, 0xE, 0x5, 0x
 inverse_sbox = [0xB, 0x7, 0x3, 0x2, 0xF, 0xD, 0x8, 0x9, 0xa, 0x6, 0x4, 0x0, 0x5, 0xe, 0xc, 0x1]
 
 
-class PrinceBlockCipher(Cipher):
+class PrinceV2BlockCipher(Cipher):
     """
-    Return a cipher object of Prince Block Cipher.
+    Return a cipher object of PrinceV2 Block Cipher.
+    The technical specifications along with the test vectors can be found here: https://eprint.iacr.org/2020/1269.pdf
 
     INPUT:
 
@@ -121,13 +122,14 @@ class PrinceBlockCipher(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.prince_block_cipher import PrinceBlockCipher
-        sage: prince = PrinceBlockCipher()
-        sage: key = 0xffffffffffffffff0000000000000000
+        sage: from claasp.ciphers.block_ciphers.prince_v2_block_cipher import PrinceV2BlockCipher
+        sage: prince_v2 = PrinceV2BlockCipher()
+        sage: key = 0x00000000000000000000000000000000
         sage: plaintext = 0x0000000000000000
-        sage: ciphertext = 0x9fb51935fc3df524
-        sage: prince.evaluate([plaintext, key]) == ciphertext
+        sage: ciphertext = 0x0125fc7359441690
+        sage: prince_v2.evaluate([plaintext, key]) == ciphertext
         True
+
     """
 
     def generate_first_rounds(self, current_state, number_of_rounds):
@@ -162,11 +164,18 @@ class PrinceBlockCipher(Cipher):
                 64
             ).id
 
-            round_key_xor = self.add_XOR_component(
-                [current_state, INPUT_KEY],
-                [list(range(64)), list(range(64, 128))],
-                64
-            )
+            if round_idx % 2 == 1:
+                round_key_xor = self.add_XOR_component(
+                    [current_state, INPUT_KEY],
+                    [list(range(64)), list(range(64, 128))],
+                    64
+                )
+            else:
+                round_key_xor = self.add_XOR_component(
+                    [current_state, INPUT_KEY],
+                    [list(range(64)), list(range(64))],
+                    64
+                )
             current_state = round_key_xor.id
             self.add_round_output_component(
                 [current_state], [[i for i in range(64)]], 64
@@ -178,12 +187,12 @@ class PrinceBlockCipher(Cipher):
         round_constant_0 = self.add_constant_component(64, round_constants[0])
         round_constant_xor_key_1 = self.add_XOR_component(
             [round_constant_0.id, INPUT_KEY],
-            [list(range(64)), list(range(64, 128))],
+            [list(range(64)), list(range(64))],
             64
         ).id
 
         current_state = self.add_XOR_component(
-            [xor_initial, round_constant_xor_key_1],
+            [INPUT_PLAINTEXT, round_constant_xor_key_1],
             [list(range(64)), list(range(64))],
             64
         )
@@ -201,11 +210,31 @@ class PrinceBlockCipher(Cipher):
                 )
             )
         input_ids = [sbox_layer.id for sbox_layer in sboxes]
+        input_ids2 = input_ids + [INPUT_KEY]
         input_bit_positions = [list(range(4)) for i in range(16)]
-        current_state = self.add_linear_layer_component(
-            input_ids, input_bit_positions, 64, get_m_prime()
+        input_bit_positions2 = input_bit_positions + [[i for i in range(64)]]
+        current_state = self.add_XOR_component(
+            input_ids2,
+            input_bit_positions2,
+            64
         )
-
+        current_state = self.add_linear_layer_component(
+            [current_state.id],
+            [list(range(64))],
+            64,
+            get_m_prime()
+        )
+        current_state = self.add_XOR_component(
+                [current_state.id, INPUT_KEY],
+                [list(range(64)), list(range(64, 128))],
+                64
+            )
+        round_constant_11 = self.add_constant_component(64, round_constants[11])
+        current_state = self.add_XOR_component(
+            [current_state.id, round_constant_11.id],
+            [list(range(64)), list(range(64))],
+            64
+        )
         sboxes = []
         for i in range(16):
             sboxes.append(
@@ -215,12 +244,9 @@ class PrinceBlockCipher(Cipher):
                     4,
                     inverse_sbox)
             )
-
         input_ids = [sbox_layer.id for sbox_layer in sboxes]
         input_bit_positions = [list(range(4)) for i in range(16)]
-
         input_ids, input_bit_positions = self.get_last_rounds(number_of_rounds, input_ids, input_bit_positions)
-
         round_constant_11 = self.add_constant_component(64, round_constants[11])
 
         constant_xor_key1 = self.add_XOR_component(
@@ -245,36 +271,29 @@ class PrinceBlockCipher(Cipher):
             64
         ).id
 
-    def get_k0_prime(self, key_component_id):
-        k0_rot = self.add_rotate_component(
-            [key_component_id], [list(range(64))], 64, 1
-        ).id
-        k0_shift = self.add_SHIFT_component(
-            [key_component_id], [list(range(64))], 64, 63
-        ).id
-
-        k0_prime = self.add_XOR_component(
-            [k0_rot, k0_shift], [list(range(64)), list(range(64))], 64
-        ).id
-
-        return k0_prime
 
     def pos_whitening(self, final_xor):
-        k0_prime = self.get_k0_prime(INPUT_KEY)
         return self.add_XOR_component(
-            [final_xor.id, k0_prime],
-            [list(range(64)), list(range(64))],
+            [final_xor.id, INPUT_KEY],
+            [list(range(64)), list(range(64,128))],
             64
         )
     def get_last_rounds(self, number_of_rounds, input_ids, input_bit_positions):
         for round_idx in range(number_of_rounds // 2, (number_of_rounds // 2 - 1) + number_of_rounds // 2):
             self.add_round()
             round_constant_0 = self.add_constant_component(64, round_constants[round_idx])
-            constant_xor_key1 = self.add_XOR_component(
-                [round_constant_0.id, INPUT_KEY],
-                [list(range(64)), list(range(64, 128))],
-                64
-            )
+            if round_idx % 2 == 1:  # Check if the round index is odd
+                constant_xor_key1 = self.add_XOR_component(
+                    [round_constant_0.id, INPUT_KEY],
+                    [list(range(64)), list(range(64, 128))],
+                    64
+                )
+            else:  # If the round index is even
+                constant_xor_key1 = self.add_XOR_component(
+                    [round_constant_0.id, INPUT_KEY],
+                    [list(range(64)), list(range(64))],
+                    64
+                )
             current_state = self.add_XOR_component(
                 input_ids + [constant_xor_key1.id],
                 input_bit_positions + [list(range(64))],
@@ -316,7 +335,4 @@ class PrinceBlockCipher(Cipher):
                          cipher_output_bit_size=64)
         pre_whitening = self.pre_whitening()
         final_xor = self.prince_core(pre_whitening, number_of_rounds)
-        pos_whitening = self.pos_whitening(final_xor)
-        self.add_cipher_output_component(
-            [pos_whitening.id], [[i for i in range(64)]], 64
-        )
+        self.add_cipher_output_component([final_xor.id], [[i for i in range(64)]], 64)

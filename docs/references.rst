@@ -59,6 +59,12 @@
         Cryptography -- SAC 2018, Springer International Publishing 2019 :
         https://link.springer.com/chapter/10.1007%2F978-3-030-10970-7_8
 
+.. [ASTTY2017]
+        Abdelkhalek A., Sasaki Y., Todo Y., Tolba M., Youssef A. M. : *MILP
+        modeling for (large) s-boxes to optimize probability of differential
+        characteristics* : IACR Transactions on Symmetric Cryptology (2017):
+        99-129 : https://tosc.iacr.org/index.php/ToSC/article/view/805/759
+
 .. _claasp-ref-B:
 
 .. only:: html
@@ -76,8 +82,9 @@
         solutions in F2* : Research Report RR-5049, INRIA, 2003.
 
 .. [BDKLLSSSS18]
-        \Bos, J.W., Ducas, L., Kiltz, E., Lepoint, T., Lyubashevsky, V., Schanck, J.M., Schwabe, P.,
-        Seiler, G., Stehlé, D.: CRYSTALS-Kyber: A CCA-Secure Module-Lattice-Based KEM. EuroS&P 2018: 353-367.
+        Bos, J.W., Ducas, L., Kiltz, E., Lepoint, T., Lyubashevsky, V.,
+        Schanck, J.M., Schwabe, P., Seiler, G., Stehlé, D. : *CRYSTALS-Kyber: A
+        CCA-Secure Module-Lattice-Based* KEM. EuroS&P 2018: 353-367.
 
 .. [BHPR2021]
         Bellini E., Hambitzer A., Protopapa M., Rossi M. : *Limitations
@@ -88,9 +95,10 @@
         Springer-Verlag, Berlin, Heidelberg, 100–124
 
 .. [BR2021]
-        Bellini, E., Rossi, M. : *Performance Comparison Between Deep Learning-Based
-        and Conventional Cryptographic Distinguishers* : In: Arai, K. (eds) Intelligent Computing.
-        Lecture Notes in Networks and Systems, vol 285. Springer
+        Bellini, E., Rossi, M. : *Performance Comparison Between Deep
+        Learning-Based and Conventional Cryptographic Distinguishers* : In:
+        Arai, K. (eds) Intelligent Computing.  Lecture Notes in Networks and
+        Systems, vol 285. Springer
 
 .. [BKLPPRSV2007]
         Bogdanov A., Knudsen L., Leander G., Paar C., Poschmann A., Robshaw M.,
@@ -109,8 +117,9 @@
         Cryptology,3(3):177–197, 2009
 
 .. [BGHR2023]
-        Bellini E., Gerault D., Hambitzer A., Rossi M: A Cipher-Agnostic Neural Training Pipeline with Automated
-        Finding of Good Input Differences : In IACR Transactions on Symmetric Cryptology 2023
+        Bellini E., Gerault D., Hambitzer A., Rossi M. : *A Cipher-Agnostic
+        Neural Training Pipeline with Automated Finding of Good Input
+        Differences* : In IACR Transactions on Symmetric Cryptology 2023
 
 .. [BCC+2010]
         Bouillaguet C., Chen H-C., Cheng H-C, Chou T., Niederhagen R., Shamir
@@ -189,6 +198,13 @@
         Transactions on Symmetric Cryptology, Vol 2017, Issue 4, pre-print :
         https://eprint.iacr.org/2018/161.pdf
 
+.. [CZZ2023]
+        Cao, W., Zhang, W., Zhou, C. : *New Automatic Search Tool for Searching
+        for Impossible Differentials Using Undisturbed Bits* In: Deng, Y.,
+        Yung, M. (eds) Information Security and Cryptology. Inscrypt 2022.
+        Lecture Notes in Computer Science, vol 13837. Springer, Cham.
+        https://doi.org/10.1007/978-3-031-26553-2_3
+
 .. _claasp-ref-D:
 
 .. only:: html
@@ -196,8 +212,9 @@
         **D**
 
 .. [DAKRV18]
-        \D'Anvers, J.-P., Karmakar, A., Roy S.S., Vercauteren F.: Saber: Module-LWR Based Key Exchange, CPA-Secure
-        Encryption and CCA-Secure KEM. AFRICACRYPT 2018: 282-305.
+        D'Anvers, J.-P., Karmakar, A., Roy S.S., Vercauteren F.: *Saber:
+        Module-LWR Based Key Exchange, CPA-Secure Encryption and CCA-Secure
+        KEM* : AFRICACRYPT 2018: 282-305.
 
 .. [Din2021Cry]
         Dinur I. : *Cryptanalytic Applications of the Polynomial Method for
@@ -209,10 +226,11 @@
         GF(2) by multiple parity-counting* : In Proceedings of the 2021
         ACM-SIAM Symposium on Discrete Algorithms (SODA), pages 2550–2564
 
- .. [DKLLSSS18]
-        \Ducas, L., Kiltz, E., Lepoint, T., Lyubashevsky, V., Schwabe, P., Seiler, G., Stehlé, D.:
-        CRYSTALS-Dilithium: A Lattice-Based Digital Signature Scheme. IACR Trans. Cryptogr. Hardw. Embed. Syst.
-        2018(1): 238-268.
+.. [DKLLSSS18]
+        Ducas, L., Kiltz, E., Lepoint, T., Lyubashevsky, V., Schwabe, P.,
+        Seiler, G., Stehlé, D. : *CRYSTALS-Dilithium: A Lattice-Based Digital
+        Signature Scheme* : IACR Trans. Cryptogr. Hardw. Embed. Syst.  2018(1):
+        238-268.
 
 .. [Dum1991]
         Dumer I. : *On minimum distance decoding of linear codes* : In Proc.
@@ -267,6 +285,11 @@
 .. [Go2019]
         Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
 * : In Advances in Cryptology – CRYPTO 2019
+
+.. [GreMW24]
+        Greene P., Motley M., Weeks B.: *ARADI and LLAMA: Low-Latency Cryptography for
+        Memory Encryption*. IACR Cryptol. ePrint Arch., 2024, 1240.
+        Available at https://eprint.iacr.org/2024/1240.
 
 .. _claasp-ref-H:
 
@@ -426,8 +449,28 @@
         106–113.  Springer (1988)
 
 .. [SGLYTQH2017]
-        Sun S., Gerault D., Lafourcade P., Yang Q., Todo Y., Qiao K., Hu L. : *Analysis of AES, SKINNY,
-        and others with constraint programming* : In IACR transactions on symmetric cryptology 2017 (1), 281--306
+        Sun S., Gerault D., Lafourcade P., Yang Q., Todo Y., Qiao K., Hu L. :
+        *Analysis of AES, SKINNY, and others with constraint programming* : In
+        IACR transactions on symmetric cryptology 2017 (1), 281--306
+
+.. [SGWW2020]
+        Sun L., Gerault D., Wang W., Wang M. : *On the usage of deterministic
+        (related-key) truncated differentials and multidimensional linear
+        approximations for SPN ciphers* : IACR Transactions on Symmetric
+        Cryptology, 2020, 262-287 :
+        https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
+
+.. [SHW+2014]
+        Sun S., Hu L., Wang M., Wang P., Qiao K., Ma X., Shi D., Song L., Fu,
+        K. : *Towards finding the best characteristics of some bit-oriented
+        block ciphers and automatic enumeration of (related-key) differential
+        and linear characteristics with predefined properties* : Cryptology
+        ePrint Archive (2014) : https://eprint.iacr.org/2014/747.pdf
+
+.. [SW2023]
+        Sun, L., Wang, M. : *SoK: Modeling for Large S-boxes Oriented to
+        Differential Probabilities and Linear Correlations (Long Paper)* :
+        Cryptology ePrint Archive, 2023.
 
 .. _claasp-ref-T:
 
