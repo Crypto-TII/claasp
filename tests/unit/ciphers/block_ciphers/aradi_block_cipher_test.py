@@ -2,6 +2,15 @@ from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
 
 
 def test_aradi_block_cipher():
+    """
+    Tests the ARADI block cipher implementation using a known test vector from [GreMW24].
+
+    This test checks both the Python evaluation and the vectorized evaluation
+    of CLAASP to ensure consistency with the expected output.
+
+    The results are asserted to match the expected ciphertext in both
+    evaluation methods.
+    """
     aradi = AradiBlockCipher()
     plaintext = 0
     key = 0x1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100
