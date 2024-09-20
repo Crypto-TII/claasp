@@ -17,7 +17,7 @@ concurrency:
 jobs:
   run-pytest:
     if: ${{ !github.event.repository.fork }}
-    runs-on: self-hosted
+    runs-on: epyc
     steps:
     - name: Checkout
       uses: actions/checkout@v2
