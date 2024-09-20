@@ -14,6 +14,8 @@ concurrency:
 jobs:
   run-doctest:
     runs-on: self-hosted
+    env:
+      GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2

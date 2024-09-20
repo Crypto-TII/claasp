@@ -18,6 +18,8 @@ jobs:
   run-pytest:
     if: ${{ !github.event.repository.fork }}
     runs-on: self-hosted
+    env:
+      GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
