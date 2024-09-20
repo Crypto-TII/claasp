@@ -1,3 +1,21 @@
+
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
+
 import time
 from gurobipy import *
 from sage.crypto.sbox import SBox
@@ -7,21 +25,16 @@ from claasp.cipher_modules.graph_generator import create_networkx_graph_from_inp
 from gurobipy import Model, GRB
 import os
 
-"""
-IMPORTANT:
-This module can only be used if the user possesses a Gurobi license.
-"""
-
 class MilpDivisionTrailModel():
     """
-    EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
-        sage: cipher = AradiBlockCipher(number_of_rounds=1)
-        sage: from claasp.cipher_modules.division_trail_search import *
-        sage: milp = MilpDivisionTrailModel(cipher)
-        sage: milp.find_degree_of_specific_output_bit(0)
-        3
+    Given a number of rounds of a chosen cipher and a chosen output bit, this module produces a model that can either:
+    - obtain the ANF of this chosen output bit,
+    - find the degree of this ANF,
+    - or check the presence or absence of a specified monomial.
+
+    IMPORTANT:
+    This module can only be used if the user possesses a Gurobi license.
 
     """
     def __init__(self, cipher):
