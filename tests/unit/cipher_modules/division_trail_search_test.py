@@ -1,5 +1,6 @@
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
+from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
 from claasp.cipher_modules.division_trail_search import *
 
 def test_get_where_component_is_used():
@@ -17,3 +18,9 @@ def test_get_monomial_occurences():
     component = cipher.get_component_from_id('sbox_0_30')
     anfs = milp.get_anfs_from_sbox(component)
     assert len(anfs) == 5
+
+def test_find_degree_of_specific_output_bit():
+    cipher = AradiBlockCipher(number_of_rounds=1)
+    milp = MilpDivisionTrailModel(cipher)
+    degree = milp.find_degree_of_specific_output_bit(0)
+    assert degree == 3

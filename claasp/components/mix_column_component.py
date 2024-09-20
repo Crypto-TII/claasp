@@ -701,7 +701,11 @@ class MixColumn(LinearLayer):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for MIX COLUMN in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing MIX COLUMN for SAT CIPHER model
+
+        The model is generated converting the MIX COLUMN compoment into a
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.sat_constraints>`.
 
         .. SEEALSO::
 
@@ -716,18 +720,12 @@ class MixColumn(LinearLayer):
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: midori = MidoriBlockCipher(number_of_rounds=3)
             sage: mix_column_component = midori.component_from(0, 23)
-            sage: mix_column_component.sat_constraints()
-            (['mix_column_0_23_0',
-              'mix_column_0_23_1',
-              'mix_column_0_23_2',
-              ...
-              '-mix_column_0_23_15 -mix_column_0_20_35 mix_column_0_20_39 -mix_column_0_20_43',
-              '-mix_column_0_23_15 mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43',
-              'mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'])
+            sage: variables, constraints = mix_column_component.sat_constraints()
+            sage: constraints[-1]
+            'mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'
         """
         matrix = binary_matrix_of_linear_component(self)
-        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())]
-                             for j in range(matrix.ncols())]
+        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
         self.set_description(matrix_transposed)
         variables, constraints = super().sat_constraints()
@@ -737,8 +735,11 @@ class MixColumn(LinearLayer):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for MIX COLUMN in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing MIX COLUMN for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
+
+        The model is generated converting the MIX COLUMN compoment into a
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.sat_bitwise_deterministic_truncated_xor_differential_constraints>`.
 
         .. SEEALSO::
 
@@ -753,25 +754,52 @@ class MixColumn(LinearLayer):
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: midori = MidoriBlockCipher(number_of_rounds=3)
             sage: mix_column_component = midori.component_from(0, 23)
-            sage: out_ids, constraints = mix_column_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            sage: constraints[7]
-            'mix_column_0_23_0_0 -inter_0_mix_column_0_23_0_0'
+            sage: variables, constraints = mix_column_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            sage: constraints[-1]
+            'mix_column_0_23_15_0 -inter_0_mix_column_0_23_15_1 -mix_column_0_20_43_1 -mix_column_0_23_15_1'
         """
         matrix = binary_matrix_of_linear_component(self)
-        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())]
-                             for j in range(matrix.ncols())]
+        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
         self.set_description(matrix_transposed)
         out_ids, constraints = super().sat_bitwise_deterministic_truncated_xor_differential_constraints()
         self.set_description(original_description)
         return out_ids, constraints
 
-    def sat_xor_differential_propagation_constraints(self, model):
+    def sat_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses representing MIX COLUMN for SAT XOR DIFFERENTIAL model
+
+        The model is generated converting the MIX COLUMN compoment into a
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.sat_xor_differential_propagation_constraints>`.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+            sage: midori = MidoriBlockCipher(number_of_rounds=3)
+            sage: mix_column_component = midori.component_from(0, 23)
+            sage: variables, constraints = mix_column_component.sat_xor_differential_propagation_constraints()
+            sage: constraints[-1]
+            'mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'
+        """
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for MIX COLUMN in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing MIX COLUMN for SAT XOR LINEAR model
+
+        The model is generated converting the MIX COLUMN compoment into a
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.sat_xor_linear_mask_propagation_constraints>`.
 
         .. SEEALSO::
 
@@ -786,18 +814,12 @@ class MixColumn(LinearLayer):
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: midori = MidoriBlockCipher(number_of_rounds=3)
             sage: mix_column_component = midori.component_from(0, 23)
-            sage: mix_column_component.sat_xor_linear_mask_propagation_constraints()
-            (['mix_column_0_23_0_i',
-              'mix_column_0_23_1_i',
-              'mix_column_0_23_2_i',
-              ...
-              '-mix_column_0_23_15_o -dummy_3_mix_column_0_23_15_o dummy_7_mix_column_0_23_15_o -dummy_11_mix_column_0_23_15_o',
-              '-mix_column_0_23_15_o dummy_3_mix_column_0_23_15_o -dummy_7_mix_column_0_23_15_o -dummy_11_mix_column_0_23_15_o',
-              'mix_column_0_23_15_o -dummy_3_mix_column_0_23_15_o -dummy_7_mix_column_0_23_15_o -dummy_11_mix_column_0_23_15_o'])
+            sage: variables, constraints = mix_column_component.sat_xor_linear_mask_propagation_constraints()
+            sage: constraints[-1]
+            'mix_column_0_23_15_o -dummy_3_mix_column_0_23_15_o -dummy_7_mix_column_0_23_15_o -dummy_11_mix_column_0_23_15_o'
         """
         matrix = binary_matrix_of_linear_component(self)
-        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())]
-                             for j in range(matrix.ncols())]
+        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
         self.set_description(matrix_transposed)
         variables, constraints = super().sat_xor_linear_mask_propagation_constraints()
@@ -807,7 +829,11 @@ class MixColumn(LinearLayer):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing MIX COLUMN for SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing MIX COLUMN for SMT CIPHER model
+
+        The model is generated converting the MIX COLUMN compoment into a
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.smt_constraints>`.
 
         INPUT:
 
@@ -818,21 +844,12 @@ class MixColumn(LinearLayer):
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: midori = MidoriBlockCipher(number_of_rounds=3)
             sage: mix_column_component = midori.component_from(0, 23)
-            sage: mix_column_component.smt_constraints()
-            (['mix_column_0_23_0',
-              'mix_column_0_23_1',
-              ...
-              'mix_column_0_23_14',
-              'mix_column_0_23_15'],
-             ['(assert (= mix_column_0_23_0 (xor mix_column_0_20_36 mix_column_0_20_40 mix_column_0_20_44)))',
-              '(assert (= mix_column_0_23_1 (xor mix_column_0_20_37 mix_column_0_20_41 mix_column_0_20_45)))',
-              ...
-              '(assert (= mix_column_0_23_14 (xor mix_column_0_20_34 mix_column_0_20_38 mix_column_0_20_42)))',
-              '(assert (= mix_column_0_23_15 (xor mix_column_0_20_35 mix_column_0_20_39 mix_column_0_20_43)))'])
+            sage: variables, constraints = mix_column_component.smt_constraints()
+            sage: constraints[-1]
+            '(assert (= mix_column_0_23_15 (xor mix_column_0_20_35 mix_column_0_20_39 mix_column_0_20_43)))'
         """
         matrix = binary_matrix_of_linear_component(self)
-        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())]
-                             for j in range(matrix.ncols())]
+        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
         self.set_description(matrix_transposed)
         variables, constraints = super().smt_constraints()
@@ -840,12 +857,36 @@ class MixColumn(LinearLayer):
         result = variables, constraints
         return result
 
-    def smt_xor_differential_propagation_constraints(self, model):
+    def smt_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a variable list and SMT-LIB list asserts representing MIX COLUMN for SMT XOR DIFFERENTIAL model
+
+        The model is generated converting the MIX COLUMN compoment into a
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.smt_xor_differential_propagation_constraints>`.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+            sage: midori = MidoriBlockCipher(number_of_rounds=3)
+            sage: mix_column_component = midori.component_from(0, 23)
+            sage: variables, constraints = mix_column_component.smt_xor_differential_propagation_constraints()
+            sage: constraints[-1]
+            '(assert (= mix_column_0_23_15 (xor mix_column_0_20_35 mix_column_0_20_39 mix_column_0_20_43)))'
+        """
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for MIX COLUMN in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing MIX COLUMN for SMT XOR LINEAR model
+
+        The model is generated converting the MIX COLUMN compoment into a
+        :obj:`LINEAR LAYER <components.linear_layer_component.LinearLayer>` and using the
+        :obj:`corresponding method <components.linear_layer_component.LinearLayer.smt_xor_linear_mask_propagation_constraints>`.
 
         INPUT:
 
@@ -856,21 +897,12 @@ class MixColumn(LinearLayer):
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: midori = MidoriBlockCipher(number_of_rounds=3)
             sage: mix_column_component = midori.component_from(0, 23)
-            sage: mix_column_component.smt_xor_linear_mask_propagation_constraints()
-            (['mix_column_0_23_0_i',
-              'mix_column_0_23_1_i',
-              ...
-              'mix_column_0_23_14_o',
-              'mix_column_0_23_15_o'],
-             ['(assert (= mix_column_0_23_0_i dummy_0_mix_column_0_23_4_o dummy_0_mix_column_0_23_8_o dummy_0_mix_column_0_23_12_o))',
-              '(assert (= mix_column_0_23_1_i dummy_1_mix_column_0_23_5_o dummy_1_mix_column_0_23_9_o dummy_1_mix_column_0_23_13_o))',
-              ...
-              '(assert (= mix_column_0_23_14_o (xor dummy_2_mix_column_0_23_14_o dummy_6_mix_column_0_23_14_o dummy_10_mix_column_0_23_14_o)))',
-              '(assert (= mix_column_0_23_15_o (xor dummy_3_mix_column_0_23_15_o dummy_7_mix_column_0_23_15_o dummy_11_mix_column_0_23_15_o)))'])
+            sage: variables, constraints = mix_column_component.smt_xor_linear_mask_propagation_constraints()
+            sage: constraints[-1]
+            '(assert (= mix_column_0_23_15_o (xor dummy_3_mix_column_0_23_15_o dummy_7_mix_column_0_23_15_o dummy_11_mix_column_0_23_15_o)))'
         """
         matrix = binary_matrix_of_linear_component(self)
-        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())]
-                             for j in range(matrix.ncols())]
+        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
         self.set_description(matrix_transposed)
         variables, constraints = super().smt_xor_linear_mask_propagation_constraints()
