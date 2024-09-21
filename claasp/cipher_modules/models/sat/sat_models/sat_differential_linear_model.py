@@ -8,10 +8,12 @@ from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import Sat
 from claasp.cipher_modules.models.utils import set_component_solution, get_bit_bindings
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils, constants
 
-
+# TODO: This class have several methods similar to the SatBitwiseDeterministicTruncatedXorDifferentialModel classes. It is possible to refactor the code to avoid code duplication.
+# TODO: Check all docstrings.
 class SatDifferentialLinearModel(SatModel):
     """
-    Model that combines regular XOR differential constraints with bitwise deterministic truncated XOR differential constraints.
+    Model that combines concrete XOR differential model with bitwise deterministic truncated differential model
+    and linear model to create differential-linear model.
     """
 
     def __init__(self, cipher, dict_of_components):
@@ -92,24 +94,20 @@ class SatDifferentialLinearModel(SatModel):
                     f'{component_id}_{idx}', f'{component_id}_{idx}_0', f'{component_id}_{idx}_1'
                 )
                 self._model_constraints.extend(constraints)
-                self._variables_list.extend([
-                    f'{component_id}_{idx}', f'{component_id}_{idx}_0', f'{component_id}_{idx}_1'
-                ])
 
         border_components = self._get_truncated_xor_differential_components_in_border()
 
         for component_id in border_components:
+
             component = self.cipher.get_component_from_id(component_id)
             for idx in range(component.output_bit_size):
-                print(f'{component_id}_{idx}', f'{component_id}_{idx}_0')
                 constraints = sat_utils.get_cnf_truncated_linear_constraints(
-                    f'{component_id}_{idx}', f'{component_id}_{idx}_0'
+                    f'{component_id}_{idx}_o', f'{component_id}_{idx}_0'
                 )
                 self._model_constraints.extend(constraints)
                 self._variables_list.extend([
                     f'{component_id}_{idx}', f'{component_id}_{idx}_0'
                 ])
-
 
     def _build_weight_constraints(self, weight):
         """
@@ -142,14 +140,17 @@ class SatDifferentialLinearModel(SatModel):
         minimize_vars = []
         for border_component in border_components:
             output_id = border_component
-            minimize_vars.extend([bit_id for bit_id in self._variables_list if
-                             bit_id.startswith(output_id) and bit_id.endswith("_0")])
+            minimize_vars.extend(
+                [bit_id for bit_id in self._variables_list if bit_id.startswith(output_id) and bit_id.endswith("_0")]
+            )
         return self._sequential_counter(minimize_vars, num_unknowns, "dummy_id_unknown")
 
+    # TODO: Allow as input parameters probability_weight and correlation_weight
     def build_xor_differential_linear_model(self, weight=-1, num_unknown_vars=None):
         """
         Constructs a model to search for probabilistic truncated XOR differential trails.
-        This model is a combination of the regular XOR differential model and of the bitwise truncated deterministic model.
+        This model is a combination of the concrete XOR differential model,the bitwise truncated deterministic model and
+        the linear XOR differential model.
 
         INPUT:
         - ``weight`` -- **integer** (default: `-1`); specifies the maximum probability weight. If set to a non-negative
@@ -167,7 +168,7 @@ class SatDifferentialLinearModel(SatModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.sat.sat_models.sat_regular_and_deterministic_xor_truncated_differential import SatRegularAndDeterministicXorTruncatedDifferential
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=4)
             sage: component_model_types = []
@@ -178,8 +179,8 @@ class SatDifferentialLinearModel(SatModel):
             ....:         "model_type": "sat_xor_differential_propagation_constraints"
             ....:     }
             ....:     component_model_types.append(component_model_type)
-            sage: sat = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
-            sage: sat.build_xor_regular_and_deterministic_truncated_differential_model()
+            sage: sat = SatDifferentialLinearModel(speck, component_model_types)
+            sage: sat.build_xor_differential_linear_model()
             ...
         """
         self.build_generic_sat_model_from_dictionary(self.dict_of_components)
@@ -230,14 +231,15 @@ class SatDifferentialLinearModel(SatModel):
                 regular_vars.append(var)
             else:
                 regular_vars.append(var)
-        #import ipdb; ipdb.set_trace()
         regular_constraints = SatModel.fix_variables_value_constraints(regular_vars)
         truncated_constraints = SatBitwiseDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints(
             truncated_vars)
+        # TODO: temporary I created the method fix_variables_value_xor_linear_constraints1 in the SatXorLinearModel class it is necessary refactor the method fix_variables_value_xor_linear_constraints from the SatXorLinearModel class to a static.
         linear_constraints = SatXorLinearModel.fix_variables_value_xor_linear_constraints1(linear_vars)
 
         return regular_constraints + truncated_constraints + linear_constraints
-    # TODO fix plaintext
+
+    # TODO: Add key-value to discriminate probability and correlation weights
     def _parse_solver_output(self, variable2value):
         """
         Parses the solver's output and returns component solutions and total weight.
@@ -259,14 +261,16 @@ class SatDifferentialLinearModel(SatModel):
                 weight = self.calculate_component_weight(component, '', variable2value)
                 components_solutions[component.id] = set_component_solution(hex_value, weight)
                 total_weight_diff += weight
+
             elif component.id in [d['component_id'] for d in self.truncated_components]:
                 value = self._get_component_value_double_ids(component, variable2value)
                 components_solutions[component.id] = set_component_solution(value)
-            if component.id in [d['component_id'] for d in self.linear_components]:
+            elif component.id in [d['component_id'] for d in self.linear_components]:
                 out_sufix = constants.OUTPUT_BIT_ID_SUFFIX
                 hex_value = self._get_component_hex_value(component, out_sufix, variable2value)
                 weight = self.calculate_component_weight(component, out_sufix, variable2value)
                 total_weight_lin += weight
+
                 components_solutions[component.id] = set_component_solution(hex_value, weight)
 
         return components_solutions, total_weight_diff + 2*total_weight_lin
@@ -330,7 +334,7 @@ class SatDifferentialLinearModel(SatModel):
             current_weight += 1
             start_building_time = time.time()
             self.build_xor_regular_and_deterministic_truncated_differential_model(current_weight)
-            self.model_constraints.extend(constraints)  # Reapply constraints for each iteration
+            self.model_constraints.extend(constraints)
             solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
             end_building_time = time.time()
 
@@ -354,6 +358,7 @@ class SatDifferentialLinearModel(SatModel):
         """
         return self._cipher
 
+    # TODO: it is possible to use the branch_xor_linear_constraints method from the linear sat model converting it to a static method
     def branch_xor_linear_constraints(self):
         """
         Return lists of variables and clauses for branch in XOR LINEAR model.

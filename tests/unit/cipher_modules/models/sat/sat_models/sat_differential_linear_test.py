@@ -6,6 +6,7 @@ from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCiphe
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.utils.utils import get_k_th_bit
 
+
 def generate_component_model_types(speck_cipher):
     """Generates the component model types for a given Speck cipher."""
     component_model_types = []
@@ -23,6 +24,7 @@ def update_component_model_types_for_truncated_components(component_model_types,
     for component_model_type in component_model_types:
         if component_model_type["component_id"] in truncated_components:
             component_model_type["model_type"] = "sat_bitwise_deterministic_truncated_xor_differential_constraints"
+
 
 def update_component_model_types_for_linear_components(component_model_types, linear_components):
     """Updates the component model types for linear components."""
@@ -62,66 +64,8 @@ def repeat_input_difference(input_difference, num_samples, num_bytes):
     return np.tile(column_array, (1, num_samples))
 
 
-def test_differential_linear_trail_with_fixed_weight_3_rounds_aradi():
-    """Test for finding a XOR regular truncated differential trail with fixed weight for 5 rounds."""
-    aradi = AradiBlockCipherSBox(number_of_rounds=3)
-    import itertools
-
-    top_part_components = []
-    middle_part_components = []
-    bottom_part_components = []
-    for round_number in range(1):
-        top_part_components.append(aradi.get_components_in_round(round_number))
-    for round_number in range(1, 2):
-        middle_part_components.append(aradi.get_components_in_round(round_number))
-    for round_number in range(2, 3):
-        bottom_part_components.append(aradi.get_components_in_round(round_number))
-    top_part_components = list(itertools.chain(*top_part_components))
-    middle_part_components = list(itertools.chain(*middle_part_components))
-    bottom_part_components = list(itertools.chain(*bottom_part_components))
-
-    top_part_components = [component.id for component in top_part_components]
-    middle_part_components = [component.id for component in middle_part_components]
-    bottom_part_components = [component.id for component in bottom_part_components]
-
-    plaintext = set_fixed_variables(
-        component_id='plaintext',
-        constraint_type='not_equal',
-        bit_positions=range(128),
-        bit_values=[0] * 128
-    )
-
-    key = set_fixed_variables(
-        component_id='key',
-        constraint_type='equal',
-        bit_positions=range(256),
-        bit_values=(0,) * 256
-    )
-
-    sbox_4_5 = set_fixed_variables(
-        component_id='sbox_2_5',
-        constraint_type='not_equal',
-        bit_positions=range(4),
-        bit_values=[0] * 4
-    )
-
-
-    component_model_types = generate_component_model_types(aradi)
-    update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
-
-    sat_heterogeneous_model = SatDifferentialLinearModel(aradi, component_model_types)
-
-    trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=15, fixed_values=[key, plaintext, sbox_4_5], solver_name="CADICAL_EXT"
-    )
-    import ipdb;
-    ipdb.set_trace()
-    assert trail['components_values']['cipher_output_4_12']['value'] == '???????????????0????????????????'
-
-
 def test_differential_linear_trail_with_fixed_weight_3_rounds_speck():
-    """Test for finding a XOR regular truncated differential trail with fixed weight for 5 rounds."""
+    """Test for finding a differential-linear trail with fixed weight for 8 rounds of Speck."""
     aradi = SpeckBlockCipher(number_of_rounds=8)
     import itertools
 
@@ -130,15 +74,14 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_speck():
     bottom_part_components = []
     for round_number in range(3):
         top_part_components.append(aradi.get_components_in_round(round_number))
-    for round_number in range(3, 6):
+    for round_number in range(3, 5):
         middle_part_components.append(aradi.get_components_in_round(round_number))
-    for round_number in range(6, 8):
+    for round_number in range(5, 8):
         bottom_part_components.append(aradi.get_components_in_round(round_number))
     top_part_components = list(itertools.chain(*top_part_components))
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
 
-    top_part_components = [component.id for component in top_part_components]
     middle_part_components = [component.id for component in middle_part_components]
     bottom_part_components = [component.id for component in bottom_part_components]
 
@@ -157,12 +100,11 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_speck():
     )
 
     modadd_2_7 = set_fixed_variables(
-        component_id='modadd_5_7',
+        component_id='modadd_7_7',
         constraint_type='not_equal',
         bit_positions=range(4),
         bit_values=[0] * 4
     )
-
 
     component_model_types = generate_component_model_types(aradi)
     update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
@@ -171,8 +113,6 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_speck():
     sat_heterogeneous_model = SatDifferentialLinearModel(aradi, component_model_types)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=10, fixed_values=[key, plaintext, modadd_2_7], solver_name="CADICAL_EXT", num_unknown_vars=31
+        weight=14, fixed_values=[key, plaintext, modadd_2_7], solver_name="CADICAL_EXT", num_unknown_vars=31
     )
-    print(trail)
-    import ipdb;
-    ipdb.set_trace()
+    assert trail["status"] == 'SATISFIABLE'
