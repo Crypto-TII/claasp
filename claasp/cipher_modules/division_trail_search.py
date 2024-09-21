@@ -33,7 +33,6 @@ class MilpDivisionTrailModel():
     - find the degree of this ANF,
     - or check the presence or absence of a specified monomial.
 
-    IMPORTANT:
     This module can only be used if the user possesses a Gurobi license.
 
     """
