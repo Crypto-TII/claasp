@@ -85,7 +85,6 @@ class SatCipherModel(SatModel):
                 print(f'{component.id} not yet implemented')
             else:
                 sat_xor_differential_propagation_constraints = getattr(component, model_type)
-                #variables, constraints = sat_xor_differential_propagation_constraints(self)
                 if model_type == 'sat_bitwise_deterministic_truncated_xor_differential_constraints':
                     variables, constraints = sat_xor_differential_propagation_constraints()
                 else:
@@ -93,8 +92,6 @@ class SatCipherModel(SatModel):
 
                 self._model_constraints.extend(constraints)
                 self._variables_list.extend(variables)
-
-
 
     def find_missing_bits(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """

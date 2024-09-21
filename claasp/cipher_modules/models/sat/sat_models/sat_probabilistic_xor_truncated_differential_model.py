@@ -8,7 +8,7 @@ from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 
 
-class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
+class SatProbabilisticXorTruncatedDifferential(SatModel):
     """
     Model that combines regular XOR differential constraints with bitwise deterministic truncated XOR differential constraints.
     """
@@ -106,7 +106,7 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
                          bit_id.startswith(output_id) and bit_id.endswith("_0")]
         return self._sequential_counter(minimize_vars, num_unknowns, "dummy_id_unknown")
 
-    def build_xor_regular_and_deterministic_truncated_differential_model(self, weight=-1, num_unknown_vars=None):
+    def build_xor_probabilistic_truncated_differential_model(self, weight=-1, num_unknown_vars=None):
         """
         Constructs a model to search for probabilistic truncated XOR differential trails.
         This model is a combination of the regular XOR differential model and of the bitwise truncated deterministic model.
@@ -127,7 +127,7 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.sat.sat_models.sat_regular_and_deterministic_xor_truncated_differential import SatRegularAndDeterministicXorTruncatedDifferential
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_probabilistic_xor_truncated_differential_model import SatProbabilisticXorTruncatedDifferential
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=4)
             sage: component_model_types = []
@@ -138,8 +138,8 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
             ....:         "model_type": "sat_xor_differential_propagation_constraints"
             ....:     }
             ....:     component_model_types.append(component_model_type)
-            sage: sat = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
-            sage: sat.build_xor_regular_and_deterministic_truncated_differential_model()
+            sage: sat = SatProbabilisticXorTruncatedDifferential(speck, component_model_types)
+            sage: sat.build_xor_probabilistic_truncated_differential_model()
             ...
         """
         self.build_generic_sat_model_from_dictionary(self.dict_of_components)
@@ -215,10 +215,10 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
 
         return components_solutions, total_weight
 
-    def find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
+    def find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
             self, weight, num_unknown_vars=None, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
-        Finds one XOR regular truncated differential trail with a fixed weight.
+        Finds one XOR probabilistic truncated differential trail with a fixed weight.
 
         INPUT:
         - ``weight`` -- **int**; Maximum probability weight for the regular xor differential part.
@@ -231,7 +231,7 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
         """
         start_time = time.time()
 
-        self.build_xor_regular_and_deterministic_truncated_differential_model(weight, num_unknown_vars)
+        self.build_xor_probabilistic_truncated_differential_model(weight, num_unknown_vars)
         constraints = self.fix_variables_value_constraints(fixed_values, self.regular_components,
                                                            self.truncated_components)
         self.model_constraints.extend(constraints)
@@ -242,10 +242,10 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
 
         return solution
 
-    def find_lowest_weight_xor_regular_truncated_differential_trail(self, fixed_values=[],
-                                                                    solver_name=solvers.SOLVER_DEFAULT):
+    def find_lowest_weight_xor_probabilistic_truncated_differential_trail(self, fixed_values=[],
+                                                                          solver_name=solvers.SOLVER_DEFAULT):
         """
-        Finds the XOR regular truncated differential trail with the lowest weight.
+        Finds the XOR probabilistic truncated differential trail with the lowest weight.
 
         INPUT:
         - ``fixed_values`` -- **list** (default: `[]`); specifies a list of variables that should be fixed to specific values. Each entry in the list should be a dictionary representing constraints for specific components, written in the CLAASP constraining syntax.
@@ -256,7 +256,7 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
         """
         current_weight = 0
         start_building_time = time.time()
-        self.build_xor_regular_and_deterministic_truncated_differential_model(current_weight)
+        self.build_xor_probabilistic_truncated_differential_model(current_weight)
         constraints = self.fix_variables_value_constraints(fixed_values, self.regular_components,
                                                            self.truncated_components)
         end_building_time = time.time()
@@ -269,8 +269,8 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
         while solution['total_weight'] is None:
             current_weight += 1
             start_building_time = time.time()
-            self.build_xor_regular_and_deterministic_truncated_differential_model(current_weight)
-            self.model_constraints.extend(constraints)  # Reapply constraints for each iteration
+            self.build_xor_probabilistic_truncated_differential_model(current_weight)
+            self.model_constraints.extend(constraints)
             solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
             end_building_time = time.time()
 
@@ -280,7 +280,7 @@ class SatRegularAndDeterministicXorTruncatedDifferential(SatModel):
 
         solution['solving_time_seconds'] = total_time
         solution['memory_megabytes'] = max_memory
-        solution['test_name'] = "find_lowest_weight_xor_regular_truncated_differential_trail"
+        solution['test_name'] = "find_lowest_weight_xor_probabilistic_truncated_differential_trail"
 
         return solution
 
