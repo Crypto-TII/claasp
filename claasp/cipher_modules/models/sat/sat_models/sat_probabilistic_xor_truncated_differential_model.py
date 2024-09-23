@@ -9,7 +9,7 @@ from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 
 
-class SatProbabilisticXorTruncatedDifferential(SatXorDifferentialModel):
+class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel):
     """
     Model that combines regular XOR differential constraints with bitwise deterministic truncated XOR differential constraints.
     """
@@ -130,7 +130,7 @@ class SatProbabilisticXorTruncatedDifferential(SatXorDifferentialModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.sat.sat_models.sat_probabilistic_xor_truncated_differential_model import SatProbabilisticXorTruncatedDifferential
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_probabilistic_xor_truncated_differential_model import SatProbabilisticXorTruncatedDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=4)
             sage: component_model_types = []
@@ -141,7 +141,7 @@ class SatProbabilisticXorTruncatedDifferential(SatXorDifferentialModel):
             ....:         "model_type": "sat_xor_differential_propagation_constraints"
             ....:     }
             ....:     component_model_types.append(component_model_type)
-            sage: sat = SatProbabilisticXorTruncatedDifferential(speck, component_model_types)
+            sage: sat = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
             sage: sat.build_xor_probabilistic_truncated_differential_model()
             ...
         """
