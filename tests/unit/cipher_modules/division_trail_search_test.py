@@ -28,7 +28,7 @@ def test_find_degree_of_specific_output_bit():
 
     cipher = SpeckBlockCipher(number_of_rounds=1)
     milp = MilpDivisionTrailModel(cipher)
-    degree = milp.find_degree_of_specific_output_bit(0)
+    degree = milp.find_degree_of_specific_output_bit(15)
     assert degree == 1
 
     cipher = GastonSboxPermutation(number_of_rounds=1)
