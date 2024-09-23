@@ -1,6 +1,7 @@
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
 from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.division_trail_search import *
 
 def test_get_where_component_is_used():
@@ -24,3 +25,13 @@ def test_find_degree_of_specific_output_bit():
     milp = MilpDivisionTrailModel(cipher)
     degree = milp.find_degree_of_specific_output_bit(0)
     assert degree == 3
+
+    cipher = SpeckBlockCipher(number_of_rounds=1)
+    milp = MilpDivisionTrailModel(cipher)
+    degree = milp.find_degree_of_specific_output_bit(0)
+    assert degree == 1
+
+    cipher = GastonSboxPermutation(number_of_rounds=1)
+    milp = MilpDivisionTrailModel(cipher)
+    degree = milp.find_degree_of_specific_output_bit(0)
+    assert degree == 2

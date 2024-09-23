@@ -82,7 +82,7 @@ class MilpDivisionTrailModel():
         # model = Model()
         model.Params.LogToConsole = 0
         model.Params.Threads = 16  # best found experimentaly on ascon_sbox_2rounds
-        model.setParam("PoolSolutions", 200000000)  # 200000000
+        model.setParam("PoolSolutions", 1234)  # 200000000
         model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model = model
 
@@ -765,15 +765,15 @@ class MilpDivisionTrailModel():
             p.append(self._model.getVarByName(f"plaintext[{i}]"))
         self._model.setObjective(sum(p[i] for i in range(nb_plaintext_bits_used)), GRB.MAXIMIZE)
 
-        # Specific to Aradi analysis:
-        for i in range(128):
-            v = self._model.getVarByName(f"plaintext[{i}]")
-            if 0 <= i < 128:  # free vars
-                self._model.addConstr(v >= 0)
-            else:
-                self._model.addConstr(v == 0)
-        self._model.update()
-        self._model.write("division_trail_model.lp")
+        ## Specific to Aradi analysis:
+        # for i in range(128):
+        #     v = self._model.getVarByName(f"plaintext[{i}]")
+        #     if 0 <= i < 128:  # free vars
+        #         self._model.addConstr(v >= 0)
+        #     else:
+        #         self._model.addConstr(v == 0)
+        # self._model.update()
+        # self._model.write("division_trail_model.lp")
         #######################
 
         self.optimize_model()
