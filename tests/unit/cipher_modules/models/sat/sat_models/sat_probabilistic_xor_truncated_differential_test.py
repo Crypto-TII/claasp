@@ -1,6 +1,6 @@
 import numpy as np
 from claasp.cipher_modules.models.sat.sat_models.sat_probabilistic_xor_truncated_differential_model import (
-    SatProbabilisticXorTruncatedDifferential
+    SatProbabilisticXorTruncatedDifferentialModel
 )
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
@@ -259,7 +259,7 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
     ]
     update_component_model_types_for_truncated_components(component_model_types, truncated_components)
 
-    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferential(speck, component_model_types)
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
     trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
         weight=8, num_unknown_vars=31, fixed_values=[intermediate_output_1_12, key, plaintext],
         solver_name="CRYPTOMINISAT_EXT"
@@ -306,7 +306,7 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
     ]
     update_component_model_types_for_truncated_components(component_model_types, truncated_components)
 
-    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferential(speck, component_model_types)
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
     trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
         weight=8, num_unknown_vars=31, fixed_values=[intermediate_output_1_12, key, plaintext],
         solver_name="CRYPTOMINISAT_EXT"
@@ -354,7 +354,7 @@ def test_find_lowest_xor_probabilistic_truncated_differential_trail_with_fixed_w
     ]
     update_component_model_types_for_truncated_components(component_model_types, truncated_components)
 
-    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferential(speck, component_model_types)
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
     trail = sat_heterogeneous_model.find_lowest_weight_xor_probabilistic_truncated_differential_trail(
         fixed_values=[intermediate_output_1_12, key, plaintext], solver_name="CRYPTOMINISAT_EXT"
     )
@@ -441,7 +441,7 @@ def test_wrong_fixed_variables_assignment():
         component_model_types, sat_bitwise_deterministic_truncated_components
     )
 
-    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferential(speck, component_model_types)
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
 
     import pytest
     with pytest.raises(ValueError) as exc_info:
@@ -483,7 +483,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     component_model_types = generate_component_model_types(aradi)
     update_component_model_types_for_truncated_components(component_model_types, bottom_part_components)
 
-    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferential(aradi, component_model_types)
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(aradi, component_model_types)
 
     trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
         weight=8, num_unknown_vars=127, fixed_values=[key, plaintext], solver_name="CADICAL_EXT"
