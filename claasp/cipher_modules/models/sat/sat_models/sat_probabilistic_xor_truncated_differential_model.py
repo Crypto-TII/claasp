@@ -4,11 +4,12 @@ from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import (
     SatBitwiseDeterministicTruncatedXorDifferentialModel
 )
+from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 
 
-class SatProbabilisticXorTruncatedDifferential(SatModel):
+class SatProbabilisticXorTruncatedDifferential(SatXorDifferentialModel):
     """
     Model that combines regular XOR differential constraints with bitwise deterministic truncated XOR differential constraints.
     """
@@ -106,7 +107,9 @@ class SatProbabilisticXorTruncatedDifferential(SatModel):
                          bit_id.startswith(output_id) and bit_id.endswith("_0")]
         return self._sequential_counter(minimize_vars, num_unknowns, "dummy_id_unknown")
 
-    def build_xor_probabilistic_truncated_differential_model(self, weight=-1, num_unknown_vars=None):
+    def build_xor_probabilistic_truncated_differential_model(
+            self, weight=-1, num_unknown_vars=None, fixed_variables=[]
+    ):
         """
         Constructs a model to search for probabilistic truncated XOR differential trails.
         This model is a combination of the regular XOR differential model and of the bitwise truncated deterministic model.
@@ -153,6 +156,11 @@ class SatProbabilisticXorTruncatedDifferential(SatModel):
             variables, constraints = self._build_weight_constraints(weight)
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
+
+        if fixed_variables:
+            constraints = self.fix_variables_value_constraints(fixed_variables, self.regular_components,
+                                                               self.truncated_components)
+            self.model_constraints.extend(constraints)
 
         self._get_connecting_constraints()
 
