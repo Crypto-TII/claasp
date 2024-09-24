@@ -327,7 +327,6 @@ class NISTStatisticalTests:
             for experiment_name in folder_experiments:
                 _mkdir_folder_experiment(path_prefix, experiment_name)
 
-        # os.system(f'cd {nist_temp_directory}')
         output_code = os.system(f'{nist_temp_directory}/assess {input_file} {bit_stream_length} {number_of_bit_streams} {input_file_format} '
                                 f'{statistical_test_option_list}')
         if output_code != 256:
@@ -336,7 +335,7 @@ class NISTStatisticalTests:
         return True
 
     @staticmethod
-    def _parse_report(report_filename, statistical_test_option_list='1' + 14 * '0'):
+    def _parse_report(report_filename):
         """
         Parse the nist statistical tests report. It will return the parsed result in a dictionary format.
 
@@ -570,7 +569,7 @@ class NISTStatisticalTests:
         except Exception as e:
             print(f'Error: {e.strerror}')
 
-    def _generate_nist_dicts(self,time_date, dataset, round_start, round_end, statistical_test_option_list='1' + 14 * '0'):
+    def _generate_nist_dicts(self,time_date, dataset, round_start, round_end, statistical_test_option_list=15 * '1'):
         # seems that the statistical tools cannot change the default folder 'experiments'
         dataset_folder = 'dataset'
         dataset_filename = f'nist_input_{self._cipher_primitive}'
