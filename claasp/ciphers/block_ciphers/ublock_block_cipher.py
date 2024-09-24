@@ -92,6 +92,12 @@ class UblockBlockCipher(Cipher):
 
         sage: ublock.component_from(0, 0).id
         'xor_0_0'
+
+        sage: plaintext = 0x0123456789abcdeffedcba9876543210
+        sage: key = 0x0123456789abcdeffedcba9876543210
+        sage: ciphertext = 0x32122bedd023c429023470e1158c147d
+        sage: ublock.evaluate([plaintext, key]) == ciphertext
+        True
     """
 
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=0):
