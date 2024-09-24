@@ -289,7 +289,7 @@ class NISTStatisticalTests:
             ....:     os.makedirs(f'test_reports/statistical_tests/experiments')
             sage: result = NISTStatisticalTests._run_nist_statistical_tests_tool(
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example',
-            ....:     10000, 10, 1, statistical_test_option_list='1' + 14 * '1')
+            ....:     10000, 10, 1, statistical_test_option_list='1' + 14 * '0')
                  Statistical Testing In Progress.........
                  Statistical Testing Complete!!!!!!!!!!!!
 
