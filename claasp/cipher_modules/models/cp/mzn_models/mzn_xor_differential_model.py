@@ -234,7 +234,7 @@ class MznXorDifferentialModel(MznModel):
             sage: speck = SpeckBlockCipher( number_of_rounds=5)
             sage: cp = MznXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(2, fixed_values=[key], solver_name='Chuffed')
+            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(2, fixed_values=[key], solver_name='chuffed')
             sage: len(trails)
             2
         """
@@ -288,7 +288,7 @@ class MznXorDifferentialModel(MznModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: cp = MznXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trails = cp.find_all_xor_differential_trails_with_weight_at_most(2,3, fixed_values=[key], solver_name='Chuffed') # long
+            sage: trails = cp.find_all_xor_differential_trails_with_weight_at_most(2,3, fixed_values=[key], solver_name='chuffed') # long
             sage: len(trails)
             9
 
@@ -371,7 +371,7 @@ class MznXorDifferentialModel(MznModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: cp = MznXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
-            sage: trail = cp.find_lowest_weight_xor_differential_trail(fixed_values=[key], solver_name='Chuffed')
+            sage: trail = cp.find_lowest_weight_xor_differential_trail(fixed_values=[key], solver_name='chuffed')
             sage: trail['total_weight']
             '1.0'
         """
@@ -422,7 +422,7 @@ class MznXorDifferentialModel(MznModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
-            sage: trail = cp.find_one_xor_differential_trail(fixed_values=[key], solver_name='Chuffed') # random
+            sage: trail = cp.find_one_xor_differential_trail(fixed_values=[key], solver_name='chuffed') # random
 
         """
         start = tm.time()
@@ -471,7 +471,7 @@ class MznXorDifferentialModel(MznModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: cp = MznXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trail = cp.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[key], solver_name='Chuffed')
+            sage: trail = cp.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[key], solver_name='chuffed')
             sage: trail['total_weight']
             '3.0'
         """

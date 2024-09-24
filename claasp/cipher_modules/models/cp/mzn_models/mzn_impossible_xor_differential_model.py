@@ -519,7 +519,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
 
         return cp_constraints
         
-    def find_all_impossible_xor_differential_trails(self, number_of_rounds, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
+    def find_all_impossible_xor_differential_trails(self, number_of_rounds, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = True):
         """
         Search for all impossible XOR differential trails of a cipher.
 
@@ -554,7 +554,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
         return self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True, solve_external = solve_external)
 
-    def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
+    def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = True):
         """
         Search for the impossible XOR differential trail of a cipher with the highest number of known bits in plaintext and ciphertext difference.
 
@@ -580,7 +580,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_lowest_complexity_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 3, 4, False)
+            sage: trail = cp.find_lowest_complexity_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 3, 4, intermediate_components = False)
         """
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
         self._model_constraints.remove(f'solve satisfy;')
@@ -590,7 +590,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         return self.solve('impossible_xor_differential_one_solution', solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
       
-    def find_one_impossible_xor_differential_trail_with_extensions(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
+    def find_one_impossible_xor_differential_trail_with_extensions(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = True):
         """
         Search for one impossible XOR differential trail of a cipher with forward and backward deterministic extensions for key recovery.
 
@@ -616,7 +616,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('cipher_output_6_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_one_impossible_xor_differential_trail_with_extensions(7, fixed_variables, 'Chuffed', 2, 4, 6, False)
+            sage: trail = cp.find_one_impossible_xor_differential_trail_with_extensions(7, fixed_variables, 'Chuffed', 2, 4, 6, intermediate_components = False)
         """
         self.build_impossible_xor_differential_trail_with_extensions_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
 
@@ -624,7 +624,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         return self.solve('impossible_xor_differential_one_solution', solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
     
-    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = False):
+    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = True):
         """
         Search for one impossible XOR differential trail of a cipher.
 
@@ -650,7 +650,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_one_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 3, 4, False)
+            sage: trail = cp.find_one_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 3, 4, intermediate_components = False)
         """
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
         
@@ -887,8 +887,8 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                 start = new_start + 9
         
         return inverse_variables, inverse_constraints
- 
-    def solve(self, model_type, solver_name=None, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None, processes_=None, timeout_in_seconds_=None, all_solutions_=False, solve_external = True):
+
+    def solve(self, model_type, solver_name=None, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None, processes_=None, timeout_in_seconds_=None, all_solutions_=False, solve_external = False):
         cipher_name = self.cipher_id
         input_file_path = f'{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, processes_, timeout_in_seconds_)
@@ -924,4 +924,4 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                               'impossible_xor_differential_one_solution']:
                 return solutions[0]
             else:
-                return solutions      
+                return solutions

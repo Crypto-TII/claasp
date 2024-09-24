@@ -565,9 +565,9 @@ class Rotate(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: minizinc = MinizincModel(fancy)
+            sage: minizinc = MznModel(fancy)
             sage: rotate_component = fancy.get_component_from_id("rot_1_11")
             sage: _, rotate_mzn_constraints = rotate_component.minizinc_constraints(minizinc)
             sage: rotate_mzn_constraints[0]

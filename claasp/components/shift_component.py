@@ -628,9 +628,9 @@ class SHIFT(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: tea = TeaBlockCipher(number_of_rounds=32)
-            sage: minizinc = MinizincModel(tea)
+            sage: minizinc = MznModel(tea)
             sage: shift_component = tea.get_component_from_id("shift_0_0")
             sage: _, shift_mzn_constraints = shift_component.minizinc_constraints(minizinc)
             sage: shift_mzn_constraints[0]

@@ -352,10 +352,10 @@ class MznModel:
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
             sage: raiden = RaidenBlockCipher(number_of_rounds=1)
-            sage: minizinc = MznXorDifferentialModel(raiden)
+            sage: minizinc = MznXorDifferentialModelARXOptimized(raiden)
             sage: minizinc.build_xor_differential_trail_model()
             sage: fixed_variables = [{
             ....:     'component_id': 'key',
@@ -371,7 +371,7 @@ class MznModel:
             ....:     'bit_positions': [0, 1, 2, 3],
             ....:     'operator': '>',
             ....:     'value': '0' }]
-            sage: minizinc.fix_variables_value_constraints(fixed_variables)[0]
+            sage: minizinc.fix_variables_value_constraints_for_ARX(fixed_variables)[0]
             'constraint plaintext_y0+plaintext_y1+plaintext_y2+plaintext_y3>0;'
         """
         def equal_operator(constraints_, fixed_variables_object_):
@@ -508,7 +508,7 @@ class MznModel:
             return components_values, memory, time
         return components_values, memory, time, total_weight
 
-    def _parse_solver_output(self, output_to_parse, model_type, truncated = False, solve_external = True, solver_name = SOLVER_DEFAULT):
+    def _parse_solver_output(self, output_to_parse, model_type, truncated = False, solve_external = False, solver_name = SOLVER_DEFAULT):
         """
         Parse solver solution (if needed).
 
@@ -519,11 +519,11 @@ class MznModel:
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_model import MznXorDifferentialTrailSearchModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, write_model_to_file
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = MznXorDifferentialTrailSearchModel(speck)
+            sage: cp = MznXorDifferentialModel(speck)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
@@ -533,7 +533,7 @@ class MznModel:
             sage: solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
             sage: os.remove('doctesting_file.mzn')
             sage: solver_output = solver_process.stdout.splitlines()
-            sage: cp._parse_solver_output(solver_output) # random
+            sage: cp._parse_solver_output(solver_output, model_type = 'xor_differential_one_solution', solve_external = True) # random
             (0.018,
              ...
              'cipher_output_3_12': {'value': '0', 'weight': 0}}},
@@ -614,7 +614,7 @@ class MznModel:
         else:
             component_solution['value'] = value
 
-    def solve(self, model_type, solver_name=SOLVER_DEFAULT, solve_external=True, timeout_in_seconds_=None,
+    def solve(self, model_type, solver_name=SOLVER_DEFAULT, solve_external=False, timeout_in_seconds_=None,
               processes_=None, nr_solutions_=None, random_seed_=None,
               all_solutions_=False, intermediate_solutions_=False,
               free_search_=False, optimisation_level_=None):
@@ -643,20 +643,17 @@ class MznModel:
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_model import MznXorDifferentialTrailSearchModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = MznXorDifferentialTrailSearchModel(speck)
+            sage: cp = MznXorDifferentialModel(speck)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', list(range(64)), integer_to_bit_list(0, 64, 'little')), set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
             sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
-            sage: cp.solve('xor_differential', 'Chuffed') # random
+            sage: cp.solve('xor_differential', 'chuffed') # random
             [{'cipher_id': 'speck_p32_k64_o32_r4',
-              ...
-              'total_weight': '7'},
-             {'cipher_id': 'speck_p32_k64_o32_r4',
                ...
-              'total_weight': '5'}]
+              'total_weight': '5.0'}]
         """
         truncated = False
         if model_type in ['deterministic_truncated_xor_differential',
@@ -755,9 +752,9 @@ class MznModel:
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: speck = SpeckBlockCipher(number_of_rounds=5, block_bit_size=32, key_bit_size=64)
-            sage: minizinc = MznXorDifferentialModel(speck)
+            sage: minizinc = MznXorDifferentialModelARXOptimized(speck)
             sage: bit_positions = [i for i in range(speck.output_bit_size)]
             sage: bit_positions_key = list(range(64))
             sage: fixed_variables = [{ 'component_id': 'plaintext',

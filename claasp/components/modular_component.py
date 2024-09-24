@@ -325,9 +325,9 @@ class Modular(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: minizinc = MznXorDifferentialModel(fancy, sat_or_milp="milp")
+            sage: minizinc = MznXorDifferentialModelARXOptimized(fancy, sat_or_milp="milp")
             sage: modadd_component = fancy.component_from(1, 9)
             sage: _, constraints = modadd_component.cp_xor_differential_propagation_constraints_arx_optimized(minizinc)
             sage: constraints[6]
@@ -733,9 +733,9 @@ class Modular(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model import MinizincXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: minizinc = MinizincXorDifferentialModel(fancy, sat_or_milp="milp")
+            sage: minizinc = MznXorDifferentialModelARXOptimized(fancy, sat_or_milp="milp")
             sage: modadd_component = fancy.component_from(1, 9)
             sage: _, constraints = modadd_component.minizinc_xor_differential_propagation_constraints(minizinc)
             sage: constraints[6]

@@ -419,7 +419,7 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp..mzn_model import MznModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(2, 31)
@@ -983,9 +983,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: speck = SpeckBlockCipher(number_of_rounds=22)
-            sage: minizinc = MinizincModel(speck)
+            sage: minizinc = MznModel(speck)
             sage: xor_component = speck.get_component_from_id("xor_0_2")
             sage: _, xor_minizinc_constraints = xor_component.minizinc_constraints(minizinc)
             sage: xor_minizinc_constraints[0]
@@ -1246,9 +1246,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(0, 31)
             sage: xor_component.cp_transform_xor_components_for_first_step(cp)
             (['array[0..3] of var 0..1: xor_0_31;'], [])
