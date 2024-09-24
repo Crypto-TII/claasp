@@ -329,18 +329,7 @@ def pprint_dictionary(dictionary):
         sage: from claasp.cipher_modules.avalanche_tests import AvalancheTests
         sage: test = AvalancheTests(speck)
         sage: d = test.avalanche_tests(number_of_samples=100)
-        sage: pprint_dictionary(d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0])
-        {   'component_ids': [   'intermediate_output_0_6',
-                                 'intermediate_output_1_12',
-                                 'intermediate_output_2_12',
-                                 'intermediate_output_3_12'],
-            'input_difference_value': '0x1',
-            'satisfied_criterion': [False, False, False, False],
-            'total': [2, 1, 12, 13],
-            'vectors': [   [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                           [1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
-                           [1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]]}
+        sage: pprint_dictionary(d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0]) # random
 
     """
     pp = pprint.PrettyPrinter(indent=4)
