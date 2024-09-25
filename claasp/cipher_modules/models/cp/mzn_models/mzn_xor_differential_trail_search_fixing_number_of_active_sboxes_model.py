@@ -409,7 +409,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
                 os.remove(solution_file_name)
                 return 'Unsatisfiable'
 
-            time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type, False)
+            time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type, False, True, second_step_solver_name)
             solutions = self.get_solutions_dictionaries_with_build_time(build_time, components_values, memory,
                                                                         second_step_solver_name, time, total_weight)
             os.remove(input_file_name)

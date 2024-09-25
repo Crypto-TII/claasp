@@ -331,7 +331,7 @@ class Modular(Component):
             sage: modadd_component = fancy.component_from(1, 9)
             sage: _, constraints = modadd_component.cp_xor_differential_propagation_constraints_arx_optimized(minizinc)
             sage: constraints[6]
-            'constraint modular_addition_word(array1d(0..6-1, [modadd_1_9_x0,modadd_1_9_x1,modadd_1_9_x2,modadd_1_9_x3,modadd_1_9_x4,modadd_1_9_x5]),array1d(0..6-1, [modadd_1_9_x6,modadd_1_9_x7,modadd_1_9_x8,modadd_1_9_x9,modadd_1_9_x10,modadd_1_9_x11]),array1d(0..6-1, [modadd_1_9_y0_0,modadd_1_9_y1_0,modadd_1_9_y2_0,modadd_1_9_y3_0,modadd_1_9_y4_0,modadd_1_9_y5_0]), p_modadd_1_9_0, dummy_modadd_1_9_0, -1)=1;\n'
+            'constraint pre_modadd_1_9_1[0] = sbox_1_0[0];'
         """
         output_size = int(self.output_bit_size)
         input_id_links = self.input_id_links
