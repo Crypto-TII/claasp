@@ -63,7 +63,7 @@ class SatXorDifferentialModel(SatModel):
         self._variables_list = []
         if not fixed_variables:
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
-        constraints = self.fix_variables_value_constraints(fixed_variables)
+        constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         self._model_constraints = constraints
         component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
         operation_types = ('AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR')
