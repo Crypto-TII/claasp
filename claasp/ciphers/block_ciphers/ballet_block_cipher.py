@@ -64,6 +64,30 @@ class BalletBlockCipher(Cipher):
 
         sage: ballet.component_from(0, 0).id
         'xor_0_0'
+
+        sage: plaintext = 0xe60e830ca56ec84814fbd2579993d435
+        sage: key = 0xcd52c514213c9632514fb60a64840881
+        sage: ciphertext = 0xc1c2e89c1581d166f3c87b5999f87a9f
+        sage: ballet.evaluate([plaintext, key]) == ciphertext
+        True
+
+        sage: plaintext = 0x00000000000000010000000200000003
+        sage: key = 0x00000000000000040000000000000005
+        sage: ciphertext = 0x911090B9308ACDD426341F12BE355B11
+        sage: ballet.evaluate([plaintext, key]) == ciphertext
+        True
+
+        plaintext = 0x00000000000000010000000200000003
+        key = 0x00000000000000040000000000000005
+        ciphertext = 0x911090B9308ACDD426341F12BE355B11
+        ciphertext_ = ballet.evaluate([plaintext, key], intermediate_output=True)
+        hex(ciphertext_[0])
+        for k in ciphertext_[1]["round_key_output"]:
+            print(hex(k))
+
+        for k in ciphertext_[1]["round_output"]:
+            print(hex(k))
+
     """
 
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=0):
@@ -96,15 +120,16 @@ class BalletBlockCipher(Cipher):
                 state_0, state_1, state_2, state_3 = self.round_function(state_0, state_1, state_2, state_3, key_0,
                                                                          last_round=True)
                 # round output
-                self.add_round_key_output_component(key_0.id, key_0.input_bit_positions, int(self.block_bit_size / 2))
+                self.add_round_key_output_component(key_0.id, key_0.input_bit_positions, self.round_key_bit_size)
                 self.add_cipher_output_component(state_0.id + state_1.id + state_2.id + state_3.id,
                                                 state_0.input_bit_positions + state_1.input_bit_positions + state_2.input_bit_positions + state_3.input_bit_positions,
                                                 self.block_bit_size)
             else:
                 # encryption
-                state_0, state_1, state_2, state_3 = self.round_function(state_0, state_1, state_2, state_3, key_0, last_round=False)
+                state_0, state_1, state_2, state_3 = self.round_function(state_0, state_1, state_2, state_3, key_0,
+                                                                         last_round=False)
                 # round output
-                self.add_round_key_output_component(key_0.id, key_0.input_bit_positions, int(self.block_bit_size/2))
+                self.add_round_key_output_component(key_0.id, key_0.input_bit_positions, self.round_key_bit_size)
                 self.add_round_output_component(state_0.id + state_1.id + state_2.id + state_3.id,
                                                 state_0.input_bit_positions + state_1.input_bit_positions + state_2.input_bit_positions + state_3.input_bit_positions,
                                                 self.block_bit_size)
