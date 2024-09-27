@@ -77,17 +77,6 @@ class BalletBlockCipher(Cipher):
         sage: ballet.evaluate([plaintext, key]) == ciphertext
         True
 
-        plaintext = 0x00000000000000010000000200000003
-        key = 0x00000000000000040000000000000005
-        ciphertext = 0x911090B9308ACDD426341F12BE355B11
-        ciphertext_ = ballet.evaluate([plaintext, key], intermediate_output=True)
-        hex(ciphertext_[0])
-        for k in ciphertext_[1]["round_key_output"]:
-            print(hex(k))
-
-        for k in ciphertext_[1]["round_output"]:
-            print(hex(k))
-
     """
 
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=0):
@@ -101,7 +90,7 @@ class BalletBlockCipher(Cipher):
         if error == 1:
             return
 
-        super().__init__(family_name="ublock",
+        super().__init__(family_name="ballet",
                          cipher_type="block_cipher",
                          cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
                          cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
@@ -179,7 +168,7 @@ class BalletBlockCipher(Cipher):
             t_1 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size*3, self.key_bit_size))])
             return state_0, state_1, state_2, state_3, key_0, key_1, t_0, t_1
 
-    def round_function(self, state_0, state_1, state_2, state_3, round_key, last_round=False):
+    def round_function(self, state_0, state_1, state_2, state_3, round_key, last_round):
 
         # state' = state_1 xor state_2
         self.add_XOR_component(state_1.id + state_2.id,
@@ -189,7 +178,7 @@ class BalletBlockCipher(Cipher):
 
         # state_0_new = state_1 xor round_key_left
         self.add_XOR_component(state_1.id + round_key.id,
-                               state_1.input_bit_positions + [list(range(self.quater_block_bit_size))],
+                               state_1.input_bit_positions + [round_key.input_bit_positions[0][:self.quater_block_bit_size]],
                                self.quater_block_bit_size)
         state_0_new = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
 
@@ -215,7 +204,7 @@ class BalletBlockCipher(Cipher):
 
         # state_3_new = state_2 xor round_key_right
         self.add_XOR_component(state_2.id + round_key.id,
-                               state_2.input_bit_positions + [list(range(self.quater_block_bit_size, self.round_key_bit_size))],
+                               state_2.input_bit_positions + [round_key.input_bit_positions[0][self.quater_block_bit_size:self.round_key_bit_size]],
                                self.quater_block_bit_size)
         state_3_new = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
 
