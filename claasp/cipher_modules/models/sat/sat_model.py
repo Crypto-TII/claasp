@@ -65,20 +65,18 @@ from claasp.editor import remove_permutations, remove_rotations
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
-from claasp.name_mappings import SBOX
+from claasp.name_mappings import SBOX, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, \
+    WORD_OPERATION
 
 
 class SatModel:
-    def __init__(self, cipher, window_size_weight_pr_vars=-1,
-                 counter='sequential',
-                 compact=False):
+    def __init__(self, cipher, counter='sequential', compact=False):
         """
         Initialise the sat model.
 
         INPUT:
 
         - ``cipher`` -- **Cipher object**; an instance of the cipher.
-        - ``window_size_weight_pr_vars`` -- **integer** (default: `-1`)
         - ``counter`` -- **string** (default: `sequential`)
         - ``compact`` -- **boolean** (default: False); set to True for using a simplified cipher (it will remove
           rotations and permutations)
@@ -100,7 +98,6 @@ class SatModel:
         self._model_constraints = []
         self._sboxes_ddt_templates = {}
         self._sboxes_lat_templates = {}
-        self.window_size_weight_pr_vars = window_size_weight_pr_vars
 
     def _add_clauses_to_solver(self, numerical_cnf, solver):
         """
@@ -262,8 +259,8 @@ class SatModel:
 
         return dummy_variables, constraints
 
-    def _sequential_counter(self, hw_list, weight):
-        return self._sequential_counter_algorithm(hw_list, weight, 'dummy_hw_0')
+    def _sequential_counter(self, hw_list, weight, dummy_id='dummy_hw_0'):
+        return self._sequential_counter_algorithm(hw_list, weight, dummy_id)
 
     def _sequential_counter_greater_or_equal(self, weight, dummy_id):
         hw_list = [variable_id for variable_id in self._variables_list if variable_id.startswith('hw_')]
@@ -305,9 +302,9 @@ class SatModel:
 
         # parsing the solution
         if status == 'SATISFIABLE':
-
             variable2value = self._get_solver_solution_parsed(variable2number, values)
             component2fields, total_weight = self._parse_solver_output(variable2value)
+
         else:
             component2fields, total_weight = {}, None
         if total_weight is not None:
@@ -344,7 +341,8 @@ class SatModel:
 
         return solution
 
-    def fix_variables_value_constraints(self, fixed_variables=[]):
+    @staticmethod
+    def fix_variables_value_constraints(fixed_variables=[]):
         """
         Return lists of variables and clauses for fixing variables in CIPHER model.
 
@@ -373,7 +371,7 @@ class SatModel:
             ....:    'bit_positions': [0, 1, 2, 3],
             ....:    'bit_values': [1, 1, 1, 0]
             ....: }]
-            sage: sat.fix_variables_value_constraints(fixed_variables)
+            sage: SatModel.fix_variables_value_constraints(fixed_variables)
             ['plaintext_0',
              '-plaintext_1',
              'plaintext_2',
@@ -486,6 +484,28 @@ class SatModel:
             return [], [f'-{variable}' for variable in hw_list]
 
         return self._counter(hw_list, weight)
+
+    def build_generic_sat_model_from_dictionary(self, component_and_model_types):
+        self._variables_list = []
+        self._model_constraints = []
+        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
+        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+
+        for component_and_model_type in component_and_model_types:
+            component = component_and_model_type["component_object"]
+            model_type = component_and_model_type["model_type"]
+            operation = component.description[0]
+            if component.type not in component_types or (
+                    WORD_OPERATION == component.type and operation not in operation_types):
+                print(f'{component.id} not yet implemented')
+            else:
+                sat_xor_differential_propagation_constraints = getattr(component, model_type)
+                if model_type == 'sat_bitwise_deterministic_truncated_xor_differential_constraints':
+                    variables, constraints = sat_xor_differential_propagation_constraints()
+                else:
+                    variables, constraints = sat_xor_differential_propagation_constraints(self)
+                self._model_constraints.extend(constraints)
+                self._variables_list.extend(variables)
 
     @property
     def cipher_id(self):
