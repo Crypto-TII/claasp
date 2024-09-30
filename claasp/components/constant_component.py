@@ -519,7 +519,9 @@ class Constant(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for a CONSTANT in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing CONSTANT for SAT CIPHER model
+
+        The list of the constraints is just the binary representation of the value of the constant.
 
         .. SEEALSO::
 
@@ -537,9 +539,12 @@ class Constant(Component):
             sage: constant_component.sat_constraints()
             (['constant_2_0_0',
               'constant_2_0_1',
-              'constant_2_0_2',
               ...
-              '-constant_2_0_13',
+              'constant_2_0_14',
+              'constant_2_0_15'],
+             ['-constant_2_0_0',
+              '-constant_2_0_1',
+              ...
               '-constant_2_0_14',
               'constant_2_0_15'])
         """
@@ -553,8 +558,11 @@ class Constant(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for CONSTANT in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing CONSTANT for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
+
+        The list of the constraints is just the binary representation of the value of the constant.
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires two variables per each symbol.
 
         .. SEEALSO::
 
@@ -572,20 +580,24 @@ class Constant(Component):
             sage: constant_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['constant_2_0_0_0',
               'constant_2_0_1_0',
-              'constant_2_0_2_0',
               ...
-              '-constant_2_0_13_1',
+              'constant_2_0_14_1',
+              'constant_2_0_15_1'],
+             ['-constant_2_0_0_0',
+              '-constant_2_0_1_0',
+              ...
               '-constant_2_0_14_1',
               '-constant_2_0_15_1'])
         """
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = [f'-{out_id}' for out_id in out_ids_0] + [f'-{out_id}' for out_id in out_ids_1]
-        #import ipdb; ipdb.set_trace()
         return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
-        Return lists of variables and strings representing clauses for CONSTANT for SAT xor differential.
+        Return a list of variables and a list of clauses representing CONSTANT for SAT XOR DIFFERENTIAL model
+
+        The value encoded is always zero for any constant since its contribute to the difference is null.
 
         .. SEEALSO::
 
@@ -603,9 +615,12 @@ class Constant(Component):
             sage: constant_component.sat_xor_differential_propagation_constraints()
             (['constant_2_0_0',
               'constant_2_0_1',
-              'constant_2_0_2',
               ...
-              '-constant_2_0_13',
+              'constant_2_0_14',
+              'constant_2_0_15'],
+             ['-constant_2_0_0',
+              '-constant_2_0_1',
+              ...
               '-constant_2_0_14',
               '-constant_2_0_15'])
         """
@@ -616,7 +631,9 @@ class Constant(Component):
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for a CONSTANT in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing CONSTANT for SAT XOR LINEAR model
+
+        The list of the clauses is empty since in XOR linear analysis any constant flip the sign if needed.
 
         .. SEEALSO::
 
@@ -647,7 +664,9 @@ class Constant(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing a CONSTANT SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing CONSTANT for SMT CIPHER model
+
+        The list of the constraints is just the binary representation of the value of the constant.
 
         INPUT:
 
@@ -680,7 +699,9 @@ class Constant(Component):
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts representing a CONSTANT for SMT xor differential.
+        Return a variable list and SMT-LIB list asserts representing CONSTANT for SMT XOR DIFFERENTIAL model
+
+        The value encoded is always zero for any constant since its contribute to the difference is null.
 
         INPUT:
 
@@ -711,7 +732,9 @@ class Constant(Component):
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for a CONSTANT in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing CONSTANT for SMT XOR LINEAR model
+
+        The list of the clauses is empty since in XOR linear analysis any constant flip the sign if needed.
 
         INPUT:
 
@@ -725,6 +748,7 @@ class Constant(Component):
             sage: constant_component.smt_xor_linear_mask_propagation_constraints()
             (['constant_0_2_0_o',
               'constant_0_2_1_o',
+              'constant_0_2_2_o',
               ...
               'constant_0_2_30_o',
               'constant_0_2_31_o'],

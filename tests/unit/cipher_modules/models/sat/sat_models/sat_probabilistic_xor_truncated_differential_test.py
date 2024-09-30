@@ -1,10 +1,12 @@
 import numpy as np
-from claasp.cipher_modules.models.sat.sat_models.sat_regular_and_deterministic_xor_truncated_differential import (
-    SatRegularAndDeterministicXorTruncatedDifferential
+from claasp.cipher_modules.models.sat.sat_models.sat_probabilistic_xor_truncated_differential_model import (
+    SatProbabilisticXorTruncatedDifferentialModel
 )
-from claasp.cipher_modules.models.utils import set_fixed_variables
+from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.utils.utils import get_k_th_bit
+import math
 
 WORD_SIZE = 16
 MASK_VAL = 2 ** WORD_SIZE - 1
@@ -134,10 +136,47 @@ def test_differential_in_single_key_scenario_speck3264():
     input_diff = 0xfe2ecdf8
     output_diff = "????100000000000????100000000011"
 
-    # Generate input data
     input_diff_data = repeat_input_difference(input_diff, num_samples, 4)
     key_data = rng.integers(low=0, high=256, size=(8, num_samples), dtype=np.uint8)
     plaintext_data1 = rng.integers(low=0, high=256, size=(4, num_samples), dtype=np.uint8)
+    plaintext_data2 = plaintext_data1 ^ input_diff_data
+
+    ciphertext1 = speck.evaluate_vectorized([plaintext_data1, key_data])
+    ciphertext2 = speck.evaluate_vectorized([plaintext_data2, key_data])
+    diff_ciphertext = ciphertext1[0] ^ ciphertext2[0]
+
+    bit_positions = extract_bit_positions(output_diff)
+    known_bits = extract_bits(diff_ciphertext.T, bit_positions)
+    inv_output_diff = output_diff[::-1]
+
+    filled_bits = [int(bit) for bit in inv_output_diff if bit in ["0", "1"]]
+
+    total = 0
+    for i in range(len(known_bits[0])):
+        if np.all(known_bits[:, i] == filled_bits):
+            total += 1
+
+    import math
+    prob_weight = math.log(total / num_samples, 2)
+    assert 14 > abs(prob_weight) > 11
+
+
+def test_differential_in_single_key_scenario_aradi():
+    """
+    This test is checking the distinguisher tested in test_differential_linear_trail_with_fixed_weight_4_rounds_aradi
+    which occurs with probability 2^-8.
+    """
+    speck = AradiBlockCipherSBox(number_of_rounds=4)
+    rng = np.random.default_rng(seed=42)
+    num_samples = 2 ** 12
+    input_diff = 0x00080021000800210000000000000000
+    output_diff = ("?0???0??0??0?0??????00??????0?0??0???0??0??0?0??????00??????0?0??0???0??0??0?0??????00??????0?0??0"
+                   "???0??0??0?0??????00??????0?0?")
+
+    # Generate input data
+    input_diff_data = repeat_input_difference(input_diff, num_samples, 16)
+    key_data = rng.integers(low=0, high=256, size=(32, num_samples), dtype=np.uint8)
+    plaintext_data1 = rng.integers(low=0, high=256, size=(16, num_samples), dtype=np.uint8)
     plaintext_data2 = plaintext_data1 ^ input_diff_data
 
     # Encrypt and evaluate
@@ -152,19 +191,19 @@ def test_differential_in_single_key_scenario_speck3264():
 
     filled_bits = [int(bit) for bit in inv_output_diff if bit in ["0", "1"]]
 
-    # Calculate probability
     total = 0
     for i in range(len(known_bits[0])):
         if np.all(known_bits[:, i] == filled_bits):
             total += 1
 
-    import math
     prob_weight = math.log(total / num_samples, 2)
-    assert 14 > abs(prob_weight) > 11
+    assert 9 > abs(prob_weight) > 2
 
 
-def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_4_rounds():
-    """Test for finding a XOR regular truncated differential trail with fixed weight for 4 rounds."""
+def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight_4_rounds():
+    """
+    Test for finding a XOR probabilistic truncated differential trail with fixed weight for 4 rounds of Speck cipher.
+    """
     speck = SpeckBlockCipher(number_of_rounds=4)
 
     plaintext = set_fixed_variables(
@@ -220,16 +259,16 @@ def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_4_r
     ]
     update_component_model_types_for_truncated_components(component_model_types, truncated_components)
 
-    sat_heterogeneous_model = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
-    trail = sat_heterogeneous_model.find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
-        weight=8, num_unknown_vars=31, fixed_values=[intermediate_output_1_12, key, plaintext], solver_name="CRYPTOMINISAT_EXT"
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
+    trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
+        weight=8, num_unknown_vars=31, fixed_values=[intermediate_output_1_12, key, plaintext],
+        solver_name="CRYPTOMINISAT_EXT"
     )
-
     assert trail['components_values']['cipher_output_3_12']['value'] == '????????00000000????????000000?1'
 
 
-def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_5_rounds():
-    """Test for finding a XOR regular truncated differential trail with fixed weight for 5 rounds."""
+def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight_5_rounds():
+    """Test for finding a XOR regular truncated differential trail with fixed weight for 5 rounds of Speck cipher."""
     speck = SpeckBlockCipher(number_of_rounds=5)
 
     plaintext = set_fixed_variables(
@@ -267,16 +306,17 @@ def test_find_one_xor_regular_truncated_differential_trail_with_fixed_weight_5_r
     ]
     update_component_model_types_for_truncated_components(component_model_types, truncated_components)
 
-    sat_heterogeneous_model = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
-    trail = sat_heterogeneous_model.find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
-        weight=8, num_unknown_vars=31, fixed_values=[intermediate_output_1_12, key, plaintext], solver_name="CRYPTOMINISAT_EXT"
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
+    trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
+        weight=8, num_unknown_vars=31, fixed_values=[intermediate_output_1_12, key, plaintext],
+        solver_name="CRYPTOMINISAT_EXT"
     )
 
     assert trail['components_values']['cipher_output_4_12']['value'] == '???????????????0????????????????'
 
 
-def test_find_lowest_xor_regular_truncated_differential_trail_with_fixed_weight_5_rounds():
-    """Test for finding a XOR regular truncated differential trail with fixed weight for 5 rounds."""
+def test_find_lowest_xor_probabilistic_truncated_differential_trail_with_fixed_weight_5_rounds():
+    """Test for finding a XOR regular truncated differential trail with fixed weight for 5 rounds of Speck cipher."""
     speck = SpeckBlockCipher(number_of_rounds=5)
 
     plaintext = set_fixed_variables(
@@ -314,12 +354,13 @@ def test_find_lowest_xor_regular_truncated_differential_trail_with_fixed_weight_
     ]
     update_component_model_types_for_truncated_components(component_model_types, truncated_components)
 
-    sat_heterogeneous_model = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
-    trail = sat_heterogeneous_model.find_lowest_weight_xor_regular_truncated_differential_trail(
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
+    trail = sat_heterogeneous_model.find_lowest_weight_xor_probabilistic_truncated_differential_trail(
         fixed_values=[intermediate_output_1_12, key, plaintext], solver_name="CRYPTOMINISAT_EXT"
     )
 
     assert trail['components_values']['cipher_output_4_12']['value'] == '???????????????0????????????????'
+
 
 def test_wrong_fixed_variables_assignment():
     speck = SpeckBlockCipher(number_of_rounds=5)
@@ -400,14 +441,54 @@ def test_wrong_fixed_variables_assignment():
         component_model_types, sat_bitwise_deterministic_truncated_components
     )
 
-    sat_heterogeneous_model = SatRegularAndDeterministicXorTruncatedDifferential(speck, component_model_types)
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
 
     import pytest
     with pytest.raises(ValueError) as exc_info:
-        sat_heterogeneous_model.find_one_xor_regular_truncated_differential_trail_with_fixed_weight(
+        sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
             8,
             31,
             [intermediate_output_1_12, key, plaintext, modadd_1_2],
             "CRYPTOMINISAT_EXT"
         )
         assert str(exc_info.value) == "The fixed value in a regular XOR differential model cannot be 2"
+
+
+def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
+    """Test for finding a XOR regular truncated differential trail with fixed weight for 4 rounds of Aradi cipher."""
+    aradi = AradiBlockCipherSBox(number_of_rounds=4)
+    import itertools
+
+    top_part_components = []
+    bottom_part_components = []
+    for round_number in range(2, 4):
+        bottom_part_components.append(aradi.get_components_in_round(round_number))
+    bottom_part_components = list(itertools.chain(*bottom_part_components))
+    bottom_part_components = [component.id for component in bottom_part_components]
+
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='equal',
+        bit_positions=range(128),
+        bit_values=integer_to_bit_list(0x00080021000800210000000000000000, 128, 'big')
+    )
+
+    key = set_fixed_variables(
+        component_id='key',
+        constraint_type='equal',
+        bit_positions=range(256),
+        bit_values=(0,) * 256
+    )
+
+    component_model_types = generate_component_model_types(aradi)
+    update_component_model_types_for_truncated_components(component_model_types, bottom_part_components)
+
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(aradi, component_model_types)
+
+    trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
+        weight=8, num_unknown_vars=127, fixed_values=[key, plaintext], solver_name="CADICAL_EXT"
+    )
+
+    assert trail['components_values']['cipher_output_3_86']['value'] == ('?0???0??0??0?0??????00??????0?0??0???0??0??0'
+                                                                         '?0??????00??????0?0??0???0??0??0?0??????00'
+                                                                         '??????0?0??0???0??0??0?0??????00??????0?0?')

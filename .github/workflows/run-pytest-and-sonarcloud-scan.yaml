@@ -39,6 +39,8 @@ jobs:
       run: |
             cd /home/runner/_work/claasp
             make remote-pytest
+      env:
+        GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
 
     - name: Upload Coverage.xml to artifacts
       uses: actions/upload-artifact@v4
@@ -56,7 +58,7 @@ jobs:
         fetch-depth: 0
 
     - name: Download Latest Coverage.xml from Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: coverage-report
 
