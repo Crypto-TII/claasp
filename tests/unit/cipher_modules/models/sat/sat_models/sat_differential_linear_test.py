@@ -4,6 +4,7 @@ from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model i
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
 from claasp.utils.utils import get_k_th_bit
 
 
@@ -115,4 +116,52 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_speck():
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
         weight=14, fixed_values=[key, plaintext, modadd_2_7], solver_name="CADICAL_EXT", num_unknown_vars=31
     )
+    assert trail["status"] == 'SATISFIABLE'
+
+def test_differential_linear_trail_with_fixed_weight_3_rounds_ascon():
+    """Test for finding a differential-linear trail with fixed weight for 8 rounds of Speck."""
+    aradi = GastonSboxPermutation(number_of_rounds=4)
+    import itertools
+
+    top_part_components = []
+    middle_part_components = []
+    bottom_part_components = []
+    for round_number in range(2):
+        top_part_components.append(aradi.get_components_in_round(round_number))
+    for round_number in range(2, 3):
+        middle_part_components.append(aradi.get_components_in_round(round_number))
+    for round_number in range(3, 4):
+        bottom_part_components.append(aradi.get_components_in_round(round_number))
+    top_part_components = list(itertools.chain(*top_part_components))
+    middle_part_components = list(itertools.chain(*middle_part_components))
+    bottom_part_components = list(itertools.chain(*bottom_part_components))
+
+    middle_part_components = [component.id for component in middle_part_components]
+    bottom_part_components = [component.id for component in bottom_part_components]
+
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='not_equal',
+        bit_positions=range(320),
+        bit_values=[0] * 320
+    )
+    import ipdb; ipdb.set_trace()
+
+    modadd_2_7 = set_fixed_variables(
+        component_id='sbox_3_88',
+        constraint_type='not_equal',
+        bit_positions=range(5),
+        bit_values=[0] * 5
+    )
+
+    component_model_types = generate_component_model_types(aradi)
+    update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
+    update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+
+    sat_heterogeneous_model = SatDifferentialLinearModel(aradi, component_model_types)
+
+    trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
+        weight=20, fixed_values=[plaintext, modadd_2_7], solver_name="CADICAL_EXT", num_unknown_vars=319
+    )
+    print(trail)
     assert trail["status"] == 'SATISFIABLE'
