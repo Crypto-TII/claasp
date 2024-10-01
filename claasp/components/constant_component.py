@@ -196,10 +196,10 @@ class Constant(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.constant_component import Constant
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: constant_component = Constant(0, 18, 16, 0xAB01)
             sage: constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             (['array[0..1] of var 0..1: constant_0_18_active = array1d(0..1, [0,0]);',
@@ -231,9 +231,9 @@ class Constant(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: constant_component = aes.component_from(0, 30)
             sage: constant_component.cp_xor_differential_propagation_first_step_constraints(cp)
             (['array[0..3] of var 0..1: constant_0_30 = array1d(0..3, [0,0,0,0]);'], [])
@@ -500,9 +500,9 @@ class Constant(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model import MinizincXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: minizinc = MinizincXorDifferentialModel(fancy)
+            sage: minizinc = MznXorDifferentialModelARXOptimized(fancy)
             sage: constant_component = fancy.get_component_from_id("constant_0_10")
             sage: _, constant_xor_differential_constraints = constant_component.minizinc_xor_differential_propagation_constraints(minizinc)
             sage: constant_xor_differential_constraints[6]

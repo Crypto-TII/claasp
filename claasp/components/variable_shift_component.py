@@ -162,9 +162,9 @@ class VariableShift(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: raiden = RaidenBlockCipher(number_of_rounds=16)
-            sage: minizinc = MinizincModel(raiden)
+            sage: minizinc = MznModel(raiden)
             sage: variable_shift_component = raiden.component_from(0, 2)
             sage: _, mzn_shift_by_variable_amount_constraints = variable_shift_component.minizinc_xor_differential_propagation_constraints(minizinc)
             sage: mzn_shift_by_variable_amount_constraints[0]
