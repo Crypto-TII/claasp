@@ -148,7 +148,7 @@ def test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis():
 
 def test_get_model():
     speck = SpeckBlockCipher(number_of_rounds=1)
-    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "CpXorDifferentialModel"
+    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
     assert speck.get_model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
     assert speck.get_model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
     assert speck.get_model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"

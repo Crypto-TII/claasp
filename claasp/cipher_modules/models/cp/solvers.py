@@ -18,10 +18,20 @@
 
 import os
 
-SOLVER_DEFAULT = 'Chuffed'
+SOLVER_DEFAULT = 'chuffed'
 MODEL_DEFAULT_PATH = os.getcwd()
 
-CP_SOLVERS_INTERNAL = []
+CP_SOLVERS_INTERNAL = [{'solver_brand_name': 'Choco', 'solver_name': 'choco'},
+                       {'solver_brand_name': 'Chuffed', 'solver_name': 'chuffed'},
+                       {'solver_brand_name': 'COIN-BC', 'solver_name': 'coin-bc'},
+                       {'solver_brand_name': 'IBM ILOG CPLEX', 'solver_name': 'cplex'},
+                       {'solver_brand_name': 'MiniZinc findMUS', 'solver_name': 'findmus'},
+                       {'solver_brand_name': 'Gecode', 'solver_name': 'gecode'},
+                       {'solver_brand_name': 'MiniZinc Globalizer', 'solver_name': 'globalizer'},
+                       {'solver_brand_name': 'Gurobi Optimizer', 'solver_name': 'gurobi'},
+                       {'solver_brand_name': 'SCIP', 'solver_name': 'scip'},
+                       {'solver_brand_name': 'OR Tools', 'solver_name': 'Xor'},
+                       {'solver_brand_name': 'FICO Xpress', 'solver_name': 'xpress'},]
 
 CP_SOLVERS_EXTERNAL = [
     {
@@ -40,7 +50,7 @@ CP_SOLVERS_EXTERNAL = [
     },
     {
         'solver_brand_name': 'Gecode',
-        'solver_name': 'Gecode', # keyword to call the solver  
+        'solver_name': 'gecode', # keyword to call the solver  
         'keywords': {
             'command': {
                 'executable': ['minizinc'],
@@ -68,7 +78,7 @@ CP_SOLVERS_EXTERNAL = [
     },
     {
         'solver_brand_name': 'COIN-BC',
-        'solver_name': 'COIN-BC', # keyword to call the solver   
+        'solver_name': 'coin-bc', # keyword to call the solver   
         'keywords': {
             'command': {
                 'executable': ['minizinc'],
@@ -95,3 +105,4 @@ CP_SOLVERS_EXTERNAL = [
         },   
     },
 ]
+                  

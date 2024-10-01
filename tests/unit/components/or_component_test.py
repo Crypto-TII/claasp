@@ -1,5 +1,5 @@
 from claasp.components.or_component import OR
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.permutations.gift_permutation import GiftPermutation
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
@@ -32,7 +32,7 @@ def test_cp_constraints():
 def test_cp_xor_linear_mask_propagation_constraints():
     gift = GiftPermutation()
     or_component = gift.component_from(39, 6)
-    cp = CpModel(gift)
+    cp = MznModel(gift)
     declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
 
     assert declarations == ['array[0..31] of var 0..3200: p_or_39_6;', 'array[0..63] of var 0..1:or_39_6_i;',

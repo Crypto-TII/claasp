@@ -1,6 +1,6 @@
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
-from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import CpXorDifferentialModel
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -90,7 +90,7 @@ def test_save_as_latex_table():
 
 def test_save_as_DataFrame():
     speck = SpeckBlockCipher(number_of_rounds=2)
-    cp = CpXorDifferentialModel(speck)
+    cp = MznXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
         component_id='plaintext',
         constraint_type='not_equal',

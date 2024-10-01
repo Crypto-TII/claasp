@@ -1050,6 +1050,9 @@ class Cipher:
           - ``technique`` -- **string** ; sat, smt, milp or cp
           - ``problem`` -- **string** ; xor_differential, xor_linear, cipher_model (more to be added as more model types are added to the library)
           """
+        if technique == 'cp':
+            technique = 'mzn'
+            formalism = 'cp'
         if problem == 'xor_differential':
             constructor_name = f'{technique[0].capitalize()}{technique[1:]}XorDifferentialModel'
         elif problem == "xor_linear":
@@ -1058,6 +1061,8 @@ class Cipher:
             constructor_name = f'{technique[0].capitalize()}{technique[1:]}CipherModel'
 
         module_name = f'claasp.cipher_modules.models.{technique}.{technique}_models.{technique}_{problem}_model'
+        if technique == 'mzn':
+            module_name = f'claasp.cipher_modules.models.{formalism}.{technique}_models.{technique}_{problem}_model'
 
         module = importlib.import_module(module_name)
         constructor = getattr(module, constructor_name)
