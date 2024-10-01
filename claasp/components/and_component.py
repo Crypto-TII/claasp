@@ -191,9 +191,9 @@ class AND(MultiInputNonlinearLogicalOperator):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: fancy = FancyBlockCipher()
-            sage: cp = CpModel(fancy)
+            sage: cp = MznModel(fancy)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.cp_xor_linear_mask_propagation_constraints(cp)
             (['array[0..23] of var 0..1:and_0_8_i;',
