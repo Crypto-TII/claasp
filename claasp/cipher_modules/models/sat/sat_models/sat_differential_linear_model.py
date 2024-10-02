@@ -214,11 +214,11 @@ class SatDifferentialLinearModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-        #ciphertext_output_vars = [f'cipher_output_7_25_{i}_o' for i in range(512)]
+        ciphertext_output_vars = [f'cipher_output_7_24_{i}_o' for i in range(512)]
 #
-        #variables, constraints = self._sequential_counter_algorithm(ciphertext_output_vars, 9, 'dummy_hw_ac')
-        #self._variables_list.extend(variables)
-        #self._model_constraints.extend(constraints)
+        variables, constraints = self._sequential_counter_algorithm(ciphertext_output_vars, 5, 'dummy_hw_ac')
+        self._variables_list.extend(variables)
+        self._model_constraints.extend(constraints)
 
 
 

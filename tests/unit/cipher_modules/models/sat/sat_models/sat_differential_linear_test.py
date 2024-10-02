@@ -206,27 +206,45 @@ def generate_uint32_array_from_hex(prefix, hex_string):
 
 def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     """Test for finding a differential-linear trail with fixed weight for 8 rounds of Speck."""
-    nr = 8
+    nr = 10
     aradi = ChachaPermutation(number_of_rounds=nr)
-
+    #import ipdb; ipdb.set_trace()
     #aradi.print()
     import itertools
 
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
-    for round_number in range(3):
+    for round_number in range(2):
         top_part_components.append(aradi.get_components_in_round(round_number))
-    for round_number in range(3, 5):
+    for round_number in range(2, 4):
         middle_part_components.append(aradi.get_components_in_round(round_number))
-    for round_number in range(5, 8):
+    for round_number in range(4, 10):
         bottom_part_components.append(aradi.get_components_in_round(round_number))
+
+    top_part_special = [
+        'modadd_2_0', 'rot_2_2', 'rot_2_2', 'modadd_2_3', 'rot_2_5', 'rot_2_5', 'modadd_2_6', 'rot_2_8', 'rot_2_8', 'modadd_2_9', 'rot_2_11', 'rot_2_11', 'xor_2_1', 'xor_2_4', 'xor_2_7', 'xor_2_10'
+    ]
+
+    middle_part_special = [
+        'modadd_4_0', 'rot_4_2', 'rot_4_2', 'modadd_4_3', 'rot_4_5', 'rot_4_5', 'modadd_4_6', 'rot_4_8', 'rot_4_8', 'xor_4_1', 'xor_4_4', 'xor_4_7', 'xor_4_10', 'modadd_4_9', 'rot_4_11', 'rot_4_11'
+    ]
+
+
+
     top_part_components = list(itertools.chain(*top_part_components))
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
 
     middle_part_components = [component.id for component in middle_part_components]
     bottom_part_components = [component.id for component in bottom_part_components]
+
+    #import ipdb;
+    #ipdb.set_trace()
+    middle_part_components = list(set(middle_part_components) - set(top_part_special))
+    middle_part_components.extend(middle_part_special)
+    bottom_part_components = list(set(bottom_part_components) - set(middle_part_special))
+    #top_part_components.extend(top_part_special)
 
     plaintext1 = set_fixed_variables(
         component_id='plaintext',
@@ -244,7 +262,7 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
 
 
     modadd_2_7 = set_fixed_variables(
-        component_id=f'modadd_5_15',
+        component_id=f'modadd_4_12',
         constraint_type='not_equal',
         bit_positions=range(32),
         bit_values=[0] * 32
@@ -264,7 +282,7 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     sat_heterogeneous_model = SatDifferentialLinearModel(aradi, component_model_types)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=90, fixed_values=[plaintext1, plaintext2, modadd_2_7], solver_name="CADICAL_EXT", num_unknown_vars=511
+        weight=80, fixed_values=[plaintext1, plaintext2, modadd_2_7], solver_name="CADICAL_EXT", num_unknown_vars=511
     )
     print(trail)
     print(generate_uint32_array_from_hex("ID", trail["components_values"]["plaintext"]["value"]))
@@ -317,10 +335,10 @@ def test_diff_lin_chacha():
     # output_mask = 0x00000000000000000000000000000000000000000000000000000100000000000000002000000000
     """
 
-    input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080088008
-    output_mask =      0x00010001000000010000000000000000000000000000008000000000000000000000000000000000000000010000000100000101000000000000000001000000
+    input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008008000000000000000000000000
+    output_mask =      0x0000000100000000000000010000000000000000000000000400000000080080000010000000000000000001000800c000000080000000010000000000000101
 
-    number_of_samples = 2 ** 21
+    number_of_samples = 2 ** 14
     start_building_time = time.time()
     rng = np.random.default_rng()
     input_difference_data = repeat_input_difference(input_difference, number_of_samples, 64)
