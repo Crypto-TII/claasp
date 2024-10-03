@@ -832,7 +832,7 @@ def differential_linear_checker_for_permutation(
         cipher, input_difference, output_mask, number_of_samples, state_size
 ):
     """
-    This method helps to verify experimentally differential-linear distinguishers for permutations using evaluate vectorized evaluator
+    This method helps to verify experimentally differential-linear distinguishers for permutations using the vectorized evaluator
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
@@ -857,7 +857,7 @@ def differential_linear_checker_for_block_cipher_single_key(
         cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key
 ):
     """
-    This method helps to verify experimentally differential-linear distinguishers for block ciphers using evaluate vectorized evaluator
+    This method helps to verify experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator
     """
     if block_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
