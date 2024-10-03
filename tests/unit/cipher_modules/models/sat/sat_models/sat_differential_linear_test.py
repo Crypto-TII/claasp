@@ -1,36 +1,12 @@
 from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
+from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, \
+    _update_component_model_types_for_truncated_components, _update_component_model_types_for_linear_components
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, \
     differential_linear_checker_for_permutation, differential_linear_checker_for_block_cipher_single_key
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 import itertools
-
-
-def generate_component_model_types(speck_cipher):
-    """Generates the component model types for a given Speck cipher."""
-    component_model_types = []
-    for component in speck_cipher.get_all_components():
-        component_model_types.append({
-            "component_id": component.id,
-            "component_object": component,
-            "model_type": "sat_xor_differential_propagation_constraints"
-        })
-    return component_model_types
-
-
-def update_component_model_types_for_truncated_components(component_model_types, truncated_components):
-    """Updates the component model types for truncated components."""
-    for component_model_type in component_model_types:
-        if component_model_type["component_id"] in truncated_components:
-            component_model_type["model_type"] = "sat_bitwise_deterministic_truncated_xor_differential_constraints"
-
-
-def update_component_model_types_for_linear_components(component_model_types, linear_components):
-    """Updates the component model types for linear components."""
-    for component_model_type in component_model_types:
-        if component_model_type["component_id"] in linear_components:
-            component_model_type["model_type"] = "sat_xor_linear_mask_propagation_constraints"
 
 
 def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
@@ -77,9 +53,9 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
         bit_values=integer_to_bit_list(0x02000201, 32, 'big')
     )
 
-    component_model_types = generate_component_model_types(speck)
-    update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_types = _generate_component_model_types(speck)
+    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
+    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
 
     sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_types)
 
@@ -130,9 +106,9 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
         bit_values=[0] * 32
     )
 
-    component_model_types = generate_component_model_types(chacha)
-    update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_types = _generate_component_model_types(chacha)
+    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
+    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
 
     sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
 
@@ -190,9 +166,9 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
         bit_values=[0] * 4
     )
 
-    component_model_types = generate_component_model_types(aradi)
-    update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_types = _generate_component_model_types(aradi)
+    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
+    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
 
     sat_heterogeneous_model = SatDifferentialLinearModel(aradi, component_model_types)
 
@@ -243,9 +219,9 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
         bit_values=[0] * 32
     )
 
-    component_model_types = generate_component_model_types(chacha)
-    update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_types = _generate_component_model_types(chacha)
+    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
+    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
 
     sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
 

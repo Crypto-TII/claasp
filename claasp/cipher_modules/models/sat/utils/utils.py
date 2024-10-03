@@ -825,3 +825,29 @@ def run_yices(solver_specs, options, dimacs_input, input_file_name):
     os.remove(input_file_name)
 
     return status, time, memory, values
+
+
+def _generate_component_model_types(speck_cipher):
+    """Generates the component model types for a given Speck cipher."""
+    component_model_types = []
+    for component in speck_cipher.get_all_components():
+        component_model_types.append({
+            "component_id": component.id,
+            "component_object": component,
+            "model_type": "sat_xor_differential_propagation_constraints"
+        })
+    return component_model_types
+
+
+def _update_component_model_types_for_truncated_components(component_model_types, truncated_components):
+    """Updates the component model types for truncated components."""
+    for component_model_type in component_model_types:
+        if component_model_type["component_id"] in truncated_components:
+            component_model_type["model_type"] = "sat_bitwise_deterministic_truncated_xor_differential_constraints"
+
+
+def _update_component_model_types_for_linear_components(component_model_types, linear_components):
+    """Updates the component model types for linear components."""
+    for component_model_type in component_model_types:
+        if component_model_type["component_id"] in linear_components:
+            component_model_type["model_type"] = "sat_xor_linear_mask_propagation_constraints"
