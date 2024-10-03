@@ -130,8 +130,16 @@ class SatDifferentialLinearModel(SatModel):
         RETURN:
         - **tuple**; A tuple containing a list of variables and a list of constraints.
         """
+
         hw_variables = [var_id for var_id in self._variables_list if var_id.startswith('hw_')]
 
+        linear_component_ids = [linear_component["component_id"] for linear_component in self.linear_components]
+        hw_linear_variables = []
+        for linear_component_id in linear_component_ids:
+            for hw_variable in hw_variables:
+                if linear_component_id in hw_variable:
+                    hw_linear_variables.append(hw_variable)
+        hw_variables.extend(hw_linear_variables)
         if weight == 0:
             return [], [f'-{var}' for var in hw_variables]
 
@@ -158,7 +166,7 @@ class SatDifferentialLinearModel(SatModel):
 
     def build_xor_differential_linear_model(self, weight=-1, num_unknown_vars=None):
         """
-        Constructs a model to search for probabilistic truncated XOR differential trails.
+        Constructs a model to search for differential-linear trails.
         This model is a combination of the concrete XOR differential model, the bitwise truncated deterministic model, and
         the linear XOR differential model.
 
@@ -266,22 +274,13 @@ class SatDifferentialLinearModel(SatModel):
             elif component.id in [d['component_id'] for d in self.truncated_components]:
                 value = self._get_component_value_double_ids(component, variable2value)
                 components_solutions[component.id] = set_component_solution(value)
-                hex_value = self._get_component_hex_value(component, constants.OUTPUT_BIT_ID_SUFFIX, variable2value)
-                components_solutions[component.id + "_o"] = set_component_solution(hex_value, 0)
 
             elif component.id in [d['component_id'] for d in self.linear_components]:
                 hex_value = self._get_component_hex_value(component, constants.OUTPUT_BIT_ID_SUFFIX, variable2value)
                 weight = self.calculate_component_weight(component, constants.OUTPUT_BIT_ID_SUFFIX, variable2value)
                 total_weight_lin += weight
-                hex_value_input = self._get_component_hex_value_input(component, constants.INPUT_BIT_ID_SUFFIX, variable2value)
                 components_solutions[component.id] = set_component_solution(hex_value, weight)
-                components_solutions[component.id + "_input"] = set_component_solution(hex_value_input, 0)
-                components_solutions[component.id + "_input"]["links"] = str(component.input_id_links)
-                components_solutions[component.id + "_input_id_links"] = {
-                    input_id_link: self._get_component_hex_value(
-                        self.cipher.get_component_from_id(input_id_link), constants.OUTPUT_BIT_ID_SUFFIX, variable2value)
-                    for input_id_link in component.input_id_links
-                }
+
 
         print("Total weights: diff =", total_weight_diff, "lin =", total_weight_lin)
 
