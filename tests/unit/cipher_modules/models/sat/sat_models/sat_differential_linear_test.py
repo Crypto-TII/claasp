@@ -206,31 +206,21 @@ def generate_uint32_array_from_hex(prefix, hex_string):
 
 def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     """Test for finding a differential-linear trail with fixed weight for 8 rounds of Speck."""
-    nr = 10
-    aradi = ChachaPermutation(number_of_rounds=nr)
+    nr = 6
+    chacha = ChachaPermutation(number_of_rounds=nr)
     #import ipdb; ipdb.set_trace()
-    #aradi.print()
+    #chacha.print()
     import itertools
 
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
-    for round_number in range(2):
-        top_part_components.append(aradi.get_components_in_round(round_number))
-    for round_number in range(2, 4):
-        middle_part_components.append(aradi.get_components_in_round(round_number))
-    for round_number in range(4, 10):
-        bottom_part_components.append(aradi.get_components_in_round(round_number))
-
-    top_part_special = [
-        'modadd_2_0', 'rot_2_2', 'rot_2_2', 'modadd_2_3', 'rot_2_5', 'rot_2_5', 'modadd_2_6', 'rot_2_8', 'rot_2_8', 'modadd_2_9', 'rot_2_11', 'rot_2_11', 'xor_2_1', 'xor_2_4', 'xor_2_7', 'xor_2_10'
-    ]
-
-    middle_part_special = [
-        'modadd_4_0', 'rot_4_2', 'rot_4_2', 'modadd_4_3', 'rot_4_5', 'rot_4_5', 'modadd_4_6', 'rot_4_8', 'rot_4_8', 'xor_4_1', 'xor_4_4', 'xor_4_7', 'xor_4_10', 'modadd_4_9', 'rot_4_11', 'rot_4_11'
-    ]
-
-
+    for round_number in range(1):
+        top_part_components.append(chacha.get_components_in_round(round_number))
+    for round_number in range(1, 3):
+        middle_part_components.append(chacha.get_components_in_round(round_number))
+    for round_number in range(3, 6):
+        bottom_part_components.append(chacha.get_components_in_round(round_number))
 
     top_part_components = list(itertools.chain(*top_part_components))
     middle_part_components = list(itertools.chain(*middle_part_components))
@@ -239,55 +229,42 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     middle_part_components = [component.id for component in middle_part_components]
     bottom_part_components = [component.id for component in bottom_part_components]
 
-    #import ipdb;
-    #ipdb.set_trace()
-    middle_part_components = list(set(middle_part_components) - set(top_part_special))
-    middle_part_components.extend(middle_part_special)
-    bottom_part_components = list(set(bottom_part_components) - set(middle_part_special))
-    #top_part_components.extend(top_part_special)
-
-    plaintext1 = set_fixed_variables(
-        component_id='plaintext',
-        constraint_type='not_equal',
-        bit_positions=range(512),
-        bit_values=[0] * 512
-    )
-
-    plaintext2 = set_fixed_variables(
+    plaintext = set_fixed_variables(
         component_id='plaintext',
         constraint_type='equal',
         bit_positions=range(384),
-        bit_values=[0] * 384
+        bit_values=integer_to_bit_list(0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000, 512, 'big')
+    )
+
+    cipher_output_5_24 = set_fixed_variables(
+        component_id='cipher_output_5_24',
+        constraint_type='equal',
+        bit_positions=range(384),
+        bit_values=integer_to_bit_list(0x00010000000100010000000100030003000000800000008000000000000001800000000000000001000000010000000201000101010000000000010103000101, 512, 'big')
     )
 
 
     modadd_2_7 = set_fixed_variables(
-        component_id=f'modadd_4_12',
+        component_id=f'modadd_3_15',
         constraint_type='not_equal',
         bit_positions=range(32),
         bit_values=[0] * 32
     )
 
-    #modadd_2_7 = set_fixed_variables(
-    #    component_id=f'f"cipher_output_{nr-1}_24"',
-    #    constraint_type='not_equal',
-    #    bit_positions=range(512),
-    #    bit_values=[0] * 512
-    #)
-
-    component_model_types = generate_component_model_types(aradi)
+    component_model_types = generate_component_model_types(chacha)
     update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
     update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
 
-    sat_heterogeneous_model = SatDifferentialLinearModel(aradi, component_model_types)
+    sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=80, fixed_values=[plaintext1, plaintext2, modadd_2_7], solver_name="CADICAL_EXT", num_unknown_vars=511
+        weight=5, fixed_values=[plaintext, modadd_2_7, cipher_output_5_24], solver_name="CADICAL_EXT", num_unknown_vars=511
     )
     print(trail)
     print(generate_uint32_array_from_hex("ID", trail["components_values"]["plaintext"]["value"]))
     print(generate_uint32_array_from_hex("ODmask", trail["components_values"][f"cipher_output_{nr-1}_24"]["value"]))
     assert trail["status"] == 'SATISFIABLE'
+    assert trail["total_weight"] <= 5
 
 
 def test_diff_lin_gaston():
@@ -335,29 +312,25 @@ def test_diff_lin_chacha():
     # output_mask = 0x00000000000000000000000000000000000000000000000000000100000000000000002000000000
     """
 
-    input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008008000000000000000000000000
-    output_mask =      0x0000000100000000000000010000000000000000000000000400000000080080000010000000000000000001000800c000000080000000010000000000000101
-
-    number_of_samples = 2 ** 14
+    input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
+    output_mask =      0x00010000000100010000000100030003000000800000008000000000000001800000000000000001000000010000000201000101010000000000010103000101
+    number_of_samples = 2 ** 12
     start_building_time = time.time()
     rng = np.random.default_rng()
     input_difference_data = repeat_input_difference(input_difference, number_of_samples, 64)
     end_building_time = time.time()
     sat_time = end_building_time - start_building_time
-    print("Time in seconds", sat_time)
-    nr = 8
+    nr = 6
     gaston = ChachaPermutation(number_of_rounds=nr)
     plaintext1 = rng.integers(low=0, high=256, size=(64, number_of_samples), dtype=np.uint8)
     plaintext2 = plaintext1 ^ input_difference_data
     start_building_time = time.time()
     ciphertext1 = gaston.evaluate_vectorized([plaintext1])
     sat_time = end_building_time - start_building_time
-    print("Time in seconds", sat_time)
     ciphertext2 = gaston.evaluate_vectorized([plaintext2])
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
     bit_positions_ciphertext = extract_bit_positions(output_mask)
     ccc = extract_bits(ciphertext3.T, bit_positions_ciphertext)
-    print(ccc)
     count = 0
     for i in range(number_of_samples):
         c_xor = np.bitwise_xor.reduce(ccc.T[i])
