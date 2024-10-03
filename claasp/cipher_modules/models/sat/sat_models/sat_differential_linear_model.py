@@ -194,7 +194,7 @@ class SatDifferentialLinearModel(SatModel):
             ...
         """
         self.build_generic_sat_model_from_dictionary(self.dict_of_components)
-        constraints = self.branch_xor_linear_constraints()
+        constraints = SatXorLinearModel.branch_xor_linear_constraints(self.bit_bindings)
         self._model_constraints.extend(constraints)
 
         if num_unknown_vars is not None:
@@ -335,7 +335,7 @@ class SatDifferentialLinearModel(SatModel):
         constraints = self.fix_variables_value_constraints(fixed_values, self.regular_components, self.truncated_components)
         self.model_constraints.extend(constraints)
 
-        solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
+        solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name)
         total_time = solution['solving_time_seconds']
         max_memory = solution['memory_megabytes']
 
@@ -343,7 +343,7 @@ class SatDifferentialLinearModel(SatModel):
             current_weight += 1
             self.build_xor_regular_and_deterministic_truncated_differential_model(current_weight)
             self.model_constraints.extend(constraints)
-            solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
+            solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name)
 
             total_time += solution['solving_time_seconds']
             max_memory = max(max_memory, solution['memory_megabytes'])
@@ -363,28 +363,3 @@ class SatDifferentialLinearModel(SatModel):
         - **object**; The cipher object being used in this model.
         """
         return self._cipher
-
-    def branch_xor_linear_constraints(self):
-        """
-        Returns lists of variables and clauses for branching in the XOR linear model.
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorLinearModel(speck)
-            sage: sat.branch_xor_linear_constraints()
-            ['-plaintext_0_o rot_0_0_0_i',
-             'plaintext_0_o -rot_0_0_0_i',
-             '-plaintext_1_o rot_0_0_1_i',
-             ...
-             'xor_2_10_14_o -cipher_output_2_12_30_i',
-             '-xor_2_10_15_o cipher_output_2_12_31_i',
-             'xor_2_10_15_o -cipher_output_2_12_31_i']
-        """
-        constraints = []
-        for output_bit, input_bits in self.bit_bindings.items():
-            constraints.extend(sat_utils.cnf_xor(output_bit, input_bits))
-
-        return constraints

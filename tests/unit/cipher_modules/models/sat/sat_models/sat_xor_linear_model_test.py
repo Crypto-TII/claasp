@@ -6,7 +6,8 @@ from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import Sat
 def test_branch_xor_linear_constraints():
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatXorLinearModel(speck)
-    constraints = sat.branch_xor_linear_constraints()
+
+    constraints = SatXorLinearModel.branch_xor_linear_constraints(sat.bit_bindings)
 
     assert constraints[0] == '-plaintext_0_o rot_0_0_0_i'
     assert constraints[1] == 'plaintext_0_o -rot_0_0_0_i'
@@ -62,7 +63,7 @@ def test_fix_variables_value_xor_linear_constraints():
                         'constraint_type': 'not_equal',
                         'bit_positions': [0, 1, 2, 3],
                         'bit_values': [1, 1, 1, 0]}]
-    constraints = sat.fix_variables_value_xor_linear_constraints(fixed_variables)
+    constraints = SatXorLinearModel.fix_variables_value_xor_linear_constraints(fixed_variables)
 
     assert constraints == ['plaintext_0_o', '-plaintext_1_o', 'plaintext_2_o', 'plaintext_3_o',
                            '-ciphertext_0_o -ciphertext_1_o -ciphertext_2_o ciphertext_3_o']

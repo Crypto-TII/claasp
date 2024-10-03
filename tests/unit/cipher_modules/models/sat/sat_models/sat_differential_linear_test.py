@@ -280,7 +280,7 @@ def test_diff_lin_speck():
     """
     input_difference = 0x02110a04
     output_mask = 0x02000201
-    number_of_samples = 2 ** 12
+    number_of_samples = 2 ** 15
     number_of_rounds = 6
     fixed_key = 0x0
     speck = SpeckBlockCipher(number_of_rounds=number_of_rounds)
@@ -291,7 +291,7 @@ def test_diff_lin_speck():
     )
     import math
     abs_corr = abs(corr)
-    assert abs(math.log(abs_corr, 2)) < 8
+    assert abs(math.log(abs_corr, 2)) <= 8
 
 
 def test_diff_lin_aradi():

@@ -34,7 +34,8 @@ class SatXorLinearModel(SatModel):
         super().__init__(cipher, counter, compact)
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
 
-    def branch_xor_linear_constraints(self):
+    @staticmethod
+    def branch_xor_linear_constraints(bindings):
         """
         Return lists of variables and clauses for branch in XOR LINEAR model.
 
@@ -52,7 +53,7 @@ class SatXorLinearModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: sat = SatXorLinearModel(speck)
-            sage: sat.branch_xor_linear_constraints()
+            sage: SatXorLinearModel.branch_xor_linear_constraints(sat.bit_bindings)
             ['-plaintext_0_o rot_0_0_0_i',
              'plaintext_0_o -rot_0_0_0_i',
              '-plaintext_1_o rot_0_0_1_i',
@@ -62,7 +63,7 @@ class SatXorLinearModel(SatModel):
              'xor_2_10_15_o -cipher_output_2_12_31_i']
         """
         constraints = []
-        for output_bit, input_bits in self.bit_bindings.items():
+        for output_bit, input_bits in bindings.items():
             constraints.extend(utils.cnf_xor(output_bit, input_bits))
 
         return constraints
@@ -91,7 +92,7 @@ class SatXorLinearModel(SatModel):
             self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self._cipher, '_'.join)
         if fixed_variables == []:
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
-        constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
+        constraints = SatXorLinearModel.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
         component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
         operation_types = ("AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB")
@@ -106,7 +107,7 @@ class SatXorLinearModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-        constraints = self.branch_xor_linear_constraints()
+        constraints = SatXorLinearModel.branch_xor_linear_constraints(self.bit_bindings)
         self._model_constraints.extend(constraints)
 
         if weight != -1:
@@ -399,62 +400,8 @@ class SatXorLinearModel(SatModel):
 
         return solution
 
-    def fix_variables_value_xor_linear_constraints(self, fixed_variables=[]):
-        """
-        Return lists variables and clauses for fixing variables in XOR LINEAR model.
-
-        .. SEEALSO::
-
-            :ref:`sat-standard` for the format
-
-        INPUT:
-
-        - ``fixed_variables`` -- **list** (default: `[]`); variables in default format
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatXorLinearModel(speck)
-            sage: fixed_variables = [{
-            ....:    'component_id': 'plaintext',
-            ....:    'constraint_type': 'equal',
-            ....:    'bit_positions': [0, 1, 2, 3],
-            ....:    'bit_values': [1, 0, 1, 1]
-            ....: }, {
-            ....:    'component_id': 'ciphertext',
-            ....:    'constraint_type': 'not_equal',
-            ....:    'bit_positions': [0, 1, 2, 3],
-            ....:    'bit_values': [1, 1, 1, 0]
-            ....: }]
-            sage: sat.fix_variables_value_xor_linear_constraints(fixed_variables)
-            ['plaintext_0_o',
-             '-plaintext_1_o',
-             'plaintext_2_o',
-             'plaintext_3_o',
-             '-ciphertext_0_o -ciphertext_1_o -ciphertext_2_o ciphertext_3_o']
-        """
-        constraints = []
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        for variable in fixed_variables:
-            component_id = variable['component_id']
-            is_equal = (variable['constraint_type'] == 'equal')
-            bit_positions = variable['bit_positions']
-            bit_values = variable['bit_values']
-            variables_ids = []
-            for position, value in zip(bit_positions, bit_values):
-                is_negative = '-' * (value ^ is_equal)
-                variables_ids.append(f'{is_negative}{component_id}_{position}{out_suffix}')
-            if is_equal:
-                constraints.extend(variables_ids)
-            else:
-                constraints.append(' '.join(variables_ids))
-
-        return constraints
-
     @staticmethod
-    def fix_variables_value_xor_linear_constraints1(fixed_variables=[]):
+    def fix_variables_value_xor_linear_constraints(fixed_variables=[]):
         """
         Return lists variables and clauses for fixing variables in XOR LINEAR model.
 
@@ -483,7 +430,7 @@ class SatXorLinearModel(SatModel):
             ....:    'bit_positions': [0, 1, 2, 3],
             ....:    'bit_values': [1, 1, 1, 0]
             ....: }]
-            sage: sat.fix_variables_value_xor_linear_constraints(fixed_variables)
+            sage: SatXorLinearModel.fix_variables_value_xor_linear_constraints(fixed_variables)
             ['plaintext_0_o',
              '-plaintext_1_o',
              'plaintext_2_o',
