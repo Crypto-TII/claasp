@@ -96,9 +96,9 @@ class CmsSatXorDifferentialModel(SatXorDifferentialModel):
             operation = component.description[0]
             if component.type not in component_types or (
                     WORD_OPERATION == component.type and operation not in operation_types):
-                variables, constraints = component.cms_xor_differential_propagation_constraints(self)
-            else:
                 print(f'{component.id} not yet implemented')
+            else:
+                variables, constraints = component.cms_xor_differential_propagation_constraints(self)
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
