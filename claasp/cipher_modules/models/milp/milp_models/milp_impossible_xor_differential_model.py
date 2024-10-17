@@ -40,8 +40,8 @@ from claasp.name_mappings import (INPUT_PLAINTEXT, INPUT_KEY, IMPOSSIBLE_XOR_DIF
 
 
 class MilpImpossibleXorDifferentialModel(MilpXorDifferentialModel):
-    def __init__(self, cipher, counter='sequential', compact=False):
-        super().__init__(cipher, counter, compact)
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
+        super().__init__(cipher, n_window_heuristic, verbose)
 
     def find_one_impossible_xor_differential_trail(self, number_of_active_key_bits=1, number_of_active_pt_bits=1, number_of_active_ct_bits=1, solver_name=solvers.SOLVER_DEFAULT):
         """

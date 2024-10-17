@@ -22,7 +22,7 @@ from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT,
                                   CIPHER_OUTPUT, WORD_OPERATION)
 
 
-class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
+class MznBitwiseDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
 
     def __init__(self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp='sat'):
         super().__init__(cipher, window_size_list, probability_weight_per_round, sat_or_milp)
@@ -42,9 +42,9 @@ class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized import MznDeterministicTruncatedXorDifferentialModelARXOptimized
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model_arx_optimized import MznBitwiseDeterministicTruncatedXorDifferentialModelARXOptimized
             sage: speck = SpeckBlockCipher(number_of_rounds=22)
-            sage: minizinc = MznDeterministicTruncatedXorDifferentialModelARXOptimized(speck)
+            sage: minizinc = MznBitwiseDeterministicTruncatedXorDifferentialModelARXOptimized(speck)
             sage: minizinc.build_deterministic_truncated_xor_differential_trail_model()
             ...
         """

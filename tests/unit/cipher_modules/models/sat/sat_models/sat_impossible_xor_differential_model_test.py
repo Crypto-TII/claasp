@@ -1,6 +1,7 @@
 from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
 from claasp.cipher_modules.models.sat.sat_models.sat_impossible_xor_differential_model import \
         SatImpossibleXorDifferentialModel
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.name_mappings import IMPOSSIBLE_XOR_DIFFERENTIAL, INPUT_KEY, INPUT_PLAINTEXT
 
 
@@ -24,3 +25,9 @@ def test_find_all_impossible_xor_differential_trails():
     trails = sat.find_all_impossible_xor_differential_trails(1, 0, 0)
 
     assert len(trails) == 4
+
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=8)
+    sat = SatImpossibleXorDifferentialModel(speck)
+    trails = sat.find_all_impossible_xor_differential_trails(1, 0, 0)
+
+    assert len(trails) == 2

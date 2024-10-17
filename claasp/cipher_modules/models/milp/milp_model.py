@@ -352,7 +352,7 @@ class MilpModel:
             os.remove(f"{solution_file_path}")
         else:
             objective_value = None
-            components_values = None
+            components_values = {}
             solver_name_in_solution = solver_name
             status, milp_time, milp_memory = self._solve_with_internal_solver()
             if status == 'SATISFIABLE':

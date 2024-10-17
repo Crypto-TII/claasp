@@ -31,7 +31,7 @@ from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, 
 from claasp.cipher_modules.models.cp.solvers import MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 
-class MznDeterministicTruncatedXorDifferentialModel(MznModel):
+class MznBitwiseDeterministicTruncatedXorDifferentialModel(MznModel):
 
     def __init__(self, cipher):
         super().__init__(cipher)
@@ -86,11 +86,11 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model import MznBitwiseDeterministicTruncatedXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: cp = MznDeterministicTruncatedXorDifferentialModel(speck)
+            sage: cp = MznBitwiseDeterministicTruncatedXorDifferentialModel(speck)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: cp.build_deterministic_truncated_xor_differential_trail_model(fixed_variables)
         """
@@ -132,9 +132,9 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model import MznBitwiseDeterministicTruncatedXorDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=2)
-            sage: cp = MznDeterministicTruncatedXorDifferentialModel(speck)
+            sage: cp = MznBitwiseDeterministicTruncatedXorDifferentialModel(speck)
             sage: cp.final_deterministic_truncated_xor_differential_constraints()[:-1]
             ['solve satisfy;']
         """
@@ -173,11 +173,11 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model import MznBitwiseDeterministicTruncatedXorDifferentialModel
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=1)
-            sage: cp = MznDeterministicTruncatedXorDifferentialModel(speck)
+            sage: cp = MznBitwiseDeterministicTruncatedXorDifferentialModel(speck)
             sage: plaintext = set_fixed_variables(
             ....:         component_id='plaintext',
             ....:         constraint_type='not_equal',
@@ -233,11 +233,11 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model import MznBitwiseDeterministicTruncatedXorDifferentialModel
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: cp = MznDeterministicTruncatedXorDifferentialModel(speck)
+            sage: cp = MznBitwiseDeterministicTruncatedXorDifferentialModel(speck)
             sage: plaintext = set_fixed_variables(
             ....:         component_id='plaintext',
             ....:         constraint_type='not_equal',
@@ -285,11 +285,11 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model import MznBitwiseDeterministicTruncatedXorDifferentialModel
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=1)
-            sage: cp = MznDeterministicTruncatedXorDifferentialModel(speck)
+            sage: cp = MznBitwiseDeterministicTruncatedXorDifferentialModel(speck)
             sage: plaintext = set_fixed_variables(
             ....:         component_id='plaintext',
             ....:         constraint_type='not_equal',
@@ -340,9 +340,9 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model import MznBitwiseDeterministicTruncatedXorDifferentialModel
             sage: aes = AESBlockCipher()
-            sage: cp = MznDeterministicTruncatedXorDifferentialModel(aes)
+            sage: cp = MznBitwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: cp.input_deterministic_truncated_xor_differential_constraints()
             (['array[0..127] of var 0..2: key;',
               'array[0..127] of var 0..2: plaintext;',
@@ -379,9 +379,9 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model import MznBitwiseDeterministicTruncatedXorDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: cp = MznDeterministicTruncatedXorDifferentialModel(speck)
+            sage: cp = MznBitwiseDeterministicTruncatedXorDifferentialModel(speck)
             sage: output_component = speck.component_from(0, 5)
             sage: cp.output_constraints(output_component)
             ([],
@@ -412,9 +412,9 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model import MznBitwiseDeterministicTruncatedXorDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: cp = MznDeterministicTruncatedXorDifferentialModel(speck)
+            sage: cp = MznBitwiseDeterministicTruncatedXorDifferentialModel(speck)
             sage: output_component = speck.component_from(0, 5)
             sage: cp.output_inverse_constraints(output_component)
             ([],
