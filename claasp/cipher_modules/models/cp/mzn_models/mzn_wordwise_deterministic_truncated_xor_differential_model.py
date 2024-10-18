@@ -22,14 +22,14 @@ import math
 import itertools
 import subprocess
 
-from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel, solve_satisfy
+from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model import MznBitwiseDeterministicTruncatedXorDifferentialModel, solve_satisfy
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL)
 from claasp.cipher_modules.models.cp.solvers import MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 
-class MznWordwiseDeterministicTruncatedXorDifferentialModel(MznDeterministicTruncatedXorDifferentialModel):
+class MznWordwiseDeterministicTruncatedXorDifferentialModel(MznBitwiseDeterministicTruncatedXorDifferentialModel):
 
     def __init__(self, cipher):
         super().__init__(cipher)

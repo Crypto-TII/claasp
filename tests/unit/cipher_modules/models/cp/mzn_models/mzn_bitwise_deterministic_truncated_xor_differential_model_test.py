@@ -1,13 +1,13 @@
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import \
-    MznDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model import \
+    MznBitwiseDeterministicTruncatedXorDifferentialModel
 
 
 def test_build_deterministic_truncated_xor_differential_trail_model():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    mzn = MznDeterministicTruncatedXorDifferentialModel(speck)
+    mzn = MznBitwiseDeterministicTruncatedXorDifferentialModel(speck)
     fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
     mzn.build_deterministic_truncated_xor_differential_trail_model(fixed_variables)
 
@@ -19,7 +19,7 @@ def test_build_deterministic_truncated_xor_differential_trail_model():
 
 def test_find_all_deterministic_truncated_xor_differential_trails():
     speck = SpeckBlockCipher(number_of_rounds=3)
-    mzn = MznDeterministicTruncatedXorDifferentialModel(speck)
+    mzn = MznBitwiseDeterministicTruncatedXorDifferentialModel(speck)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=[0] * 32)
     key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
@@ -44,7 +44,7 @@ def test_find_all_deterministic_truncated_xor_differential_trails():
 
 def test_find_one_deterministic_truncated_xor_differential_trail():
     speck = SpeckBlockCipher(number_of_rounds=1)
-    mzn = MznDeterministicTruncatedXorDifferentialModel(speck)
+    mzn = MznBitwiseDeterministicTruncatedXorDifferentialModel(speck)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=[0] * 32)
     key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)

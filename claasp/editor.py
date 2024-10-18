@@ -18,7 +18,11 @@ import sys
 
 
 from copy import deepcopy
+from itertools import chain
 
+import networkx as nx
+
+from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids
 from claasp.components.or_component import OR
 from claasp.components.and_component import AND
 from claasp.components.xor_component import XOR
@@ -44,7 +48,7 @@ from claasp.components.variable_shift_component import VariableShift
 from claasp.components.variable_rotate_component import VariableRotate
 from claasp.components.word_permutation_component import WordPermutation
 from claasp.components.intermediate_output_component import IntermediateOutput
-from claasp.name_mappings import INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, CONSTANT, INPUT_KEY, LINEAR_LAYER
+from claasp.name_mappings import INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, CONSTANT, INPUT_KEY, LINEAR_LAYER, INPUT_PLAINTEXT
 
 cipher_round_not_found_error = "Error! The cipher has no round: please run self.add_round() before adding any " \
                                "component. "
@@ -1729,6 +1733,67 @@ def remove_round_component(cipher, round_id, component):
 def remove_round_component_from_id(cipher, round_id, component_id):
     cipher.rounds.remove_round_component_from_id(round_id, component_id)
 
+def get_key_schedule(cipher):
+    """
+        Return the key schedule, if any, as a Cipher object.
+
+        INPUT:
+
+        - ``cipher`` -- **Cipher object**; an instance of the object cipher
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=4)
+            sage: speck_key_schedule = speck.get_key_schedule()
+            sage: speck_key_schedule.print_as_python_dictionary()
+            cipher = {
+            ...
+            'cipher_rounds' : [
+              # round 0
+              ...
+              # round 1
+              [
+              {
+                # round = 1 - round component = 0
+                'id': 'constant_1_0',
+                'type': 'constant',
+                'input_bit_size': 0,
+                'input_id_link': [''],
+                'input_bit_positions': [[]],
+                'output_bit_size': 16,
+                'description': ['0x0000'],
+              },
+              ...
+              ],
+              # round 2
+              ...
+              # round 3
+              ...
+              ],
+            'cipher_reference_code': None,
+            }
+        """
+
+    if INPUT_KEY not in cipher.inputs:
+        raise Exception("The primitive does not have a key schedule.")
+
+    graph_cipher = create_networkx_graph_from_input_ids(cipher)
+    key_schedule_component_ids = set(nx.dfs_tree(graph_cipher, source=INPUT_KEY)) - set(nx.dfs_tree(graph_cipher, source=INPUT_PLAINTEXT))
+    constants_ids = set(chain.from_iterable(graph_cipher.predecessors(i) for i in key_schedule_component_ids))
+
+    cipher_with_only_key_schedule = deepcopy(cipher)
+    for input in set(cipher_with_only_key_schedule.inputs) - {INPUT_KEY}:
+        index = cipher_with_only_key_schedule.inputs.index(input)
+        cipher_with_only_key_schedule.inputs.pop(index)
+        cipher_with_only_key_schedule.inputs_bit_size.pop(index)
+
+    for cipher_round in cipher.rounds_as_list:
+        for component in cipher_round.components:
+            if component.id not in key_schedule_component_ids.union(constants_ids):
+                cipher_with_only_key_schedule .remove_round_component_from_id(cipher_round.id, component.id)
+
+    return cipher_with_only_key_schedule
 
 def sort_cipher(cipher):
     """

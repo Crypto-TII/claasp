@@ -18,24 +18,23 @@
 
 """
 The search methods presented in this class differ from those of the classes
-:py:class:`Mzn Bitwise Impossible Xor Differential Model
-<cipher_modules.models.cp.mzn_models.mzn_bitwise_impossible_xor_differential_cipher_model>`
+:py:class:`Milp Bitwise Impossible Xor Differential Model
+<cipher_modules.models.milp.milp_models.milp_bitwise_impossible_xor_differential_cipher_model>`
 
-and :py:class:`Mzn Wordwise Impossible Xor Differential Model
-<cipher_modules.models.cp.mzn_models.mzn_wordwise_impossible_xor_differential_cipher_model>`.
+and :py:class:`Milp Wordwise Impossible Xor Differential Model
+<cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_cipher_model>`.
 
 Indeed, this class implements the framework proposed by `Cui et al.<https://eprint.iacr.org/2016/689.pdf>` which uses
 infeasibility of a XOR DIFFERENTIAL model to detect an impossible differential trail.
 """
 
-from claasp.cipher_modules.models.cp import solvers
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+from claasp.cipher_modules.models.milp import solvers
+from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.utils import enumerate_impossible_xor_differential_trails
 
-
-class MznImpossibleXorDifferentialModel(MznXorDifferentialModel):
-    def __init__(self, cipher):
-        super().__init__(cipher)
+class MilpImpossibleXorDifferentialModel(MilpXorDifferentialModel):
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
+        super().__init__(cipher, n_window_heuristic, verbose)
 
     def find_one_impossible_xor_differential_trail(self, number_of_active_key_bits=1, number_of_active_pt_bits=1, number_of_active_ct_bits=1, solver_name=solvers.SOLVER_DEFAULT):
         """
@@ -52,9 +51,9 @@ class MznImpossibleXorDifferentialModel(MznXorDifferentialModel):
             # to retrieve one of the trails of Table 2 from https://eprint.iacr.org/2016/689
             sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
             sage: lblock = LBlockBlockCipher(number_of_rounds=16)
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import MznImpossibleXorDifferentialModel
-            sage: mzn = MznImpossibleXorDifferentialModel(lblock)
-            sage: trail = mzn.find_one_impossible_xor_differential_trail(1,0,0) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_impossible_xor_differential_model import MilpImpossibleXorDifferentialModel
+            sage: milp = MilpImpossibleXorDifferentialModel(lblock)
+            sage: trail = milp.find_one_impossible_xor_differential_trail(1,0,0) # doctest: +SKIP
             ...
 
         """
@@ -78,11 +77,10 @@ class MznImpossibleXorDifferentialModel(MznXorDifferentialModel):
             # to retrieve the trails of Table 2 from https://eprint.iacr.org/2016/689
             sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
             sage: lblock = LBlockBlockCipher(number_of_rounds=16)
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import MznImpossibleXorDifferentialModel
-            sage: mzn = MznImpossibleXorDifferentialModel(lblock)
-            sage: trails = mzn.find_all_impossible_xor_differential_trails(1,0,0) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_impossible_xor_differential_model import MilpImpossibleXorDifferentialModel
+            sage: milp = MilpImpossibleXorDifferentialModel(lblock)
+            sage: trails = milp.find_all_impossible_xor_differential_trails(1,0,0) # doctest: +SKIP
             ...
-
 
         """
 

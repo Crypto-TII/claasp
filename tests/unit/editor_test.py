@@ -46,6 +46,21 @@ def test_remove_key_schedule():
                                                                              'output_bit_size': 16,
                                                                              'description': ['ROTATE', 7]}
 
+def test_get_key_schedule():
+    speck = SpeckBlockCipher(number_of_rounds=4)
+    removed_key_speck = speck.remove_key_schedule()
+    key_schedule_speck = speck.get_key_schedule()
+
+    assert set(removed_key_speck.get_all_components_ids()).symmetric_difference(set(key_schedule_speck.get_all_components_ids())) == set(speck.get_all_components_ids())
+    assert key_schedule_speck.component_from(1, 0).as_python_dictionary() == {'id': 'constant_1_0',
+                                                                             'type': 'constant',
+                                                                             'input_bit_size': 0,
+                                                                             'input_id_link': [''],
+                                                                             'input_bit_positions': [[]],
+                                                                             'output_bit_size': 16,
+                                                                             'description': ['0x0000']}
+
+
 
 def test_remove_permutations():
     present = PresentBlockCipher()

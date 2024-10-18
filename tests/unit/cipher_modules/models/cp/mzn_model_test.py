@@ -8,8 +8,8 @@ from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import \
         MznXorDifferentialModelARXOptimized
 from claasp.cipher_modules.models.cp.mzn_models.mzn_cipher_model_arx_optimized import MznCipherModelARXOptimized
-from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized \
-    import MznDeterministicTruncatedXorDifferentialModelARXOptimized
+from claasp.cipher_modules.models.cp.mzn_models.mzn_bitwise_deterministic_truncated_xor_differential_model_arx_optimized \
+    import MznBitwiseDeterministicTruncatedXorDifferentialModelARXOptimized
 
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
@@ -84,7 +84,7 @@ def test_fix_variables_value_constraints():
                                                                            f'plaintext_y2+plaintext_y3>0;'
 
     raiden = RaidenBlockCipher(number_of_rounds=1)
-    mzn = MznDeterministicTruncatedXorDifferentialModelARXOptimized(raiden)
+    mzn = MznBitwiseDeterministicTruncatedXorDifferentialModelARXOptimized(raiden)
     mzn.build_deterministic_truncated_xor_differential_trail_model()
 
     fixed_variables = [{'component_id': 'key',
