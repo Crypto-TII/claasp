@@ -946,7 +946,7 @@ def _convert_impossible_xor_differential_solution_to_dictionnary(trail, solving_
     """
     from copy import deepcopy
     solution = deepcopy(trail)
-    solution['solving_time_seconds'] == solving_time
+    solution['solving_time_seconds'] = solving_time
     for component in components_list:
         solution['components_values'][component['component_id']] = {}
         value = hex(bit_list_to_integer(component['bit_values']))[2:].zfill(len(component['bit_positions']) // 4)
