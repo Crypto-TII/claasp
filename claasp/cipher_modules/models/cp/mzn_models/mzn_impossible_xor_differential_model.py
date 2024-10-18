@@ -64,34 +64,9 @@ class MznImpossibleXorDifferentialModel(MznXorDifferentialModel):
 
         """
 
-        pt_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_PLAINTEXT)]
-        key_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_KEY)]
-        ct_id = [c.id for c in self._cipher.get_all_components() if c.type == 'cipher_output'][0]
-
-        key_combinations = combinations(range(key_size), number_of_active_key_bits)
-        pt_combinations = combinations(range(pt_size), number_of_active_pt_bits)
-        ct_combinations = combinations(range(self._cipher.output_bit_size), number_of_active_ct_bits)
-
-        solving_time = 0
-
-        for key_bits, pt_bits, ct_bits in product(key_combinations, pt_combinations, ct_combinations):
-            key_vars = set_components_variables_to_one(INPUT_KEY, key_size, list(key_bits))
-            pt_vars = set_components_variables_to_one(INPUT_PLAINTEXT, pt_size, list(pt_bits))
-            ct_vars = set_components_variables_to_one(ct_id, self._cipher.output_bit_size, list(ct_bits))
-
-            trail = self.find_one_xor_differential_trail(fixed_values=[key_vars, pt_vars, ct_vars],
-                                                         solver_name=solver_name)
-
-            solving_time += trail['solving_time_seconds']
-
-            if trail['status'] == 'UNSATISFIABLE':
-                return _convert_impossible_xor_differential_solution_to_dictionnary(trail, solving_time,
-                                                                                    [key_vars, pt_vars, ct_vars])
-
-
-        solution = convert_solver_solution_to_dictionary(self._cipher, IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name, solving_time,
-                                                         None, [], None)
-        return solution
+        return self._enumerate_impossible_xor_differential_trails(number_of_active_key_bits, number_of_active_pt_bits,
+                                                                  number_of_active_ct_bits, solver_name,
+                                                                  output_only_one_solution=True)
 
     def find_all_impossible_xor_differential_trails(self, number_of_active_key_bits=1, number_of_active_pt_bits=1, number_of_active_ct_bits=1, solver_name=solvers.SOLVER_DEFAULT):
         """
@@ -115,6 +90,11 @@ class MznImpossibleXorDifferentialModel(MznXorDifferentialModel):
 
 
         """
+
+        return self._enumerate_impossible_xor_differential_trails(number_of_active_key_bits, number_of_active_pt_bits,
+                                                                  number_of_active_ct_bits, solver_name)
+
+    def _enumerate_impossible_xor_differential_trails(self, number_of_active_key_bits, number_of_active_pt_bits, number_of_active_ct_bits, solver_name=solvers.SOLVER_DEFAULT, output_only_one_solution=False):
 
         pt_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_PLAINTEXT)]
         key_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_KEY)]
@@ -140,6 +120,9 @@ class MznImpossibleXorDifferentialModel(MznXorDifferentialModel):
             if trail['status'] == 'UNSATISFIABLE':
                 solution = _convert_impossible_xor_differential_solution_to_dictionnary(trail, solving_time,
                                                                                         [key_vars, pt_vars, ct_vars])
+                if output_only_one_solution:
+                    return solution
                 solutions_list.append(solution)
 
         return solutions_list
+
