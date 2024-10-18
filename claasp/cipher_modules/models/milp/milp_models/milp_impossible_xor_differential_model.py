@@ -30,12 +30,10 @@ infeasibility of a XOR DIFFERENTIAL model to detect an impossible differential t
 
 from itertools import combinations, product
 
-import numpy as np
-
 from claasp.cipher_modules.models.milp import solvers
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
-from claasp.cipher_modules.models.utils import set_fixed_variables, \
-    convert_solver_solution_to_dictionary
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_components_variables_to_one, \
+    _convert_impossible_xor_differential_solution_to_dictionnary
 from claasp.name_mappings import (INPUT_PLAINTEXT, INPUT_KEY, IMPOSSIBLE_XOR_DIFFERENTIAL)
 
 
@@ -76,19 +74,9 @@ class MilpImpossibleXorDifferentialModel(MilpXorDifferentialModel):
         solving_time = 0
 
         for key_bits, pt_bits, ct_bits in product(key_combinations, pt_combinations, ct_combinations):
-            key = np.zeros(key_size, dtype=int)
-            key[list(key_bits)] = 1
-            key_vars = set_fixed_variables(component_id=INPUT_KEY, constraint_type='equal', bit_positions=range(key_size), bit_values=key)
-
-            pt = np.zeros(pt_size, dtype=int)
-            pt[list(pt_bits)] = 1
-            pt_vars = set_fixed_variables(component_id=INPUT_PLAINTEXT, constraint_type='equal',
-                                           bit_positions=range(pt_size), bit_values=pt)
-
-            ct = np.zeros(self._cipher.output_bit_size, dtype=int)
-            ct[list(ct_bits)] = 1
-            ct_vars = set_fixed_variables(component_id=ct_id, constraint_type='equal',
-                                           bit_positions=range(self._cipher.output_bit_size), bit_values=ct)
+            key_vars = set_components_variables_to_one(INPUT_KEY, key_size, list(key_bits))
+            pt_vars = set_components_variables_to_one(INPUT_PLAINTEXT, pt_size, list(pt_bits))
+            ct_vars = set_components_variables_to_one(ct_id, self._cipher.output_bit_size, list(ct_bits))
 
             trail = self.find_one_xor_differential_trail(fixed_values=[key_vars, pt_vars, ct_vars],
                                                          solver_name=solver_name)
@@ -96,17 +84,8 @@ class MilpImpossibleXorDifferentialModel(MilpXorDifferentialModel):
             solving_time += trail['solving_time_seconds']
 
             if trail['status'] == 'UNSATISFIABLE':
-                for component in [INPUT_KEY, INPUT_PLAINTEXT, ct_id]:
-                    trail['components_values'][component] = {}
-                trail['solving_time_seconds'] == solving_time
-                trail['components_values'][INPUT_KEY]['value'] = np.packbits(key).tobytes().hex()
-                trail['components_values'][INPUT_PLAINTEXT]['value'] = np.packbits(pt).tobytes().hex()
-                trail['components_values'][ct_id]['value'] = np.packbits(ct).tobytes().hex()
-                trail['model_type'] = IMPOSSIBLE_XOR_DIFFERENTIAL
-                trail['test_name'] = 'find_one_impossible_xor_differential_trail'
-                trail['status'] = 'SATISFIABLE'
-                return trail
-
+                return _convert_impossible_xor_differential_solution_to_dictionnary(trail, solving_time,
+                                                                                    [key_vars, pt_vars, ct_vars])
 
         solution = convert_solver_solution_to_dictionary(self._cipher, IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name, solving_time,
                                                          None, [], None)
@@ -146,19 +125,9 @@ class MilpImpossibleXorDifferentialModel(MilpXorDifferentialModel):
         solving_time = 0
 
         for key_bits, pt_bits, ct_bits in product(key_combinations, pt_combinations, ct_combinations):
-            key = np.zeros(key_size, dtype=int)
-            key[list(key_bits)] = 1
-            key_vars = set_fixed_variables(component_id=INPUT_KEY, constraint_type='equal', bit_positions=range(key_size), bit_values=key)
-
-            pt = np.zeros(pt_size, dtype=int)
-            pt[list(pt_bits)] = 1
-            pt_vars = set_fixed_variables(component_id=INPUT_PLAINTEXT, constraint_type='equal',
-                                           bit_positions=range(pt_size), bit_values=pt)
-
-            ct = np.zeros(self._cipher.output_bit_size, dtype=int)
-            ct[list(ct_bits)] = 1
-            ct_vars = set_fixed_variables(component_id=ct_id, constraint_type='equal',
-                                           bit_positions=range(self._cipher.output_bit_size), bit_values=ct)
+            key_vars = set_components_variables_to_one(INPUT_KEY, key_size, list(key_bits))
+            pt_vars = set_components_variables_to_one(INPUT_PLAINTEXT, pt_size, list(pt_bits))
+            ct_vars = set_components_variables_to_one(ct_id, self._cipher.output_bit_size, list(ct_bits))
 
             trail = self.find_one_xor_differential_trail(fixed_values=[key_vars, pt_vars, ct_vars],
                                                          solver_name=solver_name)
@@ -166,15 +135,8 @@ class MilpImpossibleXorDifferentialModel(MilpXorDifferentialModel):
             solving_time += trail['solving_time_seconds']
 
             if trail['status'] == 'UNSATISFIABLE':
-                for component in [INPUT_KEY, INPUT_PLAINTEXT, ct_id]:
-                    trail['components_values'][component] = {}
-                trail['solving_time_seconds'] == solving_time
-                trail['components_values'][INPUT_KEY]['value'] = np.packbits(key).tobytes().hex()
-                trail['components_values'][INPUT_PLAINTEXT]['value'] = np.packbits(pt).tobytes().hex()
-                trail['components_values'][ct_id]['value'] = np.packbits(ct).tobytes().hex()
-                trail['model_type'] = IMPOSSIBLE_XOR_DIFFERENTIAL
-                trail['test_name'] = 'find_one_impossible_xor_differential_trail'
-                trail['status'] = 'SATISFIABLE'
-                solutions_list.append(trail)
+                solution = _convert_impossible_xor_differential_solution_to_dictionnary(trail, solving_time,
+                                                                                        [key_vars, pt_vars, ct_vars])
+                solutions_list.append(solution)
 
         return solutions_list

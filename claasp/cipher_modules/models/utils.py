@@ -24,8 +24,9 @@ from copy import deepcopy
 
 import numpy as np
 
-from claasp.name_mappings import CONSTANT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN, \
-    INPUT_KEY, INPUT_PLAINTEXT, INPUT_MESSAGE, INPUT_STATE
+from claasp.name_mappings import CONSTANT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, LINEAR_LAYER, SBOX, \
+    MIX_COLUMN, \
+    INPUT_KEY, INPUT_PLAINTEXT, INPUT_MESSAGE, INPUT_STATE, IMPOSSIBLE_XOR_DIFFERENTIAL
 
 
 def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids):
@@ -143,6 +144,34 @@ def integer_to_bit_list(int_value, list_length, endianness='little'):
         return binary_value[::-1]
 
     return binary_value
+
+def bit_list_to_integer(bit_list, endianness='big'):
+    """
+    Return the integer value represented by the bit list.
+
+    INPUT:
+
+    - ``bit_list`` -- **list** of integers (0s and 1s); the list of bits to convert
+    - ``endianness`` -- **string** (default: `big`); the endianness of the list
+
+      * ``endianness='big'``, the bit list will be interpreted with the MSB indexed by 0
+      * ``endianness='little'``, the bit list will be interpreted with the LSB indexed by 0
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.utils import bit_list_to_integer
+        sage: bit_list_to_integer([0, 0, 1, 0, 1], 'big')
+        5
+    """
+
+    if endianness == 'big':
+        binary_string = ''.join(map(str, bit_list))
+    elif endianness == 'little':
+        binary_string = ''.join(map(str, bit_list[::-1]))
+    else:
+        raise ValueError("Endianness must be 'big' or 'little'")
+
+    return int(binary_string, 2)
 
 
 def print_components_values(solution):
@@ -314,6 +343,36 @@ def set_fixed_variables(component_id, constraint_type, bit_positions, bit_values
         'bit_positions': bit_positions,
         'bit_values': bit_values
     }
+
+def set_components_variables_to_one(component_id, component_size, bit_positions):
+    """
+    Return a dictionary.
+
+    The dictionary has the information needed to fix specific output bits of a component to 1 and the rest is all 0.
+
+    INPUT:
+
+    - ``component_id`` -- **string**; the id of the component
+    - ``bit_positions`` -- **list of int**; the positions of the bits to be fixed to 1
+    - ``component_size`` -- **int**; the total size of the component
+
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.utils import set_components_variables_to_one
+        sage: set_components_variables_to_one('key', 32, [0, 2, 12])
+        {'component_id': 'key',
+         'constraint_type': 'equal',
+         'bit_positions': range(0, 32),
+         'bit_values': array([1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+
+    """
+
+    component_bits = np.zeros(component_size, dtype=int)
+    component_bits[bit_positions] = 1
+    return set_fixed_variables(component_id=component_id, constraint_type='equal', bit_positions=range(component_size),
+                                   bit_values=component_bits)
 
 
 def write_model_to_file(model_to_write, file_name):
@@ -880,3 +939,20 @@ def differential_linear_checker_for_block_cipher_single_key(
     count = np.count_nonzero(parities == 0)
     corr = 2*count/number_of_samples*1.0-1
     return corr
+
+def _convert_impossible_xor_differential_solution_to_dictionnary(trail, solving_time, components_list):
+    """
+    Converts a XOR differential solution into an impossible XOR differential solution dictionary.
+    """
+    from copy import deepcopy
+    solution = deepcopy(trail)
+    solution['solving_time_seconds'] == solving_time
+    for component in components_list:
+        solution['components_values'][component['component_id']] = {}
+        value = hex(bit_list_to_integer(component['bit_values']))[2:].zfill(len(component['bit_positions']) // 4)
+        solution['components_values'][component['component_id']]['value'] = value
+    solution['model_type'] = IMPOSSIBLE_XOR_DIFFERENTIAL
+    solution['test_name'] = 'find_one_impossible_xor_differential_trail'
+    solution['status'] = 'SATISFIABLE'
+
+    return solution
