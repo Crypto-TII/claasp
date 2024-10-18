@@ -361,11 +361,11 @@ def set_components_variables_to_one(component_id, component_size, bit_positions)
 
         sage: from claasp.cipher_modules.models.utils import set_components_variables_to_one
         sage: set_components_variables_to_one('key', 32, [0, 2, 12])
-        {'component_id': 'key',
-         'constraint_type': 'equal',
-         'bit_positions': range(0, 32),
+        {'bit_positions': range(0, 32),
          'bit_values': array([1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+         'component_id': 'key',
+         'constraint_type': 'equal'}
 
     """
 
