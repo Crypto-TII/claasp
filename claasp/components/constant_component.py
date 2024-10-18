@@ -22,7 +22,7 @@ from claasp.component import Component
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.code_generator import constant_to_bitstring
-
+from claasp.cipher_modules.generic_functions_vectorized_byte import integer_array_to_evaluate_vectorized_input
 
 def constant_to_repr(val, output_size):
     _val = int(val, 0)
@@ -33,6 +33,8 @@ def constant_to_repr(val, output_size):
     ret = [(_val >> s - (8 * (i + 1))) & 0xff for i in range(s // 8)]
 
     return ret
+
+
 
 
 class Constant(Component):
@@ -150,18 +152,33 @@ class Constant(Component):
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: constant_component = speck.component_from(2, 0)
             sage: constant_component.cp_constraints()
-            (['array[0..15] of var 0..1: constant_2_0 = array1d(0..15, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]);'],
-             [])
+            (['array[0..15] of var 0..1: constant_2_0;'],
+             ['constraint constant_2_0[0] = 0;',
+             'constraint constant_2_0[1] = 0;',
+             'constraint constant_2_0[2] = 0;',
+             'constraint constant_2_0[3] = 0;',
+             'constraint constant_2_0[4] = 0;',
+             'constraint constant_2_0[5] = 0;',
+             'constraint constant_2_0[6] = 0;',
+             'constraint constant_2_0[7] = 0;',
+             'constraint constant_2_0[8] = 0;',
+             'constraint constant_2_0[9] = 0;',
+             'constraint constant_2_0[10] = 0;',
+             'constraint constant_2_0[11] = 0;',
+             'constraint constant_2_0[12] = 0;',
+             'constraint constant_2_0[13] = 0;',
+             'constraint constant_2_0[14] = 0;',
+             'constraint constant_2_0[15] = 0;'])
         """
         output_size = self.output_bit_size
         output_id_link = self.id
         description = self.description
         value = f'{int(description[0], 16):0{output_size}b}'
-        new_declaration = f'array[0..{int(output_size) - 1}] of var 0..1: ' \
-                          f'{output_id_link} = array1d(0..{int(output_size) - 1}, [' \
-                          + ','.join(value) + ']);'
+        new_declaration = f'array[0..{int(output_size) - 1}] of var 0..1: {output_id_link};'
         cp_declarations = [new_declaration]
         cp_constraints = []
+        for i in range(output_size):
+            cp_constraints.append(f'constraint {output_id_link}[{i}] = 0;')
 
         return cp_declarations, cp_constraints
 
@@ -179,10 +196,10 @@ class Constant(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.constant_component import Constant
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: constant_component = Constant(0, 18, 16, 0xAB01)
             sage: constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             (['array[0..1] of var 0..1: constant_0_18_active = array1d(0..1, [0,0]);',
@@ -214,9 +231,9 @@ class Constant(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: constant_component = aes.component_from(0, 30)
             sage: constant_component.cp_xor_differential_propagation_first_step_constraints(cp)
             (['array[0..3] of var 0..1: constant_0_30 = array1d(0..3, [0,0,0,0]);'], [])
@@ -245,18 +262,33 @@ class Constant(Component):
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
             sage: constant_component = speck.component_from(2, 0)
             sage: constant_component.cp_xor_differential_propagation_constraints()
-            (['array[0..15] of var 0..1: constant_2_0 = array1d(0..15, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);'],
-             [])
+            (['array[0..15] of var 0..2: constant_2_0;'],
+             ['constraint constant_2_0[0] = 0;',
+             'constraint constant_2_0[1] = 0;',
+             'constraint constant_2_0[2] = 0;',
+             'constraint constant_2_0[3] = 0;',
+             'constraint constant_2_0[4] = 0;',
+             'constraint constant_2_0[5] = 0;',
+             'constraint constant_2_0[6] = 0;',
+             'constraint constant_2_0[7] = 0;',
+             'constraint constant_2_0[8] = 0;',
+             'constraint constant_2_0[9] = 0;',
+             'constraint constant_2_0[10] = 0;',
+             'constraint constant_2_0[11] = 0;',
+             'constraint constant_2_0[12] = 0;',
+             'constraint constant_2_0[13] = 0;',
+             'constraint constant_2_0[14] = 0;',
+             'constraint constant_2_0[15] = 0;'])
         """
         output_size = int(self.output_bit_size)
         output_id_link = self.id
-        new_declaration = f'array[0..{output_size - 1}] of var 0..1: ' \
-                          f'{output_id_link} = array1d(0..{output_size - 1}, [' \
-                          + ','.join('0' * output_size) + ']);'
+        new_declaration = f'array[0..{int(output_size) - 1}] of var 0..2: {output_id_link};'
         cp_declarations = [new_declaration]
         cp_constraints = []
-        result = cp_declarations, cp_constraints
-        return result
+        for i in range(output_size):
+            cp_constraints.append(f'constraint {output_id_link}[{i}] = 0;')
+
+        return cp_declarations, cp_constraints
 
     def cp_xor_linear_mask_propagation_constraints(self, model=None):
         """
@@ -468,9 +500,9 @@ class Constant(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model import MinizincXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: minizinc = MinizincXorDifferentialModel(fancy)
+            sage: minizinc = MznXorDifferentialModelARXOptimized(fancy)
             sage: constant_component = fancy.get_component_from_id("constant_0_10")
             sage: _, constant_xor_differential_constraints = constant_component.minizinc_xor_differential_propagation_constraints(minizinc)
             sage: constant_xor_differential_constraints[6]
@@ -487,7 +519,9 @@ class Constant(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for a CONSTANT in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing CONSTANT for SAT CIPHER model
+
+        The list of the constraints is just the binary representation of the value of the constant.
 
         .. SEEALSO::
 
@@ -505,9 +539,12 @@ class Constant(Component):
             sage: constant_component.sat_constraints()
             (['constant_2_0_0',
               'constant_2_0_1',
-              'constant_2_0_2',
               ...
-              '-constant_2_0_13',
+              'constant_2_0_14',
+              'constant_2_0_15'],
+             ['-constant_2_0_0',
+              '-constant_2_0_1',
+              ...
               '-constant_2_0_14',
               'constant_2_0_15'])
         """
@@ -521,8 +558,11 @@ class Constant(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for CONSTANT in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing CONSTANT for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
+
+        The list of the constraints is just the binary representation of the value of the constant.
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires two variables per each symbol.
 
         .. SEEALSO::
 
@@ -540,9 +580,12 @@ class Constant(Component):
             sage: constant_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['constant_2_0_0_0',
               'constant_2_0_1_0',
-              'constant_2_0_2_0',
               ...
-              '-constant_2_0_13_1',
+              'constant_2_0_14_1',
+              'constant_2_0_15_1'],
+             ['-constant_2_0_0_0',
+              '-constant_2_0_1_0',
+              ...
               '-constant_2_0_14_1',
               '-constant_2_0_15_1'])
         """
@@ -552,7 +595,9 @@ class Constant(Component):
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
-        Return lists of variables and strings representing clauses for CONSTANT for SAT xor differential.
+        Return a list of variables and a list of clauses representing CONSTANT for SAT XOR DIFFERENTIAL model
+
+        The value encoded is always zero for any constant since its contribute to the difference is null.
 
         .. SEEALSO::
 
@@ -570,9 +615,12 @@ class Constant(Component):
             sage: constant_component.sat_xor_differential_propagation_constraints()
             (['constant_2_0_0',
               'constant_2_0_1',
-              'constant_2_0_2',
               ...
-              '-constant_2_0_13',
+              'constant_2_0_14',
+              'constant_2_0_15'],
+             ['-constant_2_0_0',
+              '-constant_2_0_1',
+              ...
               '-constant_2_0_14',
               '-constant_2_0_15'])
         """
@@ -583,7 +631,9 @@ class Constant(Component):
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for a CONSTANT in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing CONSTANT for SAT XOR LINEAR model
+
+        The list of the clauses is empty since in XOR linear analysis any constant flip the sign if needed.
 
         .. SEEALSO::
 
@@ -614,7 +664,9 @@ class Constant(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing a CONSTANT SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing CONSTANT for SMT CIPHER model
+
+        The list of the constraints is just the binary representation of the value of the constant.
 
         INPUT:
 
@@ -647,7 +699,9 @@ class Constant(Component):
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts representing a CONSTANT for SMT xor differential.
+        Return a variable list and SMT-LIB list asserts representing CONSTANT for SMT XOR DIFFERENTIAL model
+
+        The value encoded is always zero for any constant since its contribute to the difference is null.
 
         INPUT:
 
@@ -678,7 +732,9 @@ class Constant(Component):
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for a CONSTANT in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing CONSTANT for SMT XOR LINEAR model
+
+        The list of the clauses is empty since in XOR linear analysis any constant flip the sign if needed.
 
         INPUT:
 
@@ -692,6 +748,7 @@ class Constant(Component):
             sage: constant_component.smt_xor_linear_mask_propagation_constraints()
             (['constant_0_2_0_o',
               'constant_0_2_1_o',
+              'constant_0_2_2_o',
               ...
               'constant_0_2_30_o',
               'constant_0_2_31_o'],

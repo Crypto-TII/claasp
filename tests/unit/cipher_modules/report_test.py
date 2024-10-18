@@ -1,6 +1,6 @@
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
-from claasp.cipher_modules.models.cp.cp_models.cp_xor_differential_model import CpXorDifferentialModel
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -13,6 +13,7 @@ from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
+from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
 
 
 def test_save_as_image():
@@ -50,6 +51,14 @@ def test_save_as_image():
     report_cca = Report(component_analysis)
     report_cca.save_as_image()
 
+    speck = SpeckBlockCipher(number_of_rounds=2)
+    cda = ContinuousDiffusionAnalysis(speck)
+    cda_for_repo = cda.continuous_diffusion_tests()
+    cda_repo = Report(cda_for_repo)
+    cda_repo.save_as_image()
+
+
+
 
 def test_save_as_latex_table():
     simon = SimonBlockCipher(number_of_rounds=2)
@@ -81,7 +90,7 @@ def test_save_as_latex_table():
 
 def test_save_as_DataFrame():
     speck = SpeckBlockCipher(number_of_rounds=2)
-    cp = CpXorDifferentialModel(speck)
+    cp = MznXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
         component_id='plaintext',
         constraint_type='not_equal',
@@ -126,22 +135,13 @@ def test_save_as_json():
                             bit_values=[0] * 64)
     ]
     trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
-                                                                  solver_name='kissat')
+                                                                  solver_name='KISSAT_EXT')
     trail_report = Report(trail)
     trail_report.show()
 
     avalanche_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_results)
     avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
-
-def test_clean_reports():
-    simon = SimonBlockCipher(number_of_rounds=2)
-    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(
-        simon).neural_network_blackbox_distinguisher_tests()
-    blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
-
-    blackbox_report.save_as_json()
-    blackbox_report.clean_reports()
 
 
 def test_show():
@@ -163,7 +163,7 @@ def test_show():
         set_fixed_variables(component_id='key', constraint_type='not_equal', bit_positions=list(range(80)),
                             bit_values=[0] * 80)]
     trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
-                                                                  solver_name='kissat')
+                                                                  solver_name='KISSAT_EXT')
     trail_report = Report(trail)
     trail_report.show()
 

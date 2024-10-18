@@ -1,14 +1,12 @@
 name: Generate and submit documentation
 on:
-  pull_request:
-    types: [ closed ]
+  push:
     branches:
       - main
-
+permissions: write-all
 jobs:
   generate-documentation:
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted-k3s
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -16,47 +14,21 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
-
-    - name: Build
-      uses: docker/build-push-action@v4
-      id: built-image
-      with:
-        context: .
-        file: ./docker/Dockerfile
-        push: false
-        load: true
-        tags: claasp-lib
-        cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-
-    - name: Move cache
-      run: |
-        rm -rf /tmp/.buildx-cache
-        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
     - name: Generate documentation
-      run: docker run --rm -v $PWD:/home/sage/tii-claasp claasp-lib make doc
+      run: make doc
 
     - name: Commit & Push changes
       uses: actions-js/push@master
       with:
+        branch: 'main'
         github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
         message: "Update documentation"
+        force: true
 
     - name: Update develop branch
       uses: morbalint/git-merge-action@v1
       with:
         target: 'develop'
         source: 'main'
-        token: ${{ secrets.AUTHORIZATION_TOKEN }}
         strategy_options: 'ours'
+        token: ${{ secrets.AUTHORIZATION_TOKEN }}

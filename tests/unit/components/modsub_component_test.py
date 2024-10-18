@@ -1,5 +1,5 @@
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher import Cipher
 
@@ -58,7 +58,7 @@ def test_cp_constraints():
 def test_cp_xor_differential_propagation_constraints():
     raiden = RaidenBlockCipher(number_of_rounds=3)
     modsub_component = raiden.component_from(0, 7)
-    cp_model = CpModel(raiden)
+    cp_model = MznModel(raiden)
     output_bit_ids, constraints = modsub_component.cp_xor_differential_propagation_constraints(cp_model)
 
     assert output_bit_ids[0] == 'array[0..31] of var 0..1: pre_modsub_0_7_0;'

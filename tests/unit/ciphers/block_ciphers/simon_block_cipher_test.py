@@ -20,6 +20,8 @@ def test_simon_block_cipher():
     ciphertext = 0xc69be9bb
     assert simon.evaluate([plaintext, key]) == ciphertext
     assert simon.test_against_reference_code(2) is True
+    assert simon.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+
 
     simon = SimonBlockCipher(block_bit_size=48, key_bit_size=72)
     plaintext = 0x6120676e696c
@@ -27,6 +29,8 @@ def test_simon_block_cipher():
     ciphertext = 0xdae5ac292cac
     assert simon.evaluate([plaintext, key]) == ciphertext
     assert simon.test_against_reference_code(2) is True
+    assert simon.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+
 
     simon = SimonBlockCipher(block_bit_size=48, key_bit_size=96)
     plaintext = 0x72696320646e
@@ -34,6 +38,8 @@ def test_simon_block_cipher():
     ciphertext = 0x6e06a5acf156
     assert simon.evaluate([plaintext, key]) == ciphertext
     assert simon.test_against_reference_code(2) is True
+    assert simon.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+
 
     simon = SimonBlockCipher(block_bit_size=128, key_bit_size=256)
     plaintext = 0x74206e69206d6f6f6d69732061207369
@@ -41,3 +47,4 @@ def test_simon_block_cipher():
     ciphertext = 0x8d2b5579afc8a3a03bf72a87efe7b868
     assert simon.evaluate([plaintext, key]) == ciphertext
     assert simon.test_against_reference_code(2) is True
+    assert simon.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext

@@ -19,6 +19,7 @@
 
 import time
 
+from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CIPHER, WORD_OPERATION, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
@@ -26,9 +27,8 @@ from claasp.name_mappings import (CIPHER, WORD_OPERATION, CIPHER_OUTPUT, CONSTAN
 
 
 class SatCipherModel(SatModel):
-    def __init__(self, cipher,  window_size_weight_pr_vars=-1,
-                 counter='sequential', compact=False):
-        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
+    def __init__(self, cipher, counter='sequential', compact=False):
+        super().__init__(cipher, counter, compact)
 
     def build_cipher_model(self, fixed_variables=[]):
         """
@@ -51,7 +51,7 @@ class SatCipherModel(SatModel):
             sage: sat.build_cipher_model()
         """
         variables = []
-        constraints = self.fix_variables_value_constraints(fixed_variables)
+        constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
@@ -68,7 +68,32 @@ class SatCipherModel(SatModel):
             self._model_constraints.extend(constraints)
             self._variables_list.extend(variables)
 
-    def find_missing_bits(self, fixed_values=[], solver_name='cryptominisat'):
+    def build_generic_sat_model_from_dictionary(self, fixed_variables, component_and_model_types):
+        variables = []
+        constraints = SatModel.fix_variables_value_constraints(fixed_variables)
+        self._variables_list = []
+        self._model_constraints = constraints
+        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
+        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+
+        for component_and_model_type in component_and_model_types:
+            component = component_and_model_type["component_object"]
+            model_type = component_and_model_type["model_type"]
+            operation = component.description[0]
+            if component.type not in component_types or (
+                    WORD_OPERATION == component.type and operation not in operation_types):
+                print(f'{component.id} not yet implemented')
+            else:
+                sat_xor_differential_propagation_constraints = getattr(component, model_type)
+                if model_type == 'sat_bitwise_deterministic_truncated_xor_differential_constraints':
+                    variables, constraints = sat_xor_differential_propagation_constraints()
+                else:
+                    variables, constraints = sat_xor_differential_propagation_constraints(self)
+
+                self._model_constraints.extend(constraints)
+                self._variables_list.extend(variables)
+
+    def find_missing_bits(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a generic flow of the cipher from plaintext and key to ciphertext.
 
@@ -96,7 +121,7 @@ class SatCipherModel(SatModel):
             sage: sat.find_missing_bits(fixed_values=[ciphertext]) # random
             {'cipher_id': 'speck_p32_k64_o32_r22',
              'model_type': 'cipher',
-             'solver_name': 'cryptominisat',
+             'solver_name': 'CRYPTOMINISAT_EXT',
              ...
               'intermediate_output_21_11': {'value': '1411'},
               'cipher_output_21_12': {'value': 'affec7ed'}},

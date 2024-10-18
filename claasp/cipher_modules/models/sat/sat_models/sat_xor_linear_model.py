@@ -19,6 +19,7 @@
 
 import time
 
+from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import constants, utils
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.utils.constants import OUTPUT_BIT_ID_SUFFIX, INPUT_BIT_ID_SUFFIX
@@ -29,12 +30,12 @@ from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, 
 
 
 class SatXorLinearModel(SatModel):
-    def __init__(self, cipher, window_size_weight_pr_vars=-1,
-                 counter='sequential', compact=False):
-        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
+    def __init__(self, cipher, counter='sequential', compact=False):
+        super().__init__(cipher, counter, compact)
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
 
-    def branch_xor_linear_constraints(self):
+    @staticmethod
+    def branch_xor_linear_constraints(bindings):
         """
         Return lists of variables and clauses for branch in XOR LINEAR model.
 
@@ -52,7 +53,7 @@ class SatXorLinearModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: sat = SatXorLinearModel(speck)
-            sage: sat.branch_xor_linear_constraints()
+            sage: SatXorLinearModel.branch_xor_linear_constraints(sat.bit_bindings)
             ['-plaintext_0_o rot_0_0_0_i',
              'plaintext_0_o -rot_0_0_0_i',
              '-plaintext_1_o rot_0_0_1_i',
@@ -62,7 +63,7 @@ class SatXorLinearModel(SatModel):
              'xor_2_10_15_o -cipher_output_2_12_31_i']
         """
         constraints = []
-        for output_bit, input_bits in self.bit_bindings.items():
+        for output_bit, input_bits in bindings.items():
             constraints.extend(utils.cnf_xor(output_bit, input_bits))
 
         return constraints
@@ -91,7 +92,7 @@ class SatXorLinearModel(SatModel):
             self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self._cipher, '_'.join)
         if fixed_variables == []:
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
-        constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
+        constraints = SatXorLinearModel.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
         component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
         operation_types = ("AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB")
@@ -106,7 +107,7 @@ class SatXorLinearModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-        constraints = self.branch_xor_linear_constraints()
+        constraints = SatXorLinearModel.branch_xor_linear_constraints(self.bit_bindings)
         self._model_constraints.extend(constraints)
 
         if weight != -1:
@@ -114,7 +115,8 @@ class SatXorLinearModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='cryptominisat'):
+    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
+                                                     solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions containing all the XOR linear trails having weight equal to ``fixed_weight``.
         By default, the search removes the key schedule, if any.
@@ -124,7 +126,7 @@ class SatXorLinearModel(SatModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -183,7 +185,7 @@ class SatXorLinearModel(SatModel):
         return solutions_list
 
     def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
-                                                       solver_name='cryptominisat'):
+                                                       solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions.
         By default, the search removes the key schedule, if any.
@@ -196,7 +198,7 @@ class SatXorLinearModel(SatModel):
         - ``min_weight`` -- **integer**; the weight from which to start the search
         - ``max_weight`` -- **integer**; the weight at which the search stops
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -234,7 +236,7 @@ class SatXorLinearModel(SatModel):
 
         return solutions_list
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name='cryptominisat'):
+    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR LINEAR trail with the lowest possible weight.
         By default, the search removes the key schedule, if any.
@@ -248,7 +250,7 @@ class SatXorLinearModel(SatModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -298,7 +300,7 @@ class SatXorLinearModel(SatModel):
 
         return solution
 
-    def find_one_xor_linear_trail(self, fixed_values=[], solver_name='cryptominisat'):
+    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR linear trail.
         By default, the search removes the key schedule, if any.
@@ -309,7 +311,7 @@ class SatXorLinearModel(SatModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -350,7 +352,7 @@ class SatXorLinearModel(SatModel):
         return solution
 
     def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                    solver_name='cryptominisat'):
+                                                    solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR linear trail whose weight is ``fixed_weight``.
         By default, the search removes the key schedule, if any.
@@ -360,7 +362,7 @@ class SatXorLinearModel(SatModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominisat`); the name of the solver
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -398,7 +400,8 @@ class SatXorLinearModel(SatModel):
 
         return solution
 
-    def fix_variables_value_xor_linear_constraints(self, fixed_variables=[]):
+    @staticmethod
+    def fix_variables_value_xor_linear_constraints(fixed_variables=[]):
         """
         Return lists variables and clauses for fixing variables in XOR LINEAR model.
 
@@ -427,7 +430,7 @@ class SatXorLinearModel(SatModel):
             ....:    'bit_positions': [0, 1, 2, 3],
             ....:    'bit_values': [1, 1, 1, 0]
             ....: }]
-            sage: sat.fix_variables_value_xor_linear_constraints(fixed_variables)
+            sage: SatXorLinearModel.fix_variables_value_xor_linear_constraints(fixed_variables)
             ['plaintext_0_o',
              '-plaintext_1_o',
              'plaintext_2_o',

@@ -324,11 +324,12 @@ def pprint_dictionary(dictionary):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.utils.utils import pprint_dictionary
         sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
         sage: from claasp.cipher_modules.avalanche_tests import AvalancheTests
         sage: test = AvalancheTests(speck)
         sage: d = test.avalanche_tests(number_of_samples=100)
-        sage: pprint_dictionary(d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0])
+        sage: pprint_dictionary(d["test_results"]["plaintext"]["round_output"]["avalanche_dependence_vectors"][0]) # random
 
     """
     pp = pprint.PrettyPrinter(indent=4)
@@ -346,23 +347,18 @@ def pprint_dictionary_to_file(dictionary, name_file):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: from claasp.utils.utils import pprint_dictionary_to_file
-        sage: cipher = IdentityBlockCipher()
-        sage: tests_configuration = {"diffusion_tests": {"run_tests": True, "number_of_samples": 100,
-        ....:     "run_avalanche_dependence": True, "run_avalanche_dependence_uniform": True,
-        ....:     "run_avalanche_weight": True, "run_avalanche_entropy": True,
-        ....:     "avalanche_dependence_uniform_bias": 0.2, "avalanche_dependence_criterion_threshold": 0,
-        ....:     "avalanche_dependence_uniform_criterion_threshold":0, "avalanche_weight_criterion_threshold": 0.1,
-        ....:     "avalanche_entropy_criterion_threshold":0.1}, "component_analysis_tests": {"run_tests": True}
-        ....: }
+        sage: from claasp.cipher_modules.avalanche_tests import AvalancheTests
         sage: import inspect
         sage: import claasp
+        sage: import os.path
+        sage: speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)
+        sage: test = AvalancheTests(speck)
+        sage: d = test.avalanche_tests(number_of_samples=100)
         sage: tii_path = inspect.getfile(claasp)
         sage: tii_dir_path = os.path.dirname(tii_path)
-        sage: analysis = cipher.analyze_cipher(tests_configuration)
-        sage: pprint_dictionary_to_file(analysis['diffusion_tests']['input_parameters'], f"{tii_dir_path}/test_json")
-        sage: import os.path
+        sage: pprint_dictionary_to_file(d["input_parameters"], f"{tii_dir_path}/test_json")
         sage: os.path.isfile(f"{tii_dir_path}/test_json")
         True
 

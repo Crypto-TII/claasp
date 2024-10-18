@@ -22,5 +22,5 @@ def test_generate_valid_points_for_xor_between_n_input_words():
 def test_update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs():
     update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs(3, 3)
     dictio = output_dictionary_that_contains_wordwise_truncated_xor_inequalities()
-    assert dictio[3][3][:2] == ['1----1----------0---', '--100--100-0----1---']
-    assert dictio[3][3][-2:] == ['------01------------', '----------1----0----']
+    assert dictio[3][3][:2] == ['0-000-0---00----1---', '0-00000----0----1---']
+    assert dictio[3][3][-2:] == ['-----1---------0----', '1--------------0----']

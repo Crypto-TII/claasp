@@ -1,5 +1,5 @@
 from claasp.components.and_component import AND
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
@@ -28,7 +28,7 @@ def test_cp_constraints():
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
     aes = AESBlockCipher()
-    cp = CpModel(aes)
+    cp = MznModel(aes)
     and_component = AND(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                         [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                          [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
@@ -36,15 +36,15 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
 
     assert declarations == []
 
-    assert constraints[0] == 'constraint if sbox_0_2[0] == 0 then and_0_18_active[0] = 0 /\\ and_0_18_value[0] = 0 ' \
+    assert constraints[0] == 'constraint if sbox_0_2_active[0] == 0 then and_0_18_active[0] = 0 /\\ and_0_18_value[0] = 0 ' \
                              'else and_0_18_active[0] = 3 /\\ and_0_18_value[0] = -2 endif;'
-    assert constraints[-1] == 'constraint if sbox_0_14[0] == 0 then and_0_18_active[3] = 0 /\\ and_0_18_value[3] = 0' \
+    assert constraints[-1] == 'constraint if sbox_0_14_active[0] == 0 then and_0_18_active[3] = 0 /\\ and_0_18_value[3] = 0' \
                               ' else and_0_18_active[3] = 3 /\\ and_0_18_value[3] = -2 endif;'
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
     fancy = FancyBlockCipher()
-    cp = CpModel(fancy)
+    cp = MznModel(fancy)
     and_component = fancy.component_from(0, 8)
     declarations, constraints = and_component.cp_xor_linear_mask_propagation_constraints(cp)
 

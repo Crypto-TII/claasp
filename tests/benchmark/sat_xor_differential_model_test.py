@@ -38,7 +38,8 @@ def test_build_xor_differential_trail_model_with_aes_cipher(benchmark):
 
 
 def test_find_all_xor_differential_trails_with_fixed_weight_with_speck_cipher(benchmark):
-    sat = SatXorDifferentialModel(speck, window_size_weight_pr_vars=1)
+    sat = SatXorDifferentialModel(speck)
+    sat.set_window_size_weight_pr_vars(1)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=(0,) * 32)
     key = set_fixed_variables(component_id='key', constraint_type='equal',
@@ -47,7 +48,8 @@ def test_find_all_xor_differential_trails_with_fixed_weight_with_speck_cipher(be
 
 
 def test_find_all_xor_differential_trails_with_fixed_weight_with_aes_cipher(benchmark):
-    sat = SatXorDifferentialModel(aes, window_size_weight_pr_vars=1)
+    sat = SatXorDifferentialModel(aes)
+    sat.set_window_size_weight_pr_vars(1)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=(0,) * 32)
     key = set_fixed_variables(component_id='key', constraint_type='equal',
@@ -67,7 +69,10 @@ def test_find_lowest_weight_xor_differential_trail_with_speck_cipher(benchmark):
 
 def test_find_one_xor_differential_trail_with_fixed_weight(benchmark):
     window_size_by_round_list = [0 for _ in range(speck.number_of_rounds)]
-    sat = SatXorDifferentialModel(speck, window_size_by_round=window_size_by_round_list)
+    sat = SatXorDifferentialModel(speck)
+    sat.set_window_size_heuristic_by_round(
+        window_size_by_round_list
+    )
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
                                     bit_positions=range(32), bit_values=(0,) * 32)
     key = set_fixed_variables(component_id='key', constraint_type='equal',

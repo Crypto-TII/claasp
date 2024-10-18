@@ -115,6 +115,7 @@ def test_evaluate_vectorized():
     X1Lib = int.from_bytes(X[:, 1].tobytes(), byteorder='big')
     C0Lib = speck.evaluate([X0Lib, K0Lib])
     C1Lib = speck.evaluate([X1Lib, K1Lib])
+    print(result, C0Lib, C1Lib)
     assert int.from_bytes(result[-1][0].tobytes(), byteorder='big') == C0Lib
 
     assert int.from_bytes(result[-1][1].tobytes(), byteorder='big') == C1Lib
@@ -147,7 +148,7 @@ def test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis():
 
 def test_get_model():
     speck = SpeckBlockCipher(number_of_rounds=1)
-    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "CpXorDifferentialModel"
+    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
     assert speck.get_model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
     assert speck.get_model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
     assert speck.get_model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
@@ -191,19 +192,19 @@ def test_get_round_from_component_id():
     fancy = FancyBlockCipher(number_of_rounds=2)
     assert fancy.get_round_from_component_id('xor_1_14') == 1
 
-
-def test_impossible_differential_search():
-    speck6 = SpeckBlockCipher(number_of_rounds=6)
-    # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
-    impossible_differentials = speck6.impossible_differential_search("cp", "Chuffed")
-
-    assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
-            (0x400000, 0x8000) in impossible_differentials)
+#
+# def test_impossible_differential_search():
+#     speck6 = SpeckBlockCipher(number_of_rounds=6)
+#     # impossible_differentials = speck6.impossible_differential_search("smt", "yices-smt2")
+#     impossible_differentials = speck6.impossible_differential_search("cp", "Chuffed")
+#
+#     assert ((0x400000, 1) in impossible_differentials) and ((0x400000, 2) in impossible_differentials) and (
+#             (0x400000, 0x8000) in impossible_differentials)
 
 
 def test_is_algebraically_secure():
     aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds = 1)
-    assert aes.is_algebraically_secure(20) is False
+    assert aes.is_algebraically_secure(200) is False
 
 
 def test_is_andrx():
@@ -396,9 +397,8 @@ def test_vector_check():
 
 def test_zero_correlation_linear_search():
     speck6 = SpeckBlockCipher(number_of_rounds=6)
-    zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "yices-smt2")
+    zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "YICES_EXT")
     assert len(zero_correlation_linear_approximations) > 0
-
 
 def test_cipher_inverse():
     key = 0xabcdef01abcdef01

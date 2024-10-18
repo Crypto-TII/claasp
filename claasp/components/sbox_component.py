@@ -30,6 +30,7 @@ from claasp.cipher_modules.models.milp.utils.generate_undisturbed_bits_inequalit
     update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits, \
     get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits, \
     delete_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFAULT_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.input import Input
 from claasp.component import Component, free_input
@@ -42,8 +43,6 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sbo
 from claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trail_search import (
     update_dictionary_that_contains_inequalities_for_small_sboxes,
     get_dictionary_that_contains_inequalities_for_small_sboxes)
-
-SIZE_SHOULD_BE_EQUAL = 'input_bit_size and output_bit_size should be equal.'
 
 
 def check_table_feasibility(table, table_type, solver):
@@ -100,13 +99,50 @@ def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
         for i in range(sbox_lat.nrows()):
             set_of_occurrences = set(sbox_lat.rows()[i])
             set_of_occurrences -= {0}
-            valid_probabilities.update({round(100 * math.log2(2 ** input_size / abs(occurrence)))
-                                        for occurrence in set_of_occurrences})
+            valid_probabilities.update({round(100 * math.log2(abs(pow(2, input_size - 1) / occurence))) for occurence in set_of_occurrences})
         sbox_mant.append((description, output_id_link))
 
 
+def milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_vars,
+                                                         output_vars, sbox_input_size, sbox_output_size, x, p,
+                                                         probability_dictionary, analysis, weight_precision):
+    constraints = []
+    # condition to know if sbox is active or not
+    constraints.append(
+        sbox_input_size * x[f"{component_id}_active"] >= sum(x[input_vars[i]] for i in range(sbox_input_size)))
+    constraints.append(
+        sbox_input_size * (1 - x[f"{component_id}_active"]) >=
+        -sum(x[input_vars[i]] for i in range(sbox_input_size)) + 1)
+    constraints += [x[f"{component_id}_active"] >= x[output_vars[i]] for i in range(sbox_output_size)]
+    # mip.add_constraint(sum(x[output_vars[i]] for i in range(sbox.input_size())) >= x[id + "_active"])
+
+    if analysis == "differential":
+        exponent = sbox_input_size
+    else:
+        exponent = sbox_input_size - 1
+
+    M = (10 ** weight_precision) * sbox_input_size
+    constraint_choice_proba = 0
+    constraint_compute_proba = 0
+    for proba in probability_dictionary.keys():
+        for ineq in probability_dictionary[proba]:
+            constraint = milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq, input_vars,
+                                                                              output_vars, proba, sbox_input_size,
+                                                                              sbox_output_size, x)
+            constraints.append(constraint >= 0)
+
+        constraint_choice_proba += x[f"{component_id}_sboxproba_{proba}"]
+        constraint_compute_proba += (x[f"{component_id}_sboxproba_{proba}"] *
+                                     (10 ** weight_precision) * round(-log(abs(proba) / (2 ** exponent), 2),
+                                                                   weight_precision))
+    constraints.append(constraint_choice_proba == x[f"{component_id}_active"])
+    constraints.append(p[f"{component_id}_probability"] == constraint_compute_proba)
+
+    return constraints
+
+
 def milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq, input_vars,
-                                                         output_vars, proba, sbox_input_size, x):
+                                                         output_vars, proba, sbox_input_size, sbox_output_size, x):
     constraint = 0
     for i in range(sbox_input_size - 1, -1, -1):
         char = ineq[i]
@@ -114,7 +150,7 @@ def milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq, 
             constraint += 1 - x[input_vars[i]]
         elif char == "0":
             constraint += x[input_vars[i]]
-    for i in range(2 * sbox_input_size - 1, sbox_input_size - 1, -1):
+    for i in range(sbox_input_size + sbox_output_size - 1, sbox_input_size - 1, -1):
         char = ineq[i]
         if char == "1":
             constraint += 1 - x[output_vars[i % sbox_input_size]]
@@ -128,7 +164,7 @@ def milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq, 
 
 def sat_build_table_template(table, get_hamming_weight_function, input_bit_len, output_bit_len):
     # create espresso input
-    input_length = 2 * input_bit_len + output_bit_len
+    input_length = input_bit_len + 2 * output_bit_len
     espresso_input = [f'.i {input_length}', '.o 1']
     for i in range(table.nrows()):
         for j in range(table.ncols()):
@@ -136,7 +172,7 @@ def sat_build_table_template(table, get_hamming_weight_function, input_bit_len, 
                 input_diff = f'{i:0{input_bit_len}b}'
                 output_diff = f'{j:0{output_bit_len}b}'
                 hamming_weight = get_hamming_weight_function(input_bit_len, table[i, j])
-                weight_vec = '0' * (input_bit_len - hamming_weight)
+                weight_vec = '0' * (output_bit_len - hamming_weight)
                 weight_vec += '1' * hamming_weight
                 espresso_input.append(f'{input_diff}{output_diff}{weight_vec} 1')
     espresso_input.append('.e')
@@ -175,7 +211,7 @@ def smt_get_sbox_probability_constraints(bit_ids, template):
 
 
 def _to_int(bits):
-    return int("".join(str(bit) for bit in bits), 2)
+    return int("".join(map(str, bits)), 2)
 
 
 def _combine_truncated(input_1, input_2):
@@ -219,7 +255,8 @@ class SBOX(Component):
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
             sage: sbox_component = fancy.component_from(0, 0)
             sage: algebraic = AlgebraicModel(fancy)
-            sage: sbox_component.algebraic_polynomials(algebraic)
+            sage: algebraic_polynomials = sbox_component.algebraic_polynomials(algebraic)
+            sage: algebraic_polynomials
             [sbox_0_0_y2 + sbox_0_0_x1,
              sbox_0_0_x0*sbox_0_0_y0 + sbox_0_0_x0*sbox_0_0_x3,
              ...
@@ -240,8 +277,7 @@ class SBOX(Component):
 
     def get_ddt_with_undisturbed_transitions(self):
         """
-        Returns a list of all truncated input/outputs tuples that have undisturbed differential bits
-        (see https://link.springer.com/chapter/10.1007/978-3-031-26553-2_3)
+        Returns a list of all truncated input/outputs tuples that have undisturbed differential bits (see [CZZ2023]_)
 
         INPUT:
 
@@ -396,7 +432,7 @@ class SBOX(Component):
         return cp_declarations, cp_constraints
 
     def cp_deterministic_truncated_xor_differential_constraints(self, sbox_mant, inverse=False):
-        r"""
+        """
         Return lists of declarations and constraints for SBOX component for CP deterministic truncated xor differential.
 
         INPUT:
@@ -408,13 +444,10 @@ class SBOX(Component):
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: aes = AESBlockCipher(number_of_rounds=3)
             sage: sbox_component = aes.component_from(0, 1)
-            sage: sbox_component.cp_deterministic_truncated_xor_differential_constraints()
-            ([],
-             ['constraint table(xor_0_0[0]++xor_0_0[1]++xor_0_0[2]++xor_0_0[3]++xor_0_0[4]++xor_0_0[5]++xor_0_0[6]++xor_0_0[7]++'
-             '[sbox_0_1[0]]++[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]]++[sbox_0_1[4]]++[sbox_0_1[5]]++[sbox_0_1[6]]++[sbox_0_1[7]], '
-             '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2'
-             '...'
-             '2,2,0,2,1,2,1,2,2,2,2,2,2,2,2,2,1,0,2,2,1,2,2,2,2,2,2,2,2,2,2,2);'])
+            sage: declarations, constraints, sbox_mant = sbox_component.cp_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
+            sage: constraints
+            ['constraint table([xor_0_0[0]]++[xor_0_0[1]]++[xor_0_0[2]]++[xor_0_0[3]]++[xor_0_0[4]]++[xor_0_0[5]]++[xor_0_0[6]]++[xor_0_0[7]]++[sbox_0_1[0]]++[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]]++[sbox_0_1[4]]++[sbox_0_1[5]]++[sbox_0_1[6]]++[sbox_0_1[7]], table_sbox_0_1);']
+
         """
         input_id_links = self.input_id_links
         output_id_link = self.id
@@ -455,12 +488,12 @@ class SBOX(Component):
             cp_declarations.append(undisturbed_declaration)
         new_constraint = f'constraint table({table_input}++{table_output}, table_{output_id_link_sost});'
         cp_constraints.append(new_constraint)
-                    
+
         return cp_declarations, cp_constraints, sbox_mant
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self, sbox_mant, inverse=False):
         return self.cp_deterministic_truncated_xor_differential_constraints(sbox_mant, inverse)
-        
+
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists of declarations and constraints for SBOX component for CP wordwise deterministic truncated xor differential.
@@ -472,13 +505,13 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: sbox_component = aes.component_from(0, 1)
             sage: sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             ([],
-             ['constraint if xor_0_0_value[0]_active==0 then sbox_0_1_active[0] = 0 else sbox_0_1_active[0] = 2 endif;'])
+             ['constraint if xor_0_0_value[0]==0 then sbox_0_1_active[0] = 0 else sbox_0_1_active[0] = 2 endif;'])
         """
         input_id_links = self.input_id_links
         output_id_link = self.id
@@ -492,7 +525,7 @@ class SBOX(Component):
                                for j in range(len(bit_positions) // word_size)])
         for i, input_ in enumerate(all_inputs):
             cp_constraints.append(
-                f'constraint if {input_}_active==0 then {output_id_link}_active[{i}] = 0'
+                f'constraint if {input_}==0 then {output_id_link}_active[{i}] = 0'
                 f' else {output_id_link}_active[{i}] = 2 endif;')
 
         return cp_declarations, cp_constraints
@@ -508,9 +541,9 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: sbox_component = aes.component_from(0, 1)
             sage: sbox_component.cp_xor_differential_first_step_constraints(cp)
             (['array[0..0] of var 0..1: sbox_0_1;'],
@@ -549,9 +582,9 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: midori = MidoriBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(midori)
+            sage: cp = MznModel(midori)
             sage: sbox_component = midori.component_from(0, 5)
             sage: sbox_component.cp_xor_differential_propagation_constraints(cp)[1:]
             (['constraint table([xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]++[sbox_0_5[0]]++[sbox_0_5[1]]++[sbox_0_5[2]]++[sbox_0_5[3]]++[p[0]], DDT_sbox_0_5);'],)
@@ -610,9 +643,9 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: midori = MidoriBlockCipher()
-            sage: cp = CpModel(midori)
+            sage: cp = MznModel(midori)
             sage: sbox_component = midori.component_from(0, 5)
             sage: sbox_component.cp_xor_linear_mask_propagation_constraints(cp)[1:]
             (['constraint table([sbox_0_5_i[0]]++[sbox_0_5_i[1]]++[sbox_0_5_i[2]]++[sbox_0_5_i[3]]++[sbox_0_5_o[0]]++[sbox_0_5_o[1]]++[sbox_0_5_o[2]]++[sbox_0_5_o[3]]++[p[0]],LAT_sbox_0_5);'],)
@@ -659,7 +692,6 @@ class SBOX(Component):
         cp_constraints.append(new_constraint)
         model.component_and_probability[output_id_link] = model.c
         model.c = model.c + 1
-
         return cp_declarations, cp_constraints
 
     def generate_sbox_sign_lat(self):
@@ -698,112 +730,88 @@ class SBOX(Component):
         sbox_params = [f'bit_vector_select_word({self.input_id_links[i]},  {self.input_bit_positions[i]})'
                        for i in range(len(self.input_id_links))]
         return [f'  {self.id} = bit_vector_SBOX(bit_vector_CONCAT([{",".join(sbox_params)} ]), '
-                f'np.array({self.description}, dtype=np.uint8))']
+                f'np.array({self.description}, dtype=np.uint8), output_bit_size = {self.output_bit_size})']
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} = byte_vector_SBOX({params}, np.array({self.description}, dtype=np.uint8))']
+        return [f'  {self.id} = byte_vector_SBOX({params}, {self.description}, {self.input_bit_size})']
 
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):
         # TODO: consider the option for sbox
         return ['\t//// TODO']
 
     def milp_large_xor_differential_probability_constraints(self, binary_variable, integer_variable,
-                                                            non_linear_component_id):
+                                                            non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
         Return lists of variables and constrains modeling SBOX component, with input bit size less or equal to 6.
 
         .. NOTE::
 
-            This is for MILP large xor differential probability. Constraints extracted from
-          https://tosc.iacr.org/index.php/ToSC/article/view/805/759.
+        This is for MILP large xor differential probability. Constraints extracted from [ASTTY2017]_.
 
         INPUT:
 
         - ``binary_variable`` -- **boolean MIPVariable object**
         - ``integer_variable`` -- **boolean MIPVariable object**
         - ``non_linear_component_id`` -- **string**
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
             sage: from sage.crypto.sbox import SBox
-            sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: milp = MilpModel(aes)
+            sage: present = PresentBlockCipher(number_of_rounds=3)
+            sage: milp = MilpModel(present)
             sage: milp.init_model_in_sage_milp_class()
-            sage: sbox_component = aes.component_from(0, 1)
+            sage: sbox_component = present.component_from(0, 1)
             sage: from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import delete_dictionary_that_contains_inequalities_for_large_sboxes
             sage: delete_dictionary_that_contains_inequalities_for_large_sboxes()
-            sage: variables, constraints = sbox_component.milp_large_xor_differential_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id) # long
+            sage: variables, constraints = sbox_component.milp_large_xor_differential_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id)
             ...
-            sage: variables # long
-            [('x[xor_0_0_0]', x_0),
-            ('x[xor_0_0_1]', x_1),
-            ...
-            ('x[sbox_0_1_6]', x_14),
-            ('x[sbox_0_1_7]', x_15)]
-            sage: constraints[:3] # long
-            [x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 <= 8*x_16,
-            1 - x_0 - x_1 - x_2 - x_3 - x_4 - x_5 - x_6 - x_7 <= 8 - 8*x_16,
-            x_8 <= x_16]
+            sage: variables
+             [('x[xor_0_0_0]', x_0),
+             ('x[xor_0_0_1]', x_1),
+             ...
+             ('x[sbox_0_1_2]', x_6),
+            ('x[sbox_0_1_3]', x_7)]
+            sage: constraints[:3]
+            [x_0 + x_1 + x_2 + x_3 <= 4*x_8,
+             1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
+             x_4 <= x_8]
+
         """
-        if self.output_bit_size != self.input_bit_size:
-            raise ValueError(SIZE_SHOULD_BE_EQUAL)
 
         x = binary_variable
         p = integer_variable
         input_vars, output_vars = self._get_input_output_variables()
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
-        constraints = []
         component_id = self.id
         non_linear_component_id.append(component_id)
         sbox = SBox(self.description)
-        sbox_input_size = sbox.input_size()
+        sbox_input_size, sbox_output_size = sbox.input_size(), sbox.output_size()
         update_dictionary_that_contains_inequalities_for_large_sboxes(sbox, analysis="differential")
         dict_product_of_sum = get_dictionary_that_contains_inequalities_for_large_sboxes(analysis="differential")
 
-        # condition to know if sbox is active or not
-        constraints.append(
-            sbox_input_size * x[f"{component_id}_active"] >= sum(x[input_vars[i]] for i in range(sbox_input_size)))
-        constraints.append(
-            sbox_input_size * (1 - x[f"{component_id}_active"]) >= -sum(
-                x[input_vars[i]] for i in range(sbox_input_size)) + 1)
-        constraints += [x[f"{component_id}_active"] >= x[output_vars[i]] for i in range(sbox_input_size)]
-        # mip.add_constraint(sum(x[output_vars[i]] for i in range(sbox.input_size())) >= x[id + "_active"])
-
-        M = 10 * sbox_input_size
-        constraint_choice_proba = 0
-        constraint_compute_proba = 0
-        for proba in dict_product_of_sum[str(sbox)].keys():
-            for ineq in dict_product_of_sum[str(sbox)][proba]:
-                constraint = milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq,
-                                                                                  input_vars, output_vars,
-                                                                                  proba, sbox_input_size, x)
-                constraints.append(constraint >= 0)
-
-            constraint_choice_proba += x[f"{component_id}_sboxproba_{proba}"]
-            constraint_compute_proba += \
-                x[f"{component_id}_sboxproba_{proba}"] * 10 * round(-log(proba / 2 ** sbox_input_size, 2), 1)
-
-        constraints.append(constraint_choice_proba == x[f"{component_id}_active"])
-        constraints.append(p[f"{component_id}_probability"] == constraint_compute_proba)
+        constraints = milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_vars,
+                                                             output_vars, sbox_input_size, sbox_output_size, x, p,
+                                                             dict_product_of_sum[str(sbox)], analysis="differential", weight_precision=weight_precision)
 
         return variables, constraints
 
-    def milp_large_xor_linear_probability_constraints(self, binary_variable, integer_variable, non_linear_component_id):
+    def milp_large_xor_linear_probability_constraints(self, binary_variable, integer_variable, non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
         Return lists of variables and constrains modeling SBOX component, with input bit size less or equal to 6.
 
         .. NOTE::
 
-            This is for MILP large xor linear probability. Constraints extracted from
-          https://tosc.iacr.org/index.php/ToSC/article/view/805/759.
+        This is for MILP large xor linear probability. Constraints extracted from [ASTTY2017]_.
 
         INPUT:
 
         - ``binary_variable`` -- **boolean MIPVariable object**
         - ``integer_variable`` -- **integer MIPVariable object**
         - ``non_linear_component_id`` -- **string**
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
 
@@ -826,65 +834,44 @@ class SBOX(Component):
             1 - x_0 - x_1 - x_2 - x_3 - x_4 - x_5 - x_6 - x_7 <= 8 - 8*x_16,
             ...
             x_17 + x_18 + x_19 + x_20 + x_21 + x_22 + x_23 + x_24 + x_25 + x_26 + x_27 + x_28 + x_29 + x_30 + x_31 + x_32 == x_16,
-            x_33 == 60*x_17 + 50*x_18 + 44*x_19 + 40*x_20 + 37*x_21 + 34*x_22 + 32*x_23 + 30*x_24 + 30*x_25 + 32*x_26 + 34*x_27 + 37*x_28 + 40*x_29 + 44*x_30 + 50*x_31 + 60*x_32]
+            x_33 == 600*x_17 + 500*x_18 + 442*x_19 + 400*x_20 + 368*x_21 + 342*x_22 + 319*x_23 + 300*x_24 + 300*x_25 + 319*x_26 + 342*x_27 + 368*x_28 + 400*x_29 + 442*x_30 + 500*x_31 + 600*x_32]
         """
-        if self.output_bit_size != self.input_bit_size:
-            raise ValueError(SIZE_SHOULD_BE_EQUAL)
 
         x = binary_variable
         p = integer_variable
         input_vars, output_vars = self._get_independent_input_output_variables()
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
-        constraints = []
         component_id = self.id
         non_linear_component_id.append(component_id)
         sbox = SBox(self.description)
-        sbox_input_size = sbox.input_size()
+        sbox_input_size, sbox_output_size = sbox.input_size(), sbox.output_size()
         update_dictionary_that_contains_inequalities_for_large_sboxes(sbox, analysis="linear")
         dict_product_of_sum = get_dictionary_that_contains_inequalities_for_large_sboxes(analysis="linear")
 
-        # condition to know if sbox is active or not
-        constraints.append(
-            sbox_input_size * x[f"{component_id}_active"] >= sum(x[input_vars[i]] for i in range(sbox_input_size)))
-        constraints.append(
-            sbox_input_size * (1 - x[f"{component_id}_active"]) >=
-            -sum(x[input_vars[i]] for i in range(sbox_input_size)) + 1)
-        constraints += [x[f"{component_id}_active"] >= x[output_vars[i]] for i in range(sbox_input_size)]
-
-        M = 10 * sbox_input_size
-        constraint_choice_proba = 0
-        constraint_compute_proba = 0
-        for proba in dict_product_of_sum[str(sbox)].keys():
-            for ineq in dict_product_of_sum[str(sbox)][proba]:
-                constraint = milp_large_xor_probability_constraint_for_inequality(M, component_id, ineq,
-                                                                                  input_vars,
-                                                                                  output_vars, proba,
-                                                                                  sbox_input_size, x)
-                constraints.append(constraint >= 0)
-
-            constraint_choice_proba += x[f"{component_id}_sboxproba_{proba}"]
-            constraint_compute_proba += (x[f"{component_id}_sboxproba_{proba}"] *
-                                         10 * round(-log(abs(proba) / (2 ** (sbox_input_size - 1)), 2), 1))
-        constraints.append(constraint_choice_proba == x[f"{component_id}_active"])
-        constraints.append(p[f"{component_id}_probability"] == constraint_compute_proba)
+        constraints = milp_set_constraints_from_dictionnary_for_large_sbox(component_id, input_vars,
+                                                                           output_vars, sbox_input_size,
+                                                                           sbox_output_size, x, p,
+                                                                           dict_product_of_sum[str(sbox)],
+                                                                           analysis="linear", weight_precision=weight_precision)
 
         return variables, constraints
 
     def milp_small_xor_differential_probability_constraints(self, binary_variable, integer_variable,
-                                                            non_linear_component_id):
+                                                            non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
         Return a list of variables and a list of constrains modeling a component of type SBOX.
 
-        .. NOTE::
+        NOTE::
 
-            This is for MILP small xor differential probability. Constraints extracted from
-          https://eprint.iacr.org/2014/747.pdf and https://tosc.iacr.org/index.php/ToSC/article/view/805/759
+        This is for MILP small xor differential probability. Constraints extracted from
+        [SHW+2014]_ and [ASTTY2017]_.
 
         INPUT:
 
         - ``binary_variable`` -- **boolean MIPVariable object**
         - ``integer_variable`` -- **integer MIPVariable object**
         - ``non_linear_component_id`` -- **string**
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
 
@@ -904,13 +891,11 @@ class SBOX(Component):
             ('x[sbox_0_1_3]', x_7)]
             sage: constraints
             [x_8 <= x_0 + x_1 + x_2 + x_3,
-            x_0 <= x_8,
-            ...
-            x_9 + x_10 == x_8,
-            x_11 == 30*x_9 + 20*x_10]
+             x_0 <= x_8,
+             ...
+             x_9 + x_10 == x_8,
+             x_11 == 300*x_9 + 200*x_10]
         """
-        if self.output_bit_size != self.input_bit_size:
-            raise ValueError(SIZE_SHOULD_BE_EQUAL)
 
         x = binary_variable
         p = integer_variable
@@ -922,17 +907,17 @@ class SBOX(Component):
         update_dictionary_that_contains_inequalities_for_small_sboxes(sbox, analysis="differential")
         dictio = get_dictionary_that_contains_inequalities_for_small_sboxes(analysis="differential")
         dict_inequalities = dictio[f"{sbox}"]
-        input_size = self.input_bit_size
+        input_size, output_size = self.input_bit_size, self.output_bit_size
 
         # condition to know if sbox is active or not
         constraints.append(x[f"{self.id}_active"] <= sum(x[input_vars[i]] for i in range(input_size)))
         for i in range(input_size):
             constraints.append(x[f"{self.id}_active"] >= x[input_vars[i]])
-        for i in range(input_size):
+        for i in range(output_size):
             constraints.append(x[f"{self.id}_active"] >= x[output_vars[i]])
         # mip.add_constraint(sum(x[output_vars[i]] for i in range(sbox.input_size())) >= x[id + "_active"])
 
-        M = 10 * input_size
+        M = (10 ** weight_precision) * max(input_size, output_size)
         dict_constraints = {}
         for proba in dict_inequalities:
             dict_constraints[proba] = []
@@ -947,27 +932,28 @@ class SBOX(Component):
 
         constraints.append(
             sum(x[f"{self.id}_proba_{proba}"] for proba in dict_constraints) == x[f"{self.id}_active"])
-        constraints.append(p[f"{self.id}_probability"] == 10 * sum(
+        constraints.append(p[f"{self.id}_probability"] == (10 ** weight_precision) * sum(
             x[f"{self.id}_proba_{proba}"] * (-log(proba / 2 ** sbox.input_size(), 2)) for proba in
             dict_constraints))
 
         return variables, constraints
 
-    def milp_small_xor_linear_probability_constraints(self, binary_variable, integer_variable, non_linear_component_id):
+    def milp_small_xor_linear_probability_constraints(self, binary_variable, integer_variable, non_linear_component_id,
+                                                      weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
         Return a list of variables and a list of constrains modeling a component of type Sbox.
 
         .. NOTE::
 
-            This is for MILP small xor linear probability. Constraints extracted from
-          https://eprint.iacr.org/2014/747.pdf (Appendix A) and
-          https://tosc.iacr.org/index.php/ToSC/article/view/805/759
+        This is for MILP small xor linear probability. Constraints extracted from
+        [SHW+2014]_ (Appendix A) and [ASTTY2017]_.
 
         INPUT:
 
         - ``binary_variable`` -- **MIPVariable object**
         - ``integer_variable`` -- **MIPVariable object**
         - ``non_linear_component_id`` -- **list**
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
 
@@ -990,10 +976,8 @@ class SBOX(Component):
             x_0 <= x_8,
             ...
             x_9 + x_10 + x_11 + x_12 == x_8,
-            x_13 == 20*x_9 + 10*x_10 + 10*x_11 + 20*x_12]
+            x_13 == 200*x_9 + 100*x_10 + 100*x_11 + 200*x_12]
         """
-        if self.output_bit_size != self.input_bit_size:
-            raise ValueError(SIZE_SHOULD_BE_EQUAL)
 
         x = binary_variable
         p = integer_variable
@@ -1019,7 +1003,7 @@ class SBOX(Component):
 
         # Big-M Reformulation method as used in 4.1 of
         # https://tosc.iacr.org/index.php/ToSC/article/view/805/759
-        M = 10 * input_size
+        M = (10 ** weight_precision) * max(input_size, output_size)
         dict_constraints = {}
         for proba in dict_inequalities:
             dict_constraints[proba] = []
@@ -1036,7 +1020,7 @@ class SBOX(Component):
             sum(x[f"{component_id}_proba_{proba}"] for proba in dict_constraints) == x[f"{component_id}_active"])
 
         # correlation[i,j] =  2p[i,j] - 1, where p[i,j] = LAT[i,j] / 2^n + 1/2
-        constraints.append(p[f"{component_id}_probability"] == 10 * sum(x[f"{component_id}_proba_{proba}"] *
+        constraints.append(p[f"{component_id}_probability"] == (10 ** weight_precision) * sum(x[f"{component_id}_proba_{proba}"] *
                                                                         (log((2 ** (sbox.input_size() - 1)) / abs(
                                                                             proba), 2)) for proba in dict_constraints))
 
@@ -1053,13 +1037,12 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: present = PresentBlockCipher(number_of_rounds=6)
-            sage: milp = MilpModel(present)
+            sage: milp = MilpXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0, 1)
             sage: variables, constraints = sbox_component.milp_xor_differential_propagation_constraints(milp)
-            ...
             sage: variables
             [('x[xor_0_0_0]', x_0),
             ('x[xor_0_0_1]', x_1),
@@ -1071,14 +1054,16 @@ class SBOX(Component):
             1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
             ...
             x_9 + x_10 == x_8,
-            x_11 == 30*x_9 + 20*x_10]
+            x_11 == 300*x_9 + 200*x_10]
         """
         binary_variable = model.binary_variable
         integer_variable = model.integer_variable
         non_linear_component_id = model.non_linear_component_id
+        weight_precision = model.weight_precision
         variables, constraints = self.milp_large_xor_differential_probability_constraints(binary_variable,
-                                                                                              integer_variable,
-                                                                                              non_linear_component_id)
+                                                                                          integer_variable,
+                                                                                          non_linear_component_id,
+                                                                                          weight_precision)
 
         return variables, constraints
 
@@ -1093,9 +1078,9 @@ class SBOX(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
             sage: present = PresentBlockCipher(number_of_rounds=6)
-            sage: milp = MilpModel(present)
+            sage: milp = MilpXorLinearModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0, 1)
             sage: variables, constraints = sbox_component.milp_xor_linear_mask_propagation_constraints(milp)
@@ -1107,39 +1092,41 @@ class SBOX(Component):
             ('x[sbox_0_1_2_o]', x_6),
             ('x[sbox_0_1_3_o]', x_7)]
             sage: constraints
-            [x_8 <= x_4 + x_5 + x_6 + x_7,
-            x_0 <= x_8,
+            [x_0 + x_1 + x_2 + x_3 <= 4*x_8,
+            1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
             ...
             x_9 + x_10 + x_11 + x_12 == x_8,
-            x_13 == 20*x_9 + 10*x_10 + 10*x_11 + 20*x_12]
+            x_13 == 200*x_9 + 100*x_10 + 100*x_11 + 200*x_12]
         """
         binary_variable = model.binary_variable
         integer_variable = model.integer_variable
         non_linear_component_id = model.non_linear_component_id
-        if self.output_bit_size <= 4:
-            variables, constraints = self.milp_small_xor_linear_probability_constraints(binary_variable,
+        weight_precision = model.weight_precision
+        variables, constraints = self.milp_large_xor_linear_probability_constraints(binary_variable,
                                                                                         integer_variable,
-                                                                                        non_linear_component_id)
-        else:
-            variables, constraints = self.milp_large_xor_linear_probability_constraints(binary_variable,
-                                                                                        integer_variable,
-                                                                                        non_linear_component_id)
+                                                                                        non_linear_component_id, weight_precision)
         return variables, constraints
 
     def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
-        Models the wordwise Sbox component according to Model 4 from
-        https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
+        Models the wordwise Sbox component according to Model 4 from [SGWW2020]_
+
         The valid set for the input output pair (x, y) is {(0, 0), (1, 2), (2, 2), (3, 3)}
 
         6 inequalities can enforce these transitions. They can either be computer using
         Sage with the Polyhedron class
 
-        sage: valid_points = [[0,0,0,0], [0,1,1,0],[1,0,1,0],[1,1,1,1]]
-        sage: from sage.geometry.polyhedron.constructor import Polyhedron
-        sage: Polyhedron(vertices=valid_points)
-        sage: for inequality in poly.Hrepresentation():
-        ....:    print(f'{inequality.repr_pretty()}')
+
+            sage: valid_points = [[0,0,0,0], [0,1,1,0],[1,0,1,0],[1,1,1,1]]
+            sage: from sage.geometry.polyhedron.constructor import Polyhedron
+            sage: poly = Polyhedron(vertices=valid_points)
+            sage: for inequality in poly.Hrepresentation():
+            ....:    print(f'{inequality.repr_pretty()}')
+            x0 + x1 - x2 - x3 == 0
+            x3 >= 0
+            x0 - x3 >= 0
+            x1 - x3 >= 0
+            -x0 - x1 + x3 >= -1
 
         or using espresso
 
@@ -1165,10 +1152,9 @@ class SBOX(Component):
             sage: constraints
             [x_0 + x_1 <= 1 + x_3,
              x_2 <= x_0 + x_1,
-            ...
+             ...
              x_1 <= x_2,
              x_0 <= x_2]
-
         """
         x = model.binary_variable
 
@@ -1190,8 +1176,8 @@ class SBOX(Component):
 
     def milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(self, model):
         """
-        Models the wordwise Sbox component according to a simplified version of Model 4 from
-        https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
+        Models the wordwise Sbox component according to a simplified version of Model 4 from [SGWW2020]_
+        
         The valid set for the input output pair (x, y) is {(0, 0), (1, 2), (2, 2), (3, 3)}
 
         if dX = 1
@@ -1243,7 +1229,7 @@ class SBOX(Component):
 
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
-         Models the wordwise Sbox component.
+        Models the wordwise Sbox component.
 
         INPUTS:
 
@@ -1292,8 +1278,7 @@ class SBOX(Component):
 
     def milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
-         Models the wordwise Sbox component, with added undisturbed bits information, as mentioned in
-         https://link.springer.com/chapter/10.1007/978-3-031-26553-2_3
+        Models the wordwise Sbox component, with added undisturbed bits information, as mentioned in [CZZ2023]_
 
         INPUTS:
 
@@ -1309,6 +1294,7 @@ class SBOX(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0,1)
             sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            ...
             sage: variables
             [('x[xor_0_0_0_class_bit_0]', x_0),
              ('x[xor_0_0_0_class_bit_1]', x_1),
@@ -1329,8 +1315,7 @@ class SBOX(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = ascon.component_from(0, 3)
             sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
-
-
+            ...
         """
 
         x = model.binary_variable
@@ -1364,7 +1349,12 @@ class SBOX(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for S-BOX in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing S-BOX for SAT CIPHER model
+
+        The underlying logic is: for every (input, output) pair of the S-boxes build the implication
+        ``(i0, i1, ..., in) -> oj`` for every bit in the binary representation of the output. The ``i``s
+        vector is the binary representation of the input. Note that this is the same logic of the method
+        ``cnf()`` in ``sage.crypto.sbox.SBox`` class.
 
         .. SEEALSO::
 
@@ -1390,26 +1380,24 @@ class SBOX(Component):
         """
         input_bit_len, input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        sbox_values = self.description
+        sbox_outputs = self.description
         constraints = []
-        for i in range(2 ** input_bit_len):
-            input_minus = ['-' * (i >> j & 1) for j in reversed(range(input_bit_len))]
-            current_input_bit_ids = [f'{input_minus[j]}{input_bit_ids[j]}'
-                                     for j in range(input_bit_len)]
-            output_minus = ['-' * ((sbox_values[i] >> j & 1) ^ 1)
-                            for j in reversed(range(output_bit_len))]
-            current_output_bit_ids = [f'{output_minus[j]}{output_bit_ids[j]}'
-                                      for j in range(output_bit_len)]
+        for sbox_input, sbox_output in enumerate(sbox_outputs):
+            input_signs = ('-' * (sbox_input >> j & 1) for j in reversed(range(input_bit_len)))
+            current_input_bit_ids = (f'{sign}{bit_id}' for sign, bit_id in zip(input_signs, input_bit_ids))
+            output_signs = ('-' * ((sbox_output >> j & 1) ^ 1) for j in reversed(range(output_bit_len)))
+            current_output_bit_ids = (f'{sign}{bit_id}' for sign, bit_id in zip(output_signs, output_bit_ids))
             input_constraint = ' '.join(current_input_bit_ids)
-            for j in range(output_bit_len):
-                constraint = f'{input_constraint} {current_output_bit_ids[j]}'
-                constraints.append(constraint)
+            current_constraints = (f'{input_constraint} {bit_id}' for bit_id in current_output_bit_ids)
+            constraints.extend(current_constraints)
 
         return output_bit_ids, constraints
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for a generic S-BOX in SAT deterministic truncated XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing S-BOX for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
+
+        This method implements the undisturbed bits idea from [CZZ2023]_.
 
         INPUT:
 
@@ -1423,9 +1411,12 @@ class SBOX(Component):
             sage: sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['sbox_0_2_0_0',
               'sbox_0_2_1_0',
-              'sbox_0_2_2_0',
               ...
-              '-xor_0_0_6_0 sbox_0_2_3_0',
+              'sbox_0_2_2_1',
+              'sbox_0_2_3_1'],
+             ['-xor_0_0_4_1 -xor_0_0_7_1 sbox_0_2_3_0 -sbox_0_2_3_1',
+              '-xor_0_0_4_1 sbox_0_2_2_0',
+              ...
               '-xor_0_0_5_0 sbox_0_2_3_0',
               '-xor_0_0_4_0 sbox_0_2_3_0'])
         """
@@ -1458,7 +1449,15 @@ class SBOX(Component):
 
     def sat_xor_differential_propagation_constraints(self, model):
         """
-        Return a list of variables and a list of clauses for a generic S-BOX in SAT XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing S-BOX for SAT XOR DIFFERENTIAL model
+
+        The DDT is encoded in CNF using the following method: for every ``(input_difference, output_difference)`` pair,
+        we compute the ``weight``, i.e. the ``-log2(p)``. Then every tuple ``(input_difference, output_difference, weight)``
+        will be the minterm of the Sum Of Products (SOP) form of the DDT. Note that both ``input_difference`` and
+        ``output_difference`` are binary representation, instead weight has unary representation.
+
+        The SOP is then processed by Espresso and the resulting form is the CNF of the DDT. This approach is the same
+        contained in [SW2023]_.
 
         INPUT:
 
@@ -1474,15 +1473,18 @@ class SBOX(Component):
             sage: sbox_component.sat_xor_differential_propagation_constraints(sat)
             (['sbox_0_2_0',
               'sbox_0_2_1',
-              'sbox_0_2_2',
               ...
-              'hw_sbox_0_2_2 -hw_sbox_0_2_3',
+              'hw_sbox_0_2_2',
+              'hw_sbox_0_2_3'],
+             ['xor_0_0_4 xor_0_0_6 sbox_0_2_0 sbox_0_2_1 sbox_0_2_3 -hw_sbox_0_2_1',
+              'xor_0_0_5 xor_0_0_6 -sbox_0_2_0 -sbox_0_2_2 -hw_sbox_0_2_1',
+              ...
               'xor_0_0_5 xor_0_0_6 sbox_0_2_0 sbox_0_2_2 -hw_sbox_0_2_1',
               '-hw_sbox_0_2_0'])
         """
         input_bit_len, input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(input_bit_len)]
+        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         sbox_values = self.description
         sboxes_ddt_templates = model.sboxes_ddt_templates
 
@@ -1492,10 +1494,8 @@ class SBOX(Component):
 
             check_table_feasibility(ddt, 'DDT', 'SAT')
 
-            get_hamming_weight_function = (
-                    lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
-            template = sat_build_table_template(
-                    ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
+            get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
+            template = sat_build_table_template(ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
             sboxes_ddt_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -1509,7 +1509,13 @@ class SBOX(Component):
 
     def sat_xor_linear_mask_propagation_constraints(self, model):
         """
-        Return a list of variables and a list of clauses for S-BOX in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing S-BOX for SAT XOR LINEAR model
+
+        The approach used here is very similar to the one in :meth:`SBOX.sat_xor_differential_propagation_constraints`.
+        The only difference is that we encode here the absolute value of the correlation instead of weight.
+
+        The SOP is then processed by Espresso and the resulting form is the CNF of the DDT. This approach is the same
+        contained in [SW2023]_.
 
         .. SEEALSO::
 
@@ -1529,9 +1535,12 @@ class SBOX(Component):
             sage: sbox_component.sat_xor_linear_mask_propagation_constraints(sat)
             (['sbox_0_2_0_i',
               'sbox_0_2_1_i',
-              'sbox_0_2_2_i',
               ...
-              '-sbox_0_2_0_i -sbox_0_2_1_i sbox_0_2_2_i sbox_0_2_1_o -hw_sbox_0_2_2_o',
+              'hw_sbox_0_2_2_o',
+              'hw_sbox_0_2_3_o'],
+             ['sbox_0_2_0_i sbox_0_2_1_i sbox_0_2_2_i -sbox_0_2_0_o sbox_0_2_1_o',
+              'sbox_0_2_2_i sbox_0_2_3_i sbox_0_2_0_o sbox_0_2_1_o -sbox_0_2_3_o hw_sbox_0_2_2_o',
+              ...
               '-hw_sbox_0_2_1_o',
               '-hw_sbox_0_2_0_o'])
         """
@@ -1548,10 +1557,8 @@ class SBOX(Component):
 
             check_table_feasibility(lat, 'LAT', 'SAT')
 
-            get_hamming_weight_function = (
-                    lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
-            template = sat_build_table_template(
-                    lat, get_hamming_weight_function, input_bit_len, output_bit_len)
+            get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
+            template = sat_build_table_template(lat, get_hamming_weight_function, input_bit_len, output_bit_len)
             sboxes_lat_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -1565,7 +1572,10 @@ class SBOX(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts for S-BOX in SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing S-BOX for SMT CIPHER model
+
+        The approach used here is very similar to the one in :meth:`SBOX.sat_constraints`.
+        The only difference is in the consequent, that is here the whole representation of the output value.
 
         INPUT:
 
@@ -1607,7 +1617,9 @@ class SBOX(Component):
 
     def smt_xor_differential_propagation_constraints(self, model):
         """
-        Return a variable list and SMT-LIB list asserts for S-BOX in SMT XOR DIFFERENTIAL model [AK2019]_.
+        Return a variable list and SMT-LIB list asserts representing S-BOX for SMT XOR DIFFERENTIAL model
+
+        The approach is described in detail in :meth:`SBOX.sat_xor_differential_propagation_constraints`.
 
         INPUT:
 
@@ -1634,7 +1646,7 @@ class SBOX(Component):
         """
         input_bit_len, input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(input_bit_len)]
+        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         sbox_values = self.description
         sboxes_ddt_templates = model.sboxes_ddt_templates
 
@@ -1644,10 +1656,8 @@ class SBOX(Component):
 
             check_table_feasibility(ddt, 'DDT', 'SMT')
 
-            get_hamming_weight_function = (
-                    lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
-            template = smt_build_table_template(
-                    ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
+            get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
+            template = smt_build_table_template(ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
             sboxes_ddt_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -1658,7 +1668,9 @@ class SBOX(Component):
 
     def smt_xor_linear_mask_propagation_constraints(self, model):
         """
-        Return a variable list and SMT-LIB list asserts for S-BOX in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing S-BOX for SMT XOR LINEAR model
+
+        The approach is described in detail in :meth:`SBOX.sat_xor_linear_mask_propagation_constraints`.
 
         INPUT:
 
@@ -1696,10 +1708,8 @@ class SBOX(Component):
 
             check_table_feasibility(lat, 'LAT', 'SMT')
 
-            get_hamming_weight_function = (
-                    lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
-            template = smt_build_table_template(
-                    lat, get_hamming_weight_function, input_bit_len, output_bit_len)
+            get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
+            template = smt_build_table_template(lat, get_hamming_weight_function, input_bit_len, output_bit_len)
             sboxes_lat_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids

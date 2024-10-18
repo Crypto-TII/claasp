@@ -1,5 +1,5 @@
 from claasp.components.or_component import OR
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.permutations.gift_permutation import GiftPermutation
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
@@ -32,14 +32,14 @@ def test_cp_constraints():
 def test_cp_xor_linear_mask_propagation_constraints():
     gift = GiftPermutation()
     or_component = gift.component_from(39, 6)
-    cp = CpModel(gift)
+    cp = MznModel(gift)
     declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
 
-    assert declarations == ['array[0..31] of var int: p_or_39_6;', 'array[0..63] of var 0..1:or_39_6_i;',
+    assert declarations == ['array[0..31] of var 0..3200: p_or_39_6;', 'array[0..63] of var 0..1:or_39_6_i;',
                             'array[0..31] of var 0..1:or_39_6_o;']
 
-    assert constraints[0] == 'constraint table(or_39_6_i[0]++or_39_6_i[32]++or_39_6_o[0]++p_or_39_6[0],and2inputs_LAT);'
-    assert constraints[-2] == 'constraint table(or_39_6_i[31]++or_39_6_i[63]++or_39_6_o[31]++p_or_39_6[31],' \
+    assert constraints[0] == 'constraint table([or_39_6_i[0]]++[or_39_6_i[32]]++[or_39_6_o[0]]++[p_or_39_6[0]],and2inputs_LAT);'
+    assert constraints[-2] == 'constraint table([or_39_6_i[31]]++[or_39_6_i[63]]++[or_39_6_o[31]]++[p_or_39_6[31]],' \
                               'and2inputs_LAT);'
     assert constraints[-1] == 'constraint p[0] = sum(p_or_39_6);'
 
