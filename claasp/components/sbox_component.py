@@ -494,6 +494,107 @@ class SBOX(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self, sbox_mant, inverse=False):
         return self.cp_deterministic_truncated_xor_differential_constraints(sbox_mant, inverse)
 
+    def cp_hybrid_deterministic_truncated_xor_differential_constraints(self, sbox_mant, inverse=False, list_of_component_number=[]):
+        """
+        Return lists of declarations and constraints for SBOX component for CP deterministic truncated xor differential.
+
+        INPUT:
+        - ``sbox_mant`` -- **list**
+        - ``inverse`` -- **boolean** (default: `False`)
+        - ``list_of_component_number`` -- **list** (default: `[]`)
+
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
+            sage: lblock = LBlockBlockCipher(number_of_rounds=1)
+            sage: sbox_component = lblock.component_from(0, 2)
+            sage: declarations, constraints, sbox_mant = sbox_component.cp_hybrid_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
+            sage: constraints
+            ['constraint abstract_sbox_0_2(array1d(0..3, [xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]), array1d(0..3, [sbox_0_2[0]]++[sbox_0_2[1]]++[sbox_0_2[2]]++[sbox_0_2[3]]));']
+        """
+        def _get_abstracted_predicate(sbox):
+            round, id_in_round = map(int, sbox.id.split("_")[-2:])
+            if list_of_component_number != []:
+                max_number_of_sboxes = max(len(lst) for lst in list_of_component_number.values())
+                index_of_id = list_of_component_number[round].index(id_in_round)
+                sbox_id = f"{max_number_of_sboxes*10}*{round} + 10*{index_of_id}"
+            else:
+                sbox_id = f"100*{round} + 10*{id_in_round}"
+
+            sbox_declaration = f"predicate abstract_{output_id_link_sost}(array[int] of var int: x, array[int] of var int: y) =\n"
+
+            condition1 = r" /\ ".join([f"x{[j]} == 0" for j in range(len(all_inputs))])
+            outcome1 = r" /\ ".join([f"y{[j]} = 0" for j in range(output_size)])
+            condition2 = r" \/ ".join([f"x{[j]} == 1" for j in range(len(all_inputs))])
+            outcome2_1 = r" /\ ".join([f"y{[j]} = {sbox_id}" for j in range(output_size)])
+            outcome2_2 = f"apply_{output_id_link_sost}(x, y)"
+            outcome2 = f"({outcome2_1}) \\/ ({outcome2_2})"
+            condition3_1 = r" /\ ".join([f"x{[j]} > 2" for j in range(len(all_inputs))])
+            condition3_2 = r" /\ ".join([f"x{[j]} = x{[0]}" for j in range(1, len(all_inputs))])
+            condition3 = f"({condition3_1}) /\\ ({condition3_2})"
+            default = r" /\ ".join([f"y{[j]} = 2" for j in range(len(all_inputs))])
+            sbox_declaration += (
+                f"\tif ({condition1}) then ({outcome1})\n"
+                f"\telseif ({condition2}) then ({outcome2})\n"
+                f"\telseif ({condition3}) then ({outcome2_1})\n"
+                f"\telse ({default}) endif;\n"
+            )
+
+            return sbox_declaration
+        def _get_sbox_predicate():
+            sbox_declaration = f"predicate apply_{output_id_link_sost}(array[int] of var int: x, array[int] of var int: y) =\n"
+            for i, (inputs, outputs) in enumerate(undisturbed_bits):
+                condition = r" /\ ".join([f"x{[j]} == {inputs[j]}" for j in range(len(all_inputs))])
+                outcome = r" /\ ".join([f"y{[j]} = {outputs[j]}" for j in range(output_size)])
+
+                if i == 0:
+                    sbox_declaration += f"\tif ({condition}) then ({outcome})\n"
+                else:
+                    sbox_declaration += f"\telseif ({condition}) then ({outcome})\n"
+
+            else_condition = r" /\ ".join([f"y{[j]} = 2" for j in range(output_size)])
+            sbox_declaration += f"\telse ({else_condition}) endif;"
+            return sbox_declaration
+
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        if inverse:
+            inv_output_id_link = 'inverse_' + self.id
+        else:
+            inv_output_id_link = self.id
+        output_size = self.output_bit_size
+        input_bit_positions = self.input_bit_positions
+        cp_declarations = []
+        cp_constraints = []
+        all_inputs = []
+        eventual_undisturbed_bits = self.get_ddt_with_undisturbed_transitions()
+        undisturbed_bits = [tr for tr in  eventual_undisturbed_bits if tr[1] != (2,)*self.output_bit_size]
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'[{id_link}[{position}]]' for position in bit_positions])
+        table_input = '++'.join(all_inputs)
+        table_output = '++'.join([f'[{output_id_link}[{i}]]' for i in range(output_size)])
+        undisturbed_bits_ddt = []
+        for pair in undisturbed_bits:
+            undisturbed_bits_ddt += list(pair[0]) + list(pair[1])
+        for i in range(len(undisturbed_bits_ddt)):
+            undisturbed_bits_ddt[i] = str(undisturbed_bits_ddt[i])
+        undisturbed_table_bits = ','.join(undisturbed_bits_ddt)
+        already_in = False
+        output_id_link_sost = inv_output_id_link
+        for mant in sbox_mant:
+            if undisturbed_table_bits == mant[0] and ((not inverse) or (inverse and 'inverse' in mant[1])):
+                already_in = True
+                output_id_link_sost = mant[1]
+        if not already_in:
+            sbox_declaration = _get_sbox_predicate()
+            abstract_sbox_declaration = _get_abstracted_predicate(self)
+            cp_declarations += [sbox_declaration, abstract_sbox_declaration]
+        new_constraint = f'constraint abstract_{output_id_link_sost}(array1d(0..{len(all_inputs)-1}, {table_input}), array1d(0..{output_size-1}, {table_output}));'
+        cp_constraints.append(new_constraint)
+
+        return cp_declarations, cp_constraints, sbox_mant
+
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists of declarations and constraints for SBOX component for CP wordwise deterministic truncated xor differential.
