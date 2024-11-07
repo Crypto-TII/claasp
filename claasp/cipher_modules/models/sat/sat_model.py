@@ -295,6 +295,7 @@ class SatModel:
                                                                          input_file, output_file)
             elif solver_specs['solver_name'] == 'PARKISSAT_EXT':
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
+                options = ["-c=80"]
                 status, sat_time, sat_memory, values = utils.run_parkissat(solver_specs, options, dimacs, input_file)
             elif solver_specs['solver_name'] == 'YICES_SAT_EXT':
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'

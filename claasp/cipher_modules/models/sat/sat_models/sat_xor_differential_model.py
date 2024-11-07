@@ -357,6 +357,74 @@ class SatXorDifferentialModel(SatModel):
 
         return solution
 
+    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, start_weight=0, options=None):
+        """
+        Return the solution representing a trail with the lowest weight.
+        By default, the search is set in the single-key setting.
+
+        .. NOTE::
+
+            There could be more than one trail with the lowest weight. In order to find all the lowest weight trail,
+            run :py:meth:`~SatXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight`.
+
+        INPUT:
+
+        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
+
+        .. SEEALSO::
+
+            :ref:`sat-solvers`
+
+        EXAMPLES::
+
+            # single-key setting
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: trail = sat.find_lowest_weight_xor_differential_trail()
+            sage: trail['total_weight']
+            9.0
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: key = set_fixed_variables(
+            ....:         component_id='key',
+            ....:         constraint_type='not_equal',
+            ....:         bit_positions=range(64),
+            ....:         bit_values=(0,)*64)
+            sage: trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[key])
+            sage: trail['total_weight']
+            1.0
+        """
+        current_weight = start_weight
+        start_building_time = time.time()
+        self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
+        end_building_time = time.time()
+        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
+        solution['building_time_seconds'] = end_building_time - start_building_time
+        total_time = solution['solving_time_seconds']
+        max_memory = solution['memory_megabytes']
+        while solution['total_weight'] is None:
+            current_weight += 1
+            start_building_time = time.time()
+            self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
+            end_building_time = time.time()
+            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
+            solution['building_time_seconds'] = end_building_time - start_building_time
+            total_time += solution['solving_time_seconds']
+            max_memory = max((max_memory, solution['memory_megabytes']))
+        solution['solving_time_seconds'] = total_time
+        solution['memory_megabytes'] = max_memory
+        solution['test_name'] = "find_lowest_weight_xor_differential_trail"
+
+        return solution
+
     def find_one_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR differential trail.
