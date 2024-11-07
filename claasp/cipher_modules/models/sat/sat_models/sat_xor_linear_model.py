@@ -236,7 +236,7 @@ class SatXorLinearModel(SatModel):
 
         return solutions_list
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
+    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None, start_weight=0):
         """
         Return the solution representing a XOR LINEAR trail with the lowest possible weight.
         By default, the search removes the key schedule, if any.
@@ -277,7 +277,7 @@ class SatXorLinearModel(SatModel):
             sage: trail['total_weight']
             3.0
         """
-        current_weight = 0
+        current_weight = start_weight
         start_building_time = time.time()
         self.build_xor_linear_trail_model(weight=current_weight, fixed_variables=fixed_values)
         end_building_time = time.time()
@@ -290,7 +290,7 @@ class SatXorLinearModel(SatModel):
             start_building_time = time.time()
             self.build_xor_linear_trail_model(weight=current_weight, fixed_variables=fixed_values)
             end_building_time = time.time()
-            solution = self.solve(XOR_LINEAR, solver_name=solver_name)
+            solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
             solution['building_time_seconds'] = end_building_time - start_building_time
             total_time += solution['solving_time_seconds']
             max_memory = max((max_memory, solution['memory_megabytes']))
