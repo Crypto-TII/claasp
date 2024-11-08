@@ -15,6 +15,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+"""
+MZN Hybrid Impossible Xor Differential Model.
+
+.. _mzn-hybrid-impossible-differential-standard:
+
+MZN Hybrid Impossible XOR Differential
+------------------------------------
+
+The target of this class is to combine the precision of a bitwise impossible xor differential model while keeping track
+of active non-linear components as done by the wordwise impossible xor differential model.
+To do so, the domain of each variable is extended to include values that allow to identify in a unique way any active nonlinear
+component.
+"""
 
 import os
 import ast
