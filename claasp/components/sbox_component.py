@@ -511,8 +511,7 @@ class SBOX(Component):
             sage: sbox_component = lblock.component_from(0, 2)
             sage: declarations, constraints, sbox_mant = sbox_component.cp_hybrid_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
             sage: constraints
-            ['constraint abstract_sbox_0_2(array1d(0..3, [xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]), array1d(0..3, [sbox_0_2[0]]++[sbox_0_2[1]]++[sbox_0_2[2]]++[sbox_0_2[3]]));']
-        """
+            ['constraint abstract_sbox_0_2(array1d(0..3, [xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]), array1d(0..3, [sbox_0_2[0]]++[sbox_0_2[1]]++[sbox_0_2[2]]++[sbox_0_2[3]]), 0, 0);']        """
         def _get_abstracted_predicate():
             if list_of_component_number != []:
                 max_number_of_sboxes = max(len(lst) for lst in list_of_component_number.values())
@@ -616,7 +615,7 @@ class SBOX(Component):
             sage: cp = MznHybridImpossibleXorDifferentialModel(lblock)
             sage: declarations, constraints = sbox_component.cp_hybrid_probabilistic_truncated_xor_differential_constraints(cp)
             sage: constraints
-            ['constraint table([xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]++[sbox_0_2[0]]++[sbox_0_2[1]]++[sbox_0_2[2]]++[sbox_0_2[3]]++[p[1]], DDT_sbox_0_2);']
+            ['constraint table([xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]++[sbox_0_2[0]]++[sbox_0_2[1]]++[sbox_0_2[2]]++[sbox_0_2[3]]++[p[0]], DDT_sbox_0_2);']
         """
 
         input_size = int(self.input_bit_size)
