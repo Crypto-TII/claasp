@@ -229,6 +229,23 @@ def _get_truncated_output_difference(ddt_row, n):
             output_bits[n - 1 - bit] = 1 if delta[0] else 0
     return has_undisturbed_bits, output_bits
 
+def _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(inv_output_id_link, undisturbed_bits, sbox_mant, inverse):
+    undisturbed_bits_ddt = []
+    for pair in undisturbed_bits:
+        undisturbed_bits_ddt += list(pair[0]) + list(pair[1])
+    for i in range(len(undisturbed_bits_ddt)):
+        undisturbed_bits_ddt[i] = str(undisturbed_bits_ddt[i])
+    undisturbed_table_bits = ','.join(undisturbed_bits_ddt)
+    already_in = False
+    output_id_link_sost = inv_output_id_link
+    for mant in sbox_mant:
+        if undisturbed_table_bits == mant[0] and ((not inverse) or (inverse and 'inverse' in mant[1])):
+            already_in = True
+            output_id_link_sost = mant[1]
+    if not already_in:
+        sbox_mant.append([undisturbed_table_bits, inv_output_id_link])
+
+    return already_in, output_id_link_sost, undisturbed_table_bits
 
 class SBOX(Component):
     def __init__(self, current_round_number, current_round_number_of_components,
@@ -468,20 +485,11 @@ class SBOX(Component):
             all_inputs.extend([f'[{id_link}[{position}]]' for position in bit_positions])
         table_input = '++'.join(all_inputs)
         table_output = '++'.join([f'[{output_id_link}[{i}]]' for i in range(output_size)])
-        undisturbed_bits_ddt = []
-        for pair in eventual_undisturbed_bits:
-            undisturbed_bits_ddt += list(pair[0]) + list(pair[1])
-        for i in range(len(undisturbed_bits_ddt)):
-            undisturbed_bits_ddt[i] = str(undisturbed_bits_ddt[i])
-        undisturbed_table_bits = ','.join(undisturbed_bits_ddt)
-        already_in = False
-        output_id_link_sost = inv_output_id_link
-        for mant in sbox_mant:
-            if undisturbed_table_bits == mant[0] and ((not inverse) or (inverse and 'inverse' in mant[1])):
-                already_in = True
-                output_id_link_sost = mant[1]
+
+        already_in, output_id_link_sost, undisturbed_table_bits = _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
+            inv_output_id_link, eventual_undisturbed_bits, sbox_mant, inverse)
+
         if not already_in:
-            sbox_mant.append([undisturbed_table_bits, inv_output_id_link])
             undisturbed_declaration = f'array [1..{num_pairs}, 1..{len_input + len_output}] of int: ' \
                                       f'table_{output_id_link_sost} = array2d(1..{num_pairs}, 1..{len_input + len_output}, ' \
                                       f'[{undisturbed_table_bits}]);'
@@ -572,20 +580,11 @@ class SBOX(Component):
             all_inputs.extend([f'[{id_link}[{position}]]' for position in bit_positions])
         table_input = '++'.join(all_inputs)
         table_output = '++'.join([f'[{output_id_link}[{i}]]' for i in range(output_size)])
-        undisturbed_bits_ddt = []
-        for pair in undisturbed_bits:
-            undisturbed_bits_ddt += list(pair[0]) + list(pair[1])
-        for i in range(len(undisturbed_bits_ddt)):
-            undisturbed_bits_ddt[i] = str(undisturbed_bits_ddt[i])
-        undisturbed_table_bits = ','.join(undisturbed_bits_ddt)
-        already_in = False
-        output_id_link_sost = inv_output_id_link
-        for mant in sbox_mant:
-            if undisturbed_table_bits == mant[0] and ((not inverse) or (inverse and 'inverse' in mant[1])):
-                already_in = True
-                output_id_link_sost = mant[1]
+
+        already_in, output_id_link_sost, undisturbed_table_bits = _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
+            inv_output_id_link, undisturbed_bits, sbox_mant, inverse)
+
         if not already_in:
-            sbox_mant.append([undisturbed_table_bits, inv_output_id_link])
             sbox_declaration = _get_sbox_predicate()
             abstract_sbox_declaration = _get_abstracted_predicate()
             cp_declarations += [sbox_declaration, abstract_sbox_declaration]
@@ -598,73 +597,6 @@ class SBOX(Component):
 
         return cp_declarations, cp_constraints, sbox_mant
 
-    def cp_hybrid_probabilistic_truncated_xor_differential_constraints(self, model, inverse=False):
-        """
-        Return lists of declarations and constraints for the probability of SBOX component for CP hybrid probablistic xor differential probability.
-
-        INPUT:
-
-        - ``model`` -- **model object**; a model instance
-        - ``inverse`` -- **boolean** (default: `False`)
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hybrid_impossible_xor_differential_model import MznHybridImpossibleXorDifferentialModel
-            sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
-            sage: lblock = LBlockBlockCipher(number_of_rounds=1)
-            sage: sbox_component = lblock.component_from(0, 2)
-            sage: cp = MznHybridImpossibleXorDifferentialModel(lblock)
-            sage: declarations, constraints = sbox_component.cp_hybrid_probabilistic_truncated_xor_differential_constraints(cp)
-            sage: constraints
-            ['constraint table([xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]++[sbox_0_2[0]]++[sbox_0_2[1]]++[sbox_0_2[2]]++[sbox_0_2[3]]++[p[0]], DDT_sbox_0_2);']
-        """
-
-        input_size = int(self.input_bit_size)
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        if inverse:
-            inv_output_id_link = 'inverse_' + self.id
-        else:
-            inv_output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
-        description = self.description
-        sbox = SBox(description)
-        cp_declarations = []
-        already_in = False
-        output_id_link_sost = inv_output_id_link
-        for mant in model.sbox_mant:
-            if description == mant[0] and ((not inverse) or (inverse and 'inverse' in mant[1])):
-                already_in = True
-                output_id_link_sost = mant[1]
-        if not already_in:
-            sbox_ddt = sbox.difference_distribution_table()
-            dim_ddt = len([i for i in sbox_ddt.list() if i])
-            ddt_entries = []
-            for i in range(sbox_ddt.nrows()):
-                for j in range(sbox_ddt.ncols()):
-                    if sbox_ddt[i][j]:
-                        sep_bin_i = ','.join(f'{i:0{input_size}b}')
-                        sep_bin_j = ','.join(f'{j:0{output_size}b}')
-                        log_of_prob = round(100 * math.log2((2 ** input_size) / sbox_ddt[i][j]))
-                        ddt_entries.append(f'{sep_bin_i},{sep_bin_j},{log_of_prob}')
-            ddt_values = ','.join(ddt_entries)
-            sbox_declaration = f'array [1..{dim_ddt}, 1..{input_size + output_size + 1}] of int: ' \
-                               f'DDT_{output_id_link_sost} = array2d(1..{dim_ddt}, 1..{input_size + output_size + 1}, ' \
-                               f'[{ddt_values}]);'
-            cp_declarations.append(sbox_declaration)
-            model.sbox_mant.append((description, output_id_link))
-        all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'[{id_link}[{position}]]' for position in bit_positions])
-        table_input = '++'.join(all_inputs)
-        table_output = '++'.join([f'[{output_id_link}[{i}]]' for i in range(output_size)])
-        constraint = f'constraint table({table_input}++{table_output}++[p[{model.c}]], DDT_{output_id_link_sost});'
-        cp_constraints = [constraint]
-        model.component_and_probability[output_id_link] = model.c
-        model.c += 1
-
-        return cp_declarations, cp_constraints
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists of declarations and constraints for SBOX component for CP wordwise deterministic truncated xor differential.
@@ -742,13 +674,14 @@ class SBOX(Component):
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         return self.cp_xor_differential_first_step_constraints(model)
 
-    def cp_xor_differential_propagation_constraints(self, model):
+    def cp_xor_differential_propagation_constraints(self, model, inverse=False):
         """
         Return lists of declarations and constraints for the probability of SBOX component for CP xor differential probability.
 
         INPUT:
 
         - ``model`` -- **model object**; a model instance
+        - ``inverse`` -- **boolean** (default: `False`); used to model components in the impossible xor differential model
 
         EXAMPLES::
 
@@ -769,9 +702,12 @@ class SBOX(Component):
         sbox = SBox(description)
         cp_declarations = []
         already_in = False
-        output_id_link_sost = output_id_link
+        if inverse:
+            output_id_link_sost = 'inverse_' + output_id_link
+        else:
+            output_id_link_sost = output_id_link
         for mant in model.sbox_mant:
-            if description == mant[0]:
+            if description == mant[0] and ((not inverse) or (inverse and 'inverse' in mant[1])):
                 already_in = True
                 output_id_link_sost = mant[1]
         if not already_in:
@@ -787,7 +723,7 @@ class SBOX(Component):
                         ddt_entries.append(f'{sep_bin_i},{sep_bin_j},{log_of_prob}')
             ddt_values = ','.join(ddt_entries)
             sbox_declaration = f'array [1..{dim_ddt}, 1..{input_size + output_size + 1}] of int: ' \
-                               f'DDT_{output_id_link} = array2d(1..{dim_ddt}, 1..{input_size + output_size + 1}, ' \
+                               f'DDT_{output_id_link_sost} = array2d(1..{dim_ddt}, 1..{input_size + output_size + 1}, ' \
                                f'[{ddt_values}]);'
             cp_declarations.append(sbox_declaration)
             model.sbox_mant.append((description, output_id_link))

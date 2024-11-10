@@ -572,7 +572,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
         if not wordwise:
             if component.type == SBOX:
                 if key_schedule and probabilistic:
-                    variables, constraints = component.cp_hybrid_probabilistic_truncated_xor_differential_constraints(
+                    variables, constraints = component.cp_xor_differential_propagation_constraints(
                         self, inverse)
                 else:
                     variables, constraints, sbox_mant = component.cp_hybrid_deterministic_truncated_xor_differential_constraints(
