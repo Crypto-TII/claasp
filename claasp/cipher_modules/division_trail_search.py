@@ -706,6 +706,14 @@ class MilpDivisionTrailModel():
                             tmp += self._cipher.inputs[0][0] + str(first_input_bit_positions[index])
             if 1 not in values[:max_input_bit_pos]:
                 tmp += str(1)
+            else:
+                if nb_inputs_used == 1:
+                    input1_prefix = self._cipher.inputs[0][0]
+                    l = tmp.split(input1_prefix)[1:]
+                    sorted_l = sorted(l, key=lambda x: (x == '', int(x) if x else 0))
+                    l = [''] + sorted_l
+                    tmp = input1_prefix.join(l)
+
             if tmp in monomials:
                 monomials.remove(tmp)
             else:
