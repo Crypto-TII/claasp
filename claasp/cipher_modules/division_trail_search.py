@@ -744,6 +744,9 @@ class MilpDivisionTrailModel():
     def check_presence_of_particular_monomial_in_specific_anf(self, monomial, output_bit_index, fixed_degree=None,
                                                               chosen_cipher_output=None):
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, chosen_cipher_output)
+        self._model.setParam("PoolSolutions", 200000000)  # 200000000 to be large
+        self._model.setParam(GRB.Param.PoolSearchMode, 2)
+
         for term in monomial:
             var_term = self._model.getVarByName(f"{term[0]}[{term[1]}]")
             self._model.addConstr(var_term == 1)
