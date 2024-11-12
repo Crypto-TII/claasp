@@ -286,7 +286,7 @@ class SatDifferentialLinearModel(SatModel):
         return components_solutions, total_weight_diff + 2 * total_weight_lin
 
     def find_one_differential_linear_trail_with_fixed_weight(
-            self, weight, num_unknown_vars=None, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
+            self, weight, num_unknown_vars=None, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
         Finds one XOR differential-linear trail with a fixed weight. The weight must be the sum of the probability weight
         of the top part (differential part) and the correlation weight of the bottom part (linear part).
@@ -365,7 +365,7 @@ class SatDifferentialLinearModel(SatModel):
         )
         self.model_constraints.extend(constraints)
 
-        solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
+        solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name, options=options)
         solution['building_time_seconds'] = time.time() - start_time
         solution['test_name'] = "find_one_regular_truncated_xor_differential_trail"
 
