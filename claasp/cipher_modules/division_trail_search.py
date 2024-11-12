@@ -722,8 +722,8 @@ class MilpDivisionTrailModel():
         end = time.time()
         printing_time = end - start
         print(f"########## printing_time : {printing_time}")
-        print(monomials)
         print(f'Number of monomials found: {len(monomials)}')
+        return monomials
 
     def optimize_model(self):
         print(self._model)
@@ -739,7 +739,7 @@ class MilpDivisionTrailModel():
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
 
         self.optimize_model()
-        self.get_solutions()
+        return self.get_solutions()
 
     def check_presence_of_particular_monomial_in_specific_anf(self, monomial, output_bit_index, fixed_degree=None,
                                                               chosen_cipher_output=None):
@@ -754,15 +754,17 @@ class MilpDivisionTrailModel():
         self._model.write("division_trail_model.lp")
 
         self.optimize_model()
-        self.get_solutions()
+        return self.get_solutions()
 
-    def check_presence_of_particular_monomial_in_all_anf(self, monomial, fixed_degree=None, chosen_cipher_output=None):
+    def check_presence_of_particular_monomial_in_all_anf(self, monomial, fixed_degree=None,
+                                                         chosen_cipher_output=None):
         s = ""
         for term in monomial:
             s += term[0][0] + str(term[1])
         for i in range(self._cipher.output_bit_size):
             print(f"\nSearch of {s} in anf {i} :")
-            self.check_presence_of_particular_monomial_in_specific_anf(monomial, i, fixed_degree, chosen_cipher_output)
+            self.check_presence_of_particular_monomial_in_specific_anf(monomial, i, fixed_degree,
+                                                                       chosen_cipher_output)
 
     def find_degree_of_specific_output_bit(self, output_bit_index, chosen_cipher_output=None):
         fixed_degree = None
