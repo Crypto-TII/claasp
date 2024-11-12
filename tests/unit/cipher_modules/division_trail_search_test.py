@@ -26,6 +26,11 @@ def test_find_degree_of_specific_output_bit():
     degree = milp.find_degree_of_specific_output_bit(0)
     assert degree == 3
 
+    cipher = AradiBlockCipher(number_of_rounds=1)
+    milp = MilpDivisionTrailModel(cipher)
+    degree = milp.find_degree_of_specific_output_bit(0, chosen_cipher_output='xor_0_12')
+    assert degree == 3
+
     cipher = SpeckBlockCipher(number_of_rounds=1)
     milp = MilpDivisionTrailModel(cipher)
     degree = milp.find_degree_of_specific_output_bit(15)
@@ -35,3 +40,9 @@ def test_find_degree_of_specific_output_bit():
     milp = MilpDivisionTrailModel(cipher)
     degree = milp.find_degree_of_specific_output_bit(0)
     assert degree == 2
+
+def test_check_presence_of_particular_monomial_in_specific_anf():
+    cipher = GastonSboxPermutation(number_of_rounds=1)
+    milp = MilpDivisionTrailModel(cipher)
+    monomials = milp.check_presence_of_particular_monomial_in_specific_anf([("plaintext", 230)], 0)
+    assert monomials == ['p181p230','p15p230','p33p230','p54p230','p55p230','p82p230','p100p230','p114p230','p115p230','p128p230','p140p230','p141p230','p146p230','p223p230','p205p230','p209p230','p210p230','p230p267','p230p313','p230p314','p230p315']
