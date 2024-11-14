@@ -22,6 +22,7 @@ from sage.crypto.sbox import SBox
 from collections import Counter
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_predecessors_subgraph
+from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
 from gurobipy import Model, GRB
 import os
 
@@ -221,6 +222,52 @@ class MilpDivisionTrailModel():
                 self._model.addConstr(output_vars[index] >= constr)
         self._model.update()
 
+    def create_copies_for_linear_layer(self, binary_matrix, input_vars_concat):
+        copies = {}
+        for index, var in enumerate(input_vars_concat):
+            column = [row[index] for row in binary_matrix]
+            number_of_1s = list(column).count(1)
+            if number_of_1s > 1:
+                current = 1
+            else:
+                current = 0
+            copies[index] = {}
+            copies[index][0] = var
+            copies[index]["current"] = current
+            self.set_as_used_variables([var])
+            new_vars = self._model.addVars(list(range(number_of_1s)), vtype=GRB.BINARY,
+                                                 name="copy_" + var.VarName)
+            self._model.update()
+            for i in range(number_of_1s):
+                self._model.addConstr(var >= new_vars[i])
+            self._model.addConstr(
+                sum(new_vars[i] for i in range(number_of_1s)) >= var)
+            self._model.update()
+            for i in range(1, number_of_1s + 1):
+                copies[index][i] = new_vars[i - 1]
+        return copies
+
+    def add_linear_layer_constraints(self, component):
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+
+        if component.type == "linear_layer":
+            binary_matrix = component.description
+        else:
+            binary_matrix = binary_matrix_of_linear_component(component)
+
+        copies = self.create_copies_for_linear_layer(binary_matrix, input_vars_concat)
+        for index_row, row in enumerate(binary_matrix):
+            constr = 0
+            for index_bit, bit in enumerate(row):
+                if bit:
+                    current = copies[index_bit]["current"]
+                    constr += copies[index_bit][current]
+                    copies[index_bit]["current"] += 1
+                    self.set_as_used_variables([copies[index_bit][current]])
+            self._model.addConstr(output_vars[index_row] == constr)
+        self._model.update()
+
     def add_xor_constraints(self, component):
         output_vars = self.get_output_vars(component)
         # print(output_vars)
@@ -388,6 +435,8 @@ class MilpDivisionTrailModel():
                 # print(f"---------> {component.id}")
                 if component.type == "sbox":
                     self.add_sbox_constraints(component)
+                elif component.type in ["linear_layer", "mix_column"]:
+                    self.add_linear_layer_constraints(component)
                 elif component.type in ["cipher_output", "constant", "intermediate_output"]:
                     continue
                 elif component.type == "word_operation":
