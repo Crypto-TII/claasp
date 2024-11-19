@@ -236,7 +236,8 @@ class SatXorLinearModel(SatModel):
 
         return solutions_list
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None, start_weight=0):
+    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None,
+                                            start_weight=0):
         """
         Return the solution representing a XOR LINEAR trail with the lowest possible weight.
         By default, the search removes the key schedule, if any.
@@ -300,7 +301,7 @@ class SatXorLinearModel(SatModel):
 
         return solution
 
-    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
+    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
         Return the solution representing a XOR linear trail.
         By default, the search removes the key schedule, if any.
@@ -345,7 +346,7 @@ class SatXorLinearModel(SatModel):
         start_building_time = time.time()
         self.build_xor_linear_trail_model(fixed_variables=fixed_values)
         end_building_time = time.time()
-        solution = self.solve(XOR_LINEAR, solver_name=solver_name)
+        solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
         solution['building_time_seconds'] = end_building_time - start_building_time
         solution['test_name'] = "find_one_xor_linear_trail"
 
