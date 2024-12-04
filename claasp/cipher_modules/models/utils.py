@@ -22,6 +22,8 @@ import sys
 import math
 from copy import deepcopy
 
+import numpy as np
+
 from claasp.name_mappings import CONSTANT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN, \
     INPUT_KEY, INPUT_PLAINTEXT, INPUT_MESSAGE, INPUT_STATE
 
@@ -791,3 +793,90 @@ def get_related_key_scenario_format_for_fixed_values(_cipher):
             fixed_variables.append(fixed_variable)
 
     return fixed_variables
+
+
+def _extract_bits(columns, positions):
+    """Extracts bits from columns at specified positions using vectorization."""
+    bit_size = columns.shape[0] * 8
+    positions = np.array(positions)
+    byte_indices = (bit_size - positions - 1) // 8
+    bit_indices = positions % 8
+    if np.any(byte_indices < 0) or np.any(byte_indices >= columns.shape[0]):
+        raise IndexError("Byte index out of range.")
+    bytes_at_positions = columns[byte_indices][:, :]
+    bits = (bytes_at_positions >> bit_indices[:, np.newaxis]) & 1
+
+    return bits
+
+
+def _number_to_n_bit_binary_string(number, n_bits):
+    """Converts a number to an n-bit binary string with leading zero padding."""
+    return format(number, f'0{n_bits}b')
+
+
+def _extract_bit_positions(hex_number, state_size):
+    binary_str = _number_to_n_bit_binary_string(hex_number, state_size)
+    binary_str = binary_str[::-1]
+    positions = [i for i, bit in enumerate(binary_str) if bit == '1']
+    return positions
+
+
+def _repeat_input_difference(input_difference, num_samples, num_bytes):
+    """Function to repeat the input difference for a large sample size."""
+    bytes_array = np.frombuffer(input_difference.to_bytes(num_bytes, 'big'), dtype=np.uint8)
+    repeated_array = np.broadcast_to(bytes_array[:, np.newaxis], (num_bytes, num_samples))
+    return repeated_array
+
+
+def differential_linear_checker_for_permutation(
+        cipher, input_difference, output_mask, number_of_samples, state_size
+):
+    """
+    This method helps to verify experimentally differential-linear distinguishers for permutations using the vectorized evaluator
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    num_bytes = int(state_size/8)
+
+    rng = np.random.default_rng()
+    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext2 = plaintext1 ^ input_difference_data
+    ciphertext1 = cipher.evaluate_vectorized([plaintext1])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext2])
+    ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
+    bit_positions_ciphertext = _extract_bit_positions(output_mask, state_size)
+    ccc = _extract_bits(ciphertext3.T, bit_positions_ciphertext)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    count = np.count_nonzero(parities == 0)
+    corr = 2*count/number_of_samples*1.0-1
+    return corr
+
+
+def differential_linear_checker_for_block_cipher_single_key(
+        cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key
+):
+    """
+    This method helps to verify experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator
+    """
+    if block_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    if key_size % 8 != 0:
+        raise ValueError("Key size must be a multiple of 8.")
+    state_num_bytes = int(block_size / 8)
+    key_num_bytes = int(key_size / 8)
+
+    rng = np.random.default_rng()
+    fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
+    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, state_num_bytes)
+    plaintext1 = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext2 = plaintext1 ^ input_difference_data
+    ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
+    ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
+    bit_positions_ciphertext = _extract_bit_positions(output_mask, block_size)
+    ccc = _extract_bits(ciphertext3.T, bit_positions_ciphertext)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    count = np.count_nonzero(parities == 0)
+    corr = 2*count/number_of_samples*1.0-1
+    return corr

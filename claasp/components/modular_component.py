@@ -217,9 +217,9 @@ class Modular(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=5)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(0, 0)
             sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             (['var -2..255: xor_0_0_temp_0_0_value;',
@@ -267,9 +267,9 @@ class Modular(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(speck)
+            sage: cp = MznModel(speck)
             sage: modadd_component = speck.component_from(0, 1)
             sage: modadd_component.cp_xor_differential_propagation_constraints(cp)
             (['array[0..15] of var 0..1: pre_modadd_0_1_0;',
@@ -314,6 +314,75 @@ class Modular(Component):
         result = cp_declarations, cp_constraints
         return result
 
+    def cp_xor_differential_propagation_constraints_arx_optimized(self, model):
+        """
+        Return variables and constraints for the component Modular Addition/Substraction for MINIZINC xor differential probability.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
+            sage: fancy = FancyBlockCipher(number_of_rounds=2)
+            sage: minizinc = MznXorDifferentialModelARXOptimized(fancy, sat_or_milp="milp")
+            sage: modadd_component = fancy.component_from(1, 9)
+            sage: _, constraints = modadd_component.cp_xor_differential_propagation_constraints_arx_optimized(minizinc)
+            sage: constraints[6]
+            'constraint pre_modadd_1_9_1[0] = sbox_1_0[0];'
+        """
+        output_size = int(self.output_bit_size)
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        num_add = self.description[1]
+        
+        if num_add > 2:
+            return self.cp_xor_differential_propagation_constraints(model)
+        
+        all_inputs = []
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        input_len = len(all_inputs) // num_add
+        cp_declarations = []
+        cp_constraints = []
+        cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: dummy_{output_id_link};')
+        cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: x1_{output_id_link};')
+        cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: x2_{output_id_link};')
+        
+        for i in range(input_len):
+            cp_constraints.append(f'constraint x1_{output_id_link}[{i}] = {input_id_links[0]}[{input_bit_positions[0][i]}];')
+            cp_constraints.append(f'constraint x2_{output_id_link}[{i}] = {input_id_links[1]}[{input_bit_positions[1][i]}];')
+        
+        cp_constraints.append(f'constraint x2_{output_id_link}[{input_len - 1}] + x1_{output_id_link}[{input_len - 1}] + {output_id_link}[{input_len - 1}] <= 2;')
+        cp_constraints.append(f'constraint x2_{output_id_link}[{input_len - 1}] + x1_{output_id_link}[{input_len - 1}] + {output_id_link}[{input_len - 1}] - 2*dummy_{output_id_link}[{input_len - 1}] >= 0;')
+        cp_constraints.append(f'constraint dummy_{output_id_link}[{input_len - 1}] - x2_{output_id_link}[{input_len - 1}] >= 0;')
+        cp_constraints.append(f'constraint dummy_{output_id_link}[{input_len - 1}] - x1_{output_id_link}[{input_len - 1}] >= 0;')
+        cp_constraints.append(f'constraint dummy_{output_id_link}[{input_len - 1}] - {output_id_link}[{input_len - 1}] >= 0;')
+        
+        for i in range(input_len - 1):
+            cp_constraints.append(f'constraint x1_{output_id_link}[{i+1}] - {output_id_link}[{i+1}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint x2_{output_id_link}[{i+1}] - x1_{output_id_link}[{i+1}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint {output_id_link}[{i+1}] - x2_{output_id_link}[{i+1}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint x2_{output_id_link}[{i+1}] + x1_{output_id_link}[{i+1}] + {output_id_link}[{i+1}] + dummy_{output_id_link}[{i}] <= 3;')
+            cp_constraints.append(f'constraint x2_{output_id_link}[{i+1}] + x1_{output_id_link}[{i+1}] + {output_id_link}[{i+1}] - dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint - x1_{output_id_link}[{i+1}] + x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint x1_{output_id_link}[{i+1}] + x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint x1_{output_id_link}[{i+1}] - x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint x2_{output_id_link}[{i+1}] + x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+            cp_constraints.append(f'constraint {output_id_link}[{i+1}] - x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+            cp_constraints.append(f'constraint - x1_{output_id_link}[{i+1}] + x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+            cp_constraints.append(f'constraint - x1_{output_id_link}[{i+1}] - x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+            cp_constraints.append(f'constraint - x1_{output_id_link}[{i+1}] - x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+        
+        cp_constraints.append(f'constraint p[{model.c}] = sum([if (x1_{output_id_link}[i+1] = x2_{output_id_link}[i+1]) /\\ (x1_{output_id_link}[i+1] = {output_id_link}[i+1]) then 0 else 100 endif | i in 0..{input_len - 2}]);')
+        
+        model.c += 1
+        result = cp_declarations, cp_constraints
+        return result
+
     def cp_xor_linear_mask_propagation_constraints(self, model):
         """
         Return lists of declarations and constraints for the probability of Modular Addition/Substraction for CP xor linear model.
@@ -325,10 +394,10 @@ class Modular(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
             sage: modadd_component = speck.component_from(0, 1)
-            sage: cp = CpModel(speck)
+            sage: cp = MznModel(speck)
             sage: modadd_component.cp_xor_linear_mask_propagation_constraints(cp)
             (['array[0..31] of var 0..1: modadd_0_1_i;',
               'array[0..15] of var 0..1: modadd_0_1_o;',
@@ -664,9 +733,9 @@ class Modular(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_models.minizinc_xor_differential_model import MinizincXorDifferentialModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: minizinc = MinizincXorDifferentialModel(fancy, sat_or_milp="milp")
+            sage: minizinc = MznXorDifferentialModelARXOptimized(fancy, sat_or_milp="milp")
             sage: modadd_component = fancy.component_from(1, 9)
             sage: _, constraints = modadd_component.minizinc_xor_differential_propagation_constraints(minizinc)
             sage: constraints[6]

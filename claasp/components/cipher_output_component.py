@@ -121,9 +121,9 @@ class CipherOutput(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: output_component = aes.component_from(0, 35)
             sage: output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             ([],
@@ -164,9 +164,9 @@ class CipherOutput(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: output_component = aes.component_from(0, 35)
             sage: output_component.cp_xor_differential_propagation_first_step_constraints(cp)
             (['array[0..15] of var 0..1: intermediate_output_0_35;'],

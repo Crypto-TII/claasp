@@ -1,5 +1,5 @@
 from claasp.components.not_component import NOT
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.permutations.gift_permutation import GiftPermutation
@@ -59,7 +59,7 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 def test_cp_xor_differential_first_step_constraints():
     aes = AESBlockCipher()
-    cp = CpModel(aes)
+    cp = MznModel(aes)
     not_component = NOT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                                [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                                 [0, 1, 2, 3, 4, 5, 6, 7]], 32)

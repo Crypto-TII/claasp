@@ -69,10 +69,10 @@ class IntermediateOutput(CipherOutput):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_models.cp_xor_linear_model import CpXorLinearModel
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: speck_without_key_schedule = speck.remove_key_schedule()
-            sage: cp = CpXorLinearModel(speck_without_key_schedule)
+            sage: cp = MznXorLinearModel(speck_without_key_schedule)
             sage: intermediate_component = speck.get_component_from_id("intermediate_output_0_6")
             sage: variables, constraints = intermediate_component.cp_xor_linear_mask_propagation_constraints(cp)
             sage: constraints

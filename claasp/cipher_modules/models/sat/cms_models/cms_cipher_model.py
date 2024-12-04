@@ -42,6 +42,7 @@ XOR operations were overridden.
 For any further information, visit `CryptoMiniSat - XOR clauses
 <https://www.msoos.org/xor-clauses/>`_.
 """
+from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.name_mappings import (CONSTANT, SBOX, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
@@ -82,7 +83,7 @@ class CmsSatCipherModel(SatCipherModel):
             sage: cms.build_cipher_model()
         """
         variables = []
-        constraints = self.fix_variables_value_constraints(fixed_variables)
+        constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
         operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
         self._model_constraints = constraints
