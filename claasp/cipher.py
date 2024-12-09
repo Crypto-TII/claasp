@@ -698,10 +698,10 @@ class Cipher:
 
         The inputs are given as a list cipher_input,such that cipher_inputs[0] contains the first input,
         and cipher_inputs[1] the second.
-        Each of the inputs is given as a numpy ndarray of np.uint8, of shape n*m, where n is the size
-        (in bytes) of the input, and m is the number of samples.
+        Each of the inputs is given as a numpy ndarray of np.uint8, with one one row per byte and column per sample,
+        of shape n*m, where n is the size (in bytes) of the input, and m is the number of samples.
 
-        The return is a list of m*n ndarrays (format transposed compared to the input format),
+        The return is a list of n*m ndarrays (format transposed compared to the input format),
         where the list is of size 1 if intermediate_output is False, and NUMBER_OF_ROUNDS otherwise.
 
         This function determines automatically if a bit-based evaluation is required,
