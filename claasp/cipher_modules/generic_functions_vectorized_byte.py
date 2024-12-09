@@ -23,7 +23,7 @@ import math
 NB = 8  # Number of bits of the representation
 
 
-def integer_array_to_evaluate_vectorized_input(values, bit_size):
+def integer_array_to_evaluate_vectorized_format(values, bit_size):
     """
     Converts the bit_size integers from the values array to the representation accepted by evaluate_vectorized, a numpy matrix
     of unsigned 8-bit integers (one row per byte, one column per value). If needed, the values are padded with zeroes
@@ -60,7 +60,7 @@ def cipher_inputs_to_evaluate_vectorized_inputs(cipher_inputs, cipher_inputs_bit
                                                               "cipher_inputs_bit_size "
     evaluate_vectorized_inputs = []
     for i, bit_size in enumerate(cipher_inputs_bit_size):
-        evaluate_vectorized_inputs.append(integer_array_to_evaluate_vectorized_input(cipher_inputs[i], bit_size))
+        evaluate_vectorized_inputs.append(integer_array_to_evaluate_vectorized_format(cipher_inputs[i], bit_size))
     return evaluate_vectorized_inputs
 
 
@@ -68,7 +68,7 @@ def get_number_of_bytes_needed_for_bit_size(bit_size):
     return math.ceil(bit_size / 8)
 
 
-def evaluate_vectorized_outputs_to_integers(evaluate_vectorized_outputs, cipher_output_bit_size):
+def evaluate_vectorized_format_to_integers(evaluate_vectorized_outputs, cipher_output_bit_size):
     """
     Converts the outputs of evaluate_vectorized (a list containing a single numpy matrix) to a list of integers
     (one per output/row of the matrix)

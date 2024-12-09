@@ -10,7 +10,7 @@ def test_byte_vector_is_consecutive():
 def test_integer_array_to_evaluate_vectorized_input():
     values = [0, 0xffff, 0xff, 0x01f0]
     bit_size = 16
-    evaluate_vectorized_input = integer_array_to_evaluate_vectorized_input(values, bit_size)
+    evaluate_vectorized_input = integer_array_to_evaluate_vectorized_format(values, bit_size)
     assert np.all(evaluate_vectorized_input.shape == (2, 4))
     assert np.all(evaluate_vectorized_input[:, 0] == 0)
     assert np.all(evaluate_vectorized_input[:, 1] == 255)
@@ -19,7 +19,7 @@ def test_integer_array_to_evaluate_vectorized_input():
 
     values = [0, 0x1ffff, 0xff, 0xfffff]
     bit_size = 17
-    evaluate_vectorized_input = integer_array_to_evaluate_vectorized_input(values, bit_size)
+    evaluate_vectorized_input = integer_array_to_evaluate_vectorized_format(values, bit_size)
     assert np.all(evaluate_vectorized_input.shape == (3, 4))
     assert np.all(evaluate_vectorized_input[:, 0] == 0)
     assert np.all(evaluate_vectorized_input[:, 1] == (1, 255, 255))
@@ -28,7 +28,7 @@ def test_integer_array_to_evaluate_vectorized_input():
 
     values = [2 ** 130 - 1, 0]
     bit_size = 129
-    evaluate_vectorized_input = integer_array_to_evaluate_vectorized_input(values, bit_size)
+    evaluate_vectorized_input = integer_array_to_evaluate_vectorized_format(values, bit_size)
     assert np.all(evaluate_vectorized_input.shape == (17, 2))
     assert np.all(evaluate_vectorized_input[1:, 0] == 255)
     assert evaluate_vectorized_input[0, 0] == 1
@@ -65,13 +65,13 @@ def test_get_number_of_bytes_needed_for_bit_size():
 def test_evaluate_vectorized_outputs_to_integers():
     bit_size = 256
     values = [0, 2 ** bit_size - 1, 0xff]
-    evaluate_vectorized_outputs = [integer_array_to_evaluate_vectorized_input(values, bit_size).transpose()]
-    assert np.all(evaluate_vectorized_outputs_to_integers(evaluate_vectorized_outputs, bit_size) == values)
+    evaluate_vectorized_outputs = [integer_array_to_evaluate_vectorized_format(values, bit_size)]
+    assert np.all(evaluate_vectorized_format_to_integers(evaluate_vectorized_outputs, bit_size) == values)
     bit_size = 6
-    values = [np.uint8([0xff, 0x3f]).reshape(2, 1)]
-    assert evaluate_vectorized_outputs_to_integers(values, bit_size) == [0x3f, 0x3f]
+    values = [np.uint8([0xff, 0x3f]).reshape(1, 2)]
+    assert evaluate_vectorized_format_to_integers(values, bit_size) == [0x3f, 0x3f]
     values = [np.uint8([0x3f]).reshape(1, 1)]
-    assert evaluate_vectorized_outputs_to_integers(values, bit_size) == 0x3f
+    assert evaluate_vectorized_format_to_integers(values, bit_size) == 0x3f
 
 def test_byte_vector_select_all_words():
     input_bit_size = 64
@@ -157,9 +157,9 @@ def test_byte_vector_SBOX():
     # 4 bit case
     sbox = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
     values = list(range(16))
-    formated_values = integer_array_to_evaluate_vectorized_input(values, 4)
+    formated_values = integer_array_to_evaluate_vectorized_format(values, 4)
     sub = byte_vector_SBOX([formated_values], sbox, input_bit_size=4)
-    assert np.all(evaluate_vectorized_outputs_to_integers([sub.transpose()], 4) == sbox)
+    assert np.all(evaluate_vectorized_format_to_integers([sub.transpose()], 4) == sbox)
 
     # 9 bit case
     sbox = [
@@ -200,9 +200,9 @@ def test_byte_vector_SBOX():
         43, 66, 60, 455, 341, 445, 202, 432, 8, 237, 15, 376, 436, 464, 59, 461
     ]
     values = list(range(2 ** 9))
-    formated_values = integer_array_to_evaluate_vectorized_input(values, 9)
+    formated_values = integer_array_to_evaluate_vectorized_format(values, 9)
     sub = byte_vector_SBOX([formated_values], sbox, input_bit_size=9)
-    assert np.all(evaluate_vectorized_outputs_to_integers([sub.transpose()], 9) == sbox)
+    assert np.all(evaluate_vectorized_format_to_integers([sub.transpose()], 9) == sbox)
 
 
 def test_byte_vector_XOR():
@@ -233,8 +233,8 @@ def test_byte_vector_MODADD():
     bits = 48
     A = [0xcafecafecafe]
     B = [0xdecadecadeca]
-    input_values = [integer_array_to_evaluate_vectorized_input(A, bits), integer_array_to_evaluate_vectorized_input(B, bits)]
-    expected_result = integer_array_to_evaluate_vectorized_input([(A[0]+B[0]) % (2**bits)], bits)
+    input_values = [integer_array_to_evaluate_vectorized_format(A, bits), integer_array_to_evaluate_vectorized_format(B, bits)]
+    expected_result = integer_array_to_evaluate_vectorized_format([(A[0] + B[0]) % (2 ** bits)], bits)
     modadd_result = byte_vector_MODADD(input_values)
     assert np.all(modadd_result == expected_result)
 
@@ -242,26 +242,22 @@ def test_byte_vector_MODSUB():
     bits = 48
     A = [0xcafecafecafe]
     B = [0xdecadecadeca]
-    input_values = [integer_array_to_evaluate_vectorized_input(A, bits), integer_array_to_evaluate_vectorized_input(B, bits)]
-    expected_result = integer_array_to_evaluate_vectorized_input([(A[0]-B[0]) % (2**bits)], bits)
+    input_values = [integer_array_to_evaluate_vectorized_format(A, bits), integer_array_to_evaluate_vectorized_format(B, bits)]
+    expected_result = integer_array_to_evaluate_vectorized_format([(A[0] - B[0]) % (2 ** bits)], bits)
     modsub_result = byte_vector_MODSUB(input_values)
 
     assert np.all(modsub_result == expected_result)
 
 def test_byte_vector_ROTATE():
     bits = 12
-    input_values = integer_array_to_evaluate_vectorized_input([0, 0xfff], bits)
+    input_values = integer_array_to_evaluate_vectorized_format([0, 0xfff], bits)
     rotate_result = byte_vector_ROTATE([input_values], rotation_amount = -4, input_bit_size=bits)
     assert np.all(rotate_result==input_values)
 
     bits = 12
-    input_values = integer_array_to_evaluate_vectorized_input([0, 0xff], bits)
-    expected_result = integer_array_to_evaluate_vectorized_input([0, 0x1fe], bits)
+    input_values = integer_array_to_evaluate_vectorized_format([0, 0xff], bits)
+    expected_result = integer_array_to_evaluate_vectorized_format([0, 0x1fe], bits)
     rotate_result = byte_vector_ROTATE([input_values], rotation_amount = -1, input_bit_size=bits)
-
-    print("In :", evaluate_vectorized_outputs_to_integers([input_values.transpose()], bits))
-    print("Exp:", evaluate_vectorized_outputs_to_integers([expected_result.transpose()], bits))
-    print("Out:",evaluate_vectorized_outputs_to_integers([rotate_result.transpose()], bits))
 
     assert np.all(rotate_result==expected_result)
 

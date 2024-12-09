@@ -22,7 +22,7 @@ from subprocess import Popen, PIPE
 
 from claasp.cipher_modules import code_generator
 from claasp.cipher_modules.generic_functions_vectorized_byte import cipher_inputs_to_evaluate_vectorized_inputs, \
-    evaluate_vectorized_outputs_to_integers
+    evaluate_vectorized_format_to_integers
 
 def generate_zeros(amount_of_samples):
     return
