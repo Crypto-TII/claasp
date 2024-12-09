@@ -34,7 +34,6 @@ def integer_array_to_evaluate_vectorized_format(values, bit_size):
     - ``bit_size`` -- **integer** The bit size of the elements of values.
     """
     num_bytes = get_number_of_bytes_needed_for_bit_size(bit_size)
-    # math.ceil(bit_size / 8)
     values_as_np = np.array(values, dtype=object) & (2 ** bit_size - 1)
     evaluate_vectorized_input = (np.uint8([(values_as_np >> ((num_bytes - j - 1) * 8)) & 0xff
                                            for j in range(num_bytes)]).reshape((num_bytes, -1)))
@@ -71,15 +70,15 @@ def get_number_of_bytes_needed_for_bit_size(bit_size):
 def evaluate_vectorized_format_to_integers(evaluate_vectorized_outputs, cipher_output_bit_size):
     """
     Converts the outputs of evaluate_vectorized (a list containing a single numpy matrix) to a list of integers
-    (one per output/row of the matrix)
+    (one per output/column of the matrix)
 
     INPUT:
     - ``evaluate_vectorized_outputs`` -- **list** A list containing one numpy array returned by evaluate_vectorized
     - ``cipher_output_bit_size`` -- **integer** The output bit size of the cipher
     """
     shifts = np.flip(
-        np.array([i * 8 for i in range(get_number_of_bytes_needed_for_bit_size(cipher_output_bit_size))], dtype=object))
-    int_vals = (np.sum(evaluate_vectorized_outputs[0] << shifts, axis=1) & (2 ** cipher_output_bit_size - 1)).tolist()
+        np.array([i * 8 for i in range(get_number_of_bytes_needed_for_bit_size(cipher_output_bit_size))], dtype=object)).reshape(-1, 1)
+    int_vals = (np.sum(evaluate_vectorized_outputs[0] << shifts, axis=0) & (2 ** cipher_output_bit_size - 1)).tolist()
     if len(int_vals) == 1:
         return int_vals[0]
     else:

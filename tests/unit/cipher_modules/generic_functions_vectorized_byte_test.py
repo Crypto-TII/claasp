@@ -43,7 +43,6 @@ def test_cipher_inputs_to_evaluate_vectorized_inputs():
     assert np.all(evaluate_vectorized_inputs[1].shape == (8, 1))
     assert np.all(evaluate_vectorized_inputs[0][:, 0] == (0, 0, 0, 255))
     assert np.all(evaluate_vectorized_inputs[1] == 0)
-
     inputs = [[0xff, 0, 0xcafe], [0, 0, 2 ** 64 - 1]]
     cipher_inputs_bit_size = [32, 64]
     evaluate_vectorized_inputs = cipher_inputs_to_evaluate_vectorized_inputs(inputs, cipher_inputs_bit_size)
@@ -62,7 +61,7 @@ def test_get_number_of_bytes_needed_for_bit_size():
     assert get_number_of_bytes_needed_for_bit_size(65) == 9
 
 
-def test_evaluate_vectorized_outputs_to_integers():
+def test_evaluate_vectorized_format_to_integers():
     bit_size = 256
     values = [0, 2 ** bit_size - 1, 0xff]
     evaluate_vectorized_outputs = [integer_array_to_evaluate_vectorized_format(values, bit_size)]
