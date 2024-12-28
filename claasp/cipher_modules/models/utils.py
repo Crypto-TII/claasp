@@ -889,7 +889,7 @@ def differential_linear_checker_for_block_cipher_single_key(
     return corr
 
 
-def differential_checker_for_permutation(
+def differential_checker_permutation(
         cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
 ):
     """
