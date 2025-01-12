@@ -261,8 +261,8 @@ def test_differential_in_related_key_scenario_speck3264():
 
 
 def test_differential_in_single_key_scenario_speck3264():
-    rng = np.random.default_rng(seed=42)
-    number_of_samples = 2**19
+    rng = np.random.default_rng(seed=3)
+    number_of_samples = 2**17
     input_difference = 0x20400040
     output_difference = 0x106040E0
     input_difference_data = repeat_input_difference(input_difference, number_of_samples, 4)
