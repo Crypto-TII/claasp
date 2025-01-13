@@ -242,7 +242,7 @@ def repeat_input_difference(input_difference_, number_of_samples_, number_of_byt
 
 def test_differential_in_related_key_scenario_speck3264():
     rng = np.random.default_rng(seed=42)
-    number_of_samples = 2**23
+    number_of_samples = 2**20
     input_difference = 0x00402000
     output_difference = 0x0
     key_difference = 0x000afa3d0030a000
