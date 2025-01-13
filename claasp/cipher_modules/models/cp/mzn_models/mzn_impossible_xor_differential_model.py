@@ -30,6 +30,9 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, IMPOSSIBLE_XOR_DIFFERENTIAL)
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, SOLVER_DEFAULT
+from claasp.cipher_modules.models.cp.minizinc_utils.utils import (extract_constants, extract_key_schedule, get_component_from_id, get_component_round, 
+                                                                  get_direct_component_correspondance, get_inverse_component_correspondance, 
+                                                                  get_inverse_state_key_bits_positions, get_state_key_bits_positions)
 
 
 class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferentialModel):
@@ -39,8 +42,8 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self.inverse_cipher = cipher.cipher_inverse()
         self.middle_round = 1
         self.key_schedule_bits_distribution = {}
-        self.key_involvements = self.get_state_key_bits_positions()
-        self.inverse_key_involvements = self.get_inverse_state_key_bits_positions()
+        self.key_involvements = self.get_state_key_bits_positions(self._cipher, self.key_schedule_bits_distribution)
+        self.inverse_key_involvements = self.get_inverse_state_key_bits_positions(self.inverse_cipher, self.key_schedule_bits_distribution)
     
     def add_solution_to_components_values(self, component_id, component_solution, components_values, j, output_to_parse,
                                           solution_number, string):
@@ -61,8 +64,8 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
     def build_impossible_backward_model(self, backward_components, clean = True):
         inverse_variables = []
         inverse_constraints = []
-        key_components, key_ids = self.extract_key_schedule()
-        constant_components, constant_ids = self.extract_constants()
+        key_components, key_ids = self.extract_key_schedule(self._cipher, self.key_schedule_bits_distribution)
+        constant_components, constant_ids = self.extract_constants(self._cipher)
         for component in backward_components:
             if check_if_implemented_component(component):
                 variables, constraints = self.propagate_deterministically(component, inverse=True)
@@ -119,13 +122,14 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: cp.build_impossible_xor_differential_trail_with_extensions_model(fixed_variables, 5, 2, 3, 4, False)
         """
         self.initialise_model()
+        cipher = self._cipher
         if number_of_rounds is None:
-            number_of_rounds = self._cipher.number_of_rounds
+            number_of_rounds = cipher.number_of_rounds
         inverse_cipher = self.inverse_cipher
         if final_round is None:
-            final_round = self._cipher.number_of_rounds - 1
-        key_components, key_ids = self.extract_key_schedule()
-        constant_components, constant_ids = self.extract_constants()
+            final_round = cipher.number_of_rounds - 1
+        key_components, key_ids = self.extract_key_schedule(cipher, self.key_schedule_bits_distribution)
+        constant_components, constant_ids = self.extract_constants(cipher)
         self._variables_list = []
         constraints = self.fix_variables_value_constraints(fixed_variables)
         deterministic_truncated_xor_differential = constraints
@@ -133,21 +137,21 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         
         forward_components = []
         for n_r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
-            forward_components.extend(self._cipher.get_components_in_round(n_r))
+            forward_components.extend(cipher.get_components_in_round(n_r))
                 
         backward_components = []
         for n_r in list(range(initial_round - 1)) + list(range(middle_round - 1, final_round)):
             backward_components.extend(inverse_cipher.get_components_in_round(number_of_rounds - 1 - n_r))
                 
         components_to_link = []
-        for component in self.inverse_cipher.get_all_components():
+        for component in inverse_cipher.get_all_components():
             comp_r = self.get_component_round(component.id)
             if comp_r == initial_round - 2 or comp_r == final_round - 1:
                 for id_link in component.input_id_links:
                     if self.get_component_round(id_link) > comp_r:
-                        for input_component in self.inverse_cipher.get_all_components():
+                        for input_component in inverse_cipher.get_all_components():
                             if input_component.id == id_link:
-                                components_to_link.append([self.get_inverse_component_correspondance(input_component), id_link])
+                                components_to_link.append([self.get_inverse_component_correspondance(cipher, inverse_cipher, input_component), id_link])
                                 
         link_constraints = self.link_constraints_for_trail_with_extensions(components_to_link)
         key_schedule_variables, key_schedule_constraints = self.constraints_for_key_schedule()
@@ -249,7 +253,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         backward_components = []
         for r in range(number_of_rounds - final_round, number_of_rounds - middle_round + 1):
             backward_components.extend(['inverse_' + component.id for component in self.inverse_cipher.get_components_in_round(r)])
-        key_components, key_ids = self.extract_key_schedule()
+        key_components, key_ids = self.extract_key_schedule(self._cipher, self.key_schedule_bits_distribution)
         components_to_keep = forward_components + backward_components + key_ids + ['inverse_' + id_link for id_link in key_ids] + ['array['] + [solve_satisfy]
         if initial_round == 1 and final_round == self._cipher.number_of_rounds:
             for i in range(len(set_of_constraints) - 1):
@@ -280,8 +284,8 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         return inverse_variables, inverse_constraints
         
     def clean_inverse_impossible_variables_constraints_with_extensions(self, backward_components, inverse_variables, inverse_constraints):
-        key_components, key_ids = self.extract_key_schedule()
-        constant_components, constant_ids = self.extract_constants()
+        key_components, key_ids = self.extract_key_schedule(self._cipher, self.key_schedule_bits_distribution)
+        constant_components, constant_ids = self.extract_constants(self._cipher)
         for component in backward_components:
             if component.id not in key_ids + constant_ids:
                 inverse_variables, inverse_constraints = self.set_inverse_component_id_in_constraints(component, inverse_variables, inverse_constraints)
@@ -310,57 +314,13 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         return inverse_variables, inverse_constraints
         
     def constraints_for_key_schedule(self):
-        key_components, key_ids = self.extract_key_schedule()
+        key_components, key_ids = self.extract_key_schedule(self._cipher, self.key_schedule_bits_distribution)
         return self.build_impossible_forward_model(key_components)
         
     def constraints_for_constants(self):
-        constant_components, constant_ids = self.extract_constants()
+        constant_components, constant_ids = self.extract_constants(self._cipher)
         return self.build_impossible_forward_model(constant_components)
         
-    def extract_constants(self):
-        cipher = self._cipher
-        constant_components_ids = []
-        constant_components = []
-        for component in cipher.get_all_components():
-            if 'constant' in component.id:
-                constant_components_ids.append(component.id)
-                constant_components.append(component)
-            elif '_' in component.id:
-                component_inputs = component.input_id_links
-                ks = True
-                for comp_input in component_inputs:
-                    if 'constant' not in comp_input:
-                        ks = False
-                if ks:
-                    constant_components_ids.append(component.id)
-                    constant_components.append(component)
-                
-        return constant_components, constant_components_ids
-
-    def extract_key_schedule(self):
-        cipher = self._cipher
-        key_schedule_components_ids = ['key']
-        key_schedule_components = []
-        for component in cipher.get_all_components():
-            component_inputs = component.input_id_links
-            ks = True
-            for comp_input in component_inputs:
-                if 'constant' not in comp_input and comp_input not in key_schedule_components_ids:
-                    ks = False
-            if ks:
-                key_schedule_components_ids.append(component.id)
-                key_schedule_components.append(component)
-                master_key_bits = []
-                for id_link, bit_positions in zip(component_inputs, component.input_bit_positions):
-                    if id_link == 'key':
-                        master_key_bits.extend(bit_positions)
-                    else:
-                        if id_link in self.key_schedule_bits_distribution:
-                            master_key_bits.extend(self.key_schedule_bits_distribution[id_link])
-                self.key_schedule_bits_distribution[component.id] = list(set(master_key_bits))
-                    
-        return key_schedule_components, key_schedule_components_ids
-
     def final_impossible_constraints_with_extensions(self, number_of_rounds, initial_round, middle_round, final_round, intermediate_components):
         """
         Constraints for output and incompatibility.
@@ -385,7 +345,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
              ...
              'output["plaintext = "++ show(plaintext) ++ "\\n" ++"key = "++ show(key) ++ "\\n" ++"inverse_plaintext = "++ show(inverse_plaintext) ++ "\\n" ++"inverse_intermediate_output_0_6 = "++ show(inverse_intermediate_output_0_6)++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_1_12 = "++ show(intermediate_output_1_12)++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_2_12 = "++ show(intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_2_12 = "++ show(inverse_intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_3_12 = "++ show(inverse_intermediate_output_3_12)++ "\\n" ++ "0" ++ "\\n" ++"cipher_output_4_12 = "++ show(cipher_output_4_12)++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_2_12 = "++ show(intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_2_12 = "++ show(inverse_intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ];']
         """
-        key_schedule_components, key_schedule_components_ids = self.extract_key_schedule()
+        key_schedule_components, key_schedule_components_ids = self.extract_key_schedule(self._cipher, self.key_schedule_bits_distribution)
         cipher_inputs = self._cipher.inputs
         cipher = self._cipher
         inverse_cipher = self.inverse_cipher
@@ -478,7 +438,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         cp_constraints = [solve_satisfy]
         new_constraint = 'output['
         incompatibility_constraint = 'constraint'
-        key_schedule_components, key_schedule_components_ids = self.extract_key_schedule()
+        key_schedule_components, key_schedule_components_ids = self.extract_key_schedule(self._cipher, self.key_schedule_bits_distribution)
         for element in cipher_inputs:
             new_constraint = f'{new_constraint}\"{element} = \"++ show({element}) ++ \"\\n\" ++'
         for element in cipher_outputs:
@@ -658,65 +618,6 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         return self.solve('impossible_xor_differential_one_solution', solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
     
-    def get_component_from_id(self, id_link, curr_cipher):
-        for component in curr_cipher.get_all_components():
-            if component.id == id_link:
-                return component
-        return None
-    
-    def get_component_round(self, id_link):
-        if '_' in id_link:
-            last_us = - id_link[::-1].index('_') - 1
-            start = - id_link[last_us - 1::-1].index('_') + last_us
-        
-            return int(id_link[start:len(id_link) + last_us])
-        else:
-            return 0
-        
-    def get_direct_component_correspondance(self, forward_component):
-        for inverse_component in self.inverse_cipher.get_all_components():
-            if inverse_component.get_inverse_component_correspondance(inverse_component) == forward_component:
-                return inverse_component
-                    
-    def get_inverse_component_correspondance(self, backward_component):
-        
-        for component in self._cipher.get_all_components():
-            if backward_component.id == component.id:
-                direct_inputs = component.input_id_links
-        inverse_outputs = []
-        for component in self.inverse_cipher.get_all_components():
-            if backward_component.id in component.input_id_links:
-                inverse_outputs.append(component.id)
-        correspondance = [dir_i for dir_i in direct_inputs if dir_i in inverse_outputs]
-        if len(correspondance) > 1:
-            return 'Not invertible'
-        else:
-            return correspondance[0]
-
-    def get_inverse_state_key_bits_positions(self):
-        key_bits = self.key_schedule_bits_distribution
-        for component in self.inverse_cipher.get_all_components():
-            if component.id not in key_bits:
-                component_key_bits = []
-                for id_link in component.input_id_links:
-                    if id_link in key_bits:
-                        component_key_bits.extend(key_bits[id_link])
-                key_bits[component.id] = list(set(component_key_bits))
-                        
-        return key_bits
-        
-    def get_state_key_bits_positions(self):
-        key_bits = self.key_schedule_bits_distribution
-        for component in self._cipher.get_all_components():
-            if component.id not in key_bits:
-                component_key_bits = []
-                for id_link in component.input_id_links:
-                    if id_link in key_bits:
-                        component_key_bits.extend(key_bits[id_link])
-            key_bits[component.id] = list(set(component_key_bits))
-                        
-        return key_bits
-       
     def input_impossible_constraints_with_extensions(self, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None):
     
         if number_of_rounds is None:
@@ -728,8 +629,8 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         cipher = self._cipher
         inverse_cipher = self.inverse_cipher
         
-        key_components, key_ids = self.extract_key_schedule()
-        constant_components, constant_ids = self.extract_constants()
+        key_components, key_ids = self.extract_key_schedule(self._cipher, self.key_schedule_bits_distribution)
+        constant_components, constant_ids = self.extract_constants(self._cipher)
         
         forward_components = []
         for component in self._cipher.get_all_components():
