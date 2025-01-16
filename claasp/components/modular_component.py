@@ -1071,6 +1071,87 @@ class Modular(Component):
 
         return out_ids_0 + out_ids_1 + carry_ids_0 + carry_ids_1, constraints
 
+    def sat_semi_deterministic_truncated_xor_differential_constraints(self):
+        def truncated_xor_bit(a_t15, b_t15, c_t15, a_v15, b_v15, c_v15):
+            """
+            Converts the given formula into CNF and returns a list of clauses as f-strings.
+
+            Parameters:
+            a_t15, b_t15, c_t15, a_v15, b_v15, c_v15 - Input parameters representing literals.
+
+            Returns:
+            List of f-strings representing CNF clauses.
+            """
+            clauses = []
+
+            # First part: Negating A_t15, B_t15, and C_t15
+            clauses.append(f"-{a_t15}")
+            clauses.append(f"-{b_t15}")
+            clauses.append(f"-{c_t15}")
+
+            # Implication transformed to CNF
+            clauses.append(f"{a_t15} {b_t15} {c_t15} -{a_v15} -{b_v15} -{c_v15}")
+
+            return clauses
+
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+
+        A_t = in_ids_0[0:out_len]
+        B_t = in_ids_0[out_len:2*out_len]
+
+        A_v = in_ids_1[0:out_len]
+        B_v = in_ids_1[out_len:2*out_len]
+
+        C_t = out_ids_0[0:out_len]
+        C_v = out_ids_1[0:out_len]
+
+        constraints = truncated_xor_bit(
+            A_t[out_len-1], B_t[out_len-1], C_t[out_len-1], A_v[out_len-1], B_v[out_len-1], C_v[out_len-1]
+        )
+
+        word_size = out_len
+        p = [f'p{i}' for i in range(word_size)]
+        q = [f'q{i}' for i in range(word_size)]
+        r = [f'r{i}' for i in range(word_size)]
+
+        window_size_ = 1
+        for bit_position in range(word_size - 1):
+            A_t_bit_positions = []
+
+            for i in range(window_size_ + 2):
+                if bit_position + i < word_size:
+                    A_t_bit_positions.append(A_t[bit_position + i])
+            #print(A_t_bit_positions)
+            if len(A_t_bit_positions) == 3:
+
+                cnf_clauses = sat_utils.get_cnf_semi_deterministic_window_1(
+                    A_t[bit_position], A_t[bit_position + 1], A_t[bit_position + 2],
+                    A_v[bit_position], A_v[bit_position + 1], A_v[bit_position + 2],
+                    B_t[bit_position], B_t[bit_position + 1], B_t[bit_position + 2],
+                    B_v[bit_position], B_v[bit_position + 1], B_v[bit_position + 2],
+                    C_t[bit_position], C_t[bit_position + 1], C_t[bit_position + 2],
+                    C_v[bit_position], C_v[bit_position + 1],
+                    p[bit_position], q[bit_position], r[bit_position])
+            elif len(A_t_bit_positions) == 2:
+                cnf_clauses = sat_utils.get_semi_deterministic_cnf_window_0(
+                    A_t[bit_position], A_t[bit_position + 1],
+                    A_v[bit_position], A_v[bit_position + 1],
+                    B_t[bit_position], B_t[bit_position + 1],
+                    B_v[bit_position], B_v[bit_position + 1],
+                    C_t[bit_position], C_t[bit_position + 1],
+                    C_v[bit_position], C_v[bit_position + 1],
+                    p[bit_position], q[bit_position], r[bit_position])
+
+            else:
+                import ipdb;
+                ipdb.set_trace()
+
+            constraints.extend(cnf_clauses)
+        #import ipdb; ipdb.set_trace()
+        return out_ids_0 + out_ids_1 + p + q + r, constraints
+
+
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing MODULAR ADDITION/SUBTRACTION for SAT XOR LINEAR model

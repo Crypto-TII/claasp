@@ -692,6 +692,9 @@ class Rotate(Component):
 
         return out_ids_0 + out_ids_1, constraints
 
+    def sat_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing ROTATION for SAT XOR DIFFERENTIAL model
