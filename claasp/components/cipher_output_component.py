@@ -121,9 +121,9 @@ class CipherOutput(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: output_component = aes.component_from(0, 35)
             sage: output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             ([],
@@ -164,9 +164,9 @@ class CipherOutput(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: output_component = aes.component_from(0, 35)
             sage: output_component.cp_xor_differential_propagation_first_step_constraints(cp)
             (['array[0..15] of var 0..1: intermediate_output_0_35;'],
@@ -452,7 +452,7 @@ class CipherOutput(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for OUTPUT in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing CIPHER OUTPUT for SAT CIPHER model
 
         .. SEEALSO::
 
@@ -470,9 +470,12 @@ class CipherOutput(Component):
             sage: output_component.sat_constraints()
             (['cipher_output_2_12_0',
               'cipher_output_2_12_1',
-              'cipher_output_2_12_2',
               ...
-              'xor_2_10_14 -cipher_output_2_12_30',
+              'cipher_output_2_12_30',
+              'cipher_output_2_12_31'],
+             ['cipher_output_2_12_0 -xor_2_8_0',
+              'xor_2_8_0 -cipher_output_2_12_0',
+              ...
               'cipher_output_2_12_31 -xor_2_10_15',
               'xor_2_10_15 -cipher_output_2_12_31'])
         """
@@ -486,8 +489,7 @@ class CipherOutput(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for OUTPUT in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing CIPHER OUTPUT for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
         .. SEEALSO::
 
@@ -505,9 +507,12 @@ class CipherOutput(Component):
             sage: output_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['cipher_output_2_12_0_0',
               'cipher_output_2_12_1_0',
-              'cipher_output_2_12_2_0',
               ...
-              'xor_2_10_14_1 -cipher_output_2_12_30_1',
+              'cipher_output_2_12_30_1',
+              'cipher_output_2_12_31_1'],
+             ['cipher_output_2_12_0_0 -xor_2_8_0_0',
+              'xor_2_8_0_0 -cipher_output_2_12_0_0',
+              ...
               'cipher_output_2_12_31_1 -xor_2_10_15_1',
               'xor_2_10_15_1 -cipher_output_2_12_31_1'])
         """
@@ -521,12 +526,40 @@ class CipherOutput(Component):
 
         return out_ids_0 + out_ids_1, constraints
 
-    def sat_xor_differential_propagation_constraints(self, model):
+    def sat_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses representing CIPHER OUTPUT for SAT XOR DIFFERENTIAL model
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: output_component = speck.component_from(2, 12)
+            sage: output_component.sat_xor_differential_propagation_constraints()
+            (['cipher_output_2_12_0',
+              'cipher_output_2_12_1',
+              ...
+              'cipher_output_2_12_30',
+              'cipher_output_2_12_31'],
+             ['cipher_output_2_12_0 -xor_2_8_0',
+              'xor_2_8_0 -cipher_output_2_12_0',
+              ...
+              'cipher_output_2_12_31 -xor_2_10_15',
+              'xor_2_10_15 -cipher_output_2_12_31'])
+        """
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for OUTPUT in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing CIPHER OUTPUT for SAT XOR LINEAR model
 
         .. SEEALSO::
 
@@ -544,9 +577,12 @@ class CipherOutput(Component):
             sage: output_component.sat_xor_linear_mask_propagation_constraints()
             (['cipher_output_2_12_0_i',
               'cipher_output_2_12_1_i',
-              'cipher_output_2_12_2_i',
               ...
-              'cipher_output_2_12_30_o -cipher_output_2_12_30_i',
+              'cipher_output_2_12_30_o',
+              'cipher_output_2_12_31_o'],
+             ['cipher_output_2_12_0_i -cipher_output_2_12_0_o',
+              'cipher_output_2_12_0_o -cipher_output_2_12_0_i',
+              ...
               'cipher_output_2_12_31_i -cipher_output_2_12_31_o',
               'cipher_output_2_12_31_o -cipher_output_2_12_31_i'])
         """
@@ -561,7 +597,7 @@ class CipherOutput(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing OUTPUT for SMT CIPHER constraints.
+        Return a variable list and SMT-LIB list asserts representing CIPHER OUTPUT for SMT CIPHER model
 
         INPUT:
 
@@ -593,12 +629,36 @@ class CipherOutput(Component):
 
         return output_bit_ids, constraints
 
-    def smt_xor_differential_propagation_constraints(self, model):
+    def smt_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a variable list and SMT-LIB list asserts representing CIPHER OUTPUT for SMT XOR DIFFERENTIAL model
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: output_component = speck.component_from(2, 12)
+            sage: output_component.smt_xor_differential_propagation_constraints()
+            (['cipher_output_2_12_0',
+              'cipher_output_2_12_1',
+              ...
+              'cipher_output_2_12_30',
+              'cipher_output_2_12_31'],
+             ['(assert (= cipher_output_2_12_0 xor_2_8_0))',
+              '(assert (= cipher_output_2_12_1 xor_2_8_1))',
+              ...
+              '(assert (= cipher_output_2_12_30 xor_2_10_14))',
+              '(assert (= cipher_output_2_12_31 xor_2_10_15))'])
+        """
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for OUTPUT in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing CIPHER OUTPUT for SMT XOR LINEAR model
 
         INPUT:
 

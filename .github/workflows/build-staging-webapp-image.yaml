@@ -25,12 +25,15 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildx-
 
-
     - name: Login dockerhub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_REGISTRY_USER }}
         password: ${{  secrets.DOCKER_REGISTRY_PASSWORD }}
+
+    - name: Clean docker
+      run: |
+        docker system prune -a --volumes -f
 
     - name: Build & Push
       uses: docker/build-push-action@v4

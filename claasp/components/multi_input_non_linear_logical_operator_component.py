@@ -31,9 +31,7 @@ class MultiInputNonlinearLogicalOperator(Component):
                  input_id_links, input_bit_positions, output_bit_size, operation):
         component_id = f'{operation}_{current_round_number}_{current_round_number_of_components}'
         component_type = 'word_operation'
-        input_len = 0
-        for bits in input_bit_positions:
-            input_len = input_len + len(bits)
+        input_len = sum(len(bits) for bits in input_bit_positions)
         description = [operation.upper(), int(input_len / output_bit_size)]
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
@@ -74,7 +72,7 @@ class MultiInputNonlinearLogicalOperator(Component):
     def cms_xor_linear_mask_propagation_constraints(self, model=None):
         return self.sat_xor_linear_mask_propagation_constraints(model)
 
-    def cp_deterministic_truncated_xor_differential_constraints(self, inverse=False):
+    def cp_deterministic_truncated_xor_differential_constraints(self):
         r"""
         Return lists declarations and constraints for AND component CP deterministic truncated xor differential model.
 
@@ -99,27 +97,68 @@ class MultiInputNonlinearLogicalOperator(Component):
         input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        if inverse:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}_inverse[{position}]' for position in bit_positions])
-        else:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         cp_constraints = []
         for i in range(output_size):
             operation = f' == 0 /\\ '.join(all_inputs[i::output_size])
-            if inverse:
-                new_constraint = f'constraint if {operation} == 0 then {output_id_link}_inverse[{i}] = 0 ' \
-                                 f'else {output_id_link}_inverse[{i}] = 2 endif;'
-            else:
-                new_constraint = f'constraint if {operation} == 0 then {output_id_link}[{i}] = 0 ' \
-                                 f'else {output_id_link}[{i}] = 2 endif;'
+            new_constraint = f'constraint if {operation} == 0 then {output_id_link}[{i}] = 0 ' \
+                             f'else {output_id_link}[{i}] = 2 endif;'
             cp_constraints.append(new_constraint)
 
         return cp_declarations, cp_constraints
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
+
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        r"""
+        Return lists declarations and constraints for AND component for CP wordwise deterministic truncated xor differential.
+
+        This is for the deterministic truncated xor differential trail search.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: from claasp.components.and_component import AND
+            sage: aes = AESBlockCipher()
+            sage: cp = MznModel(aes)
+            sage: and_component = AND(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
+            sage: and_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
+            ([],
+             ['constraint if sbox_0_2_active[0] == 0 then and_0_18_active[0] = 0 /\\ and_0_18_value[0] = 0 else and_0_18_active[0] = 3 /\\ and_0_18_value[0] = -2 endif;',
+               ...
+              'constraint if sbox_0_14_active[0] == 0 then and_0_18_active[3] = 0 /\\ and_0_18_value[3] = 0 else and_0_18_active[3] = 3 /\\ and_0_18_value[3] = -2 endif;'])
+        """
+        
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        cp_declarations = []
+        all_inputs_value = []
+        all_inputs_active = []
+        numadd = self.description[1]
+        word_size = model.word_size
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
+                                     for j in range(len(bit_positions) // word_size)])
+            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
+                                      for j in range(len(bit_positions) // word_size)])
+        input_len = len(all_inputs_value) // numadd
+        cp_constraints = []
+        for i in range(input_len):
+            operation = f' == 0 /\\ '.join(all_inputs_active[i::input_len])
+            new_constraint = f'constraint if {operation} == 0 then {output_id_link}_active[{i}] = 0 ' \
+                             f'/\\ {output_id_link}_value[{i}] = 0 else {output_id_link}_active[{i}] = 3 ' \
+                             f'/\\ {output_id_link}_value[{i}] = -2 endif;'
+            cp_constraints.append(new_constraint)
+
+        return cp_declarations, cp_constraints
 
     def cp_xor_differential_propagation_constraints(self, model):
         """
@@ -132,9 +171,9 @@ class MultiInputNonlinearLogicalOperator(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: fancy = FancyBlockCipher()
-            sage: cp = CpModel(fancy)
+            sage: cp = MznModel(fancy)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.cp_xor_differential_propagation_constraints(cp)
             ([],
@@ -365,46 +404,9 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         return result
 
-    def sat_constraints(self):
-        """
-        Return a list of variables and a list of clauses for AND operation in SAT CIPHER model.
-
-        This method support AND operation using more than two operands.
-
-        .. SEEALSO::
-
-            :ref:`sat-standard` for the format.
-
-        INPUT:
-
-        - None
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: and_component = fancy.component_from(0, 8)
-            sage: and_component.sat_constraints()
-            (['and_0_8_0',
-              'and_0_8_1',
-              'and_0_8_2',
-              ...
-              '-and_0_8_11 xor_0_7_11',
-              '-and_0_8_11 key_23',
-              'and_0_8_11 -xor_0_7_11 -key_23'])
-        """
-        _, input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_and(output_bit_ids[i], input_bit_ids[i::output_bit_len]))
-
-        return output_bit_ids, constraints
-
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for AND/OR in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing AND/OR for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
         .. SEEALSO::
 
@@ -422,9 +424,12 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: and_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['and_0_8_0_0',
               'and_0_8_1_0',
-              'and_0_8_2_0',
               ...
-              'and_0_8_11_0 -key_23_1',
+              'and_0_8_10_1',
+              'and_0_8_11_1'],
+             ['and_0_8_0_0 -xor_0_7_0_0',
+              'and_0_8_0_0 -key_12_0',
+              ...
               'and_0_8_11_0 -and_0_8_11_1',
               'xor_0_7_11_0 key_23_0 xor_0_7_11_1 key_23_1 -and_0_8_11_0'])
         """
@@ -442,7 +447,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for AND operation in SAT XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing AND/OR for SAT XOR DIFFERENTIAL model
 
         .. SEEALSO::
 
@@ -460,9 +465,12 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: and_component.sat_xor_differential_propagation_constraints()
             (['and_0_8_0',
               'and_0_8_1',
-              'and_0_8_2',
               ...
-              'xor_0_7_11 key_23 -hw_and_0_8_11',
+              'hw_and_0_8_10',
+              'hw_and_0_8_11'],
+             ['-and_0_8_0 hw_and_0_8_0',
+              'xor_0_7_0 key_12 -hw_and_0_8_0',
+              ...
               '-xor_0_7_11 hw_and_0_8_11',
               '-key_23 hw_and_0_8_11'])
         """
@@ -479,7 +487,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for AND operation in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing AND/OR for SAT XOR LINEAR model
 
         .. SEEALSO::
 
@@ -493,9 +501,12 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: and_component.sat_xor_linear_mask_propagation_constraints()
             (['and_0_8_0_i',
               'and_0_8_1_i',
-              'and_0_8_2_i',
               ...
-              '-and_0_8_23_i hw_and_0_8_11_o',
+              'hw_and_0_8_10_o',
+              'hw_and_0_8_11_o'],
+             ['-and_0_8_0_i hw_and_0_8_0_o',
+              '-and_0_8_12_i hw_and_0_8_0_o',
+              ...
               '-and_0_8_11_o hw_and_0_8_11_o',
               'and_0_8_11_o -hw_and_0_8_11_o'])
         """
@@ -513,7 +524,11 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for AND peration in SMT XOR DIFFERENTIAL model [ALLW2014]_.
+        Return a variable list and SMT-LIB list asserts representing AND/OR for SMT XOR DIFFERENTIAL model
+
+        .. SEEALSO::
+
+            The algorithm can be found in [ALLW2014]_.
 
         .. WARNING::
 
@@ -559,7 +574,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for AND operation in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing AND/OR for SMT XOR LINEAR model
 
         INPUT:
 

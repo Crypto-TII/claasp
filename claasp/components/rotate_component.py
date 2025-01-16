@@ -183,60 +183,25 @@ class Rotate(Component):
         return cp_declarations, cp_constraints
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
-        """
-        Return lists of declarations and constraints for ROTATE CP deterministic truncated xor differential model.
-
-        INPUT:
-
-        - ``model`` -- **model object**; a model instance
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
-            sage: rotate_component = aes.component_from(0, 18)
-            sage: rotate_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-            ([],
-             ['constraint rot_0_18[0]_active = sbox_0_6_active[0];',
-              'constraint rot_0_18[1]_active = sbox_0_10_active[0];',
-                ...
-              'constraint rot_0_18[2]_value = sbox_0_14_value[0];',
-              'constraint rot_0_18[3]_value = sbox_0_2_value[0];'])
-        """
-        output_size = int(self.output_bit_size)
-        input_id_link = self.input_id_links
+        input_id_links = self.input_id_links
         output_id_link = self.id
         input_bit_positions = self.input_bit_positions
-        word_size = model.word_size
-        rot_amount = abs(self.description[1]) // word_size
-        all_inputs_active = []
-        all_inputs_value = []
         cp_declarations = []
-        for id_link, bit_positions in zip(input_id_link, input_bit_positions):
-            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
-                                      for j in range(len(bit_positions) // word_size)])
-        for id_link, bit_positions in zip(input_id_link, input_bit_positions):
+        all_inputs_value = []
+        all_inputs_active = []
+        word_size = model.word_size
+        rot_amount = self.description[1] // word_size
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
             all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
                                      for j in range(len(bit_positions) // word_size)])
-        input_len = len(all_inputs_active)
-
-        if rot_amount == self.description[1]:
-            cp_constraints = [
-                f'constraint {output_id_link}[{i}]_active = {all_inputs_active[(i - rot_amount) % input_len]};'
-                for i in range(output_size // word_size)]
-            cp_constraints.extend([
-                f'constraint {output_id_link}[{j}]_value = {all_inputs_value[(j - rot_amount) % input_len]};' for j in
-                range(output_size // word_size)])
-        else:
-            cp_constraints = [
-                f'constraint {output_id_link}[{i}]_active = {all_inputs_active[(i + rot_amount) % input_len]};'
-                for i in range(output_size // word_size)]
-            cp_constraints.extend([
-                f'constraint {output_id_link}[{j}]_value = {all_inputs_value[(j + rot_amount) % input_len]};' for j in
-                range(output_size // word_size)])
-
+            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
+                                      for j in range(len(bit_positions) // word_size)])
+        input_len = len(all_inputs_value)
+        cp_constraints = []
+        for i in range(input_len):
+            cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[(i - rot_amount) % input_len]};')
+            cp_constraints.append(f'constraint {output_id_link}_value[{i}] = {all_inputs_value[(i - rot_amount) % input_len]};')
+        
         return cp_declarations, cp_constraints
 
     def cp_xor_differential_first_step_constraints(self, model):
@@ -250,9 +215,9 @@ class Rotate(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: rotate_component = aes.component_from(0, 18)
             sage: rotate_component.cp_xor_differential_first_step_constraints(cp)
             (['array[0..3] of var 0..1: rot_0_18;'],
@@ -600,9 +565,9 @@ class Rotate(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: minizinc = MinizincModel(fancy)
+            sage: minizinc = MznModel(fancy)
             sage: rotate_component = fancy.get_component_from_id("rot_1_11")
             sage: _, rotate_mzn_constraints = rotate_component.minizinc_constraints(minizinc)
             sage: rotate_mzn_constraints[0]
@@ -640,7 +605,11 @@ class Rotate(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for ROTATION in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing ROTATION for SAT CIPHER model
+
+        The list of clauses encodes equalities ensuring that input variables are correctly positioned in the output.
+        Each clause represents a logical condition where input variables are mapped to their corresponding output
+        positions through rotation.
 
         .. SEEALSO::
 
@@ -658,9 +627,12 @@ class Rotate(Component):
             sage: rotate_component.sat_constraints()
             (['rot_1_1_0',
               'rot_1_1_1',
-              'rot_1_1_2',
               ...
-              'key_39 -rot_1_1_14',
+              'rot_1_1_14',
+              'rot_1_1_15'],
+             ['rot_1_1_0 -key_41',
+              'key_41 -rot_1_1_0',
+              ...
               'rot_1_1_15 -key_40',
               'key_40 -rot_1_1_15'])
         """
@@ -676,12 +648,15 @@ class Rotate(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for ROTATION in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing ROTATION for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
+
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires two variables per each symbol.
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.rotate_component.Rotate.sat_constraints>` for the model.
 
         INPUT:
 
@@ -695,9 +670,12 @@ class Rotate(Component):
             sage: rotate_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['rot_1_1_0_0',
               'rot_1_1_1_0',
-              'rot_1_1_2_0',
               ...
-              'key_39_1 -rot_1_1_14_1',
+              'rot_1_1_14_1',
+              'rot_1_1_15_1'],
+             ['rot_1_1_0_0 -key_41_0',
+              'key_41_0 -rot_1_1_0_0',
+              ...
               'rot_1_1_15_1 -key_40_1',
               'key_40_1 -rot_1_1_15_1'])
         """
@@ -715,15 +693,48 @@ class Rotate(Component):
         return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses representing ROTATION for SAT XOR DIFFERENTIAL model
+
+        .. SEEALSO::
+
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.rotate_component.Rotate.sat_constraints>` for the model.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: rotate_component = speck.component_from(1, 1)
+            sage: rotate_component.sat_xor_differential_propagation_constraints()
+            (['rot_1_1_0',
+              'rot_1_1_1',
+              ...
+              'rot_1_1_14',
+              'rot_1_1_15'],
+             ['rot_1_1_0 -key_41',
+              'key_41 -rot_1_1_0',
+              ...
+              'rot_1_1_15 -key_40',
+              'key_40 -rot_1_1_15'])
+        """
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for ROTATION in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing ROTATION for SAT XOR LINEAR model
+
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires different encodings for input and ouput variables.
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.rotate_component.Rotate.sat_constraints>` for the model.
 
         INPUT:
 
@@ -737,9 +748,12 @@ class Rotate(Component):
             sage: rotate_component.sat_xor_linear_mask_propagation_constraints()
             (['rot_1_1_0_i',
               'rot_1_1_1_i',
-              'rot_1_1_2_i',
               ...
-              'rot_1_1_7_i -rot_1_1_14_o',
+              'rot_1_1_14_o',
+              'rot_1_1_15_o'],
+             ['rot_1_1_0_o -rot_1_1_9_i',
+              'rot_1_1_9_i -rot_1_1_0_o',
+              ...
               'rot_1_1_15_o -rot_1_1_8_i',
               'rot_1_1_8_i -rot_1_1_15_o'])
         """
@@ -757,7 +771,11 @@ class Rotate(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing ROTATION for SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing ROTATION for SMT CIPHER model
+
+        The list of asserts encodes equalities ensuring that input variables are correctly positioned in the output.
+        Each assert represents a condition where input variables are mapped to their corresponding output
+        positions through rotation.
 
         INPUT:
 
@@ -792,11 +810,46 @@ class Rotate(Component):
         return output_bit_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a variable list and SMT-LIB list asserts representing ROTATION for SMT CIPHER model
+
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.rotate_component.Rotate.smt_constraints>` for the model.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: rotate_component = speck.component_from(0, 0)
+            sage: rotate_component.smt_xor_differential_propagation_constraints()
+            (['rot_0_0_0',
+              'rot_0_0_1',
+              ...
+              'rot_0_0_14',
+              'rot_0_0_15'],
+             ['(assert (= rot_0_0_0 plaintext_9))',
+              '(assert (= rot_0_0_1 plaintext_10))',
+              ...
+              '(assert (= rot_0_0_14 plaintext_7))',
+              '(assert (= rot_0_0_15 plaintext_8))'])
+        """
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for rotate in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing ROTATION for SMT XOR LINEAR model
+
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires different encodings for input and ouput variables.
+
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.rotate_component.Rotate.smt_constraints>` for the model.
 
         INPUT:
 

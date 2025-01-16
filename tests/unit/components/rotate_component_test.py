@@ -1,4 +1,4 @@
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -27,23 +27,9 @@ def test_cp_inverse_constraints():
     assert constraints[-1] == 'constraint rot_0_0_inverse[15] = plaintext[8];'
 
 
-def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
-    cp = CpModel(aes)
-    rotate_component = aes.component_from(0, 18)
-    declarations, constraints = rotate_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-
-    assert declarations == []
-
-    assert constraints[0] == 'constraint rot_0_18[0]_active = sbox_0_6_active[0];'
-    assert constraints[1] == 'constraint rot_0_18[1]_active = sbox_0_10_active[0];'
-    assert constraints[-2] == 'constraint rot_0_18[2]_value = sbox_0_14_value[0];'
-    assert constraints[-1] == 'constraint rot_0_18[3]_value = sbox_0_2_value[0];'
-
-
 def test_cp_xor_differential_first_step_constraints():
     aes = AESBlockCipher(number_of_rounds=3)
-    cp = CpModel(aes)
+    cp = MznModel(aes)
     rotate_component = aes.component_from(0, 18)
     declarations, constraints = rotate_component.cp_xor_differential_first_step_constraints(cp)
 

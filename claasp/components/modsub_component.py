@@ -221,7 +221,9 @@ class MODSUB(Modular):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for Modular Subtraction in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing MODULAR SUBTRACTION for SAT CIPHER model
+
+        The list of contraints models the two's complement addtion.
 
         .. SEEALSO::
 
@@ -243,18 +245,19 @@ class MODSUB(Modular):
             sage: modsub_component.sat_constraints()
             (['temp_carry_plaintext_32',
               'temp_carry_plaintext_33',
-              'temp_carry_plaintext_34',
               ...
-              'modsub_0_7_31 -modadd_0_4_31 temp_input_plaintext_63',
+              'modsub_0_7_30',
+              'modsub_0_7_31'],
+             ['-temp_carry_plaintext_32 temp_carry_plaintext_33',
+              '-temp_carry_plaintext_32 -plaintext_33',
+              ...
               'modsub_0_7_31 modadd_0_4_31 -temp_input_plaintext_63',
               '-modsub_0_7_31 -modadd_0_4_31 -temp_input_plaintext_63'])
         """
         _, input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        temp_carry_bit_ids = [f'temp_carry_{input_bit_ids[output_bit_len + i]}'
-                              for i in range(output_bit_len - 1)]
-        temp_input_bit_ids = [f'temp_input_{input_bit_ids[output_bit_len + i]}'
-                              for i in range(output_bit_len)]
+        temp_carry_bit_ids = [f'temp_carry_{input_bit_ids[output_bit_len + i]}' for i in range(output_bit_len - 1)]
+        temp_input_bit_ids = [f'temp_input_{input_bit_ids[output_bit_len + i]}' for i in range(output_bit_len)]
         carry_bit_ids = [f'carry_{output_bit_ids[i]}' for i in range(output_bit_len - 1)]
         constraints = []
         # carries complement 2
@@ -294,7 +297,9 @@ class MODSUB(Modular):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts for Modular Subtraction in SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing MODULAR SUBTRACTION for SMT CIPHER model
+
+        The list of contraints models the two's complement addtion.
 
         .. WARNING::
 
@@ -323,10 +328,8 @@ class MODSUB(Modular):
         """
         _, input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        temp_carry_bit_ids = [f'temp_carry_{input_bit_ids[output_bit_len + i]}'
-                              for i in range(output_bit_len - 1)]
-        temp_input_bit_ids = [f'temp_input_{input_bit_ids[output_bit_len + i]}'
-                              for i in range(output_bit_len)]
+        temp_carry_bit_ids = [f'temp_carry_{input_bit_ids[output_bit_len + i]}' for i in range(output_bit_len - 1)]
+        temp_input_bit_ids = [f'temp_input_{input_bit_ids[output_bit_len + i]}' for i in range(output_bit_len)]
         carry_bit_ids = [f'carry_{output_bit_ids[i]}' for i in range(output_bit_len - 1)]
         constraints = []
 
@@ -352,13 +355,10 @@ class MODSUB(Modular):
 
         # carries
         for i in range(output_bit_len - 2):
-            operation = smt_utils.smt_carry(input_bit_ids[i + 1],
-                                            temp_input_bit_ids[i + 1],
-                                            carry_bit_ids[i + 1])
+            operation = smt_utils.smt_carry(input_bit_ids[i + 1], temp_input_bit_ids[i + 1], carry_bit_ids[i + 1])
             equation = smt_utils.smt_equivalent((carry_bit_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
-        operation = smt_utils.smt_and((input_bit_ids[output_bit_len - 1],
-                                       temp_input_bit_ids[output_bit_len - 1]))
+        operation = smt_utils.smt_and((input_bit_ids[output_bit_len - 1], temp_input_bit_ids[output_bit_len - 1]))
         equation = smt_utils.smt_equivalent((carry_bit_ids[output_bit_len - 2], operation))
         constraints.append(smt_utils.smt_assert(equation))
 
@@ -367,8 +367,7 @@ class MODSUB(Modular):
             operation = smt_utils.smt_xor((input_bit_ids[i], temp_input_bit_ids[i], carry_bit_ids[i]))
             equation = smt_utils.smt_equivalent((output_bit_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
-        operation = smt_utils.smt_xor((input_bit_ids[output_bit_len - 1],
-                                       temp_input_bit_ids[output_bit_len - 1]))
+        operation = smt_utils.smt_xor((input_bit_ids[output_bit_len - 1], temp_input_bit_ids[output_bit_len - 1]))
         equation = smt_utils.smt_equivalent((output_bit_ids[output_bit_len - 1], operation))
         constraints.append(smt_utils.smt_assert(equation))
 

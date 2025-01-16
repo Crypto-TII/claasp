@@ -1,4 +1,4 @@
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -54,30 +54,9 @@ def test_algebraic_polynomials():
                                          ' xor_1_13_y5 + xor_1_13_x17 + xor_1_13_x11 + xor_1_13_x5]'
 
 
-def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = AESBlockCipher(number_of_rounds=5)
-    cp = CpModel(aes)
-    xor_component = aes.component_from(0, 0)
-    declarations, constraints = xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-
-    assert declarations == []
-
-    assert constraints[0] == 'constraint temp_0_0_value = key_value[0] /\\ temp_0_0_active = key_active[0];'
-    assert constraints[-1] == 'constraint if temp_0_15_active + temp_1_15_active > 2 then xor_0_0_active[15] == 3 /\\' \
-                              ' xor_0_0_value[15] = -2 elif temp_0_15_active + temp_1_15_active == 1 then ' \
-                              'xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = temp_0_15_value + temp_1_15_value elif ' \
-                              'temp_0_15_active + temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ ' \
-                              'xor_0_0_value[15] = 0 elif temp_0_15_value + temp_1_15_value < 0 then ' \
-                              'xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elif temp_0_15_value == ' \
-                              'temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else ' \
-                              'xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum[(((floor(temp_0_15_value/(2**j)) + ' \
-                              'floor(temp_1_15_value/(2**j))) mod 2) * (2**j)) | j in 0..log2(temp_0_15_value + ' \
-                              'temp_1_15_value)] endif;'
-
-
 def test_cp_xor_differential_propagation_first_step_constraints():
     aes = AESBlockCipher(number_of_rounds=3)
-    cp = CpModel(aes)
+    cp = MznModel(aes)
     xor_component = aes.component_from(2, 31)
     declarations, constraints = xor_component.cp_xor_differential_propagation_first_step_constraints(cp,
                                                                                                      cp._variables_list)

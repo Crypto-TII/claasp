@@ -1163,6 +1163,12 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
     else:
         input_id_links = [[]]
         input_bit_positions = [[]]
+
+    empty_indices = [j for j, positions in enumerate(input_bit_positions) if positions == []]
+    for index in sorted(empty_indices, reverse=True):
+        del input_id_links[index]
+        del input_bit_positions[index]
+
     evaluated_component = Component(component.id, component.type, Input(component.input_bit_size, input_id_links, input_bit_positions),
                                     component.output_bit_size, component.description)
     evaluated_component.__class__ = component.__class__

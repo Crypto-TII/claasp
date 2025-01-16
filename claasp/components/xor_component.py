@@ -267,7 +267,7 @@ class XOR(Component):
 
         return cp_declarations, cp_constraints
 
-    def cp_deterministic_truncated_xor_differential_constraints(self, inverse=False):
+    def cp_deterministic_truncated_xor_differential_constraints(self):
         r"""
         Return list declarations and constraints for XOR component CP deterministic truncated XOR differential model.
 
@@ -292,23 +292,65 @@ class XOR(Component):
         input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        if inverse:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}_inverse[{position}]' for position in bit_positions])
-        else:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         cp_constraints = []
         for i in range(output_size):
             operation = ' < 2) /\\ ('.join(all_inputs[i::output_size])
             new_constraint = 'constraint if (('
             new_constraint += operation + '< 2)) then '
             operation2 = ' + '.join(all_inputs[i::output_size])
-            if inverse:
-                new_constraint += f'{output_id_link}_inverse[{i}] = ({operation2}) mod 2 ' \
-                                  f'else {output_id_link}_inverse[{i}] = 2 endif;'
-            else:
-                new_constraint += f'{output_id_link}[{i}] = ({operation2}) mod 2 else {output_id_link}[{i}] = 2 endif;'
+            new_constraint += f'{output_id_link}[{i}] = ({operation2}) mod 2 else {output_id_link}[{i}] = 2 endif;'
+            cp_constraints.append(new_constraint)
+
+        return cp_declarations, cp_constraints
+
+    def cp_hybrid_deterministic_truncated_xor_differential_constraints(self):
+        r"""
+        Return list declarations and constraints for XOR component in the hybrid CP deterministic truncated
+        XOR differential model.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: xor_component = speck.component_from(0, 2)
+            sage: xor_component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
+            ([],
+             ['constraint if (modadd_0_1[0] < 2) /\\ (key[48] < 2) then xor_0_2[0] = (modadd_0_1[0] + key[48]) mod 2 elseif (modadd_0_1[0] + key[48] = modadd_0_1[0]) then xor_0_2[0] = modadd_0_1[0] elseif (modadd_0_1[0] + key[48] = key[48]) then xor_0_2[0] = key[48] else xor_0_2[0] = 2 endif;',
+               ...
+              'constraint if (modadd_0_1[15] < 2) /\\ (key[63] < 2) then xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2 elseif (modadd_0_1[15] + key[63] = modadd_0_1[15]) then xor_0_2[15] = modadd_0_1[15] elseif (modadd_0_1[15] + key[63] = key[63]) then xor_0_2[15] = key[63] else xor_0_2[15] = 2 endif;'])
+        """
+
+        output_size = int(self.output_bit_size)
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        cp_declarations = []
+        all_inputs = [
+            f'{id_link}[{position}]'
+            for id_link, bit_positions in zip(input_id_links, input_bit_positions)
+            for position in bit_positions
+        ]
+        cp_constraints = []
+        for i in range(output_size):
+            inputs = all_inputs[i::output_size]
+            condition = ' < 2) /\\ ('.join(inputs) + ' < 2'
+            operation_sum = ' + '.join(inputs)
+
+            new_constraint = (
+                f'constraint if ({condition}) then '
+                f'{output_id_link}[{i}] = ({operation_sum}) mod 2 '
+                f'elseif ({operation_sum} = {inputs[0]}) then '
+                f'{output_id_link}[{i}] = {inputs[0]} '
+                f'elseif ({operation_sum} = {inputs[1]}) then '
+                f'{output_id_link}[{i}] = {inputs[1]} '
+                f'else {output_id_link}[{i}] = 2 endif;'
+            )
             cp_constraints.append(new_constraint)
 
         return cp_declarations, cp_constraints
@@ -327,15 +369,17 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=5)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(0, 0)
             sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-            ([],
-             ['constraint temp_0_0_value = key_value[0] /\\ temp_0_0_active = key_active[0];',
+            (['var -2..255: xor_0_0_temp_0_0_value;',
+              ...
+              'var 0..9: xor_0_0_bound_value_0_15 = if xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value > 0 then ceil(log2(xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value)) else 0 endif;'],
+             ['constraint xor_0_0_temp_0_0_value = key_value[0] /\\ xor_0_0_temp_0_0_active = key_active[0];',
                ...
-              'constraint if temp_0_15_active + temp_1_15_active > 2 then xor_0_0_active[15] == 3 /\\ xor_0_0_value[15] = -2 elif temp_0_15_active + temp_1_15_active == 1 then xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = temp_0_15_value + temp_1_15_value elif temp_0_15_active + temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 elif temp_0_15_value + temp_1_15_value < 0 then xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elif temp_0_15_value == temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum[(((floor(temp_0_15_value/(2**j)) + floor(temp_1_15_value/(2**j))) mod 2) * (2**j)) | j in 0..log2(temp_0_15_value + temp_1_15_value)] endif;'])
+              'constraint if xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active > 2 then xor_0_0_active[15] == 3 /\\ xor_0_0_value[15] = -2 elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 1 then xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 elseif xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value < 0 then xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elseif xor_0_0_temp_0_15_value == xor_0_0_temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum([(((floor(xor_0_0_temp_0_15_value/pow(2,j)) + floor(xor_0_0_temp_1_15_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..xor_0_0_bound_value_0_15]) endif;'])
         """
         input_id_links = self.input_id_links
         output_id_link = self.id
@@ -353,45 +397,57 @@ class XOR(Component):
         input_len = len(all_inputs_value) // numadd
         cp_constraints = []
         initial_constraints = []
+        for i in range(2 * numadd - 2):
+            for j in range(input_len):
+                cp_declarations.append(
+                    f'var -2..{2**word_size - 1}: {output_id_link}_temp_{i}_{j}_value;')
+                cp_declarations.append(
+                    f'var 0..3: {output_id_link}_temp_{i}_{j}_active;')
+        for i in range(input_len):
+            for summand in range(numadd - 2):
+                cp_declarations.append(f'var 0..{word_size + 1}: {output_id_link}_bound_value_{numadd + summand - 1}_{i} = if {output_id_link}_temp_{numadd + summand - 1}_{i}_value ' \
+                                       f'+ {output_id_link}_temp_{summand}_{i}_value > 0 then ceil(log2({output_id_link}_temp_{numadd + summand - 1}_{i}_value ' \
+                                       f'+ {output_id_link}_temp_{summand}_{i}_value)) else 0 endif;')
+            cp_declarations.append(f'var 0..{word_size + 1}: {output_id_link}_bound_value_{numadd - 2}_{i} = if {output_id_link}_temp_{numadd - 2}_{i}_value ' \
+                                   f'+ {output_id_link}_temp_{2 * numadd - 3}_{i}_value > 0 then ceil(log2({output_id_link}_temp_{numadd - 2}_{i}_value ' \
+                                   f'+ {output_id_link}_temp_{2 * numadd - 3}_{i}_value)) else 0 endif;')
         for i in range(numadd):
             for j in range(input_len):
                 initial_constraints.append(
-                    f'constraint temp_{i}_{j}_value = {all_inputs_value[i * input_len + j]} /\\ '
-                    f'temp_{i}_{j}_active = {all_inputs_active[i * input_len + j]};')
+                    f'constraint {output_id_link}_temp_{i}_{j}_value = {all_inputs_value[i * input_len + j]} /\\ '
+                    f'{output_id_link}_temp_{i}_{j}_active = {all_inputs_active[i * input_len + j]};')
         cp_constraints += initial_constraints
         for i in range(input_len):
-            new_constraint = 'constraint '
+            new_constraint = ''
             for summand in range(numadd - 2):
-                new_constraint += f'if temp_{numadd + summand - 1}_{i}_active + temp_{summand}_{i}_active > 2 then ' \
-                                  f'temp_{numadd + summand}_{i}_active == 3 /\\ temp_{numadd + summand}_{i}_value = -2 '
-                new_constraint += f'elif temp_{numadd + summand - 1}_{i}_active + temp_{summand}_{i}_active == 1 then' \
-                                  f' temp_{numadd + summand}_{i}_active = 1 /\\ temp_{numadd + summand}_{i}_value =' \
-                                  f' temp_{numadd + summand - 1}_{i}_value + temp_{summand}_{i}_value '
-                new_constraint += f'elif temp_{numadd + summand - 1}_{i}_active + temp_{summand}_{i}_active == 0 then' \
-                                  f' temp_{numadd + summand}_{i}_active = 0 /\\ temp_{numadd + summand}_{i}_value = 0 '
-                new_constraint += f'elif temp_{numadd + summand - 1}_{i}_value + temp_{summand}_{i}_value < 0 then ' \
-                                  f'temp_{numadd + summand}_{i}_active = 2 /\\ temp_{numadd + summand}_{i}_value = -1 '
-                new_constraint += f'elif temp_{numadd + summand - 1}_{i}_value == temp_{summand}_{i}_value then ' \
-                                  f'temp_{numadd + summand}_{i}_active = 0 /\\ temp_{numadd + summand}_{i}_value = 0 '
-                xor_to_int = f'sum[(((floor(temp_{numadd + summand - 1}_{i}_value/(2**j)) + floor(temp_{summand}_{i}' \
-                             f'_value/(2**j))) mod 2) * (2**j)) | j in 0..log2(temp_{numadd + summand - 1}_{i}' \
-                             f'_value + temp_{summand}_{i}_value)]'
-                new_constraint += f'else temp_{numadd + summand}_{i}_active = 1 /\\ temp_{numadd + summand}_{i}_value' \
-                                  f' = {xor_to_int} endif '
-            new_constraint += f'if temp_{numadd - 2}_{i}_active + temp_{2 * numadd - 3}_{i}_active > 2 then ' \
+                new_constraint += f'constraint if {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active > 2 then ' \
+                                  f'{output_id_link}_temp_{numadd + summand}_{i}_active = 3 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = -2 '
+                new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active == 1 then' \
+                                  f' {output_id_link}_temp_{numadd + summand}_{i}_active = 1 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value =' \
+                                  f' {output_id_link}_temp_{numadd + summand - 1}_{i}_value + {output_id_link}_temp_{summand}_{i}_value '
+                new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active == 0 then' \
+                                  f' {output_id_link}_temp_{numadd + summand}_{i}_active = 0 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = 0 '
+                new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_value + {output_id_link}_temp_{summand}_{i}_value < 0 then ' \
+                                  f'{output_id_link}_temp_{numadd + summand}_{i}_active = 2 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = -1 '
+                new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_value == {output_id_link}_temp_{summand}_{i}_value then ' \
+                                  f'{output_id_link}_temp_{numadd + summand}_{i}_active = 0 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = 0 '
+                xor_to_int = f'sum([(((floor({output_id_link}_temp_{numadd + summand - 1}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{summand}_{i}' \
+                             f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{output_id_link}_bound_value_{numadd + summand - 1}_{i}])'
+                new_constraint += f'else {output_id_link}_temp_{numadd + summand}_{i}_active = 1 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value' \
+                                  f' = {xor_to_int} endif;\n'
+            new_constraint += f'constraint if {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active > 2 then ' \
                               f'{output_id_link}_active[{i}] == 3 /\\ {output_id_link}_value[{i}] = -2 '
-            new_constraint += f'elif temp_{numadd - 2}_{i}_active + temp_{2 * numadd - 3}_{i}_active == 1 then ' \
-                              f'{output_id_link}_active[{i}] = 1 /\\ {output_id_link}_value[{i}] = temp_{numadd - 2}_' \
-                              f'{i}_value + temp_{2 * numadd - 3}_{i}_value '
-            new_constraint += f'elif temp_{numadd - 2}_{i}_active + temp_{2 * numadd - 3}_{i}_active == 0 then ' \
+            new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active == 1 then ' \
+                              f'{output_id_link}_active[{i}] = 1 /\\ {output_id_link}_value[{i}] = {output_id_link}_temp_{numadd - 2}_' \
+                              f'{i}_value + {output_id_link}_temp_{2 * numadd - 3}_{i}_value '
+            new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active == 0 then ' \
                               f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 '
-            new_constraint += f'elif temp_{numadd - 2}_{i}_value + temp_{2 * numadd - 3}_{i}_value < 0 then ' \
+            new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_value + {output_id_link}_temp_{2 * numadd - 3}_{i}_value < 0 then ' \
                               f'{output_id_link}_active[{i}] = 2 /\\ {output_id_link}_value[{i}] = -1 '
-            new_constraint += f'elif temp_{numadd - 2}_{i}_value == temp_{2 * numadd - 3}_{i}_value then ' \
+            new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_value == {output_id_link}_temp_{2 * numadd - 3}_{i}_value then ' \
                               f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 '
-            xor_to_int = f'sum[(((floor(temp_{numadd - 2}_{i}_value/(2**j)) + floor(temp_{2 * numadd - 3}_{i}' \
-                         f'_value/(2**j))) mod 2) * (2**j)) | j in 0..log2(temp_{numadd - 2}_{i}_value + ' \
-                         f'temp_{2 * numadd - 3}_{i}_value)]'
+            xor_to_int = f'sum([(((floor({output_id_link}_temp_{numadd - 2}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{2 * numadd - 3}_{i}' \
+                         f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{output_id_link}_bound_value_{numadd - 2}_{i}])'
             new_constraint += f'else {output_id_link}_active[{i}] = 1 /\\ {output_id_link}_value[{i}] =' \
                               f' {xor_to_int} endif;'
             cp_constraints.append(new_constraint)
@@ -413,9 +469,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(2, 31)
             sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_list)
             (['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);'],
@@ -977,9 +1033,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: speck = SpeckBlockCipher(number_of_rounds=22)
-            sage: minizinc = MinizincModel(speck)
+            sage: minizinc = MznModel(speck)
             sage: xor_component = speck.get_component_from_id("xor_0_2")
             sage: _, xor_minizinc_constraints = xor_component.minizinc_constraints(minizinc)
             sage: xor_minizinc_constraints[0]
@@ -1041,7 +1097,11 @@ class XOR(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for XOR operation in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing XOR for SAT CIPHER model
+
+        This method translates in CNF the constraint ``z = Xor(x, y)``. In prefixed notation, it becomes:
+        ``And(Or(z, Not(x), y), Or(z, x, Not(y)), Or(z, Not(x), Not(y)), Or(z, x, y))``.
+        This method supports XOR operation using more than two operands.
 
         .. SEEALSO::
 
@@ -1059,9 +1119,12 @@ class XOR(Component):
             sage: xor_component.sat_constraints()
             (['xor_0_2_0',
               'xor_0_2_1',
-              'xor_0_2_2',
               ...
-              'xor_0_2_15 -modadd_0_1_15 key_63',
+              'xor_0_2_14',
+              'xor_0_2_15'],
+             ['-xor_0_2_0 modadd_0_1_0 key_48',
+              'xor_0_2_0 -modadd_0_1_0 key_48',
+              ...
               'xor_0_2_15 modadd_0_1_15 -key_63',
               '-xor_0_2_15 -modadd_0_1_15 -key_63'])
         """
@@ -1077,12 +1140,12 @@ class XOR(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for XOR in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing XOR for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
 
         INPUT:
 
@@ -1096,9 +1159,12 @@ class XOR(Component):
             sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['xor_0_2_0_0',
               'xor_0_2_1_0',
-              'xor_0_2_2_0',
               ...
-              'modadd_0_1_15_1 xor_0_2_15_0 xor_0_2_15_1 -key_63_1',
+              'xor_0_2_14_1',
+              'xor_0_2_15_1'],
+             ['xor_0_2_0_0 -modadd_0_1_0_0',
+              'xor_0_2_0_0 -key_48_0',
+              ...
               'key_63_1 xor_0_2_15_0 xor_0_2_15_1 -modadd_0_1_15_1',
               'xor_0_2_15_0 -modadd_0_1_15_1 -key_63_1 -xor_0_2_15_1'])
         """
@@ -1115,15 +1181,44 @@ class XOR(Component):
         return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses representing XOR for SAT XOR DIFFERENTIAL model
+
+        .. SEEALSO::
+
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: xor_component = speck.component_from(0, 2)
+            sage: xor_component.sat_xor_differential_propagation_constraints()
+            (['xor_0_2_0',
+              'xor_0_2_1',
+              ...
+              'xor_0_2_14',
+              'xor_0_2_15'],
+             ['-xor_0_2_0 modadd_0_1_0 key_48',
+              'xor_0_2_0 -modadd_0_1_0 key_48',
+              ...
+              'xor_0_2_15 modadd_0_1_15 -key_63',
+              '-xor_0_2_15 -modadd_0_1_15 -key_63'])
+        """
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for XOR operation in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing XOR for SAT XOR LINEAR model
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            :ref:`sat-standard` for the format, [LWR2016]_ for the algorithm.
 
         INPUT:
 
@@ -1137,9 +1232,12 @@ class XOR(Component):
             sage: xor_component.sat_xor_linear_mask_propagation_constraints()
             (['xor_0_2_0_i',
               'xor_0_2_1_i',
-              'xor_0_2_2_i',
               ...
-              'xor_0_2_15_i -xor_0_2_15_o',
+              'xor_0_2_14_o',
+              'xor_0_2_15_o'],
+             ['xor_0_2_0_i -xor_0_2_0_o',
+              'xor_0_2_16_i -xor_0_2_0_i',
+              ...
               'xor_0_2_31_i -xor_0_2_15_i',
               'xor_0_2_15_o -xor_0_2_31_i'])
         """
@@ -1156,7 +1254,11 @@ class XOR(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing XOR operation for SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing XOR for SMT CIPHER model
+
+        Since the XOR operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
+        builtin operation, e.g. ``z = XOR(x, y)`` becomes ``(assert (= z (xor x y)))``.
+        This method support XOR operation using more than two inputs.
 
         INPUT:
 
@@ -1190,11 +1292,43 @@ class XOR(Component):
         return output_bit_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a variable list and SMT-LIB list asserts representing XOR for SMT XOR DIFFERENTIAL model
+
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: xor_component = speck.component_from(0, 2)
+            sage: xor_component.smt_xor_differential_propagation_constraints()
+            (['xor_0_2_0',
+              'xor_0_2_1',
+              ...
+              'xor_0_2_14',
+              'xor_0_2_15'],
+             ['(assert (= xor_0_2_0 (xor modadd_0_1_0 key_48)))',
+              '(assert (= xor_0_2_1 (xor modadd_0_1_1 key_49)))',
+              ...
+              '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))',
+              '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'])
+        """
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for XOR operation in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing XOR for SMT XOR LINEAR model
+
+        .. SEEALSO::
+
+            [LWR2016]_ for the algorithm.
 
         INPUT:
 
@@ -1240,9 +1374,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(0, 31)
             sage: xor_component.cp_transform_xor_components_for_first_step(cp)
             (['array[0..3] of var 0..1: xor_0_31;'], [])
