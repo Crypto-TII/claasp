@@ -17,11 +17,11 @@
 # ****************************************************************************
 
 
-from claasp.input import Input
-from claasp.component import Component
-from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
+from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.component import Component
+from claasp.input import Input
 
 
 def milp_n_window_heuristic(input_vars, output_vars, component_id, window_size, mip, x):
@@ -1111,9 +1111,9 @@ class Modular(Component):
         )
 
         word_size = out_len
-        p = [f'p{i}' for i in range(word_size)]
-        q = [f'q{i}' for i in range(word_size)]
-        r = [f'r{i}' for i in range(word_size)]
+        p = [f'hw_p_{out_ids_0[i]}' for i in range(word_size)]
+        q = [f'hw_q_{out_ids_0[i]}' for i in range(word_size)]
+        r = [f'hw_r_{out_ids_0[i]}' for i in range(word_size)]
 
         window_size_ = 1
         for bit_position in range(word_size - 1):
