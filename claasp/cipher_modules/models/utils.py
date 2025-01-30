@@ -17,15 +17,17 @@
 # ****************************************************************************
 
 
+import math
 import os
 import sys
-import math
 from copy import deepcopy
 
 import numpy as np
 
-from claasp.name_mappings import CONSTANT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN, \
+from claasp.name_mappings import CONSTANT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, LINEAR_LAYER, SBOX, \
+    MIX_COLUMN, \
     INPUT_KEY, INPUT_PLAINTEXT, INPUT_MESSAGE, INPUT_STATE
+from claasp.utils.utils import get_k_th_bit
 
 
 def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids):
@@ -815,10 +817,34 @@ def _number_to_n_bit_binary_string(number, n_bits):
 
 
 def _extract_bit_positions(hex_number, state_size):
+    """Extracts bit positions from a hex state_size-number."""
     binary_str = _number_to_n_bit_binary_string(hex_number, state_size)
     binary_str = binary_str[::-1]
     positions = [i for i, bit in enumerate(binary_str) if bit == '1']
     return positions
+
+
+def extract_bit_positions(binary_str):
+    """Extracts bit positions from a binary+unknows string."""
+    binary_str = binary_str[::-1]
+    positions = [i for i, bit in enumerate(binary_str) if bit in ['1', '0']]
+    return positions
+
+
+def extract_bits(columns, positions):
+    """Extracts the bits from columns at the specified positions."""
+    num_positions = len(positions)
+    num_columns = columns.shape[1]
+    bit_size = columns.shape[0] * 8
+
+    result = np.zeros((num_positions, num_columns), dtype=np.uint8)
+
+    for i in range(num_positions):
+        for j in range(num_columns):
+            byte_index = (bit_size - positions[i] - 1) // 8
+            bit_index = positions[i] % 8
+            result[i, j] = get_k_th_bit(columns[:, j][byte_index], bit_index)
+    return result
 
 
 def _repeat_input_difference(input_difference, num_samples, num_bytes):
@@ -880,3 +906,40 @@ def differential_linear_checker_for_block_cipher_single_key(
     count = np.count_nonzero(parities == 0)
     corr = 2*count/number_of_samples*1.0-1
     return corr
+
+
+def differential_truncated_checker_permutation(
+        cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+):
+    """
+    Verifies experimentally differential-truncated distinguishers for permutations in the single-key scenario
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    num_bytes = int(state_size / 8)
+    if seed:
+        rng = np.random.default_rng(seed)
+    else:
+        rng = np.random.default_rng(seed)
+
+    input_diff_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext_data2 = plaintext_data1 ^ input_diff_data
+
+    ciphertext1 = cipher.evaluate_vectorized([plaintext_data1])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])
+    diff_ciphertext = ciphertext1[0] ^ ciphertext2[0]
+
+    bit_positions = extract_bit_positions(output_difference)
+    known_bits = extract_bits(diff_ciphertext.T, bit_positions)
+    np.set_printoptions(linewidth=400)
+
+    inv_output_diff = output_difference[::-1]
+    filled_bits = [int(bit) for bit in inv_output_diff if bit in ["0", "1"]]
+    total = 0
+    for i in range(len(known_bits[0])):
+        if np.all(known_bits[:, i] == filled_bits):
+            total += 1
+
+    prob_weight = math.log(total / number_of_samples, 2)
+    return prob_weight

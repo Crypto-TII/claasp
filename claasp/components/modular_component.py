@@ -1072,7 +1072,11 @@ class Modular(Component):
         return out_ids_0 + out_ids_1 + carry_ids_0 + carry_ids_1, constraints
 
     def sat_semi_deterministic_truncated_xor_differential_constraints(self):
-        def truncated_xor_bit(a_t15, b_t15, c_t15, a_v15, b_v15, c_v15):
+        """
+        Return a list of variables and a list of clauses representing MODULAR ADDITION/SUBTRACTION for SAT SEMI-DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
+        """
+
+        def position_0_constraints(a_t15, b_t15, c_t15, a_v15, b_v15, c_v15):
             """
             Converts the given formula into CNF and returns a list of clauses as f-strings.
 
@@ -1084,13 +1088,14 @@ class Modular(Component):
             """
             clauses = []
 
-            # First part: Negating A_t15, B_t15, and C_t15
             clauses.append(f"-{a_t15}")
             clauses.append(f"-{b_t15}")
             clauses.append(f"-{c_t15}")
 
-            # Implication transformed to CNF
-            clauses.append(f"{a_t15} {b_t15} {c_t15} -{a_v15} -{b_v15} -{c_v15}")
+            clauses.append(f' {a_v15}  {b_v15} -{c_v15}')
+            clauses.append(f' {a_v15} -{b_v15} {c_v15}')
+            clauses.append(f'-{a_v15}  {b_v15} {c_v15}')
+            clauses.append(f'-{a_v15} -{b_v15} -{c_v15}')
 
             return clauses
 
@@ -1106,25 +1111,22 @@ class Modular(Component):
         C_t = out_ids_0[0:out_len]
         C_v = out_ids_1[0:out_len]
 
-        constraints = truncated_xor_bit(
+        constraints = position_0_constraints(
             A_t[out_len-1], B_t[out_len-1], C_t[out_len-1], A_v[out_len-1], B_v[out_len-1], C_v[out_len-1]
         )
 
         word_size = out_len
-        p = [f'hw_p_{out_ids_0[i]}' for i in range(word_size)]
-        q = [f'hw_q_{out_ids_0[i]}' for i in range(word_size)]
-        r = [f'hw_r_{out_ids_0[i]}' for i in range(word_size)]
+        p = [f'hw_p_{self.id}_{i}' for i in range(word_size)]
+        q = [f'hw_q_{self.id}_{i}' for i in range(word_size)]
+        r = [f'hw_r_{self.id}_{i}' for i in range(word_size)]
 
         window_size_ = 1
         for bit_position in range(word_size - 1):
             A_t_bit_positions = []
-
             for i in range(window_size_ + 2):
                 if bit_position + i < word_size:
                     A_t_bit_positions.append(A_t[bit_position + i])
-            #print(A_t_bit_positions)
             if len(A_t_bit_positions) == 3:
-
                 cnf_clauses = sat_utils.get_cnf_semi_deterministic_window_1(
                     A_t[bit_position], A_t[bit_position + 1], A_t[bit_position + 2],
                     A_v[bit_position], A_v[bit_position + 1], A_v[bit_position + 2],
@@ -1144,11 +1146,9 @@ class Modular(Component):
                     p[bit_position], q[bit_position], r[bit_position])
 
             else:
-                import ipdb;
-                ipdb.set_trace()
+                raise "Window size no supported"
 
             constraints.extend(cnf_clauses)
-        #import ipdb; ipdb.set_trace()
         return out_ids_0 + out_ids_1 + p + q + r, constraints
 
 

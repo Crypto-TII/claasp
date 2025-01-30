@@ -1,6 +1,7 @@
 from claasp.cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model import \
     SatSemiDeterministicTruncatedXorDifferentialModel
-from claasp.cipher_modules.models.utils import set_fixed_variables
+from claasp.cipher_modules.models.utils import set_fixed_variables, differential_truncated_checker_permutation, \
+    integer_to_bit_list
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 
@@ -58,14 +59,12 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
                               bit_values=(0,) * 64)
     trail = sat.find_one_semi_deterministic_truncated_xor_differential_trail(
         fixed_values=[plaintext, intermediate_output_0_6, intermediate_output_1_12, cipher_output_2_12, key],
-        unknown_probability_weight_configuration={
+        unknown_window_size_configuration={
             "max_number_of_sequences_window_size_0": 20,
             "max_number_of_sequences_window_size_1": 20,
             "max_number_of_sequences_window_size_2": 20
         }
     )
-
-    print(trail)
 
     assert trail['components_values']['cipher_output_2_12']['value'] == '????0??????????0???????????????1'
 
@@ -94,7 +93,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
                               bit_values=(0,) * 64)
     trail = sat.find_one_semi_deterministic_truncated_xor_differential_trail(
         fixed_values=[plaintext, intermediate_output_0_6, intermediate_output_1_12, cipher_output_2_12, key],
-        unknown_probability_weight_configuration={
+        unknown_window_size_configuration={
             "max_number_of_sequences_window_size_0": 20,
             "max_number_of_sequences_window_size_1": 1,
             "max_number_of_sequences_window_size_2": 20
@@ -115,7 +114,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
 
     trail = sat.find_one_semi_deterministic_truncated_xor_differential_trail(
         fixed_values=[plaintext],
-        unknown_probability_weight_configuration={
+        unknown_window_size_configuration={
             "max_number_of_sequences_window_size_0": 20,
             "max_number_of_sequences_window_size_1": 1,
             "max_number_of_sequences_window_size_2": 20
@@ -123,3 +122,63 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
     )
 
     assert trail['status'] == 'UNSATISFIABLE'
+
+
+def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_for_chacha_1_round_satisfiable():
+    chacha = ChachaPermutation(number_of_rounds=2)
+    sat = SatSemiDeterministicTruncatedXorDifferentialModel(chacha)
+    state_size = 512
+    initial_state_positions = [0] * state_size
+    initial_state_positions[508] = 1
+
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='equal',
+        bit_positions=list(range(state_size)),
+        bit_values=initial_state_positions
+    )
+
+    intermediate_output_0_24_int = int(
+        '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000',
+        2)
+    intermediate_output_0_24 = set_fixed_variables(
+        component_id='intermediate_output_0_24',
+        constraint_type='equal',
+        bit_positions=list(range(state_size)),
+        bit_values=integer_to_bit_list(intermediate_output_0_24_int, state_size, 'big')
+    )
+
+    cipher_output_1_24_int = list(
+        '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000010000000????100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????100000001000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000')
+    cipher_output_1_24_int_temp = []
+    for bit in cipher_output_1_24_int:
+        if bit == '?':
+            cipher_output_1_24_int_temp.append(2)
+        else:
+            cipher_output_1_24_int_temp.append(int(bit))
+    cipher_output_1_24 = set_fixed_variables(
+        component_id='cipher_output_1_24',
+        constraint_type='equal',
+        bit_positions=list(range(state_size)),
+        bit_values=cipher_output_1_24_int_temp
+    )
+
+    trail = sat.find_one_semi_deterministic_truncated_xor_differential_trail(
+        fixed_values=[plaintext, intermediate_output_0_24, cipher_output_1_24],
+        unknown_window_size_configuration={
+            "max_number_of_sequences_window_size_0": 3,
+            "max_number_of_sequences_window_size_1": 3,
+            "max_number_of_sequences_window_size_2": 3
+        },
+        number_of_unknowns_per_component={"cipher_output_1_24": 8},
+        solver_name='CADICAL_EXT'
+    )
+
+    assert trail['status'] == 'SATISFIABLE'
+
+    input_difference = int(trail['components_values']['plaintext']['value'], 2)
+    output_difference = trail['components_values']['cipher_output_1_24']['value']
+    prob = differential_truncated_checker_permutation(
+        chacha, input_difference, output_difference, 1 << 10, state_size, seed=42
+    )
+    assert 0 < abs(prob) < 5
