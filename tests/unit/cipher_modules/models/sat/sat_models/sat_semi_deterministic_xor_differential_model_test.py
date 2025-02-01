@@ -179,6 +179,6 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
     input_difference = int(trail['components_values']['plaintext']['value'], 2)
     output_difference = trail['components_values']['cipher_output_1_24']['value']
     prob = differential_truncated_checker_permutation(
-        chacha, input_difference, output_difference, 1 << 10, state_size, seed=42
+        chacha, input_difference, output_difference, 1 << 12, state_size, seed=42
     )
     assert 0 < abs(prob) < 5

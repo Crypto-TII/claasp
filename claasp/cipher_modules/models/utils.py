@@ -943,3 +943,31 @@ def differential_truncated_checker_permutation(
 
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
+
+
+def differential_checker_permutation(
+        cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+):
+    """
+    Verifies experimentally differential distinguishers for permutations using the vectorized evaluator
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    num_bytes = int(state_size / 8)
+
+    if seed:
+        rng = np.random.default_rng(seed)
+    else:
+        rng = np.random.default_rng(seed)
+    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    output_difference_data = _repeat_input_difference(output_difference, number_of_samples, num_bytes)
+    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext2 = plaintext1 ^ input_difference_data
+
+    ciphertext1 = cipher.evaluate_vectorized([plaintext1])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext2])
+    rows_all_true = np.all((ciphertext1[0] ^ ciphertext2[0] == output_difference_data.T), axis=1)
+    total = np.count_nonzero(rows_all_true)
+    import math
+    total_prob_weight = math.log(total / number_of_samples, 2)
+    return total_prob_weight
