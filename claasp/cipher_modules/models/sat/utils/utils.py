@@ -836,11 +836,15 @@ def _generate_component_model_types(speck_cipher):
     return component_model_types
 
 
-def _update_component_model_types_for_truncated_components(component_model_types, truncated_components):
+def _update_component_model_types_for_truncated_components(
+        component_model_types,
+        truncated_components,
+        truncated_model_type="sat_bitwise_deterministic_truncated_xor_differential_constraints"
+):
     """Updates the component model types for truncated components."""
     for component_model_type in component_model_types:
         if component_model_type["component_id"] in truncated_components:
-            component_model_type["model_type"] = "sat_bitwise_deterministic_truncated_xor_differential_constraints"
+            component_model_type["model_type"] = truncated_model_type
 
 
 def _update_component_model_types_for_linear_components(component_model_types, linear_components):
