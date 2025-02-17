@@ -1120,7 +1120,7 @@ class Modular(Component):
         q = [f'hw_q_{self.id}_{i}' for i in range(word_size)]
         r = [f'hw_r_{self.id}_{i}' for i in range(word_size)]
 
-        window_size_ = 1
+        window_size_ = 3
         for bit_position in range(word_size - 1):
             A_t_bit_positions = []
             for i in range(window_size_ + 2):
@@ -1144,7 +1144,29 @@ class Modular(Component):
                     C_t[bit_position], C_t[bit_position + 1],
                     C_v[bit_position], C_v[bit_position + 1],
                     p[bit_position], q[bit_position], r[bit_position])
-
+            elif len(A_t_bit_positions) == 4:
+                cnf_clauses = sat_utils.get_cnf_semi_deterministic_window_2(
+                    A_t[bit_position], A_t[bit_position + 1], A_t[bit_position + 2], A_t[bit_position + 3],
+                    A_v[bit_position], A_v[bit_position + 1], A_v[bit_position + 2], A_v[bit_position + 3],
+                    B_t[bit_position], B_t[bit_position + 1], B_t[bit_position + 2], B_t[bit_position + 3],
+                    B_v[bit_position], B_v[bit_position + 1], B_v[bit_position + 2], B_v[bit_position + 3],
+                    C_t[bit_position], C_t[bit_position + 1], C_t[bit_position + 2], C_t[bit_position + 3],
+                    C_v[bit_position], C_v[bit_position + 1],
+                    p[bit_position], q[bit_position], r[bit_position])
+            elif len(A_t_bit_positions) == 5:
+                cnf_clauses = sat_utils.get_cnf_semi_deterministic_window_3(
+                    A_t[bit_position], A_t[bit_position + 1], A_t[bit_position + 2], A_t[bit_position + 3],
+                    A_t[bit_position + 4],
+                    A_v[bit_position], A_v[bit_position + 1], A_v[bit_position + 2], A_v[bit_position + 3],
+                    A_v[bit_position + 4],
+                    B_t[bit_position], B_t[bit_position + 1], B_t[bit_position + 2], B_t[bit_position + 3],
+                    B_t[bit_position + 4],
+                    B_v[bit_position], B_v[bit_position + 1], B_v[bit_position + 2], B_v[bit_position + 3],
+                    B_v[bit_position + 4],
+                    C_t[bit_position], C_t[bit_position + 1], C_t[bit_position + 2], C_t[bit_position + 3],
+                    C_t[bit_position + 4],
+                    C_v[bit_position], C_v[bit_position + 1],
+                    p[bit_position], q[bit_position], r[bit_position])
             else:
                 raise "Window size no supported"
 

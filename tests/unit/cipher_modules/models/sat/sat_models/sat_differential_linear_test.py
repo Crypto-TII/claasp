@@ -290,18 +290,18 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation.
     This test is using in the middle part the semi-deterministic model.
     """
-    chacha = ChachaPermutation(number_of_rounds=16)
+    chacha = ChachaPermutation(number_of_rounds=15)
 
     import itertools
 
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
-    for round_number in range(4):
+    for round_number in range(3):
         top_part_components.append(chacha.get_components_in_round(round_number))
-    for round_number in range(4, 5):
+    for round_number in range(3, 4):
         middle_part_components.append(chacha.get_components_in_round(round_number))
-    for round_number in range(5, 8):
+    for round_number in range(4, 7):
         bottom_part_components.append(chacha.get_components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
@@ -346,7 +346,7 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha():
     sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=69,
+        weight=80,
         fixed_values=[plaintext1, plaintext2, modadd_6_15],
         solver_name="PARKISSAT_EXT",
         num_unknown_vars=12,
@@ -451,6 +451,71 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
     assert trail["status"] == 'SATISFIABLE'
     assert trail["total_weight"] == 11
 
+
+def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
+    """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation.
+    This test is using in the middle part the semi-deterministic model.
+    """
+    chacha = ChachaPermutation(number_of_rounds=8)
+    # import ipdb; ipdb.set_trace()
+    import itertools
+
+    top_part_components = []
+    middle_part_components = []
+    bottom_part_components = []
+    for round_number in range(2):
+        top_part_components.append(chacha.get_components_in_round(round_number))
+    for round_number in range(2, 4):
+        middle_part_components.append(chacha.get_components_in_round(round_number))
+    for round_number in range(4, 8):
+        bottom_part_components.append(chacha.get_components_in_round(round_number))
+
+    middle_part_components = list(itertools.chain(*middle_part_components))
+    bottom_part_components = list(itertools.chain(*bottom_part_components))
+
+    middle_part_components = [component.id for component in middle_part_components]
+    bottom_part_components = [component.id for component in bottom_part_components]
+
+    state_size = 512
+
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='not_equal',
+        bit_positions=list(range(state_size)),
+        bit_values=[0] * state_size
+    )
+
+    modadd_3_0 = set_fixed_variables(
+        component_id='modadd_4_0',
+        constraint_type='not_equal',
+        bit_positions=list(range(32)),
+        bit_values=[0] * 32
+    )
+
+    component_model_types = _generate_component_model_types(chacha)
+    _update_component_model_types_for_truncated_components(
+        component_model_types,
+        middle_part_components,
+        truncated_model_type='sat_semi_deterministic_truncated_xor_differential_constraints'
+    )
+    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+
+    sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
+
+    trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
+        weight=20 - 5,
+        fixed_values=[plaintext, modadd_3_0],
+        solver_name="CADICAL_EXT",
+        num_unknown_vars=8,
+        # unknown_window_size_configuration={
+        #    "max_number_of_sequences_window_size_0": 9,
+        #    "max_number_of_sequences_window_size_1": 5,
+        #    "max_number_of_sequences_window_size_2": 5
+        # },
+    )
+    print(trail)
+    assert trail["status"] == 'SATISFIABLE'
+    assert trail["total_weight"] == 11
 
 def test_diff_lin_chacha():
     """

@@ -1109,8 +1109,13 @@ def get_cnf_semi_deterministic_window_1(
 
 
 def get_cnf_semi_deterministic_window_2(
-        p0, B_t0, A_t2, C_t3, C_t2, B_t1, B_v3, A_v2, C_t1, B_v1, A_v3, B_v0, C_v1,
-        B_v2, r0, A_t3, B_t3, A_t0, C_t0, A_v1, B_t2, q0, C_v0, A_t1, A_v0
+        A_t0, A_t1, A_t2, A_t3,
+        A_v0, A_v1, A_v2, A_v3,
+        B_t0, B_t1, B_t2, B_t3,
+        B_v0, B_v1, B_v2, B_v3,
+        C_t0, C_t1, C_t2, C_t3,
+        C_v0, C_v1,
+        p0, q0, r0
 ):
     return [
         f'{p0} {B_t0} -{A_t2} -{C_t1} {A_t0} {C_t0}',
@@ -1366,4 +1371,69 @@ def get_cnf_semi_deterministic_window_2(
         f'-{A_v1} -{q0}',
         f'-{B_t2} -{q0}',
         f'-{q0} -{A_t1}'
+    ]
+
+
+def get_cnf_semi_deterministic_window_3(
+        A_t0, A_t1, A_t2, A_t3, A_t4,
+        A_v0, A_v1, A_v2, A_v3, A_v4,
+        B_t0, B_t1, B_t2, B_t3, B_t4,
+        B_v0, B_v1, B_v2, B_v3, B_v4,
+        C_t0, C_t1, C_t2, C_t3, C_t4,
+        C_v0, C_v1, p0, q0, r0):
+    return [
+        f'{A_t4} {A_v4} {B_t4} {B_v4} -{C_t4} -{q0} {r0}',
+        f'{A_t3} {A_v3} {B_t3} {B_v3} -{C_t3} -{q0} -{r0}',
+        f'-{A_t3} -{q0} {r0}',
+        f'-{A_v3} -{q0} {r0}',
+        f'-{B_t3} -{q0} {r0}',
+        f'-{B_v3} -{q0} {r0}',
+        f'{C_t3} -{q0} {r0}',
+        f'{A_t1} {A_v0} -{A_v1} {B_t1} {B_v0} -{B_v1} {C_t1} {C_v0} -{C_v1}',
+        f'{A_t1} -{A_v0} -{A_v1} {B_t1} -{B_v0} -{B_v1} {C_t1} {C_v0} -{C_v1}',
+        f'{A_t1} -{A_v0} -{A_v1} {B_t1} {B_v0} -{B_v1} {C_t1} -{C_v0} -{C_v1}',
+        f'{A_t1} {A_v0} -{A_v1} {B_t1} -{B_v0} -{B_v1} {C_t1} -{C_v0} -{C_v1}',
+        f'-{A_v1} -{q0}',
+        f'-{B_v1} -{q0}',
+        f'{A_t0} {A_t2} {A_v2} {B_t0} {B_t2} {B_v2} {C_t0} -{C_t1} -{C_t2} {q0} {r0}',
+        f'{A_t1} -{A_v1} {B_t1} -{B_v1} {C_t1} -{C_v1} -{r0}',
+        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_t1} {C_v0}',
+        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_t1} {C_v0}',
+        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_t1} -{C_v0}',
+        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_t1} -{C_v0}',
+        f'{A_t0} -{A_t2} {B_t0} {C_t0} -{C_t1} {p0}',
+        f'{A_t1} {A_v1} {B_t1} {B_v1} -{C_t1} {q0} -{r0}',
+        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} {C_v0} {C_v1}',
+        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} {C_v0} {C_v1}',
+        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_v0} {C_v1}',
+        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_v0} {C_v1}',
+        f'{A_t1} {A_v1} {B_t1} {B_v1} {C_v1} {q0} -{r0}',
+        f'{A_t0} -{A_v2} {B_t0} {C_t0} -{C_t1} {p0}',
+        f'{A_t0} {B_t0} {B_v1} {C_t0} -{C_v1} {p0} {q0}',
+        f'{A_t0} {B_t0} -{B_t2} {C_t0} -{C_t1} {p0}',
+        f'{C_t1} -{p0} {r0}',
+        f'{A_t0} {B_t0} -{B_v2} {C_t0} -{C_t1} {p0}',
+        f'{A_t0} -{A_v1} {B_t0} {C_t0} -{C_t1} {r0}',
+        f'{A_t0} -{A_v1} {B_t0} {C_t0} {C_v1} {r0}',
+        f'{A_t0} {A_v1} {B_t0} -{B_v1} {C_t0} {r0}',
+        f'-{p0} -{q0}',
+        f'{A_t0} {B_t0} {C_t0} -{C_t1} {C_t2} {p0}',
+        f'-{A_t1} {p0} -{r0}',
+        f'-{B_t1} {p0} -{r0}',
+        f'{p0} {q0} -{r0}',
+        f'{A_t0} -{A_t1} {B_t0} {C_t0} {r0}',
+        f'{A_t0} {B_t0} -{B_t1} {C_t0} {r0}',
+        f'{A_t1} -{A_v1} {B_t1} -{B_v1} -{C_t0} {C_t1} -{C_v1}',
+        f'{A_t1} -{A_v1} -{B_t0} {B_t1} -{B_v1} {C_t1} -{C_v1}',
+        f'-{A_t0} {A_t1} -{A_v1} {B_t1} -{B_v1} {C_t1} -{C_v1}',
+        f'{A_t1} {A_v1} {B_t1} {B_v1} -{C_t0} {C_t1} {C_v1}',
+        f'{A_t1} {A_v1} -{B_t0} {B_t1} {B_v1} {C_t1} {C_v1}',
+        f'-{A_t0} {A_t1} {A_v1} {B_t1} {B_v1} {C_t1} {C_v1}',
+        f'-{C_t0} -{p0}',
+        f'-{B_t0} -{p0}',
+        f'-{A_t0} -{p0}',
+        f'-{C_t0} -{q0}',
+        f'-{B_t0} -{q0}',
+        f'-{A_t0} -{q0}',
+        f'{C_t1} -{q0}',
     ]
