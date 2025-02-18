@@ -247,10 +247,10 @@ class SatDifferentialLinearModel(SatModel):
             if vari.startswith('cipher_output'):
                 print(vari)
 
-        minimize_vars = [f'cipher_output_7_24_{i}_o' for i in range(512)]
-        n_vars, v_const = self._sequential_counter(minimize_vars, 3, "dummy_id_unknown")
-        self._variables_list.extend(n_vars)
-        self._model_constraints.extend(v_const)
+        # minimize_vars = [f'cipher_output_7_24_{i}_o' for i in range(512)]
+        # n_vars, v_const = self._sequential_counter(minimize_vars, 3, "dummy_id_unknown")
+        # self._variables_list.extend(n_vars)
+        # self._model_constraints.extend(v_const)
 
         self._get_connecting_constraints()
 
