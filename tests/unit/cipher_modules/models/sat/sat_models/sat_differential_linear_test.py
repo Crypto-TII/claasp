@@ -1,3 +1,5 @@
+import itertools
+
 from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
 from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, \
     _update_component_model_types_for_truncated_components, _update_component_model_types_for_linear_components
@@ -6,7 +8,6 @@ from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_b
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-import itertools
 
 
 def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
@@ -14,9 +15,9 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
     speck = SpeckBlockCipher(number_of_rounds=6)
     middle_part_components = []
     bottom_part_components = []
-    for round_number in range(2, 4):
+    for round_number in range(2, 3):
         middle_part_components.append(speck.get_components_in_round(round_number))
-    for round_number in range(4, 6):
+    for round_number in range(3, 6):
         bottom_part_components.append(speck.get_components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
@@ -29,7 +30,7 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
         component_id='plaintext',
         constraint_type='equal',
         bit_positions=range(32),
-        bit_values=integer_to_bit_list(0x02110a04, 32, 'big')
+        bit_values=integer_to_bit_list(0x05020402, 32, 'big')
     )
 
     key = set_fixed_variables(
@@ -39,18 +40,11 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
         bit_values=(0,) * 64
     )
 
-    modadd_2_7 = set_fixed_variables(
-        component_id='modadd_4_7',
-        constraint_type='not_equal',
-        bit_positions=range(4),
-        bit_values=[0] * 4
-    )
-
     ciphertext_difference = set_fixed_variables(
         component_id='cipher_output_5_12',
         constraint_type='equal',
         bit_positions=range(32),
-        bit_values=integer_to_bit_list(0x02000201, 32, 'big')
+        bit_values=integer_to_bit_list(0x00040004, 32, 'big')
     )
 
     component_model_types = _generate_component_model_types(speck)
@@ -60,7 +54,56 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
     sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_types)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=8, fixed_values=[key, plaintext, modadd_2_7, ciphertext_difference], solver_name="CADICAL_EXT", num_unknown_vars=31
+        weight=10, fixed_values=[key, plaintext, ciphertext_difference], solver_name="CADICAL_EXT", num_unknown_vars=2
+    )
+    assert trail["status"] == 'SATISFIABLE'
+
+
+def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
+    """Test for finding the lowest differential-linear trail with fixed weight for 6 rounds of Speck."""
+    speck = SpeckBlockCipher(number_of_rounds=6)
+    middle_part_components = []
+    bottom_part_components = []
+    for round_number in range(2, 3):
+        middle_part_components.append(speck.get_components_in_round(round_number))
+    for round_number in range(3, 6):
+        bottom_part_components.append(speck.get_components_in_round(round_number))
+
+    middle_part_components = list(itertools.chain(*middle_part_components))
+    bottom_part_components = list(itertools.chain(*bottom_part_components))
+
+    middle_part_components = [component.id for component in middle_part_components]
+    bottom_part_components = [component.id for component in bottom_part_components]
+
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='not_equal',
+        bit_positions=range(32),
+        bit_values=integer_to_bit_list(0x0, 32, 'big')
+    )
+
+    key = set_fixed_variables(
+        component_id='key',
+        constraint_type='equal',
+        bit_positions=range(64),
+        bit_values=(0,) * 64
+    )
+
+    ciphertext_difference = set_fixed_variables(
+        component_id='cipher_output_5_12',
+        constraint_type='not_equal',
+        bit_positions=range(32),
+        bit_values=integer_to_bit_list(0x0, 32, 'big')
+    )
+
+    component_model_types = _generate_component_model_types(speck)
+    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
+    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+
+    sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_types)
+
+    trail = sat_heterogeneous_model.find_lowest_weight_xor_differential_linear_trail(
+        fixed_values=[key, plaintext, ciphertext_difference], solver_name="CADICAL_EXT", num_unknown_vars=2
     )
     assert trail["status"] == 'SATISFIABLE'
 

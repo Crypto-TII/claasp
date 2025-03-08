@@ -1,12 +1,15 @@
 import time
+
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import (
     SatBitwiseDeterministicTruncatedXorDifferentialModel
 )
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-from claasp.cipher_modules.models.utils import set_component_solution, get_bit_bindings
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils, constants
+from claasp.cipher_modules.models.utils import set_component_solution, get_bit_bindings
+from claasp.ciphers.block_ciphers.threefish_block_cipher import INPUT_TWEAK
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
 
 class SatDifferentialLinearModel(SatModel):
@@ -84,14 +87,28 @@ class SatDifferentialLinearModel(SatModel):
         """
         Adds constraints for connecting regular, truncated, and linear components.
         """
+
+        def get_component_output_bit_size(component_identifier):
+            component_output_bit_size = 0
+            if component_identifier not in [INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK]:
+                component = self.cipher.get_component_from_id(component_identifier)
+                component_output_bit_size = component.output_bit_size
+            else:
+                for cipher_index, cipher_input in enumerate(self._cipher.inputs):
+                    if component_identifier == cipher_input:
+                        component_output_bit_size = self._cipher.inputs_bit_size[cipher_index]
+                        break
+            return component_output_bit_size
+
         def is_any_string_in_list_substring_of_string(string, string_list):
             # Check if any string in the list is a substring of the given string
             return any(s in string for s in string_list)
 
         border_components = self._get_regular_xor_differential_components_in_border()
+        border_components += self._cipher.inputs
         for component_id in border_components:
-            component = self.cipher.get_component_from_id(component_id)
-            for idx in range(component.output_bit_size):
+            output_bit_size = get_component_output_bit_size(component_id)
+            for idx in range(output_bit_size):
                 constraints = sat_utils.get_cnf_bitwise_truncate_constraints(
                     f'{component_id}_{idx}', f'{component_id}_{idx}_0', f'{component_id}_{idx}_1'
                 )
@@ -311,9 +328,9 @@ class SatDifferentialLinearModel(SatModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=6)
             sage: middle_part_components = []
             sage: bottom_part_components = []
-            sage: for round_number in range(2, 4):
+            sage: for round_number in range(2, 3):
             ....:     middle_part_components.append(speck.get_components_in_round(round_number))
-            sage: for round_number in range(4, 6):
+            sage: for round_number in range(3, 6):
             ....:     bottom_part_components.append(speck.get_components_in_round(round_number))
             sage: middle_part_components = list(itertools.chain(*middle_part_components))
             sage: bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -331,12 +348,6 @@ class SatDifferentialLinearModel(SatModel):
             ....:     bit_positions=range(64),
             ....:     bit_values=(0,) * 64
             ....: )
-            sage: modadd_2_7 = set_fixed_variables(
-            ....:     component_id='modadd_4_7',
-            ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(4),
-            ....:     bit_values=[0] * 4
-            ....: )
             sage: ciphertext_difference = set_fixed_variables(
             ....:     component_id='cipher_output_5_12',
             ....:     constraint_type='equal',
@@ -348,7 +359,7 @@ class SatDifferentialLinearModel(SatModel):
             sage: _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
             sage: sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_types)
             sage: trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-            ....:     weight=8, fixed_values=[key, plaintext, modadd_2_7, ciphertext_difference], solver_name="CADICAL_EXT", num_unknown_vars=31
+            ....:     weight=10, fixed_values=[key, plaintext, ciphertext_difference], solver_name="CADICAL_EXT", num_unknown_vars=2
             ....: )
             sage: trail["status"] == 'SATISFIABLE'
             True
@@ -365,30 +376,34 @@ class SatDifferentialLinearModel(SatModel):
         )
         self.model_constraints.extend(constraints)
 
-        solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
+        solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name)
         solution['building_time_seconds'] = time.time() - start_time
-        solution['test_name'] = "find_one_regular_truncated_xor_differential_trail"
+        solution['test_name'] = "find_one_differential_linear_trail"
 
         return solution
 
     def find_lowest_weight_xor_differential_linear_trail(
-            self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT
+            self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, num_unknown_vars=1
     ):
         """
-        Finds the XOR regular truncated differential trail with the lowest weight.
+        Finds the differential-linear trail with the lowest weight.
 
         INPUT:
         - ``fixed_values`` -- **list** (default: `[]`); specifies a list of variables that should be fixed to specific values. Each entry in the list should be a dictionary representing constraints for specific components, written in the CLAASP constraining syntax.
         - ``solver_name`` -- **str** (default: ``solvers.SOLVER_DEFAULT``); The SAT solver to use.
+        - ``num_unknown_vars`` -- **int** (default: 1); number of unknown variables in the output of the middle round
 
         RETURN:
         - **dict**; Solution with the trail and metadata (weight, time, memory usage).
         """
         current_weight = 0
         start_building_time = time.time()
-        self.build_xor_regular_and_deterministic_truncated_differential_model(current_weight)
+        self.build_xor_differential_linear_model(current_weight, num_unknown_vars)
         constraints = self.fix_variables_value_constraints(
-            fixed_values, self.regular_components, self.truncated_components
+            fixed_values,
+            self.regular_components,
+            self.truncated_components,
+            self.linear_components
         )
         self.model_constraints.extend(constraints)
         end_building_time = time.time()
@@ -398,7 +413,7 @@ class SatDifferentialLinearModel(SatModel):
         max_memory = solution['memory_megabytes']
         while solution['total_weight'] is None:
             current_weight += 1
-            self.build_xor_regular_and_deterministic_truncated_differential_model(current_weight)
+            self.build_xor_differential_linear_model(current_weight, num_unknown_vars)
             self.model_constraints.extend(constraints)
             solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name)
             total_time += solution['solving_time_seconds']
@@ -406,7 +421,7 @@ class SatDifferentialLinearModel(SatModel):
 
         solution['solving_time_seconds'] = total_time
         solution['memory_megabytes'] = max_memory
-        solution['test_name'] = "find_lowest_weight_xor_regular_truncated_differential_trail"
+        solution['test_name'] = "find_lowest_weight_differential_linear_trail"
 
         return solution
 
