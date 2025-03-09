@@ -7,6 +7,8 @@ from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_trunc
 )
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils, constants
+from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, \
+    _update_component_model_types_for_truncated_components, _update_component_model_types_for_linear_components
 from claasp.cipher_modules.models.utils import set_component_solution, get_bit_bindings
 from claasp.ciphers.block_ciphers.threefish_block_cipher import INPUT_TWEAK
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
@@ -18,7 +20,7 @@ class SatDifferentialLinearModel(SatModel):
     and linear model to create a differential-linear model.
     """
 
-    def __init__(self, cipher, dict_of_components):
+    def __init__(self, cipher, list_of_components):
         """
         Initializes the model with cipher and components.
 
@@ -26,7 +28,14 @@ class SatDifferentialLinearModel(SatModel):
         - ``cipher`` -- **object**; The cipher model used in the SAT-based differential trail search.
         - ``dict_of_components`` -- **dict**; Dictionary mapping component IDs to their respective models and types.
         """
-        self.dict_of_components = dict_of_components
+        middle_part_components = list_of_components["middle_part_components"]
+        bottom_part_components = list_of_components["bottom_part_components"]
+
+        component_model_types = _generate_component_model_types(cipher)
+        _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
+        _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+
+        self.dict_of_components = component_model_types
         self.regular_components = self._get_components_by_type('sat_xor_differential_propagation_constraints')
         self.truncated_components = self._get_components_by_type(
             'sat_bitwise_deterministic_truncated_xor_differential_constraints')

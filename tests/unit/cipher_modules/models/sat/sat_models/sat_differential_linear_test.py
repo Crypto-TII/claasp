@@ -1,8 +1,6 @@
 import itertools
 
 from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
-from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, \
-    _update_component_model_types_for_truncated_components, _update_component_model_types_for_linear_components
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, \
     differential_linear_checker_for_permutation, differential_linear_checker_for_block_cipher_single_key
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
@@ -47,11 +45,12 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
         bit_values=integer_to_bit_list(0x00040004, 32, 'big')
     )
 
-    component_model_types = _generate_component_model_types(speck)
-    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_list = {
+        'middle_part_components': middle_part_components,
+        'bottom_part_components': bottom_part_components
+    }
 
-    sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_types)
+    sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_list)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
         weight=10, fixed_values=[key, plaintext, ciphertext_difference], solver_name="CADICAL_EXT", num_unknown_vars=2
@@ -96,11 +95,12 @@ def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
         bit_values=integer_to_bit_list(0x0, 32, 'big')
     )
 
-    component_model_types = _generate_component_model_types(speck)
-    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_list = {
+        'middle_part_components': middle_part_components,
+        'bottom_part_components': bottom_part_components
+    }
 
-    sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_types)
+    sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_list)
 
     trail = sat_heterogeneous_model.find_lowest_weight_xor_differential_linear_trail(
         fixed_values=[key, plaintext, ciphertext_difference], solver_name="CADICAL_EXT", num_unknown_vars=2
@@ -149,11 +149,12 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
         bit_values=[0] * 32
     )
 
-    component_model_types = _generate_component_model_types(chacha)
-    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_list = {
+        'middle_part_components': middle_part_components,
+        'bottom_part_components': bottom_part_components
+    }
 
-    sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
+    sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_list)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
         weight=5, fixed_values=[plaintext, modadd_3_15, cipher_output_5_24], solver_name="CADICAL_EXT", num_unknown_vars=511
@@ -209,11 +210,12 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
         bit_values=[0] * 4
     )
 
-    component_model_types = _generate_component_model_types(aradi)
-    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_list = {
+        'middle_part_components': middle_part_components,
+        'bottom_part_components': bottom_part_components
+    }
 
-    sat_heterogeneous_model = SatDifferentialLinearModel(aradi, component_model_types)
+    sat_heterogeneous_model = SatDifferentialLinearModel(aradi, component_model_list)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
         weight=10, fixed_values=[key, plaintext, sbox_4_8, cipher_output_3_86], solver_name="CADICAL_EXT", num_unknown_vars=128-1
@@ -262,11 +264,12 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
         bit_values=[0] * 32
     )
 
-    component_model_types = _generate_component_model_types(chacha)
-    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_list = {
+        'middle_part_components': middle_part_components,
+        'bottom_part_components': bottom_part_components
+    }
 
-    sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
+    sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_list)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
         weight=32, fixed_values=[plaintext, modadd_4_15], solver_name="CADICAL_EXT", num_unknown_vars=511
@@ -330,5 +333,4 @@ def test_diff_lin_aradi():
     )
     import math
     abs_corr = abs(corr)
-    print(corr, abs_corr, abs(math.log(abs_corr, 2)))
     assert abs(math.log(abs_corr, 2)) < 8
