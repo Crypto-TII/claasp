@@ -32,7 +32,7 @@ from minizinc import Instance, Model, Solver, Status
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
-from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
+from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary, set_fixed_variables
 from claasp.name_mappings import SBOX
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
@@ -313,6 +313,12 @@ class MznModel:
             ['constraint plaintext[0] != 0 \\/ plaintext[1] != 1 \\/ plaintext[2] != 0 \\/ plaintext[3] != 1;']
         """
         cp_constraints = []
+        if fixed_variables == []:
+            plaintext = set_fixed_variables('plaintext', 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size)
+            for cipher_input, bit_size in zip(self._cipher._inputs, self._cipher._inputs_bit_size):
+                if cipher_input == 'key':
+                    key = set_fixed_variables('key', 'equal', list(range(bit_size)), [0]*bit_size)
+            fixed_variables = [plaintext, key]
         for component in fixed_variables:
             component_id = component['component_id']
             bit_positions = component['bit_positions']
@@ -335,19 +341,6 @@ class MznModel:
                                   for i, position in enumerate(bit_positions)]
             new_constraint = 'constraint ' + f'{logic_operator}'.join(values_constraints) + ';'
             cp_constraints.append(new_constraint)
-        if fixed_variables == []:
-            input_len = self._cipher.output_bit_size
-            values_constraints = [f'plaintext[{i}] != 0'
-                                  for i in range(input_len)]
-            new_constraint = 'constraint ' + f'\\/'.join(values_constraints) + ';'
-            cp_constraints.append(new_constraint)
-            for cipher_input, bit_size in zip(self._cipher._inputs, self._cipher._inputs_bit_size):
-                if cipher_input == 'key':
-                    key_len = bit_size
-                    values_constraints = [f'key[{i}] = 0'
-                                          for i in range(key_len)]
-                    new_constraint = 'constraint ' + f'/\\'.join(values_constraints) + ';'
-                    cp_constraints.append(new_constraint)
 
         return cp_constraints
 
