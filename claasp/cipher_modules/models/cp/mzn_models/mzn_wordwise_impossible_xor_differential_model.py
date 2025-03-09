@@ -215,12 +215,20 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
         deterministic_truncated_xor_differential = constraints
         self.middle_round = middle_round
 
-        forward_components = []
-        for r in range(middle_round):
-            forward_components.extend(self._cipher.get_components_in_round(r))
-        backward_components = []
-        for r in range(number_of_rounds - middle_round + 1):
-            backward_components.extend(inverse_cipher.get_components_in_round(r))
+        if middle_round is not None:
+            forward_components = []
+            for r in range(middle_round):
+                forward_components.extend(self._cipher.get_components_in_round(r))
+            backward_components = []
+            for r in range(number_of_rounds - middle_round + 1):
+                backward_components.extend(inverse_cipher.get_components_in_round(r))
+        else:
+            forward_components = []
+            for r in range(number_of_rounds):
+                forward_components.extend(self._cipher.get_components_in_round(r))
+            backward_components = []
+            for r in range(number_of_rounds):
+                backward_components.extend(inverse_cipher.get_components_in_round(r))
         
         direct_variables, direct_constraints = self.build_impossible_forward_model(forward_components)
         self._variables_list.extend(direct_variables)
@@ -246,12 +254,20 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
         number_of_rounds = self._cipher.number_of_rounds
         input_component = 'plaintext'
         model_constraints = []
-        forward_components = []
-        for r in range(initial_round - 1, middle_round):
-            forward_components.extend([component.id for component in self._cipher.get_components_in_round(r)])
-        backward_components = []
-        for r in range(number_of_rounds - final_round, number_of_rounds - middle_round + 1):
-            backward_components.extend(['inverse_' + component.id for component in self.inverse_cipher.get_components_in_round(r)])
+        if middle_round is not None:
+            forward_components = []
+            for r in range(initial_round - 1, middle_round):
+                forward_components.extend([component.id for component in self._cipher.get_components_in_round(r)])
+            backward_components = []
+            for r in range(number_of_rounds - final_round, number_of_rounds - middle_round + 1):
+                backward_components.extend(['inverse_' + component.id for component in self.inverse_cipher.get_components_in_round(r)])
+        else:
+            forward_components = []
+            for r in range(initial_round - 1, final_round):
+                forward_components.extend([component.id for component in self._cipher.get_components_in_round(r)])
+            backward_components = []
+            for r in range(number_of_rounds - final_round, number_of_rounds - initial_round + 1):
+                backward_components.extend(['inverse_' + component.id for component in self.inverse_cipher.get_components_in_round(r)])
         key_components, key_ids = self.extract_key_schedule()
         components_to_keep = forward_components + backward_components + key_ids + ['inverse_' + id_link for id_link in key_ids] + ['array['] + [solve_satisfy]
         if initial_round == 1 and final_round == self._cipher.number_of_rounds:
@@ -489,36 +505,71 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
             new_constraint = f'{new_constraint}\"inverse_{element}_active = \"++ show(inverse_{element}_active) ++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
             new_constraint = f'{new_constraint}\"inverse_{element}_value = \"++ show(inverse_{element}_value) ++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
         if intermediate_components:
-            for component in cipher.get_components_in_round(middle_round-1):
-                if component.type != CONSTANT and component.id not in key_schedule_components_ids:
-                    component_id = component.id
-                    input_id_links = component.input_id_links
-                    input_bit_positions = component.input_bit_positions
-                    component_inputs = []
-                    input_bit_size = 0
-                    for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                        component_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-                        input_bit_size += len(bit_positions)
+            if middle_round is not None:
+                for component in cipher.get_components_in_round(middle_round-1):
+                    if component.type != CONSTANT and component.id not in key_schedule_components_ids:
+                        component_id = component.id
+                        input_id_links = component.input_id_links
+                        input_bit_positions = component.input_bit_positions
+                        component_inputs = []
+                        input_bit_size = 0
+                        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+                            component_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+                            input_bit_size += len(bit_positions)
+                            new_constraint = new_constraint + \
+                                f'\"{id_link}_active = \"++ show({id_link}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
+                                f'\"{id_link}_value = \"++ show({id_link}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
                         new_constraint = new_constraint + \
-                            f'\"{id_link}_active = \"++ show({id_link}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
-                            f'\"{id_link}_value = \"++ show({id_link}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                    new_constraint = new_constraint + \
-                        f'\"inverse_{component_id}_active= \"++ show(inverse_{component_id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
-                        f'\"inverse_{component_id}_value = \"++ show(inverse_{component_id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                    for i in range(input_bit_size):
-                        incompatibility_constraint += f'({component_inputs[i]}_active>=0 /\\ inverse_{component_id}_active>=0 /\\ floor({component_inputs[i]}_value/2^{i}) mod 2 != floor(inverse_{component_id}_value/2^{i}) mod 2 \\/ '
+                            f'\"inverse_{component_id}_active= \"++ show(inverse_{component_id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
+                            f'\"inverse_{component_id}_value = \"++ show(inverse_{component_id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                        for i in range(input_bit_size):
+                            incompatibility_constraint += f'({component_inputs[i]}_active>=0 /\\ inverse_{component_id}_active>=0 /\\ floor({component_inputs[i]}_value/2^{i}) mod 2 != floor(inverse_{component_id}_value/2^{i}) mod 2 \\/ '
+            else:
+                for component in cipher.get_all_components():
+                    if component.type != CONSTANT and component.id not in key_schedule_components_ids:
+                        component_id = component.id
+                        input_id_links = component.input_id_links
+                        input_bit_positions = component.input_bit_positions
+                        component_inputs = []
+                        input_bit_size = 0
+                        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+                            component_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+                            input_bit_size += len(bit_positions)
+                            new_constraint = new_constraint + \
+                                f'\"{id_link}_active = \"++ show({id_link}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
+                                f'\"{id_link}_value = \"++ show({id_link}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                        new_constraint = new_constraint + \
+                            f'\"inverse_{component_id}_active= \"++ show(inverse_{component_id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
+                            f'\"inverse_{component_id}_value = \"++ show(inverse_{component_id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                        for i in range(input_bit_size):
+                            incompatibility_constraint += f'({component_inputs[i]}_active>=0 /\\ inverse_{component_id}_active>=0 /\\ floor({component_inputs[i]}_value/2^{i}) mod 2 != floor(inverse_{component_id}_value/2^{i}) mod 2 \\/ '
         else:
-            for component in cipher.get_all_components():
-                if 'output' in component.id and component.id not in key_schedule_components_ids:
-                    if self.get_component_round(component.id) <= middle_round - 1:
+            if middle_round is not None:
+                for component in cipher.get_all_components():
+                    if 'output' in component.id and component.id not in key_schedule_components_ids:
+                        if self.get_component_round(component.id) <= middle_round - 1:
+                            new_constraint = new_constraint + \
+                            f'\"{component.id}_active = \"++ show({component.id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
+                            f'\"{component.id}_value = \"++ show({component.id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                        if self.get_component_round(component.id) >= middle_round - 1:
+                            new_constraint = new_constraint + \
+                            f'\"inverse_{component.id}_active = \"++ show(inverse_{component.id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
+                            f'\"inverse_{component.id}_value = \"++ show(inverse_{component.id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                        if self.get_component_round(component.id) == middle_round - 1:
+                            for i in range(component.output_bit_size // self.word_size):
+                                incompatibility_constraint += f'{component.id}_active[{i}] = 0 /\\ inverse_{component.id}_active[{i}] = 2 \\/ '
+                                incompatibility_constraint += f'{component.id}_active[{i}] = 2 /\\ inverse_{component.id}_active[{i}] = 0 \\/ '
+                                for j in range(self.word_size):
+                                    incompatibility_constraint += f'({component.id}_active[{i}] < 2 /\\ inverse_{component.id}_active[{i}] < 2 /\\ floor({component.id}_value[{i}]/2^{j}) mod 2 != floor(inverse_{component.id}_value[{i}]/2^{j}) mod 2) \\/ '
+            else:
+                for component in cipher.get_all_components():
+                    if 'output' in component.id and component.id not in key_schedule_components_ids:
                         new_constraint = new_constraint + \
                         f'\"{component.id}_active = \"++ show({component.id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
                         f'\"{component.id}_value = \"++ show({component.id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                    if self.get_component_round(component.id) >= middle_round - 1:
                         new_constraint = new_constraint + \
                         f'\"inverse_{component.id}_active = \"++ show(inverse_{component.id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
                         f'\"inverse_{component.id}_value = \"++ show(inverse_{component.id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                    if self.get_component_round(component.id) == middle_round - 1:
                         for i in range(component.output_bit_size // self.word_size):
                             incompatibility_constraint += f'{component.id}_active[{i}] = 0 /\\ inverse_{component.id}_active[{i}] = 2 \\/ '
                             incompatibility_constraint += f'{component.id}_active[{i}] = 2 /\\ inverse_{component.id}_active[{i}] = 0 \\/ '
@@ -815,12 +866,20 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
                                       f'{input_}_active[{i}] == 1 then {input_}_value[{i}] > 0 elseif '
                                       f'{input_}_active[{i}] == 2 then {input_}_value[{i}] =-1 else '
                                       f'{input_}_value[{i}] =-2 endif;')
-        forward_components = []
-        for r in range(middle_round):
-            forward_components.extend(self._cipher.get_components_in_round(r))
-        backward_components = []
-        for r in range(number_of_rounds - middle_round + 1):
-            backward_components.extend(inverse_cipher.get_components_in_round(r))
+        if middle_round is not None:
+            forward_components = []
+            for r in range(middle_round):
+                forward_components.extend(self._cipher.get_components_in_round(r))
+            backward_components = []
+            for r in range(number_of_rounds - middle_round + 1):
+                backward_components.extend(inverse_cipher.get_components_in_round(r))
+        else:
+            forward_components = []
+            for r in range(number_of_rounds):
+                forward_components.extend(self._cipher.get_components_in_round(r))
+            backward_components = []
+            for r in range(number_of_rounds):
+                backward_components.extend(inverse_cipher.get_components_in_round(r))
         for input_, bit_size in zip(inverse_cipher.inputs, inverse_cipher.inputs_bit_size):
             cp_declarations.append(f'array[0..{bit_size // self.word_size - 1}] of var 0..3: inverse_{input_}_active;')
             cp_declarations.append(
@@ -890,10 +949,16 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
     def _parse_solver_output(self, output_to_parse, number_of_rounds, initial_round, middle_round, final_round):
         components_values, memory, time = self.parse_solver_information(output_to_parse, True, True)
         all_components = [*self._cipher.inputs]
-        for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
-            all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
-        for r in list(range(initial_round - 1)) + list(range(middle_round - 1, final_round)):
-            all_components.extend(['inverse_' + component.id for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
+        if middle_round is not None:
+            for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
+                all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
+            for r in list(range(initial_round - 1)) + list(range(middle_round - 1, final_round)):
+                all_components.extend(['inverse_' + component.id for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
+        else:
+            for r in list(range(initial_round - 1, number_of_rounds)):
+                all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
+            for r in list(range(final_round)):
+                all_components.extend(['inverse_' + component.id for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
         all_components.extend(['inverse_' + id_link for id_link in [*self.inverse_cipher.inputs]])
         all_components.extend(['inverse_' + id_link for id_link in [*self._cipher.inputs]])
         for component_id in all_components:
@@ -933,11 +998,15 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
         return inverse_variables, inverse_constraints
 
     def solve(self, model_type, solver_name=None, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None, processes_=None, timeout_in_seconds_=None, all_solutions_=False, solve_external = False):
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+        if final_round is None:
+            final_round = self._cipher.number_of_rounds
         cipher_name = self.cipher_id
         input_file_path = f'{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, processes_, timeout_in_seconds_)
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        #os.remove(input_file_path)
+        os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
