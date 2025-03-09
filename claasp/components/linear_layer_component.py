@@ -305,7 +305,7 @@ class LinearLayer(Component):
             operation = ' == 0) /\\ ('.join(all_inputs_active[i::output_size])
             new_constraint = 'constraint if (('
             new_constraint += operation + '== 0)) then '
-            new_constraint += f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 else'\
+            new_constraint += f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 else '\
                               f'{output_id_link}_active[{i}] = 3 /\\ {output_id_link}_value[{i}] = -2 endif;'
             cp_constraints.append(new_constraint)
         

@@ -370,6 +370,35 @@ class MixColumn(LinearLayer):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        r"""
+        Return lists declarations and constraints for MIX COLUMN component for the CP deterministic truncated xor differential model.
+
+        INPUT:
+
+        - ``inverse`` -- **boolean** (default: `False`)
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: mix_column_component = aes.component_from(0, 21)
+            sage: mix_column_component.cp_deterministic_truncated_xor_differential_constraints()
+            ([],
+             ['constraint if ((rot_0_17[1] < 2) /\\ (rot_0_18[0] < 2) /\\ (rot_0_18[1] < 2) /\\ (rot_0_19[0] < 2) /\\ (rot_0_20[0]< 2)) then mix_column_0_21[0] = (rot_0_17[1] + rot_0_18[0] + rot_0_18[1] + rot_0_19[0] + rot_0_20[0]) mod 2 else mix_column_0_21[0] = 2 endif;',
+               ...
+              'constraint if ((rot_0_17[0] < 2) /\\ (rot_0_17[7] < 2) /\\ (rot_0_18[7] < 2) /\\ (rot_0_19[7] < 2) /\\ (rot_0_20[0]< 2)) then mix_column_0_21[31] = (rot_0_17[0] + rot_0_17[7] + rot_0_18[7] + rot_0_19[7] + rot_0_20[0]) mod 2 else mix_column_0_21[31] = 2 endif;'])
+        """
+        matrix = binary_matrix_of_linear_component(self)
+        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())]
+                             for j in range(matrix.ncols())]
+        original_description = deepcopy(self.description)
+        self.set_description(matrix_transposed)
+        cp_declarations, cp_constraints = super().cp_wordwise_deterministic_truncated_xor_differential_constraints(model)
+        self.set_description(original_description)
+
+        return cp_declarations, cp_constraints
+
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         """
         Return declarations and constraints for MIX COLUMN component for the CP xor differential first step model.

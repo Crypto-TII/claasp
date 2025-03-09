@@ -395,6 +395,7 @@ class XOR(Component):
             all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
                                       for j in range(len(bit_positions) // word_size)])
         input_len = len(all_inputs_value) // numadd
+        bound = len(bit_positions)
         cp_constraints = []
         initial_constraints = []
         for i in range(2 * numadd - 2):
@@ -403,14 +404,14 @@ class XOR(Component):
                     f'var -2..{2**word_size - 1}: {output_id_link}_temp_{i}_{j}_value;')
                 cp_declarations.append(
                     f'var 0..3: {output_id_link}_temp_{i}_{j}_active;')
-        for i in range(input_len):
-            for summand in range(numadd - 2):
-                cp_declarations.append(f'var 0..{word_size + 1}: {output_id_link}_bound_value_{numadd + summand - 1}_{i} = if {output_id_link}_temp_{numadd + summand - 1}_{i}_value ' \
-                                       f'+ {output_id_link}_temp_{summand}_{i}_value > 0 then ceil(log2({output_id_link}_temp_{numadd + summand - 1}_{i}_value ' \
-                                       f'+ {output_id_link}_temp_{summand}_{i}_value)) else 0 endif;')
-            cp_declarations.append(f'var 0..{word_size + 1}: {output_id_link}_bound_value_{numadd - 2}_{i} = if {output_id_link}_temp_{numadd - 2}_{i}_value ' \
-                                   f'+ {output_id_link}_temp_{2 * numadd - 3}_{i}_value > 0 then ceil(log2({output_id_link}_temp_{numadd - 2}_{i}_value ' \
-                                   f'+ {output_id_link}_temp_{2 * numadd - 3}_{i}_value)) else 0 endif;')
+        #for i in range(input_len):
+        #    for summand in range(numadd - 2):
+        #        cp_declarations.append(f'var 0..{word_size + 1}: {output_id_link}_bound_value_{numadd + summand - 1}_{i} = if {output_id_link}_temp_{numadd + summand - 1}_{i}_value ' \
+        #                               f'+ {output_id_link}_temp_{summand}_{i}_value > 0 then ceil(log2({output_id_link}_temp_{numadd + summand - 1}_{i}_value ' \
+        #                               f'+ {output_id_link}_temp_{summand}_{i}_value)) else 0 endif;')
+        #    cp_declarations.append(f'var 0..{word_size + 1}: {output_id_link}_bound_value_{numadd - 2}_{i} = if {output_id_link}_temp_{numadd - 2}_{i}_value ' \
+        #                           f'+ {output_id_link}_temp_{2 * numadd - 3}_{i}_value > 0 then ceil(log2({output_id_link}_temp_{numadd - 2}_{i}_value ' \
+        #                           f'+ {output_id_link}_temp_{2 * numadd - 3}_{i}_value)) else 0 endif;')
         for i in range(numadd):
             for j in range(input_len):
                 initial_constraints.append(
@@ -432,7 +433,7 @@ class XOR(Component):
                 new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_value == {output_id_link}_temp_{summand}_{i}_value then ' \
                                   f'{output_id_link}_temp_{numadd + summand}_{i}_active = 0 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = 0 '
                 xor_to_int = f'sum([(((floor({output_id_link}_temp_{numadd + summand - 1}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{summand}_{i}' \
-                             f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{output_id_link}_bound_value_{numadd + summand - 1}_{i}])'
+                             f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{word_size}])'
                 new_constraint += f'else {output_id_link}_temp_{numadd + summand}_{i}_active = 1 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value' \
                                   f' = {xor_to_int} endif;\n'
             new_constraint += f'constraint if {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active > 2 then ' \
@@ -447,7 +448,7 @@ class XOR(Component):
             new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_value == {output_id_link}_temp_{2 * numadd - 3}_{i}_value then ' \
                               f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 '
             xor_to_int = f'sum([(((floor({output_id_link}_temp_{numadd - 2}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{2 * numadd - 3}_{i}' \
-                         f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{output_id_link}_bound_value_{numadd - 2}_{i}])'
+                         f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{word_size}])'
             new_constraint += f'else {output_id_link}_active[{i}] = 1 /\\ {output_id_link}_value[{i}] =' \
                               f' {xor_to_int} endif;'
             cp_constraints.append(new_constraint)

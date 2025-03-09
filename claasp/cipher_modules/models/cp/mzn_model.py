@@ -670,7 +670,7 @@ class MznModel:
                 input_file_path, model_type, solver_name, processes_, timeout_in_seconds_
             )
             solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-            os.remove(input_file_path)
+            # os.remove(input_file_path)
             if solver_process.returncode >= 0:
                 solver_output = solver_process.stdout.splitlines()
         else:

@@ -190,17 +190,29 @@ class Rotate(Component):
         all_inputs_value = []
         all_inputs_active = []
         word_size = model.word_size
-        rot_amount = self.description[1] // word_size
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
-                                     for j in range(len(bit_positions) // word_size)])
-            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
-                                      for j in range(len(bit_positions) // word_size)])
-        input_len = len(all_inputs_value)
-        cp_constraints = []
-        for i in range(input_len):
-            cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[(i - rot_amount) % input_len]};')
-            cp_constraints.append(f'constraint {output_id_link}_value[{i}] = {all_inputs_value[(i - rot_amount) % input_len]};')
+        if self.description[1] % word_size == 0:
+            rot_amount = self.description[1] // word_size
+            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+                all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
+                                         for j in range(len(bit_positions) // word_size)])
+                all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
+                                          for j in range(len(bit_positions) // word_size)])
+            input_len = len(all_inputs_value)
+            cp_constraints = []
+            for i in range(input_len):
+                #cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[(i - rot_amount) % input_len]};')
+                cp_constraints.append(f'constraint {output_id_link}_value[{i}] = {all_inputs_value[(i - rot_amount) % input_len]};')
+        else:
+            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+                all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
+                                         for j in range(len(bit_positions) // word_size)])
+                all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
+                                          for j in range(len(bit_positions) // word_size)])
+            input_len = len(all_inputs_value)
+            cp_constraints = []
+            for i in range(input_len):
+                #cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[(i - rot_amount) % input_len]};')
+                cp_constraints.append(f'constraint {output_id_link}_active[{i}] = if count([{" , ".join([all_inputs_active[j] for j in range(input_len)])}], 0) = {input_len} then 0 else 3 endif;')
         
         return cp_declarations, cp_constraints
 

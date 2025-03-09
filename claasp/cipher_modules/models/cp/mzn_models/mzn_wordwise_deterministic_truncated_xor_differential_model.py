@@ -33,6 +33,10 @@ class MznWordwiseDeterministicTruncatedXorDifferentialModel(MznDeterministicTrun
 
     def __init__(self, cipher):
         super().__init__(cipher)
+        self.word_size = 1
+        for component in self._cipher.get_all_components():
+            if SBOX in component.type:
+                self.word_size = int(component.output_bit_size)
 
     def final_wordwise_deterministic_truncated_xor_differential_constraints(self, minimize=False):
         """
@@ -58,9 +62,11 @@ class MznWordwiseDeterministicTruncatedXorDifferentialModel(MznDeterministicTrun
         new_constraint = 'output['
         for element in cipher_inputs:
             new_constraint = f'{new_constraint}\"{element}_active = \"++ show({element}_active) ++ \"\\n\" ++'
+            new_constraint = f'{new_constraint}\"{element}_value = \"++ show({element}_value) ++ \"\\n\" ++'
         for component_id in cipher.get_all_components_ids():
             new_constraint = new_constraint + \
-                f'\"{component_id} = \"++ show({component_id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                f'\"{component_id}_active = \"++ show({component_id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
+                f'\"{component_id}_value = \"++ show({component_id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
             if 'cipher_output' in component_id and minimize:
                 cp_constraints.append(f'solve maximize count({self._cipher.get_all_components_ids()[-1]}_active, 0);')
         new_constraint = new_constraint[:-2] + '];'
