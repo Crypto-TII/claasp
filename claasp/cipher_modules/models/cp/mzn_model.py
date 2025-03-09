@@ -335,6 +335,19 @@ class MznModel:
                                   for i, position in enumerate(bit_positions)]
             new_constraint = 'constraint ' + f'{logic_operator}'.join(values_constraints) + ';'
             cp_constraints.append(new_constraint)
+        if fixed_variables == []:
+            input_len = self._cipher.output_bit_size
+            values_constraints = [f'plaintext[{i}] != 0'
+                                  for i in range(input_len)]
+            new_constraint = 'constraint ' + f'\\/'.join(values_constraints) + ';'
+            cp_constraints.append(new_constraint)
+            for cipher_input, bit_size in zip(self._cipher._inputs, self._cipher._inputs_bit_size):
+                if cipher_input == 'key':
+                    key_len = bit_size
+                    values_constraints = [f'key[{i}] = 0'
+                                          for i in range(key_len)]
+                    new_constraint = 'constraint ' + f'/\\'.join(values_constraints) + ';'
+                    cp_constraints.append(new_constraint)
 
         return cp_constraints
 
