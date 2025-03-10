@@ -498,7 +498,8 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         for element in cipher_inputs:
             new_constraint = f'{new_constraint}\"{element} = \"++ show({element}) ++ \"\\n\" ++'
         for element in cipher_outputs:
-            new_constraint = f'{new_constraint}\"inverse_{element} = \"++ show(inverse_{element}) ++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+            if element != 'key':
+                new_constraint = f'{new_constraint}\"inverse_{element} = \"++ show(inverse_{element}) ++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
         if intermediate_components:
             if middle_round is not None:
                 for component in cipher.get_components_in_round(middle_round-1):
@@ -855,7 +856,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             backward_components = []
             for r in range(number_of_rounds):
                 backward_components.extend(inverse_cipher.get_components_in_round(r))
-        cp_declarations.extend([f'array[0..{bit_size - 1}] of var 0..2: inverse_{input_};' for input_, bit_size in zip(inverse_cipher.inputs, inverse_cipher.inputs_bit_size)])  
+        cp_declarations.extend([f'array[0..{bit_size - 1}] of var 0..2: inverse_{input_};' for input_, bit_size in zip(inverse_cipher.inputs, inverse_cipher.inputs_bit_size) if input_ != 'key'])  
         for component in forward_components:
             output_id_link = component.id
             output_size = int(component.output_bit_size)

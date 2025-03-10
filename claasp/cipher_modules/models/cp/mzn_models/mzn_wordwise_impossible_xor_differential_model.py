@@ -757,6 +757,7 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
         cp_constraints = []
         if fixed_variables == []:
             plaintext = set_fixed_variables('plaintext', 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size)
+            ciphertext = set_fixed_variables('inverse_' + self._cipher.get_all_components_ids()[-1], 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size)
             for cipher_input, bit_size in zip(self._cipher._inputs, self._cipher._inputs_bit_size):
                 if cipher_input == 'key':
                     key = set_fixed_variables('key', 'equal', list(range(bit_size)), [0]*bit_size)
