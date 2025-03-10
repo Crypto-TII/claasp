@@ -67,7 +67,7 @@ jobs:
       run: sed -i "s/<source>\/home\/runner\/_work\/claasp\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
 
     - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
+      uses: SonarSource/sonarqube-scan-action@master
       with:
         args: >
           -Dsonar.branch.name=${{ env.GITHUB_HEAD_REF }}
