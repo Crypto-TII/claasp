@@ -24,7 +24,7 @@ import subprocess
 from copy import deepcopy
 
 from claasp.cipher_modules.models.cp.mzn_model import solve_satisfy
-from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary, check_if_implemented_component
+from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary, check_if_implemented_component, set_fixed_variables
 from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
 
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
@@ -703,6 +703,72 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         return self.solve('impossible_xor_differential_one_solution', solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
     
+    def fix_variables_value_constraints(self, fixed_variables=[], step='full_model'):
+        r"""
+        Return a list of CP constraints that fix the input variables to a specific value.
+
+        INPUT:
+
+        - ``fixed_variables`` -- **list**  (default: `[]`); dictionaries containing name, bit_size,
+          value (as integer) for the variables that need to be fixed to a certain value:
+
+          {
+              'component_id': 'plaintext',
+
+              'constraint_type': 'equal'/'not_equal'
+
+              'bit_size': 32,
+
+              'value': 753
+
+          }
+        - ``step`` -- **string** (default: `full_model`)
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: cp = MznModel(speck)
+            sage: cp.fix_variables_value_constraints([set_fixed_variables('plaintext', 'equal', range(4), integer_to_bit_list(5, 4, 'big'))])
+            ['constraint plaintext[0] = 0 /\\ plaintext[1] = 1 /\\ plaintext[2] = 0 /\\ plaintext[3] = 1;']
+            sage: cp.fix_variables_value_constraints([set_fixed_variables('plaintext', 'not_equal', list(range(4)), integer_to_bit_list(5, 4, 'big'))])
+            ['constraint plaintext[0] != 0 \\/ plaintext[1] != 1 \\/ plaintext[2] != 0 \\/ plaintext[3] != 1;']
+        """
+        cp_constraints = []
+        if fixed_variables == []:
+            plaintext = set_fixed_variables('plaintext', 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size)
+            ciphertext = set_fixed_variables('inverse_' + self._cipher.get_all_components_ids()[-1], 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size)
+            for cipher_input, bit_size in zip(self._cipher._inputs, self._cipher._inputs_bit_size):
+                if cipher_input == 'key':
+                    key = set_fixed_variables('key', 'equal', list(range(bit_size)), [0]*bit_size)
+            fixed_variables = [plaintext, ciphertext, key]
+        for component in fixed_variables:
+            component_id = component['component_id']
+            bit_positions = component['bit_positions']
+            bit_values = component['bit_values']
+            if step == 'first_step':
+                if not self._cipher.is_spn():
+                    raise ValueError('Cipher is not SPN')
+                input_length = len(bit_positions) // self.word_size
+                bit_positions = self.calculate_bit_positions(bit_positions, input_length)
+                bit_values = self.calculate_bit_values(bit_values, input_length)
+            if component['constraint_type'] == 'equal':
+                sign = '='
+                logic_operator = ' /\\ '
+            elif component['constraint_type'] == 'not_equal':
+                sign = '!='
+                logic_operator = ' \\/ '
+            else:
+                raise ValueError(constraint_type_error)
+            values_constraints = [f'{component_id}[{position}] {sign} {bit_values[i]}'
+                                  for i, position in enumerate(bit_positions)]
+            new_constraint = 'constraint ' + f'{logic_operator}'.join(values_constraints) + ';'
+            cp_constraints.append(new_constraint)
+
+        return cp_constraints
+
     def get_component_from_id(self, id_link, curr_cipher):
         for component in curr_cipher.get_all_components():
             if component.id == id_link:
@@ -956,7 +1022,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         input_file_path = f'{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, processes_, timeout_in_seconds_)
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        os.remove(input_file_path)
+        #os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()

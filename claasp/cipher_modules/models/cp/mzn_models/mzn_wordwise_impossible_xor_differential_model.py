@@ -24,7 +24,7 @@ import subprocess
 from copy import deepcopy
 
 from claasp.cipher_modules.models.cp.mzn_model import solve_satisfy
-from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary, check_if_implemented_component
+from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary, check_if_implemented_component, set_fixed_variables
 from claasp.cipher_modules.models.cp.mzn_models.mzn_wordwise_deterministic_truncated_xor_differential_model import MznWordwiseDeterministicTruncatedXorDifferentialModel
 
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
@@ -761,7 +761,7 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
             for cipher_input, bit_size in zip(self._cipher._inputs, self._cipher._inputs_bit_size):
                 if cipher_input == 'key':
                     key = set_fixed_variables('key', 'equal', list(range(bit_size)), [0]*bit_size)
-            fixed_variables = [plaintext, key]
+            fixed_variables = [plaintext, ciphertext, key]
         for component in fixed_variables:
             component_id = component['component_id']
             bit_positions = component['bit_positions']
