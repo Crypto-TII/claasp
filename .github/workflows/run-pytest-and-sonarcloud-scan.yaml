@@ -43,11 +43,10 @@ jobs:
         GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
 
     - name: Upload Coverage.xml to artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: coverage-report
         path: /home/runner/_work/claasp/coverage.xml
-        overwrite: true
 
   run-code-coverage:
     runs-on: ubuntu-latest
@@ -59,7 +58,7 @@ jobs:
         fetch-depth: 0
 
     - name: Download Latest Coverage.xml from Artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v3
       with:
         name: coverage-report
 
