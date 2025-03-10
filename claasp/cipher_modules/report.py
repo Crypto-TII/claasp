@@ -165,7 +165,8 @@ class Report:
              show_shift=False, show_linear_layer=False, show_xor=False, show_modadd=False,
              show_and=False,
              show_or=False, show_not=False, show_plaintext=True, show_key=True,
-             show_intermediate_output=True, show_cipher_output=True, show_input=True, show_output=True, show_graph=True):
+             show_intermediate_output=True, show_cipher_output=True, show_input=True, show_output=True,
+             show_graph=True):
 
         if 'trail' in self.test_name:
             if show_as_hex == True and (word_size / 4).is_integer() == False:
@@ -423,10 +424,13 @@ class Report:
         component_types = []
         show_key_flow = False
         for comp in list(self.test_report['components_values'].keys()):
-            if 'key' in comp:
+            if 'key' == comp:
                 show_key_flow = True
             if ('key' in comp or comp == 'plaintext') and comp not in component_types:
-                component_types.append(comp)
+                if 'key' in comp and comp != 'key':
+                    continue
+                else:
+                    component_types.append(comp)
             elif '_'.join(comp.split('_')[:-2]) not in component_types and comp[-2:] != "_i" and comp[-2:] != "_o":
                 component_types.append('_'.join(comp.split('_')[:-2]))
             elif ('_'.join(comp.split('_')[:-3])) + '_' + ('_'.join(comp.split('_')[-1])) not in component_types and (
@@ -626,7 +630,8 @@ class Report:
         word_denominator = '1' if word_size == 1 else 'A'
 
         for comp_id in self.test_report['components_values'].keys():
-
+            if 'key' in comp_id and comp_id != 'key':
+                continue
             if (comp_id != "plaintext" and comp_id != "key") and "key" not in comp_id:
                 rel_prob = self.test_report['components_values'][comp_id]['weight']
                 abs_prob += rel_prob
@@ -653,11 +658,11 @@ class Report:
         z_data = [x[32 * i: min(len(x), 32 * (i + 1))] for x in list(graph_data.values())]
         yrange = list(graph_data.keys())
         xrange = list(range(i * 32, 32 * (i + 1)))
-        fontsize = max(1, ceil(12//len(yrange)))
+        fontsize = max(1, ceil(12 // len(yrange)))
         heatmap = go.Heatmap(
             z=z_data, coloraxis='coloraxis', texttemplate="%{text}",
             text=[['{:.2f}'.format(float(y)) for y in x] for x in z_data],
-            textfont={'size': 2*fontsize},
+            textfont={'size': 2 * fontsize},
             x=xrange,
             y=yrange, zmin=0, zmax=1, zauto=False
         )
@@ -667,13 +672,13 @@ class Report:
                 'tickmode': 'array',
                 'tickvals': xrange,
                 'ticktext': [str(j) for j in range(i * 32, 32 * (i + 1))],
-                'tickfont': {'size': 2*fontsize}
+                'tickfont': {'size': 2 * fontsize}
             },
             f'yaxis{i + 1}': {
                 'tickmode': 'array',
                 'tickvals': yrange,
                 'ticktext': [str(j) for j in range(1, cipher_rounds + 1)],
-                'tickfont': {'size': 2*fontsize},
+                'tickfont': {'size': 2 * fontsize},
                 'autorange': 'reversed'
             }
         }
@@ -806,7 +811,6 @@ class Report:
                             for i in range(len(case[res_key])):
                                 graph_data[i + 1] = [case[res_key][i]] if type(case[res_key][i]) != list else \
                                     case[res_key][i]
-
 
                             df = pd.DataFrame.from_dict(graph_data).T
                             if len(graph_data[1]) > 1:
