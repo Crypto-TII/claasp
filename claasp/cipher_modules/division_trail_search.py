@@ -17,13 +17,12 @@
 # ****************************************************************************
 
 import time
-from gurobipy import *
 from sage.crypto.sbox import SBox
 from collections import Counter
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_predecessors_subgraph
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
-from gurobipy import Model, GRB
+from gurobipy import Model, GRB, Env
 import os
 
 verbosity = False
@@ -85,8 +84,8 @@ class MilpDivisionTrailModel():
                     self._used_variables.append(tmp2)
 
     def build_gurobi_model(self):
-        env = gurobipy.Env(empty=True)
-        env.setParam('ComputeServer', os.getenv('GUROBI_COMPUTE_SERVER'))
+        env = Env(empty=True)
+        env.setParam('ComputeServer', "10.191.12.120")
         env.start()
         # Create a new model
         model = Model("basic_model", env=env)
@@ -796,7 +795,7 @@ class MilpDivisionTrailModel():
             self.check_presence_of_particular_monomial_in_specific_anf(monomial, i, fixed_degree,
                                                                        chosen_cipher_output)
 
-    def find_degree_of_specific_output_bit(self, output_bit_index, chosen_cipher_output=None):
+    def find_degree_of_specific_output_bit(self, output_bit_index, chosen_cipher_output=None, cube_index=[]):
         fixed_degree = None
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, chosen_cipher_output)
         self._model.setParam(GRB.Param.PoolSearchMode, 1)
@@ -812,6 +811,11 @@ class MilpDivisionTrailModel():
         for i in range(nb_plaintext_bits_used):
             p.append(self._model.getVarByName(f"plaintext[{i}]"))
         self._model.setObjective(sum(p[i] for i in range(nb_plaintext_bits_used)), GRB.MAXIMIZE)
+
+        if cube_index:
+            for i in range(plaintext_bit_size):
+                if i not in cube_index:
+                    self._model.addConstr(p[i] == 0)
 
         self._model.update()
         self._model.write("division_trail_model.lp")
