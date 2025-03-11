@@ -63,7 +63,7 @@ jobs:
         name: coverage-report
 
     - name: Override Coverage Source Path for Sonar
-      run: sed -i 's|/home/runner/_work/claasp/claasp|/home/runner/_work/claasp|g' coverage.xml
+      run: sed -i "s/<source>\/home\/runner\/_work\/claasp\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
 
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
