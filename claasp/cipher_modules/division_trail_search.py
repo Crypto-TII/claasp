@@ -85,7 +85,7 @@ class MilpDivisionTrailModel():
 
     def build_gurobi_model(self):
         env = Env(empty=True)
-        env.setParam('ComputeServer', "10.191.12.120")
+        env.setParam('ComputeServer', os.getenv('GUROBI_COMPUTE_SERVER'))
         env.start()
         # Create a new model
         model = Model("basic_model", env=env)
