@@ -26,6 +26,7 @@ from claasp.components.multi_input_non_linear_logical_operator_component import 
 def cp_twoterms(model, inp1, inp2, out, cp_constraints):
     cp_constraints.append(f'constraint Ham_weight(Andz({inp1}, {inp2}, {out})) == 0 /\\ p[{model.c}] = '
                           f'Ham_weight(OR({inp1}, {inp2}));')
+    print(inp1)
     return cp_constraints
 
 
