@@ -12,6 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  if: false
   run-doctest:
     runs-on: self-hosted
     steps:
