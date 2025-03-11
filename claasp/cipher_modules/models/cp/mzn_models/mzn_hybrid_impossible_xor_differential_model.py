@@ -29,24 +29,24 @@ To do so, the domain of each variable is extended to include values that allow t
 component.
 """
 
-import os
 import ast
-import math
 import itertools
+import os
 import subprocess
 
+import math
 from sage.combinat.permutation import Permutation
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.models.cp.mzn_model import solve_satisfy, MznModel
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import update_and_or_ddt_valid_probabilities
 from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import \
     MznImpossibleXorDifferentialModel
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import update_and_or_ddt_valid_probabilities
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, check_if_implemented_component, \
     get_bit_bindings
-
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, WORD_OPERATION,
                                   IMPOSSIBLE_XOR_DIFFERENTIAL, INPUT_PLAINTEXT)
+
 
 class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel):
 
@@ -597,7 +597,8 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             value = string.replace(f'inverse_{component_id}', '')
         elif f'{component_id}' in string:
             value = string.replace(component_id, '')
-        value = ['.' if x == 0 else str(x) if x < 2 else '?' if x == 2 else str(x % 7) for x in ast.literal_eval(value[3:])]
+        value = ['.' if x == 0 else str(x) if x < 2 else '?' if x == 2 else str(x % 7 + 2) for x in
+                 ast.literal_eval(value[3:])]
 
         return ''.join(value)
 
