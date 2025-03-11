@@ -564,6 +564,7 @@ class Modular(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: modadd_component = cipher.get_component_from_id("modadd_0_1")
             sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            ...
             sage: constraints
             [x_48 <= 15,
              0 <= x_48,
@@ -669,6 +670,7 @@ class Modular(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: modadd_component = cipher.get_component_from_id("modadd_0_1")
             sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
+            ...
             sage: variables
             [('x[rot_0_0_0_class_bit_0]', x_0),
              ('x[rot_0_0_0_class_bit_1]', x_1),
