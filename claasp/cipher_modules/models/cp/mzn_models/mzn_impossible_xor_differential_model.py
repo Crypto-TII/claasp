@@ -65,7 +65,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         constant_components, constant_ids = self.extract_constants()
         for component in backward_components:
             if check_if_implemented_component(component):
-                variables, constraints = self.propagate_deterministically(component)
+                variables, constraints = self.propagate_deterministically(component, inverse=True)
                 inverse_variables.extend(variables)
                 inverse_constraints.extend(constraints)
         

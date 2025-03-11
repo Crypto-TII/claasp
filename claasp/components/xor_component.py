@@ -305,6 +305,56 @@ class XOR(Component):
 
         return cp_declarations, cp_constraints
 
+    def cp_hybrid_deterministic_truncated_xor_differential_constraints(self):
+        r"""
+        Return list declarations and constraints for XOR component in the hybrid CP deterministic truncated
+        XOR differential model.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: xor_component = speck.component_from(0, 2)
+            sage: xor_component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
+            ([],
+             ['constraint if (modadd_0_1[0] < 2) /\\ (key[48] < 2) then xor_0_2[0] = (modadd_0_1[0] + key[48]) mod 2 elseif (modadd_0_1[0] + key[48] = modadd_0_1[0]) then xor_0_2[0] = modadd_0_1[0] elseif (modadd_0_1[0] + key[48] = key[48]) then xor_0_2[0] = key[48] else xor_0_2[0] = 2 endif;',
+               ...
+              'constraint if (modadd_0_1[15] < 2) /\\ (key[63] < 2) then xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2 elseif (modadd_0_1[15] + key[63] = modadd_0_1[15]) then xor_0_2[15] = modadd_0_1[15] elseif (modadd_0_1[15] + key[63] = key[63]) then xor_0_2[15] = key[63] else xor_0_2[15] = 2 endif;'])
+        """
+
+        output_size = int(self.output_bit_size)
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        cp_declarations = []
+        all_inputs = [
+            f'{id_link}[{position}]'
+            for id_link, bit_positions in zip(input_id_links, input_bit_positions)
+            for position in bit_positions
+        ]
+        cp_constraints = []
+        for i in range(output_size):
+            inputs = all_inputs[i::output_size]
+            condition = ' < 2) /\\ ('.join(inputs) + ' < 2'
+            operation_sum = ' + '.join(inputs)
+
+            new_constraint = (
+                f'constraint if ({condition}) then '
+                f'{output_id_link}[{i}] = ({operation_sum}) mod 2 '
+                f'elseif ({operation_sum} = {inputs[0]}) then '
+                f'{output_id_link}[{i}] = {inputs[0]} '
+                f'elseif ({operation_sum} = {inputs[1]}) then '
+                f'{output_id_link}[{i}] = {inputs[1]} '
+                f'else {output_id_link}[{i}] = 2 endif;'
+            )
+            cp_constraints.append(new_constraint)
+
+        return cp_declarations, cp_constraints
+
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
