@@ -206,16 +206,19 @@ class SatDifferentialLinearModel(SatModel):
 
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=4)
+            sage: speck = SpeckBlockCipher(number_of_rounds=6)
             sage: component_model_types = []
-            sage: for component in speck.get_all_components():
-            ....:     component_model_type = {
-            ....:         "component_id": component.id,
-            ....:         "component_object": component,
-            ....:         "model_type": "sat_xor_differential_propagation_constraints"
-            ....:     }
-            ....:     component_model_types.append(component_model_type)
-            sage: sat = SatDifferentialLinearModel(speck, component_model_types)
+            sage: middle_part_components = []
+            sage: bottom_part_components = []
+            sage: for round_number in range(2, 3):
+            ....:     middle_part_components.append(speck.get_components_in_round(round_number))
+            sage: for round_number in range(3, 6):
+            ....:     bottom_part_components.append(speck.get_components_in_round(round_number))
+            sage: component_model_list = {
+            ....:     'middle_part_components': middle_part_components,
+            ....:     'bottom_part_components': bottom_part_components
+            ....: }
+            sage: sat = SatDifferentialLinearModel(speck, component_model_list)
             sage: sat.build_xor_differential_linear_model()
             ...
         """
@@ -327,12 +330,9 @@ class SatDifferentialLinearModel(SatModel):
         - **dict**; Solution returned by the solver, including the trail and additional information.
 
         EXAMPLES::
-
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, \
-            ....:     _update_component_model_types_for_truncated_components, _update_component_model_types_for_linear_components
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: import itertools
             sage: speck = SpeckBlockCipher(number_of_rounds=6)
             sage: middle_part_components = []
@@ -349,7 +349,7 @@ class SatDifferentialLinearModel(SatModel):
             ....:     component_id='plaintext',
             ....:     constraint_type='equal',
             ....:     bit_positions=range(32),
-            ....:     bit_values=integer_to_bit_list(0x02110a04, 32, 'big')
+            ....:     bit_values=integer_to_bit_list(0x05020402, 32, 'big')
             ....: )
             sage: key = set_fixed_variables(
             ....:     component_id='key',
@@ -361,18 +361,21 @@ class SatDifferentialLinearModel(SatModel):
             ....:     component_id='cipher_output_5_12',
             ....:     constraint_type='equal',
             ....:     bit_positions=range(32),
-            ....:     bit_values=integer_to_bit_list(0x02000201, 32, 'big')
+            ....:     bit_values=integer_to_bit_list(0x00040004, 32, 'big')
             ....: )
-            sage: component_model_types = _generate_component_model_types(speck)
-            sage: _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-            sage: _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
-            sage: sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_types)
+            sage: component_model_list = {
+            ....:     'middle_part_components': middle_part_components,
+            ....:     'bottom_part_components': bottom_part_components
+            ....: }
+            sage: sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_list)
             sage: trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-            ....:     weight=10, fixed_values=[key, plaintext, ciphertext_difference], solver_name="CADICAL_EXT", num_unknown_vars=2
+            ....:     weight=10,
+            ....:     fixed_values=[key, plaintext, ciphertext_difference],
+            ....:     solver_name="CADICAL_EXT",
+            ....:     num_unknown_vars=2
             ....: )
             sage: trail["status"] == 'SATISFIABLE'
             True
-
         """
         start_time = time.time()
 
