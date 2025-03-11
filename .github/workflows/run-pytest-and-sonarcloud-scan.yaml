@@ -47,7 +47,6 @@ jobs:
       with:
         name: coverage-report
         path: /home/runner/_work/claasp/coverage.xml
-        overwrite: true
 
   run-code-coverage:
     runs-on: ubuntu-latest
@@ -67,7 +66,7 @@ jobs:
       run: sed -i "s/<source>\/home\/runner\/_work\/claasp\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
 
     - name: SonarCloud Scan
-      uses: SonarSource/sonarqube-scan-action@master
+      uses: sonarsource/sonarcloud-github-action@master
       with:
         args: >
           -Dsonar.branch.name=${{ env.GITHUB_HEAD_REF }}
@@ -76,3 +75,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     needs: run-pytest
+    
