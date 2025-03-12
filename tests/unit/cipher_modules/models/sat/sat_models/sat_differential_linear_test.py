@@ -309,7 +309,7 @@ def test_diff_lin_speck():
     block_size = speck.inputs_bit_size[0]
     key_size = speck.inputs_bit_size[1]
     corr = differential_linear_checker_for_block_cipher_single_key(
-        speck, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key
+        speck, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=42
     )
     import math
     abs_corr = abs(corr)
@@ -329,7 +329,7 @@ def test_diff_lin_aradi():
     block_size = speck.inputs_bit_size[0]
     key_size = speck.inputs_bit_size[1]
     corr = differential_linear_checker_for_block_cipher_single_key(
-        speck, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key
+        speck, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=42
     )
     import math
     abs_corr = abs(corr)
