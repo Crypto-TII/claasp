@@ -815,6 +815,16 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
 
         return cp_constraints
 
+    def format_component_value(self, component_id, string):
+        value = string.replace(f'{component_id} = [', '')
+        value = value.replace(']', '')
+        value = value.replace(', ', '')
+        while ' ' in value:
+            start = value.index(' ')
+            value = value[start + 1:]
+
+        return value
+
     def get_component_from_id(self, id_link, curr_cipher):
         for component in curr_cipher.get_all_components():
             if component.id == id_link:
@@ -1042,35 +1052,29 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
         
     def _parse_solver_output(self, output_to_parse, number_of_rounds, initial_round, middle_round, final_round):
         components_values, memory, time = self.parse_solver_information(output_to_parse, True, True)
-        all_components = [*self._cipher.inputs]
-        suffix = "_active"
-        if middle_round is not None:
-            for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
-                all_components.extend([component.id + suffix for component in [*self._cipher.get_components_in_round(r)]])
-            for r in list(range(initial_round - 1)) + list(range(middle_round - 1, final_round)):
-                all_components.extend(['inverse_' + component.id + suffix for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
-        else:
-            for r in list(range(initial_round - 1, number_of_rounds)):
-                all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
-            for r in list(range(final_round)):
-                all_components.extend(['inverse_' + component.id + suffix for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
-        all_components.extend(['inverse_' + id_link + suffix for id_link in [*self.inverse_cipher.inputs]])
-        all_components.extend(['inverse_' + id_link + suffix for id_link in [*self._cipher.inputs]])
+        all_components = []
+        suffixes = ["_active", "_value"]
+        for suffix in suffixes:
+            all_components.extend([component_id + suffix for component_id in [*self._cipher.inputs]])
+            if middle_round is not None:
+                for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
+                    all_components.extend([component.id + suffix for component in [*self._cipher.get_components_in_round(r)]])
+                for r in list(range(initial_round - 1)) + list(range(middle_round - 1, final_round)):
+                    all_components.extend(['inverse_' + component.id + suffix for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
+            else:
+                for r in list(range(initial_round - 1, number_of_rounds)):
+                    all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
+                for r in list(range(final_round)):
+                    all_components.extend(['inverse_' + component.id + suffix for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
+            all_components.extend(['inverse_' + id_link + suffix for id_link in [*self.inverse_cipher.inputs]])
         for component_id in all_components:
             solution_number = 1
             for j, string in enumerate(output_to_parse):
-                if f'{component_id}' in string and 'inverse_' not in component_id + string:
+                if component_id in string:
                     value = self.format_component_value(component_id, string)
                     component_solution = {}
                     component_solution['value'] = value
-                    self.add_solution_to_components_values(component_id, component_solution, components_values, j,
-                                                           output_to_parse, solution_number, string)
-                elif f'{component_id}' in string and 'inverse_' in component_id:
-                    value = self.format_component_value(component_id, string)
-                    component_solution = {}
-                    component_solution['value'] = value
-                    self.add_solution_to_components_values(component_id, component_solution, components_values, j,
-                                                           output_to_parse, solution_number, string)
+                    components_values[f'solution{solution_number}'][f'{component_id}'] = component_solution
                 elif '----------' in string:
                     solution_number += 1
 
