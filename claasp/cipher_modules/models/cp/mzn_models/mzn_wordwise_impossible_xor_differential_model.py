@@ -511,10 +511,12 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
                         component_id = component.id
                         input_id_links = component.input_id_links
                         input_bit_positions = component.input_bit_positions
-                        component_inputs = []
+                        component_inputs_active = []
+                        component_inputs_value = []
                         input_bit_size = 0
                         for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                            component_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+                            component_inputs_active.extend([f'{id_link}_active[{position}]' for position in bit_positions])
+                            component_inputs_value.extend([f'{id_link}_active[{position}]' for position in bit_positions])
                             input_bit_size += len(bit_positions)
                             new_constraint = new_constraint + \
                                 f'\"{id_link}_active = \"++ show({id_link}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
@@ -522,17 +524,20 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
                         new_constraint = new_constraint + \
                             f'\"inverse_{component_id}_active= \"++ show(inverse_{component_id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
                             f'\"inverse_{component_id}_value = \"++ show(inverse_{component_id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                        incompatibility_constraint += f'({component_inputs[i]}_active>=0 /\\ inverse_{component_id}_active>=0 /\\ {component_inputs[i]}_value != inverse_{component_id}_value) \\/ '
+                        for i in range(component.output_bit_size // self.word_size):
+                            incompatibility_constraint += f'({component_inputs_active[i]} >= 0 /\\ inverse_{component_id}_active[{i}] >= 0 /\\ {component_inputs_value[i]} != inverse_{component_id}_value[{i}]) \\/ '
             else:
                 for component in cipher.get_all_components():
                     if component.type != CONSTANT and component.id not in key_schedule_components_ids:
                         component_id = component.id
                         input_id_links = component.input_id_links
                         input_bit_positions = component.input_bit_positions
-                        component_inputs = []
+                        component_inputs_active = []
+                        component_inputs_value = []
                         input_bit_size = 0
                         for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                            component_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+                            component_inputs_active.extend([f'{id_link}_active[{position}]' for position in bit_positions])
+                            component_inputs_value.extend([f'{id_link}_value[{position}]' for position in bit_positions])
                             input_bit_size += len(bit_positions)
                             new_constraint = new_constraint + \
                                 f'\"{id_link}_active = \"++ show({id_link}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
@@ -540,7 +545,8 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
                         new_constraint = new_constraint + \
                             f'\"inverse_{component_id}_active= \"++ show(inverse_{component_id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
                             f'\"inverse_{component_id}_value = \"++ show(inverse_{component_id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                        incompatibility_constraint += f'({component_inputs[i]}_active>=0 /\\ inverse_{component_id}_active>=0 /\\ {component_inputs[i]}_value != inverse_{component_id}_value) \\/ '
+                        for i in range(component.output_bit_size // self.word_size):
+                            incompatibility_constraint += f'({component_inputs_active[i]} >= 0 /\\ inverse_{component_id}_active[{i}] >= 0 /\\ {component_inputs_value[i]} != inverse_{component_id}_value[{i}]) \\/ '
         else:
             if middle_round is not None:
                 for component in cipher.get_all_components():
