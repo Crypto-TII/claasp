@@ -740,10 +740,11 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         if fixed_variables == []:
             plaintext = set_fixed_variables('plaintext', 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size)
             ciphertext = set_fixed_variables('inverse_' + self._cipher.get_all_components_ids()[-1], 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size)
+            fixed_variables = [plaintext, ciphertext]
             for cipher_input, bit_size in zip(self._cipher._inputs, self._cipher._inputs_bit_size):
                 if cipher_input == 'key':
                     key = set_fixed_variables('key', 'equal', list(range(bit_size)), [0]*bit_size)
-            fixed_variables = [plaintext, ciphertext, key]
+                    fixed_variables.append(key)
         for component in fixed_variables:
             component_id = component['component_id']
             bit_positions = component['bit_positions']

@@ -421,6 +421,10 @@ class XOR(Component):
         for i in range(input_len):
             new_constraint = ''
             for summand in range(numadd - 2):
+                new_constraint += f'array[0..{word_size}] of var 0..3: {output_id_link}_temp_{numadd + summand - 1}_{i}_bools;\n'
+                new_constraint += f'array[0..{word_size}] of var 0..3: {output_id_link}_temp_{summand}_{i}_bools;\n'
+                new_constraint += f'constraint TruncBitsToInt({output_id_link}_temp_{numadd + summand - 1}_{i}_bools) = {output_id_link}_temp_{numadd + summand - 1}_{i}_value;\n'
+                new_constraint += f'constraint TruncBitsToInt({output_id_link}_temp_{summand}_{i}_bools) = {output_id_link}_temp_{summand}_{i}_value;\n'
                 new_constraint += f'constraint if {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active > 2 then ' \
                                   f'{output_id_link}_temp_{numadd + summand}_{i}_active = 3 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = -2 '
                 new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active == 1 then' \
@@ -432,10 +436,15 @@ class XOR(Component):
                                   f'{output_id_link}_temp_{numadd + summand}_{i}_active = 2 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = -1 '
                 new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_value == {output_id_link}_temp_{summand}_{i}_value then ' \
                                   f'{output_id_link}_temp_{numadd + summand}_{i}_active = 0 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = 0 '
-                xor_to_int = f'sum([(((floor({output_id_link}_temp_{numadd + summand - 1}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{summand}_{i}' \
-                             f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{word_size}])'
+                #xor_to_int = f'sum([(((floor({output_id_link}_temp_{numadd + summand - 1}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{summand}_{i}' \
+                #             f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{word_size}])'
+                xor_to_int = f'TruncBitsToInt(Xor2({output_id_link}_temp_{numadd + summand - 1}_{i}_bools, {output_id_link}_temp_{summand}_{i}_bools))'
                 new_constraint += f'else {output_id_link}_temp_{numadd + summand}_{i}_active = 1 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value' \
                                   f' = {xor_to_int} endif;\n'
+            new_constraint += f'array[0..{word_size}] of var 0..3: {output_id_link}_temp_{2*numadd - 3}_{i}_bools;\n'
+            new_constraint += f'array[0..{word_size}] of var 0..3: {output_id_link}_temp_{numadd - 2}_{i}_bools;\n'
+            new_constraint += f'constraint TruncBitsToInt({output_id_link}_temp_{2*numadd - 3}_{i}_bools) = {output_id_link}_temp_{2*numadd - 3}_{i}_value;\n'
+            new_constraint += f'constraint TruncBitsToInt({output_id_link}_temp_{numadd - 2}_{i}_bools) = {output_id_link}_temp_{numadd - 2}_{i}_value;\n'
             new_constraint += f'constraint if {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active > 2 then ' \
                               f'{output_id_link}_active[{i}] == 3 /\\ {output_id_link}_value[{i}] = -2 '
             new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active == 1 then ' \
@@ -447,8 +456,9 @@ class XOR(Component):
                               f'{output_id_link}_active[{i}] = 2 /\\ {output_id_link}_value[{i}] = -1 '
             new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_value == {output_id_link}_temp_{2 * numadd - 3}_{i}_value then ' \
                               f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 '
-            xor_to_int = f'sum([(((floor({output_id_link}_temp_{numadd - 2}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{2 * numadd - 3}_{i}' \
-                         f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{word_size}])'
+            #xor_to_int = f'sum([(((floor({output_id_link}_temp_{numadd - 2}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{2 * numadd - 3}_{i}' \
+            #             f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{word_size}])'
+            xor_to_int = f'TruncBitsToInt(Xor2({output_id_link}_temp_{2*numadd - 3}_{i}_bools, {output_id_link}_temp_{numadd - 2}_{i}_bools))'
             new_constraint += f'else {output_id_link}_active[{i}] = 1 /\\ {output_id_link}_value[{i}] =' \
                               f' {xor_to_int} endif;'
             cp_constraints.append(new_constraint)
