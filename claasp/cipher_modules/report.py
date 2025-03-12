@@ -1,17 +1,18 @@
-import os
-from math import ceil
-from plotly.subplots import make_subplots
-from plotly import express as px
-import plotly.graph_objects as go
-import pandas as pd
 import itertools
-import math
 import json
+import os
 import shutil
+from datetime import datetime
+from math import ceil
+
+import pandas as pd
+import plotly.graph_objects as go
+from plotly import express as px
+from plotly.subplots import make_subplots
+
+from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
-from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
-from datetime import datetime
 
 
 def _print_colored_state(state, verbose, file):
@@ -456,18 +457,30 @@ class Report:
                          key_state_size, key_flow, word_denominator):
 
         value = self.test_report['components_values'][comp_id]['value']
-        bin_list = list(format(int(value, 16), 'b').zfill(
-            4 * len(value) if value[:2] != '0x' else 4 * len(value[2:]))) if '*' not in value else list(
-            value[2:])
+        truncated_symbol = '*' if '*' in value else '?' if '?' in value else 'None'
+        if value[:2] == '0x':
+            bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value[2:])))
+        elif value[:2] == '0b':
+            bin_list = list(value[2:])
+        elif self.test_report['solver_name'] == 'CADICAL_EXT':
+            if truncated_symbol in value:
+                bin_list = list(value)
+            else:
+                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value)))
+        else:
+            bin_list = list(value)
 
         if show_as_hex == False:
-            word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(
+            word_list = [truncated_symbol if truncated_symbol in ''.join(
+                bin_list[x:x + word_size]) else word_denominator if ''.join(
                 bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
                          range(0, len(bin_list), word_size)]
         else:
             word_list = [
-                '*' if '*' in ''.join(bin_list[x:x + word_size]) else hex(int(''.join(bin_list[x:x + word_size]), 2))[
-                                                                      2:].zfill(int(word_size / 4)) for x
+                truncated_symbol if truncated_symbol in ''.join(bin_list[x:x + word_size]) else hex(
+                    int(''.join(bin_list[x:x + word_size]), 2))[
+                                                                                                2:].zfill(
+                    int(word_size / 4)) for x
                 in range(0, len(bin_list), word_size)]
 
         if ('intermediate' in comp_id or 'cipher' in comp_id) and comp_id not in key_flow:
@@ -507,7 +520,7 @@ class Report:
                 id_link in key_flow or 'constant' in id_link or id_link + '_o' in key_flow or id_link + '_i' in key_flow
                 for id_link in input_links) or ('key' in comp_id and comp_id != 'key')):
             key_flow.append(comp_id)
-            if 'linear' in self.test_name:
+            if 'linear' in self.test_name and 'differential' not in self.test_name:
                 constants_i = [constant_id + '_i' for constant_id in input_links if 'constant' in constant_id]
                 constants_o = [constant_id + '_o' for constant_id in input_links if 'constant' in constant_id]
                 key_flow += constants_i + constants_o
