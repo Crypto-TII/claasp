@@ -20,13 +20,12 @@
 import json
 import pprint
 import random
-import numpy as np
+from collections import defaultdict, Counter
 from copy import deepcopy
 from decimal import Decimal
 from random import randrange
-from collections import defaultdict, Counter
 
-
+import numpy as np
 from sage.rings.integer_ring import IntegerRing
 
 from claasp.DTOs.component_state import ComponentState
@@ -202,6 +201,8 @@ def get_inputs_parameter(inputs_list):
     for k in inputs_list:
         inputs_id += deepcopy(k.id)
         inputs_pos += deepcopy(k.input_bit_positions)
+    if len(inputs_id) <= 0:
+        raise ValueError("inputs_id must have at least one element")
 
     inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
 
