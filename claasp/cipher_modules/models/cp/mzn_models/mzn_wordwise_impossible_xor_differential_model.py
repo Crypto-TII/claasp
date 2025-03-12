@@ -826,12 +826,15 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
         return cp_constraints
 
     def format_component_value(self, component_id, string):
-        value = string.replace(f'{component_id} = [', '')
-        value = value.replace(']', '')
-        value = value.replace(', ', '')
-        while ' ' in value:
-            start = value.index(' ')
-            value = value[start + 1:]
+        value = string.replace(f'{component_id} = ', '')
+        start = 1
+        if ':' in value:
+            end = value.index(':')
+            value = value[:start] + value[end + 2:]
+        while ':' in value:
+            end = value.index(':')
+            start = end - value[end::-1].index(',')
+            value = value[:start + 2] + value[end + 2:]
 
         return value
 
@@ -995,14 +998,15 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
             for r in range(number_of_rounds):
                 backward_components.extend(inverse_cipher.get_components_in_round(r))
         for input_, bit_size in zip(inverse_cipher.inputs, inverse_cipher.inputs_bit_size):
-            cp_declarations.append(f'array[0..{bit_size // self.word_size - 1}] of var 0..3: inverse_{input_}_active;')
-            cp_declarations.append(
-                f'array[0..{bit_size // self.word_size - 1}] of var -2..{2 ** self.word_size - 1}: inverse_{input_}_value;')
-            for i in range(bit_size // self.word_size):
-                cp_constraints.append(f'constraint if inverse_{input_}_active[{i}] == 0 then inverse_{input_}_value[{i}] = 0 elseif '
-                                      f'inverse_{input_}_active[{i}] == 1 then inverse_{input_}_value[{i}] > 0 elseif '
-                                      f'inverse_{input_}_active[{i}] == 2 then inverse_{input_}_value[{i}] =-1 else '
-                                      f'inverse_{input_}_value[{i}] =-2 endif;')
+            if input_ != 'key':
+                cp_declarations.append(f'array[0..{bit_size // self.word_size - 1}] of var 0..3: inverse_{input_}_active;')
+                cp_declarations.append(
+                    f'array[0..{bit_size // self.word_size - 1}] of var -2..{2 ** self.word_size - 1}: inverse_{input_}_value;')
+                for i in range(bit_size // self.word_size):
+                    cp_constraints.append(f'constraint if inverse_{input_}_active[{i}] == 0 then inverse_{input_}_value[{i}] = 0 elseif '
+                                          f'inverse_{input_}_active[{i}] == 1 then inverse_{input_}_value[{i}] > 0 elseif '
+                                          f'inverse_{input_}_active[{i}] == 2 then inverse_{input_}_value[{i}] =-1 else '
+                                          f'inverse_{input_}_value[{i}] =-2 endif;')
         for component in forward_components:
             if CONSTANT not in component.type:
                 output_id_link = component.id
@@ -1080,7 +1084,7 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
         for component_id in all_components:
             solution_number = 1
             for j, string in enumerate(output_to_parse):
-                if component_id in string:
+                if component_id in string and 'inverse_' + component_id not in string:
                     value = self.format_component_value(component_id, string)
                     component_solution = {}
                     component_solution['value'] = value

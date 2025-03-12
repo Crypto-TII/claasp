@@ -213,7 +213,7 @@ class Constant(Component):
                           f'{output_id_link}_active = array1d(0..{output_size // word_size - 1}, [' \
                           + ','.join('0' * (output_size // word_size)) + ']);'
         cp_declarations = [new_declaration]
-        cp_declarations.append(f'array[0..{output_size // word_size - 1}] of var 0..1: '
+        cp_declarations.append(f'array[0..{output_size // word_size - 1}] of var -2..{2**word_size}: '
                                f'{output_id_link}_value = array1d(0..{output_size // word_size - 1}, ['
                                + ','.join('0' * (output_size // word_size)) + ']);')
         cp_constraints = []
