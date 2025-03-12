@@ -1,17 +1,18 @@
-import os
-from math import ceil
-from plotly.subplots import make_subplots
-from plotly import express as px
-import plotly.graph_objects as go
-import pandas as pd
 import itertools
-import math
 import json
+import os
 import shutil
+from datetime import datetime
+from math import ceil
+
+import pandas as pd
+import plotly.graph_objects as go
+from plotly import express as px
+from plotly.subplots import make_subplots
+
+from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
-from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
-from datetime import datetime
 
 
 def _print_colored_state(state, verbose, file):
@@ -165,7 +166,8 @@ class Report:
              show_shift=False, show_linear_layer=False, show_xor=False, show_modadd=False,
              show_and=False,
              show_or=False, show_not=False, show_plaintext=True, show_key=True,
-             show_intermediate_output=True, show_cipher_output=True, show_input=True, show_output=True, show_graph=True):
+             show_intermediate_output=True, show_cipher_output=True, show_input=True, show_output=True,
+             show_graph=True):
 
         if 'trail' in self.test_name:
             if show_as_hex == True and (word_size / 4).is_integer() == False:
@@ -423,10 +425,13 @@ class Report:
         component_types = []
         show_key_flow = False
         for comp in list(self.test_report['components_values'].keys()):
-            if 'key' in comp:
+            if 'key' == comp:
                 show_key_flow = True
             if ('key' in comp or comp == 'plaintext') and comp not in component_types:
-                component_types.append(comp)
+                if 'key' in comp and comp != 'key':
+                    continue
+                else:
+                    component_types.append(comp)
             elif '_'.join(comp.split('_')[:-2]) not in component_types and comp[-2:] != "_i" and comp[-2:] != "_o":
                 component_types.append('_'.join(comp.split('_')[:-2]))
             elif ('_'.join(comp.split('_')[:-3])) + '_' + ('_'.join(comp.split('_')[-1])) not in component_types and (
@@ -452,18 +457,30 @@ class Report:
                          key_state_size, key_flow, word_denominator):
 
         value = self.test_report['components_values'][comp_id]['value']
-        bin_list = list(format(int(value, 16), 'b').zfill(
-            4 * len(value) if value[:2] != '0x' else 4 * len(value[2:]))) if '*' not in value else list(
-            value[2:])
+        truncated_symbol = '*' if '*' in value else '?' if '?' in value else 'None'
+        if value[:2] == '0x':
+            bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value[2:])))
+        elif value[:2] == '0b':
+            bin_list = list(value[2:])
+        elif self.test_report['solver_name'] == 'CADICAL_EXT':
+            if truncated_symbol in value:
+                bin_list = list(value)
+            else:
+                bin_list = list(format(int(value, 16), 'b').zfill(4 * len(value)))
+        else:
+            bin_list = list(value)
 
         if show_as_hex == False:
-            word_list = ['*' if '*' in ''.join(bin_list[x:x + word_size]) else word_denominator if ''.join(
+            word_list = [truncated_symbol if truncated_symbol in ''.join(
+                bin_list[x:x + word_size]) else word_denominator if ''.join(
                 bin_list[x:x + word_size]).count('1') > 0 else '_' for x in
                          range(0, len(bin_list), word_size)]
         else:
             word_list = [
-                '*' if '*' in ''.join(bin_list[x:x + word_size]) else hex(int(''.join(bin_list[x:x + word_size]), 2))[
-                                                                      2:].zfill(int(word_size / 4)) for x
+                truncated_symbol if truncated_symbol in ''.join(bin_list[x:x + word_size]) else hex(
+                    int(''.join(bin_list[x:x + word_size]), 2))[
+                                                                                                2:].zfill(
+                    int(word_size / 4)) for x
                 in range(0, len(bin_list), word_size)]
 
         if ('intermediate' in comp_id or 'cipher' in comp_id) and comp_id not in key_flow:
@@ -503,7 +520,7 @@ class Report:
                 id_link in key_flow or 'constant' in id_link or id_link + '_o' in key_flow or id_link + '_i' in key_flow
                 for id_link in input_links) or ('key' in comp_id and comp_id != 'key')):
             key_flow.append(comp_id)
-            if 'linear' in self.test_name:
+            if 'linear' in self.test_name and 'differential' not in self.test_name:
                 constants_i = [constant_id + '_i' for constant_id in input_links if 'constant' in constant_id]
                 constants_o = [constant_id + '_o' for constant_id in input_links if 'constant' in constant_id]
                 key_flow += constants_i + constants_o
@@ -626,7 +643,8 @@ class Report:
         word_denominator = '1' if word_size == 1 else 'A'
 
         for comp_id in self.test_report['components_values'].keys():
-
+            if 'key' in comp_id and comp_id != 'key':
+                continue
             if (comp_id != "plaintext" and comp_id != "key") and "key" not in comp_id:
                 rel_prob = self.test_report['components_values'][comp_id]['weight']
                 abs_prob += rel_prob
@@ -653,11 +671,11 @@ class Report:
         z_data = [x[32 * i: min(len(x), 32 * (i + 1))] for x in list(graph_data.values())]
         yrange = list(graph_data.keys())
         xrange = list(range(i * 32, 32 * (i + 1)))
-        fontsize = max(1, ceil(12//len(yrange)))
+        fontsize = max(1, ceil(12 // len(yrange)))
         heatmap = go.Heatmap(
             z=z_data, coloraxis='coloraxis', texttemplate="%{text}",
             text=[['{:.2f}'.format(float(y)) for y in x] for x in z_data],
-            textfont={'size': 2*fontsize},
+            textfont={'size': 2 * fontsize},
             x=xrange,
             y=yrange, zmin=0, zmax=1, zauto=False
         )
@@ -667,13 +685,13 @@ class Report:
                 'tickmode': 'array',
                 'tickvals': xrange,
                 'ticktext': [str(j) for j in range(i * 32, 32 * (i + 1))],
-                'tickfont': {'size': 2*fontsize}
+                'tickfont': {'size': 2 * fontsize}
             },
             f'yaxis{i + 1}': {
                 'tickmode': 'array',
                 'tickvals': yrange,
                 'ticktext': [str(j) for j in range(1, cipher_rounds + 1)],
-                'tickfont': {'size': 2*fontsize},
+                'tickfont': {'size': 2 * fontsize},
                 'autorange': 'reversed'
             }
         }
@@ -806,7 +824,6 @@ class Report:
                             for i in range(len(case[res_key])):
                                 graph_data[i + 1] = [case[res_key][i]] if type(case[res_key][i]) != list else \
                                     case[res_key][i]
-
 
                             df = pd.DataFrame.from_dict(graph_data).T
                             if len(graph_data[1]) > 1:

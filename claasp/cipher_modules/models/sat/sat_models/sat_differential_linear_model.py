@@ -304,7 +304,7 @@ class SatDifferentialLinearModel(SatModel):
 
             elif component.id in [d['component_id'] for d in self.truncated_components]:
                 value = self._get_component_value_double_ids(component, variable2value)
-                components_solutions[component.id] = set_component_solution(value)
+                components_solutions[component.id] = set_component_solution(value, weight=0)
 
             elif component.id in [d['component_id'] for d in self.linear_components]:
                 hex_value = self._get_component_hex_value(component, constants.OUTPUT_BIT_ID_SUFFIX, variable2value)
