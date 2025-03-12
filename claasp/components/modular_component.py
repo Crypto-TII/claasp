@@ -17,11 +17,11 @@
 # ****************************************************************************
 
 
-from claasp.input import Input
-from claasp.component import Component
-from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
+from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.component import Component
+from claasp.input import Input
 
 
 def milp_n_window_heuristic(input_vars, output_vars, component_id, window_size, mip, x):
@@ -564,6 +564,7 @@ class Modular(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: modadd_component = cipher.get_component_from_id("modadd_0_1")
             sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            ...
             sage: constraints
             [x_48 <= 15,
              0 <= x_48,
