@@ -45,6 +45,17 @@ def test_remove_key_schedule():
                                                                                                       14, 15]],
                                                                              'output_bit_size': 16,
                                                                              'description': ['ROTATE', 7]}
+    removed_key_speck = speck.remove_key_schedule(keep_round_key_addition=False)
+    assert removed_key_speck.component_from(1, 0).as_python_dictionary() == {'id': 'rot_1_6',
+                                                                             'type': 'word_operation',
+                                                                             'input_bit_size': 16,
+                                                                             'input_id_link': ['modadd_0_1'],
+                                                                             'input_bit_positions': [[0, 1, 2, 3, 4,
+                                                                                                      5, 6, 7, 8, 9,
+                                                                                                      10, 11, 12, 13,
+                                                                                                      14, 15]],
+                                                                             'output_bit_size': 16,
+                                                                             'description': ['ROTATE', 7]}
 
 
 def test_remove_permutations():

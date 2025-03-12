@@ -1494,15 +1494,18 @@ def remove_forbidden_parents(rounds, cipher_without_key_schedule):
                 cipher_without_key_schedule.remove_round_component_from_id(cipher_round.id, component.id)
 
 
-def remove_key_schedule(cipher):
+def remove_key_schedule(cipher, keep_round_key_addition=True):
     """
     Return a dictionary. A key is an output bit of a component.
 
     A value is a list of input bits which are the end point of an arc in Cipher for the relative key.
+    If `keep_round_key_addition` is False, XOR components that involve key inputs are also removed.
 
     INPUT:
 
-    - ``cipher`` -- **Cipher object**; an instance of the object cipher
+    - ``cipher`` -- **Cipher object**; an instance of a cipher.
+    - ``keep_round_key_addition`` -- **bool** (default: True); if False, removes XOR components corresponding to the
+    round key addition..
 
     EXAMPLES::
 
@@ -1541,6 +1544,22 @@ def remove_key_schedule(cipher):
     remove_forbidden_parents(cipher.rounds_as_list, cipher_without_key_schedule)
     remove_orphan_components(cipher_without_key_schedule)
     update_inputs(cipher_without_key_schedule)
+
+    if not keep_round_key_addition:
+        components_to_remove = {}
+        for round_ in cipher_without_key_schedule.rounds_as_list:
+            for component in round_.components:
+                if 'xor' in component.id and any("key" in id for id in component.input_id_links):
+                    key_index = next((i for i, link in enumerate(component.input_id_links) if "key" in link), None)
+                    component.input_id_links.pop(key_index)
+                    component.input_bit_positions.pop(key_index)
+                    if len(component.input_bit_positions) == 1:
+                        components_to_remove[component.id] = component.input_id_links[0]
+                        cipher_without_key_schedule.remove_round_component_from_id(round_.id, component.id)
+
+                for i, id in enumerate(component.input_id_links):
+                    if id in components_to_remove:
+                        component.input_id_links[i] = components_to_remove[id]
 
     return cipher_without_key_schedule
 

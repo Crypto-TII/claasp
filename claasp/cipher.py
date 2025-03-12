@@ -1381,8 +1381,8 @@ class Cipher:
         algebraic_model = AlgebraicModel(self)
         return algebraic_model.polynomial_system_at_round(r)
 
-    def remove_key_schedule(self):
-        return editor.remove_key_schedule(self)
+    def remove_key_schedule(self, keep_round_key_addition=False):
+        return editor.remove_key_schedule(self, keep_round_key_addition)
 
     def remove_round_component(self, round_id, component):
         editor.remove_round_component(self, round_id, component)
