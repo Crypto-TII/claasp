@@ -1543,9 +1543,9 @@ def remove_key_schedule(cipher, keep_round_key_addition=True):
     cipher_without_key_schedule = remove_cipher_input_keys(cipher)
     remove_forbidden_parents(cipher.rounds_as_list, cipher_without_key_schedule)
     remove_orphan_components(cipher_without_key_schedule)
-    update_inputs(cipher_without_key_schedule)
+    update_inputs(cipher_without_key_schedule, keep_round_key_addition)
 
-    if not keep_round_key_addition:
+    if keep_round_key_addition:
         components_to_remove = {}
         for round_ in cipher_without_key_schedule.rounds_as_list:
             for component in round_.components:
@@ -1869,13 +1869,14 @@ def update_component_inputs(component, component_id, parent_links):
     return modified, offset
 
 
-def update_inputs(cipher_without_key_schedule):
+def update_inputs(cipher_without_key_schedule, keep_round_key_addition):
     parent_links = set(cipher_without_key_schedule.inputs)
     for cipher_round in cipher_without_key_schedule.rounds_as_list:
         for index, component in enumerate(cipher_round.components):
             component_id = f'key_{cipher_round.id}_{index}'
             modified, offset = update_component_inputs(component, component_id, parent_links)
-            update_cipher_inputs(cipher_without_key_schedule, component_id, modified, offset)
+            if keep_round_key_addition:
+                update_cipher_inputs(cipher_without_key_schedule, component_id, modified, offset)
 
 def get_output_bit_size_from_id(cipher_list, component_id):
     try:
