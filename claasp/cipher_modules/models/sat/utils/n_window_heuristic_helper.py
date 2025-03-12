@@ -17,10 +17,12 @@
 # ****************************************************************************
 
 
-import pickle
-from sympy import symbols, And, Not, to_cnf, Equivalent, Xor
-from joblib import Parallel, delayed
 import os
+import pickle
+
+from joblib import Parallel, delayed
+from sympy import symbols, And, Not, to_cnf, Equivalent, Xor
+
 
 def save_list(data, filename):
     """Save a list to a file using pickle."""
@@ -77,7 +79,7 @@ def generating_n_window_clauses(window_size_plus_one):
         )
         ex = And(Not(ex1), ex2)
 
-    final_cnf = to_cnf(ex, simplify=True, force=True)
+    final_cnf = to_cnf(ex, simplify=False, force=True)
     clauses = convert_clauses(str(final_cnf))
     save_list(clauses, filename)
     return clauses
