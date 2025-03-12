@@ -1047,18 +1047,19 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
     def _parse_solver_output(self, output_to_parse, number_of_rounds, initial_round, middle_round, final_round):
         components_values, memory, time = self.parse_solver_information(output_to_parse, True, True)
         all_components = [*self._cipher.inputs]
+        suffix = "_active"
         if middle_round is not None:
             for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
-                all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
+                all_components.extend([component.id + suffix for component in [*self._cipher.get_components_in_round(r)]])
             for r in list(range(initial_round - 1)) + list(range(middle_round - 1, final_round)):
-                all_components.extend(['inverse_' + component.id for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
+                all_components.extend(['inverse_' + component.id + suffix for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
         else:
             for r in list(range(initial_round - 1, number_of_rounds)):
                 all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
             for r in list(range(final_round)):
-                all_components.extend(['inverse_' + component.id for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
-        all_components.extend(['inverse_' + id_link for id_link in [*self.inverse_cipher.inputs]])
-        all_components.extend(['inverse_' + id_link for id_link in [*self._cipher.inputs]])
+                all_components.extend(['inverse_' + component.id + suffix for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
+        all_components.extend(['inverse_' + id_link + suffix for id_link in [*self.inverse_cipher.inputs]])
+        all_components.extend(['inverse_' + id_link + suffix for id_link in [*self._cipher.inputs]])
         for component_id in all_components:
             solution_number = 1
             for j, string in enumerate(output_to_parse):
