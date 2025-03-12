@@ -23,7 +23,7 @@ import itertools
 import subprocess
 from copy import deepcopy
 
-from claasp.cipher_modules.models.cp.mzn_model import solve_satisfy
+from claasp.cipher_modules.models.cp.mzn_model import solve_satisfy, constraint_type_error
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary, check_if_implemented_component, set_fixed_variables
 from claasp.cipher_modules.models.cp.mzn_models.mzn_wordwise_deterministic_truncated_xor_differential_model import MznWordwiseDeterministicTruncatedXorDifferentialModel
 
@@ -652,6 +652,42 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
         if solve_with_API:
             return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
         return self.solve('impossible_xor_differential_one_solution', solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
+
+    def find_one_impossible_xor_differential_cluster(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=None, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = True):
+        """
+        Search for the impossible XOR differential trail of a cipher with the highest number of unknown bits in plaintext and ciphertext difference.
+
+        INPUT:
+
+        - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
+        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+          format
+        - ``initial_round`` -- **integer** (default: `1`); initial round of the impossible differential
+        - ``middle_round`` -- **integer** (default: `1`); inconsistency round of the impossible differential
+        - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
+        - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
+        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
+        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import MznImpossibleXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: cp = MznImpossibleXorDifferentialModel(speck)
+            sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
+            sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
+            sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
+            sage: trail = cp.find_one_impossible_xor_differential_cluster(4, fixed_variables, 'Chuffed', 1, 3, 4, intermediate_components = False)
+        """
+        self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components)
+        self._model_constraints.remove(f'solve satisfy;')
+        self._model_constraints.append(f'solve maximize count(plaintext, 2) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 2);')
+
+        if solve_with_API:
+            return self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+        return self.solve('impossible_xor_differential_one_solution', solver_name = solver_name, number_of_rounds = number_of_rounds, initial_round = initial_round, middle_round = middle_round, final_round = final_round, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
       
     def find_one_impossible_xor_differential_trail_with_extensions(self, number_of_rounds=None, fixed_values=[], solver_name=None, initial_round = 1, middle_round=2, final_round = None, intermediate_components = True, num_of_processors=None, timelimit=None, solve_with_API=False, solve_external = True):
         """
@@ -756,12 +792,11 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
         """
         cp_constraints = []
         if fixed_variables == []:
-            plaintext = set_fixed_variables('plaintext', 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size)
-            ciphertext = set_fixed_variables('inverse_' + self._cipher.get_all_components_ids()[-1], 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size)
+            fixed_variables.append(set_fixed_variables('plaintext_value', 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size))
+            fixed_variables.append(set_fixed_variables('inverse_' + self._cipher.get_all_components_ids()[-1] + '_value', 'not_equal', list(range(self._cipher.output_bit_size)), [0]*self._cipher.output_bit_size))
             for cipher_input, bit_size in zip(self._cipher._inputs, self._cipher._inputs_bit_size):
                 if cipher_input == 'key':
-                    key = set_fixed_variables('key', 'equal', list(range(bit_size)), [0]*bit_size)
-            fixed_variables = [plaintext, ciphertext, key]
+                    fixed_variables.append(set_fixed_variables('key_value', 'equal', list(range(bit_size)), [0]*bit_size))
         for component in fixed_variables:
             component_id = component['component_id']
             bit_positions = component['bit_positions']
