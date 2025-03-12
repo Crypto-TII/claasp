@@ -209,12 +209,12 @@ class Constant(Component):
         output_size = int(self.output_bit_size)
         output_id_link = self.id
         word_size = model.word_size
-        new_declaration = f'array[0..{(output_size - 1) // word_size}] of var 0..1: ' \
-                          f'{output_id_link}_active = array1d(0..{(output_size - 1) // word_size}, [' \
+        new_declaration = f'array[0..{output_size // word_size - 1}] of var 0..1: ' \
+                          f'{output_id_link}_active = array1d(0..{output_size // word_size - 1}, [' \
                           + ','.join('0' * (output_size // word_size)) + ']);'
         cp_declarations = [new_declaration]
-        cp_declarations.append(f'array[0..{(output_size - 1) // word_size}] of var 0..1: '
-                               f'{output_id_link}_value = array1d(0..{(output_size - 1) // word_size}, ['
+        cp_declarations.append(f'array[0..{output_size // word_size - 1}] of var 0..1: '
+                               f'{output_id_link}_value = array1d(0..{output_size // word_size - 1}, ['
                                + ','.join('0' * (output_size // word_size)) + ']);')
         cp_constraints = []
 

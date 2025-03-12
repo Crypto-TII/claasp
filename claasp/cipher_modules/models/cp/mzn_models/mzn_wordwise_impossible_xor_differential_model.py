@@ -525,7 +525,9 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
                             f'\"inverse_{component_id}_active= \"++ show(inverse_{component_id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
                             f'\"inverse_{component_id}_value = \"++ show(inverse_{component_id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
                         for i in range(component.output_bit_size // self.word_size):
-                            incompatibility_constraint += f'({component_inputs_active[i]} >= 0 /\\ inverse_{component_id}_active[{i}] >= 0 /\\ {component_inputs_value[i]} != inverse_{component_id}_value[{i}]) \\/ '
+                            incompatibility_constraint += f'{component_inputs_active[i]} = 0 /\\ inverse_{component_id}_active[{i}] = 2 \\/ '
+                            incompatibility_constraint += f'{component_inputs_active[i]} = 2 /\\ inverse_{component_id}_active[{i}] = 0 \\/ '
+                            incompatibility_constraint += f'({component_inputs_active[i]} < 2 /\\ inverse_{component_id}_active[{i}] < 2 /\\ {component_inputs_value[i]} != inverse_{component_id}_value[{i}]) \\/ '
             else:
                 for component in cipher.get_all_components():
                     if component.type != CONSTANT and component.id not in key_schedule_components_ids:
@@ -546,7 +548,9 @@ class MznWordwiseImpossibleXorDifferentialModel(MznWordwiseDeterministicTruncate
                             f'\"inverse_{component_id}_active= \"++ show(inverse_{component_id}_active)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++' + \
                             f'\"inverse_{component_id}_value = \"++ show(inverse_{component_id}_value)++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
                         for i in range(component.output_bit_size // self.word_size):
-                            incompatibility_constraint += f'({component_inputs_active[i]} >= 0 /\\ inverse_{component_id}_active[{i}] >= 0 /\\ {component_inputs_value[i]} != inverse_{component_id}_value[{i}]) \\/ '
+                            incompatibility_constraint += f'{component_inputs_active[i]} = 0 /\\ inverse_{component_id}_active[{i}] = 2 \\/ '
+                            incompatibility_constraint += f'{component_inputs_active[i]} = 2 /\\ inverse_{component_id}_active[{i}] = 0 \\/ '
+                            incompatibility_constraint += f'({component_inputs_active[i]} < 2 /\\ inverse_{component_id}_active[{i}] < 2 /\\ {component_inputs_value[i]} != inverse_{component_id}_value[{i}]) \\/ '
         else:
             if middle_round is not None:
                 for component in cipher.get_all_components():
