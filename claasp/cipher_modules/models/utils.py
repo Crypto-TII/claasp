@@ -17,9 +17,9 @@
 # ****************************************************************************
 
 
+import math
 import os
 import sys
-import math
 from copy import deepcopy
 
 import numpy as np
@@ -838,11 +838,7 @@ def differential_linear_checker_for_permutation(
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
-
-    if seed:
-        rng = np.random.default_rng(seed)
-    else:
-        rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
     plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
     plaintext2 = plaintext1 ^ input_difference_data
@@ -869,11 +865,7 @@ def differential_linear_checker_for_block_cipher_single_key(
         raise ValueError("Key size must be a multiple of 8.")
     state_num_bytes = int(block_size / 8)
     key_num_bytes = int(key_size / 8)
-
-    if seed:
-        rng = np.random.default_rng(seed)
-    else:
-        rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed)
     fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, state_num_bytes)
     plaintext1 = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
@@ -899,10 +891,7 @@ def differential_checker_permutation(
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
 
-    if seed:
-        rng = np.random.default_rng(seed)
-    else:
-        rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
     output_difference_data = _repeat_input_difference(output_difference, number_of_samples, num_bytes)
     plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
@@ -926,10 +915,7 @@ def differential_truncated_checker_permutation(
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
-    if seed:
-        rng = np.random.default_rng(seed)
-    else:
-        rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed)
 
     input_diff_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
     plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
@@ -963,10 +949,7 @@ def differential_truncated_checker_single_key(
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
-    if seed:
-        rng = np.random.default_rng(seed)
-    else:
-        rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed)
 
     key_num_bytes = int(key_size / 8)
     fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
