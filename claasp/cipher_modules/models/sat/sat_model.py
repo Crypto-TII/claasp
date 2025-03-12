@@ -397,7 +397,7 @@ class SatModel:
 
     def calculate_component_weight(self, component, out_suffix, output_values_dict):
         weight = 0
-        if ('MODADD' in component.description or 'AND' in component.description
+        if ('MODSUB' in component.description or 'MODADD' in component.description or 'AND' in component.description
                 or 'OR' in component.description or SBOX in component.type):
             weight = sum([output_values_dict[f'hw_{component.id}_{i}{out_suffix}']
                           for i in range(component.output_bit_size)])
