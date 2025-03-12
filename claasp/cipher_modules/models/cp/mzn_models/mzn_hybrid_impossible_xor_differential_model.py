@@ -29,24 +29,24 @@ To do so, the domain of each variable is extended to include values that allow t
 component.
 """
 
-import os
 import ast
-import math
 import itertools
+import math
+import os
 import subprocess
 
 from sage.combinat.permutation import Permutation
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.models.cp.mzn_model import solve_satisfy, MznModel
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import update_and_or_ddt_valid_probabilities
 from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import \
     MznImpossibleXorDifferentialModel
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import update_and_or_ddt_valid_probabilities
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, check_if_implemented_component, \
     get_bit_bindings
-
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, WORD_OPERATION,
-                                  IMPOSSIBLE_XOR_DIFFERENTIAL, INPUT_PLAINTEXT)
+                                  IMPOSSIBLE_XOR_DIFFERENTIAL, INPUT_PLAINTEXT, INPUT_KEY)
+
 
 class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel):
 
@@ -211,7 +211,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
                     perm = Permutation([i + 1 for i in self._extract_ones(matrix)]).inverse()
                     P = [i - 1 for i in perm]
                     end_node = (end_node[0], str(P[int(end_node[-2])])) + ('i',)
-                except ValueError:
+                except Exception:
                     pass
 
         if stop_at in end_node[0] or not any(end_node in neighbors for neighbors in graph.values()):
@@ -256,7 +256,6 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
         return True
 
     def _generate_wordwise_incompatibility_constraint(self, component):
-        self.sbox_size = 4
 
         if self.sbox_size:
             current_round = self._cipher.get_round_from_component_id(component.id)
@@ -371,7 +370,8 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
                         new_constraint = new_constraint + \
                                          f'\"inverse_{component.id} = \"++ show(inverse_{component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
                     if self.get_component_round(
-                            component.id) == middle_round - 1 and component.id not in key_schedule_components_ids:
+                            component.id) == middle_round - 1 and component.id not in key_schedule_components_ids and component.description == [
+                        'round_output']:
                         for i in range(component.output_bit_size):
                             bitwise_incompatibility_constraint += f'({component.id}[{i}]+inverse_{component.id}[{i}]=1) \\/ '
                         wordwise_incompatibility_constraint += self._generate_wordwise_incompatibility_constraint(
@@ -543,7 +543,8 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             elif CONSTANT not in component.type:
                 cp_declarations.append(f'array[0..{output_size - 1}] of var ext_domain: {prefix}{output_id_link};')
 
-        cp_constraints.append("constraint inverse_key = key;")
+        if INPUT_KEY in self._cipher.inputs:
+            cp_constraints.append("constraint inverse_key = key;")
         for input_id, input_size in self._cipher.inputs_size_to_dict().items():
             cp_constraints.append(f'constraint forall (i in 0..{input_size-1})({input_id}[i] <= 2);')
 

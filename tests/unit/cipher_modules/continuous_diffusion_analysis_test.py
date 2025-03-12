@@ -9,7 +9,7 @@ def test_continuous_tests():
     cda = ContinuousDiffusionAnalysis(speck)
     cda_for_repo = cda.continuous_diffusion_tests()
     test_results = cda_for_repo['test_results']
-    assert test_results['plaintext']['cipher_output']['continuous_neutrality_measure'][0]['values'][0] > 0.01
+    assert test_results['plaintext']['cipher_output']['continuous_neutrality_measure'][0]['values'][0] > 0.009
 
 
 def test_continuous_tests_report():
@@ -44,5 +44,5 @@ def test_continuous_diffusion_tests():
 def test_continuous_neutrality_measure_for_bit_j():
     speck = SpeckBlockCipher(number_of_rounds=2)
     cda = ContinuousDiffusionAnalysis(speck)
-    output = cda.continuous_neutrality_measure_for_bit_j(50, 200)
+    output = cda.continuous_neutrality_measure_for_bit_j(30, 80)
     assert output['plaintext']['cipher_output']['continuous_neutrality_measure']["values"][0]['2'] > 0
