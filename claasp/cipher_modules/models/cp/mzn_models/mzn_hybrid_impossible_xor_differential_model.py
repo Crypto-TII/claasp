@@ -48,6 +48,7 @@ from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, 
                                   IMPOSSIBLE_XOR_DIFFERENTIAL, INPUT_PLAINTEXT, INPUT_KEY)
 
 
+
 class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel):
 
     def __init__(self, cipher):
@@ -598,7 +599,8 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             value = string.replace(f'inverse_{component_id}', '')
         elif f'{component_id}' in string:
             value = string.replace(component_id, '')
-        value = ['.' if x == 0 else str(x) if x < 2 else '?' if x == 2 else str(x % 7) for x in ast.literal_eval(value[3:])]
+        value = ['.' if x == 0 else str(x) if x < 2 else '?' if x == 2 else str(x % 7 + 2) for x in
+                 ast.literal_eval(value[3:])]
 
         return ''.join(value)
 
