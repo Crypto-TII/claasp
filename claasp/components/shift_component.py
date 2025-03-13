@@ -42,7 +42,7 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
             sage: shift_component = fancy.get_component_from_id("shift_1_12")

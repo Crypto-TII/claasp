@@ -1252,7 +1252,7 @@ def sort_cipher_graph(cipher):
     - ``cipher`` -- graph representation of a cipher as a python dictionary
 
     EXAMPLE::
-        sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
+        sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher
         sage: from claasp.cipher_modules.inverse_cipher import sort_cipher_graph
         sage: identity = IdentityBlockCipher()
         sage: sort_cipher_graph(identity)
