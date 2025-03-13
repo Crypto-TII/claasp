@@ -1,4 +1,4 @@
-from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
 from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
