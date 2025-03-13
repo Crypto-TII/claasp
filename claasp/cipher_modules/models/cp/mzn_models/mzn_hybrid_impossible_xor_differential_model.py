@@ -658,6 +658,10 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
         return time, memory, components_values, total_weight
 
     def solve(self, model_type, solver_name=None, number_of_rounds=None, initial_round=None, middle_round=None, final_round=None, processes_=None, timeout_in_seconds_=None, all_solutions_=False, solve_external = False, probabilistic=False):
+        if number_of_rounds is None:
+            number_of_rounds = self._cipher.number_of_rounds
+        if final_round is None:
+            final_round = self._cipher.number_of_rounds
         cipher_name = self.cipher_id
         input_file_path = f'{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, processes_, timeout_in_seconds_)
