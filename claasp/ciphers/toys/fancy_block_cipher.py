@@ -38,7 +38,7 @@ class FancyBlockCipher(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+        sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
         sage: fancy = FancyBlockCipher()
         sage: fancy.number_of_rounds
         20

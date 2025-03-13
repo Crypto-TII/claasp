@@ -38,7 +38,7 @@ class ConstantBlockCipher(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.constant_block_cipher import ConstantBlockCipher
+        sage: from claasp.ciphers.toys.constant_block_cipher import ConstantBlockCipher
         sage: constant = ConstantBlockCipher(block_bit_size=3, number_of_rounds=3)
         sage: constant.number_of_rounds
         3

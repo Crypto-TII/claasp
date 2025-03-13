@@ -52,7 +52,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.cms_constraints()
@@ -82,7 +82,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher()
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.cp_deterministic_truncated_xor_differential_constraints()
@@ -170,7 +170,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: fancy = FancyBlockCipher()
             sage: cp = MznModel(fancy)
@@ -418,7 +418,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
@@ -459,7 +459,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.sat_xor_differential_propagation_constraints()
@@ -495,7 +495,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.sat_xor_linear_mask_propagation_constraints()
@@ -540,7 +540,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.smt_xor_differential_propagation_constraints()
@@ -582,7 +582,7 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.smt_xor_linear_mask_propagation_constraints()

@@ -79,7 +79,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
             sage: linear_layer_component = fancy.get_component_from_id("linear_layer_0_6")
@@ -112,7 +112,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0,6)
             sage: linear_layer_component.cms_constraints()
@@ -152,7 +152,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0,6)
             sage: linear_layer_component.cms_xor_linear_mask_propagation_constraints()
@@ -195,7 +195,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: linear_layer_component.cp_constraints()
@@ -232,7 +232,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
@@ -276,7 +276,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
@@ -324,7 +324,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher()
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: linear_layer_component.cp_xor_linear_mask_propagation_constraints()
@@ -718,7 +718,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: variables, constraints = linear_layer_component.sat_constraints()
@@ -751,7 +751,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: variables, constraints = linear_layer_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
@@ -792,7 +792,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: variables, constraints = linear_layer_component.sat_xor_differential_propagation_constraints()
@@ -817,7 +817,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: variables, constraints = linear_layer_component.sat_xor_linear_mask_propagation_constraints()
@@ -856,7 +856,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: vairables, constraints = linear_layer_component.smt_constraints()
@@ -890,7 +890,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: variables, constraints = linear_layer_component.smt_constraints()
@@ -911,7 +911,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: variables, constraints = linear_layer_component.smt_xor_linear_mask_propagation_constraints()

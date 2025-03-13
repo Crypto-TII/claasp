@@ -267,7 +267,7 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
             sage: sbox_component = fancy.component_from(0, 0)
@@ -1734,7 +1734,7 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.smt.smt_model import SmtModel
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: smt = SmtModel(fancy)

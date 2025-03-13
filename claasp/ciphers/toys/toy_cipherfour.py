@@ -25,9 +25,9 @@ PARAMETERS_CONFIGURATION_LIST = [
 ]
 
 
-class ToyCipherFOUR(Cipher):
+class ToyCipherFour(Cipher):
     """
-    Construct an instance of the ToyCipherFOUR class.
+    Construct an instance of the ToyCipherFour class.
     This class implements CipherFOUR [Knudsen2011TheBC]_,
     with a default block size of 16 bits and a key size of 96 bits.
     This toy block cipher splits the key into multiple round keys.
@@ -48,8 +48,8 @@ class ToyCipherFOUR(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.toys.toy_cipherFOUR import ToyCipherFOUR
-        sage: toy_cipher = ToyCipherFOUR()
+        sage: from claasp.ciphers.toys.toy_cipherfour import ToyCipherFour
+        sage: toy_cipher = ToyCipherFour()
         sage: plaintext = 0x1234; key = 0x111122223333444455556666
         sage: toy_cipher.evaluate([plaintext, key])
         17897
@@ -58,12 +58,12 @@ class ToyCipherFOUR(Cipher):
         sage: toy_cipher.number_of_rounds
         5
 
-        sage: toy_cipher = ToyCipherFOUR(block_bit_size=16, key_bit_size=80, number_of_rounds=10)
+        sage: toy_cipher = ToyCipherFour(block_bit_size=16, key_bit_size=80, number_of_rounds=10)
         sage: plaintext = 0x5678; key = 0x123456781234567812abcdef
         sage: hex(toy_cipher.evaluate([plaintext, key]))
         '0xbeec'
 
-        sage: toy_cipher = ToyCipherFOUR(block_bit_size=16, key_bit_size=80, sbox=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0], permutations=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], number_of_rounds=5)
+        sage: toy_cipher = ToyCipherFour(block_bit_size=16, key_bit_size=80, sbox=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0], permutations=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], number_of_rounds=5)
         sage: plaintext = 0x9abc; key = 0x3333555577779999bbbbcccc
         sage: hex(toy_cipher.evaluate([plaintext, key]))
         '0xef01'
@@ -75,9 +75,17 @@ class ToyCipherFOUR(Cipher):
                  block_bit_size=16,
                  key_bit_size=16,
                  rotation_layer=1,
-                 sbox=[12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2],
-                 permutations=[0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15],
+                 sbox=None,
+                 permutations=None,
                  number_of_rounds=5):
+
+        if sbox is None:
+            sbox = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
+
+        if permutations is None:
+            permutations = [0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15]
+
+
         self.sbox_bit_size = len(bin(len(sbox))) - 3
         self.number_of_sboxes = block_bit_size // self.sbox_bit_size
         self._num_rounds = number_of_rounds
@@ -140,6 +148,10 @@ class ToyCipherFOUR(Cipher):
                 self.sbox_bit_size,
                 self.sbox)
             sbox_outputs.append(sbox_component.id)
+
+        # Ensure we have at least 4 SBOX outputs
+        if len(sbox_outputs) < 4:
+            raise IndexError(f"Expected at least 4 SBOX outputs, but got {len(sbox_outputs)}.")
 
         # Final XOR with the last round key
         xor = self.add_XOR_component(

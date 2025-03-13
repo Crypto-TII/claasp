@@ -271,7 +271,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher as fancy
+ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher as fancy
             sage: fancy().delete_generated_evaluate_c_shared_library() # doctest: +SKIP
         """
         code_generator.delete_generated_evaluate_c_shared_library(self)
@@ -290,7 +290,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher as identity
+            sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher as identity
             sage: identity().evaluate([0x01234567,0x89ABCDEF])
             19088743
         """
@@ -310,7 +310,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher as fancy
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher as fancy
             sage: fancy(number_of_rounds=2).evaluate_using_c([0x012345,0x89ABCD], True) # random
             {'round_key_output': [3502917, 73728],
              'round_output': [9834215],
@@ -784,7 +784,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher as fancy
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher as fancy
             sage: s = fancy().generate_bit_based_c_code()
             sage: s[:8] == '#include'
             True
@@ -804,7 +804,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher as fancy
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher as fancy
             sage: fancy().generate_evaluate_c_code_shared_library() # doctest: +SKIP
         """
         code_generator.generate_evaluate_c_code_shared_library(self, intermediate_output, verbosity)
@@ -849,7 +849,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
             sage: component = fancy.get_component_from_id('sbox_0_0')
             sage: component.description
@@ -898,7 +898,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
             sage: fancy.get_round_from_component_id('xor_1_14')
             1
@@ -1247,7 +1247,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher as identity
+            sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher as identity
             sage: identity().print_evaluation_python_code() # random
             from copy import copy
             from bitstring import BitArray
@@ -1305,7 +1305,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher as identity
+            sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher as identity
             sage: identity = identity()
             sage: identity.file_name
             'identity_block_cipher_p32_k32_o32_r1.py'
@@ -1337,7 +1337,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher()
             sage: fancy.print_input_information()
             plaintext of bit size 24

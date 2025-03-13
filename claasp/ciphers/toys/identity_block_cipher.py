@@ -39,7 +39,7 @@ class IdentityBlockCipher(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
+        sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher
         sage: identity = IdentityBlockCipher()
         sage: identity.type
         'block_cipher'
