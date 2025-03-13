@@ -97,17 +97,17 @@ def test_find_one_impossible_xor_differential_trail_with_initial_and_final_round
     key = set_fixed_variables('key', constraint_type='equal',
                               bit_positions=range(64), bit_values=[0] * 64)
     trail = mzn.find_one_impossible_xor_differential_trail(fixed_values=[plaintext, ciphertext, key],
-                                                           solver_name='Chuffed', initial_round=1, middle_round=3, final_round=6,
+                                                           solver_name='Chuffed', initial_round=1, final_round=6,
                                                            intermediate_components=True, solve_external=True)
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r6'
     assert trail['model_type'] == 'impossible_xor_differential_one_solution'
     assert trail['solver_name'] == 'Chuffed'
 
-    assert trail['components_values']['plaintext']['value'] == '00000000021000000010000000000000'
+    assert trail['components_values']['plaintext']['value'] == '00000000022200000021000000000000'
     assert trail['components_values']['inverse_cipher_output_5_12']['value'] == '10000000000000001000000000000010'
 
-    assert trail['components_values']['xor_1_10']['value'] == '2222222221000022'
+    assert trail['components_values']['xor_1_10']['value'] == '2222222222100022'
     assert trail['components_values']['inverse_rot_2_9']['value'] == '2222222210022222'
 
 

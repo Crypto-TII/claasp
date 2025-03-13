@@ -832,7 +832,6 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: cp.fix_variables_value_constraints([set_fixed_variables('plaintext', 'not_equal', list(range(4)), integer_to_bit_list(5, 4, 'big'))])
             ['constraint plaintext[0] != 0 \\/ plaintext[1] != 1 \\/ plaintext[2] != 0 \\/ plaintext[3] != 1;']
         """
-        cp_constraints = []
         if fixed_variables == []:
             fixed_variables.append(
                 set_fixed_variables('plaintext', 'not_equal', list(range(self._cipher.output_bit_size)),
@@ -843,30 +842,8 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             for cipher_input, bit_size in zip(self._cipher._inputs, self._cipher._inputs_bit_size):
                 if cipher_input == 'key':
                     fixed_variables.append(set_fixed_variables('key', 'equal', list(range(bit_size)), [0] * bit_size))
-        for component in fixed_variables:
-            component_id = component['component_id']
-            bit_positions = component['bit_positions']
-            bit_values = component['bit_values']
-            if step == 'first_step':
-                if not self._cipher.is_spn():
-                    raise ValueError('Cipher is not SPN')
-                input_length = len(bit_positions) // self.word_size
-                bit_positions = self.calculate_bit_positions(bit_positions, input_length)
-                bit_values = self.calculate_bit_values(bit_values, input_length)
-            if component['constraint_type'] == 'equal':
-                sign = '='
-                logic_operator = ' /\\ '
-            elif component['constraint_type'] == 'not_equal':
-                sign = '!='
-                logic_operator = ' \\/ '
-            else:
-                raise ValueError(constraint_type_error)
-            values_constraints = [f'{component_id}[{position}] {sign} {bit_values[i]}'
-                                  for i, position in enumerate(bit_positions)]
-            new_constraint = 'constraint ' + f'{logic_operator}'.join(values_constraints) + ';'
-            cp_constraints.append(new_constraint)
 
-        return cp_constraints
+        return super().fix_variables_value_constraints(fixed_variables, step)
 
     def get_component_from_id(self, id_link, curr_cipher):
         for component in curr_cipher.get_all_components():
