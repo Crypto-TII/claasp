@@ -39,7 +39,7 @@ class ContinuousDiffusionAnalysis:
             seed=None,
             number_of_processors=1
     ):
-        def _create_list_fixing_some_inputs(_tag_input):
+        def _create_list_fixing_some_inputs(_tag_input, _rng):
             max_bias = [-1, 1]
             index_of_tag_input = self.cipher.inputs.index(_tag_input)
             lst_input = []
@@ -48,10 +48,9 @@ class ContinuousDiffusionAnalysis:
                 if i == index_of_tag_input:
                     lst_input.append([])
                 else:
-                    import random
-                    random.seed(seed)
+                    bit = _rng.integers(2)
                     lst_input.append(
-                        [Decimal(max_bias[random.choice([0, 1])]) for _ in range(self.cipher.inputs_bit_size[i])])
+                        [Decimal(max_bias[bit]) for _ in range(self.cipher.inputs_bit_size[i])])
                 i += 1
 
             return lst_input
@@ -65,8 +64,9 @@ class ContinuousDiffusionAnalysis:
         sbox_precomputations_mix_columns = get_mix_column_precomputations(mix_column_components)
         pool = Pool(number_of_processors)
         results = []
+        rng = np.random.default_rng(seed)
         for _ in range(number_of_samples):
-            list_of_inputs = _create_list_fixing_some_inputs(tag_input)
+            list_of_inputs = _create_list_fixing_some_inputs(tag_input, rng)
             results.append(pool.apply_async(
                 self._compute_sample_for_continuous_avalanche_factor,
                 args=(lambda_value, list_of_inputs, sbox_precomputations, sbox_precomputations_mix_columns))
@@ -106,7 +106,7 @@ class ContinuousDiffusionAnalysis:
             output_dict,
             seed=None
     ):
-        def _create_list_fixing_tag_input(_tag_input):
+        def _create_list_fixing_tag_input(_tag_input, _rng):
             max_bias = [-1, 1]
             index_of_tag_input = self.cipher.inputs.index(_tag_input)
             lst_input = []
@@ -117,10 +117,9 @@ class ContinuousDiffusionAnalysis:
                 if ii == index_of_tag_input:
                     lst_input.append([])
                 else:
-                    import random
-                    random.seed(seed)
+                    bit = _rng.integers(2)
                     lst_input.append([
-                        Decimal(max_bias[random.choice([0, 1])]) for _ in range(input_size)
+                        Decimal(max_bias[bit]) for _ in range(input_size)
                     ])
                 ii += 1
 
@@ -156,8 +155,9 @@ class ContinuousDiffusionAnalysis:
         sbox_precomputations_mix_columns = get_mix_column_precomputations(mix_column_components)
 
         results = []
+        rng = np.random.default_rng(seed)
         for i in range(number_of_samples):
-            list_of_inputs = _create_list_fixing_tag_input(tag_input)
+            list_of_inputs = _create_list_fixing_tag_input(tag_input, rng)
             results.append(
                 self._compute_sample_for_continuous_neutrality_measure(
                     list_of_inputs, sbox_precomputations,
