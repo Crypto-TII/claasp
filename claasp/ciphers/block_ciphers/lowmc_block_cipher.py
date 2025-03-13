@@ -17,13 +17,13 @@
 # ****************************************************************************
 
 
-from os.path import exists
 from os.path import dirname
+from os.path import exists
 from os.path import realpath
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 from claasp.ciphers.block_ciphers import lowmc_generate_matrices
+from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
     # See https://tches.iacr.org/index.php/TCHES/article/view/8680/8239 Table 6
@@ -221,7 +221,7 @@ class LowMCBlockCipher(Cipher):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
         self.WORD_SIZE = self.block_bit_size // 2
-        self.sbox = [0x00, 0x01, 0x03, 0x06, 0x07, 0x04, 0x05, 0x02]
+        self.sbox = [0x0, 0x7, 0x6, 0x5, 0x4, 0x1, 0x3, 0x2]
         self.matrices_for_linear_layer = []
         self.ROUND_CONSTANTS = []
         # Round key derivation matrices
@@ -251,10 +251,10 @@ class LowMCBlockCipher(Cipher):
 
         for r in range(number_of_rounds):
             # Nonlinear layer
-            sbox_layer_picnic = self.sbox_layer_picnic(plaintext_id)
+            sbox_layer = self.sbox_layer(plaintext_id)
 
             # Affine layer
-            linear_layer = self.linear_layer(sbox_layer_picnic, r)
+            linear_layer = self.linear_layer(sbox_layer, r)
             round_constant = self.add_round_constant(linear_layer, r)
 
             # Generate round key and add to the state
@@ -418,30 +418,6 @@ class LowMCBlockCipher(Cipher):
 
         return self.add_concatenate_component(sbox_output + [plaintext_id],
                                               [list(range(3))] * self.N_SBOX +
-                                              [list(range(3 * self.N_SBOX, self.block_bit_size))],
-                                              self.block_bit_size).id
-
-    def sbox_layer_picnic(self, plaintext_id):
-        """
-        In the Picnic-Ref-Implementation, each 3-bit chunk is first reversed before applying the Sbox.
-
-        The output is also reversed when added back to the state
-
-        e.g.
-          state[0:3] = '110' becomes '011', then is mapped to '110' via the
-          Sbox finally, it is reversed to '011' for the state-update.
-        """
-
-        sbox_output = [''] * self.N_SBOX
-
-        # m computations of 3 - bit sbox
-        # remaining n - 3m bits remain the same
-        for i in range(self.N_SBOX):
-            sbox_output[i] = self.add_SBOX_component([plaintext_id], [list(range(3 * i, 3 * (i + 1)))[::-1]],
-                                                     3, self.sbox).id
-
-        return self.add_concatenate_component(sbox_output + [plaintext_id],
-                                              [list(range(3))[::-1]] * self.N_SBOX +
                                               [list(range(3 * self.N_SBOX, self.block_bit_size))],
                                               self.block_bit_size).id
 

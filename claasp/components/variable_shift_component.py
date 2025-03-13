@@ -19,10 +19,10 @@
 
 import math
 
-from claasp.input import Input
-from claasp.component import Component
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.component import Component
+from claasp.input import Input
 
 
 class VariableShift(Component):
@@ -294,6 +294,8 @@ class VariableShift(Component):
         for i in range(number_of_states):
             states.append([f'state_{i}_{output_bit_ids[j]}' for j in range(output_bit_len)])
         constraints = []
+        if len(states) <= 0:
+            raise ValueError('states must not be empty')
 
         # first shift
         for j in range(output_bit_len - 1):
