@@ -176,7 +176,7 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
             sage: component = fancy.get_component_from_id("and_0_8")
             sage: l = component._get_independent_input_output_variables()
@@ -210,7 +210,7 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
             sage: component = fancy.get_component_from_id("and_0_8")
             sage: l = component._get_input_output_variables()
@@ -258,7 +258,7 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(fancy)
