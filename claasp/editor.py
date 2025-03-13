@@ -1505,7 +1505,7 @@ def remove_key_schedule(cipher, keep_round_key_addition=True):
 
     - ``cipher`` -- **Cipher object**; an instance of a cipher.
     - ``keep_round_key_addition`` -- **bool** (default: True); if False, removes XOR components corresponding to the
-    round key addition..
+    round key addition.
 
     EXAMPLES::
 
@@ -1545,7 +1545,7 @@ def remove_key_schedule(cipher, keep_round_key_addition=True):
     remove_orphan_components(cipher_without_key_schedule)
     update_inputs(cipher_without_key_schedule, keep_round_key_addition)
 
-    if keep_round_key_addition:
+    if not keep_round_key_addition:
         components_to_remove = {}
         for round_ in cipher_without_key_schedule.rounds_as_list:
             for component in round_.components:
@@ -1557,6 +1557,8 @@ def remove_key_schedule(cipher, keep_round_key_addition=True):
                         components_to_remove[component.id] = component.input_id_links[0]
                         cipher_without_key_schedule.remove_round_component_from_id(round_.id, component.id)
 
+        for round_ in cipher_without_key_schedule.rounds_as_list:
+            for component in round_.components:
                 for i, id in enumerate(component.input_id_links):
                     if id in components_to_remove:
                         component.input_id_links[i] = components_to_remove[id]
