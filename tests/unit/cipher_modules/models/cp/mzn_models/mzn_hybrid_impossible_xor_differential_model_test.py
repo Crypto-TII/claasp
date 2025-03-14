@@ -63,7 +63,7 @@ def test_find_one_impossible_xor_differential_trail():
                                      bit_positions=range(64), bit_values=[0] * 64)
     key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(80),
                               bit_values=[0] * 10 + [1] + [0] * 69)
-    trail = mzn.find_one_impossible_xor_differential_trail(4, [plaintext, ciphertext, key], 'Chuffed', 1, 3, 4, False, solve_external = True)
+    trail = mzn.find_one_impossible_xor_differential_trail(fixed_values=[plaintext, ciphertext, key], solver_name='Chuffed', middle_round=3, intermediate_components=False, solve_external = True)
 
     assert str(trail['cipher']) == 'lblock_p64_k80_o64_r4'
     assert trail['model_type'] == 'impossible_xor_differential_one_solution'
