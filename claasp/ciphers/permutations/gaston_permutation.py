@@ -199,19 +199,17 @@ class GastonPermutation(Cipher):
         return state
 
     def gaston_chi(self, state):
-        not_comp = []
+        not_comp = [None] * GASTON_NROWS
         for row in range(GASTON_NROWS):
             self.add_NOT_component(state[row].id, state[row].input_bit_positions, WORD_SIZE)
-            n = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-            not_comp.append(n)
+            not_comp[row] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
-        and_comp = []
+        and_comp = [None] * GASTON_NROWS
         for row in range(GASTON_NROWS):
             inputs_id, inputs_pos = get_inputs_parameter(
                 [state[(row + 2) % GASTON_NROWS], not_comp[(row + 1) % GASTON_NROWS]])
             self.add_AND_component(inputs_id, inputs_pos, WORD_SIZE)
-            a = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-            and_comp.append(a)
+            and_comp[row] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         for row in range(GASTON_NROWS):
             inputs_id, inputs_pos = get_inputs_parameter([state[row], and_comp[row]])

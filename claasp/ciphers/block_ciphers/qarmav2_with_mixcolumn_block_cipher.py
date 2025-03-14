@@ -277,7 +277,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
 
     def direct_round(self, round_output, key_state, tweak_state, tweak_permutation, round_constant, round_number):
         # Direct encryption
-        round_key_shuffle = []
+        round_key_shuffle = [None] * self.number_of_layers
         for l in range(self.number_of_layers):
             xor = self.add_XOR_component([round_output.id,
                                           key_state[round_number % 2].id,
@@ -288,22 +288,22 @@ class QARMAv2MixColumnBlockCipher(Cipher):
                                           [i for i in range(64 * l, 64 * l + 64)],
                                           [i for i in range(64)]],
                                          self.LAYER_BLOCK_SIZE)
-            round_key_shuffle.append(xor)
+            round_key_shuffle[l] = xor
 
         tweak_state[round_number % 2] = self.add_permutation_component([tweak_state[round_number % 2].id],
                                                                        [[i for i in range(self.TWEAK_BLOCK_SIZE)]],
                                                                        self.TWEAK_BLOCK_SIZE,
                                                                        tweak_permutation[round_number % 2])
 
-        round_state_shuffle = []
+        round_state_shuffle = [None] * self.number_of_layers
         for l in range(self.number_of_layers):
             shuffled_state = self.add_permutation_component([round_key_shuffle[l].id],
                                                             [[i for i in range(self.LAYER_BLOCK_SIZE)]],
                                                             self.LAYER_BLOCK_SIZE,
                                                             self.state_permutation)
-            round_state_shuffle.append(shuffled_state)
+            round_state_shuffle[l]= shuffled_state
 
-        round_state_rotate = []
+        round_state_rotate = [None] * self.number_of_layers * 4
         for l in range(self.number_of_layers):
             for c in range(4):
                 rotate = self.add_mix_column_component([round_state_shuffle[l].id],
@@ -316,16 +316,16 @@ class QARMAv2MixColumnBlockCipher(Cipher):
                                                                                                              4 * c + 52)]],
                                                        self.LAYER_BLOCK_SIZE // 4,
                                                        [self.mix_column_matrix, 0x11, self.SBOX_BIT_SIZE])
-                round_state_rotate.append(rotate)
+                round_state_rotate[l*4 + c] = rotate
 
-        round_sboxes = []
+        round_sboxes = [None] * self.number_of_layers * self.LAYER_SBOXES
         for l in range(self.number_of_layers):
             for sb in range(self.LAYER_SBOXES):
                 sbox = self.add_SBOX_component([round_state_rotate[sb % 4 + 4 * l].id],
                                                [[i for i in range(4 * int(sb / 4), 4 * int(sb / 4) + 4)]],
                                                self.SBOX_BIT_SIZE,
                                                self.sbox)
-                round_sboxes.append(sbox)
+                round_sboxes[l * self.LAYER_SBOXES + sb] = sbox
 
         if self.number_of_layers == 2 and (self.NROUNDS - round_number) % 2 == 0:
             exchanging_rows = self.add_permutation_component([round_sboxes[i].id for i in range(self.NUM_SBOXES)],
@@ -355,7 +355,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
 
         key_state = self.key_update(key_state)
 
-        round_state_shuffle = []
+        round_state_shuffle = [None] * self.number_of_layers
         for l in range(self.number_of_layers):
             shuffled_state = self.add_permutation_component([round_output.id],
                                                             [[i for i in range(64 * l, 64 * l + 64)]],
@@ -365,9 +365,9 @@ class QARMAv2MixColumnBlockCipher(Cipher):
                                                           [[i for i in range(self.LAYER_BLOCK_SIZE)],
                                                            [i for i in range(64 * l, 64 * l + 64)]],
                                                           self.LAYER_BLOCK_SIZE)
-            round_state_shuffle.append(mixed_shuffled_state)
+            round_state_shuffle[l] = mixed_shuffled_state
 
-        round_state_rotate = []
+        round_state_rotate = [None] * self.number_of_layers * 4
         for l in range(self.number_of_layers):
             for c in range(4):
                 rotate = self.add_mix_column_component([round_state_shuffle[l].id],
@@ -383,9 +383,9 @@ class QARMAv2MixColumnBlockCipher(Cipher):
                                                             i for i in range(4 * c + 48, 4 * c + 52)]],
                                                        self.LAYER_BLOCK_SIZE // 4,
                                                        [self.mix_column_matrix, 0x11, self.SBOX_BIT_SIZE])
-                round_state_rotate.append(rotate)
+                round_state_rotate[l * 4 + c]=rotate
 
-        central_keyed_state = []
+        central_keyed_state = [None] * self.number_of_layers * 16
         for l in range(self.number_of_layers):
             for w in range(16):
                 central_xor = self.add_XOR_component(
@@ -393,15 +393,15 @@ class QARMAv2MixColumnBlockCipher(Cipher):
                     [[i for i in range(self.WORD_SIZE * int(w / 4), self.WORD_SIZE * int(w / 4) + 4)],
                      [i for i in range(64 * l + 4 * w, 64 * l + 4 * w + 4)]],
                     self.WORD_SIZE)
-                central_keyed_state.append(central_xor)
+                central_keyed_state[l*16 + w] = central_xor
 
-        central_shuffled_state = []
+        central_shuffled_state = [None] * self.number_of_layers
         for l in range(self.number_of_layers):
             shuffled_state = self.add_permutation_component([central_keyed_state[16 * l + i].id for i in range(16)],
                                                             [[i for i in range(4)] for j in range(16)],
                                                             self.LAYER_BLOCK_SIZE,
                                                             self.inverse_state_permutation)
-            central_shuffled_state.append(shuffled_state)
+            central_shuffled_state[l] = shuffled_state
 
         round_output = self.add_round_output_component([central_shuffled_state[i].id for i in range(self.number_of_layers)],
                                                        [[i for i in range(self.LAYER_BLOCK_SIZE)] for j in
