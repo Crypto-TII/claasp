@@ -1,6 +1,6 @@
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
@@ -29,7 +29,7 @@ def test_cp_inverse_constraints():
 
 def test_cp_xor_differential_first_step_constraints():
     aes = AESBlockCipher(number_of_rounds=3)
-    cp = CpModel(aes)
+    cp = MznModel(aes)
     rotate_component = aes.component_from(0, 18)
     declarations, constraints = rotate_component.cp_xor_differential_first_step_constraints(cp)
 

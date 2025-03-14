@@ -30,8 +30,8 @@ def test_find_one_bitwise_deterministic_truncated_xor_differential_trail():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
     sat = SatBitwiseDeterministicTruncatedXorDifferentialModel(speck)
     plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
-                                    bit_values=(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                0, 0, 0, 0, 0, 0, 0, 0))
+                                        bit_values=(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                    0, 0, 0, 0, 0, 0, 0, 0))
     key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=(0,) * 64)
     trail = sat.find_one_bitwise_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
     assert trail['components_values']['cipher_output_2_12']['value'] == '???????????????0????????????????'

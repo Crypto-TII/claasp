@@ -64,7 +64,7 @@ def test_run_avalanche_nist_statistics_test():
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('avalanche')
+    tests.nist_statistical_tests('avalanche', statistical_test_option_list='1'+14 * '0')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
@@ -74,7 +74,7 @@ def test_run_correlation_nist_statistics_test():
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('correlation')
+    tests.nist_statistical_tests('correlation', statistical_test_option_list='1'+14 * '0')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
@@ -85,7 +85,7 @@ def test_run_CBC_nist_statistics_test():
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('cbc')
+    tests.nist_statistical_tests('cbc',  statistical_test_option_list='1'+14 * '0')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
@@ -96,7 +96,7 @@ def test_run_random_nist_statistics_test():
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('random')
+    tests.nist_statistical_tests('random',  statistical_test_option_list='1'+14 * '0')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
@@ -106,7 +106,7 @@ def test_run_low_density_nist_statistics_test():
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('low_density')
+    tests.nist_statistical_tests('low_density', statistical_test_option_list='1'+14 * '0')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10
@@ -116,7 +116,7 @@ def test_run_high_density_nist_statistics_test():
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    tests.nist_statistical_tests('high_density')
+    tests.nist_statistical_tests('high_density', statistical_test_option_list='1'+14 * '0')
     sys.stdout = old_stdout
     return_str = result.getvalue()
     assert return_str.find('Finished.') == len(return_str) - 10

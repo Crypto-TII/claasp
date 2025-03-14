@@ -1,7 +1,5 @@
 import os
-import sys
 import inspect
-from io import StringIO
 
 import claasp
 from claasp.utils.utils import point_pair
@@ -11,7 +9,6 @@ from claasp.utils.utils import signed_distance
 from claasp.utils.utils import pprint_dictionary
 from claasp.utils.utils import pprint_dictionary_to_file
 from claasp.utils.utils import bytes_positions_to_little_endian_for_32_bits
-from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
 

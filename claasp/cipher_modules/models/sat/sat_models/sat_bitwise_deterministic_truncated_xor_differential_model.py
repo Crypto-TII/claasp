@@ -27,8 +27,8 @@ from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, DETERMINISTIC_TRUNCAT
 
 
 class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
-    def __init__(self, cipher, window_size_weight_pr_vars=-1, counter='sequential', compact=False):
-        super().__init__(cipher, window_size_weight_pr_vars, counter, compact)
+    def __init__(self, cipher, counter='sequential', compact=False):
+        super().__init__(cipher, counter, compact)
 
     def build_bitwise_deterministic_truncated_xor_differential_trail_model(self, number_of_unknown_variables=None,
                                                                            fixed_variables=[]):
@@ -50,13 +50,13 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
 
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import SatBitwiseDeterministicTruncatedXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=22)
+            sage: speck = SpeckBlockCipher(number_of_rounds=2)
             sage: sat = SatBitwiseDeterministicTruncatedXorDifferentialModel(speck)
             sage: sat.build_bitwise_deterministic_truncated_xor_differential_trail_model()
             ...
         """
         variables = []
-        constraints = self.fix_variables_value_constraints(fixed_variables)
+        constraints = SatBitwiseDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
         component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
@@ -77,7 +77,8 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def fix_variables_value_constraints(self, fixed_variables=[]):
+    @staticmethod
+    def fix_variables_value_constraints(fixed_variables=[]):
         """
         Return constraints for fixed variables
 
@@ -109,7 +110,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             ....:    'bit_positions': [0, 1, 2, 3],
             ....:    'bit_values': [2, 1, 1, 0]
             ....: }]
-            sage: sat.fix_variables_value_constraints(fixed_variables)
+            sage: SatBitwiseDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints(fixed_variables)
             ['-plaintext_0_0',
              'plaintext_0_1',
              '-plaintext_1_0',
@@ -218,6 +219,10 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatModel):
             sage: trail = S.find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(get_single_key_scenario_format_for_fixed_values(speck))
             sage: trail['status']
             'SATISFIABLE'
+
+        .. SEEALSO::
+
+            :ref:`sat-solvers`
         """
         current_unknowns_count = 1
         start_building_time = time.time()

@@ -1,4 +1,4 @@
-from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
+from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher
 
 
 def test_identity_block_cipher():

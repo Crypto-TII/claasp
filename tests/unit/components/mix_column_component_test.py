@@ -1,6 +1,6 @@
 import pytest
 
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
@@ -24,7 +24,7 @@ def test_algebraic_polynomials():
 
 def test_cp_create_component():
     aes = AESBlockCipher(number_of_rounds=3)
-    cp = CpModel(aes)
+    cp = MznModel(aes)
     mix_column_component_1 = aes.component_from(0, 21)
     mix_column_component_2 = aes.component_from(0, 22)
     declarations, constraints = mix_column_component_1._cp_create_component(cp.word_size, mix_column_component_2,

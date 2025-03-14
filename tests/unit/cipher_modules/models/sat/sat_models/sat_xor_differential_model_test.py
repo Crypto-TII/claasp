@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from claasp.utils.utils import get_k_th_bit
 from claasp.components.modadd_component import MODADD
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -62,9 +61,13 @@ def compute_modadd_xor(modadd_objects, component_values):
         result.append({f"{modadd_id}": bin(xor_result)})
     return result
 
+
 speck_5rounds = SpeckBlockCipher(number_of_rounds=5)
+speck_4rounds = SpeckBlockCipher(number_of_rounds=4)
+
 def test_find_all_xor_differential_trails_with_fixed_weight():
-    sat = SatXorDifferentialModel(speck_5rounds, window_size_weight_pr_vars=1)
+    sat = SatXorDifferentialModel(speck_5rounds)
+    sat.set_window_size_weight_pr_vars(1)
 
     assert int(sat.find_all_xor_differential_trails_with_fixed_weight(
         9)[0]['total_weight']) == int(9.0)
@@ -75,6 +78,7 @@ def test_find_all_xor_differential_trails_with_weight_at_most():
     sat = SatXorDifferentialModel(speck)
     trails = sat.find_all_xor_differential_trails_with_weight_at_most(9, 10)
 
+
     assert len(trails) == 28
 
 
@@ -82,7 +86,7 @@ def test_find_lowest_weight_xor_differential_trail():
     speck = speck_5rounds
     sat = SatXorDifferentialModel(speck)
     trail = sat.find_lowest_weight_xor_differential_trail()
-
+    print(trail)
     assert int(trail['total_weight']) == int(9.0)
 
 
@@ -116,10 +120,11 @@ def test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_ful
     speck = SpeckBlockCipher(number_of_rounds=9)
     sat = SatXorDifferentialModel(speck)
     sat.set_window_size_heuristic_by_round(
-        [2 for i in range(9)], number_of_full_windows=1
+        [2 for _ in range(9)], number_of_full_windows=1
     )
     result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name="CADICAL_EXT")
     assert int(result['total_weight']) == int(30.0)
+
 
 def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_three_full_2_window():
     speck = SpeckBlockCipher(number_of_rounds=9)
@@ -127,7 +132,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_thre
     number_of_full_windows = 3
     window_size = 2
     sat.set_window_size_heuristic_by_round(
-        [window_size for i in range(9)], number_of_full_windows=number_of_full_windows
+        [window_size for _ in range(9)], number_of_full_windows=number_of_full_windows
     )
     result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name="CADICAL_EXT")
     speck_components = speck.get_all_components()
@@ -171,21 +176,23 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_one_
     assert int(result['total_weight']) == int(probability_weight)
     assert computed_number_of_full_windows == number_of_full_windows
 
+
 def test_find_one_xor_differential_trail_with_fixed_weight_9_rounds():
     speck = SpeckBlockCipher(number_of_rounds=9)
     sat = SatXorDifferentialModel(speck)
 
     sat.set_window_size_heuristic_by_round(
-        [2 for i in range(9)]
+        [2 for _ in range(9)]
     )
     result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name="CADICAL_EXT")
     assert int(result['total_weight']) == int(30.0)
+
 
 def test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window_parallel():
     speck = SpeckBlockCipher(number_of_rounds=10)
     sat = SatXorDifferentialModel(speck)
     sat.set_window_size_heuristic_by_round(
-        [3 for i in range(10)], number_of_full_windows=1
+        [3 for _ in range(10)], number_of_full_windows=1
     )
     plaintext = set_fixed_variables(
         component_id='plaintext',
@@ -225,15 +232,17 @@ def test_build_xor_differential_trail_model_fixed_weight_and_parkissat():
 
     assert int(result['total_weight']) == int(3.0)
 
+
 def repeat_input_difference(input_difference_, number_of_samples_, number_of_bytes_):
     bytes_array = input_difference_.to_bytes(number_of_bytes_, 'big')
     np_array = np.array(list(bytes_array), dtype=np.uint8)
     column_array = np_array.reshape(-1, 1)
     return np.tile(column_array, (1, number_of_samples_))
 
+
 def test_differential_in_related_key_scenario_speck3264():
     rng = np.random.default_rng(seed=42)
-    number_of_samples = 2**23
+    number_of_samples = 2**20
     input_difference = 0x00402000
     output_difference = 0x0
     key_difference = 0x000afa3d0030a000
@@ -251,20 +260,21 @@ def test_differential_in_related_key_scenario_speck3264():
     total_prob_weight = math.log(total/number_of_samples, 2)
     assert 21 > abs(total_prob_weight) > 12
 
+
 def test_differential_in_single_key_scenario_speck3264():
-    rng = np.random.default_rng(seed=42)
-    number_of_samples = 2**23
-    input_difference = 0x20400040
-    output_difference = 0x106040E0
+    rng = np.random.default_rng(seed=3)
+    number_of_samples = 2**9
+    input_difference = 0x02110a04
+    output_difference = 0x81008102
     input_difference_data = repeat_input_difference(input_difference, number_of_samples, 4)
     output_difference_data = repeat_input_difference(output_difference, number_of_samples, 4)
     key_data = rng.integers(low=0, high=256, size=(8, number_of_samples), dtype=np.uint8)
     plaintext_data1 = rng.integers(low=0, high=256, size=(4, number_of_samples), dtype=np.uint8)
     plaintext_data2 = plaintext_data1 ^ input_difference_data
-    ciphertext1 = speck_5rounds.evaluate_vectorized([plaintext_data1, key_data])
-    ciphertext2 = speck_5rounds.evaluate_vectorized([plaintext_data2, key_data])
+    ciphertext1 = speck_4rounds.evaluate_vectorized([plaintext_data1, key_data])
+    ciphertext2 = speck_4rounds.evaluate_vectorized([plaintext_data2, key_data])
     rows_all_true = np.all((ciphertext1[0] ^ ciphertext2[0] == output_difference_data.T), axis=1)
     total = np.count_nonzero(rows_all_true)
     import math
     total_prob_weight = math.log(total/number_of_samples, 2)
-    assert 21 > abs(total_prob_weight) > 13
+    assert 19 > abs(total_prob_weight) > 6

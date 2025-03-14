@@ -15,9 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import numpy as np
 from decimal import Decimal
 from multiprocessing import Pool
+
+import numpy as np
 
 from claasp.cipher_modules import evaluator
 from claasp.cipher_modules.generic_functions_continuous_diffusion_analysis import (get_sbox_precomputations,
@@ -30,8 +31,15 @@ class ContinuousDiffusionAnalysis:
     def __init__(self, cipher):
         self.cipher = cipher
 
-    def _compute_conditional_expected_value_for_continuous_metric(self, lambda_value, number_of_samples, tag_input):
-        def _create_list_fixing_some_inputs(_tag_input):
+    def _compute_conditional_expected_value_for_continuous_metric(
+            self,
+            lambda_value,
+            number_of_samples,
+            tag_input,
+            seed=None,
+            number_of_processors=1
+    ):
+        def _create_list_fixing_some_inputs(_tag_input, _rng):
             max_bias = [-1, 1]
             index_of_tag_input = self.cipher.inputs.index(_tag_input)
             lst_input = []
@@ -40,9 +48,9 @@ class ContinuousDiffusionAnalysis:
                 if i == index_of_tag_input:
                     lst_input.append([])
                 else:
-                    import secrets
+                    bit = _rng.integers(2)
                     lst_input.append(
-                        [Decimal(max_bias[secrets.choice([0, 1])]) for _ in range(self.cipher.inputs_bit_size[i])])
+                        [Decimal(max_bias[bit]) for _ in range(self.cipher.inputs_bit_size[i])])
                 i += 1
 
             return lst_input
@@ -54,10 +62,11 @@ class ContinuousDiffusionAnalysis:
         mix_column_components = ContinuousDiffusionAnalysis._get_graph_representation_components_by_type(
             self.cipher.as_python_dictionary(), 'mix_column')
         sbox_precomputations_mix_columns = get_mix_column_precomputations(mix_column_components)
-        pool = Pool()
+        pool = Pool(number_of_processors)
         results = []
+        rng = np.random.default_rng(seed)
         for _ in range(number_of_samples):
-            list_of_inputs = _create_list_fixing_some_inputs(tag_input)
+            list_of_inputs = _create_list_fixing_some_inputs(tag_input, rng)
             results.append(pool.apply_async(
                 self._compute_sample_for_continuous_avalanche_factor,
                 args=(lambda_value, list_of_inputs, sbox_precomputations, sbox_precomputations_mix_columns))
@@ -88,10 +97,16 @@ class ContinuousDiffusionAnalysis:
 
         return continuous_diffusion_tests
 
-    def _compute_conditional_expected_value_for_continuous_neutrality_measure(self, input_bit, beta,
-                                                                              number_of_samples, tag_input,
-                                                                              output_dict):
-        def _create_list_fixing_tag_input(_tag_input):
+    def _compute_conditional_expected_value_for_continuous_neutrality_measure(
+            self,
+            input_bit,
+            beta,
+            number_of_samples,
+            tag_input,
+            output_dict,
+            seed=None
+    ):
+        def _create_list_fixing_tag_input(_tag_input, _rng):
             max_bias = [-1, 1]
             index_of_tag_input = self.cipher.inputs.index(_tag_input)
             lst_input = []
@@ -102,9 +117,9 @@ class ContinuousDiffusionAnalysis:
                 if ii == index_of_tag_input:
                     lst_input.append([])
                 else:
-                    import secrets
+                    bit = _rng.integers(2)
                     lst_input.append([
-                        Decimal(max_bias[secrets.choice([0, 1])]) for _ in range(input_size)
+                        Decimal(max_bias[bit]) for _ in range(input_size)
                     ])
                 ii += 1
 
@@ -140,8 +155,9 @@ class ContinuousDiffusionAnalysis:
         sbox_precomputations_mix_columns = get_mix_column_precomputations(mix_column_components)
 
         results = []
+        rng = np.random.default_rng(seed)
         for i in range(number_of_samples):
-            list_of_inputs = _create_list_fixing_tag_input(tag_input)
+            list_of_inputs = _create_list_fixing_tag_input(tag_input, rng)
             results.append(
                 self._compute_sample_for_continuous_neutrality_measure(
                     list_of_inputs, sbox_precomputations,
@@ -262,7 +278,13 @@ class ContinuousDiffusionAnalysis:
 
         return temp_components
 
-    def continuous_avalanche_factor(self, lambda_value, number_of_samples):
+    def continuous_avalanche_factor(
+            self,
+            lambda_value,
+            number_of_samples,
+            seed=None,
+            number_of_processors=1
+    ):
         """
         Continuous generalization of the metric Avalanche Factor. This method implements Definition 14 of [MUR2020]_.
 
@@ -270,6 +292,8 @@ class ContinuousDiffusionAnalysis:
 
         - ``lambda_value`` --  **float**; threshold value used to express the input difference
         - ``number_of_samples`` --  **integer**; number of samples used to compute the continuous avalanche factor
+        - ``seed`` --  **integer**; RNG seed
+        - ``number_of_processors`` -- **integer**; number of processes to use for parallelization
 
         EXAMPLES::
 
@@ -286,12 +310,23 @@ class ContinuousDiffusionAnalysis:
         for input_tag in input_tags:
             continuous_avalanche_factor_by_tag_input_dict = \
                 self._compute_conditional_expected_value_for_continuous_metric(
-                    lambda_value, number_of_samples, input_tag)
+                    lambda_value,
+                    number_of_samples,
+                    input_tag,
+                    seed,
+                    number_of_processors
+                )
             final_dict = {**final_dict, **continuous_avalanche_factor_by_tag_input_dict}
 
         return final_dict
 
-    def continuous_diffusion_factor(self, beta_number_of_samples, gf_number_samples):
+    def continuous_diffusion_factor(
+            self,
+            beta_number_of_samples,
+            gf_number_samples,
+            seed=None,
+            number_of_processors=1
+    ):
         """
         Continuous Diffusion Factor. This method implements Definition 16 of [MUR2020]_.
 
@@ -299,6 +334,8 @@ class ContinuousDiffusionAnalysis:
 
         - ``beta_number_of_samples`` -- **integer**; number of samples used to compute the continuous measure metric
         - ``gf_number_samples`` -- **integer**;  number of vectors used to approximate gf_2
+        - ``seed`` --  **integer**; RNG seed
+        - ``number_of_processors`` -- **integer**; number of processes to use for parallelization
 
         EXAMPLES::
 
@@ -319,7 +356,12 @@ class ContinuousDiffusionAnalysis:
             input_tag = self.cipher.inputs[i]
             for input_bit in range(cipher_input_size):
                 continuous_neutrality_measures_output = self.continuous_neutrality_measure_for_bit_j(
-                    beta_number_of_samples, gf_number_samples, input_bit={input_tag: input_bit})
+                    beta_number_of_samples,
+                    gf_number_samples,
+                    input_bit={input_tag: input_bit},
+                    seed=seed,
+                    number_of_processors=number_of_processors
+                )
                 for output_tag in output_tags:
                     continuous_neutrality_measures_values = \
                         continuous_neutrality_measures_output[input_tag][output_tag][
@@ -397,7 +439,10 @@ class ContinuousDiffusionAnalysis:
                                    continuous_diffusion_factor_gf_number_samples=10,
                                    is_continuous_avalanche_factor=True,
                                    is_continuous_neutrality_measure=True,
-                                   is_diffusion_factor=True):
+                                   is_diffusion_factor=True,
+                                   seed=None,
+                                   number_of_processors=1
+                                   ):
         """
         Return a python dictionary that contains the dictionaries corresponding to each metric in [MUR2020]_.
 
@@ -421,6 +466,8 @@ class ContinuousDiffusionAnalysis:
           continuous_neutrality_measure or not
         - ``is_diffusion_factor`` -- **boolean** (default: `True`); flag indicating if we want the
           continuous_neutrality_measure, or not
+        - ``seed`` --  **integer**; RNG seed
+        - ``number_of_processors`` -- **integer**; number of processes to use for parallelization
 
         OUTPUT:
 
@@ -457,13 +504,19 @@ class ContinuousDiffusionAnalysis:
         if is_diffusion_factor:
             continuous_diffusion_factor_output = self.continuous_diffusion_factor(
                 continuous_diffusion_factor_beta_number_of_samples,
-                continuous_diffusion_factor_gf_number_samples)
+                continuous_diffusion_factor_gf_number_samples,
+                seed=seed,
+                number_of_processors=number_of_processors
+            )
             inputs_tags = list(continuous_diffusion_factor_output.keys())
             output_tags = list(continuous_diffusion_factor_output[inputs_tags[0]].keys())
         if is_continuous_neutrality_measure:
             continuous_neutrality_measure_output = self.continuous_neutrality_measure_for_bit_j(
                 continuous_neutral_measure_beta_number_of_samples,
-                continuous_neutral_measure_gf_number_samples)
+                continuous_neutral_measure_gf_number_samples,
+                seed=seed,
+                number_of_processors=number_of_processors
+            )
             inputs_tags = list(continuous_neutrality_measure_output.keys())
             output_tags = list(continuous_neutrality_measure_output[inputs_tags[0]].keys())
             for it in inputs_tags:
@@ -478,7 +531,11 @@ class ContinuousDiffusionAnalysis:
                     continuous_neutrality_measure_output[it][out]['continuous_neutrality_measure'].pop('output_bits')
         if is_continuous_avalanche_factor:
             continuous_avalanche_factor_output = self.continuous_avalanche_factor(
-                threshold_for_avalanche_factor, continuous_avalanche_factor_number_of_samples)
+                threshold_for_avalanche_factor,
+                continuous_avalanche_factor_number_of_samples,
+                seed=seed,
+                number_of_processors=number_of_processors
+            )
             inputs_tags = list(continuous_avalanche_factor_output.keys())
             output_tags = list(continuous_avalanche_factor_output[inputs_tags[0]].keys())
 
@@ -494,8 +551,15 @@ class ContinuousDiffusionAnalysis:
                         continuous_diffusion_tests["test_results"][input_tag][output_tag][test]]
         return continuous_diffusion_tests
 
-    def continuous_neutrality_measure_for_bit_j(self, beta_number_of_samples, gf_number_samples,
-                                                input_bit=None, output_bits=None):
+    def continuous_neutrality_measure_for_bit_j(
+            self,
+            beta_number_of_samples,
+            gf_number_samples,
+            input_bit=None,
+            output_bits=None,
+            seed=None,
+            number_of_processors=1
+    ):
         """
         Continuous Neutrality Measure. This method implements Definition 15 of [MUR2020]_.
 
@@ -505,6 +569,8 @@ class ContinuousDiffusionAnalysis:
         - ``gf_number_samples`` -- **integer**;  number of vectors used to approximate gf_2
         - ``input_bit`` -- **integer** (default: `None`); input bit position to be analyzed
         - ``output_bits`` -- **list** (default: `None`); output bit positions to be analyzed
+        - ``seed`` --  **integer**; RNG seed
+        - ``number_of_processors`` -- **integer**; number of processes to use for parallelization
 
         EXAMPLES::
 
@@ -522,8 +588,14 @@ class ContinuousDiffusionAnalysis:
         if input_bit is None:
             input_bit = self._init_input_bits()
 
-        beta_sample_outputs = self._generate_beta_sample_output(beta_number_of_samples, gf_number_samples,
-                                                                input_bit, output_bits)
+        beta_sample_outputs = self._generate_beta_sample_output(
+            beta_number_of_samples,
+            gf_number_samples,
+            input_bit,
+            output_bits,
+            seed=seed,
+            number_of_processors=number_of_processors
+        )
         inputs_tags = list(beta_sample_outputs[0].keys())
         output_tags = list(beta_sample_outputs[0][inputs_tags[0]].keys())
         final_result = ContinuousDiffusionAnalysis._init_final_result_structure(
@@ -571,10 +643,19 @@ class ContinuousDiffusionAnalysis:
 
         return final_result
 
-    def _generate_beta_sample_output(self, beta_number_of_samples, gf_number_samples, input_bit, output_bits):
+    def _generate_beta_sample_output(
+            self,
+            beta_number_of_samples,
+            gf_number_samples,
+            input_bit,
+            output_bits,
+            seed=None,
+            number_of_processors=1
+    ):
+        np.random.seed(seed)
         betas = np.random.uniform(low=-1.0, high=1.0, size=beta_number_of_samples)
         beta_sample_outputs_temp = []
-        pool = Pool()
+        pool = Pool(number_of_processors)
         for i in range(beta_number_of_samples):
             beta_sample_outputs_temp.append(
                 pool.apply_async(self._continuous_neutrality_measure_for_bit_j_and_beta,
@@ -592,14 +673,26 @@ class ContinuousDiffusionAnalysis:
 
         return input_bit
 
-    def _continuous_neutrality_measure_for_bit_j_and_beta(self, input_bit, beta, number_of_samples, output_bits):
+    def _continuous_neutrality_measure_for_bit_j_and_beta(
+            self,
+            input_bit,
+            beta,
+            number_of_samples,
+            output_bits,
+            seed=None
+    ):
         input_tags = input_bit.keys()
         continuous_diffusion_tests = {}
         for input_tag in input_tags:
             continuous_avalanche_factor_by_tag_input_dict = \
-                self._compute_conditional_expected_value_for_continuous_neutrality_measure(input_bit,
-                                                                                           beta, number_of_samples,
-                                                                                           input_tag, output_bits)
+                self._compute_conditional_expected_value_for_continuous_neutrality_measure(
+                    input_bit,
+                    beta,
+                    number_of_samples,
+                    input_tag,
+                    output_bits,
+                    seed
+                )
             continuous_diffusion_tests = {
                 **continuous_diffusion_tests, **continuous_avalanche_factor_by_tag_input_dict
             }

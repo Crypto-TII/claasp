@@ -1,8 +1,7 @@
-from claasp.cipher_modules.models.cp.cp_model import CpModel
-from claasp.cipher_modules.models.milp.milp_model import MilpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
-from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 
 
@@ -35,7 +34,7 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 def test_cp_xor_differential_propagation_constraints():
     fancy = FancyBlockCipher()
-    cp = CpModel(fancy)
+    cp = MznModel(fancy)
     and_component = fancy.component_from(0, 8)
     declarations, constraints = and_component.cp_xor_differential_propagation_constraints(cp)
 

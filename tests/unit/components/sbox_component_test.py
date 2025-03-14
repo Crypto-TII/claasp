@@ -1,4 +1,4 @@
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
@@ -6,7 +6,7 @@ from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
@@ -75,7 +75,7 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 def test_cp_xor_differential_propagation_constraints():
     midori = MidoriBlockCipher(number_of_rounds=3)
-    cp = CpModel(midori)
+    cp = MznModel(midori)
     sbox_component = midori.component_from(0, 5)
     declarations, constraints = sbox_component.cp_xor_differential_propagation_constraints(cp)
 
@@ -111,7 +111,7 @@ def test_cp_xor_differential_propagation_constraints():
 
 def test_cp_xor_linear_mask_propagation_constraints():
     midori = MidoriBlockCipher()
-    cp = CpModel(midori)
+    cp = MznModel(midori)
     sbox_component = midori.component_from(0, 5)
     result = sbox_component.cp_xor_linear_mask_propagation_constraints(cp)[1:]
     assert result == (['constraint table([sbox_0_5_i[0]]++[sbox_0_5_i[1]]++[sbox_0_5_i[2]]++[sbox_0_5_i[3]]++'

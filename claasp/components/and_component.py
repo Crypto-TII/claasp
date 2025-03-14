@@ -110,7 +110,7 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
             sage: and_component = fancy.get_component_from_id("and_0_8")
@@ -155,7 +155,7 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher()
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.cp_constraints()
@@ -190,10 +190,10 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: fancy = FancyBlockCipher()
-            sage: cp = CpModel(fancy)
+            sage: cp = MznModel(fancy)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.cp_xor_linear_mask_propagation_constraints(cp)
             (['array[0..23] of var 0..1:and_0_8_i;',
@@ -247,7 +247,7 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: cipher = FancyBlockCipher(number_of_rounds=20)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
@@ -334,9 +334,11 @@ class AND(MultiInputNonlinearLogicalOperator):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for AND operation in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing AND for SAT CIPHER model
 
-        This method support AND operation using more than two operands.
+        This method translates in CNF the constraint ``z = And(x, y)``. In prefixed notation, it becomes:
+        ``And(Or(x, Not(z)), Or(y, Not(z)), Or(z, Not(x), Not(y)))``.
+        This method supports AND operation using more than two inputs.
 
         .. SEEALSO::
 
@@ -348,15 +350,18 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.sat_constraints()
             (['and_0_8_0',
               'and_0_8_1',
-              'and_0_8_2',
               ...
-              '-and_0_8_11 xor_0_7_11',
+              'and_0_8_10',
+              'and_0_8_11'],
+             ['-and_0_8_0 xor_0_7_0',
+              '-and_0_8_0 key_12',
+              ...
               '-and_0_8_11 key_23',
               'and_0_8_11 -xor_0_7_11 -key_23'])
         """
@@ -370,9 +375,11 @@ class AND(MultiInputNonlinearLogicalOperator):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing AND operation FOR SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing AND for SMT CIPHER model
 
-        This method support AND operation using more than two operands.
+        Since the AND operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
+        builtin operation, e.g. ``z = And(x, y)`` becomes ``(assert (= z (and x y)))``.
+        This method support AND operation using more than two inputs.
 
         INPUT:
 
@@ -380,7 +387,7 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: and_component = fancy.component_from(0, 8)
             sage: and_component.smt_constraints()

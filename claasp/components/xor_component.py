@@ -153,7 +153,7 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
             sage: xor_component = fancy.get_component_from_id("xor_0_7")
@@ -305,6 +305,56 @@ class XOR(Component):
 
         return cp_declarations, cp_constraints
 
+    def cp_hybrid_deterministic_truncated_xor_differential_constraints(self):
+        r"""
+        Return list declarations and constraints for XOR component in the hybrid CP deterministic truncated
+        XOR differential model.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: xor_component = speck.component_from(0, 2)
+            sage: xor_component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
+            ([],
+             ['constraint if (modadd_0_1[0] < 2) /\\ (key[48] < 2) then xor_0_2[0] = (modadd_0_1[0] + key[48]) mod 2 elseif (modadd_0_1[0] + key[48] = modadd_0_1[0]) then xor_0_2[0] = modadd_0_1[0] elseif (modadd_0_1[0] + key[48] = key[48]) then xor_0_2[0] = key[48] else xor_0_2[0] = 2 endif;',
+               ...
+              'constraint if (modadd_0_1[15] < 2) /\\ (key[63] < 2) then xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2 elseif (modadd_0_1[15] + key[63] = modadd_0_1[15]) then xor_0_2[15] = modadd_0_1[15] elseif (modadd_0_1[15] + key[63] = key[63]) then xor_0_2[15] = key[63] else xor_0_2[15] = 2 endif;'])
+        """
+
+        output_size = int(self.output_bit_size)
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        cp_declarations = []
+        all_inputs = [
+            f'{id_link}[{position}]'
+            for id_link, bit_positions in zip(input_id_links, input_bit_positions)
+            for position in bit_positions
+        ]
+        cp_constraints = []
+        for i in range(output_size):
+            inputs = all_inputs[i::output_size]
+            condition = ' < 2) /\\ ('.join(inputs) + ' < 2'
+            operation_sum = ' + '.join(inputs)
+
+            new_constraint = (
+                f'constraint if ({condition}) then '
+                f'{output_id_link}[{i}] = ({operation_sum}) mod 2 '
+                f'elseif ({operation_sum} = {inputs[0]}) then '
+                f'{output_id_link}[{i}] = {inputs[0]} '
+                f'elseif ({operation_sum} = {inputs[1]}) then '
+                f'{output_id_link}[{i}] = {inputs[1]} '
+                f'else {output_id_link}[{i}] = 2 endif;'
+            )
+            cp_constraints.append(new_constraint)
+
+        return cp_declarations, cp_constraints
+
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
@@ -319,9 +369,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=5)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(0, 0)
             sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             (['var -2..255: xor_0_0_temp_0_0_value;',
@@ -419,9 +469,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(2, 31)
             sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_list)
             (['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);'],
@@ -983,9 +1033,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: speck = SpeckBlockCipher(number_of_rounds=22)
-            sage: minizinc = MinizincModel(speck)
+            sage: minizinc = MznModel(speck)
             sage: xor_component = speck.get_component_from_id("xor_0_2")
             sage: _, xor_minizinc_constraints = xor_component.minizinc_constraints(minizinc)
             sage: xor_minizinc_constraints[0]
@@ -1047,7 +1097,11 @@ class XOR(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for XOR operation in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing XOR for SAT CIPHER model
+
+        This method translates in CNF the constraint ``z = Xor(x, y)``. In prefixed notation, it becomes:
+        ``And(Or(z, Not(x), y), Or(z, x, Not(y)), Or(z, Not(x), Not(y)), Or(z, x, y))``.
+        This method supports XOR operation using more than two operands.
 
         .. SEEALSO::
 
@@ -1065,9 +1119,12 @@ class XOR(Component):
             sage: xor_component.sat_constraints()
             (['xor_0_2_0',
               'xor_0_2_1',
-              'xor_0_2_2',
               ...
-              'xor_0_2_15 -modadd_0_1_15 key_63',
+              'xor_0_2_14',
+              'xor_0_2_15'],
+             ['-xor_0_2_0 modadd_0_1_0 key_48',
+              'xor_0_2_0 -modadd_0_1_0 key_48',
+              ...
               'xor_0_2_15 modadd_0_1_15 -key_63',
               '-xor_0_2_15 -modadd_0_1_15 -key_63'])
         """
@@ -1083,12 +1140,12 @@ class XOR(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for XOR in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing XOR for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
 
         INPUT:
 
@@ -1102,9 +1159,12 @@ class XOR(Component):
             sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['xor_0_2_0_0',
               'xor_0_2_1_0',
-              'xor_0_2_2_0',
               ...
-              'modadd_0_1_15_1 xor_0_2_15_0 xor_0_2_15_1 -key_63_1',
+              'xor_0_2_14_1',
+              'xor_0_2_15_1'],
+             ['xor_0_2_0_0 -modadd_0_1_0_0',
+              'xor_0_2_0_0 -key_48_0',
+              ...
               'key_63_1 xor_0_2_15_0 xor_0_2_15_1 -modadd_0_1_15_1',
               'xor_0_2_15_0 -modadd_0_1_15_1 -key_63_1 -xor_0_2_15_1'])
         """
@@ -1121,15 +1181,44 @@ class XOR(Component):
         return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses representing XOR for SAT XOR DIFFERENTIAL model
+
+        .. SEEALSO::
+
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: xor_component = speck.component_from(0, 2)
+            sage: xor_component.sat_xor_differential_propagation_constraints()
+            (['xor_0_2_0',
+              'xor_0_2_1',
+              ...
+              'xor_0_2_14',
+              'xor_0_2_15'],
+             ['-xor_0_2_0 modadd_0_1_0 key_48',
+              'xor_0_2_0 -modadd_0_1_0 key_48',
+              ...
+              'xor_0_2_15 modadd_0_1_15 -key_63',
+              '-xor_0_2_15 -modadd_0_1_15 -key_63'])
+        """
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for XOR operation in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing XOR for SAT XOR LINEAR model
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            :ref:`sat-standard` for the format, [LWR2016]_ for the algorithm.
 
         INPUT:
 
@@ -1143,9 +1232,12 @@ class XOR(Component):
             sage: xor_component.sat_xor_linear_mask_propagation_constraints()
             (['xor_0_2_0_i',
               'xor_0_2_1_i',
-              'xor_0_2_2_i',
               ...
-              'xor_0_2_15_i -xor_0_2_15_o',
+              'xor_0_2_14_o',
+              'xor_0_2_15_o'],
+             ['xor_0_2_0_i -xor_0_2_0_o',
+              'xor_0_2_16_i -xor_0_2_0_i',
+              ...
               'xor_0_2_31_i -xor_0_2_15_i',
               'xor_0_2_15_o -xor_0_2_31_i'])
         """
@@ -1162,7 +1254,11 @@ class XOR(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing XOR operation for SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing XOR for SMT CIPHER model
+
+        Since the XOR operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
+        builtin operation, e.g. ``z = XOR(x, y)`` becomes ``(assert (= z (xor x y)))``.
+        This method support XOR operation using more than two inputs.
 
         INPUT:
 
@@ -1196,11 +1292,43 @@ class XOR(Component):
         return output_bit_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a variable list and SMT-LIB list asserts representing XOR for SMT XOR DIFFERENTIAL model
+
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: xor_component = speck.component_from(0, 2)
+            sage: xor_component.smt_xor_differential_propagation_constraints()
+            (['xor_0_2_0',
+              'xor_0_2_1',
+              ...
+              'xor_0_2_14',
+              'xor_0_2_15'],
+             ['(assert (= xor_0_2_0 (xor modadd_0_1_0 key_48)))',
+              '(assert (= xor_0_2_1 (xor modadd_0_1_1 key_49)))',
+              ...
+              '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))',
+              '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'])
+        """
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for XOR operation in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing XOR for SMT XOR LINEAR model
+
+        .. SEEALSO::
+
+            [LWR2016]_ for the algorithm.
 
         INPUT:
 
@@ -1246,9 +1374,9 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(0, 31)
             sage: xor_component.cp_transform_xor_components_for_first_step(cp)
             (['array[0..3] of var 0..1: xor_0_31;'], [])
