@@ -172,12 +172,11 @@ WORKDIR /opt
 ENV PATH="/opt/glucose-syrup-4.1/simp:/opt/glucose-syrup-4.1/parallel:${PATH}"
 
 # Installing MathSat
-RUN wget https://mathsat.fbk.eu/download.php?file=mathsat-5.6.9-linux-x86_64.tar.gz \
-    && mv download.php?file=mathsat-5.6.9-linux-x86_64.tar.gz mathsat-5.6.9-linux-x86_64.tar.gz \
-    && tar -xf mathsat-5.6.9-linux-x86_64.tar.gz \
-    && rm mathsat-5.6.9-linux-x86_64.tar.gz
+RUN wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
+    && tar -xf mathsat-5.6.11-linux-x86_64.tar.gz \
+    && rm mathsat-5.6.11-linux-x86_64.tar.gz
 
-ENV PATH="/opt/mathsat-5.6.9-linux-x86_64/bin:${PATH}"
+ENV PATH="/opt/mathsat-5.6.11-linux-x86_64/bin:${PATH}"
 
 # Installing Minisat
 RUN wget https://github.com/stp/minisat/archive/refs/tags/releases/2.2.1.zip \
