@@ -111,6 +111,7 @@ class SkinnyBlockCipher(Cipher):
             cipher_output_bit_size=block_bit_size,
         )
 
+        self.block_bit_size = block_bit_size
         self.cell_size = block_bit_size // 16
         self.number_of_key_arrays = key_bit_size // block_bit_size
 
@@ -133,9 +134,10 @@ class SkinnyBlockCipher(Cipher):
             inputs_id, inputs_pos = get_inputs_parameter(state)
             self.add_round_output_component(inputs_id, inputs_pos, block_bit_size)
             key = self.key_schedule(key)
-            inputs_id, inputs_pos = get_inputs_parameter(key)
-            self.add_round_key_output_component(inputs_id, inputs_pos, key_bit_size)
-            self.add_round()
+            for key_arrays_number in range(self.number_of_key_arrays):
+                inputs_id, inputs_pos = get_inputs_parameter(key[key_arrays_number])
+                self.add_round_key_output_component(inputs_id, inputs_pos, key_bit_size)
+                self.add_round()
         state = self.round_function(state, key, number_of_rounds - 1, rc2)
         inputs_id, inputs_pos = get_inputs_parameter(state)
         self.add_cipher_output_component(inputs_id, inputs_pos, block_bit_size)
@@ -150,11 +152,15 @@ class SkinnyBlockCipher(Cipher):
         return state
 
     def key_initialization(self):
-        key = []
-        for cell_number in range(NUMBER_OF_CELLS):
-            input_bit_positions = [i + cell_number * self.cell_size for i in range(self.cell_size)]
-            component_state = ComponentState([INPUT_KEY], [input_bit_positions])
-            key.append(component_state)
+        key = [[] for _ in range(self.number_of_key_arrays)]
+        for key_arrays_number in range(self.number_of_key_arrays):
+            for cell_number in range(NUMBER_OF_CELLS):
+                input_bit_positions = [
+                    i + cell_number * self.cell_size + key_arrays_number * self.block_bit_size
+                    for i in range(self.cell_size)
+                ]
+                component_state = ComponentState([INPUT_KEY], [input_bit_positions])
+                key[key_arrays_number].append(component_state)
 
         return key
 
@@ -186,10 +192,11 @@ class SkinnyBlockCipher(Cipher):
         state[8] = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
 
         # AddRoundTweakey
-        for cell_number in range(2 * NUMBER_OF_ROWS):
-            inputs_id, inputs_pos = get_inputs_parameter([state[cell_number], key[cell_number]])
-            self.add_XOR_component(inputs_id, inputs_pos, self.cell_size)
-            state[cell_number] = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
+        for key_arrays_number in range(self.number_of_key_arrays):
+            for cell_number in range(2 * NUMBER_OF_ROWS):
+                inputs_id, inputs_pos = get_inputs_parameter([state[cell_number], key[key_arrays_number][cell_number]])
+                self.add_XOR_component(inputs_id, inputs_pos, self.cell_size)
+                state[cell_number] = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
 
         # ShiftRows
         state[4], state[5], state[6], state[7] = state[7], state[4], state[5], state[6]
@@ -219,15 +226,15 @@ class SkinnyBlockCipher(Cipher):
         for i in range(self.number_of_key_arrays):
             # fmt: off
             (
-                key[0], key[1], key[2], key[3],
-                key[4], key[5], key[6], key[7],
-                key[8], key[9], key[10], key[11],
-                key[12], key[13], key[14], key[15],
+                key[i][0], key[i][1], key[i][2], key[i][3],
+                key[i][4], key[i][5], key[i][6], key[i][7],
+                key[i][8], key[i][9], key[i][10], key[i][11],
+                key[i][12], key[i][13], key[i][14], key[i][15],
             ) = (
-                key[9], key[15], key[8], key[13],
-                key[10], key[14], key[12], key[11],
-                key[0], key[1], key[2], key[3],
-                key[4], key[5], key[6], key[7],
+                key[i][9], key[i][15], key[i][8], key[i][13],
+                key[i][10], key[i][14], key[i][12], key[i][11],
+                key[i][0], key[i][1], key[i][2], key[i][3],
+                key[i][4], key[i][5], key[i][6], key[i][7],
             )
             # fmt: on
 
