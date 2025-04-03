@@ -76,6 +76,28 @@ S_BOX_8_BITS = [
 NUMBER_OF_ROWS = 4
 NUMBER_OF_COLUMNS = 4
 NUMBER_OF_CELLS = NUMBER_OF_ROWS * NUMBER_OF_COLUMNS
+LFSR_TK2_4BITS = [[0, 0, 0, 1], [1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0]]
+LFSR_TK3_4BITS = [[1, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [1, 0, 0, 0]]
+LFSR_TK2_8BITS = [
+    [0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0, 0, 0, 1],
+    [0, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 0],
+]
+LFSR_TK3_8BITS = [
+    [0, 1, 0, 0, 0, 0, 0, 0],
+    [1, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0],
+]
 # fmt: on
 
 
@@ -118,8 +140,12 @@ class SkinnyBlockCipher(Cipher):
         # choose the S-box
         if self.cell_size == 4:
             self.sbox = S_BOX_4_BITS
+            self.lfsr_tk2 = LFSR_TK2_4BITS
+            self.lfsr_tk3 = LFSR_TK3_4BITS
         elif self.cell_size == 8:
             self.sbox = S_BOX_8_BITS
+            self.lfsr_tk2 = LFSR_TK2_8BITS
+            self.lfsr_tk3 = LFSR_TK3_8BITS
 
         # state and key initialization
         state = self.state_initialization()
@@ -134,10 +160,9 @@ class SkinnyBlockCipher(Cipher):
             inputs_id, inputs_pos = get_inputs_parameter(state)
             self.add_round_output_component(inputs_id, inputs_pos, block_bit_size)
             key = self.key_schedule(key)
-            for key_arrays_number in range(self.number_of_key_arrays):
-                inputs_id, inputs_pos = get_inputs_parameter(key[key_arrays_number])
-                self.add_round_key_output_component(inputs_id, inputs_pos, key_bit_size)
-                self.add_round()
+            inputs_id, inputs_pos = get_inputs_parameter([key_state for key_array in key for key_state in key_array])
+            self.add_round_key_output_component(inputs_id, inputs_pos, key_bit_size)
+            self.add_round()
         state = self.round_function(state, key, number_of_rounds - 1, rc2)
         inputs_id, inputs_pos = get_inputs_parameter(state)
         self.add_cipher_output_component(inputs_id, inputs_pos, block_bit_size)
@@ -238,30 +263,16 @@ class SkinnyBlockCipher(Cipher):
             )
             # fmt: on
 
-        # if self.number_of_key_arrays > 1:
-        #     for i in range():
-        #         self.add_rotate_component(key[i + KEY_LEN].id, key[i + KEY_LEN].input_bit_positions, CELL_SIZE, -1)
-        #         temp_rotate = ComponentState([self.get_current_component_id()], [list(range(CELL_SIZE))])
-        #         self.add_XOR_component(
-        #             temp_rotate.id + const_0.id + key[i + KEY_LEN].id,
-        #             temp_rotate.input_bit_positions
-        #             + const_0.input_bit_positions
-        #             + [[key[i + KEY_LEN].input_bit_positions[0][2]]],
-        #             CELL_SIZE,
-        #         )
-        #         key[i + KEY_LEN] = ComponentState([self.get_current_component_id()], [list(range(CELL_SIZE))])
+        if self.number_of_key_arrays > 1:
+            for cell_number in range(2 * NUMBER_OF_COLUMNS):
+                input_id, input_pos = get_inputs_parameter([key[1][cell_number]])
+                self.add_linear_layer_component(input_id, input_pos, self.cell_size, self.lfsr_tk2)
+                key[1][cell_number] = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
 
-        # if self.number_of_key_arrays > 2:
-        #     for i in range(2 * ROW):
-        #         self.add_rotate_component(key[i + 2 * KEY_LEN].id, key[i + 2 * KEY_LEN].input_bit_positions, CELL_SIZE, 1)
-        #         temp_rotate = ComponentState([self.get_current_component_id()], [list(range(CELL_SIZE))])
-        #         self.add_XOR_component(
-        #             temp_rotate.id + key[i + 2 * KEY_LEN].id + const_0.id,
-        #             temp_rotate.input_bit_positions
-        #             + [[key[i + 2 * KEY_LEN].input_bit_positions[0][1]]]
-        #             + const_0.input_bit_positions,
-        #             CELL_SIZE,
-        #         )
-        #         key[i + 2 * KEY_LEN] = ComponentState([self.get_current_component_id()], [list(range(CELL_SIZE))])
+        if self.number_of_key_arrays > 2:
+            for cell_number in range(2 * NUMBER_OF_COLUMNS):
+                input_id, input_pos = get_inputs_parameter([key[2][cell_number]])
+                self.add_linear_layer_component(input_id, input_pos, self.cell_size, self.lfsr_tk3)
+                key[2][cell_number] = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
 
         return key
