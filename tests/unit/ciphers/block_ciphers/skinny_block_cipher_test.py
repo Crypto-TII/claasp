@@ -1,3 +1,7 @@
+"""SKINNY tests
+
+Test vectors from https://eprint.iacr.org/2016/660.pdf
+"""
 import pytest
 
 from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
