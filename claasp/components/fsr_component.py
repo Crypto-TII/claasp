@@ -115,7 +115,17 @@ class FSR(Component):
             sage: algebraic = AlgebraicModel(a51)
             sage: L = fsr_component.algebraic_polynomials(algebraic)
             sage: L[0]
-            linear_layer_0_6_y0 + linear_layer_0_6_x23 + linear_layer_0_6_x19 + linear_layer_0_6_x18 + linear_layer_0_6_x16 + linear_layer_0_6_x15 + linear_layer_0_6_x14 + linear_layer_0_6_x12 + linear_layer_0_6_x9 + linear_layer_0_6_x8 + linear_layer_0_6_x6 + linear_layer_0_6_x3
+            fsr_1_0_x1*fsr_1_0_x30*fsr_1_0_x53 + fsr_1_0_x1*fsr_1_0_x10*fsr_1_0_x53 + fsr_1_0_x1*fsr_1_0_x10*fsr_1_0_x30 + fsr_1_0_x0*fsr_1_0_x30*fsr_1_0_x53 + fsr_1_0_x0*fsr_1_0_x10*fsr_1_0_x53 + fsr_1_0_x0*fsr_1_0_x10*fsr_1_0_x30 + fsr_1_0_x1*fsr_1_0_x10 + fsr_1_0_x0*fsr_1_0_x10 + fsr_1_0_y0 + fsr_1_0_x1
+
+            sage: from claasp.ciphers.stream_ciphers.bivium_stream_cipher import BiviumStreamCipher
+            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+            sage: bivium = BiviumStreamCipher()
+            sage: fsr_component = bivium.get_component_from_id("fsr_0_1")
+            sage: algebraic = AlgebraicModel(bivium)
+            sage: B = fsr_component.algebraic_polynomials(algebraic)
+            sage: B[92]
+            fsr_0_1_x94*fsr_0_1_x95 + fsr_0_1_y92 + fsr_0_1_x108 + fsr_0_1_x93 + fsr_0_1_x24
+
         """
 
         bits_inside_word = self.description[1]
@@ -137,12 +147,14 @@ class FSR(Component):
         registers_start = [0 for _ in range(number_of_registers)]
         registers_update_bit = [0 for _ in range(number_of_registers)]
         clock_polynomials = [None for _ in range(number_of_registers)]
+
         if len(self.description) > 2:
             clocks = self.description[2]
         else:
             clocks = 1
 
         end = 0
+        breakpoint()
         for i in range(number_of_registers):
             registers_polynomial[i] = _get_polynomial_from_binary_polynomial_index_list(self.description[0][i][1], x_polynomial_ring)
             registers_start[i] = end
@@ -153,11 +165,17 @@ class FSR(Component):
 
         for _ in range(clocks):
             for i in range(number_of_registers):
-                output_bit = registers_polynomial[i](*x)
-                clock_bit = clock_polynomials[i](*x)
-                for k in range(registers_start[i], registers_update_bit[i]):
-                    x[k] = clock_bit*x[k+1] + (clock_bit+1)*x[k]
-                x[registers_update_bit[i]] = clock_bit*output_bit + (clock_bit+1)*x[registers_update_bit[i]]
+                feedback_bit = registers_polynomial[i](*x)
+                if clock_polynomials[i] is not None:
+                    clock_bit = clock_polynomials[i](*x)
+                    for k in range(registers_start[i], registers_update_bit[i]):
+                        x[k] = clock_bit*x[k+1] + (clock_bit+1)*x[k]
+                    x[registers_update_bit[i]] = clock_bit*feedback_bit + (clock_bit+1)*x[registers_update_bit[i]]
+                else:
+                    for k in range(registers_start[i], registers_update_bit[i]):
+                        x[k] = x[k+1]
+                    x[registers_update_bit[i]] = feedback_bit
+
 
         output_polynomials = y+vector(x)
         return output_polynomials
