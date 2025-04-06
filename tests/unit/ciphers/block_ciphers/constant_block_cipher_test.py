@@ -1,4 +1,4 @@
-from claasp.ciphers.block_ciphers.constant_block_cipher import ConstantBlockCipher
+from claasp.ciphers.toys.constant_block_cipher import ConstantBlockCipher
 
 
 def test_constant_block_cipher():

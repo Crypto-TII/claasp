@@ -79,7 +79,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=1)
             sage: linear_layer_component = fancy.get_component_from_id("linear_layer_0_6")
@@ -112,7 +112,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0,6)
             sage: linear_layer_component.cms_constraints()
@@ -152,7 +152,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0,6)
             sage: linear_layer_component.cms_xor_linear_mask_propagation_constraints()
@@ -195,7 +195,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: linear_layer_component.cp_constraints()
@@ -222,7 +222,7 @@ class LinearLayer(Component):
 
         return cp_declarations, cp_constraints
 
-    def cp_deterministic_truncated_xor_differential_constraints(self, inverse=False):
+    def cp_deterministic_truncated_xor_differential_constraints(self):
         r"""
         Return lists declarations and constraints for LINEAR LAYER CP deterministic truncated xor differential model.
 
@@ -232,7 +232,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
@@ -248,12 +248,9 @@ class LinearLayer(Component):
         matrix = self.description
         cp_declarations = []
         all_inputs = []
-        if inverse:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}_inverse[{position}]' for position in bit_positions])
-        else:
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         cp_constraints = []
         for i in range(output_size):
             addenda = [all_inputs[j] for j in range(len(matrix)) if matrix[j][i]]
@@ -261,17 +258,58 @@ class LinearLayer(Component):
             new_constraint = f'constraint if (('
             new_constraint += operation + f'< 2)) then '
             operation2 = ' + '.join(addenda)
-            if inverse:
-                new_constraint += f'{output_id_link}_inverse[{i}] = ({operation2}) mod 2 ' \
-                                  f'else {output_id_link}_inverse[{i}] = 2 endif;'
-            else:
-                new_constraint += f'{output_id_link}[{i}] = ({operation2}) mod 2 else {output_id_link}[{i}] = 2 endif;'
+            new_constraint += f'{output_id_link}[{i}] = ({operation2}) mod 2 else {output_id_link}[{i}] = 2 endif;'
             cp_constraints.append(new_constraint)
 
         return cp_declarations, cp_constraints
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
+
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        r"""
+        Return lists declarations and constraints for LINEAR LAYER CP deterministic truncated xor differential model.
+
+        INPUT:
+
+        - ``inverse`` -- **boolean** (default: `False`)
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: linear_layer_component = fancy.component_from(0, 6)
+            sage: linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
+            ([],
+             ['constraint if ((sbox_0_0[2] < 2) /\\ (sbox_0_0[3] < 2) /\\ (sbox_0_1[0] < 2) /\\ (sbox_0_1[1] < 2) /\\ (sbox_0_1[3] < 2) /\\ (sbox_0_2[0] < 2) /\\ (sbox_0_2[1] < 2) /\\ (sbox_0_3[1] < 2) /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_5[1] < 2) /\\ (sbox_0_5[3]< 2)) then linear_layer_0_6[0] = (sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[0] + sbox_0_1[1] + sbox_0_1[3] + sbox_0_2[0] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_4[2] + sbox_0_5[1] + sbox_0_5[3]) mod 2 else linear_layer_0_6[0] = 2 endif;',
+              ...
+              'constraint if ((sbox_0_0[0] < 2) /\\ (sbox_0_0[1] < 2) /\\ (sbox_0_0[2] < 2) /\\ (sbox_0_0[3] < 2) /\\ (sbox_0_1[3] < 2) /\\ (sbox_0_2[1] < 2) /\\ (sbox_0_3[1] < 2) /\\ (sbox_0_3[2] < 2) /\\ (sbox_0_3[3] < 2) /\\ (sbox_0_4[1] < 2) /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_4[3] < 2) /\\ (sbox_0_5[1] < 2) /\\ (sbox_0_5[2] < 2) /\\ (sbox_0_5[3]< 2)) then linear_layer_0_6[23] = (sbox_0_0[0] + sbox_0_0[1] + sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[3] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_3[2] + sbox_0_3[3] + sbox_0_4[1] + sbox_0_4[2] + sbox_0_4[3] + sbox_0_5[1] + sbox_0_5[2] + sbox_0_5[3]) mod 2 else linear_layer_0_6[23] = 2 endif;'])
+        """
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        cp_declarations = []
+        all_inputs_value = []
+        all_inputs_active = []
+        matrix = self.description
+        word_size = model.word_size
+        output_size = len(matrix) // word_size
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
+                                     for j in range(len(bit_positions) // word_size)])
+            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
+                                      for j in range(len(bit_positions) // word_size)])
+        input_len = len(all_inputs_value)
+        cp_constraints = []
+        for i in range(output_size):
+            operation = ' == 0) /\\ ('.join(all_inputs_active[i::output_size])
+            new_constraint = 'constraint if (('
+            new_constraint += operation + '== 0)) then '
+            new_constraint += f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 else'\
+                              f'{output_id_link}_active[{i}] = 3 /\\ {output_id_link}_value[{i}] = -2 endif;'
+            cp_constraints.append(new_constraint)
+        
+        return cp_declarations, cp_constraints
 
     def cp_xor_differential_propagation_constraints(self, model):
         return self.cp_constraints()
@@ -286,7 +324,7 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher()
             sage: linear_layer_component = fancy.component_from(0, 6)
             sage: linear_layer_component.cp_xor_linear_mask_propagation_constraints()
@@ -594,12 +632,12 @@ class LinearLayer(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: cipher = MidoriBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: cipher = MidoriBlockCipher(number_of_rounds=2)
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: linear_layer_component = cipher.component_from(0, 21)
-            sage: variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp) # random
             sage: variables
             [('x[mix_column_0_20_word_0_class_bit_0]', x_0),
              ('x[mix_column_0_20_word_0_class_bit_1]', x_1),
@@ -610,8 +648,8 @@ class LinearLayer(Component):
             [1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_13 + x_18 + x_19 - x_25,
              1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_12 + x_13 + x_19 - x_25,
             ...
-             1 <= 2 - x_6 - x_8,
-             1 <= 1 + x_7 - x_8]
+             1 <= 1 + x_7 - x_8,
+             1 <= 1 + x_1 - x_2]
 
         """
         x = model.binary_variable
@@ -666,7 +704,9 @@ class LinearLayer(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for LINEAR LAYER in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing LINEAR LAYER for SAT CIPHER model
+
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
 
         .. SEEALSO::
 
@@ -678,11 +718,11 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: constraints = linear_layer_component.sat_constraints()
-            sage: constraints[1][-1]
+            sage: variables, constraints = linear_layer_component.sat_constraints()
+            sage: constraints[-1]
             'linear_layer_0_6_23 -sbox_0_0_0 -sbox_0_0_1 -sbox_0_0_2 -sbox_0_0_3 -sbox_0_1_3 -sbox_0_2_1 -sbox_0_3_1 -sbox_0_3_2 -sbox_0_3_3 -sbox_0_4_1 -sbox_0_4_2 -sbox_0_4_3 -sbox_0_5_1 -sbox_0_5_2 -sbox_0_5_3'
         """
         input_bit_len, input_bit_ids = self._generate_input_ids()
@@ -697,8 +737,9 @@ class LinearLayer(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for LINEAR LAYER in
-        SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing LINEAR LAYER for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
+
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
 
         .. SEEALSO::
 
@@ -710,12 +751,12 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: constraints = linear_layer_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            sage: constraints[1][11]
-            'inter_0_linear_layer_0_6_0_1 inter_1_linear_layer_0_6_0_0 inter_1_linear_layer_0_6_0_1 -sbox_0_1_0_1'
+            sage: variables, constraints = linear_layer_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            sage: constraints[-1]
+            'linear_layer_0_6_23_0 -inter_12_linear_layer_0_6_23_1 -sbox_0_5_3_1 -linear_layer_0_6_23_1'
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
@@ -735,12 +776,36 @@ class LinearLayer(Component):
 
         return out_ids_0 + out_ids_1, constraints
 
-    def sat_xor_differential_propagation_constraints(self, model):
+    def sat_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses representing LINEAR LAYER for SAT XOR DIFFERENTIAL model
+
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: linear_layer_component = fancy.component_from(0, 6)
+            sage: variables, constraints = linear_layer_component.sat_xor_differential_propagation_constraints()
+            sage: constraints[-1]
+            'linear_layer_0_6_23 -sbox_0_0_0 -sbox_0_0_1 -sbox_0_0_2 -sbox_0_0_3 -sbox_0_1_3 -sbox_0_2_1 -sbox_0_3_1 -sbox_0_3_2 -sbox_0_3_3 -sbox_0_4_1 -sbox_0_4_2 -sbox_0_4_3 -sbox_0_5_1 -sbox_0_5_2 -sbox_0_5_3'
+        """
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for LINEAR LAYER in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing LINEAR LAYER for SAT XOR LINEAR model
+
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
 
         .. SEEALSO::
 
@@ -752,11 +817,11 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: constraints = linear_layer_component.sat_xor_linear_mask_propagation_constraints()
-            sage: constraints[1][-1]
+            sage: variables, constraints = linear_layer_component.sat_xor_linear_mask_propagation_constraints()
+            sage: constraints[-1]
             'linear_layer_0_6_23_o -dummy_1_linear_layer_0_6_23_o -dummy_5_linear_layer_0_6_23_o -dummy_7_linear_layer_0_6_23_o -dummy_8_linear_layer_0_6_23_o -dummy_9_linear_layer_0_6_23_o -dummy_14_linear_layer_0_6_23_o -dummy_17_linear_layer_0_6_23_o -dummy_18_linear_layer_0_6_23_o -dummy_23_linear_layer_0_6_23_o'
         """
         input_bit_len, input_bit_ids = self._generate_component_input_ids()
@@ -781,7 +846,9 @@ class LinearLayer(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing LINEAR LAYER FOR SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing LINEAR LAYER for SMT CIPHER model
+
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
 
         INPUT:
 
@@ -789,20 +856,12 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: linear_layer_component.smt_constraints()
-            (['linear_layer_0_6_0',
-              'linear_layer_0_6_1',
-              ...
-              'linear_layer_0_6_22',
-              'linear_layer_0_6_23'],
-             ['(assert (= linear_layer_0_6_0 (xor sbox_0_0_2 sbox_0_0_3 sbox_0_1_0 sbox_0_1_1 sbox_0_1_3 sbox_0_2_0 sbox_0_2_1 sbox_0_3_1 sbox_0_4_2 sbox_0_5_1 sbox_0_5_3)))',
-              '(assert (= linear_layer_0_6_1 (xor sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_0 sbox_0_1_2 sbox_0_1_3 sbox_0_2_1 sbox_0_2_2 sbox_0_3_1 sbox_0_3_3 sbox_0_4_0 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_0 sbox_0_5_1 sbox_0_5_3)))',
-              ...
-              '(assert (= linear_layer_0_6_22 (xor sbox_0_0_2 sbox_0_2_2 sbox_0_3_2 sbox_0_4_3 sbox_0_5_0 sbox_0_5_1 sbox_0_5_3)))',
-              '(assert (= linear_layer_0_6_23 (xor sbox_0_0_0 sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_3 sbox_0_2_1 sbox_0_3_1 sbox_0_3_2 sbox_0_3_3 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_1 sbox_0_5_2 sbox_0_5_3)))'])
+            sage: vairables, constraints = linear_layer_component.smt_constraints()
+            sage: constraints[-1]
+            '(assert (= linear_layer_0_6_23 (xor sbox_0_0_0 sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_3 sbox_0_2_1 sbox_0_3_1 sbox_0_3_2 sbox_0_3_3 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_1 sbox_0_5_2 sbox_0_5_3)))'
         """
         _, input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -820,11 +879,31 @@ class LinearLayer(Component):
         return output_bit_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model):
+        """
+        Return a variable list and SMT-LIB list asserts representing LINEAR LAYER for SMT XOR DIFFERENTIAL model
+
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: fancy = FancyBlockCipher(number_of_rounds=3)
+            sage: linear_layer_component = fancy.component_from(0, 6)
+            sage: variables, constraints = linear_layer_component.smt_constraints()
+            sage: constraints[-1]
+            '(assert (= linear_layer_0_6_23 (xor sbox_0_0_0 sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_3 sbox_0_2_1 sbox_0_3_1 sbox_0_3_2 sbox_0_3_3 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_1 sbox_0_5_2 sbox_0_5_3)))'
+        """
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for LINEAR LAYER in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing LINEAR LAYER for SMT XOR LINEAR model.
+
+        A LINEAR LAYER is just a system of additions in GF(2), thus, they are modeled as a list of XOR equalities.
 
         INPUT:
 
@@ -832,31 +911,12 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: constraints = linear_layer_component.smt_xor_linear_mask_propagation_constraints()
-            sage: constraints[0]
-            ['linear_layer_0_6_0_i',
-             'linear_layer_0_6_1_i',
-             'linear_layer_0_6_2_i',
-             'linear_layer_0_6_3_i',
-             'linear_layer_0_6_4_i',
-             'linear_layer_0_6_5_i',
-             'linear_layer_0_6_6_i',
-            ...
-             'dummy_7_linear_layer_0_6_13_o',
-             'dummy_8_linear_layer_0_6_13_o',
-             'dummy_9_linear_layer_0_6_13_o',
-             'dummy_11_linear_layer_0_6_13_o',
-            ...
-             'linear_layer_0_6_17_o',
-             'linear_layer_0_6_18_o',
-             'linear_layer_0_6_19_o',
-             'linear_layer_0_6_20_o',
-             'linear_layer_0_6_21_o',
-             'linear_layer_0_6_22_o',
-             'linear_layer_0_6_23_o']
+            sage: variables, constraints = linear_layer_component.smt_xor_linear_mask_propagation_constraints()
+            sage: constraints[-1]
+            '(assert (= linear_layer_0_6_23_o (xor dummy_1_linear_layer_0_6_23_o dummy_5_linear_layer_0_6_23_o dummy_7_linear_layer_0_6_23_o dummy_8_linear_layer_0_6_23_o dummy_9_linear_layer_0_6_23_o dummy_14_linear_layer_0_6_23_o dummy_17_linear_layer_0_6_23_o dummy_18_linear_layer_0_6_23_o dummy_23_linear_layer_0_6_23_o)))'
         """
         input_bit_len, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX

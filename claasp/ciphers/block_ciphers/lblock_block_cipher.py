@@ -44,9 +44,9 @@ class LBlockBlockCipher(Cipher):
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
-        sage: lblock = LBlockBlockCipher(number_of_rounds=3)
+        sage: lblock = LBlockBlockCipher(number_of_rounds=32)
         sage: lblock.evaluate([0,0])
-        641582411206367315
+        13985955387709807565
     """
 
     def __init__(self, number_of_rounds=32):

@@ -195,10 +195,10 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
              x_1 == 0,
              x_2 == 1,
              x_3 == 1,
-             x_6 <= 6 - 3*x_4 - 3*x_5,
+             x_5 <= 6 - 6*x_4,
             ...
-            -2 + 3*x_13 - 3*x_14 <= x_15,
-            x_4 + x_7 + x_10 + x_13 == 1]
+             -2 <= x_11,
+             x_4 + x_6 + x_8 + x_10 == 1]
 
 
         """
@@ -224,15 +224,15 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(fancy)
             sage: milp.init_model_in_sage_milp_class()
             sage: component = fancy.component_from(0, 6)
             sage: input_ids, output_ids = component._get_input_output_variables()
-            sage: _, input_id_tuples, output_id_tuples = component._get_input_output_variables_tuples(milp)
-            sage: constraints = milp.link_binary_tuples_to_integer_variables(input_id_tuples + output_id_tuples, input_ids + output_ids)
+            sage: input_ids_tuples, output_ids_tuples = component._get_input_output_variables_tuples()
+            sage: constraints = milp.link_binary_tuples_to_integer_variables(input_ids_tuples + output_ids_tuples, input_ids + output_ids)
             sage: constraints
             [x_96 == 2*x_0 + x_1,
              x_97 == 2*x_2 + x_3,

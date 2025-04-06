@@ -77,7 +77,7 @@ RUN sage -pip install bitstring==4.0.1 \
   pygments==2.12.0 \
   sage-package==0.0.7 \
   setuptools==59.6.0 \
-  sphinx==4.5.0 \
+  sphinx==5.0.0 \
   sphinxcontrib-bibtex==2.5.0 \
   tensorflow==2.13.0 \
   pytest==7.2.1 \
@@ -85,7 +85,9 @@ RUN sage -pip install bitstring==4.0.1 \
   pytest-xdist==3.2.0 \
   pytest-benchmark==4.0.0 \
   networkx==2.8.8 \
-  numpy==1.24.3
+  numpy==1.24.3 \
+  joblib==1.4.2 \
+  gurobipy==11.0
 
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
@@ -232,7 +234,7 @@ RUN wget https://github.com/google/or-tools/releases/download/v9.2/or-tools_amd6
     && tar -xf or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz \
     && rm or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz
 
-RUN mkdir -p ~/.minizinc/solvers/s
+RUN mkdir -p /opt/minizinc/solvers/s
 
 RUN echo '\
 { \n\
@@ -256,7 +258,7 @@ RUN echo '\
 "supportsMzn": false, \n\
 "supportsNL": false, \n\
 "version": "8.2" } \
-' > ~/.minizinc/solvers/Xor.msc
+' > /opt/minizinc/solvers/Xor.msc
 
 # Installing Choco
 
@@ -291,7 +293,9 @@ RUN echo '\
   "needsStdlibDir": false, \n\
   "isGUIApplication": false \n\
 } \
-' > ~/.minizinc/solvers/choco.msc
+' > /opt/minizinc/solvers/choco.msc
+
+ENV MZN_SOLVER_PATH="/opt/minizinc/solvers"
 
 ENV LD_LIBRARY_PATH="/opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib:${LD_LIBRARY_PATH}"
 

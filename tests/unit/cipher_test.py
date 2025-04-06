@@ -1,28 +1,22 @@
 import os
 import sys
-import pytest
-import inspect
 import os.path
 import numpy as np
 from io import StringIO
 from decimal import Decimal
 
-import claasp
 from claasp.cipher import Cipher
 from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
-from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
-from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
-from claasp.ciphers.permutations.xoodoo_permutation import XoodooPermutation
-from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
+from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher
 from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
@@ -148,7 +142,7 @@ def test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis():
 
 def test_get_model():
     speck = SpeckBlockCipher(number_of_rounds=1)
-    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "CpXorDifferentialModel"
+    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
     assert speck.get_model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
     assert speck.get_model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
     assert speck.get_model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"

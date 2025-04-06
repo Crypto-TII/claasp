@@ -47,6 +47,10 @@ TEST_ID_TABLE = {
 
 }
 
+nist_executable_root_directory = f"/usr/local/bin/sts-2.1.2/"
+nist_temp_directory = f"nist_sts_temp_dir"
+nist_local_experiment_folder = f"{nist_temp_directory}/experiments/"
+
 
 class NISTStatisticalTests:
 
@@ -64,7 +68,7 @@ class NISTStatisticalTests:
                                round_start=0,
                                round_end=0,
                                nist_report_folder_prefix="nist_statistics_report",
-                               statistical_test_option_list='1' + 14 * '0'
+                               statistical_test_option_list=15 * '1'
                                ):
         """
 
@@ -86,10 +90,10 @@ class NISTStatisticalTests:
 
          EXAMPLE:
 
-             from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+             from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
              from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
              speck = SpeckBlockCipher(number_of_rounds=5)
-             nist_tests = StatisticalTests(speck)
+             nist_tests = NISTStatisticalTests(speck)
              nist_avalanche_test_results = nist_tests.nist_statistical_tests('avalanche')
 
          """
@@ -145,7 +149,7 @@ class NISTStatisticalTests:
             if bits_in_one_sequence == 'default':
                 bits_in_one_sequence = 1048576
             if number_of_sequences == 'default':
-                number_of_sequences = 384
+                number_of_sequences = 128
 
             number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence / self.cipher.output_bit_size)
             self.number_of_sequences = number_of_sequences
@@ -164,7 +168,7 @@ class NISTStatisticalTests:
             if bits_in_one_sequence == 'default':
                 bits_in_one_sequence = 1048576
             if number_of_sequences == 'default':
-                number_of_sequences = 384
+                number_of_sequences = 300
 
             number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence / self.cipher.output_bit_size)
             self.number_of_sequences = number_of_sequences
@@ -200,7 +204,7 @@ class NISTStatisticalTests:
             if bits_in_one_sequence == 'default':
                 bits_in_one_sequence = 1056896
             if number_of_sequences == 'default':
-                number_of_sequences = 1
+                number_of_sequences = 128
 
             number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence / self.cipher.output_bit_size)
             self.number_of_sequences = number_of_sequences
@@ -220,7 +224,7 @@ class NISTStatisticalTests:
             if bits_in_one_sequence == 'default':
                 bits_in_one_sequence = 1056896
             if number_of_sequences == 'default':
-                number_of_sequences = 1
+                number_of_sequences = 128
 
             number_of_blocks_in_one_sample = math.ceil(bits_in_one_sequence / self.cipher.output_bit_size)
             self.number_of_sequences = number_of_sequences
@@ -280,12 +284,12 @@ class NISTStatisticalTests:
         EXAMPLES::
 
             sage: import os
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
             sage: if not os.path.exists(f'test_reports/statistical_tests/experiments'):
             ....:     os.makedirs(f'test_reports/statistical_tests/experiments')
-            sage: result = StatisticalTests._run_nist_statistical_tests_tool(
+            sage: result = NISTStatisticalTests._run_nist_statistical_tests_tool(
             ....:     f'claasp/cipher_modules/statistical_tests/input_data_example',
-            ....:     10000, 10, 1)
+            ....:     10000, 10, 1, statistical_test_option_list='1' + 14 * '0')
                  Statistical Testing In Progress.........
                  Statistical Testing Complete!!!!!!!!!!!!
 
@@ -316,24 +320,22 @@ class NISTStatisticalTests:
             "RandomExcursionsVariant"
         ]
 
-        nist_local_experiment_folder = f"/usr/local/bin/sts-2.1.2/experiments/"
+        input_file = os.path.abspath(input_file)
+        os.system(f'cp -r {nist_executable_root_directory} {nist_temp_directory}')
         for directory in ["AlgorithmTesting", "BBS", "CCG", "G-SHA1", "LCG", "MODEXP", "MS", "QCG1", "QCG2", "XOR"]:
             path_prefix = os.path.join(nist_local_experiment_folder, directory)
             for experiment_name in folder_experiments:
                 _mkdir_folder_experiment(path_prefix, experiment_name)
-        os.system(f'chmod -R 777 {nist_local_experiment_folder}')
 
-        input_file = os.path.abspath(input_file)
-        output_code = os.system(f'niststs {input_file} {bit_stream_length} {number_of_bit_streams} {input_file_format} '
+        output_code = os.system(f'{nist_temp_directory}/assess {input_file} {bit_stream_length} {number_of_bit_streams} {input_file_format} '
                                 f'{statistical_test_option_list}')
         if output_code != 256:
             return output_code
-        else:
-            os.system(f'chmod -R 777 {nist_local_experiment_folder}')
-            return True
+
+        return True
 
     @staticmethod
-    def _parse_report(report_filename, statistical_test_option_list='1' + 14 * '0'):
+    def _parse_report(report_filename):
         """
         Parse the nist statistical tests report. It will return the parsed result in a dictionary format.
 
@@ -347,8 +349,8 @@ class NISTStatisticalTests:
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import StatisticalTests
-            sage: dict = StatisticalTests._parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
+            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
+            sage: dict = NISTStatisticalTests._parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
             Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is in progress.
             Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is finished.
         """
@@ -387,7 +389,7 @@ class NISTStatisticalTests:
         try:
             total_passed_line_2 = \
                 [line for line in lines if 'is approximately =' in line and 'for a sample size' in line][0]
-            total_passed = [int(x) for x in total_passed_line_2 if x.isdigit()]
+            total_passed = [int(x) for x in total_passed_line_2.split(' ') if x.isnumeric()]
             if len(total_passed) != 1:
                 total_2 = total_passed[1]
                 passed_2 = total_passed[0]
@@ -482,17 +484,17 @@ class NISTStatisticalTests:
 
         plt.scatter(x, y, color="cadetblue")
         plt.title(
-            f'{report_dict["cipher_name"]}:{report_dict["data_type"]}, Round " {report_dict["round"]}|{report_dict["rounds"]}')
+            f'{report_dict["cipher_name"]}:{report_dict["data_type"]}, Round " {report_dict["round"]+1}|{report_dict["rounds"]}')
         plt.xlabel('Test ID')
         plt.ylabel('Passing Rate')
 
         if show_graph == False:
             if output_dir == '':
-                output_dir = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png'
+                output_dir = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]+1}.png'
                 plt.savefig(output_dir)
             else:
                 plt.savefig(
-                    output_dir + '/' + f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]}.png')
+                    output_dir + '/' + f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]+1}.png')
         else:
             plt.show()
             plt.clf()
@@ -533,7 +535,7 @@ class NISTStatisticalTests:
         plt.plot(x, y, 'o--', color='olive', alpha=0.4)
         if random_round > -1:
             plt.title(
-                f'{report_dict_list[0]["cipher_name"]}: {report_dict_list[0]["data_type"]}, Random at {random_round}|{report_dict_list[0]["rounds"]}')
+                f'{report_dict_list[0]["cipher_name"]}: {report_dict_list[0]["data_type"]}, Random at {random_round+1}|{report_dict_list[0]["rounds"]}')
         else:
             plt.title(f'{report_dict_list[0]["cipher_name"]}: {report_dict_list[0]["data_type"]}')
         plt.xlabel('Round')
@@ -567,9 +569,8 @@ class NISTStatisticalTests:
         except Exception as e:
             print(f'Error: {e.strerror}')
 
-    def _generate_nist_dicts(self,time_date, dataset, round_start, round_end, statistical_test_option_list='1' + 14 * '0'):
+    def _generate_nist_dicts(self,time_date, dataset, round_start, round_end, statistical_test_option_list=15 * '1'):
         # seems that the statistical tools cannot change the default folder 'experiments'
-        nist_local_experiment_folder = f"/usr/local/bin/sts-2.1.2/experiments/"
         dataset_folder = 'dataset'
         dataset_filename = f'nist_input_{self._cipher_primitive}'
         dataset_filename = os.path.join(dataset_folder, dataset_filename)
@@ -604,6 +605,8 @@ class NISTStatisticalTests:
             except OSError:
                 shutil.rmtree(report_folder_round)
                 shutil.move(nist_local_experiment_folder, report_folder_round)
+            shutil.rmtree(nist_temp_directory)
+
 
             self._write_execution_time(f'Compute round {round_number}', sts_execution_time)
 
@@ -612,7 +615,7 @@ class NISTStatisticalTests:
                 sts_report_dict = self._parse_report(
                     os.path.join(report_folder_round, "AlgorithmTesting/finalAnalysisReport.txt"))
                 sts_report_dict['data_type'] = f'{self.cipher.inputs[self.input_index]}_{self.dataset_type.value}'
-                sts_report_dict["cipher_name"] = self.cipher.id
+                sts_report_dict["cipher_name"] = f'{self.cipher.id}'
                 sts_report_dict["round"] = round_number
                 sts_report_dict["rounds"] = self.cipher.number_of_rounds
                 sts_report_dicts.append(sts_report_dict)

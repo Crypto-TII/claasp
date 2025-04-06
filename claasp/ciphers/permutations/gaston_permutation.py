@@ -76,7 +76,7 @@ class GastonPermutation(Cipher):
         sage: gaston = GastonPermutation(number_of_rounds=12)
         sage: plaintext = 0x0
         sage: ciphertext = 0x88B326096BEBC6356CA8FB64BC5CE6CAF1CE3840D819071354D70067438689B5F17FE863F958F32B
-        sage: print(gaston.evaluate([plaintext]))==ciphertext)
+        sage: print(gaston.evaluate([plaintext])==ciphertext)
         True
 
         sage: plaintext=0x1F4AD9906DA6A2544B84D7F83F2BDDFA468A0853578A00E36C05A0506DF7F66E4EFB22112453C964
@@ -199,19 +199,17 @@ class GastonPermutation(Cipher):
         return state
 
     def gaston_chi(self, state):
-        not_comp = []
+        not_comp = [None] * GASTON_NROWS
         for row in range(GASTON_NROWS):
             self.add_NOT_component(state[row].id, state[row].input_bit_positions, WORD_SIZE)
-            n = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-            not_comp.append(n)
+            not_comp[row] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
-        and_comp = []
+        and_comp = [None] * GASTON_NROWS
         for row in range(GASTON_NROWS):
             inputs_id, inputs_pos = get_inputs_parameter(
                 [state[(row + 2) % GASTON_NROWS], not_comp[(row + 1) % GASTON_NROWS]])
             self.add_AND_component(inputs_id, inputs_pos, WORD_SIZE)
-            a = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-            and_comp.append(a)
+            and_comp[row] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         for row in range(GASTON_NROWS):
             inputs_id, inputs_pos = get_inputs_parameter([state[row], and_comp[row]])

@@ -42,7 +42,7 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
             sage: shift_component = fancy.get_component_from_id("shift_1_12")
@@ -208,10 +208,10 @@ class SHIFT(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.shift_component import SHIFT
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
             sage: shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             ([],
@@ -266,10 +266,10 @@ class SHIFT(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.shift_component import SHIFT
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = CpModel(aes)
+            sage: cp = MznModel(aes)
             sage: shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
             sage: shift_component.cp_xor_differential_first_step_constraints(cp)
             (['array[0..3] of var 0..1: shift_0_18;'],
@@ -628,9 +628,9 @@ class SHIFT(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: tea = TeaBlockCipher(number_of_rounds=32)
-            sage: minizinc = MinizincModel(tea)
+            sage: minizinc = MznModel(tea)
             sage: shift_component = tea.get_component_from_id("shift_0_0")
             sage: _, shift_mzn_constraints = shift_component.minizinc_constraints(minizinc)
             sage: shift_mzn_constraints[0]
@@ -663,7 +663,12 @@ class SHIFT(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for SHIFT in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing SHIFT for SAT CIPHER model.
+
+        The list of clauses encodes equalities ensuring that input variables are correctly positioned in the output
+        during the shift operation. Each clause represents a logical condition where input variables are mapped to their
+        corresponding output positions through the shift. Additionally, output variables that do not correspond to an
+        input variable are constrained to zero, ensuring a valid state in the resulting configuration.
 
         .. SEEALSO::
 
@@ -681,9 +686,12 @@ class SHIFT(Component):
             sage: shift_component.sat_constraints()
             (['shift_0_0_0',
               'shift_0_0_1',
-              'shift_0_0_2',
               ...
-              '-shift_0_0_29',
+              'shift_0_0_30',
+              'shift_0_0_31'],
+             ['shift_0_0_0 -plaintext_36',
+              'plaintext_36 -shift_0_0_0',
+              ...
               '-shift_0_0_30',
               '-shift_0_0_31'])
         """
@@ -707,12 +715,15 @@ class SHIFT(Component):
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
-        Return a list of variables and a list of clauses for SHIFT in SAT
-        DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model.
+        Return a list of variables and a list of clauses representing SHIFT for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model
+
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires two variables per each symbol.
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
 
         INPUT:
 
@@ -726,9 +737,12 @@ class SHIFT(Component):
             sage: shift_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['shift_0_0_0_0',
               'shift_0_0_1_0',
-              'shift_0_0_2_0',
               ...
-              '-shift_0_0_30_1',
+              'shift_0_0_30_1',
+              'shift_0_0_31_1'],
+             ['shift_0_0_0_0 -plaintext_36_0',
+              'plaintext_36_0 -shift_0_0_0_0',
+              ...
               '-shift_0_0_31_0',
               '-shift_0_0_31_1'])
         """
@@ -755,15 +769,48 @@ class SHIFT(Component):
         return out_ids_0 + out_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses representing SHIFT for SAT XOR DIFFERENTIAL model.
+
+        .. SEEALSO::
+
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+            sage: tea = TeaBlockCipher(number_of_rounds=3)
+            sage: shift_component = tea.component_from(0, 0)
+            sage: shift_component.sat_xor_differential_propagation_constraints()
+            (['shift_0_0_0',
+              'shift_0_0_1',
+              ...
+              'shift_0_0_30',
+              'shift_0_0_31'],
+             ['shift_0_0_0 -plaintext_36',
+              'plaintext_36 -shift_0_0_0',
+              ...
+              '-shift_0_0_30',
+              '-shift_0_0_31'])
+        """
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a list of variables and a list of clauses for SHIFT in SAT XOR LINEAR model.
+        Return a list of variables and a list of clauses representing SHIFT for SAT XOR LINEAR model
+
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires different encodings for input and ouput variables.
 
         .. SEEALSO::
 
-            :ref:`sat-standard` for the format.
+            - :ref:`sat-standard` for the format.
+            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
 
         INPUT:
 
@@ -777,9 +824,12 @@ class SHIFT(Component):
             sage: shift_component.sat_xor_linear_mask_propagation_constraints()
             (['shift_0_0_0_i',
               'shift_0_0_1_i',
-              'shift_0_0_2_i',
               ...
-              'shift_0_0_30_i -shift_0_0_26_o',
+              'shift_0_0_30_o',
+              'shift_0_0_31_o'],
+             ['-shift_0_0_0_i',
+              '-shift_0_0_1_i',
+              ...
               'shift_0_0_27_o -shift_0_0_31_i',
               'shift_0_0_31_i -shift_0_0_27_o'])
         """
@@ -804,7 +854,13 @@ class SHIFT(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts representing for SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing SHIFT for SMT CIPHER model
+
+        The list of asserts encodes equalities ensuring that input variables are correctly positioned in the output
+        during the shift operation. Each clause represents a logical condition where input variables are mapped to their
+        corresponding output positions through the shift. Additionally, output variables that do not correspond to an
+        input variable are constrained to zero, ensuring a valid state in the resulting configuration. Note that, it is
+        not an equality using boolean False, instead, it has been encoded in a CNF fashion.
 
         INPUT:
 
@@ -824,9 +880,6 @@ class SHIFT(Component):
              ['(assert (= shift_0_0_0 plaintext_36))',
               '(assert (= shift_0_0_1 plaintext_37))',
               ...
-              '(assert (= shift_0_0_27 plaintext_63))',
-              '(assert (not shift_0_0_28))',
-              '(assert (not shift_0_0_29))',
               '(assert (not shift_0_0_30))',
               '(assert (not shift_0_0_31))'])
         """
@@ -851,11 +904,46 @@ class SHIFT(Component):
         return output_bit_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
+        """
+        Return a variable list and SMT-LIB list asserts representing SHIFT for SMT XOR DIFFERENTIAL model
+
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.shift_component.SHIFT.smt_constraints>`.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+            sage: tea = TeaBlockCipher(number_of_rounds=3)
+            sage: shift_component = tea.component_from(0, 0)
+            sage: shift_component.smt_xor_differential_propagation_constraints()
+            (['shift_0_0_0',
+              'shift_0_0_1',
+              ...
+              'shift_0_0_30',
+              'shift_0_0_31'],
+             ['(assert (= shift_0_0_0 plaintext_36))',
+              '(assert (= shift_0_0_1 plaintext_37))',
+              ...
+              '(assert (not shift_0_0_30))',
+              '(assert (not shift_0_0_31))'])
+        """
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
-        Return a variable list and SMT-LIB list asserts for SHIFT in SMT XOR LINEAR model.
+        Return a variable list and SMT-LIB list asserts representing SHIFT for SMT XOR LINEAR model
+
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires different encodings for input and ouput variables.
+
+        .. SEEALSO::
+
+            :obj:`smt_constraints() <components.shift_component.SHIFT.smt_constraints>`.
 
         INPUT:
 

@@ -393,7 +393,13 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
     elif CIPHER_INVERSE_SUFFIX in cipher.id:
-        code.append('  return intermediateOutputs["plaintext"]')
+        # full inversion
+        if 'plaintext' in cipher.get_all_components_ids():
+            code.append('  return intermediateOutputs["plaintext"]')
+        # in partial inversion
+        else:
+            code.append('  last_inter_output = [output for output in list(intermediateOutputs.keys()) if \'intermediate_output\' in output][0]')
+            code.append('  return intermediateOutputs[last_inter_output]')
     else:
         code.append('  return intermediateOutputs["cipher_output"]')
    # print('\n'.join(code))
@@ -529,7 +535,7 @@ def generate_python_code_string(cipher, verbosity=False):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+        sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
         sage: from claasp.cipher_modules import code_generator
         sage: fancy = FancyBlockCipher()
         sage: string_python_code = code_generator.generate_python_code_string(fancy)
@@ -539,7 +545,7 @@ def generate_python_code_string(cipher, verbosity=False):
         # This test is skipped due to it changes the order of the intermediate outputs sometimes as:
         # intermediate_output['cipher_output'] = []
         # intermediate_output['round_key_output'] = []
-        sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
+        sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher
         sage: from claasp.cipher_modules import code_generator
         sage: identity = IdentityBlockCipher()
         sage: print(code_generator.generate_python_code_string(identity, verbosity=True)) # doctest: +SKIP

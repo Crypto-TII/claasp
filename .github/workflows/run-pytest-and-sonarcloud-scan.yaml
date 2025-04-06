@@ -39,12 +39,15 @@ jobs:
       run: |
             cd /home/runner/_work/claasp
             make remote-pytest
+      env:
+        GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
 
     - name: Upload Coverage.xml to artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: /home/runner/_work/claasp/coverage.xml
+        overwrite: true
 
   run-code-coverage:
     runs-on: ubuntu-latest
@@ -56,15 +59,15 @@ jobs:
         fetch-depth: 0
 
     - name: Download Latest Coverage.xml from Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: coverage-report
 
     - name: Override Coverage Source Path for Sonar
-      run: sed -i "s/<source>\/home\/runner\/_work\/claasp\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
+      run: sed -i "s/<source>\/home\/runner\/_work\/claasp<\/source>/<source>\/github\/workspace\/claasp<\/source>/g" coverage.xml
 
     - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
+      uses: SonarSource/sonarqube-scan-action@master
       with:
         args: >
           -Dsonar.branch.name=${{ env.GITHUB_HEAD_REF }}

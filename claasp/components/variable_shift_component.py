@@ -19,10 +19,10 @@
 
 import math
 
-from claasp.input import Input
-from claasp.component import Component
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.component import Component
+from claasp.input import Input
 
 
 class VariableShift(Component):
@@ -162,9 +162,9 @@ class VariableShift(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: from claasp.cipher_modules.models.minizinc.minizinc_model import MinizincModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: raiden = RaidenBlockCipher(number_of_rounds=16)
-            sage: minizinc = MinizincModel(raiden)
+            sage: minizinc = MznModel(raiden)
             sage: variable_shift_component = raiden.component_from(0, 2)
             sage: _, mzn_shift_by_variable_amount_constraints = variable_shift_component.minizinc_xor_differential_propagation_constraints(minizinc)
             sage: mzn_shift_by_variable_amount_constraints[0]
@@ -202,7 +202,7 @@ class VariableShift(Component):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for SHIFT BY VARIABLE AMOUNT in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing SHIFT BY VARIABLE AMOUNT for SAT CIPHER model
 
         .. SEEALSO::
 
@@ -220,9 +220,12 @@ class VariableShift(Component):
             sage: variable_shift_component.sat_constraints()
             (['var_shift_0_2_0',
               'var_shift_0_2_1',
-              'var_shift_0_2_2',
               ...
-              '-var_shift_0_2_31 state_3_var_shift_0_2_31',
+              'var_shift_0_2_30',
+              'var_shift_0_2_31'],
+             ['-state_0_var_shift_0_2_0 key_0 key_95',
+              'state_0_var_shift_0_2_0 -key_0 key_95',
+              ...
               '-var_shift_0_2_31 -key_91',
               'var_shift_0_2_31 -state_3_var_shift_0_2_31 key_91'])
         """
@@ -259,7 +262,7 @@ class VariableShift(Component):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts for SHIFT BY VARIABLE AMOUNT in SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing SHIFT BY VARIABLE AMOUNT for SMT CIPHER model
 
         INPUT:
 
@@ -291,6 +294,8 @@ class VariableShift(Component):
         for i in range(number_of_states):
             states.append([f'state_{i}_{output_bit_ids[j]}' for j in range(output_bit_len)])
         constraints = []
+        if len(states) <= 0:
+            raise ValueError('states must not be empty')
 
         # first shift
         for j in range(output_bit_len - 1):

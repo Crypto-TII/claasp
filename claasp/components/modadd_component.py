@@ -124,7 +124,7 @@ class MODADD(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
             sage: modadd_component = fancy.get_component_from_id("modadd_1_9")
@@ -308,7 +308,7 @@ class MODADD(Modular):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for Modular Addition in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing MODULAR ADDITION for SAT CIPHER model
 
         .. SEEALSO::
 
@@ -328,11 +328,14 @@ class MODADD(Modular):
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: modadd_component = speck.component_from(0, 1)
             sage: modadd_component.sat_constraints()
-            (['carry_modadd_0_1_0',
-              'carry_modadd_0_1_1',
-              'carry_modadd_0_1_2',
+            (['carry_0_modadd_0_1_0',
+              'carry_0_modadd_0_1_1',
               ...
-              'modadd_0_1_15 -rot_0_0_15 plaintext_31',
+              'modadd_0_1_14',
+              'modadd_0_1_15'],
+             ['rot_0_0_1 plaintext_17 -carry_0_modadd_0_1_0',
+              '-rot_0_0_1 -plaintext_17 carry_0_modadd_0_1_0',
+              ...
               'modadd_0_1_15 rot_0_0_15 -plaintext_31',
               '-modadd_0_1_15 -rot_0_0_15 -plaintext_31'])
         """
@@ -342,8 +345,7 @@ class MODADD(Modular):
         # reformat of the in_ids
         inputs_ids = [input_ids[i * output_len: (i + 1) * output_len] for i in range(num_of_addenda)]
         # carries
-        carries_ids = [[f'carry_{i}_{output_id}' for output_id in output_ids[:-1]]
-                       for i in range(num_of_addenda - 1)]
+        carries_ids = [[f'carry_{i}_{output_id}' for output_id in output_ids[:-1]] for i in range(num_of_addenda - 1)]
         # reformat of the outputs_ids
         outputs_ids = [[f'modadd_output_{i}_{output_id}' for output_id in output_ids]
                        for i in range(num_of_addenda - 2)] + [output_ids]
@@ -355,7 +357,7 @@ class MODADD(Modular):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts for Modular Addition for SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing MODULAR ADDITION for SMT CIPHER model
 
         .. WARNING::
 
@@ -374,20 +376,10 @@ class MODADD(Modular):
             (['carry_0_modadd_0_1_0',
               'carry_0_modadd_0_1_1',
               ...
-              'carry_0_modadd_0_1_29',
-              'carry_0_modadd_0_1_30',
-              'modadd_0_1_0',
-              'modadd_0_1_1',
-              ...
               'modadd_0_1_30',
               'modadd_0_1_31'],
              ['(assert (= carry_0_modadd_0_1_0 (or (and shift_0_0_1 key_1) (and shift_0_0_1 carry_0_modadd_0_1_1) (and key_1 carry_0_modadd_0_1_1))))',
               '(assert (= carry_0_modadd_0_1_1 (or (and shift_0_0_2 key_2) (and shift_0_0_2 carry_0_modadd_0_1_2) (and key_2 carry_0_modadd_0_1_2))))',
-              ...
-              '(assert (= carry_0_modadd_0_1_29 (or (and shift_0_0_30 key_30) (and shift_0_0_30 carry_0_modadd_0_1_30) (and key_30 carry_0_modadd_0_1_30))))',
-              '(assert (= carry_0_modadd_0_1_30 (and shift_0_0_31 key_31)))',
-              '(assert (= modadd_0_1_0 (xor shift_0_0_0 key_0 carry_0_modadd_0_1_0)))',
-              '(assert (= modadd_0_1_1 (xor shift_0_0_1 key_1 carry_0_modadd_0_1_1)))',
               ...
               '(assert (= modadd_0_1_30 (xor shift_0_0_30 key_30 carry_0_modadd_0_1_30)))',
               '(assert (= modadd_0_1_31 (xor shift_0_0_31 key_31)))'])
@@ -398,8 +390,7 @@ class MODADD(Modular):
         # reformat of the in_ids
         inputs_ids = [input_ids[i * output_len: (i + 1) * output_len] for i in range(num_of_addenda)]
         # carries
-        carries_ids = [[f'carry_{i}_{output_id}' for output_id in output_ids[:-1]]
-                       for i in range(num_of_addenda - 1)]
+        carries_ids = [[f'carry_{i}_{output_id}' for output_id in output_ids[:-1]] for i in range(num_of_addenda - 1)]
         # reformat of the outputs_ids
         outputs_ids = [[f'modadd_output_{i}_{output_id}' for output_id in output_ids]
                        for i in range(num_of_addenda - 2)] + [output_ids]

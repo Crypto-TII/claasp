@@ -1,4 +1,4 @@
-from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 
 
 def test_fancy_block_cipher():
