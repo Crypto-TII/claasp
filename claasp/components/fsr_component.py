@@ -37,7 +37,6 @@ def _get_polynomial_from_binary_polynomial_index_list(polynomial_index_list, R):
         p += m
     return p
 
-
 def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
     if polynomial_index_list == []:
         return R(1)
@@ -46,7 +45,7 @@ def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
     y = R.construction()[1].gen()
 
     for _ in polynomial_index_list:
-        m = 0  # presently it is for field of characteristic 2 only
+        m = 0
         cc = "{0:b}".format(_[0])
         for i in range(len(cc)):
             if cc[i] == '1':  m = m + pow(y, len(cc) - 1 - i)
@@ -54,8 +53,6 @@ def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
             m = m * x[i]
         p += m
     return p
-
-
 
 def _bits_to_words_array(input, bits_inside_word, word_gf):
     y = word_gf.gen()
@@ -114,8 +111,8 @@ class FSR(Component):
             sage: a51 = A51StreamCipher()
             sage: fsr_component = a51.get_component_from_id("fsr_1_0")
             sage: algebraic = AlgebraicModel(a51)
-            sage: L = fsr_component.algebraic_polynomials(algebraic)
-            sage: L[0]
+            sage: A = fsr_component.algebraic_polynomials(algebraic)
+            sage: A[0]
             fsr_1_0_x1*fsr_1_0_x30*fsr_1_0_x53 + fsr_1_0_x1*fsr_1_0_x10*fsr_1_0_x53 + fsr_1_0_x1*fsr_1_0_x10*fsr_1_0_x30 + fsr_1_0_x0*fsr_1_0_x30*fsr_1_0_x53 + fsr_1_0_x0*fsr_1_0_x10*fsr_1_0_x53 + fsr_1_0_x0*fsr_1_0_x10*fsr_1_0_x30 + fsr_1_0_x1*fsr_1_0_x10 + fsr_1_0_x0*fsr_1_0_x10 + fsr_1_0_y0 + fsr_1_0_x1
 
             sage: from claasp.ciphers.stream_ciphers.bivium_stream_cipher import BiviumStreamCipher
@@ -145,6 +142,14 @@ class FSR(Component):
             sage: E[24]
             fsr_0_16_y24 + fsr_0_16_x17 + fsr_0_16_x13 + fsr_0_16_x5 + fsr_0_16_x0
 
+            sage: from claasp.ciphers.stream_ciphers.snow3g_stream_cipher import Snow3GStreamCipher
+            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+            sage: snow = Snow3GStreamCipher(number_of_initialization_clocks=1, keystream_word_size=1)
+            sage: fsr_component = snow.get_component_from_id("fsr_0_714")
+            sage: algebraic = AlgebraicModel(snow)
+            sage: S = fsr_component.algebraic_polynomials(algebraic)
+            sage: S[480]
+            fsr_0_714_y480 + fsr_0_714_x352 + fsr_0_714_x64 + fsr_0_714_x0
         """
 
         bits_inside_word = self.description[1]
@@ -193,7 +198,6 @@ class FSR(Component):
                     for k in range(registers_start[i], registers_update_bit[i]):
                         x[k] = x[k+1]
                     x[registers_update_bit[i]] = feedback_bit
-
 
         output_polynomials = y+vector(x)
         return output_polynomials
