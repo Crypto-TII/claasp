@@ -31,7 +31,7 @@ def test_skinny_block_cipher():
     assert skinny.evaluate([plaintext, key]) == ciphertext
     assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
 
-    # Skinny-64-128
+    # Skinny-64-192
     skinny = SkinnyBlockCipher(block_bit_size=64, key_bit_size=192, number_of_rounds=40)
     plaintext = 0x530C61D35E8663C3
     key = 0xED00C85B120D68618753E24BFD908F60B2DBB41B422DFCD0
