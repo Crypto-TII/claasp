@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -22,10 +21,11 @@ from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {'block_bit_size': 128, 'key_bit_size': 128, 'r': 46},
-    {'block_bit_size': 128, 'key_bit_size': 256, 'r': 48},
-    {'block_bit_size': 256, 'key_bit_size': 256, 'r': 74},
+    {"block_bit_size": 128, "key_bit_size": 128, "r": 46},
+    {"block_bit_size": 128, "key_bit_size": 256, "r": 48},
+    {"block_bit_size": 256, "key_bit_size": 256, "r": 74},
 ]
+
 
 class BalletBlockCipher(Cipher):
     """
@@ -90,11 +90,13 @@ class BalletBlockCipher(Cipher):
         if error == 1:
             return
 
-        super().__init__(family_name="ballet",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
-                         cipher_output_bit_size=self.block_bit_size)
+        super().__init__(
+            family_name="ballet",
+            cipher_type="block_cipher",
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
+            cipher_output_bit_size=self.block_bit_size,
+        )
 
         if self.block_bit_size == self.key_bit_size:
             state_0, state_1, state_2, state_3, key_0, key_1 = self.round_initialization()
@@ -104,24 +106,36 @@ class BalletBlockCipher(Cipher):
         for round_number in range(self.r):
             self.add_round()
 
-            if round_number == self.r-1:
+            if round_number == self.r - 1:
                 # encryption
-                state_0, state_1, state_2, state_3 = self.round_function(state_0, state_1, state_2, state_3, key_0,
-                                                                         last_round=True)
+                state_0, state_1, state_2, state_3 = self.round_function(
+                    state_0, state_1, state_2, state_3, key_0, last_round=True
+                )
                 # round output
                 self.add_round_key_output_component(key_0.id, key_0.input_bit_positions, self.round_key_bit_size)
-                self.add_cipher_output_component(state_0.id + state_1.id + state_2.id + state_3.id,
-                                                state_0.input_bit_positions + state_1.input_bit_positions + state_2.input_bit_positions + state_3.input_bit_positions,
-                                                self.block_bit_size)
+                self.add_cipher_output_component(
+                    state_0.id + state_1.id + state_2.id + state_3.id,
+                    state_0.input_bit_positions
+                    + state_1.input_bit_positions
+                    + state_2.input_bit_positions
+                    + state_3.input_bit_positions,
+                    self.block_bit_size,
+                )
             else:
                 # encryption
-                state_0, state_1, state_2, state_3 = self.round_function(state_0, state_1, state_2, state_3, key_0,
-                                                                         last_round=False)
+                state_0, state_1, state_2, state_3 = self.round_function(
+                    state_0, state_1, state_2, state_3, key_0, last_round=False
+                )
                 # round output
                 self.add_round_key_output_component(key_0.id, key_0.input_bit_positions, self.round_key_bit_size)
-                self.add_round_output_component(state_0.id + state_1.id + state_2.id + state_3.id,
-                                                state_0.input_bit_positions + state_1.input_bit_positions + state_2.input_bit_positions + state_3.input_bit_positions,
-                                                self.block_bit_size)
+                self.add_round_output_component(
+                    state_0.id + state_1.id + state_2.id + state_3.id,
+                    state_0.input_bit_positions
+                    + state_1.input_bit_positions
+                    + state_2.input_bit_positions
+                    + state_3.input_bit_positions,
+                    self.block_bit_size,
+                )
                 # round_key schedule
                 if self.block_bit_size == self.key_bit_size:
                     key_0, key_1 = self.key_schedule_nn(key_0, key_1, round_number)
@@ -153,33 +167,40 @@ class BalletBlockCipher(Cipher):
 
     def round_initialization(self):
         state_0 = ComponentState([INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size))])
-        state_1 = ComponentState([INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size, self.quater_block_bit_size*2))])
-        state_2 = ComponentState([INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size*2, self.quater_block_bit_size*3))])
-        state_3 = ComponentState([INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size*3, self.block_bit_size))])
+        state_1 = ComponentState(
+            [INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size, self.quater_block_bit_size * 2))]
+        )
+        state_2 = ComponentState(
+            [INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size * 2, self.quater_block_bit_size * 3))]
+        )
+        state_3 = ComponentState([INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size * 3, self.block_bit_size))])
 
         if self.block_bit_size == self.key_bit_size:
             key_0 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size))])
             key_1 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size, self.key_bit_size))])
             return state_0, state_1, state_2, state_3, key_0, key_1
-        else:
-            key_0 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size))])
-            key_1 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size, self.round_key_bit_size*2))])
-            t_0 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size*2, self.round_key_bit_size*3))])
-            t_1 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size*3, self.key_bit_size))])
-            return state_0, state_1, state_2, state_3, key_0, key_1, t_0, t_1
+
+        key_0 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size))])
+        key_1 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size, self.round_key_bit_size * 2))])
+        t_0 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size * 2, self.round_key_bit_size * 3))])
+        t_1 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size * 3, self.key_bit_size))])
+        return state_0, state_1, state_2, state_3, key_0, key_1, t_0, t_1
 
     def round_function(self, state_0, state_1, state_2, state_3, round_key, last_round):
-
         # state' = state_1 xor state_2
-        self.add_XOR_component(state_1.id + state_2.id,
-                               state_1.input_bit_positions + state_2.input_bit_positions,
-                               self.quater_block_bit_size)
+        self.add_XOR_component(
+            state_1.id + state_2.id,
+            state_1.input_bit_positions + state_2.input_bit_positions,
+            self.quater_block_bit_size,
+        )
         state_temp = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
 
         # state_0_new = state_1 xor round_key_left
-        self.add_XOR_component(state_1.id + round_key.id,
-                               state_1.input_bit_positions + [round_key.input_bit_positions[0][:self.quater_block_bit_size]],
-                               self.quater_block_bit_size)
+        self.add_XOR_component(
+            state_1.id + round_key.id,
+            state_1.input_bit_positions + [round_key.input_bit_positions[0][: self.quater_block_bit_size]],
+            self.quater_block_bit_size,
+        )
         state_0_new = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
 
         # state_1_new = (state_0 <<< 6) modadd (state' <<< 9)
@@ -187,9 +208,11 @@ class BalletBlockCipher(Cipher):
         state_temp_1 = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
         self.add_rotate_component(state_temp.id, state_temp.input_bit_positions, self.quater_block_bit_size, -9)
         state_temp_2 = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
-        self.add_MODADD_component(state_temp_1.id+state_temp_2.id,
-                                  state_temp_1.input_bit_positions+state_temp_2.input_bit_positions,
-                                  self.quater_block_bit_size)
+        self.add_MODADD_component(
+            state_temp_1.id + state_temp_2.id,
+            state_temp_1.input_bit_positions + state_temp_2.input_bit_positions,
+            self.quater_block_bit_size,
+        )
         state_1_new = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
 
         # state_2_new = (state_3 <<< 15) modadd (state' <<< 14)
@@ -197,22 +220,26 @@ class BalletBlockCipher(Cipher):
         state_temp_1 = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
         self.add_rotate_component(state_temp.id, state_temp.input_bit_positions, self.quater_block_bit_size, -14)
         state_temp_2 = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
-        self.add_MODADD_component(state_temp_1.id + state_temp_2.id,
-                                  state_temp_1.input_bit_positions + state_temp_2.input_bit_positions,
-                                  self.quater_block_bit_size)
+        self.add_MODADD_component(
+            state_temp_1.id + state_temp_2.id,
+            state_temp_1.input_bit_positions + state_temp_2.input_bit_positions,
+            self.quater_block_bit_size,
+        )
         state_2_new = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
 
         # state_3_new = state_2 xor round_key_right
-        self.add_XOR_component(state_2.id + round_key.id,
-                               state_2.input_bit_positions + [round_key.input_bit_positions[0][self.quater_block_bit_size:self.round_key_bit_size]],
-                               self.quater_block_bit_size)
+        self.add_XOR_component(
+            state_2.id + round_key.id,
+            state_2.input_bit_positions
+            + [round_key.input_bit_positions[0][self.quater_block_bit_size : self.round_key_bit_size]],
+            self.quater_block_bit_size,
+        )
         state_3_new = ComponentState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
-
 
         if last_round:
             return state_1_new, state_0_new, state_3_new, state_2_new
-        else:
-            return state_0_new, state_1_new, state_2_new, state_3_new
+
+        return state_0_new, state_1_new, state_2_new, state_3_new
 
     def key_schedule_nn(self, key_0, key_1, RC):
         # key_1_new = key_0 xor (key_1 <<< 3) xor (key_1 <<< 5) xor RC
@@ -223,9 +250,14 @@ class BalletBlockCipher(Cipher):
         key_temp_2 = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
         self.add_constant_component(self.round_key_bit_size, RC)
         round_constant = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
-        self.add_XOR_component(key_0.id + key_temp_1.id + key_temp_2.id + round_constant.id,
-                               key_0.input_bit_positions + key_temp_1.input_bit_positions + key_temp_2.input_bit_positions + round_constant.input_bit_positions,
-                               self.round_key_bit_size)
+        self.add_XOR_component(
+            key_0.id + key_temp_1.id + key_temp_2.id + round_constant.id,
+            key_0.input_bit_positions
+            + key_temp_1.input_bit_positions
+            + key_temp_2.input_bit_positions
+            + round_constant.input_bit_positions,
+            self.round_key_bit_size,
+        )
         key_1_new = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
 
         return key_1, key_1_new
@@ -237,9 +269,11 @@ class BalletBlockCipher(Cipher):
         t_temp_1 = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
         self.add_rotate_component(t_1.id, t_1.input_bit_positions, self.round_key_bit_size, -17)
         t_temp_2 = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
-        self.add_XOR_component(t_0.id + t_temp_1.id + t_temp_2.id,
-                               t_0.input_bit_positions + t_temp_1.input_bit_positions + t_temp_2.input_bit_positions,
-                               self.round_key_bit_size)
+        self.add_XOR_component(
+            t_0.id + t_temp_1.id + t_temp_2.id,
+            t_0.input_bit_positions + t_temp_1.input_bit_positions + t_temp_2.input_bit_positions,
+            self.round_key_bit_size,
+        )
         t_1_new = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
 
         # key_1_new = key_0 xor (key_1 <<< 3) xor (key_1 <<< 5)
@@ -248,17 +282,21 @@ class BalletBlockCipher(Cipher):
         key_temp_1 = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
         self.add_rotate_component(key_1.id, key_1.input_bit_positions, self.round_key_bit_size, -5)
         key_temp_2 = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
-        self.add_XOR_component(key_0.id + key_temp_1.id + key_temp_2.id,
-                               key_0.input_bit_positions + key_temp_1.input_bit_positions + key_temp_2.input_bit_positions,
-                               self.round_key_bit_size)
+        self.add_XOR_component(
+            key_0.id + key_temp_1.id + key_temp_2.id,
+            key_0.input_bit_positions + key_temp_1.input_bit_positions + key_temp_2.input_bit_positions,
+            self.round_key_bit_size,
+        )
         key_1_new = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
 
         # key_1_new = key_1_new xor t_1_new xor RC
         self.add_constant_component(self.round_key_bit_size, RC)
         round_constant = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
-        self.add_XOR_component(key_1_new.id + t_1_new.id + round_constant.id,
-                               key_1_new.input_bit_positions + t_1_new.input_bit_positions + round_constant.input_bit_positions,
-                               self.round_key_bit_size)
+        self.add_XOR_component(
+            key_1_new.id + t_1_new.id + round_constant.id,
+            key_1_new.input_bit_positions + t_1_new.input_bit_positions + round_constant.input_bit_positions,
+            self.round_key_bit_size,
+        )
         key_1_new = ComponentState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
 
         return key_1, key_1_new, t_1, t_1_new
