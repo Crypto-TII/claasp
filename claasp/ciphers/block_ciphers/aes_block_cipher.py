@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -20,7 +19,7 @@
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
-PARAMETERS_CONFIGURATION_LIST = [{'word_size': 8, 'state_size': 4, 'number_of_rounds': 10}]
+PARAMETERS_CONFIGURATION_LIST = [{"word_size": 8, "state_size": 4, "number_of_rounds": 10}]
 
 
 class AESBlockCipher(Cipher):
@@ -45,44 +44,35 @@ class AESBlockCipher(Cipher):
         True
     """
 
-    def __init__(self, number_of_rounds=10, word_size=8, state_size=4):
-
-        if word_size not in [2, 3, 4, 8]:
+    def __init__(self, number_of_rounds: int = 10, word_size: int = 8, state_size: int = 4):
+        if word_size not in (2, 3, 4, 8):
             raise ValueError("word_size incorrect (should be in [2,3,4,8])")
-        if state_size not in [2, 3, 4]:
+        if state_size not in (2, 3, 4):
             raise ValueError("state_size incorrect (should be in [2,3,4])")
 
         # cipher dictionary initialize
-        self.CIPHER_BLOCK_SIZE = state_size ** 2 * word_size
-        self.KEY_BLOCK_SIZE = self.CIPHER_BLOCK_SIZE
-        self.NROUNDS = number_of_rounds
-        self.SBOX_BIT_SIZE = word_size
-        self.NUM_SBOXES = state_size ** 2
-        self.NUM_ROWS = state_size
-        self.ROW_SIZE = state_size * word_size
+        self.cipher_block_size = state_size**2 * word_size
+        self.key_block_size = self.cipher_block_size
+        self.nrounds = number_of_rounds
+        self.sbox_bit_size = word_size
+        self.num_sboxes = state_size**2
+        self.num_rows = state_size
+        self.row_size = state_size * word_size
 
-        super().__init__(family_name="aes_block_cipher",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.KEY_BLOCK_SIZE, self.CIPHER_BLOCK_SIZE],
-                         cipher_output_bit_size=self.CIPHER_BLOCK_SIZE)
+        super().__init__(
+            family_name="aes_block_cipher",
+            cipher_type="block_cipher",
+            cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.key_block_size, self.cipher_block_size],
+            cipher_output_bit_size=self.cipher_block_size,
+        )
 
         # In function of wordsize
-        self.sbox = {
-            2: [
-                0x00, 0x01,
-                0x01, 0x02,
-            ],
-            3: [
-                0x00, 0x01, 0x05, 0x06,
-                0x07, 0x02, 0x03, 0x04,
-            ],
-            4: [
-                0x00, 0x01, 0x09, 0x0e,
-                0x0d, 0x0b, 0x07, 0x06,
-                0x0f, 0x02, 0x0c, 0x05,
-                0x0a, 0x04, 0x03, 0x08,
-            ],
+        # fmt: off
+        self.sbox = {            
+            2: [0x00, 0x01, 0x01, 0x02],
+            3: [0x00, 0x01, 0x05, 0x06, 0x07, 0x02, 0x03, 0x04],
+            4: [0x00, 0x01, 0x09, 0x0E, 0x0D, 0x0B, 0x07, 0x06, 0x0F, 0x02, 0x0C, 0x05, 0x0A, 0x04, 0x03, 0x08],
             8: [
                 0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
                 0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -104,77 +94,98 @@ class AESBlockCipher(Cipher):
         }
 
         # In function of wordsize
-        self.ROUND_CONSTANT = {
+        self.round_constant = {
             2: [
-                "0b01000000", "0b10000000", "0b11000000", "0b01000000", "0b10000000", "0b11000000", "0b01000000",
-                "0b10000000",
-                "0b11000000", "0b01000000", "0b10000000", "0b11000000", "0b01000000", "0b10000000", "0b11000000",
-                "0b01000000",
+                "0b01000000", "0b10000000", "0b11000000", "0b01000000",
+                "0b10000000", "0b11000000", "0b01000000", "0b10000000",
+                "0b11000000", "0b01000000", "0b10000000", "0b11000000",
+                "0b01000000", "0b10000000", "0b11000000", "0b01000000",
             ],
             3: [
-                "0b001000000000", "0b010000000000", "0b100000000000", "0b011000000000", "0b110000000000",
-                "0b111000000000", "0b101000000000", "0b001000000000",
-                "0b010000000000", "0b100000000000", "0b011000000000", "0b110000000000", "0b111000000000",
-                "0b101000000000", "0b001000000000", "0b010000000000",
+                "0b001000000000", "0b010000000000", "0b100000000000", "0b011000000000",
+                "0b110000000000", "0b111000000000", "0b101000000000", "0b001000000000",
+                "0b010000000000", "0b100000000000", "0b011000000000", "0b110000000000",
+                "0b111000000000", "0b101000000000", "0b001000000000", "0b010000000000",
             ],
             4: [
-                "0x1000", "0x2000", "0x4000", "0x8000", "0x3000", "0x6000", "0xc000", "0xb000",
-                "0x5000", "0xa000", "0x7000", "0xe000", "0xf000", "0xd000", "0x9000", "0x1000",
+                "0x1000", "0x2000", "0x4000", "0x8000",
+                "0x3000", "0x6000", "0xc000", "0xb000",
+                "0x5000", "0xa000", "0x7000", "0xe000",
+                "0xf000", "0xd000", "0x9000", "0x1000",
             ],
             8: {
-                4: [
-                    "0x01000000", "0x02000000", "0x04000000", "0x08000000", "0x10000000", "0x20000000", "0x40000000",
-                    "0x80000000", "0x1B000000", "0x36000000", "0x36000000", "0x6C000000", "0xD8000000", "0xAB000000",
-                    "0x4D000000",
-                    "0x9A000000"
+                2: [
+                    "0x0100", "0x0200", "0x0400", "0x0800",
+                    "0x1000", "0x2000", "0x4000", "0x8000",
+                    "0x1B00", "0x3600", "0x3600", "0x6C00",
+                    "0xD800", "0xAB00", "0x4D00", "0x9A00",
                 ],
                 3: [
-                    "0x010000", "0x020000", "0x040000", "0x080000", "0x100000", "0x200000", "0x400000",
-                    "0x800000", "0x1B0000", "0x360000", "0x360000", "0x6C0000", "0xD80000", "0xAB0000", "0x4D0000",
-                    "0x9A0000"
+                    "0x010000", "0x020000", "0x040000", "0x080000",
+                    "0x100000", "0x200000", "0x400000", "0x800000",
+                    "0x1B0000", "0x360000", "0x360000", "0x6C0000",
+                    "0xD80000", "0xAB0000", "0x4D0000", "0x9A0000",
                 ],
-                2: [
-                    "0x0100", "0x0200", "0x0400", "0x0800", "0x1000", "0x2000", "0x4000",
-                    "0x8000", "0x1B00", "0x3600", "0x3600", "0x6C00", "0xD800", "0xAB00", "0x4D00",
-                    "0x9A00"
-                ]
+                4: [
+                    "0x01000000", "0x02000000", "0x04000000", "0x08000000",
+                    "0x10000000", "0x20000000", "0x40000000", "0x80000000",
+                    "0x1B000000", "0x36000000", "0x36000000", "0x6C000000",
+                    "0xD8000000", "0xAB000000", "0x4D000000", "0x9A000000",
+                ],
             }
         }
+        # fmt: on
 
         # In function of (wordsize, statesize)
-        self.AES_matrix = {
+        self.aes_matrix = {
             (2, 2): [[0x02, 0x03], [0x03, 0x02]],
             (3, 2): [[0x02, 0x03], [0x03, 0x02]],
             (4, 2): [[0x02, 0x03], [0x03, 0x02]],
             (8, 2): [[0x02, 0x03], [0x03, 0x02]],
             (2, 3): [[0x01, 0x02, 0x02], [0x02, 0x01, 0x02], [0x02, 0x02, 0x01]],
             (3, 3): [[0x01, 0x02, 0x05], [0x05, 0x06, 0x05], [0x05, 0x05, 0x01]],
-            (4, 3): [[0x08, 0x03, 0x04], [0x0a, 0x06, 0x09], [0x03, 0x04, 0x0c]],
+            (4, 3): [[0x08, 0x03, 0x04], [0x0A, 0x06, 0x09], [0x03, 0x04, 0x0C]],
             (8, 3): [[0x01, 0x02, 0x05], [0x05, 0x06, 0x05], [0x05, 0x05, 0x01]],
-            (2, 4): [[0x02, 0x03, 0x01, 0x01], [0x01, 0x02, 0x03, 0x01], [0x01, 0x01, 0x02, 0x03],
-                     [0x03, 0x01, 0x01, 0x02]],
-            (3, 4): [[0x01, 0x07, 0x05, 0x05], [0x07, 0x02, 0x01, 0x03], [0x06, 0x03, 0x01, 0x02],
-                     [0x07, 0x05, 0x05, 0x07]],
-            (4, 4): [[0x02, 0x03, 0x01, 0x01], [0x01, 0x02, 0x03, 0x01], [0x01, 0x01, 0x02, 0x03],
-                     [0x03, 0x01, 0x01, 0x02]],
-            (8, 4): [[0x02, 0x03, 0x01, 0x01], [0x01, 0x02, 0x03, 0x01], [0x01, 0x01, 0x02, 0x03],
-                     [0x03, 0x01, 0x01, 0x02]]
+            (2, 4): [
+                [0x02, 0x03, 0x01, 0x01],
+                [0x01, 0x02, 0x03, 0x01],
+                [0x01, 0x01, 0x02, 0x03],
+                [0x03, 0x01, 0x01, 0x02],
+            ],
+            (3, 4): [
+                [0x01, 0x07, 0x05, 0x05],
+                [0x07, 0x02, 0x01, 0x03],
+                [0x06, 0x03, 0x01, 0x02],
+                [0x07, 0x05, 0x05, 0x07],
+            ],
+            (4, 4): [
+                [0x02, 0x03, 0x01, 0x01],
+                [0x01, 0x02, 0x03, 0x01],
+                [0x01, 0x01, 0x02, 0x03],
+                [0x03, 0x01, 0x01, 0x02],
+            ],
+            (8, 4): [
+                [0x02, 0x03, 0x01, 0x01],
+                [0x01, 0x02, 0x03, 0x01],
+                [0x01, 0x01, 0x02, 0x03],
+                [0x03, 0x01, 0x01, 0x02],
+            ],
         }
 
         # In function of wordsize
         self.irreducible_polynomial = {
             2: 0x7,
-            3: 0xb,
+            3: 0xB,
             4: 0x13,
-            8: 0x11b,
+            8: 0x11B,
         }
 
         # In function of wordsize
-        self.AES_matrix_description = {
-            2: [self.AES_matrix[(word_size, state_size)], self.irreducible_polynomial[word_size], word_size],
-            3: [self.AES_matrix[(word_size, state_size)], self.irreducible_polynomial[word_size], word_size],
-            4: [self.AES_matrix[(word_size, state_size)], self.irreducible_polynomial[word_size], word_size],
-            8: [self.AES_matrix[(word_size, state_size)], self.irreducible_polynomial[word_size], word_size],
+        self.aes_matrix_description = {
+            2: [self.aes_matrix[(word_size, state_size)], self.irreducible_polynomial[word_size], word_size],
+            3: [self.aes_matrix[(word_size, state_size)], self.irreducible_polynomial[word_size], word_size],
+            4: [self.aes_matrix[(word_size, state_size)], self.irreducible_polynomial[word_size], word_size],
+            8: [self.aes_matrix[(word_size, state_size)], self.irreducible_polynomial[word_size], word_size],
         }
 
         # In function of statesize
@@ -187,10 +198,11 @@ class AESBlockCipher(Cipher):
         # Rounds definition:
         # Round 0 different from others since it starts with first_add_round_key
         self.add_round()
-        first_add_round_key = self.add_XOR_component([INPUT_KEY, INPUT_PLAINTEXT],
-                                                     [[i for i in range(self.KEY_BLOCK_SIZE)],
-                                                      [i for i in range(self.CIPHER_BLOCK_SIZE)]],
-                                                     int(self.CIPHER_BLOCK_SIZE))
+        first_add_round_key = self.add_XOR_component(
+            [INPUT_KEY, INPUT_PLAINTEXT],
+            [list(range(self.key_block_size)), list(range(self.cipher_block_size))],
+            int(self.cipher_block_size),
+        )
         add_round_key = None
         remaining_xors = None
         xor1 = None
@@ -201,56 +213,64 @@ class AESBlockCipher(Cipher):
             key_rotation = self.create_rotate_component(remaining_xors, round_number, word_size)
             key_sboxes_components = self.create_key_sbox_components(key_rotation, word_size)
             constant = self.create_constant_component(round_number, state_size, word_size)
-            remaining_xors, xor1 = self.create_xor_components(constant, key_sboxes_components,
-                                                              remaining_xors, xor1, round_number)
-            self.add_intermediate_output_component([remaining_xors[i].id for i in range(self.NUM_ROWS)],
-                                                   [[i for i in range(self.ROW_SIZE)] for _ in range(self.NUM_ROWS)],
-                                                   self.KEY_BLOCK_SIZE,
-                                                   "round_key_output")
-            add_round_key = self.create_round_key(mix_column_components, remaining_xors,
-                                                  round_number, shift_row_components)
+            remaining_xors, xor1 = self.create_xor_components(
+                constant, key_sboxes_components, remaining_xors, xor1, round_number
+            )
+            self.add_intermediate_output_component(
+                [remaining_xors[i].id for i in range(self.num_rows)],
+                [list(range(self.row_size)) for _ in range(self.num_rows)],
+                self.key_block_size,
+                "round_key_output",
+            )
+            add_round_key = self.create_round_key(
+                mix_column_components, remaining_xors, round_number, shift_row_components
+            )
             self.create_round_output_component(add_round_key, number_of_rounds, round_number)
 
     def create_sbox_components(self, add_round_key, first_add_round_key, round_number, word_size):
         sboxes_components = []
-        for j in range(self.NUM_SBOXES):
+        for j in range(self.num_sboxes):
             if round_number == 0:
                 sbox = self.add_SBOX_component(
                     [first_add_round_key.id],
-                    [[i for i in range(j * self.SBOX_BIT_SIZE, (j + 1) * self.SBOX_BIT_SIZE)]],
-                    self.SBOX_BIT_SIZE, self.sbox[word_size])
+                    [list(range(j * self.sbox_bit_size, (j + 1) * self.sbox_bit_size))],
+                    self.sbox_bit_size,
+                    self.sbox[word_size],
+                )
             else:
                 sbox = self.add_SBOX_component(
                     [add_round_key.id],
-                    [[i for i in range(j * self.SBOX_BIT_SIZE, (j + 1) * self.SBOX_BIT_SIZE)]],
-                    self.SBOX_BIT_SIZE, self.sbox[word_size])
+                    [list(range(j * self.sbox_bit_size, (j + 1) * self.sbox_bit_size))],
+                    self.sbox_bit_size,
+                    self.sbox[word_size],
+                )
             sboxes_components.append(sbox)
 
         return sboxes_components
 
     def create_shift_row_components(self, sboxes_components, word_size):
         shift_row_components = []
-        for j in range(self.NUM_ROWS):
+        for j in range(self.num_rows):
             rotation = self.add_rotate_component(
-                [sboxes_components[i].id for i in
-                 range(j, j + self.NUM_ROWS * (self.NUM_ROWS - 1) + 1, self.NUM_ROWS)],
-                [[i for i in range(self.SBOX_BIT_SIZE)] for _ in range(self.NUM_ROWS)],
-                self.ROW_SIZE,
-                -word_size * j)
+                [sboxes_components[i].id for i in range(j, j + self.num_rows * (self.num_rows - 1) + 1, self.num_rows)],
+                [list(range(self.sbox_bit_size)) for _ in range(self.num_rows)],
+                self.row_size,
+                -word_size * j,
+            )
             shift_row_components.append(rotation)
 
         return shift_row_components
 
     def create_mix_column_components(self, round_number, shift_row_components, word_size):
         mix_column_components = []
-        if round_number != self.NROUNDS - 1:
-            for j in range(self.NUM_ROWS):
+        if round_number != self.nrounds - 1:
+            for j in range(self.num_rows):
                 mix_column = self.add_mix_column_component(
-                    [shift_row_components[i].id for i in range(self.NUM_ROWS)],
-                    [[i for i in range(j * self.SBOX_BIT_SIZE, (j + 1) * self.SBOX_BIT_SIZE)] for _ in
-                     range(self.NUM_ROWS)],
-                    self.ROW_SIZE,
-                    self.AES_matrix_description[word_size])
+                    [shift_row_components[i].id for i in range(self.num_rows)],
+                    [list(range(j * self.sbox_bit_size, (j + 1) * self.sbox_bit_size)) for _ in range(self.num_rows)],
+                    self.row_size,
+                    self.aes_matrix_description[word_size],
+                )
                 mix_column_components.append(mix_column)
 
         return mix_column_components
@@ -259,109 +279,119 @@ class AESBlockCipher(Cipher):
         if round_number == 0:
             key_rotation = self.add_rotate_component(
                 [INPUT_KEY],
-                [[i for i in range(self.KEY_BLOCK_SIZE - self.ROW_SIZE, self.KEY_BLOCK_SIZE)]],
-                self.ROW_SIZE,
-                -word_size)
+                [list(range(self.key_block_size - self.row_size, self.key_block_size))],
+                self.row_size,
+                -word_size,
+            )
         else:
             key_rotation = self.add_rotate_component(
-                [remaining_xors[self.NUM_ROWS - 1].id],
-                [[i for i in range(self.ROW_SIZE)]],
-                self.ROW_SIZE,
-                -word_size)
+                [remaining_xors[self.num_rows - 1].id], [list(range(self.row_size))], self.row_size, -word_size
+            )
 
         return key_rotation
 
     def create_key_sbox_components(self, key_rotation, word_size):
         key_sboxes_components = []
-        for i in range(self.NUM_ROWS):
+        for i in range(self.num_rows):
             key_sub = self.add_SBOX_component(
                 [key_rotation.id],
-                [[j for j in range(i * self.SBOX_BIT_SIZE, (i + 1) * self.SBOX_BIT_SIZE)]],
-                self.SBOX_BIT_SIZE,
-                self.sbox[word_size])
+                [list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size))],
+                self.sbox_bit_size,
+                self.sbox[word_size],
+            )
             key_sboxes_components.append(key_sub)
 
         return key_sboxes_components
 
     def create_constant_component(self, round_number, state_size, word_size):
         if word_size != 8:
-            if self.ROUND_CONSTANT[word_size][round_number][:2] == '0b':
-                constant = self.add_constant_component(len(self.ROUND_CONSTANT[word_size][round_number]) - 2,
-                                                       int(self.ROUND_CONSTANT[word_size][round_number], 2))
-            elif self.ROUND_CONSTANT[word_size][round_number][:2] == '0x':
-                constant = self.add_constant_component(self.ROW_SIZE,
-                                                       int(self.ROUND_CONSTANT[word_size][round_number], 16))
+            if self.round_constant[word_size][round_number][:2] == "0b":
+                constant = self.add_constant_component(
+                    len(self.round_constant[word_size][round_number]) - 2,
+                    int(self.round_constant[word_size][round_number], 2),
+                )
+            elif self.round_constant[word_size][round_number][:2] == "0x":
+                constant = self.add_constant_component(
+                    self.row_size, int(self.round_constant[word_size][round_number], 16)
+                )
             else:
                 print("Error : Constant format")
         else:
-            constant = self.add_constant_component(self.ROW_SIZE,
-                                                   int(self.ROUND_CONSTANT[word_size][state_size][round_number],
-                                                       16))
+            constant = self.add_constant_component(
+                self.row_size, int(self.round_constant[word_size][state_size][round_number], 16)
+            )
 
         return constant
 
     def create_xor_components(self, constant, key_sboxes_components, remaining_xors, xor1, round_number):
         if round_number == 0:
             xor1 = self.add_XOR_component(
-                [key_sboxes_components[i].id for i in range(self.NUM_ROWS)] + [constant.id, INPUT_KEY],
-                [[i for i in range(self.SBOX_BIT_SIZE)] for _ in range(self.NUM_ROWS)] + [
-                    [i for i in range(self.ROW_SIZE)] for _ in range(2)],
-                self.ROW_SIZE)
+                [key_sboxes_components[i].id for i in range(self.num_rows)] + [constant.id, INPUT_KEY],
+                [list(range(self.sbox_bit_size)) for _ in range(self.num_rows)]
+                + [list(range(self.row_size)) for _ in range(2)],
+                self.row_size,
+            )
         else:
             xor1 = self.add_XOR_component(
-                [key_sboxes_components[i].id for i in range(self.NUM_ROWS)] + [constant.id, xor1.id],
-                [[i for i in range(self.SBOX_BIT_SIZE)] for _ in range(self.NUM_ROWS)] + [
-                    [i for i in range(self.ROW_SIZE)] for _ in range(2)],
-                self.ROW_SIZE)
+                [key_sboxes_components[i].id for i in range(self.num_rows)] + [constant.id, xor1.id],
+                [list(range(self.sbox_bit_size)) for _ in range(self.num_rows)]
+                + [list(range(self.row_size)) for _ in range(2)],
+                self.row_size,
+            )
         tmp_remaining_xors = [xor1]
-        for i in range(self.NUM_ROWS - 1):
+        for i in range(self.num_rows - 1):
             if round_number == 0:
                 xor = self.add_XOR_component(
                     [tmp_remaining_xors[i].id, INPUT_KEY],
-                    [[i for i in range(self.ROW_SIZE)],
-                     [i for i in range((i + 1) * self.ROW_SIZE, (i + 2) * self.ROW_SIZE)]],
-                    self.ROW_SIZE)
+                    [
+                        list(range(self.row_size)),
+                        list(range((i + 1) * self.row_size, (i + 2) * self.row_size)),
+                    ],
+                    self.row_size,
+                )
             else:
                 xor = self.add_XOR_component(
                     [tmp_remaining_xors[i].id, remaining_xors[i + 1].id],
-                    [[i for i in range(self.ROW_SIZE)], [i for i in range(self.ROW_SIZE)]],
-                    self.ROW_SIZE)
+                    [list(range(self.row_size)), list(range(self.row_size))],
+                    self.row_size,
+                )
             tmp_remaining_xors.append(xor)
         remaining_xors = list(tmp_remaining_xors)
 
         return remaining_xors, xor1
 
     def create_round_key(self, mix_column_components, remaining_xors, round_number, shift_row_components):
-        if round_number != self.NROUNDS - 1:
+        if round_number != self.nrounds - 1:
             add_round_key = self.add_XOR_component(
-                [mix_column_components[i].id for i in range(self.NUM_ROWS)] + [remaining_xors[i].id for i in
-                                                                               range(self.NUM_ROWS)],
-                [[i for i in range(self.ROW_SIZE)] for _ in range(2 * self.NUM_ROWS)],
-                self.CIPHER_BLOCK_SIZE)
+                [mix_column_components[i].id for i in range(self.num_rows)]
+                + [remaining_xors[i].id for i in range(self.num_rows)],
+                [list(range(self.row_size)) for _ in range(2 * self.num_rows)],
+                self.cipher_block_size,
+            )
         else:
             shift_rows_ids = []
-            for i in range(self.NUM_ROWS):
-                shift_rows_ids.extend([shift_row_components[j].id for j in range(self.NUM_ROWS)])
+            for _ in range(self.num_rows):
+                shift_rows_ids.extend([shift_row_components[i].id for i in range(self.num_rows)])
             shift_rows_input_position_lists = []
-            for i in range(self.NUM_ROWS):
+            for i in range(self.num_rows):
                 shift_rows_input_position_lists.extend(
-                    [[j for j in range(i * self.SBOX_BIT_SIZE, (i + 1) * self.SBOX_BIT_SIZE)] for _ in
-                     range(self.NUM_ROWS)])
+                    [list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size)) for _ in range(self.num_rows)]
+                )
             add_round_key = self.add_XOR_component(
-                shift_rows_ids + [remaining_xors[i].id for i in range(self.NUM_ROWS)],
-                shift_rows_input_position_lists + [[i for i in range(self.ROW_SIZE)] for _ in range(self.NUM_ROWS)],
-                self.CIPHER_BLOCK_SIZE)
+                shift_rows_ids + [remaining_xors[i].id for i in range(self.num_rows)],
+                shift_rows_input_position_lists + [list(range(self.row_size)) for _ in range(self.num_rows)],
+                self.cipher_block_size,
+            )
 
         return add_round_key
 
     def create_round_output_component(self, add_round_key, number_of_rounds, round_number):
         if round_number == number_of_rounds - 1:
-            self.add_cipher_output_component([add_round_key.id],
-                                             [[i for i in range(self.CIPHER_BLOCK_SIZE)]],
-                                             self.CIPHER_BLOCK_SIZE)
+            self.add_cipher_output_component(
+                [add_round_key.id], [list(range(self.cipher_block_size))], self.cipher_block_size
+            )
         else:
-            self.add_intermediate_output_component([add_round_key.id],
-                                                   [[i for i in range(self.CIPHER_BLOCK_SIZE)]],
-                                                   self.CIPHER_BLOCK_SIZE,
-                                                   "round_output")
+            self.add_intermediate_output_component(
+                [add_round_key.id], [list(range(self.cipher_block_size))], self.cipher_block_size, "round_output"
+            )
             self.add_round()
