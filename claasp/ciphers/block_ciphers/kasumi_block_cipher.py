@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -17,10 +16,10 @@
 # ****************************************************************************
 
 from claasp.cipher import Cipher
-from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 from claasp.utils.utils import extract_inputs
 
+# fmt: off
 SBox9 = [
     167, 239, 161, 379, 391, 334, 9, 338, 38, 226, 48, 358, 452, 385, 90, 397,
     183, 253, 147, 331, 415, 340, 51, 362, 306, 500, 262, 82, 216, 159, 356, 177,
@@ -68,39 +67,44 @@ SBox7 = [
     102, 31, 26, 45, 75, 4, 85, 92, 37, 74, 80, 49, 68, 29, 115, 44,
     64, 107, 108, 24, 110, 83, 36, 78, 42, 19, 15, 41, 88, 119, 59, 3
 ]
+# fmt: on
 
-PARAMETERS_CONFIGURATION_LIST = [{'block_bit_size': 64, 'key_bit_size': 128, 'number_of_rounds': 8}]
+PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 8}]
 half_half_word_distribution = [7, 2, 7]
 half_word_distribution = half_half_word_distribution + half_half_word_distribution
+
+
 class KasumiBlockCipher(Cipher):
     """
-       Return a cipher object of Kasumi Block Cipher.
+    Return a cipher object of Kasumi Block Cipher.
 
-       INPUT:
+    INPUT:
 
-       - ``number_of_rounds`` -- **integer** (default: `8`); number of rounds of the cipher.
-          Must be less or equal to 8
+    - ``number_of_rounds`` -- **integer** (default: `8`); number of rounds of the cipher.
+       Must be less or equal to 8
 
-       EXAMPLES::
+    EXAMPLES::
 
-           sage: from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
-           sage: kasumi = KasumiBlockCipher()
-           sage: key = 0x9900aabbccddeeff1122334455667788
-           sage: plaintext = 0xfedcba0987654321
-           sage: ciphertext= 0x514896226caa4f20
-           sage: kasumi.evaluate([key, plaintext]) == ciphertext
-           True
-       """
+        sage: from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
+        sage: kasumi = KasumiBlockCipher()
+        sage: key = 0x9900aabbccddeeff1122334455667788
+        sage: plaintext = 0xfedcba0987654321
+        sage: ciphertext= 0x514896226caa4f20
+        sage: kasumi.evaluate([key, plaintext]) == ciphertext
+        True
+    """
 
     def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=8):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
-        self.WORD_SIZE = int(key_bit_size / 8)
-        super().__init__(family_name="kasumi_block_cipher",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[key_bit_size, block_bit_size],
-                         cipher_output_bit_size=block_bit_size)
+        self.word_size = int(key_bit_size / 8)
+        super().__init__(
+            family_name="kasumi_block_cipher",
+            cipher_type="block_cipher",
+            cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[key_bit_size, block_bit_size],
+            cipher_output_bit_size=block_bit_size,
+        )
 
         left_half_ids, left_half_positions, right_half_ids, right_half_positions = KasumiBlockCipher.init_halves()
 
@@ -112,109 +116,75 @@ class KasumiBlockCipher(Cipher):
             sub_key = self.round_key(key, key_derived, round_number + 1)
             if round_number % 2 == 0:
                 right_half_ids, right_half_positions = self._even_round(
-                    left_half_ids,
-                    left_half_positions,
-                    sub_key,
-                    right_half_ids,
-                    right_half_positions
+                    left_half_ids, left_half_positions, sub_key, right_half_ids, right_half_positions
                 )
 
             else:
                 left_half_ids, left_half_positions = self._odd_round(
-                    left_half_ids,
-                    left_half_positions,
-                    sub_key,
-                    right_half_ids,
-                    right_half_positions
+                    left_half_ids, left_half_positions, sub_key, right_half_ids, right_half_positions
                 )
 
             self.add_round_output_component(
                 left_half_ids + right_half_ids,
                 [list(range(size)) for size in half_word_distribution * 2],
-                self.block_bit_size
+                self.block_bit_size,
             )
 
         self.add_cipher_output_component(
             left_half_ids + right_half_ids,
             [list(range(size)) for size in half_word_distribution * 2],
-            self.block_bit_size
+            self.block_bit_size,
         )
 
     @staticmethod
     def init_halves():
-        left_half_ids = ['plaintext' for _ in range(6)]
+        left_half_ids = ["plaintext" for _ in range(6)]
         left_half_positions = [
-            list(range(sum(half_word_distribution[:i]), sum(half_word_distribution[:i + 1]))) for i
-                               in range(len(half_word_distribution))
+            list(range(sum(half_word_distribution[:i]), sum(half_word_distribution[: i + 1])))
+            for i in range(len(half_word_distribution))
         ]
-        right_half_ids = ['plaintext' for _ in range(6)]
+        right_half_ids = ["plaintext" for _ in range(6)]
         offset = 32
         right_half_positions = [
-            list(range(sum(half_word_distribution[:i]) + offset, sum(half_word_distribution[:i + 1]) + offset))
+            list(range(sum(half_word_distribution[:i]) + offset, sum(half_word_distribution[: i + 1]) + offset))
             for i in range(len(half_word_distribution))
         ]
         return left_half_ids, left_half_positions, right_half_ids, right_half_positions
-    def _even_round(
-            self,
-            left_half_ids,
-            left_positions,
-            sub_key,
-            right_half_ids,
-            right_positions
-    ):
+
+    def _even_round(self, left_half_ids, left_positions, sub_key, right_half_ids, right_positions):
         temp_positions = []
         for i in range(6):
             temp_positions.append(list(range(half_word_distribution[i])))
 
-        fls = self.fl_function(
-            left_half_ids,
-            left_positions,
-            sub_key
-        )
-        fos = self.fo_function(
-            fls,
-            temp_positions,
-            sub_key
-        )
+        fls = self.fl_function(left_half_ids, left_positions, sub_key)
+        fos = self.fo_function(fls, temp_positions, sub_key)
 
         new_right_half_ids = []
         for i in range(6):
             xor = self.add_XOR_component(
                 [fos[i], right_half_ids[i]],
-                [list(range(half_word_distribution[i])), right_positions[i]], half_word_distribution[i]
+                [list(range(half_word_distribution[i])), right_positions[i]],
+                half_word_distribution[i],
             )
             new_right_half_ids.append(xor.id)
 
         return new_right_half_ids, temp_positions
 
-    def _odd_round(
-        self,
-        left_half_ids,
-        left_positions,
-        sub_key,
-        right_half_ids,
-        right_positions
-    ):
+    def _odd_round(self, left_half_ids, left_positions, sub_key, right_half_ids, right_positions):
         temp_positions = []
         for i in range(6):
             temp_positions.append(list(range(half_word_distribution[i])))
 
-        fos = self.fo_function(
-            right_half_ids,
-            right_positions, sub_key)
+        fos = self.fo_function(right_half_ids, right_positions, sub_key)
 
-        fls = self.fl_function(
-            fos,
-            temp_positions,
-            sub_key
-        )
+        fls = self.fl_function(fos, temp_positions, sub_key)
 
         new_left_half_ids = []
         for i in range(6):
             xor = self.add_XOR_component(
                 [fls[i], left_half_ids[i]],
                 [list(range(half_word_distribution[i])), left_positions[i]],
-                half_word_distribution[i]
+                half_word_distribution[i],
             )
             new_left_half_ids.append(xor.id)
 
@@ -226,65 +196,38 @@ class KasumiBlockCipher(Cipher):
 
         configuration_number_of_rounds = None
         for parameters in PARAMETERS_CONFIGURATION_LIST:
-            if parameters['block_bit_size'] == self.block_bit_size \
-                    and parameters['key_bit_size'] == self.key_bit_size:
-                configuration_number_of_rounds = parameters['number_of_rounds']
+            if parameters["block_bit_size"] == self.block_bit_size and parameters["key_bit_size"] == self.key_bit_size:
+                configuration_number_of_rounds = parameters["number_of_rounds"]
                 break
         if configuration_number_of_rounds is None:
             raise ValueError("No available number of rounds for the given parameters.")
         return configuration_number_of_rounds
 
     def fi_function1(self, ids, ki_id, ki_positions):
-        s9_1 = self.add_SBOX_component(
-            [ids[0], ids[1]], [list(range(7)), list(range(2))], 9, SBox9
-        ).id
+        s9_1 = self.add_SBOX_component([ids[0], ids[1]], [list(range(7)), list(range(2))], 9, SBox9).id
 
         cst1 = self.add_constant_component(2, 0b00).id
 
-        xor1_1 = self.add_XOR_component(
-            [s9_1, cst1], [list(range(2)), list(range(2))], 2
-        ).id
-        xor1_2 = self.add_XOR_component(
-            [s9_1, ids[2]], [list(range(2,9)),  list(range(7))], 7
-        ).id
+        xor1_1 = self.add_XOR_component([s9_1, cst1], [list(range(2)), list(range(2))], 2).id
+        xor1_2 = self.add_XOR_component([s9_1, ids[2]], [list(range(2, 9)), list(range(7))], 7).id
 
-        s7_1 = self.add_SBOX_component(
-            [ids[2]], [list(range(7))], 7, SBox7
-        ).id
+        s7_1 = self.add_SBOX_component([ids[2]], [list(range(7))], 7, SBox7).id
 
-        xor2 = self.add_XOR_component(
-            [s7_1, xor1_2], [list(range(7)), list(range(7))], 7
-        ).id
+        xor2 = self.add_XOR_component([s7_1, xor1_2], [list(range(7)), list(range(7))], 7).id
 
-        xor3_1 = self.add_XOR_component(
-            [xor1_1, ki_id], [list(range(2)), ki_positions[7:9]], 2
-        ).id
-        xor3_2 = self.add_XOR_component(
-            [xor1_2, ki_id], [list(range(7)), ki_positions[9:16]], 7
-        ).id
+        xor3_1 = self.add_XOR_component([xor1_1, ki_id], [list(range(2)), ki_positions[7:9]], 2).id
+        xor3_2 = self.add_XOR_component([xor1_2, ki_id], [list(range(7)), ki_positions[9:16]], 7).id
 
-        xor4 = self.add_XOR_component(
-            [xor2, ki_id], [list(range(7)), ki_positions[:7]], 7
-        ).id
+        xor4 = self.add_XOR_component([xor2, ki_id], [list(range(7)), ki_positions[:7]], 7).id
 
-        s9_2 = self.add_SBOX_component(
-            [xor3_1, xor3_2], [list(range(2)), list(range(7))], 9, SBox9
-        ).id
+        s9_2 = self.add_SBOX_component([xor3_1, xor3_2], [list(range(2)), list(range(7))], 9, SBox9).id
 
-        xor5_1 = self.add_XOR_component(
-            [s9_2, cst1], [list(range(2)), list(range(2))], 2
-        )
-        xor5_2 = self.add_XOR_component(
-            [s9_2, xor4], [list(range(2, 9)), list(range(7))], 7
-        )
+        xor5_1 = self.add_XOR_component([s9_2, cst1], [list(range(2)), list(range(2))], 2)
+        xor5_2 = self.add_XOR_component([s9_2, xor4], [list(range(2, 9)), list(range(7))], 7)
         xor5_2_id = xor5_2.id
 
-        s7_2 = self.add_SBOX_component(
-            [xor4], [list(range(7))], 7, SBox7
-        ).id
-        xor6 = self.add_XOR_component(
-            [s7_2, xor5_2_id], [list(range(7)), list(range(7))], 7
-        )
+        s7_2 = self.add_SBOX_component([xor4], [list(range(7))], 7, SBox7).id
+        xor6 = self.add_XOR_component([s7_2, xor5_2_id], [list(range(7)), list(range(7))], 7)
 
         return [xor6, xor5_1, xor5_2]
 
@@ -293,46 +236,37 @@ class KasumiBlockCipher(Cipher):
         xor1s = []
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor1_temp = self.add_XOR_component(
-                [ids[i], sub_key],
-                [positions[i], list(range(start, end))],
-                length
-            )
+            xor1_temp = self.add_XOR_component([ids[i], sub_key], [positions[i], list(range(start, end))], length)
             xor1s.append(xor1_temp.id)
             start = end
 
-        ki_id, ki_positions = extract_inputs([sub_key], [list(range(8 * self.WORD_SIZE))],
-                                             [i + 5 * self.WORD_SIZE for i in range(self.WORD_SIZE)])
+        ki_id, ki_positions = extract_inputs(
+            [sub_key], [list(range(8 * self.word_size))], [i + 5 * self.word_size for i in range(self.word_size)]
+        )
 
         fis1 = self.fi_function1([xor1s[0], xor1s[1], xor1s[2]], ki_id[0], ki_positions[0])
 
         xor2s = []
         for i, length in enumerate(half_half_word_distribution):
             xor2_temp = self.add_XOR_component(
-                [fis1[i].id, ids[i+3]],
-                [list(range(length)), positions[i+3]],
-                length
+                [fis1[i].id, ids[i + 3]], [list(range(length)), positions[i + 3]], length
             )
             xor2s.append(xor2_temp.id)
 
-        subkey_size = [i + 3 * self.WORD_SIZE for i in range(self.WORD_SIZE)]
+        subkey_size = [i + 3 * self.word_size for i in range(self.word_size)]
 
         start = 0
         xor3s = []
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
             xor3_temp = self.add_XOR_component(
-                [ids[i+3], sub_key],
-                [positions[i+3], subkey_size[start:end]],
-                length
+                [ids[i + 3], sub_key], [positions[i + 3], subkey_size[start:end]], length
             )
             xor3s.append(xor3_temp.id)
             start = end
 
-
         ki2_id, ki2_positions = extract_inputs(
-            [sub_key], [list(range(8 * self.WORD_SIZE))],
-                                               [i + 6 * self.WORD_SIZE for i in range(self.WORD_SIZE)]
+            [sub_key], [list(range(8 * self.word_size))], [i + 6 * self.word_size for i in range(self.word_size)]
         )
 
         fis2 = self.fi_function1([xor3s[0], xor3s[1], xor3s[2]], ki2_id[0], ki2_positions[0])
@@ -340,104 +274,78 @@ class KasumiBlockCipher(Cipher):
         xor4s = []
         for i, length in enumerate(half_half_word_distribution):
             xor4_temp = self.add_XOR_component(
-                [fis2[i].id, xor2s[i]],
-                [list(range(length)), list(range(length))],
-                length
+                [fis2[i].id, xor2s[i]], [list(range(length)), list(range(length))], length
             )
             xor4s.append(xor4_temp.id)
 
-        sub_key_positions = [i + 4 * self.WORD_SIZE for i in range(self.WORD_SIZE)]
+        sub_key_positions = [i + 4 * self.word_size for i in range(self.word_size)]
 
         xor5s = []
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
             xor5_temp = self.add_XOR_component(
-                [xor2s[i], sub_key],
-                [list(range(length)), sub_key_positions[start:end]],
-                length
+                [xor2s[i], sub_key], [list(range(length)), sub_key_positions[start:end]], length
             )
             xor5s.append(xor5_temp.id)
             start = end
 
         ki3_id, ki3_positions = extract_inputs(
-            [sub_key], [list(range(8 * self.WORD_SIZE))],
-                                               [i + 7 * self.WORD_SIZE for i in range(self.WORD_SIZE)]
+            [sub_key], [list(range(8 * self.word_size))], [i + 7 * self.word_size for i in range(self.word_size)]
         )
         fis3 = self.fi_function1([xor5s[0], xor5s[1], xor5s[2]], ki3_id[0], ki3_positions[0])
 
         xor6s = []
         for i, length in enumerate(half_half_word_distribution):
             xor6_temp = self.add_XOR_component(
-                [fis3[i].id, xor4s[i]],
-                [list(range(length)), list(range(length))],
-                length
+                [fis3[i].id, xor4s[i]], [list(range(length)), list(range(length))], length
             )
             xor6s.append(xor6_temp.id)
 
         return xor4s + xor6s
 
     def fl_function(self, ids, positions, sub_key):
-        word_size = list(range(self.WORD_SIZE))
+        word_size = list(range(self.word_size))
         and1s = []
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            and1_temp = self.add_AND_component(
-                [ids[i], sub_key],
-                [positions[i], word_size[start:end]],
-                length
-            )
+            and1_temp = self.add_AND_component([ids[i], sub_key], [positions[i], word_size[start:end]], length)
             and1s.append(and1_temp.id)
             start = end
 
         rot1 = self.add_rotate_component(
-            [and1s[0], and1s[1], and1s[2]],
-            [list(range(7)), list(range(2)), list(range(7))], self.WORD_SIZE, -1
+            [and1s[0], and1s[1], and1s[2]], [list(range(7)), list(range(2)), list(range(7))], self.word_size, -1
         ).id
 
-        rot_size = list(range(self.WORD_SIZE))
+        rot_size = list(range(self.word_size))
 
         xor1s = []
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor1_temp = self.add_XOR_component(
-                [rot1, ids[i+3]],
-                [rot_size[start:end], positions[i+3]],
-                length
-            )
+            xor1_temp = self.add_XOR_component([rot1, ids[i + 3]], [rot_size[start:end], positions[i + 3]], length)
             xor1s.append(xor1_temp.id)
             start = end
 
-        subkey_size = [(i + self.WORD_SIZE) for i in range(self.WORD_SIZE)]
+        subkey_size = [(i + self.word_size) for i in range(self.word_size)]
 
         or1s = []
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            or1_temp = self.add_OR_component(
-                [xor1s[i], sub_key],
-                [list(range(length)), subkey_size[start:end]],
-                length
-            )
+            or1_temp = self.add_OR_component([xor1s[i], sub_key], [list(range(length)), subkey_size[start:end]], length)
             or1s.append(or1_temp.id)
             start = end
 
+        rot2 = self.add_rotate_component(or1s, [list(range(7)), list(range(2)), list(range(7))], self.word_size, -1).id
 
-        rot2 = self.add_rotate_component(or1s, [list(range(7)), list(range(2)), list(range(7))],
-                                         self.WORD_SIZE, -1).id
-
-        rot_size = list(range(self.WORD_SIZE))
+        rot_size = list(range(self.word_size))
         xor2s = []
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor2_temp = self.add_XOR_component(
-                [rot2, ids[i]],
-                [rot_size[start:end], positions[i]],
-                length
-            )
+            xor2_temp = self.add_XOR_component([rot2, ids[i]], [rot_size[start:end], positions[i]], length)
             xor2s.append(xor2_temp.id)
             start = end
 
@@ -446,60 +354,57 @@ class KasumiBlockCipher(Cipher):
     def derived_key(self, key):
         cst = self.add_constant_component(128, 0x123456789ABCDEFFEDCBA9876543210).id
         key_der = self.add_XOR_component(
-            key[0] + [cst],
-            [list(range(self.key_bit_size))] + [list(range(self.key_bit_size))],
-            self.key_bit_size
+            key[0] + [cst], [list(range(self.key_bit_size))] + [list(range(self.key_bit_size))], self.key_bit_size
         )
         return key_der.id
 
     def round_key(self, key, key_der, r):
         kl1 = self.add_rotate_component(
-            key[0], [[i + (r - 1) * self.WORD_SIZE for i in range(self.WORD_SIZE)]],
-                                        self.WORD_SIZE, -1
+            key[0], [[i + (r - 1) * self.word_size for i in range(self.word_size)]], self.word_size, -1
         ).id
         kl2_id, kl2_positions = extract_inputs(
             [key_der],
             [list(range(self.key_bit_size))],
-            [i + ((r + 1) % 8) * self.WORD_SIZE for i in range(self.WORD_SIZE)]
+            [i + ((r + 1) % 8) * self.word_size for i in range(self.word_size)],
         )
 
         ko1 = self.add_rotate_component(
-            key[0],
-            [[i + (r % 8) * self.WORD_SIZE for i in range(self.WORD_SIZE)]],
-             self.WORD_SIZE, -5
+            key[0], [[i + (r % 8) * self.word_size for i in range(self.word_size)]], self.word_size, -5
         ).id
         ko2 = self.add_rotate_component(
-            key[0],
-            [[i + ((r + 4) % 8) * self.WORD_SIZE for i in range(self.WORD_SIZE)]],
-            self.WORD_SIZE, -8
+            key[0], [[i + ((r + 4) % 8) * self.word_size for i in range(self.word_size)]], self.word_size, -8
         ).id
         ko3 = self.add_rotate_component(
-            key[0],
-            [[i + ((r + 5) % 8) * self.WORD_SIZE for i in range(self.WORD_SIZE)]],
-            self.WORD_SIZE, -13
+            key[0], [[i + ((r + 5) % 8) * self.word_size for i in range(self.word_size)]], self.word_size, -13
         ).id
         ki1_id, ki1_positions = extract_inputs(
             [key_der],
             [list(range(self.key_bit_size))],
-            [i + ((r + 3) % 8) * self.WORD_SIZE for i in range(self.WORD_SIZE)]
+            [i + ((r + 3) % 8) * self.word_size for i in range(self.word_size)],
         )
         ki2_id, ki2_positions = extract_inputs(
             [key_der],
             [list(range(self.key_bit_size))],
-            [i + ((r + 2) % 8) * self.WORD_SIZE for i in range(self.WORD_SIZE)]
+            [i + ((r + 2) % 8) * self.word_size for i in range(self.word_size)],
         )
         ki3_id, ki3_positions = extract_inputs(
             [key_der],
             [list(range(self.key_bit_size))],
-            [i + ((r + 6) % 8) * self.WORD_SIZE for i in range(self.WORD_SIZE)]
+            [i + ((r + 6) % 8) * self.word_size for i in range(self.word_size)],
         )
 
         sub_key = self.add_round_key_output_component(
             [kl1, kl2_id[0], ko1, ko2, ko3, ki1_id[0], ki2_id[0], ki3_id[0]],
-            [list(range(self.WORD_SIZE)), kl2_positions[0],
-             list(range(self.WORD_SIZE)), list(range(self.WORD_SIZE)),
-             list(range(self.WORD_SIZE)), ki1_positions[0],
-             ki2_positions[0], ki3_positions[0]],
-             self.key_bit_size
+            [
+                list(range(self.word_size)),
+                kl2_positions[0],
+                list(range(self.word_size)),
+                list(range(self.word_size)),
+                list(range(self.word_size)),
+                ki1_positions[0],
+                ki2_positions[0],
+                ki3_positions[0],
+            ],
+            self.key_bit_size,
         ).id
         return sub_key
