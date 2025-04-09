@@ -17,24 +17,22 @@
 # ****************************************************************************
 
 
-import os
-import math
 import itertools
+import math
+import os
 import subprocess
-
 from copy import deepcopy
-
-from sage.crypto.sbox import SBox
-
 from datetime import timedelta
 
 from minizinc import Instance, Model, Solver, Status
+from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
+from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, \
+    SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import SBOX
-from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 solve_satisfy = 'solve satisfy;'
 constraint_type_error = 'Constraint type not defined'
@@ -42,7 +40,7 @@ constraint_type_error = 'Constraint type not defined'
 
 class MznModel:
 
-    def __init__(self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp='sat'):
+    def __init__(self, cipher, sat_or_milp='sat'):
         self._cipher = cipher
         self.initialise_model()
         if sat_or_milp not in ['sat', 'milp']:
@@ -66,17 +64,8 @@ class MznModel:
         self.mzn_carries_output_directives = []
         self.input_postfix = "x"
         self.output_postfix = "y"
-        self.window_size_list = window_size_list
-        self.probability_weight_per_round = probability_weight_per_round
         self.carries_vars = []
-        if probability_weight_per_round and len(probability_weight_per_round) != self._cipher.number_of_rounds:
-            raise ValueError("probability_weight_per_round size must be equal to cipher_number_of_rounds")
-
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
-
-        if window_size_list and len(window_size_list) != self._cipher.number_of_rounds:
-            raise ValueError("window_size_list size must be equal to cipher_number_of_rounds")
-
         
     def initialise_model(self):
         self._variables_list = []
