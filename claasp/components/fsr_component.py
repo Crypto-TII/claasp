@@ -20,56 +20,13 @@
 from sage.modules.free_module_element import vector
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
-
 from claasp.input import Input
 from claasp.component import Component
+from claasp.cipher_modules.generic_functions import _get_polynomial_from_binary_polynomial_index_list
+from claasp.cipher_modules.generic_functions import   _get_polynomial_from_word_polynomial_index_list
+from claasp.cipher_modules.generic_functions import   _bits_to_words_array
 
 
-def _get_polynomial_from_binary_polynomial_index_list(polynomial_index_list, R):
-    if polynomial_index_list == []:
-        return R(1)
-    p = 0
-    x = R.gens()
-    for _ in polynomial_index_list:
-        m = 1
-        for i in _:
-            m = m * x[i]
-        p += m
-    return p
-
-def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
-    if polynomial_index_list == []:
-        return R(1)
-    p = 0
-    x = R.gens()
-    y = R.construction()[1].gen()
-
-    for _ in polynomial_index_list:
-        m = 0
-        cc = "{0:b}".format(_[0])
-        for i in range(len(cc)):
-            if cc[i] == '1':  m = m + pow(y, len(cc) - 1 - i)
-        for i in _[1]:
-            m = m * x[i]
-        p += m
-    return p
-
-def _bits_to_words_array(input, bits_inside_word, word_gf):
-    y = word_gf.gen()
-
-    # bits "a0,a1,a2..,an" represented "a0 * x^n + ... + an * x^0"
-    monomials = [pow(y, i) for i in range(bits_inside_word - 1, -1, -1)]
-    word_array = [0 for _ in
-                  range(int(len(input) / bits_inside_word))]
-
-    for i in range(len(word_array)):
-        c = 0
-        for j in range(len(monomials)):
-            c += (input[(i * bits_inside_word) + j]) * monomials[j]
-
-        word_array[i] = c
-
-    return word_array
 
 def _words_array_to_bits(word_array, word_gf):
     bits_inside_word = word_gf.degree()
