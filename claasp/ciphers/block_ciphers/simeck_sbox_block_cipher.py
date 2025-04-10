@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -21,39 +20,48 @@ from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {'block_bit_size': 32, 'key_bit_size': 64, 'number_of_rounds': 32},
-    {'block_bit_size': 48, 'key_bit_size': 96, 'number_of_rounds': 36},
-    {'block_bit_size': 64, 'key_bit_size': 128, 'number_of_rounds': 44}
+    {"block_bit_size": 32, "key_bit_size": 64, "number_of_rounds": 32},
+    {"block_bit_size": 48, "key_bit_size": 96, "number_of_rounds": 36},
+    {"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 44},
 ]
-Z = [
-    5557826286501673759,
-    3114073359753873471
+Z = [5557826286501673759, 3114073359753873471]
+WORDSIZE_TO_ZINDEX = {16: 0, 24: 0, 32: 1}
+# fmt: off
+SBOX = [
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x04, 0x04, 0x06, 0x07,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x08, 0x08, 0x08, 0x09, 0x0C, 0x0C, 0x0E, 0x0F,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x04, 0x04, 0x06, 0x07,
+    0x10, 0x10, 0x10, 0x11, 0x10, 0x10, 0x12, 0x13, 0x18, 0x18, 0x18, 0x19, 0x1C, 0x1C, 0x1E, 0x1F,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x04, 0x04, 0x06, 0x07,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x08, 0x08, 0x08, 0x09, 0x0C, 0x0C, 0x0E, 0x0F,
+    0x20, 0x20, 0x20, 0x21, 0x20, 0x20, 0x22, 0x23, 0x20, 0x20, 0x20, 0x21, 0x24, 0x24, 0x26, 0x27,
+    0x30, 0x30, 0x30, 0x31, 0x30, 0x30, 0x32, 0x33, 0x38, 0x38, 0x38, 0x39, 0x3C, 0x3C, 0x3E, 0x3F,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x04, 0x04, 0x06, 0x07,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x08, 0x08, 0x08, 0x09, 0x0C, 0x0C, 0x0E, 0x0F,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x04, 0x04, 0x06, 0x07,
+    0x10, 0x10, 0x10, 0x11, 0x10, 0x10, 0x12, 0x13, 0x18, 0x18, 0x18, 0x19, 0x1C, 0x1C, 0x1E, 0x1F,
+    0x40, 0x40, 0x40, 0x41, 0x40, 0x40, 0x42, 0x43, 0x40, 0x40, 0x40, 0x41, 0x44, 0x44, 0x46, 0x47,
+    0x40, 0x40, 0x40, 0x41, 0x40, 0x40, 0x42, 0x43, 0x48, 0x48, 0x48, 0x49, 0x4C, 0x4C, 0x4E, 0x4F,
+    0x60, 0x60, 0x60, 0x61, 0x60, 0x60, 0x62, 0x63, 0x60, 0x60, 0x60, 0x61, 0x64, 0x64, 0x66, 0x67,
+    0x70, 0x70, 0x70, 0x71, 0x70, 0x70, 0x72, 0x73, 0x78, 0x78, 0x78, 0x79, 0x7C, 0x7C, 0x7E, 0x7F,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x04, 0x04, 0x06, 0x07,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x08, 0x08, 0x08, 0x09, 0x0C, 0x0C, 0x0E, 0x0F,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x04, 0x04, 0x06, 0x07,
+    0x10, 0x10, 0x10, 0x11, 0x10, 0x10, 0x12, 0x13, 0x18, 0x18, 0x18, 0x19, 0x1C, 0x1C, 0x1E, 0x1F,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x04, 0x04, 0x06, 0x07,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x08, 0x08, 0x08, 0x09, 0x0C, 0x0C, 0x0E, 0x0F,
+    0x20, 0x20, 0x20, 0x21, 0x20, 0x20, 0x22, 0x23, 0x20, 0x20, 0x20, 0x21, 0x24, 0x24, 0x26, 0x27,
+    0x30, 0x30, 0x30, 0x31, 0x30, 0x30, 0x32, 0x33, 0x38, 0x38, 0x38, 0x39, 0x3C, 0x3C, 0x3E, 0x3F,
+    0x80, 0x80, 0x80, 0x81, 0x80, 0x80, 0x82, 0x83, 0x80, 0x80, 0x80, 0x81, 0x84, 0x84, 0x86, 0x87,
+    0x80, 0x80, 0x80, 0x81, 0x80, 0x80, 0x82, 0x83, 0x88, 0x88, 0x88, 0x89, 0x8C, 0x8C, 0x8E, 0x8F,
+    0x80, 0x80, 0x80, 0x81, 0x80, 0x80, 0x82, 0x83, 0x80, 0x80, 0x80, 0x81, 0x84, 0x84, 0x86, 0x87,
+    0x90, 0x90, 0x90, 0x91, 0x90, 0x90, 0x92, 0x93, 0x98, 0x98, 0x98, 0x99, 0x9C, 0x9C, 0x9E, 0x9F,
+    0xC0, 0xC0, 0xC0, 0xC1, 0xC0, 0xC0, 0xC2, 0xC3, 0xC0, 0xC0, 0xC0, 0xC1, 0xC4, 0xC4, 0xC6, 0xC7,
+    0xC0, 0xC0, 0xC0, 0xC1, 0xC0, 0xC0, 0xC2, 0xC3, 0xC8, 0xC8, 0xC8, 0xC9, 0xCC, 0xCC, 0xCE, 0xCF,
+    0xE0, 0xE0, 0xE0, 0xE1, 0xE0, 0xE0, 0xE2, 0xE3, 0xE0, 0xE0, 0xE0, 0xE1, 0xE4, 0xE4, 0xE6, 0xE7,
+    0xF0, 0xF0, 0xF0, 0xF1, 0xF0, 0xF0, 0xF2, 0xF3, 0xF8, 0xF8, 0xF8, 0xF9, 0xFC, 0xFC, 0xFE, 0xFF,
 ]
-WORDSIZE_TO_ZINDEX = {
-    16: 0,
-    24: 0,
-    32: 1
-}
-SBOX = [0, 0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 0, 0, 0, 1, 0, 0, 2, 3, 8, 8, 8, 9, 12, 12, 14, 15, 0, 0,
-        0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 16, 16, 16, 17, 16, 16, 18, 19, 24, 24, 24, 25, 28, 28, 30,
-        31, 0, 0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 0, 0, 0, 1, 0, 0, 2, 3, 8, 8, 8, 9, 12, 12, 14, 15,
-        32, 32, 32, 33, 32, 32, 34, 35, 32, 32, 32, 33, 36, 36, 38, 39, 48, 48, 48, 49, 48, 48, 50, 51, 56, 56,
-        56, 57, 60, 60, 62, 63, 0, 0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 0, 0, 0, 1, 0, 0, 2, 3, 8, 8, 8,
-        9, 12, 12, 14, 15, 0, 0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 16, 16, 16, 17, 16, 16, 18, 19, 24,
-        24, 24, 25, 28, 28, 30, 31, 64, 64, 64, 65, 64, 64, 66, 67, 64, 64, 64, 65, 68, 68, 70, 71, 64, 64, 64,
-        65, 64, 64, 66, 67, 72, 72, 72, 73, 76, 76, 78, 79, 96, 96, 96, 97, 96, 96, 98, 99, 96, 96, 96, 97, 100,
-        100, 102, 103, 112, 112, 112, 113, 112, 112, 114, 115, 120, 120, 120, 121, 124, 124, 126, 127, 0, 0, 0,
-        1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 0, 0, 0, 1, 0, 0, 2, 3, 8, 8, 8, 9, 12, 12, 14, 15, 0, 0, 0, 1,
-        0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 16, 16, 16, 17, 16, 16, 18, 19, 24, 24, 24, 25, 28, 28, 30, 31, 0,
-        0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 1, 4, 4, 6, 7, 0, 0, 0, 1, 0, 0, 2, 3, 8, 8, 8, 9, 12, 12, 14, 15, 32, 32,
-        32, 33, 32, 32, 34, 35, 32, 32, 32, 33, 36, 36, 38, 39, 48, 48, 48, 49, 48, 48, 50, 51, 56, 56, 56, 57,
-        60, 60, 62, 63, 128, 128, 128, 129, 128, 128, 130, 131, 128, 128, 128, 129, 132, 132, 134, 135, 128,
-        128, 128, 129, 128, 128, 130, 131, 136, 136, 136, 137, 140, 140, 142, 143, 128, 128, 128, 129, 128, 128,
-        130, 131, 128, 128, 128, 129, 132, 132, 134, 135, 144, 144, 144, 145, 144, 144, 146, 147, 152, 152, 152,
-        153, 156, 156, 158, 159, 192, 192, 192, 193, 192, 192, 194, 195, 192, 192, 192, 193, 196, 196, 198, 199,
-        192, 192, 192, 193, 192, 192, 194, 195, 200, 200, 200, 201, 204, 204, 206, 207, 224, 224, 224, 225, 224,
-        224, 226, 227, 224, 224, 224, 225, 228, 228, 230, 231, 240, 240, 240, 241, 240, 240, 242, 243, 248, 248,
-        248, 249, 252, 252, 254, 255]
+# fmt: on
 
 
 class SimeckSboxBlockCipher(Cipher):
@@ -93,18 +101,22 @@ class SimeckSboxBlockCipher(Cipher):
 
         if number_of_rounds is None:
             for parameters in PARAMETERS_CONFIGURATION_LIST:
-                if parameters['block_bit_size'] == self.block_bit_size and \
-                        parameters['key_bit_size'] == self.key_bit_size:
-                    number_of_rounds = parameters['number_of_rounds']
+                if (
+                    parameters["block_bit_size"] == self.block_bit_size
+                    and parameters["key_bit_size"] == self.key_bit_size
+                ):
+                    number_of_rounds = parameters["number_of_rounds"]
                     break
             if number_of_rounds is None:
                 raise ValueError("No available number of rounds for the given parameters.")
 
-        super().__init__(family_name="simeck_sbox",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[self.block_bit_size, key_bit_size],
-                         cipher_output_bit_size=self.block_bit_size)
+        super().__init__(
+            family_name="simeck_sbox",
+            cipher_type="block_cipher",
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[self.block_bit_size, key_bit_size],
+            cipher_output_bit_size=self.block_bit_size,
+        )
 
         left = INPUT_PLAINTEXT, list(range(self.word_size))
         right = INPUT_PLAINTEXT, list(range(self.word_size, 2 * self.word_size))
@@ -130,9 +142,9 @@ class SimeckSboxBlockCipher(Cipher):
         output_ids = [""] * self.word_size
         output_positions = [0] * self.word_size
         for i in range(self.number_of_sboxes):
-            sbox_input_positions = [left[1][(position + 8*i) % self.word_size] for position in positions_pattern]
+            sbox_input_positions = [left[1][(position + 8 * i) % self.word_size] for position in positions_pattern]
             sbox_id = self.add_SBOX_component([left[0]], [sbox_input_positions], 8, SBOX).id
-            sbox_output_positions = [(position + 8*i) % self.word_size for position in positions_pattern[:-1]]
+            sbox_output_positions = [(position + 8 * i) % self.word_size for position in positions_pattern[:-1]]
             for j, sbox_output_position in enumerate(sbox_output_positions):
                 output_ids[sbox_output_position] = sbox_id
                 output_positions[sbox_output_position] = j
@@ -145,13 +157,13 @@ class SimeckSboxBlockCipher(Cipher):
             else:
                 sboxes_positions[-1].append(output_positions[i])
         s1_left_input_positions = left[1][1:] + [left[1][0]]
-        f_id = self.add_XOR_component([*sboxes_ids, left[0]],
-                                      [*sboxes_positions, s1_left_input_positions],
-                                      self.word_size).id
+        f_id = self.add_XOR_component(
+            [*sboxes_ids, left[0]], [*sboxes_positions, s1_left_input_positions], self.word_size
+        ).id
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
-        new_left_id = self.add_XOR_component([right[0], f_id, round_key[0]],
-                                             [right[1], list(range(self.word_size)), round_key[1]],
-                                             self.word_size).id
+        new_left_id = self.add_XOR_component(
+            [right[0], f_id, round_key[0]], [right[1], list(range(self.word_size)), round_key[1]], self.word_size
+        ).id
 
         return (new_left_id, list(range(self.word_size))), left
 
