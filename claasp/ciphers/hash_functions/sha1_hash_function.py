@@ -1,21 +1,19 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 
 """
 SHA-1 cipher.
@@ -26,11 +24,13 @@ has been chosen to strictly adhere to the RFC.
 The input is named *key* because the hash function SHA-1 can be seen like a
 symmetric cipher whose plaintext is the initial state and key is the input.
 """
+
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_MESSAGE
 from claasp.DTOs.component_state import ComponentState
 
-PARAMETERS_CONFIGURATION_LIST = [{'word_size': 32, 'number_of_rounds': 80}]
+
+PARAMETERS_CONFIGURATION_LIST = [{"word_size": 32, "number_of_rounds": 80}]
 
 
 class SHA1HashFunction(Cipher):
@@ -57,20 +57,23 @@ class SHA1HashFunction(Cipher):
     """
 
     def __init__(self, word_size=32, number_of_rounds=80):
-
         self.word_size = word_size
 
-        K = (0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6)
-        H = (0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0)
+        K = (0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6)
+        H = (0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0)
 
-        super().__init__(family_name="SHA1",
-                         cipher_type="hash_function",
-                         cipher_inputs=[INPUT_MESSAGE],
-                         cipher_inputs_bit_size=[word_size * 16],
-                         cipher_output_bit_size=160)
+        super().__init__(
+            family_name="SHA1",
+            cipher_type="hash_function",
+            cipher_inputs=[INPUT_MESSAGE],
+            cipher_inputs_bit_size=[word_size * 16],
+            cipher_output_bit_size=160,
+        )
 
-        W = [ComponentState(INPUT_MESSAGE, [list(range(i * self.word_size, (i + 1) * self.word_size))])
-             for i in range(16)]
+        W = [
+            ComponentState(INPUT_MESSAGE, [list(range(i * self.word_size, (i + 1) * self.word_size))])
+            for i in range(16)
+        ]
 
         self.add_round()
         Kt = self.add_constant_component(word_size, K[0])
@@ -146,36 +149,34 @@ class SHA1HashFunction(Cipher):
             E = self.add_modadd_component_in_sha1(E, initial_state[4])
 
         self.add_cipher_output_component(
-            [A.id, B.id, C.id, D.id, E.id],
-            [list(range(self.word_size)) for _ in range(5)],
-            self.word_size * 5)
+            [A.id, B.id, C.id, D.id, E.id], [list(range(self.word_size)) for _ in range(5)], self.word_size * 5
+        )
 
     def add_and_component_in_sha1(self, component_0, component_1):
-        return self.add_AND_component([component_0.id, component_1.id],
-                                      [list(range(self.word_size)), list(range(self.word_size))],
-                                      self.word_size)
+        return self.add_AND_component(
+            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+        )
 
     def add_modadd_component_in_sha1(self, component_0, component_1):
-        return self.add_MODADD_component([component_0.id, component_1.id],
-                                         [list(range(self.word_size)), list(range(self.word_size))],
-                                         self.word_size)
+        return self.add_MODADD_component(
+            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+        )
 
     def add_rotate_component_in_sha1(self, component, amount):
-        return self.add_rotate_component([component.id],
-                                         [list(range(self.word_size))],
-                                         self.word_size,
-                                         amount)
+        return self.add_rotate_component([component.id], [list(range(self.word_size))], self.word_size, amount)
 
     def add_round_output_component_in_sha1(self, A, B, C, D, E):
-        return self.add_round_output_component([A.id, B.id, C.id, D.id, E.id],
-                                               [list(range(self.word_size)) for _ in range(5)],
-                                               self.word_size * 5)
+        return self.add_round_output_component(
+            [A.id, B.id, C.id, D.id, E.id], [list(range(self.word_size)) for _ in range(5)], self.word_size * 5
+        )
 
     def compute_temp_and_s_30_b(self, A, B, E, ft_B_C_D, K, W):
         S_5_A = self.add_rotate_component_in_sha1(A, -(5 % self.word_size))
-        TEMP = self.add_MODADD_component([S_5_A.id, ft_B_C_D.id, E.id, K.id, W.id],
-                                         [list(range(self.word_size)) for _ in range(4)] + W.input_bit_positions,
-                                         self.word_size)
+        TEMP = self.add_MODADD_component(
+            [S_5_A.id, ft_B_C_D.id, E.id, K.id, W.id],
+            [list(range(self.word_size)) for _ in range(4)] + W.input_bit_positions,
+            self.word_size,
+        )
         S_30_B = self.add_rotate_component_in_sha1(B, -(30 % self.word_size))
 
         return TEMP, S_30_B
@@ -184,9 +185,9 @@ class SHA1HashFunction(Cipher):
         B_AND_C = self.add_and_component_in_sha1(B, C)
         NOT_B = self.add_NOT_component([B.id], [list(range(self.word_size))], self.word_size)
         NOT_B_AND_D = self.add_and_component_in_sha1(NOT_B, D)
-        ft_B_C_D = self.add_OR_component([B_AND_C.id, NOT_B_AND_D.id],
-                                         [list(range(self.word_size)), list(range(self.word_size))],
-                                         self.word_size)
+        ft_B_C_D = self.add_OR_component(
+            [B_AND_C.id, NOT_B_AND_D.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+        )
 
         return self.compute_temp_and_s_30_b(A, B, E, ft_B_C_D, K, W)
 
@@ -194,7 +195,8 @@ class SHA1HashFunction(Cipher):
         ft_B_C_D = self.add_XOR_component(
             [B.id, C.id, D.id],
             [list(range(self.word_size)), list(range(self.word_size)), list(range(self.word_size))],
-            self.word_size)
+            self.word_size,
+        )
 
         return self.compute_temp_and_s_30_b(A, B, E, ft_B_C_D, K, W)
 
@@ -205,15 +207,20 @@ class SHA1HashFunction(Cipher):
         ft_B_C_D = self.add_OR_component(
             [B_AND_C.id, B_AND_D.id, C_AND_D.id],
             [list(range(self.word_size)), list(range(self.word_size)), list(range(self.word_size))],
-            self.word_size)
+            self.word_size,
+        )
 
         return self.compute_temp_and_s_30_b(A, B, E, ft_B_C_D, K, W)
 
     def schedule(self, W, t):
-        Wt_temp = self.add_XOR_component([W[t - 3].id, W[t - 8].id, W[t - 14].id, W[t - 16].id],
-                                         W[t - 3].input_bit_positions + W[t - 8].input_bit_positions +
-                                         W[t - 14].input_bit_positions + W[t - 16].input_bit_positions,
-                                         self.word_size)
+        Wt_temp = self.add_XOR_component(
+            [W[t - 3].id, W[t - 8].id, W[t - 14].id, W[t - 16].id],
+            W[t - 3].input_bit_positions
+            + W[t - 8].input_bit_positions
+            + W[t - 14].input_bit_positions
+            + W[t - 16].input_bit_positions,
+            self.word_size,
+        )
         Wt = self.add_rotate_component_in_sha1(Wt_temp, -1)
 
         return ComponentState(Wt.id, [list(range(self.word_size))])
