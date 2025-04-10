@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -21,31 +20,19 @@ from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {'block_bit_size': 32, 'key_bit_size': 64, 'number_of_rounds': 32},
-    {'block_bit_size': 48, 'key_bit_size': 72, 'number_of_rounds': 36},
-    {'block_bit_size': 48, 'key_bit_size': 96, 'number_of_rounds': 36},
-    {'block_bit_size': 64, 'key_bit_size': 96, 'number_of_rounds': 42},
-    {'block_bit_size': 64, 'key_bit_size': 128, 'number_of_rounds': 44},
-    {'block_bit_size': 96, 'key_bit_size': 96, 'number_of_rounds': 52},
-    {'block_bit_size': 96, 'key_bit_size': 144, 'number_of_rounds': 54},
-    {'block_bit_size': 128, 'key_bit_size': 128, 'number_of_rounds': 68},
-    {'block_bit_size': 128, 'key_bit_size': 192, 'number_of_rounds': 69},
-    {'block_bit_size': 128, 'key_bit_size': 256, 'number_of_rounds': 72}
+    {"block_bit_size": 32, "key_bit_size": 64, "number_of_rounds": 32},
+    {"block_bit_size": 48, "key_bit_size": 72, "number_of_rounds": 36},
+    {"block_bit_size": 48, "key_bit_size": 96, "number_of_rounds": 36},
+    {"block_bit_size": 64, "key_bit_size": 96, "number_of_rounds": 42},
+    {"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 44},
+    {"block_bit_size": 96, "key_bit_size": 96, "number_of_rounds": 52},
+    {"block_bit_size": 96, "key_bit_size": 144, "number_of_rounds": 54},
+    {"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 68},
+    {"block_bit_size": 128, "key_bit_size": 192, "number_of_rounds": 69},
+    {"block_bit_size": 128, "key_bit_size": 256, "number_of_rounds": 72},
 ]
-z = [
-    4506230155203752166,
-    2575579794259089498,
-    3160415496042964403,
-    3957284701066611983,
-    3781244162168104175
-]
-conf = {
-    16: {4: 0},
-    24: {3: 0, 4: 1},
-    32: {3: 2, 4: 3},
-    48: {2: 2, 3: 3},
-    64: {2: 2, 3: 3, 4: 4}
-}
+Z = [4506230155203752166, 2575579794259089498, 3160415496042964403, 3957284701066611983, 3781244162168104175]
+CONF = {16: {4: 0}, 24: {3: 0, 4: 1}, 32: {3: 2, 4: 3}, 48: {2: 2, 3: 3}, 64: {2: 2, 3: 3, 4: 4}}
 reference_code = """
 def simon_encrypt(plaintext, key):
     from claasp.utils.integer_functions import bytearray_to_wordlist, wordlist_to_bytearray, lor, ror
@@ -142,16 +129,15 @@ class SimonBlockCipher(Cipher):
         self.word_size = self.block_bit_size // 2
         self.key_size_in_words = key_bit_size // self.word_size
         self.rotation_amounts = rotation_amounts.copy()
-        self.z = z[conf[self.word_size][self.key_size_in_words]]
+        self.z = Z[CONF[self.word_size][self.key_size_in_words]]
         self.c = 2**self.word_size - 4
 
         if number_of_rounds is None:
             n = None
 
             for parameters in PARAMETERS_CONFIGURATION_LIST:
-                if parameters['block_bit_size'] == self.block_bit_size and \
-                        parameters['key_bit_size'] == key_bit_size:
-                    n = parameters['number_of_rounds']
+                if parameters["block_bit_size"] == self.block_bit_size and parameters["key_bit_size"] == key_bit_size:
+                    n = parameters["number_of_rounds"]
                     break
 
             if n is None:
@@ -159,16 +145,19 @@ class SimonBlockCipher(Cipher):
         else:
             n = number_of_rounds
 
-        super().__init__(family_name="simon",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[self.block_bit_size, key_bit_size],
-                         cipher_output_bit_size=self.block_bit_size,
-                         cipher_reference_code=reference_code.format(block_bit_size, key_bit_size, n,
-                                                                     self.rotation_amounts, self.z))
+        super().__init__(
+            family_name="simon",
+            cipher_type="block_cipher",
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[self.block_bit_size, key_bit_size],
+            cipher_output_bit_size=self.block_bit_size,
+            cipher_reference_code=reference_code.format(block_bit_size, key_bit_size, n, self.rotation_amounts, self.z),
+        )
 
-        data = [INPUT_PLAINTEXT, INPUT_PLAINTEXT], \
-               [list(range(self.word_size)), list(range(self.word_size, 2 * self.word_size))]
+        data = (
+            [INPUT_PLAINTEXT, INPUT_PLAINTEXT],
+            [list(range(self.word_size)), list(range(self.word_size, 2 * self.word_size))],
+        )
 
         round_keys = [None] * n
 
@@ -194,13 +183,13 @@ class SimonBlockCipher(Cipher):
     def feistel_function(self, data, round_key):
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
         f_id = self.f((data[0][0], data[1][0]))
-        new_x_id = self.add_XOR_component([data[0][1], f_id, round_key[0]],
-                                          [data[1][1], list(range(self.word_size)), round_key[1]],
-                                          self.word_size).id
+        new_x_id = self.add_XOR_component(
+            [data[0][1], f_id, round_key[0]], [data[1][1], list(range(self.word_size)), round_key[1]], self.word_size
+        ).id
 
-        self.add_round_output_component([new_x_id, data[0][0]],
-                                        [list(range(self.word_size)), data[1][0]],
-                                        self.block_bit_size).id
+        self.add_round_output_component(
+            [new_x_id, data[0][0]], [list(range(self.word_size)), data[1][0]], self.block_bit_size
+        ).id
 
         return [new_x_id, data[0][0]], [list(range(self.word_size)), data[1][0]]
 
@@ -209,34 +198,38 @@ class SimonBlockCipher(Cipher):
             key_size = self.key_size_in_words - round_number - 1
 
             self.add_round_key_output_component(
-                [INPUT_KEY],
-                [list(range(self.word_size * key_size, self.word_size * (key_size + 1)))],
-                self.word_size).id
-            round_keys[round_number] = \
-                INPUT_KEY, list(range(self.word_size * key_size, self.word_size * (key_size + 1)))
+                [INPUT_KEY], [list(range(self.word_size * key_size, self.word_size * (key_size + 1)))], self.word_size
+            ).id
+            round_keys[round_number] = (
+                INPUT_KEY,
+                list(range(self.word_size * key_size, self.word_size * (key_size + 1))),
+            )
 
         else:
             i = round_number - self.key_size_in_words
 
             # c ^ z[j][i]
-            round_constant = self.add_constant_component(
-                self.word_size, self.c ^ ((self.z >> (61 - (i % 62))) & 1)).id
+            round_constant = self.add_constant_component(self.word_size, self.c ^ ((self.z >> (61 - (i % 62))) & 1)).id
 
-            op = self.add_rotate_component([round_keys[i + self.key_size_in_words - 1][0]],
-                                           [round_keys[i + self.key_size_in_words - 1][1]],
-                                           self.word_size, 3).id
+            op = self.add_rotate_component(
+                [round_keys[i + self.key_size_in_words - 1][0]],
+                [round_keys[i + self.key_size_in_words - 1][1]],
+                self.word_size,
+                3,
+            ).id
 
             if self.key_size_in_words == 4:
-                op = self.add_XOR_component([op, round_keys[i + 1][0]],
-                                            [list(range(self.word_size)), round_keys[i + 1][1]],
-                                            self.word_size).id
+                op = self.add_XOR_component(
+                    [op, round_keys[i + 1][0]], [list(range(self.word_size)), round_keys[i + 1][1]], self.word_size
+                ).id
 
             rot_id = self.add_rotate_component([op], [list(range(self.word_size))], self.word_size, 1).id
 
-            xor_id = self.add_XOR_component([round_constant, round_keys[i][0], op, rot_id],
-                                            [list(range(self.word_size)), round_keys[i][1]] +
-                                            [list(range(self.word_size))] * 2,
-                                            self.word_size).id
+            xor_id = self.add_XOR_component(
+                [round_constant, round_keys[i][0], op, rot_id],
+                [list(range(self.word_size)), round_keys[i][1]] + [list(range(self.word_size))] * 2,
+                self.word_size,
+            ).id
 
             self.add_round_key_output_component([xor_id], [list(range(self.word_size))], self.word_size).id
             round_keys[round_number] = xor_id, list(range(self.word_size))
