@@ -1,26 +1,25 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
-PARAMETERS_CONFIGURATION_LIST = [{'block_bit_size': 64, 'key_bit_size': 128, 'number_of_rounds': 32}]
+
+PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 32}]
 reference_code = """
 def xtea_encrypt(plaintext, key):
     from claasp.utils.integer_functions import bytearray_to_wordlist, wordlist_to_bytearray
@@ -40,13 +39,12 @@ def xtea_encrypt(plaintext, key):
     k = bytearray_to_wordlist(key, block_size, key_size)
 
     for _ in range(rounds):
-
         v[0] += (((v[1] << left_shift_amount) ^ (v[1] >> right_shift_amount)) + v[1]) ^ (sum + k[sum & 3])
         v[0] = v[0] % 2**block_size
 
         sum += delta
 
-        v[1] += (((v[0] << left_shift_amount) ^ (v[0] >> right_shift_amount)) + v[0]) ^ (sum + k[(sum>>11) & 3])
+        v[1] += (((v[0] << left_shift_amount) ^ (v[0] >> right_shift_amount)) + v[0]) ^ (sum + k[(sum >> 11) & 3])
         v[1] = v[1] % 2**block_size
 
     return wordlist_to_bytearray(v, block_size, plaintext_size)
@@ -80,28 +78,32 @@ class XTeaBlockCipher(Cipher):
         'shift_0_0'
     """
 
-    def __init__(self, block_bit_size=64, key_bit_size=128,
-                 number_of_rounds=0, right_shift_amount=5, left_shift_amount=4):
+    def __init__(
+        self, block_bit_size=64, key_bit_size=128, number_of_rounds=0, right_shift_amount=5, left_shift_amount=4
+    ):
         self.word_size = block_bit_size // 2
 
         if number_of_rounds == 0:
             n = None
             for parameters in PARAMETERS_CONFIGURATION_LIST:
-                if parameters['block_bit_size'] == block_bit_size and parameters['key_bit_size'] == key_bit_size:
-                    n = parameters['number_of_rounds']
+                if parameters["block_bit_size"] == block_bit_size and parameters["key_bit_size"] == key_bit_size:
+                    n = parameters["number_of_rounds"]
                     break
             if n is None:
                 raise ValueError("No available number of rounds for the given parameters.")
         else:
             n = number_of_rounds
 
-        super().__init__(family_name="xtea",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[block_bit_size, key_bit_size],
-                         cipher_output_bit_size=block_bit_size,
-                         cipher_reference_code=reference_code.format(block_bit_size, key_bit_size, n,
-                                                                     right_shift_amount, left_shift_amount))
+        super().__init__(
+            family_name="xtea",
+            cipher_type="block_cipher",
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[block_bit_size, key_bit_size],
+            cipher_output_bit_size=block_bit_size,
+            cipher_reference_code=reference_code.format(
+                block_bit_size, key_bit_size, n, right_shift_amount, left_shift_amount
+            ),
+        )
 
         data = [(INPUT_PLAINTEXT, list(range(i * self.word_size, (i + 1) * self.word_size))) for i in range(2)]
         key = [(INPUT_KEY, list(range(i * self.word_size, (i + 1) * self.word_size))) for i in range(4)]
@@ -122,17 +124,19 @@ class XTeaBlockCipher(Cipher):
             xor1_id = self.add_XOR_component([ls1_id, rs1_id], [word_bit_positions] * 2, self.word_size).id
 
             # ((v1 << l) ^ (v1 >> r)) + v1
-            sum1_id = self.add_MODADD_component([xor1_id, data[1][0]],
-                                                [word_bit_positions, data[1][1]], self.word_size).id
+            sum1_id = self.add_MODADD_component(
+                [xor1_id, data[1][0]], [word_bit_positions, data[1][1]], self.word_size
+            ).id
 
             # sum constant
-            sum_constant = (round_number * 0x9E3779B9) % 2 ** self.word_size
+            sum_constant = (round_number * 0x9E3779B9) % 2**self.word_size
             sum_constant_id = self.add_constant_component(self.word_size, sum_constant).id
 
             # sum + key[sum & 3]
             i = sum_constant & 3
-            sum2_id = self.add_MODADD_component([sum_constant_id, key[i][0]],
-                                                [word_bit_positions, key[i][1]], self.word_size).id
+            sum2_id = self.add_MODADD_component(
+                [sum_constant_id, key[i][0]], [word_bit_positions, key[i][1]], self.word_size
+            ).id
 
             # (((v1 << l) ^ (v1 >> r)) + v1) ^ (sum + key[sum & 3])
             xor2_id = self.add_XOR_component([sum1_id, sum2_id], [word_bit_positions] * 2, self.word_size).id
@@ -142,7 +146,7 @@ class XTeaBlockCipher(Cipher):
 
             # OPERATION 2
             # sum = sum + delta
-            sum_constant = (sum_constant + 0x9E3779B9) % 2 ** self.word_size
+            sum_constant = (sum_constant + 0x9E3779B9) % 2**self.word_size
             sum_constant_id = self.add_constant_component(self.word_size, sum_constant).id
 
             # v0 << l
@@ -159,8 +163,9 @@ class XTeaBlockCipher(Cipher):
 
             # sum + key[(sum>>11) & 3]
             i = (sum_constant >> 11) & 3
-            sum4_id = self.add_MODADD_component([sum_constant_id, key[i][0]],
-                                                [word_bit_positions, key[i][1]], self.word_size).id
+            sum4_id = self.add_MODADD_component(
+                [sum_constant_id, key[i][0]], [word_bit_positions, key[i][1]], self.word_size
+            ).id
 
             # (((v0 << l) ^ (v0 >> r)) + v0) ^ (sum + key[(sum>>11) & 3])
             xor4_id = self.add_XOR_component([sum3_id, sum4_id], [word_bit_positions] * 2, self.word_size).id
