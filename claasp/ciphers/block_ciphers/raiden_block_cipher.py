@@ -1,26 +1,25 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
-PARAMETERS_CONFIGURATION_LIST = [{'block_bit_size': 64, 'key_bit_size': 128, 'number_of_rounds': 16}]
+
+PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 16}]
 reference_code = """
 def raiden_encrypt(plaintext, key):
     from claasp.utils.integer_functions import bytearray_to_wordlist, wordlist_to_bytearray
@@ -64,7 +63,8 @@ class RaidenBlockCipher(Cipher):
     - ``key_bit_size`` -- **integer** (default: `128`); cipher key bit size of the cipher
     - ``number_of_rounds`` -- **integer** (default: `0`); number of rounds of the cipher. The cipher uses the
       corresponding amount given the other parameters (if available) when number_of_rounds is 0
-    - ``right_shift_amount`` -- **integer** (default: `14`); number of bits to be shifted in each right shift of the cipher
+    - ``right_shift_amount`` -- **integer** (default: `14`);
+      number of bits to be shifted in each right shift of the cipher
     - ``left_shift_amount`` -- **integer** (default: `9`); number of bits to be shifted in each left shift of the cipher
 
     EXAMPLES::
@@ -77,17 +77,17 @@ class RaidenBlockCipher(Cipher):
         'modadd_0_0'
     """
 
-    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=0,
-                 right_shift_amount=14, left_shift_amount=9):
+    def __init__(
+        self, block_bit_size=64, key_bit_size=128, number_of_rounds=0, right_shift_amount=14, left_shift_amount=9
+    ):
         self.word_size = block_bit_size // 2
 
         if number_of_rounds == 0:
             n = None
 
             for parameters in PARAMETERS_CONFIGURATION_LIST:
-                if parameters['block_bit_size'] == block_bit_size and \
-                        parameters['key_bit_size'] == key_bit_size:
-                    n = parameters['number_of_rounds']
+                if parameters["block_bit_size"] == block_bit_size and parameters["key_bit_size"] == key_bit_size:
+                    n = parameters["number_of_rounds"]
                     break
 
             if n is None:
@@ -95,13 +95,16 @@ class RaidenBlockCipher(Cipher):
         else:
             n = number_of_rounds
 
-        super().__init__(family_name="raiden",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[block_bit_size, key_bit_size],
-                         cipher_output_bit_size=block_bit_size,
-                         cipher_reference_code=reference_code.format(block_bit_size, key_bit_size,
-                                                                     n, right_shift_amount, left_shift_amount))
+        super().__init__(
+            family_name="raiden",
+            cipher_type="block_cipher",
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[block_bit_size, key_bit_size],
+            cipher_output_bit_size=block_bit_size,
+            cipher_reference_code=reference_code.format(
+                block_bit_size, key_bit_size, n, right_shift_amount, left_shift_amount
+            ),
+        )
 
         data = [(INPUT_PLAINTEXT, list(range(i * self.word_size, (i + 1) * self.word_size))) for i in range(2)]
         key = [(INPUT_KEY, list(range(i * self.word_size, (i + 1) * self.word_size))) for i in range(4)]
@@ -119,8 +122,9 @@ class RaidenBlockCipher(Cipher):
             sum2_id = self.add_MODADD_component([key[2][0], key[3][0]], [key[2][1], key[3][1]], self.word_size).id
 
             # k0 << k2
-            ls1_id = \
-                self.add_variable_shift_component([key[0][0], key[2][0]], [key[0][1], key[2][1]], self.word_size, -1).id
+            ls1_id = self.add_variable_shift_component(
+                [key[0][0], key[2][0]], [key[0][1], key[2][1]], self.word_size, -1
+            ).id
 
             # (k2 + k3) ^ (k0 << k2)
             xor1_id = self.add_XOR_component([sum2_id, ls1_id], [word_bit_positions] * 2, self.word_size).id
@@ -131,14 +135,16 @@ class RaidenBlockCipher(Cipher):
             # OPERATION 2
             # sk + v1
             sum3_id = self.add_MODADD_component(
-                [sk_id, data[1][0]], [word_bit_positions, data[1][1]], self.word_size).id
+                [sk_id, data[1][0]], [word_bit_positions, data[1][1]], self.word_size
+            ).id
 
             # (sk + v1) << ls
             ls2_id = self.add_SHIFT_component([sum3_id], [word_bit_positions], self.word_size, -left_shift_amount).id
 
             # sk - v1
             sub1_id = self.add_MODSUB_component(
-                [sk_id, data[1][0]], [word_bit_positions, data[1][1]], self.word_size).id
+                [sk_id, data[1][0]], [word_bit_positions, data[1][1]], self.word_size
+            ).id
 
             # (sk + v1) >> rs
             rs1_id = self.add_SHIFT_component([sum3_id], [word_bit_positions], self.word_size, right_shift_amount).id
@@ -171,9 +177,9 @@ class RaidenBlockCipher(Cipher):
             # ROUND KEY OUTPUT
             key[round_number % 4] = sk_id, word_bit_positions
 
-            self.add_round_key_output_component([key[0][0], key[1][0], key[2][0], key[3][0]],
-                                                [key[0][1], key[1][1], key[2][1], key[3][1]],
-                                                key_bit_size)
+            self.add_round_key_output_component(
+                [key[0][0], key[1][0], key[2][0], key[3][0]], [key[0][1], key[1][1], key[2][1], key[3][1]], key_bit_size
+            )
 
             # ROUND OUTPUT
             data[0] = v0, word_bit_positions
