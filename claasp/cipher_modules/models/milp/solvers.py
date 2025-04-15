@@ -117,4 +117,21 @@ MILP_SOLVERS_EXTERNAL = [
             "unsat_condition": "MIP - Integer infeasible.",
         },
     },
+    {
+        "solver_brand_name": "HiGHS (external)",
+        "solver_name": "HIGHS_EXT",
+        "keywords": {
+            "command": {
+                "executable": "highs",
+                "options": [],
+                "input_file": "--model_file",
+                "solve": "",
+                "output_file": "--solution_file",
+                "end": "",
+                "format": ["executable", "output_file", "input_file"],
+            },
+            "time": r"[\s]+Timing [\s]+([0-9]*[.]?[0-9]+) \(total\)",
+            "unsat_condition": "[\s]+Status[\s]+Infeasible",
+        },
+    },
 ]
