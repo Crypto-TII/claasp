@@ -973,3 +973,37 @@ def differential_truncated_checker_single_key(
 
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
+
+
+def pnb_high_order_xor_differential_checker_permutation(
+        cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+):
+    """
+    Verifies experimentally pnb_high_order_xor_differential distinguishers for permutations using the vectorized evaluator
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    num_bytes = int(state_size / 8)
+
+    rng = np.random.default_rng(seed)
+    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    output_difference_data = _repeat_input_difference(output_difference, number_of_samples, num_bytes)
+    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext2 = plaintext1 ^ input_difference_data
+
+    plaintext11 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext22 = plaintext11 ^ input_difference_data
+
+    ciphertext1 = cipher.evaluate_vectorized([plaintext1])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext2])
+
+    ciphertext11 = cipher.evaluate_vectorized([plaintext11])
+    ciphertext22 = cipher.evaluate_vectorized([plaintext22])
+
+    rows_all_true = np.all(
+        (ciphertext1[0] ^ ciphertext2[0] ^ ciphertext11[0] ^ ciphertext22[0] == output_difference_data.T), axis=1
+    )
+    total = np.count_nonzero(rows_all_true)
+    import math
+    total_prob_weight = math.log(total / number_of_samples, 2)
+    return total_prob_weight
