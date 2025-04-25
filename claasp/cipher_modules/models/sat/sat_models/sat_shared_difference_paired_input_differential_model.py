@@ -74,7 +74,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
         self.duplicate_round_cipher = cipher1
         super().__init__(self.duplicate_round_cipher)
 
-    def build_pnb_high_order_xor_differential_model(self, weight=-1, fixed_variables=[]):
+    def build_shared_difference_paired_input_differential_model(self, weight=-1, fixed_variables=[]):
         """
         Build the SAT model for searching high-order XOR differential distinguishers involving paired inputs
         and shared difference. The distinguisher follows the mathematical form:
@@ -98,7 +98,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_model import SharedDifferencePairedInputDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: model = SharedDifferencePairedInputDifferentialModel(speck)
-            sage: model.build_pnb_high_order_xor_differential_model()
+            sage: model.build_shared_difference_paired_input_differential_model()
         """
         self.differential_model.build_xor_differential_trail_model(weight, fixed_variables)
         self._model_constraints = self.differential_model._model_constraints
@@ -180,7 +180,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
             'SATISFIABLE'
         """
         start_time = time.time()
-        self.build_pnb_high_order_xor_differential_model(weight, fixed_variables=fixed_values)
+        self.build_shared_difference_paired_input_differential_model(weight, fixed_variables=fixed_values)
         solution = self.differential_model.solve(
             "SHARED_DIFFERENCE_PAIRED_INPUT_DIFFERENTIAL_MODEL", solver_name=solver_name
         )
