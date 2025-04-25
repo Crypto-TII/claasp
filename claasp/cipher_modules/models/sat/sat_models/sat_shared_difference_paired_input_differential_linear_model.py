@@ -28,7 +28,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
 
     """
 
-    def __init__(self, cipher, list_of_components):
+    def __init__(self, cipher, dict_of_components):
         """
         Initializes the model with cipher and components.
 
@@ -44,7 +44,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             sage: component_dict = {'middle_part_components': [], 'bottom_part_components': speck.get_components_in_round(4)}
             sage: model = SharedDifferencePairedInputDifferentialLinearModel(speck, component_dict)
         """
-        bottom_part_components = list_of_components["bottom_part_components"]
+        bottom_part_components = dict_of_components["bottom_part_components"]
         component_model_types = _generate_component_model_types(cipher)
         _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
 
