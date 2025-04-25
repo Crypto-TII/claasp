@@ -975,11 +975,11 @@ def differential_truncated_checker_single_key(
     return prob_weight
 
 
-def pnb_high_order_xor_differential_checker_permutation(
+def shared_difference_paired_input_differential_checker_permutation(
         cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
 ):
     """
-    Verifies experimentally pnb_high_order_xor_differential distinguishers for permutations using the vectorized evaluator
+    Verifies experimentally SharedDifferencePairedInputDifferential distinguishers for permutations using the vectorized evaluator
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
