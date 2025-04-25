@@ -5,6 +5,120 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2025-03-14
+
+### Added
+
+- Adding seed and number_of_processors parameters on cda.
+- Support for differential-linear trails on report module.
+- Optional probabilistic propagations for key schedule in the hybrid impossible model.
+- Hybrid model for xor impossible differential trail search.
+- Sat model for differential-linear distinguishers.
+- Differential-linear checker.
+- Add differential-linear search.
+- Add commands to use gurobi in github server.
+- Add a way to choose a component as cipher_output.
+- New representation for aradi block cipher.
+- Create ublock cipher.
+- Create twine block cipher object.
+- Build_generic_sat_model.
+- Add support for heterogeneous model creation.
+- Standard docstring head for sat and smt components.
+- Build_generic_sat_model_from_dictionary.
+- Clearer docstrings for sat and smt components.
+- Merging models.
+- Add automatic publish on pypi workflow.
+- Fix typo in docker image name.
+- Add m1 build workflow.
+- Run docker image without pre-building.
+- New interface of nist statistical tests.
+
+### Changed
+
+- Differential-linear cryptanalysis model.
+- More compact lowmc sbox and linear layers.
+- Refactor two methods in satxorlinearmodel.
+- Fix_variables_value_constraints.
+- Speed improvement on the division trail search module.
+- Moving window_size_weight_pr_vars.
+- Unified solve method for new unique minizinc model; defined internal solvers.
+
+### Fixed
+
+- Cp id bitwise model.
+- Cp id bitwise model and align hybrid model.
+- Addressing sonarqube issue.
+- Adding seed to differential_linear tests.
+- Addressing sonar reliability issue.
+- Fixing differential-linear trail model.
+- Mzn hybrid model for permutations.
+- Sbox deterministic truncated constraints.
+- Calculate_component_weight.
+- Doctest.
+- Xor linear model output issue.
+- Minor errors.
+- Mzn and not cp in testing.
+- Update actions/download-artifact version.
+- Update actions/upload-artifact version.
+- Correct parameters for the nist statistical tests and dieharder.
+
+## [3.0.0] - 2025-03-14
+
+### Added
+
+- Adding seed and number_of_processors parameters on cda.
+- Support for differential-linear trails on report module.
+- Optional probabilistic propagations for key schedule in the hybrid impossible model.
+- Hybrid model for xor impossible differential trail search.
+- Sat model for differential-linear distinguishers.
+- Differential-linear checker.
+- Add differential-linear search.
+- Add commands to use gurobi in github server.
+- Add a way to choose a component as cipher_output.
+- New representation for aradi block cipher.
+- Create ublock cipher.
+- Create twine block cipher object.
+- Build_generic_sat_model.
+- Add support for heterogeneous model creation.
+- Standard docstring head for sat and smt components.
+- Build_generic_sat_model_from_dictionary.
+- Clearer docstrings for sat and smt components.
+- Merging models.
+- Add automatic publish on pypi workflow.
+- Fix typo in docker image name.
+- Add m1 build workflow.
+- Run docker image without pre-building.
+- New interface of nist statistical tests.
+
+### Changed
+
+- Differential-linear cryptanalysis model.
+- More compact lowmc sbox and linear layers.
+- Refactor two methods in satxorlinearmodel.
+- Fix_variables_value_constraints.
+- Speed improvement on the division trail search module.
+- Moving window_size_weight_pr_vars.
+- Unified solve method for new unique minizinc model; defined internal solvers.
+
+### Fixed
+
+- Cp id bitwise model.
+- Cp id bitwise model and align hybrid model.
+- Addressing sonarqube issue.
+- Adding seed to differential_linear tests.
+- Addressing sonar reliability issue.
+- Fixing differential-linear trail model.
+- Mzn hybrid model for permutations.
+- Sbox deterministic truncated constraints.
+- Calculate_component_weight.
+- Doctest.
+- Xor linear model output issue.
+- Minor errors.
+- Mzn and not cp in testing.
+- Update actions/download-artifact version.
+- Update actions/upload-artifact version.
+- Correct parameters for the nist statistical tests and dieharder.
+
 ## [2.6.0] - 2024-08-23
 
 ### Added
@@ -218,6 +332,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything! First public release.
 
+[4.0.0]: https://github.com/Crypto-TII/claasp/compare/v4.0.0..v3.0.0
+[3.0.0]: https://github.com/Crypto-TII/claasp/compare/v3.0.0..v2.6.0
 [2.6.0]: https://github.com/Crypto-TII/claasp/compare/v2.6.0..v2.5.0
 [2.5.0]: https://github.com/Crypto-TII/claasp/compare/v2.5.0..v2.4.0
 [2.4.0]: https://github.com/Crypto-TII/claasp/compare/v2.4.0..v2.3.0

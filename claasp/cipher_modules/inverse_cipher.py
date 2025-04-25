@@ -272,13 +272,14 @@ def get_all_bit_names(self):
                             "type": "output_updated"
                         }
                         output_updated_bit_name = input_id_link + "_" + str(i) + "_output_updated"
-                    else:
-                        output_updated_bit = {
+                        if output_updated_bit_name not in dictio.keys():  # changed, if added
+                            dictio[output_updated_bit_name] = output_updated_bit
+                    output_updated_bit = {
                             "component_id": c.id,
                             "position": starting_bit_position + j,
                             "type": "output_updated"
                         }
-                        output_updated_bit_name = c.id + "_" + str(starting_bit_position + j) + "_output_updated"
+                    output_updated_bit_name = c.id + "_" + str(starting_bit_position + j) + "_output_updated"
                     if output_updated_bit_name not in dictio.keys(): # changed, if added
                         dictio[output_updated_bit_name] = output_updated_bit
                     j += 1
@@ -640,19 +641,22 @@ def is_intersection_of_input_id_links_null(inverse_component, component):
     return False, input_bit_positions
 
 def find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits):
-    starting_bit_position = 0
+    bit_positions = []
+    list_of_keys = []
+
+    for index, input_id_link in enumerate(inverse_component.input_id_links):
+        for position, i in enumerate(inverse_component.input_bit_positions[index]):
+            potential_equivalent_bit_name = input_id_link + "_" + str(i) + "_output_updated"
+            if potential_equivalent_bit_name in all_equivalent_bits.keys():
+                list_of_keys += all_equivalent_bits[potential_equivalent_bit_name]
+    offset = 0
     for index, input_id_link in enumerate(component.input_id_links):
-        input_bit_positions_of_inverse = inverse_component.input_bit_positions[index]
-        for position, i in enumerate(component.input_bit_positions[index]):
-            input_bit_name = input_id_link + "_" + str(i) + "_output"
-            potential_equivalent_bit_name = inverse_component.input_id_links[index] + "_" + str(
-                input_bit_positions_of_inverse[position]) + "_input"
-            if input_bit_name not in all_equivalent_bits[potential_equivalent_bit_name]:
-                input_bit_positions = list(
-                    range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[index])))
-                return input_bit_positions
-        starting_bit_position += len(component.input_bit_positions[index])
-    raise ValueError("Equivalent bits not found")
+        for pos, i in enumerate(component.input_bit_positions[index]):
+            output_bit_name = input_id_link + "_" + str(i) + "_output"
+            if output_bit_name in all_equivalent_bits and not any("output_updated" in item for item in all_equivalent_bits[output_bit_name]):
+                bit_positions.append(offset + pos)
+        offset += len(component.input_bit_positions[index])
+    return bit_positions
 
 def update_output_bits(inverse_component, self, all_equivalent_bits, available_bits):
 
@@ -677,8 +681,6 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
 
     id = inverse_component.id
     component = get_component_from_id(id, self)
-    flag_is_intersection_of_input_id_links_null, input_bit_positions = is_intersection_of_input_id_links_null(
-        inverse_component, component)
 
     if (component.description == [INPUT_KEY]) or (component.description == [INPUT_TWEAK]) or(component.type == CONSTANT):
         for i in range(component.output_bit_size):
@@ -702,8 +704,7 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
     elif component.input_bit_size == component.output_bit_size:
         _add_output_bit_equivalences(id, range(component.output_bit_size), component, all_equivalent_bits, available_bits)
     else:
-        if flag_is_intersection_of_input_id_links_null:
-            input_bit_positions = find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits)
+        input_bit_positions = find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits)
         _add_output_bit_equivalences(id, input_bit_positions, component, all_equivalent_bits, available_bits)
 
 def order_input_id_links_for_modadd(component, input_id_links, input_bit_positions, available_bits, self):
@@ -1252,7 +1253,7 @@ def sort_cipher_graph(cipher):
     - ``cipher`` -- graph representation of a cipher as a python dictionary
 
     EXAMPLE::
-        sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
+        sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher
         sage: from claasp.cipher_modules.inverse_cipher import sort_cipher_graph
         sage: identity = IdentityBlockCipher()
         sage: sort_cipher_graph(identity)

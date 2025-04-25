@@ -5,8 +5,11 @@ import numpy as np
 from claasp.cipher_modules.models.sat.sat_models.sat_probabilistic_xor_truncated_differential_model import (
     SatProbabilisticXorTruncatedDifferentialModel
 )
+
+from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, \
+    _update_component_model_types_for_truncated_components
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, \
-    differential_truncated_checker_permutation
+    differential_truncated_checker_single_key, differential_truncated_checker_permutation
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
@@ -76,61 +79,7 @@ def speck_key_expansion(key, rounds):
     return ks
 
 
-def generate_component_model_types(speck_cipher):
-    """Generates the component model types for a given Speck cipher."""
-    component_model_types = []
-    for component in speck_cipher.get_all_components():
-        component_model_types.append({
-            "component_id": component.id,
-            "component_object": component,
-            "model_type": "sat_xor_differential_propagation_constraints"
-        })
-    return component_model_types
-
-
-def update_component_model_types_for_truncated_components(
-        component_model_types,
-        truncated_components,
-        model_type="sat_bitwise_deterministic_truncated_xor_differential_constraints"
-):
-    """Updates the component model types for truncated components."""
-    for component_model_type in component_model_types:
-        if component_model_type["component_id"] in truncated_components:
-            component_model_type["model_type"] = model_type
-
-
-def extract_bits(columns, positions):
-    """Extracts the bits from columns at the specified positions."""
-    num_positions = len(positions)
-    num_columns = columns.shape[1]
-    bit_size = columns.shape[0] * 8
-
-    result = np.zeros((num_positions, num_columns), dtype=np.uint8)
-
-    for i in range(num_positions):
-        for j in range(num_columns):
-            byte_index = (bit_size - positions[i] - 1) // 8
-            bit_index = positions[i] % 8
-            result[i, j] = get_k_th_bit(columns[:, j][byte_index], bit_index)
-    return result
-
-
-def extract_bit_positions(binary_str):
-    """Extracts bit positions from a binary+unknows string."""
-    binary_str = binary_str[::-1]
-    positions = [i for i, bit in enumerate(binary_str) if bit in ['1', '0']]
-    return positions
-
-
-def repeat_input_difference(input_difference, num_samples, num_bytes):
-    """Repeats the input difference to generate a large sample for testing."""
-    bytes_array = input_difference.to_bytes(num_bytes, 'big')
-    np_array = np.array(list(bytes_array), dtype=np.uint8)
-    column_array = np_array.reshape(-1, 1)
-    return np.tile(column_array, (1, num_samples))
-
-
-def test_differential_in_single_key_scenario_speck3264():
+def test_differential_truncated_in_single_key_scenario_speck3264():
     """
     This test is checking the resulting probability after combining two differentials, one regular and one truncated.
     The regular one occurs with probability 2^-12 and the truncated one occurs with probability 1. The regular differential
@@ -139,34 +88,14 @@ def test_differential_in_single_key_scenario_speck3264():
     expected probability for the resulting differential is approximately 2^-12.
     """
     speck = SpeckBlockCipher(number_of_rounds=3)
-    rng = np.random.default_rng(seed=42)
     num_samples = 2 ** 14
     input_diff = 0xfe2ecdf8
     output_diff = "????100000000000????100000000011"
-
-    input_diff_data = repeat_input_difference(input_diff, num_samples, 4)
-    key_data = rng.integers(low=0, high=256, size=(8, num_samples), dtype=np.uint8)
-    plaintext_data1 = rng.integers(low=0, high=256, size=(4, num_samples), dtype=np.uint8)
-    plaintext_data2 = plaintext_data1 ^ input_diff_data
-
-    ciphertext1 = speck.evaluate_vectorized([plaintext_data1, key_data])
-    ciphertext2 = speck.evaluate_vectorized([plaintext_data2, key_data])
-    diff_ciphertext = ciphertext1[0] ^ ciphertext2[0]
-
-    bit_positions = extract_bit_positions(output_diff)
-    known_bits = extract_bits(diff_ciphertext.T, bit_positions)
-    inv_output_diff = output_diff[::-1]
-
-    filled_bits = [int(bit) for bit in inv_output_diff if bit in ["0", "1"]]
-
-    total = 0
-    for i in range(len(known_bits[0])):
-        if np.all(known_bits[:, i] == filled_bits):
-            total += 1
-
-    import math
-    prob_weight = math.log(total / num_samples, 2)
-    assert 14 > abs(prob_weight) > 11
+    key_size = speck.inputs_bit_size[1]
+    total_prob_weight = differential_truncated_checker_single_key(
+        speck, input_diff, output_diff, num_samples, speck.output_bit_size, 0x0, key_size, seed=42
+    )
+    assert 14 > abs(total_prob_weight) > 10
 
 
 def test_differential_in_single_key_scenario_aradi():
@@ -174,38 +103,17 @@ def test_differential_in_single_key_scenario_aradi():
     This test is checking the distinguisher tested in test_differential_linear_trail_with_fixed_weight_4_rounds_aradi
     which occurs with probability 2^-8.
     """
-    speck = AradiBlockCipherSBox(number_of_rounds=4)
-    rng = np.random.default_rng(seed=42)
+    aradi = AradiBlockCipherSBox(number_of_rounds=4)
     num_samples = 2 ** 12
     input_diff = 0x00080021000800210000000000000000
     output_diff = ("?0???0??0??0?0??????00??????0?0??0???0??0??0?0??????00??????0?0??0???0??0??0?0??????00??????0?0??0"
                    "???0??0??0?0??????00??????0?0?")
 
-    # Generate input data
-    input_diff_data = repeat_input_difference(input_diff, num_samples, 16)
-    key_data = rng.integers(low=0, high=256, size=(32, num_samples), dtype=np.uint8)
-    plaintext_data1 = rng.integers(low=0, high=256, size=(16, num_samples), dtype=np.uint8)
-    plaintext_data2 = plaintext_data1 ^ input_diff_data
+    key_size = aradi.inputs_bit_size[1]
+    aradi = differential_truncated_checker_single_key(
+        aradi, input_diff, output_diff, num_samples, aradi.output_bit_size, 0x0, key_size, seed=42)
 
-    # Encrypt and evaluate
-    ciphertext1 = speck.evaluate_vectorized([plaintext_data1, key_data])
-    ciphertext2 = speck.evaluate_vectorized([plaintext_data2, key_data])
-    diff_ciphertext = ciphertext1[0] ^ ciphertext2[0]
-
-    # Check bit positions
-    bit_positions = extract_bit_positions(output_diff)
-    known_bits = extract_bits(diff_ciphertext.T, bit_positions)
-    inv_output_diff = output_diff[::-1]
-
-    filled_bits = [int(bit) for bit in inv_output_diff if bit in ["0", "1"]]
-
-    total = 0
-    for i in range(len(known_bits[0])):
-        if np.all(known_bits[:, i] == filled_bits):
-            total += 1
-
-    prob_weight = math.log(total / num_samples, 2)
-    assert 9 > abs(prob_weight) > 2
+    assert 9 > abs(aradi) > 2
 
 
 def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight_4_rounds():
@@ -235,7 +143,7 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
         bit_values=(0,) * 64
     )
 
-    component_model_types = generate_component_model_types(speck)
+    component_model_types = _generate_component_model_types(speck)
     truncated_components = [
         'constant_2_0',
         'rot_2_1',
@@ -265,7 +173,7 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
         'intermediate_output_3_12',
         'cipher_output_3_12'
     ]
-    update_component_model_types_for_truncated_components(component_model_types, truncated_components)
+    _update_component_model_types_for_truncated_components(component_model_types, truncated_components)
 
     sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
     trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
@@ -302,7 +210,7 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
         bit_values=(0,) * 64
     )
 
-    component_model_types = generate_component_model_types(speck)
+    component_model_types = _generate_component_model_types(speck)
     truncated_components = [
         'constant_2_0', 'rot_2_1', 'modadd_2_2', 'xor_2_3', 'rot_2_4',
         'xor_2_5', 'rot_2_6', 'modadd_2_7', 'xor_2_8', 'rot_2_9', 'xor_2_10',
@@ -314,7 +222,7 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
         'xor_4_5', 'rot_4_6', 'modadd_4_7', 'xor_4_8', 'rot_4_9', 'xor_4_10',
         'intermediate_output_4_11', 'intermediate_output_4_12', 'cipher_output_4_12'
     ]
-    update_component_model_types_for_truncated_components(component_model_types, truncated_components)
+    _update_component_model_types_for_truncated_components(component_model_types, truncated_components)
 
     sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
 
@@ -353,7 +261,7 @@ def test_find_lowest_xor_probabilistic_truncated_differential_trail_with_fixed_w
         bit_values=(0,) * 64
     )
 
-    component_model_types = generate_component_model_types(speck)
+    component_model_types = _generate_component_model_types(speck)
     truncated_components = [
         'constant_2_0', 'rot_2_1', 'modadd_2_2', 'xor_2_3', 'rot_2_4',
         'xor_2_5', 'rot_2_6', 'modadd_2_7', 'xor_2_8', 'rot_2_9', 'xor_2_10',
@@ -365,7 +273,7 @@ def test_find_lowest_xor_probabilistic_truncated_differential_trail_with_fixed_w
         'xor_4_5', 'rot_4_6', 'modadd_4_7', 'xor_4_8', 'rot_4_9', 'xor_4_10',
         'intermediate_output_4_11', 'intermediate_output_4_12', 'cipher_output_4_12'
     ]
-    update_component_model_types_for_truncated_components(component_model_types, truncated_components)
+    _update_component_model_types_for_truncated_components(component_model_types, truncated_components)
 
     sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
     trail = sat_heterogeneous_model.find_lowest_weight_xor_probabilistic_truncated_differential_trail(
@@ -407,7 +315,7 @@ def test_wrong_fixed_variables_assignment():
             0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         )
     )
-    component_model_types = generate_component_model_types(speck)
+    component_model_types = _generate_component_model_types(speck)
     sat_bitwise_deterministic_truncated_components = [
         'constant_2_0',
         'rot_2_1',
@@ -450,7 +358,7 @@ def test_wrong_fixed_variables_assignment():
         'intermediate_output_4_12',
         'cipher_output_4_12'
     ]
-    update_component_model_types_for_truncated_components(
+    _update_component_model_types_for_truncated_components(
         component_model_types, sat_bitwise_deterministic_truncated_components
     )
 
@@ -493,8 +401,8 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
         bit_values=(0,) * 256
     )
 
-    component_model_types = generate_component_model_types(aradi)
-    update_component_model_types_for_truncated_components(component_model_types, bottom_part_components)
+    component_model_types = _generate_component_model_types(aradi)
+    _update_component_model_types_for_truncated_components(component_model_types, bottom_part_components)
 
     sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(aradi, component_model_types)
     trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(

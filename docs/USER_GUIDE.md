@@ -1,11 +1,8 @@
 # User's Guide for CLAASP Library
 
-In this guide we provide instruction for a user to start using CLAASP: Cryptographic Library for Automated Analysis of 
-Symmetric Primitives library.
+In this guide we provide instruction for a user to start using CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives library.
 
-This package is designed as a cryptanalysis tool to examine properties of Boolean functions, S-Boxes, block ciphers,
-stream ciphers, public-key, digital signatures, etc. It is built on the top of [SageMath](http://www.sagemath.org) and
-implemented using [Python3](https://www.python.org/) and [Cython](https://www.cython.org).
+This package is designed as a cryptanalysis tool to examine properties of Boolean functions, S-Boxes, block ciphers, stream ciphers, public-key, digital signatures, etc. It is built on the top of [SageMath](http://www.sagemath.org) and implemented using [Python3](https://www.python.org/) and [Cython](https://www.cython.org).
 
 ## Installation
 
@@ -16,39 +13,66 @@ Download the source from the git repository:
     $ cd claasp/
 ```
 
-CLAASP library is built on the top of SageMath, and it will try to pick the `sage` binary from `PATH`
-environment variable. Alternatively, you can specify different sage binary in the file `SAGE_BIN_PATH` 
-if you want to use other version of SageMath.
+CLAASP library is built on the top of SageMath, and it will try to pick the `sage` binary from `PATH` environment variable. Alternatively, you can specify different sage binary in the file `SAGE_BIN_PATH` if you want to use other version of SageMath.
 
-There are two different ways of getting the library ready to use, using docker or installing the dependencies on your 
-machine. If you choose to use Docker, the dependencies will not be installed. These will remain inside your docker 
-image and will be deleted as soon as you delete that image.
+There are two different ways of getting the library ready to use, using pip, docker or installing the dependencies on your machine. If you choose to use Docker, the dependencies will not be installed. These will remain inside your docker image and will be deleted as soon as you delete that image.
+
+### Using pip
+
+You can install CLAASP using `pip` with the commands:
+
+```bash
+    $ python3 -m venv your_venv_name
+    $ source your_venv_name/bin/activate
+    $ pip install claasp
+```
+
+In order to use the library, you have to manually install other dependencies:
+- `dieharder` version `3.31.1.2-1build1`;
+- `latexmk` version `1:4.76-1`;
+- `python3-cryptominisat` version `5.8.0+dfsg1-2`;
+- `sagemath` version `9.5-4`.
 
 ### Docker
 
-In order to use this approach you need to have [docker](https://www.docker.com/) installed and up in your machine.
-After we have installed and opened it, we can run the command in the terminal that will create the image and launch 
-the container:
+In order to use this approach you need to have [Docker](https://www.docker.com/) installed and up in your machine.
+
+After you have installed and opened it, you can run the command in the terminal that will create the image and launch the container.
+
+#### Using Makefile
 
 - In case you use a macOS machine with Apple Silicon chip (arm64), you need to run the command
-   ```make rundocker-m1```
 
-- Otherwise, run ```make rundocker```
+    ```make rundocker-m1```
 
-Once it has finished, inside the docker terminal execute the command:
-    
-   ```make install```
+- Otherwise, run
 
-After the installation, we need to enter to the sage terminal with the command:
+    ```make rundocker```
 
-   ```sage```
+After the installation, you need to enter to the sage terminal with the command:
 
-After that we are ready to go and can use the library as specified in the [usage](#usage) section.
+```sage```
+
+After that you are ready to go and can use the library as specified in the [usage](#usage) section.
+
+#### Using docker-compose
+
+You can alternatively use `docker-compose`.
+
+1. **Create the service**  
+    Run `docker compose create environment` or `docker compose create environment-arm` (depending on your architecture).
+2. **Start the container**  
+    Run `docker start -ia claasp-container` or `docker start -ia claasp-arm-container`
+3. **Have fun with library**  
+    Enter the Sage terminal with `sage` command and follow [usage](#usage).
+4. **Exit the container**  
+    When you exit the container, you can restart whenever you want at point 2.
+5. **Clean (optionally)**  
+    If you want to regain some space, just run `docker rm claasp-container; docker rmi tiicrc/claasp:local` or `docker rm claasp-arm-container; docker rmi tiicrc/claasp:arm-local`.
 
 ### Manual installation
 
-To install the dependencies manually, you can do it through make command or executing a script from the 
-root directory of the project. Before doing this, make sure that you have set up `locale` correctly.
+To install the dependencies manually, you can do it through make command or executing a script from the root directory of the project. Before doing this, make sure that you have set up `locale` correctly.
 
 #### Make command
 
@@ -60,8 +84,7 @@ Alternatively, you can run ```./configure.sh```.
 
 ## Documentation
 
-If you want to deep dive in the library, check how it works and what you can do with it, you can generate the 
-documentation in two different formats: an HTML page or a pdf file. You can find both ways of generating it below.
+If you want to deep dive in the library, check how it works and what you can do with it, you can generate the documentation in two different formats: an HTML page or a pdf file. You can find both ways of generating it below.
 
 ### HTML
 
@@ -83,8 +106,7 @@ The resulting PDF is available in `docs/build/latex/claasp.pdf`.
 
 ## Copyright
 
-Every new file created inside `claasp` folder must include de project copyright.
-You can generate it by running:
+Every new file created inside `claasp` folder must include de project copyright. You can generate it by running:
 
     $ make copyright
 

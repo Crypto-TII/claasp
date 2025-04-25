@@ -52,6 +52,17 @@ RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-603.tar.gz 
 
 ENV SOPLEX_HOME="/opt/soplex-release-603/build"
 
+## Installing HiGHS
+
+RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-archive.tar.gz \
+    && tar -xf source-archive.tar.gz \
+    && rm source-archive.tar.gz \
+    && cd HiGHS \
+    && cmake -S. -B build \
+    && cmake --build build --parallel
+
+ENV PATH="${PATH}:/opt/HiGHS/build/bin"
+
 WORKDIR /opt
 
 ## Installing SCIP
@@ -86,7 +97,8 @@ RUN sage -pip install bitstring==4.0.1 \
   pytest-benchmark==4.0.0 \
   networkx==2.8.8 \
   numpy==1.24.3 \
-  joblib==1.4.2
+  joblib==1.4.2 \
+  gurobipy==11.0
 
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
@@ -171,12 +183,11 @@ WORKDIR /opt
 ENV PATH="/opt/glucose-syrup-4.1/simp:/opt/glucose-syrup-4.1/parallel:${PATH}"
 
 # Installing MathSat
-RUN wget https://mathsat.fbk.eu/download.php?file=mathsat-5.6.9-linux-x86_64.tar.gz \
-    && mv download.php?file=mathsat-5.6.9-linux-x86_64.tar.gz mathsat-5.6.9-linux-x86_64.tar.gz \
-    && tar -xf mathsat-5.6.9-linux-x86_64.tar.gz \
-    && rm mathsat-5.6.9-linux-x86_64.tar.gz
+RUN wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
+    && tar -xf mathsat-5.6.11-linux-x86_64.tar.gz \
+    && rm mathsat-5.6.11-linux-x86_64.tar.gz
 
-ENV PATH="/opt/mathsat-5.6.9-linux-x86_64/bin:${PATH}"
+ENV PATH="/opt/mathsat-5.6.11-linux-x86_64/bin:${PATH}"
 
 # Installing Minisat
 RUN wget https://github.com/stp/minisat/archive/refs/tags/releases/2.2.1.zip \

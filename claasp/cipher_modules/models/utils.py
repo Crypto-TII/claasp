@@ -52,7 +52,7 @@ def check_if_implemented_component(component):
         print(f'{component.id} not yet implemented')
         return False
     return True
-            
+
 
 def convert_solver_solution_to_dictionary(cipher, model_type, solver_name, solve_time, memory,
                                           components_values, total_weight):
@@ -116,7 +116,7 @@ def get_previous_output_bit_ids(input_bit_positions, input_id_links, format_func
     previous_output_bit_ids = []
     for id_link, bit_positions in zip(input_id_links, input_bit_positions):
         previous_output_bit_ids.extend(
-                [format_func((id_link, f'{position}', 'o')) for position in bit_positions])
+            [format_func((id_link, f'{position}', 'o')) for position in bit_positions])
 
     return previous_output_bit_ids
 
@@ -230,30 +230,6 @@ def set_component_value_weight_sign(value, weight=0, sign=1):
         'weight': weight,
         'sign': sign
     }
-
-def set_component_solution(value, weight=None, sign=None):
-    """
-    Return a dictionary that represents the solution for one component of the cipher.
-
-    INPUT:
-
-    - ``value`` -- **string**; hexadecimal representation (e.g. ``'abcd1234'``) that represents the output of the
-      component
-    - ``weight`` -- **integer** (default: `None`); the weight of the component
-    - ``sign`` -- **integer** (default: `None`); the sign of the weight of the component (either 1 or -1)
-
-    EXAMPLES::
-
-        sage: from claasp.cipher_modules.models.utils import set_component_solution
-        sage: set_component_solution('abcd1234', 0, 1)
-        {'sign': 1, 'value': 'abcd1234', 'weight': 0}
-    """
-    component_solution = {'value': value}
-    if weight is not None:
-        component_solution['weight'] = weight
-    if sign is not None:
-        component_solution['sign'] = sign
-    return component_solution
 
 
 def set_component_solution(value, weight=None, sign=None):
@@ -855,16 +831,15 @@ def _repeat_input_difference(input_difference, num_samples, num_bytes):
 
 
 def differential_linear_checker_for_permutation(
-        cipher, input_difference, output_mask, number_of_samples, state_size
+        cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
 ):
     """
     This method helps to verify experimentally differential-linear distinguishers for permutations using the vectorized evaluator
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
-    num_bytes = int(state_size/8)
-
-    rng = np.random.default_rng()
+    num_bytes = int(state_size / 8)
+    rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
     plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
     plaintext2 = plaintext1 ^ input_difference_data
@@ -875,15 +850,15 @@ def differential_linear_checker_for_permutation(
     ccc = _extract_bits(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
-    corr = 2*count/number_of_samples*1.0-1
+    corr = 2 * count / number_of_samples * 1.0 - 1
     return corr
 
 
 def differential_linear_checker_for_block_cipher_single_key(
-        cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key
+        cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None
 ):
     """
-    This method helps to verify experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator
+    Verifies experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator
     """
     if block_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
@@ -891,8 +866,7 @@ def differential_linear_checker_for_block_cipher_single_key(
         raise ValueError("Key size must be a multiple of 8.")
     state_num_bytes = int(block_size / 8)
     key_num_bytes = int(key_size / 8)
-
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(seed)
     fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, state_num_bytes)
     plaintext1 = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
@@ -904,8 +878,33 @@ def differential_linear_checker_for_block_cipher_single_key(
     ccc = _extract_bits(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
-    corr = 2*count/number_of_samples*1.0-1
+    corr = 2 * count / number_of_samples * 1.0 - 1
     return corr
+
+
+def differential_checker_permutation(
+        cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+):
+    """
+    Verifies experimentally differential distinguishers for permutations using the vectorized evaluator
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    num_bytes = int(state_size / 8)
+
+    rng = np.random.default_rng(seed)
+    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    output_difference_data = _repeat_input_difference(output_difference, number_of_samples, num_bytes)
+    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext2 = plaintext1 ^ input_difference_data
+
+    ciphertext1 = cipher.evaluate_vectorized([plaintext1])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext2])
+    rows_all_true = np.all((ciphertext1[0] ^ ciphertext2[0] == output_difference_data.T), axis=1)
+    total = np.count_nonzero(rows_all_true)
+    import math
+    total_prob_weight = math.log(total / number_of_samples, 2)
+    return total_prob_weight
 
 
 def differential_truncated_checker_permutation(
@@ -917,10 +916,7 @@ def differential_truncated_checker_permutation(
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
-    if seed:
-        rng = np.random.default_rng(seed)
-    else:
-        rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed)
 
     input_diff_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
     plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
@@ -945,29 +941,36 @@ def differential_truncated_checker_permutation(
     return prob_weight
 
 
-def differential_checker_permutation(
-        cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+def differential_truncated_checker_single_key(
+        cipher, input_difference, output_difference, number_of_samples, state_size, fixed_key, key_size, seed=None
 ):
     """
-    Verifies experimentally differential distinguishers for permutations using the vectorized evaluator
+    Verifies experimentally differential-truncated distinguishers for block_ciphers in the single-key scenario
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
+    rng = np.random.default_rng(seed)
 
-    if seed:
-        rng = np.random.default_rng(seed)
-    else:
-        rng = np.random.default_rng(seed)
-    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
-    output_difference_data = _repeat_input_difference(output_difference, number_of_samples, num_bytes)
-    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
-    plaintext2 = plaintext1 ^ input_difference_data
+    key_num_bytes = int(key_size / 8)
+    fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
+    input_diff_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext_data2 = plaintext_data1 ^ input_diff_data
 
-    ciphertext1 = cipher.evaluate_vectorized([plaintext1])
-    ciphertext2 = cipher.evaluate_vectorized([plaintext2])
-    rows_all_true = np.all((ciphertext1[0] ^ ciphertext2[0] == output_difference_data.T), axis=1)
-    total = np.count_nonzero(rows_all_true)
-    import math
-    total_prob_weight = math.log(total / number_of_samples, 2)
-    return total_prob_weight
+    ciphertext1 = cipher.evaluate_vectorized([plaintext_data1, fixed_key_data])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext_data2, fixed_key_data])
+    diff_ciphertext = ciphertext1[0] ^ ciphertext2[0]
+    bit_positions = extract_bit_positions(output_difference)
+    known_bits = extract_bits(diff_ciphertext.T, bit_positions)
+
+    inv_output_diff = output_difference[::-1]
+    filled_bits = [int(bit) for bit in inv_output_diff if bit in ["0", "1"]]
+
+    total = 0
+    for i in range(len(known_bits[0])):
+        if np.all(known_bits[:, i] == filled_bits):
+            total += 1
+
+    prob_weight = math.log(total / number_of_samples, 2)
+    return prob_weight

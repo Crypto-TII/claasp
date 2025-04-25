@@ -22,7 +22,7 @@ def test_build_impossible_xor_differential_trail_model():
     fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
     mzn.build_impossible_xor_differential_trail_model(number_of_rounds=5, fixed_variables=fixed_variables, middle_round=3)
 
-    assert len(mzn.model_constraints) == 1662
+    assert len(mzn.model_constraints) == 1661
     assert mzn.model_constraints[2] == 'array[0..31] of var 0..2: plaintext;'
     assert mzn.model_constraints[3] == 'array[0..63] of var 0..2: key;'
     assert mzn.model_constraints[4] == 'array[0..31] of var 0..2: inverse_cipher_output_4_12;'
@@ -73,7 +73,32 @@ def test_find_one_impossible_xor_differential_trail():
                                     bit_positions=range(32), bit_values=[0] * 32)
     key = set_fixed_variables('key', constraint_type='equal',
                                     bit_positions=range(64), bit_values=[0] * 64)
-    trail = mzn.find_one_impossible_xor_differential_trail(6, [plaintext, ciphertext, key], 'Chuffed', 1, 3, 6, True, solve_external = True)
+    trail = mzn.find_one_impossible_xor_differential_trail(fixed_values=[plaintext, ciphertext, key], solver_name='Chuffed', middle_round=3, intermediate_components=True, solve_external = True)
+
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r6'
+    assert trail['model_type'] == 'impossible_xor_differential_one_solution'
+    assert trail['solver_name'] == 'Chuffed'
+
+    assert trail['components_values']['plaintext']['value'] == '00000000021000000010000000000000'
+    assert trail['components_values']['inverse_cipher_output_5_12']['value'] == '10000000000000001000000000000010'
+    
+    assert trail['components_values']['xor_1_10']['value'] == '2222222221000022'
+    assert trail['components_values']['inverse_rot_2_9']['value'] == '2222222210022222'
+
+
+def test_find_one_impossible_xor_differential_trail_with_initial_and_final_round():
+    speck = SpeckBlockCipher(number_of_rounds=6)
+    mzn = MznImpossibleXorDifferentialModel(speck)
+    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
+                                    bit_positions=range(32), bit_values=[0] * 32)
+    ciphertext = set_fixed_variables(component_id='inverse_' + speck.get_all_components_ids()[-1],
+                                     constraint_type='not_equal',
+                                     bit_positions=range(32), bit_values=[0] * 32)
+    key = set_fixed_variables('key', constraint_type='equal',
+                              bit_positions=range(64), bit_values=[0] * 64)
+    trail = mzn.find_one_impossible_xor_differential_trail(fixed_values=[plaintext, ciphertext, key],
+                                                           solver_name='Chuffed', initial_round=1, final_round=6,
+                                                           intermediate_components=True, solve_external=True)
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r6'
     assert trail['model_type'] == 'impossible_xor_differential_one_solution'
@@ -81,7 +106,7 @@ def test_find_one_impossible_xor_differential_trail():
 
     assert trail['components_values']['plaintext']['value'] == '00000000022200000021000000000000'
     assert trail['components_values']['inverse_cipher_output_5_12']['value'] == '10000000000000001000000000000010'
-    
+
     assert trail['components_values']['xor_1_10']['value'] == '2222222222100022'
     assert trail['components_values']['inverse_rot_2_9']['value'] == '2222222210022222'
 
@@ -106,3 +131,17 @@ def test_find_one_impossible_xor_differential_trail_with_extensions():
     
     assert trail['components_values']['intermediate_output_2_12']['value'] == '22222222220000002222222222000022'
     assert trail['components_values']['inverse_intermediate_output_2_12']['value'] == '22222222222222222222222222122222'
+
+
+def test_find_one_impossible_xor_differential_cluster():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    mzn = MznImpossibleXorDifferentialModel(speck)
+    fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little')),
+                       set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')),
+                       set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little'))]
+    trail = mzn.find_one_impossible_xor_differential_cluster(4, fixed_variables, 'Chuffed', 1, 3, 4, intermediate_components=False)
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
+    assert trail['model_type'] == 'impossible_xor_differential_one_solution'
+    assert trail['solver_name'] == 'Chuffed'
+    assert trail['components_values']['key']['value'] == '0000000000000000000000000000000000000000000000000000000000000000'
+    assert trail['status'] == 'SATISFIABLE'
