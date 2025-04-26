@@ -17,18 +17,17 @@
 # ****************************************************************************
 
 
-import os
-import math
 import inspect
-import time
+import os
 from subprocess import call
 
 import claasp
+from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_of_bytes_needed_for_bit_size
 from claasp.component import free_input
 from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, CONSTANT,
                                   CONCATENATE, PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   FSR, CIPHER_INVERSE_SUFFIX)
-from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_of_bytes_needed_for_bit_size
+
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
 
@@ -371,8 +370,10 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
     for i in range(len(cipher.inputs)):
         code.append(f'  {cipher.inputs[i]}=input[{i}]')
         output_bit_sizes[cipher.inputs[i]] = cipher.inputs_bit_size[i]
+    cipher_descriptions = []
     for component in cipher.get_all_components():
-        #code.append(f'  print("{component.id}")')
+        cipher_descriptions.append(component.description)
+    for component in cipher.get_all_components():
         formatted_component_inputs = prepare_input_byte_based_vectorized_python_code_string(output_bit_sizes, component)
         output_bit_sizes[component.id] = component.output_bit_size
         component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
@@ -388,13 +389,12 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         if verbosity and component.type != 'constant':
             code.append(f'  byte_vector_print_as_hex_values("{name}_input", {formatted_component_inputs})')
             code.append(f'  byte_vector_print_as_hex_values("{name}_output", {name})')
-    #code.append('  print("CIPHER OUTPUT : ", cipher_output_15_15)')
 
     if store_intermediate_outputs:
         code.append('  return intermediateOutputs')
     elif CIPHER_INVERSE_SUFFIX in cipher.id:
         # full inversion
-        if 'plaintext' in cipher.get_all_components_ids():
+        if ['plaintext'] in cipher_descriptions:
             code.append('  return intermediateOutputs["plaintext"]')
         # in partial inversion
         else:
@@ -402,7 +402,6 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
             code.append('  return intermediateOutputs[last_inter_output]')
     else:
         code.append('  return intermediateOutputs["cipher_output"]')
-   # print('\n'.join(code))
 
     return '\n'.join(code)
 
