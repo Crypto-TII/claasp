@@ -22,7 +22,12 @@ class SatDifferentialLinearModel(SatModel):
     and linear model to create a differential-linear model.
     """
 
-    def __init__(self, cipher, list_of_components):
+    def __init__(
+            self,
+            cipher,
+            list_of_components,
+            middle_part_model="sat_bitwise_deterministic_truncated_xor_differential_constraints"
+    ):
         """
         Initializes the model with cipher and components.
 
@@ -32,32 +37,43 @@ class SatDifferentialLinearModel(SatModel):
         """
         middle_part_components = list_of_components["middle_part_components"]
         bottom_part_components = list_of_components["bottom_part_components"]
+        middle_part_component_ids = []
+
+        for component in middle_part_components:
+            middle_part_component_ids.append(component)
+        bottom_part_component_ids = []
+        for component in bottom_part_components:
+            bottom_part_component_ids.append(component)
 
         component_model_types = _generate_component_model_types(cipher)
-        _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-        _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+        _update_component_model_types_for_truncated_components(
+            component_model_types, middle_part_component_ids, middle_part_model
+        )
+        _update_component_model_types_for_linear_components(component_model_types, bottom_part_component_ids)
 
         self.dict_of_components = component_model_types
         self.regular_components = self._get_components_by_type('sat_xor_differential_propagation_constraints')
 
         model_types = set(component['model_type'] for component in self.dict_of_components)
 
-        truncated_model_types = {
+        truncated_model_types = [
             item for item in model_types if
             item != 'sat_xor_differential_propagation_constraints' and item != 'sat_xor_linear_mask_propagation_constraints'
-        }
+        ]
 
-        allow_truncated_models_types = {
+        allow_truncated_models_types = [
             'sat_semi_deterministic_truncated_xor_differential_constraints',
             'sat_bitwise_deterministic_truncated_xor_differential_constraints'
-        }
+        ]
 
-        if len(truncated_model_types & allow_truncated_models_types) == 0 or len(
-                truncated_model_types & allow_truncated_models_types) == 2:
+        if len(truncated_model_types + allow_truncated_models_types) == 0 or len(
+                truncated_model_types + allow_truncated_models_types) == 2:
+
             raise ValueError(f"Model types should be one of {allow_truncated_models_types}")
 
-        self.truncated_model_type = list(truncated_model_types)[0]
+        self.truncated_model_type = truncated_model_types[0]
         self.truncated_components = self._get_components_by_type(self.truncated_model_type)
+
         self.linear_components = self._get_components_by_type(
             'sat_xor_linear_mask_propagation_constraints')
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
@@ -102,9 +118,6 @@ class SatDifferentialLinearModel(SatModel):
         """
         truncated_component_ids = {item['component_id'] for item in self.truncated_components}
         border_components = []
-        print("truncated_component_ids:", truncated_component_ids)
-        print("linear_component_ids:", [item['component_id'] for item in self.linear_components])
-
         for linear_component in self.linear_components:
             component_obj = self.cipher.get_component_from_id(linear_component['component_id'])
             for input_id in component_obj.input_id_links:
@@ -237,9 +250,9 @@ class SatDifferentialLinearModel(SatModel):
             sage: middle_part_components = []
             sage: bottom_part_components = []
             sage: for round_number in range(2, 3):
-            ....:     middle_part_components.append(speck.get_components_in_round(round_number))
+            ....:     middle_part_components += [component.id for component in speck.get_components_in_round(round_number)]
             sage: for round_number in range(3, 6):
-            ....:     bottom_part_components.append(speck.get_components_in_round(round_number))
+            ....:     bottom_part_components += [component.id for component in speck.get_components_in_round(round_number)]
             sage: component_model_list = {
             ....:     'middle_part_components': middle_part_components,
             ....:     'bottom_part_components': bottom_part_components
@@ -271,14 +284,6 @@ class SatDifferentialLinearModel(SatModel):
             )
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
-        for vari in self._variables_list:
-            if vari.startswith('cipher_output'):
-                print(vari)
-
-        # minimize_vars = [f'cipher_output_7_24_{i}_o' for i in range(512)]
-        # n_vars, v_const = self._sequential_counter(minimize_vars, 3, "dummy_id_unknown")
-        # self._variables_list.extend(n_vars)
-        # self._model_constraints.extend(v_const)
 
         self._get_connecting_constraints()
 
@@ -355,8 +360,7 @@ class SatDifferentialLinearModel(SatModel):
                 weight = self.calculate_component_weight(component, constants.OUTPUT_BIT_ID_SUFFIX, variable2value)
                 total_weight_lin += weight
                 components_solutions[component.id] = set_component_solution(hex_value, weight)
-        print("top part weights:", total_weight_diff)
-        print("linear part weights:", total_weight_lin)
+
         return components_solutions, total_weight_diff + 2 * total_weight_lin
 
     def find_one_differential_linear_trail_with_fixed_weight(

@@ -38,16 +38,20 @@ class SatTruncatedXorDifferentialModel(SatModel):
             ....:    'bit_positions': [0, 1, 2, 3],
             ....:    'bit_values': [2, 1, 1, 0]
             ....: }]
-            sage: SatSemiDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints(fixed_variables)
-            ['-plaintext_0_0',
-             'plaintext_0_1',
-             '-plaintext_1_0',
-             '-plaintext_1_1',
-             '-plaintext_2_0',
-             'plaintext_2_1',
-             '-plaintext_3_0',
-             'plaintext_3_1',
-             '-ciphertext_0_0 ciphertext_1_0 -ciphertext_1_1 ciphertext_2_0 -ciphertext_2_1 ciphertext_3_0 ciphertext_3_1']
+            sage: list_of_constraints = SatSemiDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints(fixed_variables)
+            sage: expected_set_of_constraints = set(['-plaintext_0_0',
+            ....: 'plaintext_0_1',
+            ....: '-plaintext_1_0',
+            ....: '-plaintext_1_1',
+            ....: '-plaintext_2_0',
+            ....: 'plaintext_2_1',
+            ....: '-plaintext_3_0',
+            ....: 'plaintext_3_1',
+            ....: '-ciphertext_0_0 ciphertext_0_1',
+            ....: '-ciphertext_0_0 -ciphertext_0_1',
+            ....: 'ciphertext_1_0 -ciphertext_1_1 ciphertext_2_0 -ciphertext_2_1 ciphertext_3_0 ciphertext_3_1'])
+            sage: set(list_of_constraints) == expected_set_of_constraints
+            True
         """
         constraints = []
         for variable in fixed_variables:

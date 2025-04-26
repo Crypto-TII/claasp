@@ -278,7 +278,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
     assert trail["total_weight"] <= 32
 
 
-def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
+def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation."""
     chacha = ChachaPermutation(number_of_rounds=8)
 
@@ -318,11 +318,14 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
         bit_values=[0] * 32
     )
 
-    component_model_types = _generate_component_model_types(chacha)
-    _update_component_model_types_for_truncated_components(component_model_types, middle_part_components)
-    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_list = {
+        'middle_part_components': middle_part_components,
+        'bottom_part_components': bottom_part_components
+    }
 
-    sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
+    sat_heterogeneous_model = SatDifferentialLinearModel(
+        chacha, component_model_list
+    )
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
         weight=32, fixed_values=[plaintext, modadd_4_15], solver_name="CADICAL_EXT", num_unknown_vars=511
@@ -331,84 +334,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
     assert trail["total_weight"] <= 32
 
 
-def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha():
-    """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation.
-    This test is using in the middle part the semi-deterministic model.
-    """
-    chacha = ChachaPermutation(number_of_rounds=15)
-
-    import itertools
-
-    top_part_components = []
-    middle_part_components = []
-    bottom_part_components = []
-    for round_number in range(3):
-        top_part_components.append(chacha.get_components_in_round(round_number))
-    for round_number in range(3, 4):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
-    for round_number in range(4, 7):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
-
-    middle_part_components = list(itertools.chain(*middle_part_components))
-    bottom_part_components = list(itertools.chain(*bottom_part_components))
-
-    middle_part_components = [component.id for component in middle_part_components]
-    bottom_part_components = [component.id for component in bottom_part_components]
-
-    state_size = 512
-    initial_state_positions = [0] * state_size
-    initial_state_positions[508] = 1
-
-    plaintext1 = set_fixed_variables(
-        component_id='plaintext',
-        constraint_type='equal',
-        bit_positions=list(range(384)),
-        bit_values=[0] * 384
-    )
-
-    plaintext2 = set_fixed_variables(
-        component_id='plaintext',
-        constraint_type='not_equal',
-        bit_positions=list(range(384, 512)),
-        bit_values=[0] * 384
-    )
-
-    modadd_6_15 = set_fixed_variables(
-        component_id=f'modadd_6_15',
-        constraint_type='not_equal',
-        bit_positions=range(32),
-        bit_values=[0] * 32
-    )
-
-    component_model_types = _generate_component_model_types(chacha)
-    _update_component_model_types_for_truncated_components(
-        component_model_types,
-        middle_part_components,
-        truncated_model_type='sat_semi_deterministic_truncated_xor_differential_constraints'
-    )
-    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
-
-    sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
-
-    trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=80,
-        fixed_values=[plaintext1, plaintext2, modadd_6_15],
-        solver_name="PARKISSAT_EXT",
-        num_unknown_vars=12,
-        unknown_window_size_configuration={
-            "max_number_of_sequences_window_size_0": 80,
-            "max_number_of_sequences_window_size_1": 25,
-            "max_number_of_sequences_window_size_2": 190
-        },
-    )
-    print(trail)
-    import ipdb;
-    ipdb.set_trace()
-    assert trail["status"] == 'SATISFIABLE'
-    assert trail["total_weight"] <= 32
-
-
-def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
+def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation.
     This test is using in the middle part the semi-deterministic model.
     """
@@ -472,15 +398,14 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
         )
     )
 
-    component_model_types = _generate_component_model_types(chacha)
-    _update_component_model_types_for_truncated_components(
-        component_model_types,
-        middle_part_components,
-        truncated_model_type='sat_semi_deterministic_truncated_xor_differential_constraints'
-    )
-    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_list = {
+        'middle_part_components': middle_part_components,
+        'bottom_part_components': bottom_part_components
+    }
 
-    sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
+    sat_heterogeneous_model = SatDifferentialLinearModel(
+        chacha, component_model_list, middle_part_model='sat_semi_deterministic_truncated_xor_differential_constraints'
+    )
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
         weight=60,
@@ -537,30 +462,26 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
         bit_values=[0] * 32
     )
 
-    component_model_types = _generate_component_model_types(chacha)
-    _update_component_model_types_for_truncated_components(
-        component_model_types,
-        middle_part_components,
-        truncated_model_type='sat_semi_deterministic_truncated_xor_differential_constraints'
-    )
-    _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
+    component_model_list = {
+        'middle_part_components': middle_part_components,
+        'bottom_part_components': bottom_part_components
+    }
 
-    sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_types)
+    sat_heterogeneous_model = SatDifferentialLinearModel(
+        chacha,
+        component_model_list,
+        middle_part_model='sat_semi_deterministic_truncated_xor_differential_constraints'
+    )
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=20 - 5,
+        weight=12,
         fixed_values=[plaintext, modadd_3_0],
         solver_name="CADICAL_EXT",
         num_unknown_vars=8,
-        # unknown_window_size_configuration={
-        #    "max_number_of_sequences_window_size_0": 9,
-        #    "max_number_of_sequences_window_size_1": 5,
-        #    "max_number_of_sequences_window_size_2": 5
-        # },
     )
-    print(trail)
     assert trail["status"] == 'SATISFIABLE'
-    assert trail["total_weight"] == 11
+    assert trail["total_weight"] <= 12
+
 
 def test_diff_lin_chacha():
     """

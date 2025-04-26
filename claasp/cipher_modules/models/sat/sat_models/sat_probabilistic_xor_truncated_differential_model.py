@@ -153,7 +153,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
             ....:     component_model_type = {
             ....:         "component_id": component.id,
             ....:         "component_object": component,
-            ....:         "model_type": "sat_xor_differential_propagation_constraints"
+            ....:         "model_type": "sat_semi_deterministic_truncated_xor_differential_constraints"
             ....:     }
             ....:     component_model_types.append(component_model_type)
             sage: sat = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
