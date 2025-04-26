@@ -1,7 +1,3 @@
-import math
-
-import numpy as np
-
 from claasp.cipher_modules.models.sat.sat_models.sat_probabilistic_xor_truncated_differential_model import (
     SatProbabilisticXorTruncatedDifferentialModel
 )
@@ -13,7 +9,6 @@ from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_b
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-from claasp.utils.utils import get_k_th_bit
 
 WORD_SIZE = 16
 MASK_VAL = 2 ** WORD_SIZE - 1
@@ -492,11 +487,11 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
         bit_values=cipher_output_2_24_state
     )
 
-    component_model_types = generate_component_model_types(chacha)
-    update_component_model_types_for_truncated_components(
+    component_model_types = _generate_component_model_types(chacha)
+    _update_component_model_types_for_truncated_components(
         component_model_types,
         bottom_part_components,
-        model_type="sat_semi_deterministic_truncated_xor_differential_constraints"
+        truncated_model_type="sat_semi_deterministic_truncated_xor_differential_constraints"
     )
 
     sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(chacha, component_model_types)

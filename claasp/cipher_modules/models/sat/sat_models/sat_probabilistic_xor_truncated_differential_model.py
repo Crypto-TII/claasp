@@ -248,9 +248,6 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
                     total_weight += weight
                     total_weight_truncated += weight
                 components_solutions[component.id] = set_component_solution(value, weight)
-                # import ipdb; ipdb.set_trace()
-        print("total_weight", total_weight)
-        print("total_weight_truncated", total_weight_truncated)
         return components_solutions, total_weight
 
     def find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
