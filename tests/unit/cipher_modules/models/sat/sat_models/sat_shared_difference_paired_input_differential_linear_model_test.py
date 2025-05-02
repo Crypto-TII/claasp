@@ -169,7 +169,7 @@ def test_backward_direction_distinguisher():
             plaintext_constants,
             plaintext_nonce
         ],
-        solver_name="PARKISSAT_EXT"
+        solver_name="KISSAT_EXT"
     )
 
     assert trail["status"] == "SATISFIABLE"
