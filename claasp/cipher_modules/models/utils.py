@@ -793,9 +793,17 @@ def _number_to_n_bit_binary_string(number, n_bits):
 
 
 def _extract_bit_positions(hex_number, state_size):
+    """Extracts bit positions from a hex state_size-number."""
     binary_str = _number_to_n_bit_binary_string(hex_number, state_size)
     binary_str = binary_str[::-1]
     positions = [i for i, bit in enumerate(binary_str) if bit == '1']
+    return positions
+
+
+def extract_bit_positions(binary_str):
+    """Extracts bit positions from a binary+unknows string."""
+    binary_str = binary_str[::-1]
+    positions = [i for i, bit in enumerate(binary_str) if bit in ['1', '0']]
     return positions
 
 
@@ -813,13 +821,6 @@ def extract_bits(columns, positions):
             bit_index = positions[i] % 8
             result[i, j] = get_k_th_bit(columns[:, j][byte_index], bit_index)
     return result
-
-
-def extract_bit_positions(binary_str):
-    """Extracts bit positions from a binary+unknows string."""
-    binary_str = binary_str[::-1]
-    positions = [i for i, bit in enumerate(binary_str) if bit in ['1', '0']]
-    return positions
 
 
 def _repeat_input_difference(input_difference, num_samples, num_bytes):
