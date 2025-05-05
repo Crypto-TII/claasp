@@ -1043,3 +1043,89 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
     count = np.count_nonzero(parities == 0)
     corr = 2 * count / number_of_samples * 1.0 - 1
     return corr
+
+
+def _create_diff_array_from_truncated_string(diff_str, num_samples, state_size, rng):
+    """
+    Creates a difference array (num_bytes, num_samples) from a truncated difference
+    string of length 'state_size' bits. Each character in diff_str is '0', '1', or '?'.
+    - '0' means that bit of the difference is 0 for all samples.
+    - '1' means that bit of the difference is 1 for all samples.
+    - '?' means that bit of the difference is randomly chosen (0 or 1) for each sample.
+    """
+    num_bytes = state_size // 8
+    diff_array = np.zeros((num_bytes, num_samples), dtype=np.uint8)
+
+    # Reverse the string so that index 0 corresponds to the least significant bit
+    diff_str = diff_str[::-1]
+    if len(diff_str) != state_size:
+        raise ValueError(f"Truncated string must be exactly {state_size} bits long.")
+
+    for bit_index, ch in enumerate(diff_str):
+        if ch == '?':
+            # For each sample, set this bit to 0 or 1 with probability 1/2
+            random_bits = rng.integers(0, 2, size=(num_samples,), dtype=np.uint8)
+            # Place each random bit into the correct location
+            byte_idx = bit_index // 8
+            bit_pos_in_byte = bit_index % 8
+            # Shift random_bits to correct position, then OR them in
+            diff_array[byte_idx, :] |= (random_bits << bit_pos_in_byte)
+        elif ch == '1':
+            byte_idx = bit_index // 8
+            bit_pos_in_byte = bit_index % 8
+            # 1 in that bit for all samples
+            diff_array[byte_idx, :] |= (1 << bit_pos_in_byte)
+        elif ch == '0':
+            # Already zeroed in diff_array, so do nothing
+            pass
+        else:
+            raise ValueError(f"Invalid character in truncated string: {ch!r}")
+    diff_array = diff_array[::-1, :]
+
+    return diff_array
+
+
+def shared_truncated_difference_paired_input_differential_linear_checker_permutation(
+        cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
+):
+    """
+    Verifies experimentally differential-truncated distinguishers for permutations.
+    - input_difference can be either an integer (classic use) or a truncated string ('0','1','?')
+    - output_difference is a truncated string specifying known bits (0/1) and unknown bits (?)
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    num_bytes = state_size // 8
+    rng = np.random.default_rng(seed)
+
+    # 1) Build the input difference array for all samples
+    if isinstance(input_difference, int):
+        input_diff_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    elif isinstance(input_difference, str):
+        input_diff_data = _create_diff_array_from_truncated_string(input_difference, number_of_samples, state_size, rng)
+    else:
+        raise TypeError("input_difference must be either int or str (truncated)")
+    tohex = lambda v: "0x" + v.tobytes().hex()
+    print("input_diff_data  =", tohex(input_diff_data))
+    # 2) Generate random plaintext pairs that differ according to input_difference
+    bottom_ciphertext_final1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    bottom_ciphertext_final2 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext_data2 = plaintext_data1 ^ input_diff_data
+
+    plaintext_data11 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext_data22 = plaintext_data11 ^ input_diff_data
+
+    # 3) Evaluate the cipher in a vectorized manner on the two plaintext sets
+    ciphertext1 = cipher.evaluate_vectorized([bottom_ciphertext_final1, plaintext_data1])
+    ciphertext2 = cipher.evaluate_vectorized([bottom_ciphertext_final1, plaintext_data2])
+    ciphertext11 = cipher.evaluate_vectorized([bottom_ciphertext_final2, plaintext_data11])
+    ciphertext22 = cipher.evaluate_vectorized([bottom_ciphertext_final2, plaintext_data22])
+    diff_ciphertext = ciphertext1[0] ^ ciphertext2[0] ^ ciphertext11[0] ^ ciphertext22[0]
+
+    bit_positions_ciphertext = _extract_bit_positions(output_mask, state_size)
+    ccc = extract_bits(diff_ciphertext.T, bit_positions_ciphertext)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    count = np.count_nonzero(parities == 0)
+    corr = 2 * count / number_of_samples * 1.0 - 1
+    return corr

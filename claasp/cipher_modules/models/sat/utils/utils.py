@@ -824,14 +824,14 @@ def run_yices(solver_specs, options, dimacs_input, input_file_name):
     return status, time, memory, values
 
 
-def _generate_component_model_types(speck_cipher):
+def _generate_component_model_types(speck_cipher, model_type="sat_xor_differential_propagation_constraints"):
     """Generates the component model types for a given Speck cipher."""
     component_model_types = []
     for component in speck_cipher.get_all_components():
         component_model_types.append({
             "component_id": component.id,
             "component_object": component,
-            "model_type": "sat_xor_differential_propagation_constraints"
+            "model_type": model_type
         })
     return component_model_types
 
