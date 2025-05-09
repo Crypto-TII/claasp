@@ -59,7 +59,7 @@ class ChachaStreamCipher(ChachaPermutation):
         - ``key_bit_size`` -- **integer** (default: `256`); cipher key bit size of the cipher
         - ``number_of_rounds`` -- **integer** (default: `20`); number of rounds of the cipher
         - ``block_count`` -- **integer** (default: `1`)
-        - ``chacha_constants`` -- **integer** (default: `int("0x617078653320646e79622d326b206574", 16)`)
+        - ``chacha_constants`` -- **integer** (default: `0x617078653320646e79622d326b206574`)
 
     EXAMPLES::
 
@@ -70,7 +70,7 @@ class ChachaStreamCipher(ChachaPermutation):
     """
 
     def __init__(self, block_bit_size=512, key_bit_size=256, number_of_rounds=20,
-                 block_count=1, chacha_constants=int("0x617078653320646e79622d326b206574", 16)):
+                 block_count=1, chacha_constants=0x617078653320646e79622d326b206574):
         self.WORD_SIZE = 32
 
         input_state_of_components = [

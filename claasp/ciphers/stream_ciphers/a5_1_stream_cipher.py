@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -28,21 +27,20 @@ CLOCK_BIT = "CLOCK_BIT"
 CLOCK_POLYNOMIAL = "CLOCK_POLYNOMIAL"
 
 REGISTERS = [
-    {BIT_LENGTH: 19,
-     TAPPED_BITS: [[0], [1], [2], [5]],
-     CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [10], []]},
-    {BIT_LENGTH: 22,
-     TAPPED_BITS: [[19], [20]],
-     CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [30], []]},
-    {BIT_LENGTH: 23,
-     TAPPED_BITS: [[41], [42], [43], [56]],
-     CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [53], []]},
+    {BIT_LENGTH: 19, TAPPED_BITS: [[0], [1], [2], [5]], CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [10], []]},
+    {BIT_LENGTH: 22, TAPPED_BITS: [[19], [20]], CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [30], []]},
+    {BIT_LENGTH: 23, TAPPED_BITS: [[41], [42], [43], [56]], CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [53], []]},
 ]
 
 
-PARAMETERS_CONFIGURATION_LIST = [{'key_bit_size': 64, 'frame_bit_size': 22,
-                                  'number_of_normal_clocks_at_initialization': 100,
-                                  'number_of_rounds': 228}]
+PARAMETERS_CONFIGURATION_LIST = [
+    {
+        "key_bit_size": 64,
+        "frame_bit_size": 22,
+        "number_of_normal_clocks_at_initialization": 100,
+        "number_of_rounds": 228,
+    }
+]
 
 
 class A51StreamCipher(Cipher):
@@ -77,31 +75,39 @@ class A51StreamCipher(Cipher):
 
     """
 
-    def __init__(self, key_bit_size=64, frame_bit_size=22, number_of_normal_clocks_at_initialization=100,
-                 number_of_rounds=228):
-
-        super().__init__(family_name="a51",
-                         cipher_type="stream_cipher",
-                         cipher_inputs=[INPUT_KEY, INPUT_FRAME],
-                         cipher_inputs_bit_size=[key_bit_size, frame_bit_size],
-                         cipher_output_bit_size=number_of_rounds)
+    def __init__(
+        self, key_bit_size=64, frame_bit_size=22, number_of_normal_clocks_at_initialization=100, number_of_rounds=228
+    ):
+        super().__init__(
+            family_name="a51",
+            cipher_type="stream_cipher",
+            cipher_inputs=[INPUT_KEY, INPUT_FRAME],
+            cipher_inputs_bit_size=[key_bit_size, frame_bit_size],
+            cipher_output_bit_size=number_of_rounds,
+        )
 
         # registers initialization
         regs_size = 0
         regs_output_bit = [0]
-        for i in range(len(REGISTERS)-1):
-            regs_size += REGISTERS[i][BIT_LENGTH]
+        for register in REGISTERS[:-1]:
+            regs_size += register[BIT_LENGTH]
             regs_output_bit.append(regs_size)
         regs_size += REGISTERS[-1][BIT_LENGTH]
 
-        regs = self.regs_initialization(key_bit_size=key_bit_size, frame_bit_size=frame_bit_size,
-                                        number_of_normal_clocks_at_initialization=number_of_normal_clocks_at_initialization,
-                                        regs_size=regs_size)
+        regs = self.regs_initialization(
+            key_bit_size=key_bit_size,
+            frame_bit_size=frame_bit_size,
+            number_of_normal_clocks_at_initialization=number_of_normal_clocks_at_initialization,
+            regs_size=regs_size,
+        )
 
-        fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS],
-                             REGISTERS[i][CLOCK_POLYNOMIAL]] for i in range(len(REGISTERS))], 1, 1]
-        cipher_output=[]
-        for r in range(number_of_rounds):
+        fsr_description = [
+            [[register[BIT_LENGTH], register[TAPPED_BITS], register[CLOCK_POLYNOMIAL]] for register in REGISTERS],
+            1,
+            1,
+        ]
+        cipher_output = []
+        for _ in range(number_of_rounds):
             regs = self.round_function(regs=regs, regs_size=regs_size, fsr_description=fsr_description)
             regs_xor_output = []
             for i in range(len(REGISTERS)):
@@ -117,19 +123,20 @@ class A51StreamCipher(Cipher):
         # registers initialization
         self.add_round()
         constant_0 = []
-        for i in range(len(REGISTERS)):
-            self.add_constant_component(REGISTERS[i][BIT_LENGTH] - 1, 0)
-            constant_0.append(ComponentState([self.get_current_component_id()],
-                                           [[i for i in range(REGISTERS[i][BIT_LENGTH] - 1)]]))
+        for register in REGISTERS:
+            self.add_constant_component(register[BIT_LENGTH] - 1, 0)
+            constant_0.append(
+                ComponentState([self.get_current_component_id()], [list(range(register[BIT_LENGTH] - 1))])
+            )
 
         self.add_constant_component(regs_size, 0)
-        regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+        regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         # load key
-        fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS]] for i in range(len(REGISTERS))], 1]
+        fsr_description = [[[register[BIT_LENGTH], register[TAPPED_BITS]] for register in REGISTERS], 1]
         for i in range(key_bit_size):
             self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
-            regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+            regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
             inputs = [regs]
             for j in range(len(REGISTERS)):
@@ -137,12 +144,12 @@ class A51StreamCipher(Cipher):
                 inputs.append(ComponentState([INPUT_KEY], [[i]]))
             inputs_id, inputs_pos = get_inputs_parameter(inputs)
             self.add_XOR_component(inputs_id, inputs_pos, regs_size)
-            regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+            regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         # load frame
         for i in range(frame_bit_size):
             self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
-            regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+            regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
             inputs = [regs]
             for j in range(len(REGISTERS)):
@@ -150,20 +157,22 @@ class A51StreamCipher(Cipher):
                 inputs.append(ComponentState([INPUT_FRAME], [[i]]))
             inputs_id, inputs_pos = get_inputs_parameter(inputs)
             self.add_XOR_component(inputs_id, inputs_pos, regs_size)
-            regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+            regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         # normal clocked without output
-        fsr_description = [[[REGISTERS[i][BIT_LENGTH], REGISTERS[i][TAPPED_BITS],
-                             REGISTERS[i][CLOCK_POLYNOMIAL]] for i in range(len(REGISTERS))], 1,
-                           number_of_normal_clocks_at_initialization]
+        fsr_description = [
+            [[register[BIT_LENGTH], register[TAPPED_BITS], register[CLOCK_POLYNOMIAL]] for register in REGISTERS],
+            1,
+            number_of_normal_clocks_at_initialization,
+        ]
         self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
-        regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+        regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         return regs
 
     def round_function(self, regs, regs_size, fsr_description):
         self.add_round()
         self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
-        regs = ComponentState([self.get_current_component_id()], [[i for i in range(regs_size)]])
+        regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         return regs
