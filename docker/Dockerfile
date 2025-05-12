@@ -98,7 +98,8 @@ RUN sage -pip install bitstring==4.0.1 \
   networkx==2.8.8 \
   numpy==1.24.3 \
   joblib==1.4.2 \
-  gurobipy==11.0
+  gurobipy==11.0 \
+  pytest-randomly==3.16.0
 
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
