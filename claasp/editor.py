@@ -21,6 +21,7 @@ from copy import deepcopy
 
 from claasp.components.or_component import OR
 from claasp.components.and_component import AND
+from claasp.components.theta_gaston_component import ThetaGaston
 from claasp.components.xor_component import XOR
 from claasp.components.not_component import NOT
 from claasp.components.fsr_component import FSR
@@ -1083,6 +1084,44 @@ def add_sigma_component(cipher, input_id_links, input_bit_positions, output_bit_
     add_component(cipher, linear_layer_component)
     return linear_layer_component
 
+def add_theta_gaston_component(cipher, input_id_links, input_bit_positions, output_bit_size, rotation_amounts_parameter):
+    """
+    Use this function to create the theta component of Gaston in cipher.
+
+    .. NOTE::
+
+        See :py:class:`GastonSboxTheta Permutation <ciphers.permutations.gaston_sbox_theta_permutation>`.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; an instance of the object cipher
+    - ``input_id_links`` -- **list**; the list of input_id links
+    - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
+    - ``output_bit_size`` -- **integer**; the output bits of the component
+    - ``rotation_amounts_parameter`` -- **list**; the direction of the rotation, positive for right rotation
+      and negative for left rotation
+
+    EXAMPLES::
+
+        sage: from claasp.cipher import Cipher
+        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [320], 320)
+        sage: cipher.add_round()
+        sage: input_bit_positions = [[i for i in range(320)]]
+        sage: theta_gaston_0_0 = cipher.add_theta_gaston_component(["input"], input_bit_positions, 320, list(range(8)))
+        sage: theta_gaston_0_0.type, theta_gaston_0_0.output_bit_size
+        ('linear_layer', 320)
+        sage: sum(int(e) for row in theta_gaston_0_0.description for e in row)
+        3520
+    """
+    if cipher.current_round_number is None:
+        print(cipher_round_not_found_error)
+        return None
+
+    linear_layer_component = ThetaGaston(cipher.current_round_number, cipher.current_round_number_of_components,
+                                   input_id_links, input_bit_positions,
+                                   output_bit_size, rotation_amounts_parameter)
+    add_component(cipher, linear_layer_component)
+    return linear_layer_component
 
 def add_theta_keccak_component(cipher, input_id_links, input_bit_positions, output_bit_size):
     """

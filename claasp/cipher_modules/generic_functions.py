@@ -782,6 +782,56 @@ def THETA_XOODOO(input):
 
     return output
 
+def THETA_GASTON(input, rotation_amounts=(1,18,23,25,32,52,60,63)):
+    """
+    Perform the twin column parity mixer (mixing layer) of Gaston.
+
+    INPUT:
+    - ``input`` -- BitArray of length 320 or 640, interpreted as 5 rows of 64 bits.
+    - ``rotation_amounts`` -- **tuple of 8 integers** (default: (1, 18, 23, 25, 32, 52, 60, 63)):
+        - First three values: `r`, `s`, `u` — rotation amounts for P, Q, and E.
+        - Remaining five values: `t0` through `t4` — row-specific rotation amounts used in computing Q.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.generic_functions import THETA_GASTON
+        sage: from bitstring import BitArray
+        sage: b = BitArray(bytes=range(40))
+        sage: THETA_GASTON(b).bin[:70] == '0011010110100010000110000010011000101100101110110000000100111111001111'
+        True
+
+    """
+
+    def rol(bitarr, amount):
+        amount %= bitarr.len
+        return bitarr[amount:] + bitarr[:amount]
+
+    assert len(rotation_amounts) == 8
+    assert len(input) in [320, 640]
+
+    row_len = len(input) // 5
+    r, s, u, *t_list = rotation_amounts
+
+    A = [input[i * row_len:(i + 1) * row_len] for i in range(5)]
+
+    P = A[0].copy()
+    for i in range(1, 5):
+        P ^= A[i]
+
+    Q = rol(A[0], t_list[0])
+    for i in range(1, 5):
+        Q ^= rol(A[i], t_list[i])
+
+    E = (P ^ rol(P, r)) ^ (Q ^ rol(Q, s))
+
+    E_shifted = rol(E, u)
+
+    output = BitArray()
+    for i in range(5):
+        output += A[i] ^ E_shifted
+
+    return output
+
 
 def ROTATE_BY_VARIABLE_AMOUNT(input, input_size, rotation_direction, verbosity=False):
     """
