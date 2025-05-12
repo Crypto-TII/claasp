@@ -3,8 +3,6 @@ from __future__ import annotations
 import itertools
 import os
 import pickle
-import re
-from typing import Dict, List
 
 from claasp.cipher_modules.models.sat.sat_models.sat_shared_truncated_difference_paired_input_differential_linear_model import \
     SharedTruncatedDifferencePairedInputDifferentialLinearModel
@@ -108,44 +106,6 @@ def add_prefix_id_to_components(chacha_permutation, prefix):
         new_input_id_links = [f'{prefix}_{input_id_link}' for input_id_link in component.input_id_links]
         component.set_input_id_links(new_input_id_links)
     return 0
-
-
-ID_RE = re.compile(r'^(modadd|xor|rot)_(\d+)_(\d+)$')  # op, round, local‑idx
-
-
-def extract_half_quarter_rounds_from_dict(
-        cipher: Dict) -> Dict[int, List[List[Dict]]]:
-    """
-    `cipher` must contain the key ``cipher_rounds`` exactly like the
-    example you posted: a list where each element is the list of
-    component‑dicts for that round.
-
-    Returns  { round‑idx : [HQ0, HQ1, HQ2, HQ3] }.
-    """
-    hqrs: Dict[int, List[List[Dict]]] = {}
-
-    for rnd_idx, round_components in enumerate(cipher["cipher_rounds"]):
-
-        # Keep only the “real” operations (modadd/xor/rot).  Skip
-        # intermediate_output, cipher_output, etc.
-        ops = [comp for comp in round_components if ID_RE.match(comp["id"])]
-
-        # Sort by in‑round index so we are sure of the order
-        ops.sort(key=lambda c: int(ID_RE.match(c["id"]).group(3)))
-
-        if len(ops) % 6 != 0:
-            raise ValueError(f"Round {rnd_idx}: {len(ops)} op components "
-                             "(not a multiple of 6)")
-
-        # Slice into blocks of 6 → the four half‑quarter rounds
-        hq = [ops[i:i + 6] for i in range(0, len(ops), 6)]
-        if len(hq) != 4:
-            raise ValueError(f"Round {rnd_idx}: expected 4 half‑quarters, "
-                             f"got {len(hq)}")
-
-        hqrs[f'round_{rnd_idx}'] = hq
-
-    return hqrs
 
 
 def construct_backward_chacha(cipher):
@@ -253,17 +213,17 @@ def test_backward_direction_distinguisher():
     )
 
     # trail = sat_heterogeneous_model.find_one_shared_truncated_difference_paired_input_differential_linear_trail_with_fixed_weight(
-    #    weight,
-    #    fixed_values=[ciphertext_final, bottom_ciphertext_final, plaintext_nonce, plaintext_constants],
-    #    solver_name=solvers.SOLVER_DEFAULT
+    #   weight,
+    #   fixed_values=[ciphertext_final, bottom_ciphertext_final, plaintext_nonce, plaintext_constants],
+    #   solver_name="KISSAT_EXT"
     # )
     # assert trail['status'] == 'SATISFIABLE'
     # print(trail)
     # import ipdb; ipdb.set_trace()
-    input_difference = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-    output_mask_string = "00000000000000000000000000010000000000000000000000000000000180000000000000000000000000000000000100000000000000000000000000010000"  # trail['components_values']['bottom_plaintext']['value']
+    input_difference = "100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000?0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"  # trail['components_values']['bottom_fake_plaintext']['value'] #"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    output_mask_string = "00000000000000000000000000000001000800800000000000000000000000000000000000001000000000000000000000000000000000000000000100000000"  # trail['components_values']['bottom_plaintext']['value'] #"00000000000000000000000000010000000000000000000000000000000180000000000000000000000000000000000100000000000000000000000000010000"  # trail['components_values']['bottom_plaintext']['value']
     output_mask = int(output_mask_string, 16)
-    exp_number_of_samples = 11
+    exp_number_of_samples = 12
     corr1 = shared_truncated_difference_paired_input_differential_linear_checker_permutation(
         chacha_stream_cipher,
         input_difference,
@@ -280,7 +240,9 @@ def test_backward_direction_distinguisher():
     #    512,
     #    21
     # )
+    print("Output mask C format")
     print(split_512bit_hex_to_32bit_words(output_mask_string))
+    print("PNBs C format")
     print(binary_string_to_32bit_hex_chunks(input_difference))
     # assert math.log(abs(corr1), 2) < exp_number_of_samples - 2
     # assert math.log(abs(corr2), 2) < exp_number_of_samples + 1 - 2

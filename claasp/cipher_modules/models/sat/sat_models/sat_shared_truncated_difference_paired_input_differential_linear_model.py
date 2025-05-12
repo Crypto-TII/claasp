@@ -234,9 +234,11 @@ class SharedTruncatedDifferencePairedInputDifferentialLinearModel(SatModel):
         if weight == 0:
             return [], [f'-{var}' for var in hw_variables]
 
-        return self._counter(hw_variables, weight)
+        return self._sequential_counter(hw_variables, weight, dummy_id='dummy_hw_000')
 
-    def build_shared_truncated_difference_paired_input_differential_model(self, weight=-1):
+    def build_shared_truncated_difference_paired_input_differential_model(
+            self, weight=-1, fixed_values=None, key_recovery=None
+    ):
         """
         Constructs a model to search for differential-linear trails.
         This model is a combination of the SharedDifferencePairedInputDifferentialModel,
@@ -285,6 +287,79 @@ class SharedTruncatedDifferencePairedInputDifferentialLinearModel(SatModel):
 
         if weight != -1:
             variables, constraints = self._build_weight_constraints(weight)
+            self._variables_list.extend(variables)
+            self._model_constraints.extend(constraints)
+
+        if fixed_values is not None:
+            constraints = self.fix_variables_value_constraints(
+                fixed_values,
+                self.truncated_components,
+                self.linear_components
+            )
+            self.model_constraints.extend(constraints)
+            self._model_constraints.extend(constraints)
+
+        if key_recovery == True:
+            # pnbs = []
+            # for i in range(512):
+            #    # import pdb; pdb.set_trace()
+            #    pnbs.append(f'bottom_fake_plaintext_{i}_0')
+            #
+            # variables, constraints = self._sequential_counter_algorithm(
+            #    pnbs, 1, "dummy_id_for_pnbs", greater_or_equal=True
+            # )
+            #
+            # self._variables_list.extend(variables)
+            # self._model_constraints.extend(constraints)
+
+            pnbs = []
+            for i in range(128, 384):
+                # import pdb; pdb.set_trace()
+                pnbs.append(f'bottom_fake_plaintext_{i}_0')
+
+            variables, constraints = self._sequential_counter_algorithm(
+                pnbs, 1, "dummy_id_for_pnbs11", greater_or_equal=True
+            )
+
+            self._variables_list.extend(variables)
+            self._model_constraints.extend(constraints)
+
+            pnbs = []
+            for i in range(512):
+                # import pdb; pdb.set_trace()
+                pnbs.append(f'bottom_plaintext_{i}_i')
+
+            variables, constraints = self._sequential_counter_algorithm(
+                pnbs, 1, "dummy_id_for_output_mask", greater_or_equal=True
+            )
+            # [xxxx for xxxx in self._variables_list if xxxx.startswith('bottom_plaintext_')]
+            # import ipdb; ipdb.set_trace()
+            self._variables_list.extend(variables)
+            self._model_constraints.extend(constraints)
+
+            pnbs = []
+            for i in range(512):
+                # import pdb; pdb.set_trace()
+                pnbs.append(f'bottom_intermediate_output_3_24_{i}_0')
+            #
+            variables, constraints = self._sequential_counter_algorithm(
+                pnbs, 32, "dummy_id_jaslkjksasaklj3", greater_or_equal=False
+            )
+            # [xxxx for xxxx in self._variables_list if xxxx.startswith('bottom_plaintext_')]
+            # import ipdb; ipdb.set_trace()
+            self._variables_list.extend(variables)
+            self._model_constraints.extend(constraints)
+            #
+            pnbs = []
+            for i in range(512):
+                # import pdb; pdb.set_trace()
+                pnbs.append(f'cipher1_bottom_intermediate_output_3_24_{i}_0')
+            #
+            variables, constraints = self._sequential_counter_algorithm(
+                pnbs, 32, "dummy_id_jaslkjksasaklj4", greater_or_equal=False
+            )
+            # [xxxx for xxxx in self._variables_list if xxxx.startswith('bottom_plaintext_')]
+            # import ipdb; ipdb.set_trace()
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
@@ -453,7 +528,7 @@ class SharedTruncatedDifferencePairedInputDifferentialLinearModel(SatModel):
             pnbs.append(f'bottom_fake_plaintext_{i}_0')
 
         variables, constraints = self._sequential_counter_algorithm(
-            pnbs, 3, "dummy_id_jaslkjksasaklj1", greater_or_equal=True
+            pnbs, 3, "dummy_id_for_pnbs", greater_or_equal=True
         )
 
         self._variables_list.extend(variables)
@@ -465,7 +540,7 @@ class SharedTruncatedDifferencePairedInputDifferentialLinearModel(SatModel):
             pnbs.append(f'bottom_plaintext_{i}_i')
 
         variables, constraints = self._sequential_counter_algorithm(
-            pnbs, 5, "dummy_id_jaslkjksasaklj2", greater_or_equal=True
+            pnbs, 5, "dummy_id_for_output_mask", greater_or_equal=True
         )
         # [xxxx for xxxx in self._variables_list if xxxx.startswith('bottom_plaintext_')]
         # import ipdb; ipdb.set_trace()
