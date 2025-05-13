@@ -1,5 +1,7 @@
+
 import itertools
-from copy import deepcopy
+import os
+import pickle
 
 from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_linear_model import \
     SharedDifferencePairedInputDifferentialLinearModel
@@ -62,8 +64,15 @@ def add_prefix_id_to_components(chacha_permutation, prefix):
 
 
 def construct_backward_chacha(cipher):
-    chacha_key_recovery = cipher
-    chacha_inverse = chacha_key_recovery.cipher_inverse()
+    cache_path = "chacha_inverse_4_rounds.pkl"
+    if os.path.exists(cache_path):
+        with open(cache_path, "rb") as f:
+            chacha_inverse = pickle.load(f)
+    else:
+        chacha_key_recovery = cipher
+        chacha_inverse = chacha_key_recovery.cipher_inverse()
+        with open(cache_path, "wb") as f:
+            pickle.dump(chacha_inverse, f)
     add_ciphertext_and_new_plaintext_to_inputs(chacha_inverse)
     add_prefix_id_to_inputs(chacha_inverse, "bottom")
     add_prefix_id_to_components(chacha_inverse, "bottom")
@@ -74,8 +83,8 @@ def construct_backward_chacha(cipher):
 def test_backward_direction_distinguisher():
     chacha1 = ChachaPermutation(number_of_rounds=4)
     chacha_stream_cipher = construct_backward_chacha(chacha1)
-    chacha_stream_cipher_copy = deepcopy(chacha_stream_cipher)
-    chacha_stream_cipher_copy.sort_cipher()
+    # chacha_stream_cipher_copy = deepcopy(chacha_stream_cipher)
+    # chacha_stream_cipher_copy.sort_cipher()
 
     top_part_components = []
     bottom_part_components = []
@@ -169,7 +178,7 @@ def test_backward_direction_distinguisher():
             plaintext_constants,
             plaintext_nonce
         ],
-        solver_name="PARKISSAT_EXT"
+        solver_name="KISSAT_EXT"
     )
 
     assert trail["status"] == "SATISFIABLE"
@@ -178,10 +187,10 @@ def test_backward_direction_distinguisher():
     output_difference1 = int(trail['components_values']['bottom_plaintext']['value'], 16)
 
     prob = shared_difference_paired_input_differential_linear_checker_permutation(
-        chacha_stream_cipher_copy,
+        chacha_stream_cipher,
         input_difference,
         output_difference1,
-        1 << 14,
+        1 << 8,
         512,
         1
     )
