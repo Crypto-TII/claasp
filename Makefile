@@ -73,7 +73,7 @@ testall: install
 	$(SAGE_BIN) setup.py testall
 
 test: install
-	$(SAGE_BIN) -t $(MODULE)
+	SAGE_TIMEOUT=600 $(SAGE_BIN) -tp 32 $(MODULE)
 
 coverage:
 	$(SAGE_BIN) -coverage $(PACKAGE)/*

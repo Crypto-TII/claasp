@@ -599,26 +599,27 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
+            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: skinny = SkinnyBlockCipher(block_bit_size=128, number_of_rounds=2)
-            sage: milp = MilpModel(skinny)
+            sage: midori = MidoriBlockCipher()
+            sage: milp = MilpModel(midori)
             sage: milp.init_model_in_sage_milp_class()
-            sage: mix_column_component = skinny.component_from(0, 31)
+            sage: mix_column_component = midori.component_from(0, 20)
             sage: variables, constraints = mix_column_component.milp_xor_linear_mask_propagation_constraints(milp)
             ...
             sage: variables
-            [('x[mix_column_0_31_0_i]', x_0),
-             ('x[mix_column_0_31_1_i]', x_1),
+            [('x[mix_column_0_20_0_i]', x_0),
+             ('x[mix_column_0_20_1_i]', x_1),
             ...
-             ('x[mix_column_0_31_30_o]', x_62),
-             ('x[mix_column_0_31_31_o]', x_63)]
+             ('x[mix_column_0_20_62_o]', x_126),
+             ('x[mix_column_0_20_63_o]', x_127)]
+
             sage: constraints
-            [x_32 == x_24,
-             x_33 == x_25,
+            [x_64 == x_0,
+             x_65 == x_1,
             ...
-            1 <= 3 - x_15 + x_23 - x_31 - x_63,
-            1 <= 3 + x_15 - x_23 - x_31 - x_63]
+            x_126 == x_34,
+            x_127 == x_35]
         """
         bin_matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[bin_matrix[i][j] for i in range(bin_matrix.nrows())]

@@ -224,6 +224,10 @@ class Cipher:
         return editor.add_sigma_component(self, input_id_links, input_bit_positions,
                                           output_bit_size, rotation_amounts_parameter)
 
+    def add_theta_gaston_component(self, input_id_links, input_bit_positions, output_bit_size, rotation_amounts_parameter):
+        return editor.add_theta_gaston_component(self, input_id_links, input_bit_positions,
+                                          output_bit_size, rotation_amounts_parameter)
+
     def add_theta_keccak_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_theta_keccak_component(self, input_id_links, input_bit_positions, output_bit_size)
 

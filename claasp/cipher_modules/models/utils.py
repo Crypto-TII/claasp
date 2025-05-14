@@ -793,9 +793,17 @@ def _number_to_n_bit_binary_string(number, n_bits):
 
 
 def _extract_bit_positions(hex_number, state_size):
+    """Extracts bit positions from a hex state_size-number."""
     binary_str = _number_to_n_bit_binary_string(hex_number, state_size)
     binary_str = binary_str[::-1]
     positions = [i for i, bit in enumerate(binary_str) if bit == '1']
+    return positions
+
+
+def extract_bit_positions(binary_str):
+    """Extracts bit positions from a binary+unknows string."""
+    binary_str = binary_str[::-1]
+    positions = [i for i, bit in enumerate(binary_str) if bit in ['1', '0']]
     return positions
 
 
@@ -813,13 +821,6 @@ def extract_bits(columns, positions):
             bit_index = positions[i] % 8
             result[i, j] = get_k_th_bit(columns[:, j][byte_index], bit_index)
     return result
-
-
-def extract_bit_positions(binary_str):
-    """Extracts bit positions from a binary+unknows string."""
-    binary_str = binary_str[::-1]
-    positions = [i for i, bit in enumerate(binary_str) if bit in ['1', '0']]
-    return positions
 
 
 def _repeat_input_difference(input_difference, num_samples, num_bytes):
@@ -973,3 +974,72 @@ def differential_truncated_checker_single_key(
 
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
+
+
+def shared_difference_paired_input_differential_checker_permutation(
+        cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+):
+    """
+    Verifies experimentally SharedDifferencePairedInputDifferential distinguishers for permutations using the vectorized evaluator
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    num_bytes = int(state_size / 8)
+
+    rng = np.random.default_rng(seed)
+    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    output_difference_data = _repeat_input_difference(output_difference, number_of_samples, num_bytes)
+    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext2 = plaintext1 ^ input_difference_data
+
+    plaintext11 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext22 = plaintext11 ^ input_difference_data
+
+    ciphertext1 = cipher.evaluate_vectorized([plaintext1])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext2])
+
+    ciphertext11 = cipher.evaluate_vectorized([plaintext11])
+    ciphertext22 = cipher.evaluate_vectorized([plaintext22])
+
+    rows_all_true = np.all(
+        (ciphertext1[0] ^ ciphertext2[0] ^ ciphertext11[0] ^ ciphertext22[0] == output_difference_data.T), axis=1
+    )
+    total = np.count_nonzero(rows_all_true)
+    import math
+    total_prob_weight = math.log(total / number_of_samples, 2)
+    return total_prob_weight
+
+
+def shared_difference_paired_input_differential_linear_checker_permutation(
+        cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
+):
+    """
+    This method helps to verify experimentally SharedDifferencePairedInputDifferentialLinear distinguishers for permutations using the vectorized evaluator
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    num_bytes = int(state_size / 8)
+
+    rng = np.random.default_rng(seed)
+    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    bottom_ciphertext_final1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    bottom_ciphertext_final2 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext2 = plaintext1 ^ input_difference_data
+
+    plaintext11 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext22 = plaintext11 ^ input_difference_data
+
+    ciphertext1 = cipher.evaluate_vectorized([bottom_ciphertext_final1, plaintext1])
+    ciphertext2 = cipher.evaluate_vectorized([bottom_ciphertext_final1, plaintext2])
+
+    ciphertext11 = cipher.evaluate_vectorized([bottom_ciphertext_final2, plaintext11])
+    ciphertext22 = cipher.evaluate_vectorized([bottom_ciphertext_final2, plaintext22])
+
+    ciphertext3 = ciphertext1[0] ^ ciphertext2[0] ^ ciphertext11[0] ^ ciphertext22[0]
+    bit_positions_ciphertext = _extract_bit_positions(output_mask, state_size)
+    ccc = _extract_bits(ciphertext3.T, bit_positions_ciphertext)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    count = np.count_nonzero(parities == 0)
+    corr = 2 * count / number_of_samples * 1.0 - 1
+    return corr

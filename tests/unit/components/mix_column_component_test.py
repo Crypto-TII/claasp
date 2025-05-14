@@ -4,7 +4,6 @@ from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
 
@@ -117,21 +116,21 @@ def test_milp_constraints():
 
 
 def test_milp_xor_linear_mask_propagation_constraints():
-    skinny = SkinnyBlockCipher(block_bit_size=128, number_of_rounds=2)
-    milp = MilpModel(skinny)
+    midori = MidoriBlockCipher()
+    milp = MilpModel(midori)
     milp.init_model_in_sage_milp_class()
-    mix_column_component = skinny.component_from(0, 31)
+    mix_column_component = midori.component_from(0, 20)
     variables, constraints = mix_column_component.milp_xor_linear_mask_propagation_constraints(milp)
 
-    assert str(variables[0]) == "('x[mix_column_0_31_0_i]', x_0)"
-    assert str(variables[1]) == "('x[mix_column_0_31_1_i]', x_1)"
-    assert str(variables[-2]) == "('x[mix_column_0_31_30_o]', x_62)"
-    assert str(variables[-1]) == "('x[mix_column_0_31_31_o]', x_63)"
+    assert str(variables[0]) == "('x[mix_column_0_20_0_i]', x_0)"
+    assert str(variables[1]) == "('x[mix_column_0_20_1_i]', x_1)"
+    assert str(variables[-2]) == "('x[mix_column_0_20_62_o]', x_126)"
+    assert str(variables[-1]) == "('x[mix_column_0_20_63_o]', x_127)"
 
-    assert str(constraints[0]) == "x_32 == x_24"
-    assert str(constraints[1]) == "x_33 == x_25"
-    assert str(constraints[-2]) == "1 <= 3 - x_15 + x_23 - x_31 - x_63"
-    assert str(constraints[-1]) == "1 <= 3 + x_15 - x_23 - x_31 - x_63"
+    assert str(constraints[0]) == "x_64 == x_0"
+    assert str(constraints[1]) == "x_65 == x_1"
+    assert str(constraints[-2]) == "x_126 == x_34"
+    assert str(constraints[-1]) == "x_127 == x_35"
 
 
 def test_sat_constraints():

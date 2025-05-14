@@ -35,20 +35,40 @@ In order to use the library, you have to manually install other dependencies:
 
 ### Docker
 
-In order to use this approach you need to have [docker](https://www.docker.com/) installed and up in your machine. After we have installed and opened it, we can run the command in the terminal that will create the image and launch the container:
+In order to use this approach you need to have [Docker](https://www.docker.com/) installed and up in your machine.
+
+After you have installed and opened it, you can run the command in the terminal that will create the image and launch the container.
+
+#### Using Makefile
+
 - In case you use a macOS machine with Apple Silicon chip (arm64), you need to run the command
-   ```make rundocker-m1```
-- Otherwise, run ```make rundocker```
 
-Once it has finished, inside the docker terminal execute the command:
+    ```make rundocker-m1```
 
-   ```make install```
+- Otherwise, run
 
-After the installation, we need to enter to the sage terminal with the command:
+    ```make rundocker```
 
-   ```sage```
+After the installation, you need to enter to the sage terminal with the command:
 
-After that we are ready to go and can use the library as specified in the [usage](#usage) section.
+```sage```
+
+After that you are ready to go and can use the library as specified in the [usage](#usage) section.
+
+#### Using docker-compose
+
+You can alternatively use `docker-compose`.
+
+1. **Create the service**  
+    Run `docker compose create environment` or `docker compose create environment-arm` (depending on your architecture).
+2. **Start the container**  
+    Run `docker start -ia claasp-container` or `docker start -ia claasp-arm-container`
+3. **Have fun with library**  
+    Enter the Sage terminal with `sage` command and follow [usage](#usage).
+4. **Exit the container**  
+    When you exit the container, you can restart whenever you want at point 2.
+5. **Clean (optionally)**  
+    If you want to regain some space, just run `docker rm claasp-container; docker rmi tiicrc/claasp:local` or `docker rm claasp-arm-container; docker rmi tiicrc/claasp:arm-local`.
 
 ### Manual installation
 
