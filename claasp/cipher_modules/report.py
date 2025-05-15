@@ -848,7 +848,7 @@ class Report:
 
                                     fig.write_image(
                                         f"{output_directory}/{it}/{out}/{res}/{res}_{case['input_difference_value']}.png",
-                                        scale=20)
+                                        scale=1)
                                 else:
                                     fig.show(renderer='png')
                                     return
@@ -864,7 +864,7 @@ class Report:
                                 if show_graph == False:
                                     fig.write_image(output_directory + '/' + it + '/' + out + '/' + res +
                                                     '/' + str(res) + '.png',
-                                                    scale=4)
+                                                    scale=1)
                                 else:
                                     fig.show(renderer='png')
                                     return
