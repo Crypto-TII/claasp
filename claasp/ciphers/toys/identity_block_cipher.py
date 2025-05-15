@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -20,7 +19,7 @@
 from claasp.cipher import Cipher
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
-PARAMETERS_CONFIGURATION_LIST = [{'block_bit_size': 32, 'key_bit_size': 32, 'number_of_rounds': 1}]
+PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 32, "key_bit_size": 32, "number_of_rounds": 1}]
 
 
 class IdentityBlockCipher(Cipher):
@@ -59,11 +58,13 @@ class IdentityBlockCipher(Cipher):
     """
 
     def __init__(self, block_bit_size=32, key_bit_size=32, number_of_rounds=1):
-        super().__init__(family_name="identity_block_cipher",
-                         cipher_type=BLOCK_CIPHER,
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[block_bit_size, key_bit_size],
-                         cipher_output_bit_size=block_bit_size)
+        super().__init__(
+            family_name="identity_block_cipher",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[block_bit_size, key_bit_size],
+            cipher_output_bit_size=block_bit_size,
+        )
 
         # cipher rounds
         cipher_input = INPUT_PLAINTEXT

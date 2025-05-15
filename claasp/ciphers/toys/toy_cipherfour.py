@@ -16,13 +16,9 @@
 # ****************************************************************************
 
 from claasp.cipher import Cipher
-from claasp.DTOs.component_state import ComponentState
-from claasp.utils.utils import get_number_of_rounds_from
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
-PARAMETERS_CONFIGURATION_LIST = [
-    {'block_bit_size': 16, 'key_bit_size': 96, 'number_of_rounds': 5}
-]
+PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 16, "key_bit_size": 96, "number_of_rounds": 5}]
 
 
 class ToyCipherFour(Cipher):
@@ -71,20 +67,14 @@ class ToyCipherFour(Cipher):
         61185
     """
 
-    def __init__(self,
-                 block_bit_size=16,
-                 key_bit_size=16,
-                 rotation_layer=1,
-                 sbox=None,
-                 permutations=None,
-                 number_of_rounds=5):
-
+    def __init__(
+        self, block_bit_size=16, key_bit_size=16, rotation_layer=1, sbox=None, permutations=None, number_of_rounds=5
+    ):
         if sbox is None:
             sbox = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
 
         if permutations is None:
             permutations = [0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15]
-
 
         self.sbox_bit_size = len(bin(len(sbox))) - 3
         self.number_of_sboxes = block_bit_size // self.sbox_bit_size
@@ -93,23 +83,28 @@ class ToyCipherFour(Cipher):
         self.rotation_layer = rotation_layer
         self.sbox = sbox
         self.permutations = permutations
-        super().__init__(family_name="toyspn1",
-                         cipher_type=BLOCK_CIPHER,
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[block_bit_size, key_bit_size * (number_of_rounds + 1)],
-                         cipher_output_bit_size=block_bit_size)
+        super().__init__(
+            family_name="toyspn1",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[block_bit_size, key_bit_size * (number_of_rounds + 1)],
+            cipher_output_bit_size=block_bit_size,
+        )
 
         state = INPUT_PLAINTEXT
-        key= INPUT_KEY
+        key = INPUT_KEY
 
         for round_idx in range(number_of_rounds - 1):
             # XOR with round key
             self.add_round()
             xor = self.add_XOR_component(
                 [state, key],
-                [[i for i in range(block_bit_size)],
-                 [i for i in range(round_idx*block_bit_size, (round_idx+1)*block_bit_size)]],
-                block_bit_size)
+                [
+                    list(range(block_bit_size)),
+                    list(range(round_idx * block_bit_size, (round_idx + 1) * block_bit_size)),
+                ],
+                block_bit_size,
+            )
             state = xor.id  # Update state to XOR output
 
             # S-box layer
@@ -119,24 +114,23 @@ class ToyCipherFour(Cipher):
                     [state],
                     [[ns * self.sbox_bit_size + i for i in range(self.sbox_bit_size)]],
                     self.sbox_bit_size,
-                    self.sbox)
+                    self.sbox,
+                )
                 sbox_outputs.append(sbox_component.id)
 
             # Permutation layer
             state = self.permutation_layer(sbox_outputs)
 
-            self.add_round_output_component([state],
-                                            [[i for i in range(block_bit_size)]],
-                                            block_bit_size)
+            self.add_round_output_component([state], [list(range(block_bit_size))], block_bit_size)
 
         self.add_round()
 
         # XOR with round key
         xor = self.add_XOR_component(
             [state, key],
-            [[i for i in range(block_bit_size)],
-             [i for i in range(4*block_bit_size, 5*block_bit_size)]],
-            block_bit_size)
+            [list(range(block_bit_size)), list(range(4 * block_bit_size, 5 * block_bit_size))],
+            block_bit_size,
+        )
         state = xor.id
 
         # Last round does not include permutation
@@ -146,7 +140,8 @@ class ToyCipherFour(Cipher):
                 [state],
                 [[ns * self.sbox_bit_size + i for i in range(self.sbox_bit_size)]],
                 self.sbox_bit_size,
-                self.sbox)
+                self.sbox,
+            )
             sbox_outputs.append(sbox_component.id)
 
         # Ensure we have at least 4 SBOX outputs
@@ -155,20 +150,19 @@ class ToyCipherFour(Cipher):
 
         # Final XOR with the last round key
         xor = self.add_XOR_component(
-            [sbox_outputs[0]] + [sbox_outputs[1]] + [sbox_outputs[2]] + [sbox_outputs[3]]+[key],
-            [list(range(4))]*4 + [[i for i in range(5*block_bit_size, 6*block_bit_size)]],
-            block_bit_size)
+            [sbox_outputs[0]] + [sbox_outputs[1]] + [sbox_outputs[2]] + [sbox_outputs[3]] + [key],
+            [list(range(4))] * 4 + [list(range(5 * block_bit_size, 6 * block_bit_size))],
+            block_bit_size,
+        )
         state = xor.id
 
-        self.add_cipher_output_component(
-            [state],
-            [[i for i in range(block_bit_size)]],
-            block_bit_size)
+        self.add_cipher_output_component([state], [list(range(block_bit_size))], block_bit_size)
 
     def permutation_layer(self, sbox_output):
         perm = self.add_permutation_component(
             [sbox_output[0]] + [sbox_output[1]] + [sbox_output[2]] + [sbox_output[3]],
-            [list(range(4))]*4,
+            [list(range(4))] * 4,
             self.block_bit_size,
-            self.permutations)
+            self.permutations,
+        )
         return perm.id
