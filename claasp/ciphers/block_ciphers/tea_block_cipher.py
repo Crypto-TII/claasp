@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 32}]
 reference_code = """
@@ -96,7 +96,7 @@ class TeaBlockCipher(Cipher):
 
         super().__init__(
             family_name="tea",
-            cipher_type="block_cipher",
+            cipher_type=BLOCK_CIPHER,
             cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
             cipher_inputs_bit_size=[block_bit_size, key_bit_size],
             cipher_output_bit_size=block_bit_size,

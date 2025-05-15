@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 from claasp.component import linear_layer_to_binary_matrix
 
 input_types = [INPUT_KEY, INPUT_PLAINTEXT]
@@ -94,7 +94,7 @@ class AradiBlockCipherSBoxAndCompactLinearMap(Cipher):
 
         super().__init__(
             family_name="aradi",
-            cipher_type="block_cipher",
+            cipher_type=BLOCK_CIPHER,
             cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
             cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
             cipher_output_bit_size=self.block_bit_size,

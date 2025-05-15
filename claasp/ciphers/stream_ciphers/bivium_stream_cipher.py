@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY, INPUT_INITIALIZATION_VECTOR
+from claasp.name_mappings import STREAM_CIPHER, INPUT_KEY, INPUT_INITIALIZATION_VECTOR
 
 PARAMETERS_CONFIGURATION_LIST = [
     {
@@ -40,12 +40,13 @@ NLFSR_DESCR = [
 
 class BiviumStreamCipher(Cipher):
     """
-     Return a cipher object of Bivium Stream Cipher.
+    Return a cipher object of Bivium Stream Cipher.
 
     INPUT:
+
     - ``keystream_bit_len`` -- **integer** (default: `256`); number of clocks of the cipher.
-    - ``key_bit_size`` --  fix 80-bit;
-    - ``iv_bit_size`` --   fix 80-bit;
+    - ``key_bit_size`` -- fix 80-bit;
+    - ``iv_bit_size`` -- fix 80-bit;
 
     EXAMPLES::
 
@@ -80,7 +81,7 @@ class BiviumStreamCipher(Cipher):
 
         super().__init__(
             family_name="bivium_stream_cipher",
-            cipher_type="stream_cipher",
+            cipher_type=STREAM_CIPHER,
             cipher_inputs=[INPUT_KEY, INPUT_INITIALIZATION_VECTOR],
             cipher_inputs_bit_size=[key_bit_size, iv_bit_size],
             cipher_output_bit_size=keystream_bit_len,
@@ -122,7 +123,7 @@ class BiviumStreamCipher(Cipher):
 
     def bivium_state_initialization(self, key, iv):
         self.add_round()
-        cst0 = self.add_constant_component(13, 0x00000).id
+        cst0 = self.add_constant_component(13, 0x0).id
         state0_id = [cst0] + key[0] + [cst0] + iv[0]
         state0_pos = [list(range(13)), list(range(self.key_bit_size)), list(range(4)), list(range(self.iv_bit_size))]
         biv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size, NLFSR_DESCR).id

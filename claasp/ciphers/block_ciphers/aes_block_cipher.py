@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 8, "state_size": 4, "number_of_rounds": 10}]
 
@@ -61,7 +61,7 @@ class AESBlockCipher(Cipher):
 
         super().__init__(
             family_name="aes_block_cipher",
-            cipher_type="block_cipher",
+            cipher_type=BLOCK_CIPHER,
             cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
             cipher_inputs_bit_size=[self.key_block_size, self.cipher_block_size],
             cipher_output_bit_size=self.cipher_block_size,

@@ -27,7 +27,7 @@ symmetric cipher whose plaintext is the initial state and key is the input.
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_MESSAGE
+from claasp.name_mappings import HASH_FUNCTION, INPUT_MESSAGE
 
 
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 32, "number_of_rounds": 64}]
@@ -62,7 +62,7 @@ class MD5HashFunction(Cipher):
 
         super().__init__(
             family_name="MD5",
-            cipher_type="hash_function",
+            cipher_type=HASH_FUNCTION,
             cipher_inputs=[INPUT_MESSAGE],
             cipher_inputs_bit_size=[word_size * 16],
             cipher_output_bit_size=64,

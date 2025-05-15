@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, INPUT_TWEAK
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY, INPUT_TWEAK
 from claasp.DTOs.component_state import ComponentState
 
 # fmt: off
@@ -63,7 +63,7 @@ class SCARFBlockCipher(Cipher):
 
         super().__init__(
             family_name="scarf",
-            cipher_type="block_cipher",
+            cipher_type=BLOCK_CIPHER,
             cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY, INPUT_TWEAK],
             cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size, self.tweak_bit_size],
             cipher_output_bit_size=self.block_bit_size,

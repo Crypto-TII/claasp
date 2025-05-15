@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY, INPUT_INITIALIZATION_VECTOR
+from claasp.name_mappings import STREAM_CIPHER, INPUT_KEY, INPUT_INITIALIZATION_VECTOR
 
 PARAMETERS_CONFIGURATION_LIST = [
     {
@@ -75,7 +75,7 @@ class TriviumStreamCipher(Cipher):
 
         super().__init__(
             family_name="trivium_stream_cipher",
-            cipher_type="stream_cipher",
+            cipher_type=STREAM_CIPHER,
             cipher_inputs=[INPUT_KEY, INPUT_INITIALIZATION_VECTOR],
             cipher_inputs_bit_size=[key_bit_size, iv_bit_size],
             cipher_output_bit_size=keystream_bit_len,

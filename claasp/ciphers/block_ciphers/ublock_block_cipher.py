@@ -18,7 +18,7 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 128, "key_bit_size": 128, "r": 16},
@@ -115,7 +115,7 @@ class UblockBlockCipher(Cipher):
 
         super().__init__(
             family_name="ublock",
-            cipher_type="block_cipher",
+            cipher_type=BLOCK_CIPHER,
             cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
             cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
             cipher_output_bit_size=self.block_bit_size,

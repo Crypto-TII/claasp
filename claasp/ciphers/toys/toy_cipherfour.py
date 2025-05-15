@@ -18,7 +18,7 @@
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
 from claasp.utils.utils import get_number_of_rounds_from
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
     {'block_bit_size': 16, 'key_bit_size': 96, 'number_of_rounds': 5}
@@ -94,7 +94,7 @@ class ToyCipherFour(Cipher):
         self.sbox = sbox
         self.permutations = permutations
         super().__init__(family_name="toyspn1",
-                         cipher_type="block_cipher",
+                         cipher_type=BLOCK_CIPHER,
                          cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
                          cipher_inputs_bit_size=[block_bit_size, key_bit_size * (number_of_rounds + 1)],
                          cipher_output_bit_size=block_bit_size)

@@ -26,7 +26,7 @@ symmetric cipher whose plaintext is the initial state and key is the input.
 """
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_MESSAGE
+from claasp.name_mappings import HASH_FUNCTION, INPUT_MESSAGE
 from claasp.DTOs.component_state import ComponentState
 
 
@@ -64,7 +64,7 @@ class SHA1HashFunction(Cipher):
 
         super().__init__(
             family_name="SHA1",
-            cipher_type="hash_function",
+            cipher_type=HASH_FUNCTION,
             cipher_inputs=[INPUT_MESSAGE],
             cipher_inputs_bit_size=[word_size * 16],
             cipher_output_bit_size=160,

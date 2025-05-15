@@ -27,7 +27,7 @@ the input.
 """
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_MESSAGE
+from claasp.name_mappings import HASH_FUNCTION, INPUT_MESSAGE
 from claasp.DTOs.component_state import ComponentState
 
 
@@ -83,7 +83,7 @@ class SHA2HashFunction(Cipher):
 
         super().__init__(
             family_name="SHA2_family",
-            cipher_type="hash_function",
+            cipher_type=HASH_FUNCTION,
             cipher_inputs=[INPUT_MESSAGE],
             cipher_inputs_bit_size=[self.word_size * 16],
             cipher_output_bit_size=output_bit_size,

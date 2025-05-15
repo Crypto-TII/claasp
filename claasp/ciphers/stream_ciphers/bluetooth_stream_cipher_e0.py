@@ -18,7 +18,7 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_STATE
+from claasp.name_mappings import STREAM_CIPHER, INPUT_STATE
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"key_bit_size": 128, "lfsr_state_bit_size": 128, "fsm_bit_size": 4, "keystream_bit_len": 125}
@@ -82,7 +82,7 @@ class BluetoothStreamCipherE0(Cipher):
 
         super().__init__(
             family_name="bluetooth_E0_stream_cipher",
-            cipher_type="stream_cipher",
+            cipher_type=STREAM_CIPHER,
             cipher_inputs=[INPUT_STATE],
             cipher_inputs_bit_size=[key_bit_size + fsm_bit_size],
             cipher_output_bit_size=keystream_bit_len,

@@ -19,7 +19,7 @@
 from math import sqrt
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_MESSAGE, INPUT_STATE
+from claasp.name_mappings import HASH_FUNCTION, INPUT_MESSAGE, INPUT_STATE
 
 
 PARAMETERS_CONFIGURATION_LIST = [
@@ -223,7 +223,7 @@ class BlakeHashFunction(Cipher):
 
         super().__init__(
             family_name="blake",
-            cipher_type="hash_function",
+            cipher_type=HASH_FUNCTION,
             cipher_inputs=[INPUT_MESSAGE, INPUT_STATE],
             cipher_inputs_bit_size=[self.block_bit_size, state_bit_size],
             cipher_output_bit_size=state_bit_size,

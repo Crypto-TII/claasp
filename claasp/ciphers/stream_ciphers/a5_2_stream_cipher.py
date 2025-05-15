@@ -18,7 +18,7 @@
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
 from claasp.utils.utils import get_inputs_parameter
-from claasp.name_mappings import INPUT_KEY, INPUT_FRAME
+from claasp.name_mappings import STREAM_CIPHER, INPUT_KEY, INPUT_FRAME
 
 
 BIT_LENGTH = "BIT_LENGTH"
@@ -84,7 +84,7 @@ class A52StreamCipher(Cipher):
     ):
         super().__init__(
             family_name="a52",
-            cipher_type="stream_cipher",
+            cipher_type=STREAM_CIPHER,
             cipher_inputs=[INPUT_KEY, INPUT_FRAME],
             cipher_inputs_bit_size=[key_bit_size, frame_bit_size],
             cipher_output_bit_size=number_of_rounds,

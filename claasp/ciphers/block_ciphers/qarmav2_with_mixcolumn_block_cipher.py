@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"number_of_rounds": 10, "number_of_layers": 1, "key_bit_size": 128, "tweak_bit_size": 128}
@@ -86,7 +86,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
 
         super().__init__(
             family_name="qarmav2_block_cipher",
-            cipher_type="block_cipher",
+            cipher_type=BLOCK_CIPHER,
             cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK],
             cipher_inputs_bit_size=[key_bit_size, self.cipher_block_size, tweak_bit_size],
             cipher_output_bit_size=self.cipher_block_size,

@@ -19,6 +19,7 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
+from claasp.name_mappings import BLOCK_CIPHER
 
 KEY_ID = "id"
 KEY_POS = "bit_positions"
@@ -131,7 +132,7 @@ class ConstantBlockCipher(Cipher):
 
     def __init__(self, block_bit_size=3, number_of_rounds=3):
         super().__init__(family_name="constant",
-                         cipher_type="block_cipher",
+                         cipher_type=BLOCK_CIPHER,
                          cipher_inputs=[],
                          cipher_inputs_bit_size=[],
                          cipher_output_bit_size=block_bit_size)

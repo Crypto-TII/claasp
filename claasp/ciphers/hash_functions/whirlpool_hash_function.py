@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_MESSAGE, INTERMEDIATE_OUTPUT
+from claasp.name_mappings import HASH_FUNCTION, INPUT_MESSAGE, INTERMEDIATE_OUTPUT
 
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 8, "state_size": 8, "number_of_rounds": 10}]
 
@@ -96,7 +96,7 @@ class WhirlpoolHashFunction(Cipher):
 
         super().__init__(
             family_name="whirlpool_hash_function",
-            cipher_type="hash_function",
+            cipher_type=HASH_FUNCTION,
             cipher_inputs=[INPUT_MESSAGE],
             cipher_inputs_bit_size=[self.cipher_block_size],
             cipher_output_bit_size=self.cipher_block_size,

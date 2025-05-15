@@ -18,7 +18,7 @@
 import numpy as np
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 round_constants = [
     0x0000000000000000,
@@ -243,7 +243,7 @@ class PrinceV2BlockCipher(Cipher):
     def __init__(self, number_of_rounds=12):
         super().__init__(
             family_name="prince",
-            cipher_type="block_cipher",
+            cipher_type=BLOCK_CIPHER,
             cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
             cipher_inputs_bit_size=[64, 128],
             cipher_output_bit_size=64,

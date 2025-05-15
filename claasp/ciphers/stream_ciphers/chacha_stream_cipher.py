@@ -20,7 +20,7 @@
 from claasp.DTOs.component_state import ComponentState
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.utils.utils import bytes_positions_to_little_endian_for_multiple_of_32
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_NONCE, INPUT_BLOCK_COUNT, INPUT_KEY
+from claasp.name_mappings import STREAM_CIPHER, INPUT_PLAINTEXT, INPUT_NONCE, INPUT_BLOCK_COUNT, INPUT_KEY
 
 INPUT_CONSTANTS = "chacha_constants"
 PARAMETERS_CONFIGURATION_LIST = [{'block_bit_size': 512, 'key_bit_size': 256, 'number_of_rounds': 20}]
@@ -89,7 +89,7 @@ class ChachaStreamCipher(ChachaPermutation):
         init_state_plaintext(input_state_of_components)
 
         super().__init__(number_of_rounds=number_of_rounds,
-                         cipher_type="stream_cipher",
+                         cipher_type=STREAM_CIPHER,
                          cipher_family="chacha_stream_cipher",
                          inputs=[INPUT_PLAINTEXT, INPUT_KEY, INPUT_NONCE],
                          cipher_inputs_bit_size=[block_bit_size, key_bit_size, self.WORD_SIZE * 3])
