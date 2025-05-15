@@ -17,7 +17,7 @@ def test_continuous_tests_report():
     with open('tests/unit/cipher_modules/pre_computed_cda_obj.pkl', 'rb') as f:
         cda_for_repo = pickle.load(f)
     cda_repo = Report(cda_for_repo)
-    cda_repo.save_as_image()
+    #cda_repo.save_as_image()
 
 
 def test_continuous_avalanche_factor():

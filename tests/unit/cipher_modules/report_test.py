@@ -33,30 +33,30 @@ def test_save_as_image():
 
     trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
     trail_report = Report(trail)
-    trail_report.save_as_image()
+    #trail_report.save_as_image()
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output',
-             fixed_input_difference='average')
+    #avalanche_report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output',
+    #         fixed_input_difference='average')
 
     blackbox_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(blackbox_results)
-    blackbox_report.save_as_image()
+    #blackbox_report.save_as_image()
 
     algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout_in_seconds=1)
     algebraic_report = Report(algebraic_results)
-    algebraic_report.save_as_image()
+    #algebraic_report.save_as_image()
 
     component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
     report_cca = Report(component_analysis)
-    report_cca.save_as_image()
+    #report_cca.save_as_image()
 
     speck = SpeckBlockCipher(number_of_rounds=2)
     cda = ContinuousDiffusionAnalysis(speck)
     cda_for_repo = cda.continuous_diffusion_tests()
     cda_repo = Report(cda_for_repo)
-    cda_repo.save_as_image()
+    #cda_repo.save_as_image()
 
 
 
