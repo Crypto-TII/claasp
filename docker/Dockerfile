@@ -101,15 +101,11 @@ RUN sage -pip install bitstring==4.0.1 \
   gurobipy==11.0
 
 # Installing nist sts
-COPY required_dependencies/assess.c /opt/
-COPY required_dependencies/utilities.c /opt/
-COPY required_dependencies/utilities.h /opt/
-
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \
     && unzip sts-2_1_2.zip
-RUN mv /opt/assess.c /opt/sts-2.1.2/sts-2.1.2/src/
-RUN mv /opt/utilities.c /opt/sts-2.1.2/sts-2.1.2/src/
-RUN mv /opt/utilities.h /opt/sts-2.1.2/sts-2.1.2/include/
+COPY required_dependencies/assess.c /opt/sts-2.1.2/sts-2.1.2/src/
+COPY required_dependencies/utilities.c /opt/sts-2.1.2/sts-2.1.2/src/
+COPY required_dependencies/utilities.h /opt/sts-2.1.2/sts-2.1.2/include/
 RUN cd /opt/sts-2.1.2/sts-2.1.2 \
     && make \
     && mv /opt/sts-2.1.2/sts-2.1.2 /usr/local/bin/ \
@@ -328,3 +324,5 @@ FROM claasp-base AS claasp-lib
 COPY . .
 
 RUN make install
+
+ENV TERM=xterm-color
