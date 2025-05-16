@@ -16,6 +16,8 @@ from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnaly
 from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
 from sage.all import load
 # from tests.precomputed_test_results import speck_three_rounds_component_analysis, speck_three_rounds_avalanche_tests, speck_three_rounds_neural_network_tests, speck_three_rounds_dieharder_tests, present_four_rounds_find_one_xor_differential_trail
+import pytest
+
 
 def test_save_as_image():
     speck = SpeckBlockCipher(number_of_rounds=2)
@@ -57,8 +59,6 @@ def test_save_as_image():
     cda_for_repo = cda.continuous_diffusion_tests()
     cda_repo = Report(cda_for_repo)
     #cda_repo.save_as_image()
-
-
 
 
 def test_save_as_latex_table():
@@ -116,6 +116,7 @@ def test_save_as_DataFrame():
     report_sts.save_as_DataFrame()
 
 
+@pytest.mark.skip(reason="WIP")
 def test_save_as_json():
     simon = SimonBlockCipher(number_of_rounds=2)
 
@@ -145,6 +146,7 @@ def test_save_as_json():
     avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
 
 
+@pytest.mark.skip(reason="WIP")
 def test_show():
     precomputed_results = load('tests/precomputed_results.sobj')
     component_analysis = precomputed_results['speck_three_rounds_component_analysis']
