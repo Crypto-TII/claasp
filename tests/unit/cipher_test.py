@@ -34,7 +34,7 @@ from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
 from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QARMAv2MixColumnBlockCipher
 from claasp.ciphers.toys.toyspn1 import ToySPN1
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
-from claasp.name_mappings import BLOCK_CIPHER, PERMUTATION
+from claasp.name_mappings import BLOCK_CIPHER, PERMUTATION, INPUT_KEY, INPUT_PLAINTEXT
 
 EVALUATION_PY = 'evaluation.py'
 DICTIONARY_EXAMPLE_PY = "claasp/ciphers/dictionary_example.py"
@@ -277,7 +277,7 @@ cipher_reference_code = None
 
 
 def test_print_as_python_dictionary_to_file():
-    cipher = Cipher("cipher_name", BLOCK_CIPHER, ["key", "plaintext"], [32, 32], 32)
+    cipher = Cipher("cipher_name", BLOCK_CIPHER, [INPUT_KEY, INPUT_PLAINTEXT], [32, 32], 32)
     cipher.print_as_python_dictionary_to_file(DICTIONARY_EXAMPLE_PY)
     assert os.path.isfile(DICTIONARY_EXAMPLE_PY)
     os.remove(DICTIONARY_EXAMPLE_PY)
@@ -321,7 +321,7 @@ key of bit size 24
 
 def test_print_as_python_dictionary():
     old_stdout = sys.stdout
-    cipher = Cipher("cipher_name", BLOCK_CIPHER, ["key", "plaintext"], [32, 32], 32)
+    cipher = Cipher("cipher_name", BLOCK_CIPHER, [INPUT_KEY, INPUT_PLAINTEXT], [32, 32], 32)
     cipher.add_round()
     cipher.add_constant_component(16, 0xAB01)
     cipher.add_constant_component(16, 0xAB01)

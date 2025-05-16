@@ -1165,8 +1165,8 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
         EXAMPLES::
 
             sage: from claasp.cipher import Cipher
-            sage: from claasp.name_mappings import BLOCK_CIPHER
-            sage: cipher = Cipher("cipher_name", BLOCK_CIPHER, ["key", "plaintext"], [32, 32], 32)
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: cipher = Cipher("cipher_name", BLOCK_CIPHER, [INPUT_KEY, INPUT_PLAINTEXT], [32, 32], 32)
             sage: cipher.add_round()
             sage: constant_0_0 = cipher.add_constant_component(16, 0xAB01)
             sage: constant_0_1 = cipher.add_constant_component(16, 0xAB01)
@@ -1233,8 +1233,8 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
         EXAMPLES::
 
             sage: from claasp.cipher import Cipher
-            sage: from claasp.name_mappings import BLOCK_CIPHER
-            sage: cipher = Cipher("cipher_name", BLOCK_CIPHER, ["key", "plaintext"], [32, 32], 32)
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: cipher = Cipher("cipher_name", BLOCK_CIPHER, [INPUT_KEY, INPUT_PLAINTEXT], [32, 32], 32)
             sage: cipher.print_as_python_dictionary_to_file("claasp/ciphers/dictionary_example.py")
             sage: os.remove("claasp/ciphers/dictionary_example.py")
         """

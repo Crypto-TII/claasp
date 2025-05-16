@@ -757,7 +757,7 @@ def get_related_key_scenario_format_for_fixed_values(_cipher):
     """
     fixed_variables = []
     for input_index, input_name in enumerate(_cipher.inputs):
-        if input_name == "key":
+        if input_name == INPUT_KEY:
             input_size = _cipher.inputs_bit_size[input_index]
             list_bits_to_avoid = [0] * input_size
             fixed_variable = set_fixed_variables(input, "not_equal", list(range(input_size)), list_bits_to_avoid)
