@@ -21,8 +21,8 @@ all: install
 builddocker:
 	docker build -f docker/Dockerfile --target claasp-base -t $(DOCKER_IMG_NAME) .
 
-rundocker: builddocker
-	docker run -i -p 8887:8887 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
+rundocker:
+	docker run -i -p 8887:8887 --cpus=6 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
 	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
 
 rundockerhub:
@@ -52,10 +52,10 @@ develop:
 	$(SAGE_BIN) -pip install --upgrade -e .
 
 remote-pytest:
-	pytest -v -n=8 --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/
+	pytest -v -n=1 --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/ --randomly-seed=1553614239
 
 pytest:
-	pytest -v -n=8 --dist loadfile tests/unit/
+	pytest -v -n=1 --dist loadfile tests/unit/ --randomly-seed=1553614239
 
 github-pytest:
 	pytest -v tests/unit/
