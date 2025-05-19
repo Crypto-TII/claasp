@@ -14,7 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
+
 from claasp.DTOs.component_state import ComponentState
+from claasp.name_mappings import INPUT_PLAINTEXT
 from claasp.utils.utils import get_2d_array_element_from_1d_array_index, set_2d_array_element_from_1d_array_index
 
 
@@ -45,7 +47,6 @@ def add_intermediate_output_component_latin_dances_permutations(permutation, rou
 
 def half_like_round_function_latin_dances(permutation, round_number, columns, diagonals):
     state = permutation.state_of_components
-
 
     def top_half_quarter_round(a, b, c, d):
         permutation.top_half_quarter_round(*a, state)
@@ -78,27 +79,38 @@ def sub_quarter_round_latin_dances(permutation, state, p1_index, p2_index, p3_in
     p3 = get_2d_array_element_from_1d_array_index(p3_index, state, 4)
     word_size = permutation.WORD_SIZE
 
-    p1 = permutation.add_MODADD_component([p1.id] + [p2.id], get_input_bit_positions_latin_dances(p1, word_size) +
-                                          get_input_bit_positions_latin_dances(p2, word_size), word_size)
-    if cipher_name == 'salsa':
-        p2 = permutation.add_rotate_component([p1.id], get_input_bit_positions_latin_dances(p1, word_size), word_size,
-                                              rot_amount)
-        p3 = permutation.add_XOR_component([p3.id] + [p2.id], get_input_bit_positions_latin_dances(p3, word_size) +
-                                           get_input_bit_positions_latin_dances(p2, word_size), word_size)
+    p1 = permutation.add_MODADD_component(
+        [p1.id] + [p2.id],
+        get_input_bit_positions_latin_dances(p1, word_size) + get_input_bit_positions_latin_dances(p2, word_size),
+        word_size,
+    )
+    if cipher_name == "salsa":
+        p2 = permutation.add_rotate_component(
+            [p1.id], get_input_bit_positions_latin_dances(p1, word_size), word_size, rot_amount
+        )
+        p3 = permutation.add_XOR_component(
+            [p3.id] + [p2.id],
+            get_input_bit_positions_latin_dances(p3, word_size) + get_input_bit_positions_latin_dances(p2, word_size),
+            word_size,
+        )
 
         set_2d_array_element_from_1d_array_index(p3_index, state, p3, 4)
     else:
-        p3 = permutation.add_XOR_component([p3.id] + [p1.id], get_input_bit_positions_latin_dances(p3, word_size) +
-                                           get_input_bit_positions_latin_dances(p1, word_size), word_size)
+        p3 = permutation.add_XOR_component(
+            [p3.id] + [p1.id],
+            get_input_bit_positions_latin_dances(p3, word_size) + get_input_bit_positions_latin_dances(p1, word_size),
+            word_size,
+        )
 
-        p3 = permutation.add_rotate_component([p3.id], get_input_bit_positions_latin_dances(p3, word_size), word_size,
-                                              rot_amount)
+        p3 = permutation.add_rotate_component(
+            [p3.id], get_input_bit_positions_latin_dances(p3, word_size), word_size, rot_amount
+        )
         set_2d_array_element_from_1d_array_index(p1_index, state, p1, 4)
         set_2d_array_element_from_1d_array_index(p3_index, state, p3, 4)
 
 
 def get_input_bit_positions_latin_dances(component, word_size=32):
-    if component.id == 'plaintext':
+    if component.id == INPUT_PLAINTEXT:
         return component.input_bit_positions
     else:
         return [list(range(word_size))]
@@ -111,14 +123,25 @@ def init_state_latin_dances(permutation, input_plaintext):
         for j in range(0, 4):
             i_offset = 4 * word_size
             component_state = ComponentState(
-                input_plaintext, [list(range(j * word_size + i * i_offset, j * word_size + word_size + i * i_offset))])
+                input_plaintext, [list(range(j * word_size + i * i_offset, j * word_size + word_size + i * i_offset))]
+            )
             state_of_components[i][j] = component_state
 
 
 def init_latin_dances_cipher(
-        permutation, super_class, input_plaintext, state_of_components, number_of_rounds,
-        start_round, cipher_family, cipher_type, inputs, cipher_inputs_bit_size, quarter_round_indexes, word_size,
-        rotations
+    permutation,
+    super_class,
+    input_plaintext,
+    state_of_components,
+    number_of_rounds,
+    start_round,
+    cipher_family,
+    cipher_type,
+    inputs,
+    cipher_inputs_bit_size,
+    quarter_round_indexes,
+    word_size,
+    rotations,
 ):
     columns = quarter_round_indexes[0]
     diagonals = quarter_round_indexes[1]
@@ -140,18 +163,20 @@ def init_latin_dances_cipher(
     else:
         permutation.state_of_components = state_of_components
 
-    super_class.__init__(family_name=cipher_family,
-                         cipher_type=cipher_type,
-                         cipher_inputs=inputs if inputs else [input_plaintext],
-                         cipher_inputs_bit_size=cipher_inputs_bit_size if inputs else [permutation.block_bit_size],
-                         cipher_output_bit_size=permutation.block_bit_size)
+    super_class.__init__(
+        family_name=cipher_family,
+        cipher_type=cipher_type,
+        cipher_inputs=inputs if inputs else [input_plaintext],
+        cipher_inputs_bit_size=cipher_inputs_bit_size if inputs else [permutation.block_bit_size],
+        cipher_output_bit_size=permutation.block_bit_size,
+    )
 
     for i in range(number_of_rounds):
-        if start_round[0] == 'even':
+        if start_round[0] == "even":
             j = i + 2
         else:
             j = i
-        if start_round[1] == 'bottom':
+        if start_round[1] == "bottom":
             j += 1
         permutation.add_round()
         half_like_round_function_latin_dances(permutation, j, columns, diagonals)
