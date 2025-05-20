@@ -325,6 +325,7 @@ RUN adduser --uid 1000 ${NAME} \
     && echo "sage ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 RUN chown -R ${NAME}:${NAME} /usr/local/bin/sts-2.1.2
+RUN pip install ruff --prefix /usr
 
 USER sage
 
