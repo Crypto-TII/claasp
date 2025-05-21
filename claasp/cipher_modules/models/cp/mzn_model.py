@@ -17,24 +17,23 @@
 # ****************************************************************************
 
 
-import os
-import math
 import itertools
+import math
+import os
 import subprocess
-
 from copy import deepcopy
-
-from sage.crypto.sbox import SBox
-
 from datetime import timedelta
 
 from minizinc import Instance, Model, Solver, Status
+from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
+from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, \
+    SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
-from claasp.name_mappings import SBOX
-from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
+from claasp.name_mappings import SBOX, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, \
+    WORD_OPERATION
 
 solve_satisfy = 'solve satisfy;'
 constraint_type_error = 'Constraint type not defined'
@@ -42,7 +41,7 @@ constraint_type_error = 'Constraint type not defined'
 
 class MznModel:
 
-    def __init__(self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp='sat'):
+    def __init__(self, cipher, sat_or_milp='sat'):
         self._cipher = cipher
         self.initialise_model()
         if sat_or_milp not in ['sat', 'milp']:
@@ -66,17 +65,8 @@ class MznModel:
         self.mzn_carries_output_directives = []
         self.input_postfix = "x"
         self.output_postfix = "y"
-        self.window_size_list = window_size_list
-        self.probability_weight_per_round = probability_weight_per_round
         self.carries_vars = []
-        if probability_weight_per_round and len(probability_weight_per_round) != self._cipher.number_of_rounds:
-            raise ValueError("probability_weight_per_round size must be equal to cipher_number_of_rounds")
-
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
-
-        if window_size_list and len(window_size_list) != self._cipher.number_of_rounds:
-            raise ValueError("window_size_list size must be equal to cipher_number_of_rounds")
-
         
     def initialise_model(self):
         self._variables_list = []
@@ -676,9 +666,13 @@ class MznModel:
         else:
             constraints = self._model_constraints
             mzn_model_string = "\n".join(constraints)
+
             solver_name_mzn = Solver.lookup(solver_name)
             bit_mzn_model = Model()
             bit_mzn_model.add_string(mzn_model_string)
+
+            import ipdb;
+            ipdb.set_trace()
             instance = Instance(solver_name_mzn, bit_mzn_model)
             if processes_ != None and timeout_in_seconds_ != None:
                 solver_output = instance.solve(processes=processes_, timeout=timedelta(seconds=int(timeout_in_seconds_)),
@@ -775,6 +769,10 @@ class MznModel:
         constraints = self._model_constraints
         variables = self._variables_list
         mzn_model_string = "\n".join(constraints) + "\n".join(variables)
+        f = open("test.mzn", "w")
+        f.write(mzn_model_string)
+
+        f.close()
         solver_name_mzn = Solver.lookup(solver_name)
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
@@ -890,3 +888,24 @@ class MznModel:
         if not self._model_constraints:
             raise ValueError('No model generated')
         return self._model_constraints
+
+    def build_generic_mzn_model_from_dictionary(self, component_and_model_types):
+        self._variables_list = []
+        self._model_constraints = []
+        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
+        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+        for component_and_model_type in component_and_model_types:
+            component = component_and_model_type["component_object"]
+            model_type = component_and_model_type["model_type"]
+            operation = component.description[0]
+            if component.type not in component_types or (
+                    WORD_OPERATION == component.type and operation not in operation_types):
+                print(f'{component.id} not yet implemented')
+            else:
+                minizinc_xor_differential_propagation_constraints = getattr(component, model_type)
+                if model_type == 'create_bct_mzn_constraint_from_component_ids':
+                    variables, constraints = minizinc_xor_differential_propagation_constraints()
+                else:
+                    variables, constraints = minizinc_xor_differential_propagation_constraints(self)
+                self._model_constraints.extend(constraints)
+                self._variables_list.extend(variables)

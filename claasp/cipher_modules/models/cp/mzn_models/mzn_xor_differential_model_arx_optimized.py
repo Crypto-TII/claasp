@@ -29,8 +29,15 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp='sat',
             include_word_operations_mzn_file=True
     ):
+        self.window_size_list = window_size_list
+        self.probability_weight_per_round = probability_weight_per_round
         self.include_word_operations_mzn_file = include_word_operations_mzn_file
-        super().__init__(cipher, window_size_list, probability_weight_per_round, sat_or_milp)
+        super().__init__(cipher, sat_or_milp)
+        if probability_weight_per_round and len(probability_weight_per_round) != self._cipher.number_of_rounds:
+            raise ValueError("probability_weight_per_round size must be equal to cipher_number_of_rounds")
+
+        if window_size_list and len(window_size_list) != self._cipher.number_of_rounds:
+            raise ValueError("window_size_list size must be equal to cipher_number_of_rounds")
 
     @staticmethod
     def _create_minizinc_1d_array_from_list(mzn_list):

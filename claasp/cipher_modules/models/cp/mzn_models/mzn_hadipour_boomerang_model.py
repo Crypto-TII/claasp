@@ -14,37 +14,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-import time
-from copy import deepcopy
 
-from minizinc import Status
-
-from claasp.cipher_modules.models.cp import solvers
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import get_bct_operations
-from claasp.cipher_modules.models.cp.minizinc_utils.utils import group_strings_by_pattern
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import \
-    MznXorDifferentialModelARXOptimized
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, _set_model_type_for_components
 
 
-class MznHadipourBoomerangModel(MznXorDifferentialModel):
+class MznHadipourBoomerangModel(MznModel):
     def __init__(self, cipher, boomerang_structure):
         self.boomerang_structure = boomerang_structure
-        top_part_number_of_rounds = boomerang_structure["top_part_number_of_rounds"]
-        middle_part_number_of_rounds = boomerang_structure["middle_part_number_of_rounds"]
-        bottom_part_number_of_rounds = boomerang_structure["bottom_part_number_of_rounds"]
+        self.top_part_number_of_rounds = boomerang_structure["top_part_number_of_rounds"]
+        self.middle_part_number_of_rounds = boomerang_structure["middle_part_number_of_rounds"]
+        self.bottom_part_number_of_rounds = boomerang_structure["bottom_part_number_of_rounds"]
 
-        total_number_of_rounds = top_part_number_of_rounds + middle_part_number_of_rounds + bottom_part_number_of_rounds
+        total_number_of_rounds = self.top_part_number_of_rounds + self.middle_part_number_of_rounds + self.bottom_part_number_of_rounds
         assert total_number_of_rounds == cipher.number_of_rounds
 
         e0_cipher = cipher.get_partial_cipher(
             start_round=0,
-            end_round=top_part_number_of_rounds + middle_part_number_of_rounds - 1,
+            end_round=self.top_part_number_of_rounds + self.middle_part_number_of_rounds - 1,
             keep_key_schedule=False
         )
         e1_cipher = cipher.cipher_partial_inverse(
-            start_round=top_part_number_of_rounds,
-            end_round=top_part_number_of_rounds + middle_part_number_of_rounds + bottom_part_number_of_rounds - 1,
+            start_round=self.top_part_number_of_rounds,
+            end_round=self.top_part_number_of_rounds + self.middle_part_number_of_rounds + self.bottom_part_number_of_rounds - 1,
             keep_key_schedule=False
         )
         # TODO:: Create a unified cipher from e0_cipher and e1_cipher
@@ -54,3 +46,25 @@ class MznHadipourBoomerangModel(MznXorDifferentialModel):
         import ipdb;
         ipdb.set_trace()
 
+    def build_hadipour_boomerang_model(self, weight=-1):
+        top_part_components = []
+        middle_part_components = []
+        bottom_part_components = []
+
+        component_and_model_types = _generate_component_model_types(self.cipher)
+        for round_number in range(0, self.top_part_number_of_rounds):
+            top_part_components.extend(self.cipher.get_components_in_round(round_number))
+        e0_number_of_rounds = self.top_part_number_of_rounds + self.middle_part_number_of_rounds
+        for round_number in range(self.top_part_number_of_rounds, e0_number_of_rounds):
+            middle_part_components.extend(self.cipher.get_components_in_round(round_number))
+        for round_number in range(e0_number_of_rounds, e0_number_of_rounds + self.bottom_part_number_of_rounds):
+            bottom_part_components.extend(self.cipher.get_components_in_round(round_number))
+
+        _set_model_type_for_components(
+            component_and_model_types,
+            middle_part_components,
+            model_type="cp_deterministic_truncated_xor_differential_constraints"
+        )
+        self.build_generic_mzn_model_from_dictionary(component_and_model_types)
+
+        # TODO:: Add Hadipour constraints
