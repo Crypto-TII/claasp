@@ -51,7 +51,11 @@ class MznHadipourBoomerangModel(MznModel):
         middle_part_components = []
         bottom_part_components = []
 
-        component_and_model_types = _generate_component_model_types(self.cipher)
+        # by default we are defining every component to have a pure differential modeling
+        component_and_model_types = _generate_component_model_types(
+            self.cipher,
+            model_type="cp_xor_differential_propagation_constraints"
+        )
         for round_number in range(0, self.top_part_number_of_rounds):
             top_part_components.extend(self.cipher.get_components_in_round(round_number))
         e0_number_of_rounds = self.top_part_number_of_rounds + self.middle_part_number_of_rounds
@@ -60,6 +64,7 @@ class MznHadipourBoomerangModel(MznModel):
         for round_number in range(e0_number_of_rounds, e0_number_of_rounds + self.bottom_part_number_of_rounds):
             bottom_part_components.extend(self.cipher.get_components_in_round(round_number))
 
+        # updating the type of modeling only for the middle part
         _set_model_type_for_components(
             component_and_model_types,
             middle_part_components,
