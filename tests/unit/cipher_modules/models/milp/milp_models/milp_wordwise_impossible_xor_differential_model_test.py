@@ -15,7 +15,7 @@ def test_build_wordwise_impossible_xor_differential_trail_model():
 
     constraints = milp.model_constraints
 
-    assert len(constraints) == 48392
+    assert len(constraints) == 24200
     assert str(constraints[0]) == '1 <= 1 + x_0 - x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9'
     assert str(constraints[1]) == '1 <= 1 + x_1 - x_9'
     assert str(constraints[-2]) == 'x_3238 == x_2065'
@@ -93,7 +93,7 @@ def test_find_one_wordwise_impossible_xor_differential_trail_model_with_external
     ciphertext = set_fixed_variables(component_id='cipher_output_1_32', constraint_type='equal', bit_positions=range(16),
                                     bit_values=[1] + [0]*15)
     trail = milp.find_one_wordwise_impossible_xor_differential_trail(1, fixed_bits=[key],
-                                                                     fixed_words=[plaintext, ciphertext], external_solver_name='glpk')
+                                                                     fixed_words=[plaintext, ciphertext], external_solver_name='glpk_ext')
     assert trail['status'] == 'SATISFIABLE'
     assert trail['components_values']['plaintext']['value'] == '1003000000000000'
     assert trail['components_values']['key']['value'] == '0000000000000000'
@@ -113,7 +113,7 @@ def test_find_one_wordwise_impossible_xor_differential_trail_with_fully_automati
     ciphertext_backward = set_fixed_variables(component_id='cipher_output_1_32_backward', constraint_type='equal', bit_positions=range(16),
                                     bit_values=[1] + [0]*15)
     trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model(fixed_bits=[key, key_backward],
-                                                                     fixed_words=[plaintext, ciphertext_backward], external_solver_name='glpk')
+                                                                     fixed_words=[plaintext, ciphertext_backward], external_solver_name='glpk_ext')
     assert trail['status'] == 'SATISFIABLE'
     assert trail['components_values']['plaintext']['value'] == '1003000000000000'
     assert trail['components_values']['key']['value'] == '0000000000000000'

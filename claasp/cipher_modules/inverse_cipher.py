@@ -8,6 +8,9 @@ from claasp.component import Component
 from claasp.components import modsub_component, cipher_output_component, linear_layer_component, \
     intermediate_output_component
 from claasp.input import Input
+from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from claasp.cipher_modules.component_analysis_tests import int_to_poly
 from claasp.name_mappings import *
 
 
@@ -269,13 +272,14 @@ def get_all_bit_names(self):
                             "type": "output_updated"
                         }
                         output_updated_bit_name = input_id_link + "_" + str(i) + "_output_updated"
-                    else:
-                        output_updated_bit = {
+                        if output_updated_bit_name not in dictio.keys():  # changed, if added
+                            dictio[output_updated_bit_name] = output_updated_bit
+                    output_updated_bit = {
                             "component_id": c.id,
                             "position": starting_bit_position + j,
                             "type": "output_updated"
                         }
-                        output_updated_bit_name = c.id + "_" + str(starting_bit_position + j) + "_output_updated"
+                    output_updated_bit_name = c.id + "_" + str(starting_bit_position + j) + "_output_updated"
                     if output_updated_bit_name not in dictio.keys(): # changed, if added
                         dictio[output_updated_bit_name] = output_updated_bit
                     j += 1
@@ -637,19 +641,22 @@ def is_intersection_of_input_id_links_null(inverse_component, component):
     return False, input_bit_positions
 
 def find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits):
-    starting_bit_position = 0
+    bit_positions = []
+    list_of_keys = []
+
+    for index, input_id_link in enumerate(inverse_component.input_id_links):
+        for position, i in enumerate(inverse_component.input_bit_positions[index]):
+            potential_equivalent_bit_name = input_id_link + "_" + str(i) + "_output_updated"
+            if potential_equivalent_bit_name in all_equivalent_bits.keys():
+                list_of_keys += all_equivalent_bits[potential_equivalent_bit_name]
+    offset = 0
     for index, input_id_link in enumerate(component.input_id_links):
-        input_bit_positions_of_inverse = inverse_component.input_bit_positions[index]
-        for position, i in enumerate(component.input_bit_positions[index]):
-            input_bit_name = input_id_link + "_" + str(i) + "_output"
-            potential_equivalent_bit_name = inverse_component.input_id_links[index] + "_" + str(
-                input_bit_positions_of_inverse[position]) + "_input"
-            if input_bit_name not in all_equivalent_bits[potential_equivalent_bit_name]:
-                input_bit_positions = list(
-                    range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[index])))
-                return input_bit_positions
-        starting_bit_position += len(component.input_bit_positions[index])
-    raise ValueError("Equivalent bits not found")
+        for pos, i in enumerate(component.input_bit_positions[index]):
+            output_bit_name = input_id_link + "_" + str(i) + "_output"
+            if output_bit_name in all_equivalent_bits and not any("output_updated" in item for item in all_equivalent_bits[output_bit_name]):
+                bit_positions.append(offset + pos)
+        offset += len(component.input_bit_positions[index])
+    return bit_positions
 
 def update_output_bits(inverse_component, self, all_equivalent_bits, available_bits):
 
@@ -674,10 +681,8 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
 
     id = inverse_component.id
     component = get_component_from_id(id, self)
-    flag_is_intersection_of_input_id_links_null, input_bit_positions = is_intersection_of_input_id_links_null(
-        inverse_component, component)
 
-    if (component.description == [INPUT_KEY]) or (component.type == CONSTANT):
+    if (component.description == [INPUT_KEY]) or (component.description == [INPUT_TWEAK]) or(component.type == CONSTANT):
         for i in range(component.output_bit_size):
             output_bit_name_updated = id + "_" + str(i) + "_output_updated"
             bit = {
@@ -699,8 +704,7 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
     elif component.input_bit_size == component.output_bit_size:
         _add_output_bit_equivalences(id, range(component.output_bit_size), component, all_equivalent_bits, available_bits)
     else:
-        if flag_is_intersection_of_input_id_links_null:
-            input_bit_positions = find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits)
+        input_bit_positions = find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits)
         _add_output_bit_equivalences(id, input_bit_positions, component, all_equivalent_bits, available_bits)
 
 def order_input_id_links_for_modadd(component, input_id_links, input_bit_positions, available_bits, self):
@@ -745,11 +749,21 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
     elif component.type == MIX_COLUMN:
         input_id_links, input_bit_positions = compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(
             component, available_output_components, all_equivalent_bits, self)
-        inv_matrix = get_inverse_matrix_in_integer_representation(component)
-        inverse_component = Component(component.id, component.type,
-                                      Input(component.input_bit_size, input_id_links, input_bit_positions),
-                                      component.output_bit_size, [[list(row) for row in inv_matrix]] + component.description[1:])
-        inverse_component.__class__ = component.__class__
+        description = component.description
+        G = PolynomialRing(GF(2), 'x')
+        x = G.gen()
+        irr_poly = int_to_poly(int(description[1]), int(description[2]), x)
+        if irr_poly and not irr_poly.is_irreducible():
+            binary_matrix = binary_matrix_of_linear_component(component)
+            inv_binary_matrix = binary_matrix.inverse()
+            inverse_component = Component(component.id, LINEAR_LAYER, Input(component.input_bit_size, input_id_links, input_bit_positions), component.output_bit_size, list(inv_binary_matrix.transpose()))
+            inverse_component.__class__ = linear_layer_component.LinearLayer
+        else:
+            inv_matrix = get_inverse_matrix_in_integer_representation(component)
+            inverse_component = Component(component.id, component.type,
+                                          Input(component.input_bit_size, input_id_links, input_bit_positions),
+                                          component.output_bit_size, [[list(row) for row in inv_matrix]] + component.description[1:])
+            inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == WORD_OPERATION and component.description[0] == "SIGMA":
@@ -945,7 +959,7 @@ def get_component_from_id(component_id, self):
 
 
 def get_key_schedule_component_ids(self):
-    key_schedule_component_ids = [input for input in self.inputs if INPUT_KEY in input]
+    key_schedule_component_ids = [input for input in self.inputs if INPUT_KEY in input or INPUT_TWEAK in input]
     component_list = self.get_all_components()
     for c in component_list:
         flag_belong_to_key_schedule = True
@@ -1150,6 +1164,12 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
     else:
         input_id_links = [[]]
         input_bit_positions = [[]]
+
+    empty_indices = [j for j, positions in enumerate(input_bit_positions) if positions == []]
+    for index in sorted(empty_indices, reverse=True):
+        del input_id_links[index]
+        del input_bit_positions[index]
+
     evaluated_component = Component(component.id, component.type, Input(component.input_bit_size, input_id_links, input_bit_positions),
                                     component.output_bit_size, component.description)
     evaluated_component.__class__ = component.__class__
@@ -1233,10 +1253,11 @@ def sort_cipher_graph(cipher):
     - ``cipher`` -- graph representation of a cipher as a python dictionary
 
     EXAMPLE::
-        sage: from tii.graph_representations.creator import GraphRepresentationCreator
-        sage: GR = GraphRepresentationCreator()
-        sage: cipher_python_dictionary = GR.identity_block_cipher_creator()
-        sage: sorted_cipher = GR.sort_cipher_graph(cipher_python_dictionary)
+        sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher
+        sage: from claasp.cipher_modules.inverse_cipher import sort_cipher_graph
+        sage: identity = IdentityBlockCipher()
+        sage: sort_cipher_graph(identity)
+        identity_block_cipher_p32_k32_o32_r1
     """
 
     k = 0
@@ -1270,17 +1291,18 @@ def remove_components_from_rounds(cipher, start_round, end_round, keep_key_sched
 
     return removed_component_ids, intermediate_outputs
 
-def get_relative_position(target_link, target_bit_positions, descendant):
-    offset = 0
-    if target_link == descendant.id:
+def get_relative_position(target_link, target_bit_positions, intermediate_output):
+    if target_link == intermediate_output.id:
         return target_bit_positions
-    for i, link in enumerate(descendant.input_id_links):
-        child_input_bit_position = descendant.input_bit_positions[i]
-        if link == target_link:
-            if set(target_bit_positions) <= set(child_input_bit_position):
-                return [idx + offset for idx, e in enumerate(child_input_bit_position) if e in target_bit_positions]
-        offset += len(child_input_bit_position)
-    return []
+
+    intermediate_output_position_links = {}
+    current_bit_position = 0
+    for input_id_link, input_bit_positions in zip(intermediate_output.input_id_links, intermediate_output.input_bit_positions):
+        for i in input_bit_positions:
+            intermediate_output_position_links[(input_id_link, i)] = current_bit_position
+            current_bit_position += 1
+
+    return [intermediate_output_position_links[(target_link, bit)] for bit in target_bit_positions if (target_link, bit) in intermediate_output_position_links]
 
 def get_most_recent_intermediate_output(target_link, intermediate_outputs):
     for index in sorted(intermediate_outputs, reverse=True):
@@ -1294,4 +1316,5 @@ def update_input_links_from_rounds(cipher_rounds, removed_components, intermedia
                 if link in removed_components:
                     intermediate_output = get_most_recent_intermediate_output(link, intermediate_outputs)
                     component.input_id_links[i] = f'{intermediate_output.id}'
-                    component.input_bit_positions[i] = get_relative_position(link, component.input_bit_positions[i], intermediate_output)
+                    component.input_bit_positions[i] = get_relative_position(link, component.input_bit_positions[i],
+                                                                             intermediate_output)

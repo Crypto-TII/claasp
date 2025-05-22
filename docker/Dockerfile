@@ -1,7 +1,6 @@
 FROM ubuntu:22.04 AS claasp-base
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GUROBI_ARCH=linux64
 ARG COPY_CLAASP_LIBRARY=false
 ARG INSTALL_CLAASP_LIBRARY=false
 
@@ -23,18 +22,18 @@ RUN apt-get install -y build-essential \
   latexmk=1:4.76-1 \
   python3-cryptominisat=5.8.0+dfsg1-2 \
   sagemath=9.5-4 \
-  wget \
-  z3
+  wget
+RUN apt-get install -y z3
 
 COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
 WORKDIR /opt
 
-RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_${GUROBI_ARCH}.tar.gz \
-    && tar -xf gurobi10.0.0_${GUROBI_ARCH}.tar.gz \
-    && rm gurobi10.0.0_${GUROBI_ARCH}.tar.gz
+RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz \
+    && tar -xf gurobi10.0.0_linux64.tar.gz \
+    && rm gurobi10.0.0_linux64.tar.gz
 
-ENV GUROBI_HOME="/opt/gurobi1000/${GUROBI_ARCH}"
+ENV GUROBI_HOME="/opt/gurobi1000/linux64"
 ENV PATH="${PATH}:${GUROBI_HOME}/bin"
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
 
@@ -52,6 +51,17 @@ RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-603.tar.gz 
     && make
 
 ENV SOPLEX_HOME="/opt/soplex-release-603/build"
+
+## Installing HiGHS
+
+RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-archive.tar.gz \
+    && tar -xf source-archive.tar.gz \
+    && rm source-archive.tar.gz \
+    && cd HiGHS \
+    && cmake -S. -B build \
+    && cmake --build build --parallel
+
+ENV PATH="${PATH}:/opt/HiGHS/build/bin"
 
 WORKDIR /opt
 
@@ -76,10 +86,9 @@ RUN sage -pip install bitstring==4.0.1 \
   progress==1.6 \
   pycosat==0.6.3 \
   pygments==2.12.0 \
-  sage-numerical-backends-gurobi==9.3.1 \
   sage-package==0.0.7 \
   setuptools==59.6.0 \
-  sphinx==4.5.0 \
+  sphinx==5.0.0 \
   sphinxcontrib-bibtex==2.5.0 \
   tensorflow==2.13.0 \
   pytest==7.2.1 \
@@ -87,7 +96,9 @@ RUN sage -pip install bitstring==4.0.1 \
   pytest-xdist==3.2.0 \
   pytest-benchmark==4.0.0 \
   networkx==2.8.8 \
-  numpy==1.24.3
+  numpy==1.24.3 \
+  joblib==1.4.2 \
+  gurobipy==11.0
 
 # Installing nist sts
 COPY required_dependencies/assess.c /opt/
@@ -161,21 +172,22 @@ RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1
     && tar -xf glucose-syrup-4.1.tgz \
     && rm glucose-syrup-4.1.tgz
 
-RUN make glucose-syrup-4.1/simp
+RUN cd glucose-syrup-4.1/simp \
+    && make
 
-RUN make glucose-syrup-4.1/parallel
+RUN cd glucose-syrup-4.1/parallel \
+    && make
 
 WORKDIR /opt
 
 ENV PATH="/opt/glucose-syrup-4.1/simp:/opt/glucose-syrup-4.1/parallel:${PATH}"
 
 # Installing MathSat
-RUN wget https://mathsat.fbk.eu/download.php?file=mathsat-5.6.9-linux-x86_64.tar.gz \
-    && mv download.php?file=mathsat-5.6.9-linux-x86_64.tar.gz mathsat-5.6.9-linux-x86_64.tar.gz \
-    && tar -xf mathsat-5.6.9-linux-x86_64.tar.gz \
-    && rm mathsat-5.6.9-linux-x86_64.tar.gz
+RUN wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
+    && tar -xf mathsat-5.6.11-linux-x86_64.tar.gz \
+    && rm mathsat-5.6.11-linux-x86_64.tar.gz
 
-ENV PATH="/opt/mathsat-5.6.9-linux-x86_64/bin:${PATH}"
+ENV PATH="/opt/mathsat-5.6.11-linux-x86_64/bin:${PATH}"
 
 # Installing Minisat
 RUN wget https://github.com/stp/minisat/archive/refs/tags/releases/2.2.1.zip \
@@ -232,7 +244,7 @@ RUN wget https://github.com/google/or-tools/releases/download/v9.2/or-tools_amd6
     && tar -xf or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz \
     && rm or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz
 
-RUN mkdir -p ~/.minizinc/solvers/s
+RUN mkdir -p /opt/minizinc/solvers/s
 
 RUN echo '\
 { \n\
@@ -256,7 +268,7 @@ RUN echo '\
 "supportsMzn": false, \n\
 "supportsNL": false, \n\
 "version": "8.2" } \
-' > ~/.minizinc/solvers/Xor.msc
+' > /opt/minizinc/solvers/Xor.msc
 
 # Installing Choco
 
@@ -291,7 +303,9 @@ RUN echo '\
   "needsStdlibDir": false, \n\
   "isGUIApplication": false \n\
 } \
-' > ~/.minizinc/solvers/choco.msc
+' > /opt/minizinc/solvers/choco.msc
+
+ENV MZN_SOLVER_PATH="/opt/minizinc/solvers"
 
 ENV LD_LIBRARY_PATH="/opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib:${LD_LIBRARY_PATH}"
 
@@ -301,7 +315,11 @@ RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libsystemd.so.0
 RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libcrypt.so.1
 
 RUN sage -pip install plotly -U kaleido
+COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
+RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
 
+RUN apt-get install -y coinor-cbc coinor-libcbc-dev
+RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
 
 WORKDIR /home/sage/tii-claasp
 

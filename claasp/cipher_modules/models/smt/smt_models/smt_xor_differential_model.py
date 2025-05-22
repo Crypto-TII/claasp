@@ -19,9 +19,10 @@
 
 import time
 
+from claasp.cipher_modules.models.smt import solvers
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.cipher_modules.models.smt.utils import constants, utils
-from claasp.cipher_modules.models.utils import set_component_solution
+from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
                                   MIX_COLUMN, SBOX, WORD_OPERATION, XOR_DIFFERENTIAL)
 
@@ -59,6 +60,8 @@ class SmtXorDifferentialModel(SmtModel):
         """
         variables = []
         self._variables_list = []
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_constraints(fixed_variables)
         component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
         operation_types = ('AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR')
@@ -85,15 +88,16 @@ class SmtXorDifferentialModel(SmtModel):
         self._model_constraints = \
             constants.MODEL_PREFIX + self._declarations + self._model_constraints + constants.MODEL_SUFFIX
 
-    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='z3'):
+    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions  containing all the XOR differential trails having the ``fixed_weight`` weight.
+        By default, the search is set in the single-key setting.
 
         INPUT:
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` in method
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -101,22 +105,27 @@ class SmtXorDifferentialModel(SmtModel):
 
         EXAMPLES::
 
+            # single-key setting
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: smt = SmtXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:     component_id='plaintext',
-            ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(32),
-            ....:     bit_values=integer_to_bit_list(0, 32, 'big'))
+            sage: trails = smt.find_all_xor_differential_trails_with_fixed_weight(9)
+            sage: len(trails)
+            2
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: smt = SmtXorDifferentialModel(speck)
             sage: key = set_fixed_variables(
             ....:     component_id='key',
-            ....:     constraint_type='equal',
+            ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
-            ....:     bit_values=integer_to_bit_list(0, 64, 'big'))
-            sage: trails = smt.find_all_xor_differential_trails_with_fixed_weight(9, fixed_values=[plaintext, key])
+            ....:     bit_values=[0]*64)
+            sage: trails = smt.find_all_xor_differential_trails_with_fixed_weight(2, fixed_values=[key])
             sage: len(trails)
             2
         """
@@ -150,9 +159,10 @@ class SmtXorDifferentialModel(SmtModel):
         return solutions_list
 
     def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
-                                                             solver_name='z3'):
+                                                             solver_name=solvers.SOLVER_DEFAULT):
         """
         Return a list of solutions.
+        By default, the search is set in the single-key setting.
 
         The list contains all the XOR differential trails having the weight lying in the interval
         ``[min_weight, max_weight]``.
@@ -162,7 +172,7 @@ class SmtXorDifferentialModel(SmtModel):
         - ``min_weight`` -- **integer**; the weight from which to start the search
         - ``max_weight`` -- **integer**; the weight at which the search stops
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -170,24 +180,29 @@ class SmtXorDifferentialModel(SmtModel):
 
         EXAMPLES::
 
+            # single-key setting
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: smt = SmtXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:     component_id='plaintext',
-            ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(32),
-            ....:     bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: key = set_fixed_variables(
-            ....:     component_id='key',
-            ....:     constraint_type='equal',
-            ....:     bit_positions=range(64),
-            ....:     bit_values=integer_to_bit_list(0, 64, 'big'))
-            sage: trails = smt.find_all_xor_differential_trails_with_weight_at_most(9, 10, fixed_values=[plaintext, key])
+            sage: trails = smt.find_all_xor_differential_trails_with_weight_at_most(9, 10)
             sage: len(trails)
             28
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: smt = SmtXorDifferentialModel(speck)
+            sage: key = set_fixed_variables(
+            ....:     component_id='key',
+            ....:     constraint_type='not_equal',
+            ....:     bit_positions=range(64),
+            ....:     bit_values=[0]*64)
+            sage: trails = smt.find_all_xor_differential_trails_with_weight_at_most(2, 3, fixed_values=[key])
+            sage: len(trails)
+            9
         """
         solutions_list = []
         for weight in range(min_weight, max_weight + 1):
@@ -200,9 +215,10 @@ class SmtXorDifferentialModel(SmtModel):
 
         return solutions_list
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name='z3'):
+    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a trail with the lowest weight.
+        By default, the search is set in the single-key setting.
 
         .. NOTE::
 
@@ -212,7 +228,7 @@ class SmtXorDifferentialModel(SmtModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -220,24 +236,29 @@ class SmtXorDifferentialModel(SmtModel):
 
         EXAMPLES::
 
+            # single-key setting
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: smt = SmtXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:     component_id='plaintext',
-            ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(32),
-            ....:     bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: key = set_fixed_variables(
-            ....:     component_id='key',
-            ....:     constraint_type='equal',
-            ....:     bit_positions=range(64),
-            ....:     bit_values=integer_to_bit_list(0, 64, 'big'))
-            sage: trail = smt.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
+            sage: trail = smt.find_lowest_weight_xor_differential_trail()
             sage: trail['total_weight']
             9.0
+
+            # related-key setting
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: smt = SmtXorDifferentialModel(speck)
+            sage: key = set_fixed_variables(
+            ....:     component_id='key',
+            ....:     constraint_type='not_equal',
+            ....:     bit_positions=range(64),
+            ....:     bit_values=[0]*64)
+            sage: trail = smt.find_lowest_weight_xor_differential_trail(fixed_values=[key])
+            sage: trail['total_weight']
+            1.0
         """
         current_weight = 0
         start_building_time = time.time()
@@ -262,16 +283,16 @@ class SmtXorDifferentialModel(SmtModel):
 
         return solution
 
-    def find_one_xor_differential_trail(self, fixed_values=[], solver_name='z3'):
+    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR differential trail.
-
+        By default, the search is set in the single-key setting.
         The solution probability is almost always lower than the one of a random guess of the longest input.
 
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
 
         .. SEEALSO::
 
@@ -279,25 +300,33 @@ class SmtXorDifferentialModel(SmtModel):
 
         EXAMPLES::
 
+            # single-key setting
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: smt = SmtXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:     component_id='plaintext',
-            ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(32),
-            ....:     bit_values=integer_to_bit_list(0, 32, 'big'))
-            sage: smt.find_one_xor_differential_trail(fixed_values=[plaintext]) # random
+            sage: smt.find_one_xor_differential_trail() # random
             {'cipher_id': 'speck_p32_k64_o32_r5',
              'model_type': 'xor_differential',
-             'solver_name': 'z3',
+             'solver_name': 'Z3_EXT',
              'solving_time_seconds': 0.05,
              'memory_megabytes': 19.28,
              ...
              'total_weight': 93,
              'building_time_seconds': 0.002946615219116211}
+
+             # related-key setting
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: smt = SmtXorDifferentialModel(speck)
+            sage: key = set_fixed_variables(
+            ....:     component_id='key',
+            ....:     constraint_type='not_equal',
+            ....:     bit_positions=range(64),
+            ....:     bit_values=[0]*64)
+            sage: smt.find_one_xor_differential_trail(fixed_values=[key]) # random
         """
         start_building_time = time.time()
         self.build_xor_differential_trail_model(fixed_variables=fixed_values)
@@ -308,9 +337,11 @@ class SmtXorDifferentialModel(SmtModel):
 
         return solution
 
-    def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name='z3'):
+    def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
+                                                          solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a XOR differential trail whose probability is ``2 ** fixed_weight``.
+        By default, the search is set in the single-key setting.
 
         INPUT:
 
@@ -324,24 +355,29 @@ class SmtXorDifferentialModel(SmtModel):
 
         EXAMPLES::
 
+            # single-key setting
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: smt = SmtXorDifferentialModel(speck)
-            sage: plaintext = set_fixed_variables(
-            ....:     component_id='plaintext',
-            ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(32),
-            ....:     bit_values=(0,)*32)
+            sage: trail = smt.find_one_xor_differential_trail_with_fixed_weight(3)
+            sage: trail['total_weight']
+            3.0
+
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: smt = SmtXorDifferentialModel(speck)
             sage: key = set_fixed_variables(
             ....:     component_id='key',
-            ....:     constraint_type='equal',
+            ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
-            ....:     bit_values=(0,)*64)
-            sage: result = smt.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[plaintext, key])
-            sage: result['total_weight']
+            ....:     bit_values=[0]*64)
+            sage: trail = smt.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[key])
+            sage: trail['total_weight']
             3.0
+
         """
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=fixed_weight, fixed_variables=fixed_values)

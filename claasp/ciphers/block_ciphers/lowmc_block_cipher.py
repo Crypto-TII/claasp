@@ -17,13 +17,13 @@
 # ****************************************************************************
 
 
-from os.path import exists
 from os.path import dirname
+from os.path import exists
 from os.path import realpath
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 from claasp.ciphers.block_ciphers import lowmc_generate_matrices
+from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
     # See https://tches.iacr.org/index.php/TCHES/article/view/8680/8239 Table 6
@@ -69,13 +69,159 @@ class LowMCBlockCipher(Cipher):
         20
         sage: lowmc.component_from(0, 0).id # long time
         'linear_layer_0_0'
+
+        # All test vectors below are taken from the Picnic reference implementation:
+        # https://github.com/microsoft/Picnic/blob/master/unit_test.c
+
+        # Vectorsets for Picnic-L1-20
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(key_bit_size=128) # long time
+        sage: key = 0x80000000000000000000000000000000 # long time
+        sage: plaintext = 0xABFF0000000000000000000000000000 # long time
+        sage: ciphertext = 0x0E30720B9F64D5C2A7771C8C238D8F70 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(key_bit_size=128) # long time
+        sage: key = 0xB5DF537B000000000000000000000000 # long time
+        sage: plaintext = 0xF77DB57B000000000000000000000000 # long time
+        sage: ciphertext = 0x0E5961E9992153B13245AF243DD7DDC0 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        # Vectorsets for Picnic-L3-30
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=192, key_bit_size=192) # long time
+        sage: key = 0x800000000000000000000000000000000000000000000000 # long time
+        sage: plaintext = 0xABFF00000000000000000000000000000000000000000000 # long time
+        sage: ciphertext = 0xA85B8244344A2E1B10A17BAB043073F6BB649AE6AF659F6F # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=192, key_bit_size=192) # long time
+        sage: key = 0xB5DF537B0000000000000000000000000000000000000000 # long time
+        sage: plaintext = 0xF77DB57B0000000000000000000000000000000000000000 # long time
+        sage: ciphertext = 0x210BBC4A434B32DB1E85AE7A27FEE9E41582FAC21D035AA1 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        # Vectorsets for Picnic-L5-38
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=256, key_bit_size=256) # long time
+        sage: key = 0x8000000000000000000000000000000000000000000000000000000000000000 # long time
+        sage: plaintext = 0xABFF000000000000000000000000000000000000000000000000000000000000 # long time
+        sage: ciphertext = 0xB8F20A888A0A9EC4E495F1FB439ABDDE18C1D3D29CF20DF4B10A567AA02C7267 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=256, key_bit_size=256) # long time
+        sage: key = 0xF77DB57B00000000000000000000000000000000000000000000000000000000 # long time
+        sage: plaintext = 0xB5DF537B00000000000000000000000000000000000000000000000000000000 # long time
+        sage: ciphertext = 0xEEECCE6A584A93306DAEA07519B47AD6402C11DD942AA3166541444977A214C5 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        # Vectorsets for Picnic3-L1-4
+        # Note that all values need to be truncated to exact block_bit_size value
+        # (129 bits, 136 might raise an error at some point)
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=129, key_bit_size=129) # long time
+        sage: key = 0x8000000000000000000000000000000000 >> 7 # long time
+        sage: plaintext = 0xabff000000000000000000000000000000 >> 7 # long time
+        sage: ciphertext = 0x2fd7d5425ee35e667c972f12fb153e9d80 >> 7 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=129, key_bit_size=129) # long time
+        sage: key = 0xab22425149aa612d7fff137220275b1680 >> 7 # long time
+        sage: plaintext = 0x4b992353a60665bf992d035482c1d27900 >> 7 # long time
+        sage: ciphertext = 0x2a4062d835c593ea19f822ad242477d280 >> 7 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=129, key_bit_size=129) # long time
+        sage: key = 0xe73af29cfc7ae53e5220d31e2e5917da80 >> 7 # long time
+        sage: plaintext = 0x304ba7a8de2b5cf887f9a48ab7561bf680 >> 7 # long time
+        sage: ciphertext = 0x5cd2c355328efde9f378c16123d33fb300 >> 7 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=129, key_bit_size=129) # long time
+        sage: key = 0x30f33488532d7eb8a5f8fb4f2e63ba5600 >> 7 # long time
+        sage: plaintext = 0xc26a5df906158dcb6ac7891da9f49f7800 >> 7 # long time
+        sage: ciphertext = 0xb43b65f7c535006cf27e86f551bd01580 >> 7 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        # Vectorsets for Picnic3-L3-4
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=192, key_bit_size=192, number_of_rounds=4) # long time
+        sage: key = 0x800000000000000000000000000000000000000000000000 # long time
+        sage: plaintext = 0xABFF00000000000000000000000000000000000000000000 # long time
+        sage: ciphertext = 0xf8f7a225de77123129107a20f5543afa7833076653ba2b29 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=192, key_bit_size=192, number_of_rounds=4) # long time
+        sage: key = 0x81b85dfe40f612275aa3f9199139ebaae8dff8366f2dd34e # long time
+        sage: plaintext = 0xb865ccf3fcda8ddbed527dc34dd4150d4a482dcbf7e9643c # long time
+        sage: ciphertext = 0x95ef9ed7c37872a7b4602a3fa9c46ebcb84254ed0e44ee9f # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=192, key_bit_size=192, number_of_rounds=4) # long time
+        sage: key = 0x2405978fdaad9b6d8dcdd18a0c2c0ec68b69dd0a3754fe38 # long time
+        sage: plaintext = 0x33e8b4552e95ef5279497706bce01ecb4acb860141b7fc43 # long time
+        sage: ciphertext = 0xddaf0f9d9edd572069a8949faea0d1fd2d91ef262b411caf # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=192, key_bit_size=192, number_of_rounds=4) # long time
+        sage: key = 0x569d7d822300943d9483477427e88ea227a2e3172c04bcd3 # long time
+        sage: plaintext = 0xaeeb9d5b61a2a56dd598f7da26dfd78cc992e0aea3fc2e39 # long time
+        sage: ciphertext = 0x869870ae6547ad0afef27793170d96bc78e040096944808f # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        # Vectorsets for Picnic3-L5-4
+        # Note that all values need to be truncated to exact block_bit_size value
+        # (255 bits, 256 might raise an error at some point)
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=255, key_bit_size=255, number_of_rounds=4) # long time
+        sage: key = 0x8000000000000000000000000000000000000000000000000000000000000000 >> 1 # long time
+        sage: plaintext = 0xABFF000000000000000000000000000000000000000000000000000000000000 >> 1 # long time
+        sage: ciphertext = 0xD4721D846DD14DBA3A2C41501C02DA282ECAFD72DF77992F3967EFD6E8F3F356 >> 1 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=255, key_bit_size=255, number_of_rounds=4) # long time
+        sage: key = 0x7c20be53b6d6008149e19a34b97d9684a0914caf9f7f38b2499811369c3f53da >> 1 # long time
+        sage: plaintext = 0x8863f129c0387ae5a402a49bd64927c4c65964fb8531b0d761b161b4c97b755e >> 1 # long time
+        sage: ciphertext = 0x3b6e4b63cc8b08268b6781d5a629d6e03020c1c048d4684161b90ad73339126 >> 1 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=255, key_bit_size=255, number_of_rounds=4) # long time
+        sage: key = 0x6df9e78d0fc1b870dabe520514b959636a42304bf43a2408524506c81ea30b14 >> 1 # long time
+        sage: plaintext = 0x9e5178420520b8cca529595b80c4703b2dcf2a0730643a6f412798605f052b68 >> 1 # long time
+        sage: ciphertext = 0x0f19fcc8bc18869aab8e4fe81e9767d18cfe715081929f92963b4000000626f8 >> 1 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
+        sage: from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
+        sage: lowmc = LowMCBlockCipher(block_bit_size=255, key_bit_size=255, number_of_rounds=4) # long time
+        sage: key = 0xb071c6d4a377e551254c5dc401a3d08acb99609f418a8c2207f5122b5a17fe9a >> 1 # long time
+        sage: plaintext = 0xf7616dc514fd0e1028561d098aafa54c34be728cf24a5024df17b9cc2e33fbfa >> 1 # long time
+        sage: ciphertext = 0x4448c70ac3863021be232c63381687cd5defb50ba28d7b268e19727baebc679a >> 1 # long time
+        sage: assert lowmc.evaluate([plaintext, key]) == ciphertext # long time
+
     """
 
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=0, number_of_sboxes=0):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
         self.WORD_SIZE = self.block_bit_size // 2
-        self.sbox = [0x00, 0x01, 0x03, 0x06, 0x07, 0x04, 0x05, 0x02]
+        self.sbox = [0x0, 0x7, 0x6, 0x5, 0x4, 0x1, 0x3, 0x2]
         self.matrices_for_linear_layer = []
         self.ROUND_CONSTANTS = []
         # Round key derivation matrices
@@ -105,10 +251,10 @@ class LowMCBlockCipher(Cipher):
 
         for r in range(number_of_rounds):
             # Nonlinear layer
-            sbox_layer_picnic = self.sbox_layer_picnic(plaintext_id)
+            sbox_layer = self.sbox_layer(plaintext_id)
 
             # Affine layer
-            linear_layer = self.linear_layer(sbox_layer_picnic, r)
+            linear_layer = self.linear_layer(sbox_layer, r)
             round_constant = self.add_round_constant(linear_layer, r)
 
             # Generate round key and add to the state
@@ -272,30 +418,6 @@ class LowMCBlockCipher(Cipher):
 
         return self.add_concatenate_component(sbox_output + [plaintext_id],
                                               [list(range(3))] * self.N_SBOX +
-                                              [list(range(3 * self.N_SBOX, self.block_bit_size))],
-                                              self.block_bit_size).id
-
-    def sbox_layer_picnic(self, plaintext_id):
-        """
-        In the Picnic-Ref-Implementation, each 3-bit chunk is first reversed before applying the Sbox.
-
-        The output is also reversed when added back to the state
-
-        e.g.
-          state[0:3] = '110' becomes '011', then is mapped to '110' via the
-          Sbox finally, it is reversed to '011' for the state-update.
-        """
-
-        sbox_output = [''] * self.N_SBOX
-
-        # m computations of 3 - bit sbox
-        # remaining n - 3m bits remain the same
-        for i in range(self.N_SBOX):
-            sbox_output[i] = self.add_SBOX_component([plaintext_id], [list(range(3 * i, 3 * (i + 1)))[::-1]],
-                                                     3, self.sbox).id
-
-        return self.add_concatenate_component(sbox_output + [plaintext_id],
-                                              [list(range(3))[::-1]] * self.N_SBOX +
                                               [list(range(3 * self.N_SBOX, self.block_bit_size))],
                                               self.block_bit_size).id
 

@@ -1,5 +1,26 @@
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-from claasp.cipher_modules.models.cp.cp_model import CpModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+from claasp.cipher import Cipher
+
+
+def test_algebraic_polynomials():
+    cipher = Cipher("cipher_name", "permutation", ["input"], [8], 8)
+    cipher.add_round()
+    cipher.add_MODSUB_component(["input", "input"], [[0, 1, 2, 3], [4, 5, 6, 7]], 4)
+    modsub_component = cipher.get_component_from_id('modsub_0_0')
+    algebraic = AlgebraicModel(cipher)
+    algebraic_polynomials = modsub_component.algebraic_polynomials(algebraic)
+
+    assert str(algebraic_polynomials[0]) == "modsub_0_0_b0_0"
+    assert str(algebraic_polynomials[1]) == "modsub_0_0_b0_0 + modsub_0_0_y0 + modsub_0_0_x4 + modsub_0_0_x0"
+    assert str(algebraic_polynomials[2]) == "modsub_0_0_x4*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_b0_0 + " \
+                                            "modsub_0_0_x0*modsub_0_0_x4 + modsub_0_0_b0_1 + modsub_0_0_b0_0 + " \
+                                            "modsub_0_0_x4"
+    assert str(algebraic_polynomials[-2]) == "modsub_0_0_x6*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_b0_2 + " \
+                                             "modsub_0_0_x2*modsub_0_0_x6 + modsub_0_0_b0_3 + modsub_0_0_b0_2 + " \
+                                             "modsub_0_0_x6"
+    assert str(algebraic_polynomials[-1]) == "modsub_0_0_b0_3 + modsub_0_0_y3 + modsub_0_0_x7 + modsub_0_0_x3"
 
 
 def test_cms_constraints():
@@ -37,11 +58,12 @@ def test_cp_constraints():
 def test_cp_xor_differential_propagation_constraints():
     raiden = RaidenBlockCipher(number_of_rounds=3)
     modsub_component = raiden.component_from(0, 7)
-    cp_model = CpModel(raiden)
+    cp_model = MznModel(raiden)
     output_bit_ids, constraints = modsub_component.cp_xor_differential_propagation_constraints(cp_model)
-    
+
     assert output_bit_ids[0] == 'array[0..31] of var 0..1: pre_modsub_0_7_0;'
-    assert output_bit_ids[-1] == 'array[0..31] of var 0..1: eq_modsub_0_7 = Eq(Shi_pre_modsub_0_7_1, Shi_pre_modsub_0_7_0, Shi_modsub_0_7);'
+    assert output_bit_ids[
+               -1] == 'array[0..31] of var 0..1: eq_modsub_0_7 = Eq(Shi_pre_modsub_0_7_1, Shi_pre_modsub_0_7_0, Shi_modsub_0_7);'
 
     assert constraints[0] == 'constraint pre_modsub_0_7_0[0] = modadd_0_4[0];'
     assert constraints[1] == 'constraint pre_modsub_0_7_0[1] = modadd_0_4[1];'

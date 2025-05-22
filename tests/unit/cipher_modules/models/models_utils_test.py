@@ -11,7 +11,10 @@ from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dicti
                                                 find_sign_for_xor_linear_trails, print_components_values,
                                                 write_solution_to_file,
                                                 get_single_key_scenario_format_for_fixed_values,
-                                                get_related_key_scenario_format_for_fixed_values)
+                                                get_related_key_scenario_format_for_fixed_values,
+                                                differential_truncated_checker_permutation,
+                                                differential_checker_permutation)
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 
 NOT_EQUAL = 'not equal'
 
@@ -55,7 +58,7 @@ def test_to_bias_for_xor_linear_trail():
     trail = milp.find_lowest_weight_xor_linear_trail([plaintext])
     solution = to_bias_for_xor_linear_trail(speck, trail)
 
-    assert solution['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(solution['cipher']) == 'speck_p32_k64_o32_r4'
     assert solution['total_weight'] == 4.0
     assert solution['measure'] == 'bias'
 
@@ -68,7 +71,7 @@ def test_to_probability_for_xor_linear_trail():
     trail = milp.find_lowest_weight_xor_linear_trail([plaintext])
     solution = to_probability_for_xor_linear_trail(speck, trail)
 
-    assert solution['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(solution['cipher']) == 'speck_p32_k64_o32_r4'
     assert solution['measure'] == 'probability'
     assert solution['total_weight'] == 0.83
 
@@ -81,7 +84,7 @@ def test_to_correlation_for_xor_linear_trail():
     trail = milp.find_lowest_weight_xor_linear_trail([plaintext])
     solution = to_correlation_for_xor_linear_trail(speck, trail)
 
-    assert solution['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(solution['cipher']) == 'speck_p32_k64_o32_r4'
     assert solution['measure'] == 'correlation'
     assert solution['total_weight'] == 3.0
 
@@ -108,3 +111,25 @@ def test_get_single_key_scenario_format_for_fixed_values():
     fixed_values = get_single_key_scenario_format_for_fixed_values(speck)
     assert fixed_values[0]["constraint_type"] == 'equal'
     assert fixed_values[1]["constraint_type"] == 'not_equal'
+
+
+def test_differential_checker_permutation():
+    cipher = ChachaPermutation(number_of_rounds=1)
+    input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
+    output_difference = 0x00000000000000000000000000000000800000000000000000000000000000000008000000000000000000000000000000080000000000000000000000000000
+
+    probability_weight = differential_checker_permutation(
+        cipher, input_difference, output_difference, 1 << 12, 512, seed=42
+    )
+    assert abs(probability_weight) < 2
+
+
+def test_differential_truncated_checker_permutation():
+    cipher = ChachaPermutation(number_of_rounds=3)
+    input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
+    output_difference = '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????????????????????????????????????????????????????????????????????1000000000000000????????????????????100000000000????????????????????????10000000????????????????????????????????????10000000????????????????????????????????????????????????1000000000000000????????????????????1000000000000000000010000000000010000000000000000000000000000000000000000000????????????????????????????????00000000000000001000000000000000'
+
+    probability_weight = differential_truncated_checker_permutation(
+        cipher, input_difference, output_difference, 1 << 12, 512, seed=42
+    )
+    assert abs(probability_weight) < 2

@@ -176,12 +176,12 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
             sage: component = fancy.get_component_from_id("and_0_8")
             sage: l = component._get_independent_input_output_variables()
             sage: l[0]
-             ['and_0_8_0_i',
+            ['and_0_8_0_i',
              'and_0_8_1_i',
              ...
              'and_0_8_22_i',
@@ -210,7 +210,7 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
             sage: component = fancy.get_component_from_id("and_0_8")
             sage: l = component._get_input_output_variables()
@@ -258,7 +258,7 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(fancy)
@@ -312,7 +312,7 @@ class Component:
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: cipher = AESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwisewiseDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: component = cipher.get_component_from_id("rot_0_18")

@@ -782,6 +782,56 @@ def THETA_XOODOO(input):
 
     return output
 
+def THETA_GASTON(input, rotation_amounts=(1,18,23,25,32,52,60,63)):
+    """
+    Perform the twin column parity mixer (mixing layer) of Gaston.
+
+    INPUT:
+    - ``input`` -- BitArray of length 320 or 640, interpreted as 5 rows of 64 bits.
+    - ``rotation_amounts`` -- **tuple of 8 integers** (default: (1, 18, 23, 25, 32, 52, 60, 63)):
+        - First three values: `r`, `s`, `u` — rotation amounts for P, Q, and E.
+        - Remaining five values: `t0` through `t4` — row-specific rotation amounts used in computing Q.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.generic_functions import THETA_GASTON
+        sage: from bitstring import BitArray
+        sage: b = BitArray(bytes=range(40))
+        sage: THETA_GASTON(b).bin[:70] == '0011010110100010000110000010011000101100101110110000000100111111001111'
+        True
+
+    """
+
+    def rol(bitarr, amount):
+        amount %= bitarr.len
+        return bitarr[amount:] + bitarr[:amount]
+
+    assert len(rotation_amounts) == 8
+    assert len(input) in [320, 640]
+
+    row_len = len(input) // 5
+    r, s, u, *t_list = rotation_amounts
+
+    A = [input[i * row_len:(i + 1) * row_len] for i in range(5)]
+
+    P = A[0].copy()
+    for i in range(1, 5):
+        P ^= A[i]
+
+    Q = rol(A[0], t_list[0])
+    for i in range(1, 5):
+        Q ^= rol(A[i], t_list[i])
+
+    E = (P ^ rol(P, r)) ^ (Q ^ rol(Q, s))
+
+    E_shifted = rol(E, u)
+
+    output = BitArray()
+    for i in range(5):
+        output += A[i] ^ E_shifted
+
+    return output
+
 
 def ROTATE_BY_VARIABLE_AMOUNT(input, input_size, rotation_direction, verbosity=False):
     """
@@ -952,6 +1002,17 @@ def select_bits(input, bit_positions, verbosity=False):
 def merge_bits():
     return 0
 
+def _get_polynomial_from_binary_polynomial_index_list(polynomial_index_list, R):
+    if polynomial_index_list == []:
+        return R(1)
+    p = 0
+    x = R.gens()
+    for _ in polynomial_index_list:
+        m = 1
+        for i in _:
+            m = m * x[i]
+        p += m
+    return p
 
 def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     """
@@ -968,17 +1029,6 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
 
     """
 
-    def get_polynomail(polynomial_index_list, R):
-        if polynomial_index_list == []:
-            return R(1)
-        p = 0
-        x = R.gens()
-        for _ in polynomial_index_list:
-            m = 1
-            for i in _:
-                m = m * x[i]
-            p += m
-        return p
 
     output = BitArray(input)
     R = BooleanPolynomialRing(len(input), 'x')
@@ -993,9 +1043,9 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
         registers_start[i] = end
         end += registers_info[i][0]
         registers_update_bit[i] = end - 1
-        registers_polynomial[i] = get_polynomail(registers_info[i][1], R)
-        if len(registers_info[i]) > 2:
-            clock_polynomials[i] = get_polynomail(registers_info[i][2], R)
+        registers_polynomial[i] = _get_polynomial_from_binary_polynomial_index_list(registers_info[i][1], R)
+        if len(registers_info[i]) > 2 and registers_info[i][2] != None:
+            clock_polynomials[i] = _get_polynomial_from_binary_polynomial_index_list(registers_info[i][2], R)
 
     for r in range(number_of_clocks):
         do_clocks = [True for _ in range(number_of_registers)]
@@ -1024,6 +1074,37 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
         print(output_expression.format(output.bin))
     return output
 
+def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
+    if polynomial_index_list == []:
+        return R(1)
+    p = 0
+    x = R.gens()
+    y = R.construction()[1].gen()
+
+    for _ in polynomial_index_list:
+        m = 0  # presently it is for field of characteristic 2 only
+        cc = "{0:b}".format(_[0])
+        for i in range(len(cc)):
+            if cc[i] == '1':  m = m + pow(y, len(cc) - 1 - i)
+        for i in _[1]:
+            m = m * x[i]
+        p += m
+    return p
+
+def _bits_to_words_array(input, bits_inside_word, word_gf):
+    y = word_gf.gen()
+
+    monomials = [pow(y, i) for i in range(bits_inside_word - 1, -1, -1)]
+    word_array = [0 for _ in
+                  range(int(len(input) / bits_inside_word))]
+
+    for i in range(len(word_array)):
+        c = 0
+        for j in range(len(monomials)):
+            c += (input[(i * bits_inside_word) + j]) * monomials[j]
+        word_array[i] = c
+
+    return word_array
 
 def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosity=False):
     """
@@ -1041,22 +1122,8 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
 
     """
 
-    def bits_to_word(input, bits_inside_word, word_gf):
-        y = word_gf.gen()
 
-        monomials = [pow(y, i) for i in range(bits_inside_word - 1, -1, -1)]
-        word_array = [0 for _ in
-                      range(int(len(input) / bits_inside_word))]
-
-        for i in range(len(word_array)):
-            c = 0
-            for j in range(len(monomials)):
-                c += (input[(i * bits_inside_word) + j]) * monomials[j]
-            word_array[i] = c
-
-        return word_array
-
-    def word_to_bits(word_array, bits_inside_word, word_gf):
+    def _word_to_bits(word_array, bits_inside_word, word_gf):
         output = BitArray()
         d = word_gf.degree()
         s = f'0b'
@@ -1069,25 +1136,9 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
         output.append(s)
         return output
 
-    def get_polynomail(polynomial_index_list, R):
-        if polynomial_index_list == []:
-            return R(1)
-        p = 0
-        x = R.gens()
-        y = R.construction()[1].gen()
-
-        for _ in polynomial_index_list:
-            m = 0  # presently it is for field of characteristic 2 only
-            cc = "{0:b}".format(_[0])
-            for i in range(len(cc)):
-                if cc[i] == '1':  m = m + pow(y, len(cc) - 1 - i)
-            for i in _[1]:
-                m = m * x[i]
-            p += m
-        return p
 
     word_gf = GF(pow(2, bits_inside_word))
-    word_array = bits_to_word(input, bits_inside_word, word_gf)
+    word_array = _bits_to_words_array(input, bits_inside_word, word_gf)
     R = PolynomialRing(word_gf, len(word_array), 'x')
     number_of_registers = len(registers_info)
     registers_polynomial = [0 for _ in range(number_of_registers)]
@@ -1099,9 +1150,9 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
         registers_start[i] = end
         end += registers_info[i][0]
         registers_update_word[i] = end - 1
-        registers_polynomial[i] = get_polynomail(registers_info[i][1], R)
+        registers_polynomial[i] = _get_polynomial_from_word_polynomial_index_list(registers_info[i][1], R)
         if len(registers_info[i]) > 2:
-            clock_polynomials[i] = get_polynomail(registers_info[i][2], R)
+            clock_polynomials[i] = _get_polynomial_from_word_polynomial_index_list(registers_info[i][2], R)
 
     for r in range(number_of_clocks):
         do_clocks = [True for _ in range(number_of_registers)]
@@ -1121,7 +1172,7 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
             registers.append(reg)
         word_array = registers
 
-    output = word_to_bits(word_array, bits_inside_word, word_gf)
+    output = _word_to_bits(word_array, bits_inside_word, word_gf)
     if verbosity:
         print("FSR:")
         for i in range(number_of_registers):

@@ -6,7 +6,8 @@ from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import Sat
 def test_branch_xor_linear_constraints():
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatXorLinearModel(speck)
-    constraints = sat.branch_xor_linear_constraints()
+
+    constraints = SatXorLinearModel.branch_xor_linear_constraints(sat.bit_bindings)
 
     assert constraints[0] == '-plaintext_0_o rot_0_0_0_i'
     assert constraints[1] == 'plaintext_0_o -rot_0_0_0_i'
@@ -15,46 +16,38 @@ def test_branch_xor_linear_constraints():
     assert constraints[-2] == '-xor_2_10_15_o cipher_output_2_12_31_i'
     assert constraints[-1] == 'xor_2_10_15_o -cipher_output_2_12_31_i'
 
-
 def test_find_all_xor_linear_trails_with_weight_at_most():
-    speck = SpeckBlockCipher(number_of_rounds=3)
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
     sat = SatXorLinearModel(speck)
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
-                                    bit_positions=range(32), bit_values=integer_to_bit_list(0, 32, 'big'))
-    trails = sat.find_all_xor_linear_trails_with_weight_at_most(2, 3, fixed_values=[plaintext])
+    key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+    trails = sat.find_all_xor_linear_trails_with_weight_at_most(0, 3, fixed_values=[key])
 
-    assert len(trails) == 11
+    assert len(trails) == 73
 
 
 def test_find_lowest_weight_xor_linear_trail():
-    speck = SpeckBlockCipher(number_of_rounds=3)
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
     sat = SatXorLinearModel(speck)
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
-                                    bit_positions=range(32), bit_values=integer_to_bit_list(0, 32, 'big'))
-    trail = sat.find_lowest_weight_xor_linear_trail(fixed_values=[plaintext])
+    trail = sat.find_lowest_weight_xor_linear_trail()
 
-    assert trail['total_weight'] == 2.0
+    assert trail['total_weight'] == 3.0
 
 
 def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(number_of_rounds=4)
     sat = SatXorLinearModel(speck)
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
-                                    bit_positions=range(32), bit_values=integer_to_bit_list(0, 32, 'big'))
-    trail = sat.find_one_xor_linear_trail(fixed_values=[plaintext])
+    trail = sat.find_one_xor_linear_trail()
 
-    assert trail['cipher_id'] == 'speck_p32_k64_o32_r4'
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['model_type'] == 'xor_linear'
-    assert trail['solver_name'] == 'cryptominisat'
+    assert trail['solver_name'] == 'CRYPTOMINISAT_EXT'
     assert trail['status'] == 'SATISFIABLE'
 
 
 def test_find_one_xor_linear_trail_with_fixed_weight():
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatXorLinearModel(speck)
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not_equal',
-                                    bit_positions=range(32), bit_values=(0,) * 32)
-    result = sat.find_one_xor_linear_trail_with_fixed_weight(7, fixed_values=[plaintext])
+    result = sat.find_one_xor_linear_trail_with_fixed_weight(7)
 
     assert result['total_weight'] == 7.0
 
@@ -70,7 +63,7 @@ def test_fix_variables_value_xor_linear_constraints():
                         'constraint_type': 'not_equal',
                         'bit_positions': [0, 1, 2, 3],
                         'bit_values': [1, 1, 1, 0]}]
-    constraints = sat.fix_variables_value_xor_linear_constraints(fixed_variables)
+    constraints = SatXorLinearModel.fix_variables_value_xor_linear_constraints(fixed_variables)
 
     assert constraints == ['plaintext_0_o', '-plaintext_1_o', 'plaintext_2_o', 'plaintext_3_o',
                            '-ciphertext_0_o -ciphertext_1_o -ciphertext_2_o ciphertext_3_o']

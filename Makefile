@@ -3,15 +3,16 @@
 # Package folder
 PACKAGE=claasp
 
-# change to your sage command if needed
+# Change to your sage command if needed
 SAGE_BIN=`if [ -s SAGE_BIN_PATH ]; then cat SAGE_BIN_PATH; else echo sage; fi`
 MODULE?=$(PACKAGE)
 
 DOCKER_IMG_NAME=claasp
 CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 
+
 all: install
-	if [ $(CURRENT_BRANCH) == "master" ]; then\
+	if [ $(CURRENT_BRANCH) == "main" ]; then\
 		$(SAGE_BIN) setup.py testall;\
 	else\
 		$(SAGE_BIN) -t `{ git diff --name-only "*.py" ; git diff --name-only --staged "*.py"; } | uniq`;\
@@ -24,10 +25,20 @@ rundocker: builddocker
 	docker run -i -p 8887:8887 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
 	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
 
+rundockerhub:
+	docker pull tiicrc/claasp-base \
+	docker run -i -p 8887:8887 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
+	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
+
 builddocker-m1:
-	docker build --build-arg="GUROBI_ARCH=armlinux64" -f docker/Dockerfile --platform linux/aarch64 --target claasp-base -t $(DOCKER_IMG_NAME) .
+	docker build -f docker/Dockerfile --platform linux/x86_64 --target claasp-base -t $(DOCKER_IMG_NAME) .
 
 rundocker-m1: builddocker-m1
+	docker run -i -p 8888:8888 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
+	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
+
+rundockerhub-m1:
+	docker pull tiicrc/claasp-m1-base \
 	docker run -i -p 8888:8888 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
 	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
 
@@ -46,6 +57,9 @@ remote-pytest:
 pytest:
 	pytest -v -n=auto --dist loadfile tests/unit/
 
+github-pytest:
+	pytest -v tests/unit/
+
 pytest-coverage:
 	pytest -v -n=2 --dist loadfile --cov-report term-missing --cov=$(PACKAGE) tests/unit/
 
@@ -59,7 +73,7 @@ testall: install
 	$(SAGE_BIN) setup.py testall
 
 test: install
-	$(SAGE_BIN) -t $(MODULE)
+	SAGE_TIMEOUT=600 $(SAGE_BIN) -tp 32 $(MODULE)
 
 coverage:
 	$(SAGE_BIN) -coverage $(PACKAGE)/*
@@ -92,6 +106,3 @@ copyright: install
 
 local-installation:
 	./configure.sh
-
-local-installation-m1:
-	./configure.sh armlinux64

@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -44,14 +43,43 @@ class OR(MultiInputNonlinearLogicalOperator):
             sage: or_component = gift.get_component_from_id("or_0_4")
             sage: algebraic = AlgebraicModel(gift)
             sage: or_component.algebraic_polynomials(algebraic)
-            [or_0_4_y0 + 1,
-             or_0_4_y1 + 1,
-             ...
-             or_0_4_y30 + 1,
-             or_0_4_y31 + 1]
+            [or_0_4_x0*or_0_4_x32 + or_0_4_y0 + or_0_4_x32 + or_0_4_x0,
+             or_0_4_x1*or_0_4_x33 + or_0_4_y1 + or_0_4_x33 + or_0_4_x1,
+             or_0_4_x2*or_0_4_x34 + or_0_4_y2 + or_0_4_x34 + or_0_4_x2,
+             or_0_4_x3*or_0_4_x35 + or_0_4_y3 + or_0_4_x35 + or_0_4_x3,
+             or_0_4_x4*or_0_4_x36 + or_0_4_y4 + or_0_4_x36 + or_0_4_x4,
+             or_0_4_x5*or_0_4_x37 + or_0_4_y5 + or_0_4_x37 + or_0_4_x5,
+             or_0_4_x6*or_0_4_x38 + or_0_4_y6 + or_0_4_x38 + or_0_4_x6,
+             or_0_4_x7*or_0_4_x39 + or_0_4_y7 + or_0_4_x39 + or_0_4_x7,
+             or_0_4_x8*or_0_4_x40 + or_0_4_y8 + or_0_4_x40 + or_0_4_x8,
+             or_0_4_x9*or_0_4_x41 + or_0_4_y9 + or_0_4_x41 + or_0_4_x9,
+             or_0_4_x10*or_0_4_x42 + or_0_4_y10 + or_0_4_x42 + or_0_4_x10,
+             or_0_4_x11*or_0_4_x43 + or_0_4_y11 + or_0_4_x43 + or_0_4_x11,
+             or_0_4_x12*or_0_4_x44 + or_0_4_y12 + or_0_4_x44 + or_0_4_x12,
+             or_0_4_x13*or_0_4_x45 + or_0_4_y13 + or_0_4_x45 + or_0_4_x13,
+             or_0_4_x14*or_0_4_x46 + or_0_4_y14 + or_0_4_x46 + or_0_4_x14,
+             or_0_4_x15*or_0_4_x47 + or_0_4_y15 + or_0_4_x47 + or_0_4_x15,
+             or_0_4_x16*or_0_4_x48 + or_0_4_y16 + or_0_4_x48 + or_0_4_x16,
+             or_0_4_x17*or_0_4_x49 + or_0_4_y17 + or_0_4_x49 + or_0_4_x17,
+             or_0_4_x18*or_0_4_x50 + or_0_4_y18 + or_0_4_x50 + or_0_4_x18,
+             or_0_4_x19*or_0_4_x51 + or_0_4_y19 + or_0_4_x51 + or_0_4_x19,
+             or_0_4_x20*or_0_4_x52 + or_0_4_y20 + or_0_4_x52 + or_0_4_x20,
+             or_0_4_x21*or_0_4_x53 + or_0_4_y21 + or_0_4_x53 + or_0_4_x21,
+             or_0_4_x22*or_0_4_x54 + or_0_4_y22 + or_0_4_x54 + or_0_4_x22,
+             or_0_4_x23*or_0_4_x55 + or_0_4_y23 + or_0_4_x55 + or_0_4_x23,
+             or_0_4_x24*or_0_4_x56 + or_0_4_y24 + or_0_4_x56 + or_0_4_x24,
+             or_0_4_x25*or_0_4_x57 + or_0_4_y25 + or_0_4_x57 + or_0_4_x25,
+             or_0_4_x26*or_0_4_x58 + or_0_4_y26 + or_0_4_x58 + or_0_4_x26,
+             or_0_4_x27*or_0_4_x59 + or_0_4_y27 + or_0_4_x59 + or_0_4_x27,
+             or_0_4_x28*or_0_4_x60 + or_0_4_y28 + or_0_4_x60 + or_0_4_x28,
+             or_0_4_x29*or_0_4_x61 + or_0_4_y29 + or_0_4_x61 + or_0_4_x29,
+             or_0_4_x30*or_0_4_x62 + or_0_4_y30 + or_0_4_x62 + or_0_4_x30,
+             or_0_4_x31*or_0_4_x63 + or_0_4_y31 + or_0_4_x63 + or_0_4_x31]
+
         """
         ninputs = self.input_bit_size
         noutputs = self.output_bit_size
+        ors_number = self.description[1] - 1
         word_size = noutputs
         ring_R = model.ring()
         input_vars = [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)]
@@ -61,10 +89,11 @@ class OR(MultiInputNonlinearLogicalOperator):
         def or_polynomial(x0, x1):
             return x0 * x1 + x0 + x1
 
-        x = [ring_R.one() for _ in range(noutputs)]
-        for word_vars in words_vars:
+        x = [words_vars[0][_] for _ in range(noutputs)]
+        for or_itr in range(ors_number):
             for i in range(noutputs):
-                x[i] = or_polynomial(x[i], word_vars[i])
+                x[i] = or_polynomial(x[i], words_vars[or_itr + 1][i])
+
         y = list(map(ring_R, output_vars))
 
         polynomials = [y[i] + x[i] for i in range(noutputs)]
@@ -140,18 +169,22 @@ class OR(MultiInputNonlinearLogicalOperator):
         EXAMPLES::
 
             sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: from claasp.cipher_modules.models.cp.cp_model import CpModel
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: gift = GiftPermutation()
             sage: or_component = gift.component_from(39, 6)
-            sage: cp = CpModel(gift)
-            sage: or_component.cp_xor_linear_mask_propagation_constraints(cp)
-            (['array[0..31] of var int: p_or_39_6;',
-              'array[0..63] of var 0..1:or_39_6_i;',
-              'array[0..31] of var 0..1:or_39_6_o;'],
-             ['constraint table(or_39_6_i[0]++or_39_6_i[32]++or_39_6_o[0]++p_or_39_6[0],and2inputs_LAT);',
-              ...
-              'constraint table(or_39_6_i[31]++or_39_6_i[63]++or_39_6_o[31]++p_or_39_6[31],and2inputs_LAT);',
-              'constraint p[0] = sum(p_or_39_6);'])
+            sage: cp = MznModel(gift)
+            sage: declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
+            sage: declarations
+            ['array[0..31] of var 0..3200: p_or_39_6;',
+             'array[0..63] of var 0..1:or_39_6_i;',
+             'array[0..31] of var 0..1:or_39_6_o;']
+           sage: constraints
+           ['constraint table([or_39_6_i[0]]++[or_39_6_i[32]]++[or_39_6_o[0]]++[p_or_39_6[0]],and2inputs_LAT);',
+            'constraint table([or_39_6_i[1]]++[or_39_6_i[33]]++[or_39_6_o[1]]++[p_or_39_6[1]],and2inputs_LAT);',
+            ...
+            'constraint table([or_39_6_i[31]]++[or_39_6_i[63]]++[or_39_6_o[31]]++[p_or_39_6[31]],and2inputs_LAT);',
+            'constraint p[0] = sum(p_or_39_6);']
+
         """
         input_size = int(self.input_bit_size)
         output_size = int(self.output_bit_size)
@@ -160,7 +193,7 @@ class OR(MultiInputNonlinearLogicalOperator):
         cp_constraints = []
         num_add = self.description[1]
         input_len = input_size // num_add
-        cp_declarations.append(f'array[0..{output_size - 1}] of var int: p_{output_id_link};')
+        cp_declarations.append(f'array[0..{output_size - 1}] of var 0..{100 * output_size}: p_{output_id_link};')
         cp_declarations.append(f'array[0..{input_size - 1}] of var 0..1:{output_id_link}_i;')
         cp_declarations.append(f'array[0..{output_size - 1}] of var 0..1:{output_id_link}_o;')
         model.component_and_probability[output_id_link] = 0
@@ -168,8 +201,8 @@ class OR(MultiInputNonlinearLogicalOperator):
         for i in range(output_size):
             new_constraint = f'constraint table('
             for j in range(num_add):
-                new_constraint = new_constraint + f'{output_id_link}_i[{i + input_len * j}]++'
-            new_constraint = new_constraint + f'{output_id_link}_o[{i}]++p_{output_id_link}[{p_count}],and{num_add}inputs_LAT);'
+                new_constraint = new_constraint + f'[{output_id_link}_i[{i + input_len * j}]]++'
+            new_constraint = new_constraint + f'[{output_id_link}_o[{i}]]++[p_{output_id_link}[{p_count}]],and{num_add}inputs_LAT);'
             cp_constraints.append(new_constraint)
             p_count = p_count + 1
         cp_constraints.append(f'constraint p[{model.c}] = sum(p_{output_id_link});')
@@ -214,9 +247,11 @@ class OR(MultiInputNonlinearLogicalOperator):
 
     def sat_constraints(self):
         """
-        Return a list of variables and a list of clauses for OR operation in SAT CIPHER model.
+        Return a list of variables and a list of clauses representing OR for SAT CIPHER model
 
-        This method support AND operation using more than two operands.
+        This method translates in CNF the constraint ``z = Or(x, y)``. It becomes in prefixed notation:
+        ``And(Or(z, Not(x)), Or(z, Not(y)), Or(x, y, Not(z)))``.
+        This method support OR operation using more than two inputs.
 
         .. SEEALSO::
 
@@ -234,9 +269,12 @@ class OR(MultiInputNonlinearLogicalOperator):
             sage: or_component.sat_constraints()
             (['or_0_4_0',
               'or_0_4_1',
-              'or_0_4_2',
               ...
-              'or_0_4_31 -xor_0_3_31',
+              'or_0_4_30',
+              'or_0_4_31'],
+             ['or_0_4_0 -xor_0_3_0',
+              'or_0_4_0 -xor_0_1_0',
+              ...
               'or_0_4_31 -xor_0_1_31',
               '-or_0_4_31 xor_0_3_31 xor_0_1_31'])
         """
@@ -250,9 +288,11 @@ class OR(MultiInputNonlinearLogicalOperator):
 
     def smt_constraints(self):
         """
-        Return a variable list and SMT-LIB list asserts for OR operation in SMT CIPHER model.
+        Return a variable list and SMT-LIB list asserts representing OR for SMT CIPHER model
 
-        This method support OR operation using more than two operands.
+        Since the OR operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
+        builtin operation, e.g. ``z = Or(x, y)`` becomes ``(assert (= z (or x y)))``.
+        This method support OR operation using more than two inputs.
 
         INPUT:
 

@@ -35,3 +35,4 @@ def test_gimli_sbox_permutation():
     plaintext = 0x1af105601000043540540354354350550000000100000001000000010000000100000001000000010000000100000001
     ciphertext = 0x100e4c1d8774953fb2b3d6a5f2e1af9b3f0f3fb5e32cba39245f231bf280918e62126d745cfb6a0221cf7adeb3dee484
     assert gimli.evaluate([plaintext]) == ciphertext
+    assert gimli.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext

@@ -23,15 +23,16 @@ The target of this module is to generate MILP inequalities for a wordwise trunca
 """
 import itertools
 from math import ceil, log
-import pickle, os, pathlib
+import pickle, os
 from functools import reduce
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.utils import generate_product_of_sum_from_espresso
+from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 
 input_patterns_file_name = "dictionary_containing_truncated_input_pattern_inequalities.obj"
 xor_n_inputs_file_name = "dictionary_containing_truncated_xor_inequalities_between_n_input_bits.obj"
-wordwise_truncated_input_pattern_inequalities_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), input_patterns_file_name)
-wordwise_truncated_xor_inequalities_between_n_input_bits_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(), xor_n_inputs_file_name)
+wordwise_truncated_input_pattern_inequalities_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH, input_patterns_file_name)
+wordwise_truncated_xor_inequalities_between_n_input_bits_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH, xor_n_inputs_file_name)
 
 
 
@@ -99,6 +100,7 @@ def get_valid_points_for_wordwise_xor(delta_in_1, zeta_in_1, delta_in_2, zeta_in
     zeta_out = 0
     if delta_in_1 + delta_in_2 > 2:
         delta_out = 3
+        zeta_out = -2
     elif delta_in_1 + delta_in_2 == 1:
         delta_out = 1
         zeta_out = zeta_in_1 + zeta_in_2
@@ -106,6 +108,7 @@ def get_valid_points_for_wordwise_xor(delta_in_1, zeta_in_1, delta_in_2, zeta_in
         delta_out = 0
     elif zeta_in_1 + zeta_in_2 < 0:
         delta_out = 2
+        zeta_out = -1
     elif zeta_in_1 == zeta_in_2:
         delta_out = 0
     else:
@@ -168,6 +171,7 @@ def generate_valid_points_for_xor_between_n_input_words(wordsize=4, number_of_wo
                                                                                               zeta[summand + 1])
 
         delta_output, zeta_output = get_valid_points_for_wordwise_xor(tmp_delta[-1], tmp_zeta[-1], delta[-1], zeta[-1])
+        zeta_output = max(0, zeta_output)
         if delta.count(3) == 0 and delta.count(2) == 1 and delta.count(1) > 1:
             only_fixed_patterns = [i[1] for i in enumerate(zeta) if delta[i[0]] == 1]
             if len(only_fixed_patterns) > 1:

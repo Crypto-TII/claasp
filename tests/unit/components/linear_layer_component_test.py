@@ -1,6 +1,6 @@
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
@@ -98,31 +98,31 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
     fancy = FancyBlockCipher(number_of_rounds=3)
     linear_component = fancy.component_from(0, 6)
-    declarations, constraints = linear_component.cp_deterministic_truncated_xor_differential_constraints(True)
+    declarations, constraints = linear_component.cp_deterministic_truncated_xor_differential_constraints()
 
     assert declarations == []
 
-    assert constraints[0] == 'constraint if ((sbox_0_0_inverse[2] < 2) /\\ (sbox_0_0_inverse[3] < 2) /\\ ' \
-                             '(sbox_0_1_inverse[0] < 2) /\\ (sbox_0_1_inverse[1] < 2) /\\ (sbox_0_1_inverse[3] < 2)' \
-                             ' /\\ (sbox_0_2_inverse[0] < 2) /\\ (sbox_0_2_inverse[1] < 2) /\\ ' \
-                             '(sbox_0_3_inverse[1] < 2) /\\ (sbox_0_4_inverse[2] < 2) /\\ (sbox_0_5_inverse[1] < 2) ' \
-                             '/\\ (sbox_0_5_inverse[3]< 2)) then linear_layer_0_6_inverse[0] = (sbox_0_0_inverse[2]' \
-                             ' + sbox_0_0_inverse[3] + sbox_0_1_inverse[0] + sbox_0_1_inverse[1] + ' \
-                             'sbox_0_1_inverse[3] + sbox_0_2_inverse[0] + sbox_0_2_inverse[1] + sbox_0_3_inverse[1]' \
-                             ' + sbox_0_4_inverse[2] + sbox_0_5_inverse[1] + sbox_0_5_inverse[3]) mod 2 else ' \
-                             'linear_layer_0_6_inverse[0] = 2 endif;'
+    assert constraints[0] == 'constraint if ((sbox_0_0[2] < 2) /\\ (sbox_0_0[3] < 2) /\\ ' \
+                             '(sbox_0_1[0] < 2) /\\ (sbox_0_1[1] < 2) /\\ (sbox_0_1[3] < 2)' \
+                             ' /\\ (sbox_0_2[0] < 2) /\\ (sbox_0_2[1] < 2) /\\ ' \
+                             '(sbox_0_3[1] < 2) /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_5[1] < 2) ' \
+                             '/\\ (sbox_0_5[3]< 2)) then linear_layer_0_6[0] = (sbox_0_0[2]' \
+                             ' + sbox_0_0[3] + sbox_0_1[0] + sbox_0_1[1] + ' \
+                             'sbox_0_1[3] + sbox_0_2[0] + sbox_0_2[1] + sbox_0_3[1]' \
+                             ' + sbox_0_4[2] + sbox_0_5[1] + sbox_0_5[3]) mod 2 else ' \
+                             'linear_layer_0_6[0] = 2 endif;'
 
-    assert constraints[-1] == 'constraint if ((sbox_0_0_inverse[0] < 2) /\\ (sbox_0_0_inverse[1] < 2) /\\ ' \
-                              '(sbox_0_0_inverse[2] < 2) /\\ (sbox_0_0_inverse[3] < 2) /\\ (sbox_0_1_inverse[3] < 2)' \
-                              ' /\\ (sbox_0_2_inverse[1] < 2) /\\ (sbox_0_3_inverse[1] < 2) /\\ ' \
-                              '(sbox_0_3_inverse[2] < 2) /\\ (sbox_0_3_inverse[3] < 2) /\\ (sbox_0_4_inverse[1] < 2)' \
-                              ' /\\ (sbox_0_4_inverse[2] < 2) /\\ (sbox_0_4_inverse[3] < 2) /\\' \
-                              ' (sbox_0_5_inverse[1] < 2) /\\ (sbox_0_5_inverse[2] < 2) /\\ (sbox_0_5_inverse[3]< 2))' \
-                              ' then linear_layer_0_6_inverse[23] = (sbox_0_0_inverse[0] + sbox_0_0_inverse[1] +' \
-                              ' sbox_0_0_inverse[2] + sbox_0_0_inverse[3] + sbox_0_1_inverse[3] + sbox_0_2_inverse[1]' \
-                              ' + sbox_0_3_inverse[1] + sbox_0_3_inverse[2] + sbox_0_3_inverse[3] + ' \
-                              'sbox_0_4_inverse[1] + sbox_0_4_inverse[2] + sbox_0_4_inverse[3] + sbox_0_5_inverse[1]' \
-                              ' + sbox_0_5_inverse[2] + sbox_0_5_inverse[3]) mod 2 else linear_layer_0_6_inverse[23]' \
+    assert constraints[-1] == 'constraint if ((sbox_0_0[0] < 2) /\\ (sbox_0_0[1] < 2) /\\ ' \
+                              '(sbox_0_0[2] < 2) /\\ (sbox_0_0[3] < 2) /\\ (sbox_0_1[3] < 2)' \
+                              ' /\\ (sbox_0_2[1] < 2) /\\ (sbox_0_3[1] < 2) /\\ ' \
+                              '(sbox_0_3[2] < 2) /\\ (sbox_0_3[3] < 2) /\\ (sbox_0_4[1] < 2)' \
+                              ' /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_4[3] < 2) /\\' \
+                              ' (sbox_0_5[1] < 2) /\\ (sbox_0_5[2] < 2) /\\ (sbox_0_5[3]< 2))' \
+                              ' then linear_layer_0_6[23] = (sbox_0_0[0] + sbox_0_0[1] +' \
+                              ' sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[3] + sbox_0_2[1]' \
+                              ' + sbox_0_3[1] + sbox_0_3[2] + sbox_0_3[3] + ' \
+                              'sbox_0_4[1] + sbox_0_4[2] + sbox_0_4[3] + sbox_0_5[1]' \
+                              ' + sbox_0_5[2] + sbox_0_5[3]) mod 2 else linear_layer_0_6[23]' \
                               ' = 2 endif;'
 
 
@@ -325,8 +325,8 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
 
     assert str(constraints[0]) == '1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_13 + x_18 + x_19 - x_25'
     assert str(constraints[1]) == '1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_12 + x_13 + x_19 - x_25'
-    assert str(constraints[-2]) == '1 <= 2 - x_6 - x_8'
-    assert str(constraints[-1]) == '1 <= 1 + x_7 - x_8'
+    assert str(constraints[-2]) == '1 <= 1 + x_7 - x_8'
+    assert str(constraints[-1]) == '1 <= 1 + x_1 - x_2'
 
     cipher = AESBlockCipher(number_of_rounds=2)
     cipher_inverse = cipher.cipher_inverse()

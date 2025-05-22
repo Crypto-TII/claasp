@@ -23,7 +23,9 @@ To contribute to this project, please, follow the following conventions.
   - [Single underscore VS double underscore](#single-underscore-vs-double-underscore)
   - [C code](#c-code)
 - [Testing](#testing)
-  - [Running tests](#running-tests)
+  - [Creating pytests](#creating-pytests)
+  - [Running pytests](#running-pytests)
+  - [Running doctests](#running-doctests)
   - [Deprecation warnings](#deprecation-warnings)
 - [Code analysis with SonarCloud](#code-analysis-with-sonarcloud)
   - [Project overview](#project-overview)
@@ -116,6 +118,8 @@ Build #PY-212.4746.96, built on July 27, 2021
 
 ## Python interpreter
 
+### Configuring PyCharm with a Local Interpreter
+
 We will now set up PyCharm to use the Python 3 interpreter of SageMath
    1. Click `PyCharm` menu in the top-left toolbar and select `Preferences...`
    2. Click the drop-down menu of `Project: claasp` and select `Python Interpreter`
@@ -131,7 +135,45 @@ After the steps above, you should now be able to:
 1. Click on `Add Configuration...`.
 2. Click on `Add new run configuration...`.
 3. Select "Python".
-4. Add the file to be run/debugged in the field "Script Path".
+4. Add the file to be run/debugged in the field "Script Path"
+
+### Configuring PyCharm with Docker as a Remote Interpreter
+```angular2html
+PyCharm 2023.3.3 (Professional Edition)
+Build #PY-233.13763.11, built on January 25, 2024
+```
+Configuring PyCharm to use Python from within a container involves setting up a remote interpreter. PyCharm supports Docker as a remote interpreter, allowing you to develop inside a Docker container which can encapsulate the project's environment, dependencies, and settings that CLAASP need. Here's how to set it up:
+
+#### Requirements
+- **Docker**: Ensure Docker is installed and running on your system.
+- **PyCharm 2023.3.3 (Professional Edition)**: The Docker integration feature is available in the Professional edition of PyCharm.
+
+#### Steps to Configure Docker as a Remote Interpreter in PyCharm
+
+1. **Open Your Project in PyCharm**: Start PyCharm and open the project you want to configure.
+
+2. **Install the Docker Plugin (if not already installed)**:
+    - Go to **Preferences** > **Plugins**.
+    - Search for "Docker" in the Marketplace tab and install the plugin.
+    - Restart PyCharm if necessary.
+
+3. **Configure Docker Connection**:
+    - Go to **Preferences** > **Build, Execution, Deployment** > **Docker**.
+    - Click the **+** button to add a new Docker configuration.
+    - PyCharm should automatically detect the Docker installation. Adjust settings if necessary.
+
+4. **Configure Project Interpreter**:
+    - Go to **Preferences** > **Project: [Your Project Name]** > **Python Interpreter**.
+    - In the right corner click **Add Interpreter**.
+    - In the left-hand pane of the Add Python Interpreter dialog, select **On Docker**.
+    - Specify the docker image. You can choose one of "build" or "Pull or use existing":
+      - If your option is "build" then you need to fill the field "Dockerfile" with `docker/Dockerfile`
+      - If your option is "Pull or use existing" then you need to fill the field "image tag" with `claasp:latest`
+    - PyCharm will attempt to find the Python interpreter in the created image. You may need to specify the path to the Python executable if PyCharm cannot locate it automatically (commonly `/usr/bin/python3` or similar).
+
+5. **Apply and Save Changes**: Click **OK** to save your new interpreter settings.
+
+After completing these steps, PyCharm will use the Python interpreter from the specified Docker container for your CLAASP project. 
 
 ### Makefile configuration
 
@@ -607,6 +649,7 @@ children.
 [C implementation of Python](https://peps.python.org/pep-0007/).
 
 # Testing
+## Creating pytests
 The project uses **`Pytest` as it’s testing framework**. We can forget to write the example Docstrings as they will 
 still be part of the documentation.
 Our tests are stored in the `tests` folder that mimics the folder structure of `claasp`.
@@ -648,8 +691,8 @@ def test_aes_block_cipher():
 As you can see above, the `assert` keyword is the one that will check if our result is the one we expected. 
 Apart from that, the structure of the test is very similar.
 
-## Running tests
-To run all the project test you can run `make pytest command`, but if you want to run specific things you can do:
+## Running pytests
+To run all the project test you can run `make pytest` command, but if you want to run specific things you can do:
 - **Run specific file:**
 ```bash
 pytest -v tests/cipher_test.py
@@ -666,6 +709,10 @@ pytest -vv tests/cipher_test.py
 ```bash
 pytest -s tests/cipher_test.py
 ```
+- **Run the tests in parallel:**
+```bash
+pytest -v -n=auto tests/cipher_test.py
+ ```
 
 If we want a **specific test to be skipped** we will need to `import pytest` to the top of the file and add this 
 following command with the reason of the test being skipped as the argument `@pytest.mark.skip("Takes to long")`:
@@ -681,6 +728,18 @@ def test_aes_block_cipher():
     plaintext = 0x6bc1bee22e409f96e93d7e117393172a
     ciphertext = 0x3ad77bb40d7a3660a89ecaf32466ef97
     assert aes.evaluate([key, plaintext]) == ciphertext
+```
+## Running doctests
+If you want to run all doctests you need to execute `make test` command. 
+
+If you want to execute a **specific module** you can execute:
+```bash
+sage -t claasp
+```
+
+And if you want to execute a **specific file test** you can execute:
+```bash
+sage -t claasp/cipher.py
 ```
 
 ## Deprecation warnings

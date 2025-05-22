@@ -16,12 +16,12 @@
 # ****************************************************************************
 
 import time
-from claasp.cipher_modules.models.milp.utils.config import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED, \
     MILP_BACKWARD_SUFFIX, MILP_BUILDING_MESSAGE, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE
 from claasp.cipher_modules.models.milp.utils.milp_truncated_utils import \
     fix_variables_value_deterministic_truncated_xor_differential_constraints
-from claasp.cipher_modules.models.milp.milp_model import MilpModel, verbose_print
+from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
@@ -29,8 +29,8 @@ from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
 
 class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
-    def __init__(self, cipher, n_window_heuristic=None):
-        super().__init__(cipher, n_window_heuristic)
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
+        super().__init__(cipher, n_window_heuristic, verbose)
         self._trunc_binvar = None
 
     def init_model_in_sage_milp_class(self, solver_name=SOLVER_DEFAULT):
@@ -80,7 +80,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             sage: milp.add_constraints_to_build_in_sage_milp_class()
 
         """
-        verbose_print(MILP_BUILDING_MESSAGE)
+        self._verbose_print(MILP_BUILDING_MESSAGE)
 
         mip = self._model
         x = self._binary_variable
@@ -195,10 +195,10 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
              x_1 == 0,
              x_2 == 1,
              x_3 == 1,
-             x_6 <= 6 - 3*x_4 - 3*x_5,
+             x_5 <= 6 - 6*x_4,
             ...
-            -2 + 3*x_13 - 3*x_14 <= x_15,
-            x_4 + x_7 + x_10 + x_13 == 1]
+             -2 <= x_11,
+             x_4 + x_6 + x_8 + x_10 == 1]
 
 
         """
@@ -224,15 +224,15 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(fancy)
             sage: milp.init_model_in_sage_milp_class()
             sage: component = fancy.component_from(0, 6)
             sage: input_ids, output_ids = component._get_input_output_variables()
-            sage: _, input_id_tuples, output_id_tuples = component._get_input_output_variables_tuples(milp)
-            sage: constraints = milp.link_binary_tuples_to_integer_variables(input_id_tuples + output_id_tuples, input_ids + output_ids)
+            sage: input_ids_tuples, output_ids_tuples = component._get_input_output_variables_tuples()
+            sage: constraints = milp.link_binary_tuples_to_integer_variables(input_ids_tuples + output_ids_tuples, input_ids + output_ids)
             sage: constraints
             [x_96 == 2*x_0 + x_1,
              x_97 == 2*x_2 + x_3,
@@ -305,7 +305,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(fixed_values)
@@ -344,7 +344,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
-        verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         p = self._integer_variable
         mip.set_objective(p[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE])

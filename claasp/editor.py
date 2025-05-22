@@ -21,6 +21,7 @@ from copy import deepcopy
 
 from claasp.components.or_component import OR
 from claasp.components.and_component import AND
+from claasp.components.theta_gaston_component import ThetaGaston
 from claasp.components.xor_component import XOR
 from claasp.components.not_component import NOT
 from claasp.components.fsr_component import FSR
@@ -275,9 +276,9 @@ def add_FSR_component(cipher, input_id_links, input_bit_positions, output_bit_si
         sage: cipher = Cipher("cipher_name", "fsr", ["input"], [12], 12)
         sage: cipher.add_round()
         sage: fsr_0_0 = cipher.add_FSR_component(["input", "input"], [[0,1,2,3,4],[0,1,2,3,4,5,6]], 12, [[
-        [5, [[4], [5], [6, 7]]],  # Register_len:5,  feedback poly: x4 + x5 + x6*x7
-        [7, [[0], [8], [1, 2]]]  # Register_len:7, feedback poly: x0 + x1*x2 + x8
-        ], 1])
+        ....: [5, [[4], [5], [6, 7]]],  # Register_len:5,  feedback poly: x4 + x5 + x6*x7
+        ....: [7, [[0], [8], [1, 2]]]  # Register_len:7, feedback poly: x0 + x1*x2 + x8
+        ....: ], 1])
         sage: cipher.print()
         cipher_id = cipher_name_i12_o12_r1
         cipher_type = fsr
@@ -285,7 +286,6 @@ def add_FSR_component(cipher, input_id_links, input_bit_positions, output_bit_si
         cipher_inputs_bit_size = [12]
         cipher_output_bit_size = 12
         cipher_number_of_rounds = 1
-
         <BLANKLINE>
             # round = 0 - round component = 0
             id = fsr_0_0
@@ -479,7 +479,7 @@ def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit
             input_id_link = ['input', 'input']
             input_bit_positions = [[0, 1], [2, 3]]
             output_bit_size = 2
-            description = ['MODADD', 2]
+            description = ['MODADD', 2, None]
         cipher_reference_code = None
     """
     if cipher.current_round_number is None:
@@ -524,7 +524,7 @@ def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit
             input_id_link = ['input', 'input']
             input_bit_positions = [[0, 1], [2, 3]]
             output_bit_size = 2
-            description = ['MODSUB', 2]
+            description = ['MODSUB', 2, None]
         cipher_reference_code = None
     """
     if cipher.current_round_number is None:
@@ -792,7 +792,7 @@ def add_round(cipher):
           # round 0
           [
           ],
-        ],
+          ],
         'cipher_reference_code': None,
         }
     """
@@ -1084,6 +1084,44 @@ def add_sigma_component(cipher, input_id_links, input_bit_positions, output_bit_
     add_component(cipher, linear_layer_component)
     return linear_layer_component
 
+def add_theta_gaston_component(cipher, input_id_links, input_bit_positions, output_bit_size, rotation_amounts_parameter):
+    """
+    Use this function to create the theta component of Gaston in cipher.
+
+    .. NOTE::
+
+        See :py:class:`GastonSboxTheta Permutation <ciphers.permutations.gaston_sbox_theta_permutation>`.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; an instance of the object cipher
+    - ``input_id_links`` -- **list**; the list of input_id links
+    - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
+    - ``output_bit_size`` -- **integer**; the output bits of the component
+    - ``rotation_amounts_parameter`` -- **list**; the direction of the rotation, positive for right rotation
+      and negative for left rotation
+
+    EXAMPLES::
+
+        sage: from claasp.cipher import Cipher
+        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [320], 320)
+        sage: cipher.add_round()
+        sage: input_bit_positions = [[i for i in range(320)]]
+        sage: theta_gaston_0_0 = cipher.add_theta_gaston_component(["input"], input_bit_positions, 320, list(range(8)))
+        sage: theta_gaston_0_0.type, theta_gaston_0_0.output_bit_size
+        ('linear_layer', 320)
+        sage: sum(int(e) for row in theta_gaston_0_0.description for e in row)
+        3520
+    """
+    if cipher.current_round_number is None:
+        print(cipher_round_not_found_error)
+        return None
+
+    linear_layer_component = ThetaGaston(cipher.current_round_number, cipher.current_round_number_of_components,
+                                   input_id_links, input_bit_positions,
+                                   output_bit_size, rotation_amounts_parameter)
+    add_component(cipher, linear_layer_component)
+    return linear_layer_component
 
 def add_theta_keccak_component(cipher, input_id_links, input_bit_positions, output_bit_size):
     """
@@ -1633,7 +1671,12 @@ def remove_rotations(cipher):
         sage: removed_rotations_speck = remove_rotations(speck)
         sage: removed_rotations_speck.print_as_python_dictionary()
         cipher = {
-        ...
+        'cipher_id': 'speck_p32_k64_o32_r5',
+        'cipher_type': 'block_cipher',
+        'cipher_inputs': ['plaintext', 'key'],
+        'cipher_inputs_bit_size': [32, 64],
+        'cipher_output_bit_size': 32,
+        'cipher_number_of_rounds': 5,
         'cipher_rounds' : [
           # round 0
           [
@@ -1645,31 +1688,70 @@ def remove_rotations(cipher):
             'input_id_link': ['plaintext', 'plaintext'],
             'input_bit_positions': [[9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8], [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]],
             'output_bit_size': 16,
-            'description': ['MODADD', 2],
-          },
-          {
-            # round = 0 - round component = 1
-            'id': 'xor_0_2',
-            'type': 'word_operation',
-            'input_bit_size': 32,
-            'input_id_link': ['modadd_0_1', 'key'],
-            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]],
-            'output_bit_size': 16,
-            'description': ['XOR', 2],
-          },
-          {
-            # round = 0 - round component = 2
-            'id': 'xor_0_4',
-            'type': 'word_operation',
-            'input_bit_size': 32,
-            'input_id_link': ['xor_0_2', 'plaintext'],
-            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 16, 17]],
-            'output_bit_size': 16,
-            'description': ['XOR', 2],
+            'description': ['MODADD', 2, None],
           },
           ...
+          ],
+          # round 1
+          [
+          {
+            # round = 1 - round component = 0
+            'id': 'constant_1_0',
+            'type': 'constant',
+            'input_bit_size': 0,
+            'input_id_link': [''],
+            'input_bit_positions': [[]],
+            'output_bit_size': 16,
+            'description': ['0x0000'],
+          },
+          ...
+          ],
+          # round 2
+          [
+          {
+            # round = 2 - round component = 0
+            'id': 'constant_2_0',
+            'type': 'constant',
+            'input_bit_size': 0,
+            'input_id_link': [''],
+            'input_bit_positions': [[]],
+            'output_bit_size': 16,
+            'description': ['0x0001'],
+          },
+          ...
+          ],
+          # round 3
+          [
+          {
+            # round = 3 - round component = 0
+            'id': 'constant_3_0',
+            'type': 'constant',
+            'input_bit_size': 0,
+            'input_id_link': [''],
+            'input_bit_positions': [[]],
+            'output_bit_size': 16,
+            'description': ['0x0002'],
+          },
+          ...
+          ],
+          # round 4
+          [
+          {
+            # round = 4 - round component = 0
+            'id': 'constant_4_0',
+            'type': 'constant',
+            'input_bit_size': 0,
+            'input_id_link': [''],
+            'input_bit_positions': [[]],
+            'output_bit_size': 16,
+            'description': ['0x0003'],
+          },
+          ...
+          ],
+          ],
         'cipher_reference_code': None,
         }
+
     """
     cipher_without_rotations = propagate_rotations(cipher)
     for round_ in cipher.rounds_as_list:

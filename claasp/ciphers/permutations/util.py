@@ -147,10 +147,12 @@ def init_latin_dances_cipher(
                          cipher_output_bit_size=permutation.block_bit_size)
 
     for i in range(number_of_rounds):
-        if start_round == 'even':
+        if start_round[0] == 'even':
             j = i + 2
         else:
             j = i
+        if start_round[1] == 'bottom':
+            j += 1
         permutation.add_round()
         half_like_round_function_latin_dances(permutation, j, columns, diagonals)
         add_intermediate_output_component_latin_dances_permutations(permutation, i, number_of_rounds)

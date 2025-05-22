@@ -1,4 +1,4 @@
-from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 
 
 def test_fancy_block_cipher():
@@ -23,3 +23,4 @@ def test_fancy_block_cipher():
     fancy = FancyBlockCipher(number_of_rounds=1)
     ciphertext = 0xfedcba
     assert fancy.evaluate([plaintext, key]) == ciphertext
+    assert fancy.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext

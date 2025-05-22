@@ -1,4 +1,4 @@
-from claasp.ciphers.block_ciphers.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules.models.algebraic.boolean_polynomial_ring import is_boolean_polynomial_ring
 
@@ -28,13 +28,13 @@ def test_nvars():
 def test_polynomial_system():
     fancy = FancyBlockCipher(number_of_rounds=1)
     assert str(AlgebraicModel(fancy).polynomial_system()) == \
-           'Polynomial Sequence with 468 Polynomials in 384 Variables'
+           'Polynomial Sequence with 228 Polynomials in 144 Variables'
 
 
 def test_polynomial_system_at_round():
     fancy = FancyBlockCipher(number_of_rounds=1)
     assert str(AlgebraicModel(fancy).polynomial_system_at_round(0)) == \
-           'Polynomial Sequence with 252 Polynomials in 288 Variables'
+           'Polynomial Sequence with 228 Polynomials in 144 Variables'
 
 
 def test_ring():
