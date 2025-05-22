@@ -23,6 +23,27 @@ PERMUTATION = (
 
 
 class BaksheeshBlockCipher(Cipher):
+    """
+    Construct an instance of the BaksheeshBlockCipher class.
+
+    This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
+
+    INPUT:
+    
+    - ``block_bit_size`` -- **integer** (default: `128`); cipher input and output block bit size of the cipher
+    - ``key_bit_size`` -- **integer** (default: `128`); cipher key bit size of the cipher
+    - ``number_of_rounds`` -- **integer** (default: `35`); number of rounds of the cipher
+
+    EXAMPLES::
+
+    sage: from claasp.ciphers.block_ciphers.baksheesh_block_cipher import BaksheeshBlockCipher
+    sage: baksheesh = BaksheeshBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=35)
+    sage: baksheesh.number_of_rounds
+    35
+
+    sage: baksheesh.component_from(0, 0).id
+    'xor_0_0'
+    """
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=35):
         super().__init__(
             family_name="baksheesh",
@@ -45,10 +66,10 @@ class BaksheeshBlockCipher(Cipher):
         state = ([xor.id], [list(range(block_bit_size))])
 
         # 2) Rounds
-        for r in range(number_of_rounds - 1):
+        for round_number in range(number_of_rounds - 1):
             state = self.apply_sbox_layer(state)
             state = self.apply_bit_permutation(state)
-            state = self.apply_round_constants(state, r)
+            state = self.apply_round_constants(state, round_number)
             key = self.update_key(key)
             xor = self.add_XOR_component(state[0] + key[0], state[1] + key[1], block_bit_size)
             state = ([xor.id], [list(range(block_bit_size))])
