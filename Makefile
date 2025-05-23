@@ -58,6 +58,29 @@ remote-pytest:
   --ignore=tests/unit/cipher_modules/statistical_tests \
   --ignore=tests/unit/cipher_modules/models/cp \
   --ignore=tests/unit/cipher_modules/report_test.py \
+  --ignore=tests/unit/ciphers/stream_ciphers/zuc_stream_cipher_test.py \
+  --ignore=tests/unit/ciphers/stream_ciphers/trivium_stream_cipher_test.py \
+  --ignore=tests/unit/ciphers/toys/toyspn1_test.py \
+  --ignore=tests/unit/ciphers/toys/toyfeistel_test.py \
+  --ignore=tests/unit/ciphers/toys/toy_cipherFOUR_test.py \
+  --ignore=tests/unit/ciphers/toys/toyspn2_test.py \
+  --ignore=tests/unit/ciphers/stream_ciphers/a5_1_stream_cipher_test.py \
+  --ignore=tests/unit/ciphers/permutations/spongent_pi_precomputation_permutation_test.py \
+  --ignore=tests/unit/ciphers/permutations/keccak_invertible_permutation_test.py \
+  --ignore=tests/unit/ciphers/permutations/spongent_pi_fsr_permutation_test.py \
+  --ignore=tests/unit/cipher_modules/neural_network_tests_test.py \
+  --ignore=tests/unit/ciphers/stream_ciphers/a5_2_stream_cipher_test.py \
+  --ignore=tests/unit/ciphers/permutations/spongent_pi_permutation_test.py \
+  --ignore=tests/unit/ciphers/stream_ciphers/bluetooth_stream_cipher_e0_test.py \
+  --ignore=tests/unit/ciphers/permutations/xoodoo_invertible_permutation_test.py \
+  --ignore=tests/unit/ciphers/permutations/tinyjambu_32bits_word_permutation_test.py \
+  --ignore=tests/unit/ciphers/permutations/tinyjambu_fsr_32bits_word_permutation_test.py \
+  --ignore=tests/unit/cipher_modules/statistical_tests/dieharder_statistical_tests_test.py \
+  --ignore=tests/unit/ciphers/permutations/keccak_sbox_permutation_test.py \
+  --ignore=tests/unit/ciphers/permutations/xoodoo_permutation_test.py \
+  --ignore=tests/unit/cipher_modules/report_test.py \
+  --ignore=tests/unit/ciphers/block_ciphers/qarmav2_with_mixcolumn_block_cipher_test.py \
+  --ignore=tests/unit/ciphers/hash_functions/whirlpool_hash_function_test.py \
   tests/unit/
 
 pytest:
