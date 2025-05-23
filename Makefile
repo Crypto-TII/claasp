@@ -52,10 +52,16 @@ develop:
 	$(SAGE_BIN) -pip install --upgrade -e .
 
 remote-pytest:
-	pytest -v -n=1 --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/ --randomly-seed=1553614239
+	pytest -v -n=16 --dist loadfile \
+  --cov-report xml:coverage.xml --cov=$(PACKAGE) \
+  --randomly-seed=1553614239 \
+  --ignore=tests/unit/cipher_modules/statistical_tests \
+  --ignore=tests/unit/cipher_modules/models/cp \
+  --ignore=tests/unit/cipher_modules/report_test.py \
+  tests/unit/
 
 pytest:
-	pytest -v -n=1 --dist loadfile tests/unit/ --randomly-seed=1553614239
+	pytest -v -n=16 --dist loadfile tests/unit/ --randomly-seed=1553614239
 
 github-pytest:
 	pytest -v tests/unit/
