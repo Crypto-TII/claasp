@@ -118,7 +118,7 @@ class SatModel:
                 if f'{cipher_input}_{i}{out_suffix}' in variable2value:
                     value ^= variable2value[f'{cipher_input}_{i}{out_suffix}']
             hex_digits = bit_size // 4 + (bit_size % 4 != 0)
-            hex_value = f'{value:0{hex_digits}x}'
+            hex_value = f'{value:#0{hex_digits+2}x}'
             component_solution = set_component_solution(hex_value)
             components_solutions[cipher_input] = component_solution
 
@@ -148,7 +148,7 @@ class SatModel:
             if f'{component.id}_{i}{out_suffix}' in variable2value:
                 value ^= variable2value[f'{component.id}_{i}{out_suffix}']
             hex_digits = output_bit_size // 4 + (output_bit_size % 4 != 0)
-            hex_value = f'{value:0{hex_digits}x}'
+            hex_value = f'{value:#0{hex_digits+2}x}'
 
         return hex_value
 
