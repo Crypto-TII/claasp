@@ -576,8 +576,14 @@ class MznModel:
                     elif '----------' in string:
                         solution_number += 1
         else:
-            time = output_to_parse.statistics['solveTime'].total_seconds()
-            memory = output_to_parse.statistics['trailMem']
+            if 'solveTime' in output_to_parse.statistics:
+                time = output_to_parse.statistics['solveTime'].total_seconds()
+            else:
+                time = output_to_parse.statistics['time'].total_seconds()
+            if 'trailMem' in output_to_parse.statistics:
+                memory = output_to_parse.statistics['trailMem']
+            else:
+                memory = '-1'
             if output_to_parse.status not in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
                 solutions = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, time, memory, {}, '0')
                 solutions['status'] = 'UNSATISFIABLE'
@@ -609,7 +615,7 @@ class MznModel:
         if not truncated:
             bin_value = int(value, 2)
             hex_value = f'{bin_value:x}'
-            hex_value = ('0' * (math.ceil(len(value) / 4) - len(hex_value))) + hex_value
+            hex_value = ('0x' + '0' * (math.ceil(len(value) / 4) - len(hex_value))) + hex_value
             component_solution['value'] = hex_value
         else:
             component_solution['value'] = value
