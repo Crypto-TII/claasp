@@ -21,6 +21,7 @@ import os
 import math
 import itertools
 import subprocess
+import time
 
 from copy import deepcopy
 
@@ -675,7 +676,10 @@ class MznModel:
             command = self.get_command_for_solver_process(
                 input_file_path, model_type, solver_name, processes_, timeout_in_seconds_
             )
+            start = time.time()
             solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+            end = time.time()
+            solve_time = end - start
             os.remove(input_file_path)
             if solver_process.returncode >= 0:
                 solver_output = solver_process.stdout.splitlines()
@@ -686,6 +690,7 @@ class MznModel:
             bit_mzn_model = Model()
             bit_mzn_model.add_string(mzn_model_string)
             instance = Instance(solver_name_mzn, bit_mzn_model)
+            start = time.time()
             if processes_ != None and timeout_in_seconds_ != None:
                 solver_output = instance.solve(processes=processes_, timeout=timedelta(seconds=int(timeout_in_seconds_)),
                                     nr_solutions=nr_solutions_, random_seed=random_seed_, all_solutions=all_solutions_,
@@ -695,12 +700,14 @@ class MznModel:
                 solver_output = instance.solve(nr_solutions=nr_solutions_, random_seed=random_seed_, all_solutions=all_solutions_,
                                     intermediate_solutions=intermediate_solutions_, free_search=free_search_,
                                     optimisation_level=optimisation_level_)
+            end = time.time()
+            solve_time = end - start
             return self._parse_solver_output(solver_output, model_type, truncated = truncated, solve_external = solve_external, solver_name=solver_name)
         if truncated:
-            solve_time, memory, components_values = self._parse_solver_output(solver_output, model_type, truncated = True, solve_external = solve_external)
+            solver_time, memory, components_values = self._parse_solver_output(solver_output, model_type, truncated = True, solve_external = solve_external)
             total_weight = 0
         else:
-            solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type, solve_external = solve_external, solver_name=solver_name)
+            solver_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type, solve_external = solve_external, solver_name=solver_name)
         if components_values == {}:
             solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name,
                                                              solve_time, memory,
