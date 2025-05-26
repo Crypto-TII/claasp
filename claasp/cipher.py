@@ -1214,6 +1214,11 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
             print("'cipher_reference_code': None,")
         print("}")
 
+    ################################ BOOMERANG ################################
+    def get_boomerang_representation(self, prefix='upper_'):
+        self._rounds.get_boomerang_representation(prefix)
+    ################################ BOOMERANG ################################
+
     def print_as_python_dictionary_to_file(self, file_name=""):
         """
         Use this function to print the cipher as a python dictionary to a file.

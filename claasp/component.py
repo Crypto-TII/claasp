@@ -426,8 +426,17 @@ class Component:
                              range(len(output_ids) // word_size)]
 
         return input_full_tuple, output_full_tuple
-
-
+    
+    ####################################### BOOMERANG #############################################
+    def get_boomerang_representation(self, prefix='upper_'):
+        self._id = prefix + self.id
+        self._input._id_links = [prefix + i for i in self.input_id_links]
+        # new_input = []
+        # for input in self.input_id_links:
+        #     new_input.append(prefix + input)
+        # self._input_id_links = new_input
+    ###################################### BOOMERANG ##############################################
+    
     def as_python_dictionary(self):
         return {
             'id': self._id,
