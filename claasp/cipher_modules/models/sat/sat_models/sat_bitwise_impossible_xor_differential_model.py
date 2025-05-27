@@ -19,14 +19,14 @@ import time
 
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.cipher_modules.inverse_cipher import get_key_schedule_component_ids
-from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import \
-    SatBitwiseDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import (
+    SatBitwiseDeterministicTruncatedXorDifferentialModel,
+)
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.name_mappings import CIPHER_OUTPUT, IMPOSSIBLE_XOR_DIFFERENTIAL
 
 
 class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedXorDifferentialModel):
-
     def __init__(self, cipher, compact=False):
         super().__init__(cipher, compact)
         self._forward_cipher = None
@@ -59,11 +59,13 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
             ...
         """
         component_list = self._forward_cipher.get_all_components() + self._backward_cipher.get_all_components()
-        return self.build_bitwise_deterministic_truncated_xor_differential_trail_model(fixed_variables=fixed_variables,
-                                                                                       component_list=component_list)
+        return self.build_bitwise_deterministic_truncated_xor_differential_trail_model(
+            fixed_variables=fixed_variables, component_list=component_list
+        )
 
-    def find_one_bitwise_impossible_xor_differential_trail(self, middle_round, fixed_values=[],
-                                                           solver_name='cryptominisat'):
+    def find_one_bitwise_impossible_xor_differential_trail(
+        self, middle_round, fixed_values=[], solver_name="cryptominisat"
+    ):
         """
         Returns one bitwise impossible XOR differential trail.
 
@@ -120,47 +122,162 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
         self._middle_round = middle_round
 
         self._forward_cipher = self._cipher.get_partial_cipher(0, middle_round - 1, keep_key_schedule=True)
-        backward_cipher = self._cipher.cipher_partial_inverse(middle_round, self._cipher.number_of_rounds - 1,
-                                                              keep_key_schedule=False)
-        self._backward_cipher = backward_cipher.add_suffix_to_components("_backward",
-                                                                         [backward_cipher.get_all_components_ids()[-1]])
+        backward_cipher = self._cipher.cipher_partial_inverse(
+            middle_round, self._cipher.number_of_rounds - 1, keep_key_schedule=False
+        )
+        self._backward_cipher = backward_cipher.add_suffix_to_components(
+            "_backward", [backward_cipher.get_all_components_ids()[-1]]
+        )
 
         self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables=fixed_values)
 
         forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
         out_size, forward_out_ids_0, forward_out_ids_1 = forward_output._generate_output_double_ids()
-        backward_out_ids_0 = ["_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:])
-                              for id_ in forward_out_ids_0]
-        backward_out_ids_1 = ["_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:])
-                              for id_ in forward_out_ids_1]
+        backward_out_ids_0 = [
+            "_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in forward_out_ids_0
+        ]
+        backward_out_ids_1 = [
+            "_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in forward_out_ids_1
+        ]
         end = time.time()
         building_time = end - start
 
-        incompatibility_ids = [f'incompatibility_{i}' for i in range(out_size)]
+        incompatibility_ids = [f"incompatibility_{i}" for i in range(out_size)]
         for i in range(out_size):
-            self._model_constraints.extend(utils.incompatibility(incompatibility_ids[i],
-                                                                 (forward_out_ids_0[i], forward_out_ids_1[i]),
-                                                                 (backward_out_ids_0[i], backward_out_ids_1[i])))
-        self._model_constraints.append(' '.join(incompatibility_ids))
+            self._model_constraints.extend(
+                utils.incompatibility(
+                    incompatibility_ids[i],
+                    (forward_out_ids_0[i], forward_out_ids_1[i]),
+                    (backward_out_ids_0[i], backward_out_ids_1[i]),
+                )
+            )
+        self._model_constraints.append(" ".join(incompatibility_ids))
 
         solution = self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name=solver_name)
-        solution['building_time'] = building_time
+        solution["building_time"] = building_time
 
         return solution
 
-    def _parse_solver_output(self, variable2value):        
+    def find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components(
+        self, component_id_list, fixed_values=[], solver_name="cryptominisat"
+    ):
+        """
+        Returns one bitwise impossible XOR differential trail.
+
+        INPUTS:
+
+        - ``solver_name`` -- *str*, the solver to call
+        - ``component_id_list`` -- **str**; the list of component ids for which the incompatibility occurs
+        - ``fixed_values`` -- *list of dict*, the variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: simon = SimonBlockCipher(block_bit_size=32, number_of_rounds=11)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_impossible_xor_differential_model import SatBitwiseImpossibleXorDifferentialModel
+            sage: sat = SatBitwiseImpossibleXorDifferentialModel(simon)
+            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0]*31 + [1])
+            sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
+            sage: ciphertext = set_fixed_variables(component_id='cipher_output_10_13', constraint_type='equal', bit_positions=range(32), bit_values=[0]*6 + [2,0,2] + [0]*23)
+            sage: trail = sat.find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components(
+                                    component_id_list=['intermediate_output_5_12'],
+                                    fixed_values=[plaintext, key, ciphertext],
+                                    solver_name='cryptominisat'
+                                    )
+
+            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+            sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
+            sage: ascon = AsconSboxSigmaPermutation(number_of_rounds=5)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_impossible_xor_differential_model import SatBitwiseImpossibleXorDifferentialModel
+            sage: sat = SatBitwiseImpossibleXorDifferentialModel(ascon)
+            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(320), bit_values=[1] + [0]*191 + [1] + [0]*63 + [1] + [0]*63 )
+            sage: P1 = set_fixed_variables(component_id='intermediate_output_0_71', constraint_type='equal', bit_positions=range(320), bit_values= [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+            sage: P2 = set_fixed_variables(component_id='intermediate_output_1_71', constraint_type='equal', bit_positions=range(320), bit_values= [2, 2, 0, 2, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 2, 2, 0, 2, 0, 0, 2, 2, 0, 0, 2, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 2, 2, 0, 2, 2, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2, 2, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2, 0, 0, 0, 0, 2, 2, 0, 0, 2, 2, 0, 0, 2, 0, 2, 2, 2, 0, 2, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0])
+            sage: P3 = set_fixed_variables(component_id='intermediate_output_2_71', constraint_type='equal', bit_positions=range(320), bit_values= [2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 0, 2, 0, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 0, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2, 2, 0, 2, 0, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+            sage: P5 = set_fixed_variables(component_id='cipher_output_4_71', constraint_type='equal', bit_positions=range(320), bit_values= [0]*192 + [1] + [0]* 127)
+            sage: trail = sat.find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components(
+                                        component_id_list=["sbox_3_56"],
+                                        fixed_values=[plaintext, P1, P2, P3, P5],
+                                        solver_name='cryptominisat'
+                                        ) #doctest: +SKIP
+        """
+        start = time.time()
+
+        if component_id_list is None:
+            return self.find_one_bitwise_impossible_xor_differential_trail(
+                middle_round=None, fixed_values=[], solver_name="cryptominisat"
+            )
+        assert set(component_id_list) <= set(self._cipher.get_all_components_ids()) - set(
+            get_key_schedule_component_ids(self._cipher)
+        )
+
+        # determine middle round
+        rounds = [self._cipher.get_round_from_component_id(cid) for cid in component_id_list]
+        assert len(set(rounds)) == 1, "All chosen components must be in the same round"
+        middle = rounds[0]
+
+        # case: single round_output
+        if len(component_id_list) == 1:
+            comp = self._cipher.get_component_from_id(component_id_list[0])
+            if comp.description == ["round_output"]:
+                return self.find_one_bitwise_impossible_xor_differential_trail(middle + 1, fixed_values, solver_name)
+
+        # build partial ciphers
+        self._middle_round = middle
+        self._forward_cipher = self._cipher.get_partial_cipher(0, middle, keep_key_schedule=True)
+        backward_cipher = self._cipher.cipher_partial_inverse(
+            middle + 1, self._cipher.number_of_rounds - 1, keep_key_schedule=False
+        )
+
+        suffix = "_backward"
+        self._backward_cipher = backward_cipher.add_suffix_to_components(
+            suffix, backward_cipher.get_all_components_ids()
+        )
+
+        # build base model
+        self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables=fixed_values)
+
+        # generate incompatibility constraints for each chosen component
+        incompat_ids = []
+        for cid in component_id_list:
+            # forward component
+            fwd_comp = self._forward_cipher.get_component_from_id(cid)
+            out_size, fwd_out_ids_0, fwd_out_ids_1 = fwd_comp._generate_output_double_ids()
+            # backward component
+            bwd_in_ids_0 = ["_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in fwd_out_ids_0]
+            bwd_in_ids_1 = ["_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in fwd_out_ids_1]
+
+            # add incompatibility for each bit of this component
+            for i in range(out_size):
+                inv_id = f"incompatibility_{cid}_{i}"
+                incompat_ids.append(inv_id)
+                self._model_constraints.extend(
+                    utils.incompatibility(
+                        inv_id, (fwd_out_ids_0[i], fwd_out_ids_1[i]), (bwd_in_ids_0[i], bwd_in_ids_1[i])
+                    )
+                )
+
+        self._model_constraints.append(" ".join(incompat_ids))
+
+        solution = self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name=solver_name)
+        solution["building_time"] = time.time() - start
+        return solution
+
+    def _parse_solver_output(self, variable2value):
         last_backward_component = self._backward_cipher.get_all_components()[-1]
         last_backward_component_id = last_backward_component.id
         last_backward_component_output_bit_size = last_backward_component.output_bit_size
         values = []
         for i in range(last_backward_component_output_bit_size):
             variable_value = 0
-            if f'{last_backward_component_id}_{i}_0' in variable2value:
-                variable_value ^= variable2value[f'{last_backward_component_id}_{i}_0'] << 1
-            if f'{last_backward_component_id}_{i}_1' in variable2value:
-                variable_value ^= variable2value[f'{last_backward_component_id}_{i}_1']
-            values.append(f'{variable_value}')
-        last_backward_component_value = ''.join(values).replace('2', '?').replace('3', '?')
+            if f"{last_backward_component_id}_{i}_0" in variable2value:
+                variable_value ^= variable2value[f"{last_backward_component_id}_{i}_0"] << 1
+            if f"{last_backward_component_id}_{i}_1" in variable2value:
+                variable_value ^= variable2value[f"{last_backward_component_id}_{i}_1"]
+            values.append(f"{variable_value}")
+        last_backward_component_value = "".join(values).replace("2", "?").replace("3", "?")
 
         components_solutions = self._get_cipher_inputs_components_solutions_double_ids(variable2value)
         for component in self._cipher.get_all_components():
