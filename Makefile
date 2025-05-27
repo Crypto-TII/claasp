@@ -52,7 +52,8 @@ develop:
 	$(SAGE_BIN) -pip install --upgrade -e .
 
 remote-pytest:
-	pytest -v -n=16 --isolate --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/
+	pytest -v -n=16 --isolate --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/ \
+	--ignore=tests/unit/cipher_modules/statistical_tests/dieharder_statistical_tests_test.py
 
 pytest:
 	pytest -v -n=auto --dist loadfile tests/unit/
