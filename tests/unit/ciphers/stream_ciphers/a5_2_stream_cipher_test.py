@@ -9,4 +9,8 @@ def test_a52():
     assert a52.component_from(0, 0).id == 'constant_0_0'
     assert a52.component_from(1, 0).id == 'fsr_1_0'
 
-
+    # a52 = A52StreamCipher(number_of_rounds = 1)
+    # key = 0x003fffffffffffff
+    # frame = 0b1000010000000000000000
+    # keystream = 0x1
+    # assert a52.evaluate([key, frame]) == keystream
