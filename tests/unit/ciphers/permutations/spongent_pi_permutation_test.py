@@ -16,7 +16,7 @@ def test_spongent_pi_permutation():
 
     plaintext = 0x0000000000000000000000000000000000000000
     ciphertext = 0x60a224efe52f9f1febbfe51f7a2dc9564341167
-    assert hex(spongentpi.evaluate([plaintext])) == hex(ciphertext)
+    assert spongentpi.evaluate([plaintext]) == ciphertext
 
     spongentpi = SpongentPiPermutation(state_bit_size=176, number_of_rounds=4)
     plaintext = 0x0123456789abcdef0123456789abcdef0123456789ab
