@@ -958,7 +958,8 @@ class NeuralNetworkTests:
             else:
                 inputs1[input_index] = np.tile(inputs0[input_index], number_of_differences)
         round_outputs = encrypt(inputs1)['round_output']
-        scores = 0
+        scores = np.zeros(number_of_differences)
+        i = 1
         for i in range(1, len(round_outputs)):
             nr = i - 1
             C1 = round_outputs[nr]
