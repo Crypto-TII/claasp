@@ -58,8 +58,8 @@ class A52StreamCipher(Cipher):
 
     INPUT:
 
-        - ``key_bit_size`` -- **integer** (default: `128`); cipher key bit size of the cipher
-        - ``number_of_rounds`` -- **integer** (default: `640`); number of rounds of the cipher
+        - ``key_bit_size`` -- **integer** (default: `64`); cipher key bit size of the cipher
+        - ``number_of_rounds`` -- **integer** (default: `288`); number of rounds of the cipher
 
     EXAMPLES::
 
