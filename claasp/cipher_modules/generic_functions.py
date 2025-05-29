@@ -1032,7 +1032,7 @@ def index_list_to_expression_str(index_list):
             monomial_strs.append("*".join(f"x{i}" for i in monomial))
     return " + ".join(monomial_strs)
 
-def fsr_binary(input, registers_info, number_of_clocks, verbosity=True):
+def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     """
     INPUT:
 
@@ -1113,14 +1113,19 @@ def compute_word_indexed_sum(index_list, word_array, word_gf):
     """
     res = word_gf(0)
     for coeff_int, word_indices in index_list:
-        coeff = word_gf(coeff_int)
+        coeff = word_gf(0)
+        binary_coeff_str = "{0:b}".format(coeff_int)
+        for i, bit in enumerate(binary_coeff_str):
+            if bit == '1':
+                exponent = len(binary_coeff_str) - 1 - i
+                coeff += word_gf.gen() ** exponent
         product = coeff
         for idx in word_indices:
             product *= word_array[idx]
         res += product
     return res
 
-def _word_list_to_bits(word_array, bits_inside_word, word_gf):
+def _word_list_to_bits(word_array, bits_inside_word):
     """
     Convert an array of GF(2^w) words to a BitArray.
     """
@@ -1177,6 +1182,7 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
     registers_update_word = [0 for _ in range(number_of_registers)]
     clock_conditions = [None for _ in range(number_of_registers)]
     end = 0
+
     for i in range(number_of_registers):
         registers_start[i] = end
         end += registers_info[i][0]
@@ -1190,6 +1196,7 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
             if clock_conditions[j] is not None:
                 do_clocks[j] =int(compute_word_indexed_sum(clock_conditions[j], word_array, word_gf))
             if do_clocks[j] > 0:
+
                 output_words[j] = compute_word_indexed_sum(registers_info[j][1], word_array, word_gf)
 
         registers = []
@@ -1200,7 +1207,7 @@ def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosit
             registers.append(reg)
         word_array = registers
 
-    output = _word_list_to_bits(word_array, bits_inside_word, word_gf)
+    output = _word_list_to_bits(word_array, bits_inside_word)
     if verbosity:
         print("FSR (word-based):")
         for i in range(number_of_registers):
