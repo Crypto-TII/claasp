@@ -1215,8 +1215,11 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
         print("}")
 
     ################################ BOOMERANG ################################
-    def get_boomerang_representation(self, prefix='upper_'):
-        self._rounds.get_boomerang_representation(prefix)
+    def add_prefix(self, prefix='upper_'):
+        self._rounds.add_prefix(prefix)
+
+    def remove_prefix(self, prefix='upper_'):
+        self._rounds.remove_prefix(prefix)
     ################################ BOOMERANG ################################
 
     def print_as_python_dictionary_to_file(self, file_name=""):

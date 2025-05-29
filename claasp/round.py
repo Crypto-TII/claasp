@@ -86,10 +86,15 @@ class Round:
         print("  ],")
 
     #################### BOOMERANG #################
-    def get_boomerang_representation(self, prefix='upper_'):
+    def add_prefix(self, prefix='upper_'):
         for component_number in range(self.number_of_components):
             requested_component = self.component_from(component_number)
-            requested_component.get_boomerang_representation(prefix)
+            requested_component.add_prefix(prefix)
+    
+    def remove_prefix(self, prefix='upper_'):
+        for component_number in range(self.number_of_components):
+            requested_component = self.component_from(component_number)
+            requested_component.remove_prefix(prefix)
     ################## BOOMERANG #######################
 
     def remove_component(self, component):

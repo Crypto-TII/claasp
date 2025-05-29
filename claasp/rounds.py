@@ -150,10 +150,15 @@ class Rounds:
             requested_round.print_round_as_python_dictionary()
     
     ################# BOOMERANG #########################
-    def get_boomerang_representation(self, prefix='upper_'):
+    def add_prefix(self, prefix='upper_'):
         for round_number in range(self.number_of_rounds):
             requested_round = self.round_at(round_number)
-            requested_round.get_boomerang_representation(prefix)
+            requested_round.add_prefix(prefix)
+
+    def remove_prefix(self, prefix='upper_'):
+        for round_number in range(self.number_of_rounds):
+            requested_round = self.round_at(round_number)
+            requested_round.remove_prefix(prefix)
     ################ BOOMERANG ###############################
 
     def remove_round_component(self, round_number, component):
