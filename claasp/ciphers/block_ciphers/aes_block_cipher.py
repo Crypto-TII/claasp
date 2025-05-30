@@ -96,41 +96,41 @@ class AESBlockCipher(Cipher):
         # In function of wordsize
         self.round_constant = {
             2: [
-                "0b01000000", "0b10000000", "0b11000000", "0b01000000",
-                "0b10000000", "0b11000000", "0b01000000", "0b10000000",
-                "0b11000000", "0b01000000", "0b10000000", "0b11000000",
-                "0b01000000", "0b10000000", "0b11000000", "0b01000000",
+                0b01000000, 0b10000000, 0b11000000, 0b01000000,
+                0b10000000, 0b11000000, 0b01000000, 0b10000000,
+                0b11000000, 0b01000000, 0b10000000, 0b11000000,
+                0b01000000, 0b10000000, 0b11000000, 0b01000000,
             ],
             3: [
-                "0b001000000000", "0b010000000000", "0b100000000000", "0b011000000000",
-                "0b110000000000", "0b111000000000", "0b101000000000", "0b001000000000",
-                "0b010000000000", "0b100000000000", "0b011000000000", "0b110000000000",
-                "0b111000000000", "0b101000000000", "0b001000000000", "0b010000000000",
+                0b001000000000, 0b010000000000, 0b100000000000, 0b011000000000,
+                0b110000000000, 0b111000000000, 0b101000000000, 0b001000000000,
+                0b010000000000, 0b100000000000, 0b011000000000, 0b110000000000,
+                0b111000000000, 0b101000000000, 0b001000000000, 0b010000000000,
             ],
             4: [
-                "0x1000", "0x2000", "0x4000", "0x8000",
-                "0x3000", "0x6000", "0xc000", "0xb000",
-                "0x5000", "0xa000", "0x7000", "0xe000",
-                "0xf000", "0xd000", "0x9000", "0x1000",
+                0x1000, 0x2000, 0x4000, 0x8000,
+                0x3000, 0x6000, 0xc000, 0xb000,
+                0x5000, 0xa000, 0x7000, 0xe000,
+                0xf000, 0xd000, 0x9000, 0x1000,
             ],
             8: {
                 2: [
-                    "0x0100", "0x0200", "0x0400", "0x0800",
-                    "0x1000", "0x2000", "0x4000", "0x8000",
-                    "0x1B00", "0x3600", "0x3600", "0x6C00",
-                    "0xD800", "0xAB00", "0x4D00", "0x9A00",
+                    0x0100, 0x0200, 0x0400, 0x0800,
+                    0x1000, 0x2000, 0x4000, 0x8000,
+                    0x1B00, 0x3600, 0x3600, 0x6C00,
+                    0xD800, 0xAB00, 0x4D00, 0x9A00,
                 ],
                 3: [
-                    "0x010000", "0x020000", "0x040000", "0x080000",
-                    "0x100000", "0x200000", "0x400000", "0x800000",
-                    "0x1B0000", "0x360000", "0x360000", "0x6C0000",
-                    "0xD80000", "0xAB0000", "0x4D0000", "0x9A0000",
+                    0x010000, 0x020000, 0x040000, 0x080000,
+                    0x100000, 0x200000, 0x400000, 0x800000,
+                    0x1B0000, 0x360000, 0x360000, 0x6C0000,
+                    0xD80000, 0xAB0000, 0x4D0000, 0x9A0000,
                 ],
                 4: [
-                    "0x01000000", "0x02000000", "0x04000000", "0x08000000",
-                    "0x10000000", "0x20000000", "0x40000000", "0x80000000",
-                    "0x1B000000", "0x36000000", "0x36000000", "0x6C000000",
-                    "0xD8000000", "0xAB000000", "0x4D000000", "0x9A000000",
+                    0x01000000, 0x02000000, 0x04000000, 0x08000000,
+                    0x10000000, 0x20000000, 0x40000000, 0x80000000,
+                    0x1B000000, 0x36000000, 0x36000000, 0x6C000000,
+                    0xD8000000, 0xAB000000, 0x4D000000, 0x9A000000,
                 ],
             }
         }
@@ -305,20 +305,16 @@ class AESBlockCipher(Cipher):
 
     def create_constant_component(self, round_number, state_size, word_size):
         if word_size != 8:
-            if self.round_constant[word_size][round_number][:2] == "0b":
+            if word_size in (2, 3):
                 constant = self.add_constant_component(
-                    len(self.round_constant[word_size][round_number]) - 2,
-                    int(self.round_constant[word_size][round_number], 2),
+                    word_size * 4,
+                    self.round_constant[word_size][round_number],
                 )
-            elif self.round_constant[word_size][round_number][:2] == "0x":
-                constant = self.add_constant_component(
-                    self.row_size, int(self.round_constant[word_size][round_number], 16)
-                )
-            else:
-                print("Error : Constant format")
+            elif word_size == 4:
+                constant = self.add_constant_component(self.row_size, self.round_constant[word_size][round_number])
         else:
             constant = self.add_constant_component(
-                self.row_size, int(self.round_constant[word_size][state_size][round_number], 16)
+                self.row_size, self.round_constant[word_size][state_size][round_number]
             )
 
         return constant
