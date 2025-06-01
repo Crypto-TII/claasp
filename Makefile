@@ -54,7 +54,6 @@ develop:
 remote-pytest:
 	pytest -v -n=16 --isolate --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/ \
 	--ignore=tests/unit/cipher_modules/statistical_tests/dieharder_statistical_tests_test.py \
-	--ignore=tests/unit/cipher_modules/models/cp \
 	--ignore=tests/unit/cipher_modules/report_test.py \
 
 pytest:
