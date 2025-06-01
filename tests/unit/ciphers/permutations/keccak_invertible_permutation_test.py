@@ -34,7 +34,6 @@ def test_keccak_invertible_permutation():
     #                  '3d425e939397161e889b37', 16)
     # assert keccak.evaluate([plaintext]) == ciphertext
     #
-    # # Very long test
     # keccak = KeccakInvertiblePermutation(number_of_rounds=2)
     # plaintext = int('0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
     #                 '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
