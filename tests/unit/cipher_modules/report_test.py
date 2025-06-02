@@ -34,29 +34,34 @@ def test_save_as_image():
     trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
     trail_report = Report(trail)
     trail_report.save_as_image()
+    trail_report.clean_reports()
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
     avalanche_report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output',
              fixed_input_difference='average')
-
+    avalanche_report.clean_reports()
     blackbox_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(blackbox_results)
     blackbox_report.save_as_image()
+    blackbox_report.clean_reports()
 
     algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout_in_seconds=1)
     algebraic_report = Report(algebraic_results)
     algebraic_report.save_as_image()
+    algebraic_report.clean_reports()
 
     component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
     report_cca = Report(component_analysis)
     report_cca.save_as_image()
+    report_cca.clean_reports()
 
     speck = SpeckBlockCipher(number_of_rounds=2)
     cda = ContinuousDiffusionAnalysis(speck)
     cda_for_repo = cda.continuous_diffusion_tests()
     cda_repo = Report(cda_for_repo)
     cda_repo.save_as_image()
+    cda_repo.clean_reports()
 
 
 
@@ -81,14 +86,14 @@ def test_save_as_latex_table():
     avalanche_test_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_test_results)
     avalanche_report.save_as_latex_table(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
-
+    avalanche_report.clean_reports()
     trail_report = Report(trail)
     trail_report.save_as_latex_table()
-
+    trail_report.clean_reports()
     dieharder=DieharderTests(simon)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
     report_sts.save_as_latex_table()
-
+    report_sts.clean_reports()
 def test_save_as_DataFrame():
     speck = SpeckBlockCipher(number_of_rounds=2)
     cp = MznXorDifferentialModel(speck)
@@ -107,14 +112,14 @@ def test_save_as_DataFrame():
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
     avalanche_report.save_as_DataFrame(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
-
+    avalanche_report.clean_reports()
     trail_report = Report(trail)
     trail_report.save_as_DataFrame()
-
+    trail_report.clean_reports()
     dieharder = DieharderTests(speck)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
     report_sts.save_as_DataFrame()
-
+    report_sts.clean_reports()
 
 def test_save_as_json():
     simon = SimonBlockCipher(number_of_rounds=2)
@@ -126,7 +131,7 @@ def test_save_as_json():
     dieharder = DieharderTests(simon)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
     report_sts.save_as_json()
-
+    report_sts.clean_reports()
     present = PresentBlockCipher(number_of_rounds=2)
     sat = SatXorDifferentialModel(present)
     related_key_setting = [
@@ -143,7 +148,7 @@ def test_save_as_json():
     avalanche_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_results)
     avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
-
+    avalanche_report.clean_reports()
 
 def test_show():
     precomputed_results = load('tests/precomputed_results.sobj')
