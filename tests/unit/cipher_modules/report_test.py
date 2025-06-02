@@ -41,6 +41,7 @@ def test_save_as_image():
     avalanche_report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output',
              fixed_input_difference='average')
     avalanche_report.clean_reports()
+
     blackbox_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests()
     blackbox_report = Report(blackbox_results)
     blackbox_report.save_as_image()
@@ -62,9 +63,6 @@ def test_save_as_image():
     cda_repo = Report(cda_for_repo)
     cda_repo.save_as_image()
     cda_repo.clean_reports()
-
-
-
 
 def test_save_as_latex_table():
     simon = SimonBlockCipher(number_of_rounds=2)
