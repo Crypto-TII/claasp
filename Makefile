@@ -53,7 +53,7 @@ develop:
 
 remote-pytest:
 	pytest -v -n=16 --isolate --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/ \
-	--ignore=tests/unit/cipher_modules/report_test.py \
+	--ignore=tests/unit/cipher_modules/models/cp \
 
 pytest:
 	pytest -v -n=auto --dist loadfile tests/unit/
