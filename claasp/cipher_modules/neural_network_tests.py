@@ -334,7 +334,6 @@ class NeuralNetworkTests:
         d_array = np.uint8([b for b in int(d).to_bytes(input_lengths[index] // 8, byteorder='big')])
         other_inputs_np[index] = other_inputs_np[index] ^ np.broadcast_to(d_array, (
             nb_samples, input_lengths[index] // 8)).transpose()
-        print([(x.shape, x.dtype) for x in other_inputs_np])
         cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_output=True)
         other_output = evaluator.evaluate_vectorized(self.cipher, other_inputs_np, intermediate_output=True)
 
@@ -366,7 +365,8 @@ class NeuralNetworkTests:
                                           dtype=np.uint8).reshape(-1,
                                                                   samples))  # requires input size to be a multiple of 8
             inputs_1.append(inputs_0[-1] ^ self._integer_to_np(input_differences[i], self.cipher.inputs_bit_size[i]))
-            inputs_1[-1][:, y == 0] ^= np.frombuffer(urandom(num_rand_samples * self.cipher.inputs_bit_size[i] // 8),
+            if num_rand_samples>0:
+                inputs_1[-1][:, y == 0] ^= np.frombuffer(urandom(num_rand_samples * self.cipher.inputs_bit_size[i] // 8),
                                                      dtype=np.uint8).reshape(-1, num_rand_samples)
 
         if number_of_rounds < self.cipher.number_of_rounds:
@@ -958,7 +958,8 @@ class NeuralNetworkTests:
             else:
                 inputs1[input_index] = np.tile(inputs0[input_index], number_of_differences)
         round_outputs = encrypt(inputs1)['round_output']
-        scores = 0
+        scores = np.zeros(number_of_differences)
+        i = 1
         for i in range(1, len(round_outputs)):
             nr = i - 1
             C1 = round_outputs[nr]
