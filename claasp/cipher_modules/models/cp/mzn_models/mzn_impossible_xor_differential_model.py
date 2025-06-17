@@ -20,6 +20,7 @@ import os
 import math
 import itertools
 import subprocess
+import time
 from copy import deepcopy
 
 from claasp.cipher_modules.models.cp.mzn_model import solve_satisfy, constraint_type_error
