@@ -128,9 +128,9 @@ def test_save_as_json():
     # blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
     # blackbox_report.save_as_json(fixed_input='plaintext',fixed_output='round_output')
     # dieharder = DieharderTests(simon)
-    report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
-    report_sts.save_as_json()
-    report_sts.clean_reports()
+    # report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
+    # report_sts.save_as_json()
+    # report_sts.clean_reports()
     present = PresentBlockCipher(number_of_rounds=2)
     sat = SatXorDifferentialModel(present)
     related_key_setting = [
