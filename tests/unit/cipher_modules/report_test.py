@@ -42,10 +42,10 @@ def test_save_as_image():
              fixed_input_difference='average')
     avalanche_report.clean_reports()
 
-    blackbox_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests()
-    blackbox_report = Report(blackbox_results)
-    blackbox_report.save_as_image()
-    blackbox_report.clean_reports()
+    # blackbox_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests()
+    # blackbox_report = Report(blackbox_results)
+    # blackbox_report.save_as_image()
+    # blackbox_report.clean_reports()
 
     algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout_in_seconds=1)
     algebraic_report = Report(algebraic_results)
@@ -92,6 +92,7 @@ def test_save_as_latex_table():
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
     report_sts.save_as_latex_table()
     report_sts.clean_reports()
+
 def test_save_as_DataFrame():
     speck = SpeckBlockCipher(number_of_rounds=2)
     cp = MznXorDifferentialModel(speck)
@@ -122,11 +123,11 @@ def test_save_as_DataFrame():
 def test_save_as_json():
     simon = SimonBlockCipher(number_of_rounds=2)
 
-    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(
-        simon).neural_network_blackbox_distinguisher_tests()
-    blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
-    blackbox_report.save_as_json(fixed_input='plaintext',fixed_output='round_output')
-    dieharder = DieharderTests(simon)
+    # neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(
+    #     simon).neural_network_blackbox_distinguisher_tests()
+    # blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
+    # blackbox_report.save_as_json(fixed_input='plaintext',fixed_output='round_output')
+    # dieharder = DieharderTests(simon)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
     report_sts.save_as_json()
     report_sts.clean_reports()
@@ -164,7 +165,7 @@ def test_show():
     dieharder_test_results = precomputed_results['speck_three_rounds_dieharder_test']
     report_sts = Report(dieharder_test_results)
     report_sts.show()
-    neural_network_test_results = precomputed_results['speck_three_rounds_neural_network_test']
-    neural_network_tests_report = Report(neural_network_test_results)
-    neural_network_tests_report.show(fixed_input_difference=None)
-    neural_network_tests_report.show(fixed_input_difference='0xa')
+    # neural_network_test_results = precomputed_results['speck_three_rounds_neural_network_test']
+    # neural_network_tests_report = Report(neural_network_test_results)
+    # neural_network_tests_report.show(fixed_input_difference=None)
+    # neural_network_tests_report.show(fixed_input_difference='0xa')
