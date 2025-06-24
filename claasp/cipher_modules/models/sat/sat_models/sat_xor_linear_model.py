@@ -149,7 +149,7 @@ class SatXorLinearModel(SatModel):
             sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
             sage: sat = SatXorLinearModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
-            sage: trails = sat.find_all_xor_linear_trails_with_fixed_weight(2, fixed_values=[key]) # long
+            sage: trails = sat.find_all_xor_linear_trails_with_fixed_weight(2, fixed_values=[key])
             sage: len(trails) == 8
             True
         """
@@ -167,7 +167,7 @@ class SatXorLinearModel(SatModel):
             for component in solution['components_values']:
                 value_as_hex_string = solution['components_values'][component]['value']
                 value_to_avoid = int(value_as_hex_string, base=16)
-                bit_len = len(value_as_hex_string) * 4
+                bit_len = (len(value_as_hex_string) - 2) * 4
                 minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
                 if CONSTANT in component and component.endswith(INPUT_BIT_ID_SUFFIX):
                     continue
