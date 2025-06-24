@@ -1,39 +1,31 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {'block_bit_size': 32, 'key_bit_size': 64, 'number_of_rounds': 32},
-    {'block_bit_size': 48, 'key_bit_size': 96, 'number_of_rounds': 36},
-    {'block_bit_size': 64, 'key_bit_size': 128, 'number_of_rounds': 44}
+    {"block_bit_size": 32, "key_bit_size": 64, "number_of_rounds": 32},
+    {"block_bit_size": 48, "key_bit_size": 96, "number_of_rounds": 36},
+    {"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 44},
 ]
-Z = [
-    5557826286501673759,
-    3114073359753873471
-]
-WORDSIZE_TO_ZINDEX = {
-    16: 0,
-    24: 0,
-    32: 1
-}
+Z = [5557826286501673759, 3114073359753873471]
+WORDSIZE_TO_ZINDEX = {16: 0, 24: 0, 32: 1}
 
 
 class SimeckBlockCipher(Cipher):
@@ -72,18 +64,22 @@ class SimeckBlockCipher(Cipher):
 
         if number_of_rounds is None:
             for parameters in PARAMETERS_CONFIGURATION_LIST:
-                if parameters['block_bit_size'] == self.block_bit_size and \
-                        parameters['key_bit_size'] == self.key_bit_size:
-                    number_of_rounds = parameters['number_of_rounds']
+                if (
+                    parameters["block_bit_size"] == self.block_bit_size
+                    and parameters["key_bit_size"] == self.key_bit_size
+                ):
+                    number_of_rounds = parameters["number_of_rounds"]
                     break
             if number_of_rounds is None:
                 raise ValueError("No available number of rounds for the given parameters.")
 
-        super().__init__(family_name="simeck",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[self.block_bit_size, key_bit_size],
-                         cipher_output_bit_size=self.block_bit_size)
+        super().__init__(
+            family_name="simeck",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[self.block_bit_size, key_bit_size],
+            cipher_output_bit_size=self.block_bit_size,
+        )
 
         left = INPUT_PLAINTEXT, list(range(self.word_size))
         right = INPUT_PLAINTEXT, list(range(self.word_size, 2 * self.word_size))
@@ -108,9 +104,9 @@ class SimeckBlockCipher(Cipher):
         s1x_id = self.add_rotate_component([left[0]], [left[1]], self.word_size, self.rotation_amounts[1]).id
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
         f_id = self.add_XOR_component([x_and_s5x_id, s1x_id], [list(range(self.word_size))] * 2, self.word_size).id
-        new_left_id = self.add_XOR_component([right[0], f_id, round_key[0]],
-                                             [right[1], list(range(self.word_size)), round_key[1]],
-                                             self.word_size).id
+        new_left_id = self.add_XOR_component(
+            [right[0], f_id, round_key[0]], [right[1], list(range(self.word_size)), round_key[1]], self.word_size
+        ).id
 
         return (new_left_id, list(range(self.word_size))), left
 

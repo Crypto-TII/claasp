@@ -65,7 +65,8 @@ def add_AND_component(cipher, input_id_links, input_bit_positions, output_bit_si
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: and_0_0 = cipher.add_AND_component(["input","input"], [[0,1],[2,3]], 2)
         sage: cipher.print()
@@ -110,7 +111,8 @@ def add_cipher_output_component(cipher, input_id_links, input_bit_positions, out
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: component_0_0 = cipher.add_cipher_output_component(["input"], [[0,1,2,3]], 4)
         sage: cipher.print()
@@ -159,7 +161,8 @@ def add_concatenate_component(cipher, input_id_links, input_bit_positions, outpu
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: concatenate_0_0 = cipher.add_concatenate_component(["input"], [[0,1,2,3]], 4)
         sage: cipher.print()
@@ -203,7 +206,8 @@ def add_constant_component(cipher, output_bit_size, value):
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [32], 32)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [32], 32)
         sage: cipher.add_round()
         sage: constant_0_0 = cipher.add_constant_component(16, 0xAB01)
         sage: constant_0_1 = cipher.add_constant_component(16, 0xAB02)
@@ -323,7 +327,8 @@ def add_intermediate_output_component(cipher, input_id_links, input_bit_position
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: component_0_0 = cipher.add_intermediate_output_component(["input"], [[0,1,2,3]], 4, "output_tag")
         sage: cipher.print()
@@ -369,7 +374,8 @@ def add_linear_layer_component(cipher, input_id_links, input_bit_positions, outp
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: linear_layer_0_0 = cipher.add_linear_layer_component(
         ....: ["input"], [[0,1,2,3]], 4, [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
@@ -416,7 +422,8 @@ def add_mix_column_component(cipher, input_id_links, input_bit_positions, output
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: mix_column_0_0 = cipher.add_mix_column_component(["input"], [[0,1,2,3]], 4, [[[2, 3], [3, 2]], 1, 3])
         sage: cipher.print()
@@ -461,7 +468,8 @@ def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: modadd_0_0 = cipher.add_MODADD_component(["input","input"], [[0,1],[2,3]], 2)
         sage: cipher.print()
@@ -506,7 +514,8 @@ def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: modsub_0_0 = cipher.add_MODSUB_component(["input","input"], [[0,1],[2,3]], 2)
         sage: cipher.print()
@@ -551,7 +560,8 @@ def add_NOT_component(cipher, input_id_links, input_bit_positions, output_bit_si
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: not_0_0 = cipher.add_NOT_component(["input"], [[0,1,2,3]], 4)
         sage: cipher.print()
@@ -596,7 +606,8 @@ def add_OR_component(cipher, input_id_links, input_bit_positions, output_bit_siz
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: or_0_0 = cipher.add_OR_component(["input","input"], [[0,1],[2,3]], 2)
         sage: cipher.print()
@@ -643,7 +654,8 @@ def add_permutation_component(cipher, input_id_links, input_bit_positions, outpu
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: perm_0_0 = cipher.add_permutation_component(["input"], [[0,1,2,3]], 4, [3,2,1,0])
         sage: cipher.print()
@@ -688,7 +700,8 @@ def add_reverse_component(cipher, input_id_links, input_bit_positions, output_bi
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: rev_0_0 = cipher.add_reverse_component(["input"], [[0,1,2,3]], 4)
         sage: cipher.print()
@@ -736,7 +749,8 @@ def add_rotate_component(cipher, input_id_links, input_bit_positions, output_bit
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: rotate_0_0 = cipher.add_rotate_component(["input"], [[0,1,2,3]], 4, 2)
         sage: cipher.print()
@@ -778,7 +792,8 @@ def add_round(cipher):
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: cipher.print_as_python_dictionary()
         cipher = {
@@ -816,7 +831,8 @@ def add_round_key_output_component(cipher, input_id_links, input_bit_positions, 
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: component_0_0 = cipher.add_round_key_output_component(["input"], [[0,1,2,3]], 4)
         sage: cipher.print()
@@ -861,7 +877,8 @@ def add_round_output_component(cipher, input_id_links, input_bit_positions, outp
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: component_0_0 = cipher.add_round_output_component(["input"], [[0,1,2,3]], 4)
         sage: cipher.print()
@@ -907,7 +924,8 @@ def add_SBOX_component(cipher, input_id_links, input_bit_positions, output_bit_s
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: sbox_0_0 = cipher.add_SBOX_component(["input"], [[0,1,2,3]], 4,
         ....: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
@@ -955,7 +973,8 @@ def add_SHIFT_component(cipher, input_id_links, input_bit_positions, output_bit_
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: shift_0_0 = cipher.add_SHIFT_component(["input"], [[0,1,2,3]], 4, 2)
         sage: cipher.print()
@@ -1002,7 +1021,8 @@ def add_shift_rows_component(cipher, input_id_links, input_bit_positions, output
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: shift_row_0_0 = cipher.add_shift_rows_component(["input"], [[0,1,2,3]], 4, 2)
         sage: cipher.print()
@@ -1053,7 +1073,8 @@ def add_sigma_component(cipher, input_id_links, input_bit_positions, output_bit_
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: sigma_0_0 = cipher.add_sigma_component(["input"], [[0,1,2,3]], 4, [1,3])
         sage: cipher.print()
@@ -1104,7 +1125,8 @@ def add_theta_gaston_component(cipher, input_id_links, input_bit_positions, outp
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [320], 320)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [320], 320)
         sage: cipher.add_round()
         sage: input_bit_positions = [[i for i in range(320)]]
         sage: theta_gaston_0_0 = cipher.add_theta_gaston_component(["input"], input_bit_positions, 320, list(range(8)))
@@ -1141,7 +1163,8 @@ def add_theta_keccak_component(cipher, input_id_links, input_bit_positions, outp
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [1600], 1600)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [1600], 1600)
         sage: cipher.add_round()
         sage: input_bit_positions = [[i for i in range(1600)]]
         sage: theta_keccak_0_0 = cipher.add_theta_keccak_component(["input"], input_bit_positions, 1600)
@@ -1176,7 +1199,8 @@ def add_theta_xoodoo_component(cipher, input_id_links, input_bit_positions, outp
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [384], 384)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [384], 384)
         sage: cipher.add_round()
         sage: input_bit_positions = [[i for i in range(384)]]
         sage: theta_xoodoo_0_0 = cipher.add_theta_xoodoo_component(["input"], input_bit_positions, 384)
@@ -1209,7 +1233,8 @@ def add_variable_rotate_component(cipher, input_id_links, input_bit_positions, o
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: var_rotate_0_0 = cipher.add_variable_rotate_component(["input", "input"], [[0, 1, 2, 3],
         ....: [4, 5, 6, 7]], 4, -1)
@@ -1256,7 +1281,8 @@ def add_variable_shift_component(cipher, input_id_links, input_bit_positions, ou
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: var_shift_0_0 = cipher.add_variable_shift_component(["input", "input"], [[0,1,2,3], [4,5,6,7]], 4, -1)
         sage: cipher.print()
@@ -1304,7 +1330,8 @@ def add_word_permutation_component(cipher, input_id_links, input_bit_positions, 
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: perm_0_0 = cipher.add_word_permutation_component(["input"], [[0,1,2,3]], 4, [1,0], 2)
         sage: cipher.print()
@@ -1350,7 +1377,8 @@ def add_XOR_component(cipher, input_id_links, input_bit_positions, output_bit_si
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: xor_0_0 = cipher.add_XOR_component(["input","input"], [[0,1],[2,3]], 2)
         sage: cipher.print()
@@ -1802,7 +1830,8 @@ def sort_cipher(cipher):
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
         sage: sbox_that_should_be_second = cipher.add_SBOX_component(["sbox_0_1"], [[0,1,2,3]], 4,
         ....: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])

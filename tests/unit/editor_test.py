@@ -4,10 +4,11 @@ from claasp.cipher import Cipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.editor import remove_permutations, remove_rotations
+from claasp.name_mappings import PERMUTATION
 
 
 def test_add_shift_rows_component():
-    cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+    cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
     cipher.add_round()
     cipher.add_shift_rows_component(["input"], [[0, 1, 2, 3]], 4, 2)
     assert cipher.rounds.rounds_as_python_dictionary() == [[{'id': 'shift_rows_0_0',
@@ -20,7 +21,7 @@ def test_add_shift_rows_component():
 
 
 def test_add_variable_rotate_component():
-    cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+    cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
     cipher.add_round()
     cipher.add_variable_rotate_component(["input", "input"], [[0, 1, 2, 3], [4, 5, 6, 7]], 4, -1)
     assert cipher.rounds.rounds_as_python_dictionary() == [[{'id': 'var_rot_0_0',
