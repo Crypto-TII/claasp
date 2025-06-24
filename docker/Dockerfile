@@ -22,8 +22,8 @@ RUN apt-get install -y build-essential \
   latexmk=1:4.76-1 \
   python3-cryptominisat=5.8.0+dfsg1-2 \
   sagemath=9.5-4 \
-  wget \
-  z3
+  wget
+RUN apt-get install -y z3
 
 COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
