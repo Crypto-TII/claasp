@@ -50,7 +50,7 @@ class MODSUB(Modular):
 
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: from claasp.cipher import Cipher
-            sage: from claasp.name_nappings import PERMUTATION
+            sage: from claasp.name_mappings import PERMUTATION
             sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [8], 8)
             sage: cipher.add_round()
             sage: modsub_0_0 = cipher.add_MODSUB_component(["input","input"], [[0,1,2,3],[4,5,6,7]], 4)
