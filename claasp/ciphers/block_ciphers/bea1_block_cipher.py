@@ -1,26 +1,25 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
-PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 11}]
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 11}]
 
 
 class BEA1BlockCipher(Cipher):
@@ -43,18 +42,20 @@ class BEA1BlockCipher(Cipher):
     """
 
     def __init__(self, number_of_rounds=11):
+        self.key_block_size = 120
+        self.cipher_block_size = 80
+        self.sbox_bit_size = 10
+        self.nrounds = number_of_rounds
 
-        self.KEY_BLOCK_SIZE = 120
-        self.CIPHER_BLOCK_SIZE = 80
-        self.SBOX_BIT_SIZE = 10
-        self.NROUNDS = number_of_rounds
+        super().__init__(
+            family_name="bea1_block_cipher",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.key_block_size, self.cipher_block_size],
+            cipher_output_bit_size=self.cipher_block_size,
+        )
 
-        super().__init__(family_name='bea1_block_cipher', 
-                         cipher_type='block_cipher', 
-                         cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.KEY_BLOCK_SIZE, self.CIPHER_BLOCK_SIZE],
-                         cipher_output_bit_size=self.CIPHER_BLOCK_SIZE)
-        
+        # fmt: off
         self.sboxes = {
             0: [
                 0x0BA, 0x026, 0x0A0, 0x1E1, 0x183, 0x3DB, 0x1A4, 0x083, 0x110, 0x350, 0x085, 0x2E5, 0x3B4, 0x195, 0x359, 0x2E6,
@@ -364,64 +365,72 @@ class BEA1BlockCipher(Cipher):
             [0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
             [1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0]
         ]
-        
+        # fmt: on
+
         self.add_round()
 
-        _zero = self.add_constant_component(self.SBOX_BIT_SIZE, 0);
-
+        _zero = self.add_constant_component(self.sbox_bit_size, 0)
         key_state = [
             self.add_XOR_component(
-                [INPUT_KEY if j < (self.KEY_BLOCK_SIZE // self.SBOX_BIT_SIZE) else _zero.id, _zero.id],
+                [INPUT_KEY if j < (self.key_block_size // self.sbox_bit_size) else _zero.id, _zero.id],
                 [
-                    [i for i in range(j * self.SBOX_BIT_SIZE, (j + 1) * self.SBOX_BIT_SIZE)] if (j < (self.KEY_BLOCK_SIZE // self.SBOX_BIT_SIZE)) else [i for i in range(self.SBOX_BIT_SIZE)],
-                    [i for i in range(self.SBOX_BIT_SIZE)]
-                 ],
-                self.SBOX_BIT_SIZE)
-            for j in range(2 * self.KEY_BLOCK_SIZE // self.SBOX_BIT_SIZE)
+                    list(range(j * self.sbox_bit_size, (j + 1) * self.sbox_bit_size))
+                    if (j < (self.key_block_size // self.sbox_bit_size))
+                    else list(range(self.sbox_bit_size)),
+                    list(range(self.sbox_bit_size)),
+                ],
+                self.sbox_bit_size,
+            )
+            for j in range(2 * self.key_block_size // self.sbox_bit_size)
         ]
 
         for i in range(7):
             x = self.add_linear_layer_component(
-                [key_state[(12*i + 8) % 24].id, key_state[(12*i + 9) % 24].id, key_state[(12*i + 10) % 24].id, key_state[(12*i + 11) % 24].id],
-                [[j for j in range(self.SBOX_BIT_SIZE)]] * 4,
-                self.SBOX_BIT_SIZE * 4,
-                self.mix_columns_matrix)
+                [
+                    key_state[(12 * i + 8) % 24].id,
+                    key_state[(12 * i + 9) % 24].id,
+                    key_state[(12 * i + 10) % 24].id,
+                    key_state[(12 * i + 11) % 24].id,
+                ],
+                [list(range(self.sbox_bit_size))] * 4,
+                self.sbox_bit_size * 4,
+                self.mix_columns_matrix,
+            )
             x = [
                 self.add_SBOX_component(
                     [x.id],
-                    [[j * self.SBOX_BIT_SIZE + k for k in range(self.SBOX_BIT_SIZE)]],
-                    self.SBOX_BIT_SIZE,
-                    self.sboxes[j]
-                ) for j in range(4)
+                    [[j * self.sbox_bit_size + k for k in range(self.sbox_bit_size)]],
+                    self.sbox_bit_size,
+                    self.sboxes[j],
+                )
+                for j in range(4)
             ]
-            xor_constant = self.add_constant_component(
-                self.SBOX_BIT_SIZE,
-                pow(3, i, 2**10)
-            )
+            xor_constant = self.add_constant_component(self.sbox_bit_size, pow(3, i, 2**10))
             x[0] = self.add_XOR_component(
-                [x[0].id, xor_constant.id],
-                [[k for k in range(self.SBOX_BIT_SIZE)]] * 2,
-                self.SBOX_BIT_SIZE
+                [x[0].id, xor_constant.id], [list(range(self.sbox_bit_size))] * 2, self.sbox_bit_size
             )
 
             for j in range(4):
-                key_state[(12*i + 12) % 24 + j] = self.add_XOR_component(
-                    [key_state[(12*i) % 24 + j].id, x[j].id],
-                    [[k for k in range(self.SBOX_BIT_SIZE)]] * 2,
-                    self.SBOX_BIT_SIZE)
+                key_state[(12 * i + 12) % 24 + j] = self.add_XOR_component(
+                    [key_state[(12 * i) % 24 + j].id, x[j].id],
+                    [list(range(self.sbox_bit_size))] * 2,
+                    self.sbox_bit_size,
+                )
             for j in range(4):
-                key_state[(12*i + 16) % 24 + j] = self.add_XOR_component(
-                    [key_state[(12*i + 4) % 24 + j].id, key_state[(12*i + 12) % 24 + j].id],
-                    [[k for k in range(self.SBOX_BIT_SIZE)]] * 2,
-                    self.SBOX_BIT_SIZE)
+                key_state[(12 * i + 16) % 24 + j] = self.add_XOR_component(
+                    [key_state[(12 * i + 4) % 24 + j].id, key_state[(12 * i + 12) % 24 + j].id],
+                    [list(range(self.sbox_bit_size))] * 2,
+                    self.sbox_bit_size,
+                )
             for j in range(4):
-                key_state[(12*i + 20) % 24 + j] = self.add_XOR_component(
-                    [key_state[(12*i + 8) % 24 + j].id, key_state[(12*i + 16) % 24 + j].id],
-                    [[k for k in range(self.SBOX_BIT_SIZE)]] * 2,
-                    self.SBOX_BIT_SIZE)
+                key_state[(12 * i + 20) % 24 + j] = self.add_XOR_component(
+                    [key_state[(12 * i + 8) % 24 + j].id, key_state[(12 * i + 16) % 24 + j].id],
+                    [list(range(self.sbox_bit_size))] * 2,
+                    self.sbox_bit_size,
+                )
 
         cipher_state = INPUT_PLAINTEXT
-        for round_number in range(self.NROUNDS):
+        for round_number in range(self.nrounds):
             if round_number > 0:
                 self.add_round()
 
@@ -432,35 +441,35 @@ class BEA1BlockCipher(Cipher):
             cipher_state = [
                 self.add_SBOX_component(
                     [cipher_state[i].id],
-                    [[j for j in range(self.SBOX_BIT_SIZE)]],
-                    self.SBOX_BIT_SIZE,
-                    self.sboxes[i%4]
+                    [list(range(self.sbox_bit_size))],
+                    self.sbox_bit_size,
+                    self.sboxes[i % 4],
                 )
                 for i in range(8)
             ]
 
-            if round_number != self.NROUNDS - 1:
+            if round_number != self.nrounds - 1:
                 # mix columns + shift rows
                 mx1 = self.add_linear_layer_component(
                     [cipher_state[0].id, cipher_state[5].id, cipher_state[2].id, cipher_state[7].id],
-                    [[j for j in range(self.SBOX_BIT_SIZE)]] * 4,
-                    self.SBOX_BIT_SIZE * 4,
-                    self.mix_columns_matrix
+                    [list(range(self.sbox_bit_size))] * 4,
+                    self.sbox_bit_size * 4,
+                    self.mix_columns_matrix,
                 )
                 mx2 = self.add_linear_layer_component(
                     [cipher_state[4].id, cipher_state[1].id, cipher_state[6].id, cipher_state[3].id],
-                    [[j for j in range(self.SBOX_BIT_SIZE)]] * 4,
-                    self.SBOX_BIT_SIZE * 4,
-                    self.mix_columns_matrix
+                    [list(range(self.sbox_bit_size))] * 4,
+                    self.sbox_bit_size * 4,
+                    self.mix_columns_matrix,
                 )
                 cipher_state = [
                     self.add_XOR_component(
                         [mx1.id, _zero.id],
                         [
-                            [j for j in range(i * self.SBOX_BIT_SIZE, (i + 1) * self.SBOX_BIT_SIZE)],
-                            [j for j in range(self.SBOX_BIT_SIZE)]
+                            list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size)),
+                            list(range(self.sbox_bit_size)),
                         ],
-                        self.SBOX_BIT_SIZE
+                        self.sbox_bit_size,
                     )
                     for i in range(4)
                 ]
@@ -468,63 +477,64 @@ class BEA1BlockCipher(Cipher):
                     self.add_XOR_component(
                         [mx2.id, _zero.id],
                         [
-                            [j for j in range(i * self.SBOX_BIT_SIZE, (i + 1) * self.SBOX_BIT_SIZE)],
-                            [j for j in range(self.SBOX_BIT_SIZE)]
+                            list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size)),
+                            list(range(self.sbox_bit_size)),
                         ],
-                        self.SBOX_BIT_SIZE
+                        self.sbox_bit_size,
                     )
                     for i in range(4)
                 ]
 
                 self.add_intermediate_output_component(
                     [mx1.id, mx2.id],
-                    [[j for j in range(self.SBOX_BIT_SIZE * 4)]] * 2,
-                    self.SBOX_BIT_SIZE * 8,
-                    'round_output'
+                    [list(range(self.sbox_bit_size * 4))] * 2,
+                    self.sbox_bit_size * 8,
+                    "round_output",
                 )
             else:
                 # shift rows
                 cipher_state = [
-                    cipher_state[0], cipher_state[5], cipher_state[2], cipher_state[7],
-                    cipher_state[4], cipher_state[1], cipher_state[6], cipher_state[3]
+                    cipher_state[0],
+                    cipher_state[5],
+                    cipher_state[2],
+                    cipher_state[7],
+                    cipher_state[4],
+                    cipher_state[1],
+                    cipher_state[6],
+                    cipher_state[3],
                 ]
                 # add last key
-                cipher_state = self.xor_round_key(self.NROUNDS, key_state, cipher_state)
+                cipher_state = self.xor_round_key(self.nrounds, key_state, cipher_state)
                 self.add_cipher_output_component(
                     [cipher_state[i].id for i in range(8)],
-                    [[j for j in range(self.SBOX_BIT_SIZE)]] * 8,
-                    self.SBOX_BIT_SIZE * 8
+                    [list(range(self.sbox_bit_size))] * 8,
+                    self.sbox_bit_size * 8,
                 )
 
-
     def xor_round_key(self, round_number, key_state, cipher_state):
-        key = [key_state[(8*round_number + i) % 24] for i in range(8)]
+        key = [key_state[(8 * round_number + i) % 24] for i in range(8)]
 
         self.add_round_key_output_component(
-            [key[i].id for i in range(8)],
-            [[j for j in range(self.SBOX_BIT_SIZE)]] * 8,
-            self.SBOX_BIT_SIZE * 8
+            [key[i].id for i in range(8)], [list(range(self.sbox_bit_size))] * 8, self.sbox_bit_size * 8
         )
 
-        if type(cipher_state) is str:
+        if isinstance(cipher_state, str):
             # cipher_state == INPUT_PLAINTEXT
             return [
                 self.add_XOR_component(
                     [cipher_state, key[i].id],
                     [
-                        [j for j in range(i * self.SBOX_BIT_SIZE, (i + 1) * self.SBOX_BIT_SIZE)],
-                        [j for j in range(self.SBOX_BIT_SIZE)]
+                        list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size)),
+                        list(range(self.sbox_bit_size)),
                     ],
-                    self.SBOX_BIT_SIZE
+                    self.sbox_bit_size,
                 )
                 for i in range(8)
             ]
-        else:
-            return [
-                self.add_XOR_component(
-                    [cipher_state[i].id, key[i].id],
-                    [[j for j in range(self.SBOX_BIT_SIZE)]] * 2,
-                    self.SBOX_BIT_SIZE
-                )
-                for i in range(8)
-            ]
+
+        return [
+            self.add_XOR_component(
+                [cipher_state[i].id, key[i].id], [list(range(self.sbox_bit_size))] * 2, self.sbox_bit_size
+            )
+            for i in range(8)
+        ]
