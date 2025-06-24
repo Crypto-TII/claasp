@@ -1533,18 +1533,19 @@ def remove_forbidden_parents(rounds, cipher_without_key_schedule):
                 cipher_without_key_schedule.remove_round_component_from_id(cipher_round.id, component.id)
 
 
-def remove_key_schedule(cipher, keep_round_key_addition=True):
+def remove_key_schedule(cipher, keep_round_key_injection=True):
     """
     Return a dictionary. A key is an output bit of a component.
 
     A value is a list of input bits which are the end point of an arc in Cipher for the relative key.
-    If `keep_round_key_addition` is False, XOR components that involve key inputs are also removed.
+    If `keep_round_key_injection` is False, round keys are also removed from the inputs and so is their injection
+    into the round function.
 
     INPUT:
 
     - ``cipher`` -- **Cipher object**; an instance of a cipher.
-    - ``keep_round_key_addition`` -- **bool** (default: True); if False, removes XOR components corresponding to the
-    round key addition.
+    - ``keep_round_key_injection`` -- **bool** (default: True); if False, removes components corresponding to the
+    round key injection.
 
     EXAMPLES::
 
@@ -1582,13 +1583,13 @@ def remove_key_schedule(cipher, keep_round_key_addition=True):
     cipher_without_key_schedule = remove_cipher_input_keys(cipher)
     remove_forbidden_parents(cipher.rounds_as_list, cipher_without_key_schedule)
     remove_orphan_components(cipher_without_key_schedule)
-    update_inputs(cipher_without_key_schedule, keep_round_key_addition)
+    update_inputs(cipher_without_key_schedule, keep_round_key_injection)
 
-    if not keep_round_key_addition:
+    if not keep_round_key_injection:
         components_to_remove = {}
         for round_ in cipher_without_key_schedule.rounds_as_list:
             for component in round_.components:
-                if 'xor' in component.id and any("key" in id for id in component.input_id_links):
+                if any("key" in id for id in component.input_id_links):
                     key_index = next((i for i, link in enumerate(component.input_id_links) if "key" in link), None)
                     component.input_id_links.pop(key_index)
                     component.input_bit_positions.pop(key_index)

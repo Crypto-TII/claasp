@@ -1385,8 +1385,8 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
         algebraic_model = AlgebraicModel(self)
         return algebraic_model.polynomial_system_at_round(r)
 
-    def remove_key_schedule(self, keep_round_key_addition=True):
-        return editor.remove_key_schedule(self, keep_round_key_addition)
+    def remove_key_schedule(self, keep_round_key_injection=True):
+        return editor.remove_key_schedule(self, keep_round_key_injection)
 
     def remove_round_component(self, round_id, component):
         editor.remove_round_component(self, round_id, component)
