@@ -61,7 +61,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     assert solution['model_type'] == 'xor_differential'
     assert solution['solver_name'] == 'Chuffed'
     assert eval(solution['total_weight']) == 224.0
-    assert solution['components_values']['key'] == {'value': '00000000000000000000000000000000', 'weight': 0}
+    assert solution['components_values']['key'] == {'value': '0x00000000000000000000000000000000', 'weight': 0}
     assert eval(solution['components_values']['plaintext']['value']) > 0
     assert solution['components_values']['plaintext']['weight'] == 0
     assert solution['components_values']['cipher_output_1_32']['weight'] == 0
