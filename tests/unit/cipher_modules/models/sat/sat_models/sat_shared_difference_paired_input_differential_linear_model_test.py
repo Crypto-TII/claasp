@@ -83,8 +83,6 @@ def construct_backward_chacha(cipher):
 def test_backward_direction_distinguisher():
     chacha1 = ChachaPermutation(number_of_rounds=4)
     chacha_stream_cipher = construct_backward_chacha(chacha1)
-    # chacha_stream_cipher_copy = deepcopy(chacha_stream_cipher)
-    # chacha_stream_cipher_copy.sort_cipher()
 
     top_part_components = []
     bottom_part_components = []
