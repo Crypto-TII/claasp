@@ -61,10 +61,10 @@ import uuid
 
 from sage.sat.solvers.satsolver import SAT
 
-from claasp.editor import remove_permutations, remove_rotations
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
+from claasp.editor import remove_permutations, remove_rotations
 from claasp.name_mappings import SBOX, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, \
     WORD_OPERATION
 
@@ -118,7 +118,7 @@ class SatModel:
                 if f'{cipher_input}_{i}{out_suffix}' in variable2value:
                     value ^= variable2value[f'{cipher_input}_{i}{out_suffix}']
             hex_digits = bit_size // 4 + (bit_size % 4 != 0)
-            hex_value = f'{value:0{hex_digits}x}'
+            hex_value = f'{value:#0{hex_digits+2}x}'
             component_solution = set_component_solution(hex_value)
             components_solutions[cipher_input] = component_solution
 
@@ -148,7 +148,7 @@ class SatModel:
             if f'{component.id}_{i}{out_suffix}' in variable2value:
                 value ^= variable2value[f'{component.id}_{i}{out_suffix}']
             hex_digits = output_bit_size // 4 + (output_bit_size % 4 != 0)
-            hex_value = f'{value:0{hex_digits}x}'
+            hex_value = f'{value:#0{hex_digits+2}x}'
 
         return hex_value
 
@@ -500,7 +500,8 @@ class SatModel:
                 print(f'{component.id} not yet implemented')
             else:
                 sat_xor_differential_propagation_constraints = getattr(component, model_type)
-                if model_type == 'sat_bitwise_deterministic_truncated_xor_differential_constraints':
+                if model_type in ['sat_bitwise_deterministic_truncated_xor_differential_constraints',
+                                  'sat_semi_deterministic_truncated_xor_differential_constraints']:
                     variables, constraints = sat_xor_differential_propagation_constraints()
                 else:
                     variables, constraints = sat_xor_differential_propagation_constraints(self)
