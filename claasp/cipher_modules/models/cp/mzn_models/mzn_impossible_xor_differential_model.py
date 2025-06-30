@@ -1103,10 +1103,14 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             final_round = self._cipher.number_of_rounds
         cipher_name = self.cipher_id
         input_file_path = f'{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
+        att = 0
+        while os.path.exists(input_file_path):
+            input_file_path = f'{cipher_name}_Mzn_{model_type}_{solver_name}_{att}.mzn'
+            att += 1
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, processes_,
                                                       timeout_in_seconds_)
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        # os.remove(input_file_path)
+        os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
