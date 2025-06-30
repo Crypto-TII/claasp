@@ -244,7 +244,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_first_step_model(-1,fixed_variables)
             sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step', 'Chuffed')
-            sage: cp.generate_table_of_solutions(first_step_solution, 'Chuffed')
+            sage: cp.generate_table_of_solutions(first_step_solution, 'Chuffed', 'aes_block_cipher_k128_p128_o128_r2_table_of_solutions_Chuffed.mzn')
         """
         cipher_name = self.cipher_id
         separator = '----------'
