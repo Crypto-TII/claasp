@@ -430,9 +430,13 @@ class MznModel:
                    'differential_pair_one_solution',
                    'evaluate_cipher']
         write_model_to_file(self._model_constraints, input_file_path)
+        found_name = False
         for i in range(len(CP_SOLVERS_EXTERNAL)):
             if solver_name == CP_SOLVERS_EXTERNAL[i]['solver_name']:
                 command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
+                found_name = True
+        if not found_name:
+            raise(NameError(f'Solver {solver_name} not defined. Specify a valid solver name.'))
         command_options['keywords']['command']['input_file'].append(input_file_path)
         if model_type not in solvers:
             command_options['keywords']['command']['options'].insert(0, '-a')

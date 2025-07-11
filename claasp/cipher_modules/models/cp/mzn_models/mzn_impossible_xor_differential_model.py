@@ -579,7 +579,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
 
         return cp_constraints
 
-    def find_all_impossible_xor_differential_trails(self, number_of_rounds=None, fixed_values=[], solver_name=None,
+    def find_all_impossible_xor_differential_trails(self, number_of_rounds=None, fixed_values=[], solver_name='Chuffed',
                                                     initial_round=1, middle_round=None, final_round=None,
                                                     intermediate_components=True, num_of_processors=None,
                                                     timelimit=None, solve_with_API=False, solve_external=True):
@@ -623,7 +623,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           solve_external=solve_external)
 
     def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[],
-                                                                 solver_name=None, initial_round=1, middle_round=None,
+                                                                 solver_name='Chuffed', initial_round=1, middle_round=None,
                                                                  final_round=None, intermediate_components=True,
                                                                  num_of_processors=None, timelimit=None,
                                                                  solve_with_API=False, solve_external=True):
@@ -668,7 +668,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           final_round=final_round, timeout_in_seconds_=timelimit, processes_=num_of_processors,
                           solve_external=solve_external)
 
-    def find_one_impossible_xor_differential_cluster(self, number_of_rounds=None, fixed_values=[], solver_name=None,
+    def find_one_impossible_xor_differential_cluster(self, number_of_rounds=None, fixed_values=[], solver_name='Chuffed',
                                                      initial_round=1, middle_round=None, final_round=None,
                                                      intermediate_components=True, num_of_processors=None,
                                                      timelimit=None, solve_with_API=False, solve_external=True):
@@ -714,7 +714,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           solve_external=solve_external)
 
     def find_one_impossible_xor_differential_trail_with_extensions(self, number_of_rounds=None, fixed_values=[],
-                                                                   solver_name=None, initial_round=1, middle_round=None,
+                                                                   solver_name='Chuffed', initial_round=1, middle_round=None,
                                                                    final_round=None, intermediate_components=True,
                                                                    num_of_processors=None, timelimit=None,
                                                                    solve_with_API=False, solve_external=True):
@@ -757,7 +757,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           final_round=final_round, timeout_in_seconds_=timelimit, processes_=num_of_processors,
                           solve_external=solve_external)
 
-    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None,
+    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name='Chuffed',
                                                    initial_round=1, middle_round=None, final_round=None,
                                                    intermediate_components=True, num_of_processors=None, timelimit=None,
                                                    solve_with_API=False, solve_external=True):
@@ -1106,7 +1106,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, processes_,
                                                       timeout_in_seconds_)
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        # os.remove(input_file_path)
+        os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
