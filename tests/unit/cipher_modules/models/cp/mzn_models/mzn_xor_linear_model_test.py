@@ -51,7 +51,7 @@ def test_find_lowest_weight_xor_linear_trail():
     trail = mzn.find_lowest_weight_xor_linear_trail(solve_external=False)
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
-    assert eval('0x' + trail['components_values']['cipher_output_3_12_o']['value']) >= 0
+    assert eval(trail['components_values']['cipher_output_3_12_o']['value']) >= 0
     assert trail['components_values']['cipher_output_3_12_o']['weight'] == 0
     assert trail['total_weight'] == '3.0'
 
@@ -68,16 +68,16 @@ def test_find_one_xor_linear_trail():
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['components_values']['plaintext']['weight'] == 0
-    assert eval('0x' + trail['components_values']['plaintext']['value']) > 0
+    assert eval(trail['components_values']['plaintext']['value']) > 0
     assert trail['components_values']['cipher_output_3_12_o']['weight'] == 0
-    assert eval('0x' + trail['components_values']['cipher_output_3_12_o']['value']) >= 0
+    assert eval(trail['components_values']['cipher_output_3_12_o']['value']) >= 0
     assert eval(trail['total_weight']) >= 0
 
     trail = mzn.find_one_xor_linear_trail(solver_name = 'chuffed', solve_external=False)
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r4'
     assert trail['components_values']['plaintext']['weight'] == 0
-    assert eval('0x' + trail['components_values']['plaintext']['value']) > 0
+    assert eval(trail['components_values']['plaintext']['value']) > 0
     assert eval(trail['total_weight']) >= 0
 
 
