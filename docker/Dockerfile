@@ -98,7 +98,8 @@ RUN sage -pip install bitstring==4.0.1 \
   networkx==2.8.8 \
   numpy==1.24.3 \
   joblib==1.4.2 \
-  gurobipy==11.0
+  gurobipy==11.0 \
+  pytest-isolate==0.0.11
 
 # Installing nist sts
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \
