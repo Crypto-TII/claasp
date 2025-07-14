@@ -272,7 +272,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self._model_constraints = self._model_prefix + self.clean_constraints(set_of_constraints, initial_round,
                                                                               middle_round, final_round, fully_automatic)
 
-    def clean_constraints(self, set_of_constraints, initial_round, middle_round, final_round, fully_automatic):
+    def clean_constraints(self, set_of_constraints=[], initial_round=1, middle_round=None, final_round=None, fully_automatic=False):
         number_of_rounds = self._cipher.number_of_rounds
         input_component = 'plaintext'
         model_constraints = []
@@ -1143,6 +1143,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         if fully_automatic:
             all_components.extend([component.id for component in self._cipher.get_all_components()])
             all_components.extend(['inverse_' + component.id for component in self.inverse_cipher.get_all_components()])
+            all_components.extend(['inverse_' + component for component in self.inverse_cipher.inputs])
         else:
             if middle_round is not None:
                 for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
