@@ -931,7 +931,7 @@ class Modular(Component):
         result = variables, constraints
         return result
 
-    def sat_xor_differential_propagation_constraints(self, model):
+    def sat_xor_differential_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing MODULAR ADDITION/SUBTRACTION for SAT XOR DIFFERENTIAL model
 
