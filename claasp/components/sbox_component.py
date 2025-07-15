@@ -248,6 +248,8 @@ def _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(inv_outpu
     return already_in, output_id_link_sost, undisturbed_table_bits
 
 class SBOX(Component):
+    sboxes_ddt_templates = {}
+    sboxes_lat_templates = {}
     def __init__(self, current_round_number, current_round_number_of_components,
                  input_id_links, input_bit_positions, output_bit_size, s_box_description):
         component_id = f'sbox_{current_round_number}_{current_round_number_of_components}'
@@ -1554,7 +1556,7 @@ class SBOX(Component):
 
         return output_ids, constraints
 
-    def sat_xor_differential_propagation_constraints(self, model):
+    def sat_xor_differential_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing S-BOX for SAT XOR DIFFERENTIAL model
 
@@ -1593,20 +1595,19 @@ class SBOX(Component):
         output_bit_len, output_bit_ids = self._generate_output_ids()
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         sbox_values = self.description
-        sboxes_ddt_templates = model.sboxes_ddt_templates
 
         # if optimized SAT DDT template is not initialized in instance fields, compute it
-        if f'{sbox_values}' not in sboxes_ddt_templates:
+        if f'{sbox_values}' not in self.sboxes_ddt_templates:
             ddt = SBox(sbox_values).difference_distribution_table()
 
             check_table_feasibility(ddt, 'DDT', 'SAT')
 
             get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
             template = sat_build_table_template(ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
-            sboxes_ddt_templates[f'{sbox_values}'] = template
+            self.sboxes_ddt_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
-        template = sboxes_ddt_templates[f'{sbox_values}']
+        template = self.sboxes_ddt_templates[f'{sbox_values}']
         constraints = []
         for clause in template:
             literals = ['-' * value[0] + bit_ids[value[1]] for value in clause]
@@ -1614,7 +1615,7 @@ class SBOX(Component):
 
         return output_bit_ids + hw_bit_ids, constraints
 
-    def sat_xor_linear_mask_propagation_constraints(self, model):
+    def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing S-BOX for SAT XOR LINEAR model
 
@@ -1656,20 +1657,19 @@ class SBOX(Component):
         output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(input_bit_len)]
         sbox_values = self.description
-        sboxes_lat_templates = model.sboxes_lat_templates
 
         # if optimized SAT LAT template is not initialized in instance fields, compute it
-        if f'{sbox_values}' not in sboxes_lat_templates:
+        if f'{sbox_values}' not in self.sboxes_lat_templates:
             lat = SBox(sbox_values).linear_approximation_table()
 
             check_table_feasibility(lat, 'LAT', 'SAT')
 
             get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
             template = sat_build_table_template(lat, get_hamming_weight_function, input_bit_len, output_bit_len)
-            sboxes_lat_templates[f'{sbox_values}'] = template
+            self.sboxes_lat_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
-        template = sboxes_lat_templates[f'{sbox_values}']
+        template = self.sboxes_lat_templates[f'{sbox_values}']
         constraints = []
         for clause in template:
             literals = ['-' * value[0] + bit_ids[value[1]] for value in clause]
