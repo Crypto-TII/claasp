@@ -1561,15 +1561,19 @@ def remove_forbidden_parents(rounds, cipher_without_key_schedule):
                 cipher_without_key_schedule.remove_round_component_from_id(cipher_round.id, component.id)
 
 
-def remove_key_schedule(cipher):
+def remove_key_schedule(cipher, keep_round_key_injection=True):
     """
     Return a dictionary. A key is an output bit of a component.
 
     A value is a list of input bits which are the end point of an arc in Cipher for the relative key.
+    If `keep_round_key_injection` is False, round keys are also removed from the inputs and so is their injection
+    into the round function.
 
     INPUT:
 
-    - ``cipher`` -- **Cipher object**; an instance of the object cipher
+    - ``cipher`` -- **Cipher object**; an instance of a cipher.
+    - ``keep_round_key_injection`` -- **bool** (default: True); if False, removes components corresponding to the
+    round key injection.
 
     EXAMPLES::
 
@@ -1607,7 +1611,25 @@ def remove_key_schedule(cipher):
     cipher_without_key_schedule = remove_cipher_input_keys(cipher)
     remove_forbidden_parents(cipher.rounds_as_list, cipher_without_key_schedule)
     remove_orphan_components(cipher_without_key_schedule)
-    update_inputs(cipher_without_key_schedule)
+    update_inputs(cipher_without_key_schedule, keep_round_key_injection)
+
+    if not keep_round_key_injection:
+        components_to_remove = {}
+        for round_ in cipher_without_key_schedule.rounds_as_list:
+            for component in round_.components:
+                if any("key" in id for id in component.input_id_links):
+                    key_index = next((i for i, link in enumerate(component.input_id_links) if "key" in link), None)
+                    component.input_id_links.pop(key_index)
+                    component.input_bit_positions.pop(key_index)
+                    if len(component.input_bit_positions) == 1:
+                        components_to_remove[component.id] = component.input_id_links[0]
+                        cipher_without_key_schedule.remove_round_component_from_id(round_.id, component.id)
+
+        for round_ in cipher_without_key_schedule.rounds_as_list:
+            for component in round_.components:
+                for i, id in enumerate(component.input_id_links):
+                    if id in components_to_remove:
+                        component.input_id_links[i] = components_to_remove[id]
 
     return cipher_without_key_schedule
 
@@ -1918,13 +1940,14 @@ def update_component_inputs(component, component_id, parent_links):
     return modified, offset
 
 
-def update_inputs(cipher_without_key_schedule):
+def update_inputs(cipher_without_key_schedule, keep_round_key_addition):
     parent_links = set(cipher_without_key_schedule.inputs)
     for cipher_round in cipher_without_key_schedule.rounds_as_list:
         for index, component in enumerate(cipher_round.components):
             component_id = f'key_{cipher_round.id}_{index}'
             modified, offset = update_component_inputs(component, component_id, parent_links)
-            update_cipher_inputs(cipher_without_key_schedule, component_id, modified, offset)
+            if keep_round_key_addition:
+                update_cipher_inputs(cipher_without_key_schedule, component_id, modified, offset)
 
 def get_output_bit_size_from_id(cipher_list, component_id):
     try:

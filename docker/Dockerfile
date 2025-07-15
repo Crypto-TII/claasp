@@ -5,25 +5,34 @@ ARG COPY_CLAASP_LIBRARY=false
 ARG INSTALL_CLAASP_LIBRARY=false
 
 # Install dependencies with apt-get
-RUN apt-get -qq update
-RUN apt-get install --no-install-recommends -y gfortran \
-  gcc \
-  g++ \
+RUN apt-get -q update
+RUN apt-get install --no-install-recommends -y \
   libboost-program-options-dev \
   libsqlite3-dev \
-  libstdc++-9-dev \
+  libstdc++-9-dev
+
+RUN apt-get install --no-install-recommends -y \
+  gfortran \
+  gcc \
+  g++
+
+RUN apt-get install --no-install-recommends -y \
   openssl \
   sudo \
   zlib1g-dev
-RUN apt-get install -y build-essential \
+
+RUN apt-get install -y \
+  build-essential \
   cmake \
-  dieharder=3.31.1.2-1build1 \
   git \
+  wget
+
+RUN apt-get install -y \
+  dieharder=3.31.1.2-1build1 \
   latexmk=1:4.76-1 \
   python3-cryptominisat=5.8.0+dfsg1-2 \
   sagemath=9.5-4 \
-  wget
-RUN apt-get install -y z3
+  z3=4.8.12-1
 
 COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
@@ -98,7 +107,8 @@ RUN sage -pip install bitstring==4.0.1 \
   networkx==2.8.8 \
   numpy==1.24.3 \
   joblib==1.4.2 \
-  gurobipy==11.0
+  gurobipy==11.0 \
+  pytest-isolate==0.0.11
 
 # Installing nist sts
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \

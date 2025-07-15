@@ -21,6 +21,7 @@ import os
 import math
 import itertools
 import subprocess
+import time
 
 from copy import deepcopy
 
@@ -580,8 +581,14 @@ class MznModel:
                     elif '----------' in string:
                         solution_number += 1
         else:
-            time = output_to_parse.statistics['solveTime'].total_seconds()
-            memory = output_to_parse.statistics['trailMem']
+            if 'solveTime' in output_to_parse.statistics:
+                time = output_to_parse.statistics['solveTime'].total_seconds()
+            else:
+                time = output_to_parse.statistics['time'].total_seconds()
+            if 'trailMem' in output_to_parse.statistics:
+                memory = output_to_parse.statistics['trailMem']
+            else:
+                memory = '-1'
             if output_to_parse.status not in [Status.SATISFIED, Status.ALL_SOLUTIONS, Status.OPTIMAL_SOLUTION]:
                 solutions = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, time, memory, {}, '0')
                 solutions['status'] = 'UNSATISFIABLE'
@@ -613,7 +620,7 @@ class MznModel:
         if not truncated:
             bin_value = int(value, 2)
             hex_value = f'{bin_value:x}'
-            hex_value = ('0' * (math.ceil(len(value) / 4) - len(hex_value))) + hex_value
+            hex_value = ('0x' + '0' * (math.ceil(len(value) / 4) - len(hex_value))) + hex_value
             component_solution['value'] = hex_value
         else:
             component_solution['value'] = value
@@ -673,7 +680,10 @@ class MznModel:
             command = self.get_command_for_solver_process(
                 input_file_path, model_type, solver_name, processes_, timeout_in_seconds_
             )
+            start = time.time()
             solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+            end = time.time()
+            solve_time = end - start
             os.remove(input_file_path)
             if solver_process.returncode >= 0:
                 solver_output = solver_process.stdout.splitlines()
@@ -684,6 +694,7 @@ class MznModel:
             bit_mzn_model = Model()
             bit_mzn_model.add_string(mzn_model_string)
             instance = Instance(solver_name_mzn, bit_mzn_model)
+            start = time.time()
             if processes_ != None and timeout_in_seconds_ != None:
                 solver_output = instance.solve(processes=processes_, timeout=timedelta(seconds=int(timeout_in_seconds_)),
                                     nr_solutions=nr_solutions_, random_seed=random_seed_, all_solutions=all_solutions_,
@@ -693,12 +704,14 @@ class MznModel:
                 solver_output = instance.solve(nr_solutions=nr_solutions_, random_seed=random_seed_, all_solutions=all_solutions_,
                                     intermediate_solutions=intermediate_solutions_, free_search=free_search_,
                                     optimisation_level=optimisation_level_)
+            end = time.time()
+            solve_time = end - start
             return self._parse_solver_output(solver_output, model_type, truncated = truncated, solve_external = solve_external, solver_name=solver_name)
         if truncated:
-            solve_time, memory, components_values = self._parse_solver_output(solver_output, model_type, truncated = True, solve_external = solve_external)
+            solver_time, memory, components_values = self._parse_solver_output(solver_output, model_type, truncated = True, solve_external = solve_external)
             total_weight = 0
         else:
-            solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type, solve_external = solve_external, solver_name=solver_name)
+            solver_time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type, solve_external = solve_external, solver_name=solver_name)
         if components_values == {}:
             solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name,
                                                              solve_time, memory,
