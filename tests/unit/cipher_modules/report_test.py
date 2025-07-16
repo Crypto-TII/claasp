@@ -15,7 +15,6 @@ from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
 from sage.all import load
-# from tests.precomputed_test_results import speck_three_rounds_component_analysis, speck_three_rounds_avalanche_tests, speck_three_rounds_neural_network_tests, speck_three_rounds_dieharder_tests, present_four_rounds_find_one_xor_differential_trail
 
 def test_save_as_image():
     speck = SpeckBlockCipher(number_of_rounds=2)
@@ -43,8 +42,7 @@ def test_save_as_image():
              fixed_input_difference='average')
     avalanche_report.clean_reports()
 
-    precomputed_results = load('tests/precomputed_results.sobj')
-    blackbox_results = precomputed_results['speck_three_rounds_neural_network_test']
+    blackbox_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests(nb_samples=10)
     blackbox_report = Report(blackbox_results)
     blackbox_report.save_as_image()
     blackbox_report.clean_reports()
@@ -123,13 +121,16 @@ def test_save_as_DataFrame():
     report_sts.clean_reports()
 
 def test_save_as_json():
-    simon = SimonBlockCipher(number_of_rounds=2)
 
-    precomputed_results = load('tests/precomputed_results.sobj')
-    neural_network_blackbox_distinguisher_tests_results = precomputed_results['speck_three_rounds_neural_network_test']
+    speck = SpeckBlockCipher(number_of_rounds=2)
+
+    # precomputed_results = load('tests/precomputed_results.sobj')
+    neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests(nb_samples=10)
     blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
     blackbox_report.save_as_json(fixed_input='plaintext',fixed_output='round_output')
     blackbox_report.clean_reports()
+
+    simon = SimonBlockCipher(number_of_rounds=2)
 
     dieharder = DieharderTests(simon)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
@@ -154,22 +155,33 @@ def test_save_as_json():
     avalanche_report.clean_reports()
 
 def test_show():
-    precomputed_results = load('tests/precomputed_results.sobj')
-    component_analysis = precomputed_results['speck_three_rounds_component_analysis']
+
+    speck = SpeckBlockCipher(number_of_rounds=2)
+    component_analysis = CipherComponentsAnalysis(speck)
     report_cca = Report(component_analysis)
     report_cca.show()
-    avalanche_results = precomputed_results['speck_three_rounds_avalanche_test']
+    avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
     avalanche_report.show(test_name=None)
     avalanche_report.show(test_name='avalanche_weight_vectors', fixed_input_difference=None)
     avalanche_report.show(test_name='avalanche_weight_vectors', fixed_input_difference='average')
-    trail = precomputed_results['present_four_rounds_trail_search']
+
+    present = PresentBlockCipher(number_of_rounds=2)
+    sat = SatXorDifferentialModel(present)
+    related_key_setting = [
+        set_fixed_variables(component_id='key', constraint_type='not_equal', bit_positions=list(range(80)),
+                            bit_values=[0] * 80),
+        set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=list(range(64)),
+                            bit_values=[0] * 64)
+    ]
+    trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
+                                                                  solver_name='KISSAT_EXT')
     trail_report = Report(trail)
     trail_report.show()
-    dieharder_test_results = precomputed_results['speck_three_rounds_dieharder_test']
+    dieharder_test_results = DieharderTests(speck).dieharder_statistical_tests('avalanche', dieharder_test_option=100)
     report_sts = Report(dieharder_test_results)
     report_sts.show()
-    neural_network_test_results = precomputed_results['speck_three_rounds_neural_network_test']
+    neural_network_test_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests(nb_samples=10)
     neural_network_tests_report = Report(neural_network_test_results)
     neural_network_tests_report.show(fixed_input_difference=None)
     neural_network_tests_report.show(fixed_input_difference='0xa')
