@@ -1,3 +1,5 @@
+import os
+
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
 from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import \
@@ -88,6 +90,8 @@ def test_find_one_impossible_xor_differential_trail():
     file = open('speck_p32_k64_o32_r6_Mzn_impossible_xor_differential_Chuffed.mzn', 'w')
     file.close()
     trail = mzn.find_one_impossible_xor_differential_trail(fixed_values=[plaintext, ciphertext, key], solver_name='Chuffed', middle_round=3, intermediate_components=True, solve_external = True)
+
+    os.remove('speck_p32_k64_o32_r6_Mzn_impossible_xor_differential_Chuffed.mzn')
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r6'
     assert trail['model_type'] == 'impossible_xor_differential_one_solution'
