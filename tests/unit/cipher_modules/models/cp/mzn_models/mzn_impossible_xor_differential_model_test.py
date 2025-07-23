@@ -87,11 +87,11 @@ def test_find_one_impossible_xor_differential_trail():
     assert trail['components_values']['xor_1_10']['value'] == '2222222221000022'
     assert trail['components_values']['inverse_rot_2_9']['value'] == '2222222210022222'
 
-    file = open('speck_p32_k64_o32_r6_Mzn_impossible_xor_differential_Chuffed.mzn', 'w')
+    file = open('speck_p32_k64_o32_r6_Mzn_impossible_xor_differential_one_solution_Chuffed.mzn', 'w')
     file.close()
     trail = mzn.find_one_impossible_xor_differential_trail(fixed_values=[plaintext, ciphertext, key], solver_name='Chuffed', middle_round=3, intermediate_components=True, solve_external = True)
 
-    os.remove('speck_p32_k64_o32_r6_Mzn_impossible_xor_differential_Chuffed.mzn')
+    os.remove('speck_p32_k64_o32_r6_Mzn_impossible_xor_differential_one_solution_Chuffed.mzn')
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r6'
     assert trail['model_type'] == 'impossible_xor_differential_one_solution'
