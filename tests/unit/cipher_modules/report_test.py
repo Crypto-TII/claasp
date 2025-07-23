@@ -14,7 +14,6 @@ from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
-from sage.all import load
 
 def test_save_as_image():
     speck = SpeckBlockCipher(number_of_rounds=2)
@@ -157,7 +156,7 @@ def test_save_as_json():
 def test_show():
 
     speck = SpeckBlockCipher(number_of_rounds=2)
-    component_analysis = CipherComponentsAnalysis(speck)
+    component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
     report_cca = Report(component_analysis)
     report_cca.show()
     avalanche_results = AvalancheTests(speck).avalanche_tests()
