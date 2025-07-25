@@ -35,6 +35,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model impor
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
     MznXorDifferentialNumberOfActiveSboxesModel)
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, CP_SOLVERS_INTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
+from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
 
 
 class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
@@ -43,6 +44,30 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
     def __init__(self, cipher):
         self._table_items = []
         super().__init__(cipher)
+
+    def initialise_model(self):
+        self._table_items = []
+        self._first_step = []
+        self._first_step_find_all_solutions = []
+        self._variables_list = []
+        self._model_constraints = []
+        self.c = 0
+        if self._cipher.is_spn():
+            for component in self._cipher.get_all_components():
+                if SBOX in component.type:
+                    self.word_size = int(component.output_bit_size)
+                    break
+        self._float_and_lat_values = []
+        self._probability = False
+        self.sbox_mant = []
+        self.mix_column_mant = []
+        self.modadd_twoterms_mant = []
+        self.input_sbox = []
+        self.table_of_solutions_length = 0
+        self.list_of_xor_components = []
+        self.list_of_xor_all_inputs = []
+        self.component_and_probability = {}
+        self._model_prefix = ['include "globals.mzn";', f'{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}']
 
     def build_xor_differential_trail_second_step_model(self, weight=-1, fixed_variables=[]):
         """
@@ -341,6 +366,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
              'total_weight': '6.0',
              'building_time': 3.7489726543426514}
         """
+        self.initialise_model()
         possible_sboxes = 0
         if weight > 0:
             possible_sboxes = self.find_possible_number_of_active_sboxes(weight)
