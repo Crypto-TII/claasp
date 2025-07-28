@@ -740,20 +740,20 @@ def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_stri
         while data_line[seconds_str_index] != " ":
             output_str += data_line[seconds_str_index]
             seconds_str_index -= 1
-        time = float(output_str[::-1])
+        solver_time = float(output_str[::-1])
     else:
-        time = _get_data(solver_specs['keywords']['time'], solver_output)
-    memory = float('inf')
+        solver_time = _get_data(solver_specs['keywords']['time'], solver_output)
+    solver_memory = float('inf')
     memory_keywords = solver_specs['keywords']['memory']
     if memory_keywords:
         if not (solver_name == solvers.GLUCOSE_SYRUP_EXT and status != 'SATISFIABLE'):
-            memory = _get_data(memory_keywords, solver_output)
+            solver_memory = _get_data(memory_keywords, solver_output)
     if solver_name == solvers.KISSAT_EXT:
-        memory = memory / 10**6
+        solver_memory = solver_memory / 10**6
     if solver_name == solvers.CRYPTOMINISAT_EXT:
-        memory = memory / 10**3
+        solver_memory = solver_memory / 10**3
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_file_name):
