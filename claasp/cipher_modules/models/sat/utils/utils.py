@@ -50,6 +50,9 @@ import itertools
 import os
 import re
 import subprocess
+import time
+
+from claasp.cipher_modules.models.sat import solvers
 
 
 # ----------------- #
@@ -728,7 +731,7 @@ def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_stri
             if line.startswith('v'):
                 values.extend(line.split()[1:])
         values = values[:-1]
-    if solver_name == 'kissat':
+    if solver_name == solvers.KISSAT_EXT:
         data_keywords = solver_specs['keywords']['time']
         lines = solver_output
         data_line = [line for line in lines if data_keywords in line][0]
@@ -743,11 +746,11 @@ def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_stri
     memory = float('inf')
     memory_keywords = solver_specs['keywords']['memory']
     if memory_keywords:
-        if not (solver_name == 'glucose-syrup' and status != 'SATISFIABLE'):
+        if not (solver_name == solvers.GLUCOSE_SYRUP_EXT and status != 'SATISFIABLE'):
             memory = _get_data(memory_keywords, solver_output)
-    if solver_name == 'kissat':
+    if solver_name == solvers.KISSAT_EXT:
         memory = memory / 10**6
-    if solver_name == 'cryptominisat':
+    if solver_name == solvers.CRYPTOMINISAT_EXT:
         memory = memory / 10**3
 
     return status, time, memory, values
@@ -762,8 +765,8 @@ def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_fil
     command.append(output_file_name)
     solver_process = subprocess.run(command, capture_output=True, text=True)
     solver_output = solver_process.stdout.splitlines()
-    time = _get_data(solver_specs['keywords']['time'], solver_output)
-    memory = _get_data(solver_specs['keywords']['memory'], solver_output)
+    solver_time = _get_data(solver_specs['keywords']['time'], solver_output)
+    solver_memory = _get_data(solver_specs['keywords']['memory'], solver_output)
     status = solver_output[-1]
     values = []
     if status == 'SATISFIABLE':
@@ -772,22 +775,21 @@ def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_fil
     os.remove(input_file_name)
     os.remove(output_file_name)
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
     """Call the Parkissat solver specified in `solver_specs`, using input and output files."""
     with open(input_file_name, 'wt') as input_file:
         input_file.write(dimacs_input)
-    import time
     command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options'] + options
     command.append(input_file_name)
     start = time.time()
     solver_process = subprocess.run(command, capture_output=True, text=True)
     end = time.time()
     solver_output = solver_process.stdout.splitlines()
-    time = end - start
-    memory = 0
+    solver_time = end - start
+    solver_memory = 0
     status = solver_output[0].split()[1]
     values = ""
     if status == 'SATISFIABLE':
@@ -799,7 +801,7 @@ def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
             values.extend(substrings)
     os.remove(input_file_name)
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def run_yices(solver_specs, options, dimacs_input, input_file_name):
@@ -811,15 +813,15 @@ def run_yices(solver_specs, options, dimacs_input, input_file_name):
     solver_process = subprocess.run(command, capture_output=True, text=True)
     solver_stats = solver_process.stderr.splitlines()
     solver_output = solver_process.stdout.splitlines()
-    time = _get_data(solver_specs['keywords']['time'], solver_stats)
-    memory = _get_data(solver_specs['keywords']['memory'], solver_stats)
+    solver_time = _get_data(solver_specs['keywords']['time'], solver_stats)
+    solver_memory = _get_data(solver_specs['keywords']['memory'], solver_stats)
     status = 'SATISFIABLE' if solver_output[0] == 'sat' else 'UNSATISFIABLE'
     values = []
     if status == 'SATISFIABLE':
         values = solver_output[1].split()[:-1]
     os.remove(input_file_name)
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def _generate_component_model_types(speck_cipher):
