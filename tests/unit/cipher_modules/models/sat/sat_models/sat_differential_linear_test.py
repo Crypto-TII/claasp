@@ -1,6 +1,7 @@
 import itertools
 
 from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
+from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, \
     differential_linear_checker_for_permutation, differential_linear_checker_for_block_cipher_single_key
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
@@ -53,7 +54,7 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
     sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_list)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=10, fixed_values=[key, plaintext, ciphertext_difference], solver_name="CADICAL_EXT", num_unknown_vars=2
+        weight=10, fixed_values=[key, plaintext, ciphertext_difference], solver_name=CADICAL_EXT, num_unknown_vars=2
     )
     assert trail["status"] == 'SATISFIABLE'
 
@@ -103,7 +104,7 @@ def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
     sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_list)
 
     trail = sat_heterogeneous_model.find_lowest_weight_xor_differential_linear_trail(
-        fixed_values=[key, plaintext, ciphertext_difference], solver_name="CADICAL_EXT", num_unknown_vars=2
+        fixed_values=[key, plaintext, ciphertext_difference], solver_name=CADICAL_EXT, num_unknown_vars=2
     )
     assert trail["status"] == 'SATISFIABLE'
 
@@ -157,7 +158,7 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_list)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=5, fixed_values=[plaintext, modadd_3_15, cipher_output_5_24], solver_name="CADICAL_EXT", num_unknown_vars=511
+        weight=5, fixed_values=[plaintext, modadd_3_15, cipher_output_5_24], solver_name=CADICAL_EXT, num_unknown_vars=511
     )
     assert trail["status"] == 'SATISFIABLE'
     assert trail["total_weight"] <= 5
@@ -218,7 +219,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     sat_heterogeneous_model = SatDifferentialLinearModel(aradi, component_model_list)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=10, fixed_values=[key, plaintext, sbox_4_8, cipher_output_3_86], solver_name="CADICAL_EXT", num_unknown_vars=128-1
+        weight=10, fixed_values=[key, plaintext, sbox_4_8, cipher_output_3_86], solver_name=CADICAL_EXT, num_unknown_vars=128-1
     )
     assert trail["status"] == 'SATISFIABLE'
     assert trail["total_weight"] <= 10
@@ -272,7 +273,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
     sat_heterogeneous_model = SatDifferentialLinearModel(chacha, component_model_list)
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=32, fixed_values=[plaintext, modadd_4_15], solver_name="CADICAL_EXT", num_unknown_vars=511
+        weight=32, fixed_values=[plaintext, modadd_4_15], solver_name=CADICAL_EXT, num_unknown_vars=511
     )
     assert trail["status"] == 'SATISFIABLE'
     assert trail["total_weight"] <= 32
@@ -328,7 +329,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case
     )
 
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=32, fixed_values=[plaintext, modadd_4_15], solver_name="CADICAL_EXT", num_unknown_vars=511
+        weight=32, fixed_values=[plaintext, modadd_4_15], solver_name=CADICAL_EXT, num_unknown_vars=511
     )
     assert trail["status"] == 'SATISFIABLE'
     assert trail["total_weight"] <= 32
@@ -476,7 +477,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     trail = sat_heterogeneous_model.find_one_differential_linear_trail_with_fixed_weight(
         weight=12,
         fixed_values=[plaintext, modadd_3_0],
-        solver_name="CADICAL_EXT",
+        solver_name=CADICAL_EXT,
         num_unknown_vars=8,
     )
     assert trail["status"] == 'SATISFIABLE'

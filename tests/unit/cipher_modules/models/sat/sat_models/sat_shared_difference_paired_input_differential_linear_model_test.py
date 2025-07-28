@@ -5,6 +5,7 @@ import pickle
 
 from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_linear_model import \
     SharedDifferencePairedInputDifferentialLinearModel
+from claasp.cipher_modules.models.sat.solvers import KISSAT_EXT
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, \
     shared_difference_paired_input_differential_linear_checker_permutation
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
@@ -25,7 +26,6 @@ def add_ciphertext_and_new_plaintext_to_inputs(chacha_permutation):
     chacha_permutation.inputs_bit_size.append(512)
     chacha_permutation.inputs_bit_size.append(512)
     modsub_ids = []
-    constants_ids = []
     round_object = chacha_permutation.rounds.round_at(0)
     for i in range(16):
         new_modsub_component = MODSUB(
@@ -44,7 +44,7 @@ def add_ciphertext_and_new_plaintext_to_inputs(chacha_permutation):
         0,
         round_object.get_number_of_components(),
         modsub_ids,
-        [list(range(32)) for i in range(16)],
+        [list(range(32)) for _ in range(16)],
         512,
         "round_output"
     )
@@ -176,7 +176,7 @@ def test_backward_direction_distinguisher():
             plaintext_constants,
             plaintext_nonce
         ],
-        solver_name="KISSAT_EXT"
+        solver_name=KISSAT_EXT
     )
 
     assert trail["status"] == "SATISFIABLE"

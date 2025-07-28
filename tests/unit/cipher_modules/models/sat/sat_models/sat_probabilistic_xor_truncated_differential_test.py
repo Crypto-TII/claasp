@@ -4,6 +4,7 @@ from claasp.cipher_modules.models.sat.sat_models.sat_probabilistic_xor_truncated
 
 from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, \
     _update_component_model_types_for_truncated_components
+from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, \
     differential_truncated_checker_single_key, differential_truncated_checker_permutation
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
@@ -175,7 +176,6 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
         weight=8,
         fixed_values=[intermediate_output_1_12, key, plaintext],
         number_of_unknowns_per_component={'cipher_output_3_12': 31},
-        solver_name="CRYPTOMINISAT_EXT"
     )
     assert trail['components_values']['cipher_output_3_12']['value'] == '????????00000000????????000000?1'
 
@@ -225,7 +225,6 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
         weight=8,
         fixed_values=[intermediate_output_1_12, key, plaintext],
         number_of_unknowns_per_component={'cipher_output_4_12': 31},
-        solver_name="CRYPTOMINISAT_EXT"
     )
 
     assert trail['components_values']['cipher_output_4_12']['value'] == '???????????????0????????????????'
@@ -272,7 +271,7 @@ def test_find_lowest_xor_probabilistic_truncated_differential_trail_with_fixed_w
 
     sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
     trail = sat_heterogeneous_model.find_lowest_weight_xor_probabilistic_truncated_differential_trail(
-        fixed_values=[intermediate_output_1_12, key, plaintext], solver_name="CRYPTOMINISAT_EXT"
+        fixed_values=[intermediate_output_1_12, key, plaintext], solver_name=solvers.CRYPTOMINISAT_EXT
     )
 
     assert trail['components_values']['cipher_output_4_12']['value'] == '???????????????0????????????????'
@@ -403,7 +402,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
         weight=8,
         fixed_values=[key, plaintext],
-        solver_name="CADICAL_EXT",
+        solver_name=solvers.CADICAL_EXT,
         number_of_unknowns_per_component={'cipher_output_3_86': 127}
     )
 
@@ -424,8 +423,7 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     bottom_part_components = list(itertools.chain(*bottom_part_components))
     bottom_part_components = [component.id for component in bottom_part_components]
     initial_state_positions = integer_to_bit_list(
-        int('00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008008000000000000000000000000',
-            16),
+        0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008008000000000000000000000000,
         512,
         'big'
     )
@@ -436,14 +434,12 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
         bit_values=initial_state_positions
     )
     intermediate_output_0_24_state = integer_to_bit_list(
-        int('00000000000000000000000000000000800008000000000000000000000000008008000000000000000000000000000080080000000000000000000000000000',
-            16),
+        0x00000000000000000000000000000000800008000000000000000000000000008008000000000000000000000000000080080000000000000000000000000000,
         512,
         'big'
     )
     intermediate_output_1_24_state = integer_to_bit_list(
-        int('80000800000000000000000000000000000400040000000000000000000000008800000000000000000000000000000008080000000000000000000000000000',
-            16),
+        0x80000800000000000000000000000000000400040000000000000000000000008800000000000000000000000000000008080000000000000000000000000000,
         512,
         'big'
     )
@@ -508,7 +504,7 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
         weight=14,
         number_of_unknowns_per_component=max_number_of_unknowns_per_component,
         fixed_values=[plaintext, intermediate_output_0_24, intermediate_output_1_24, cipher_output_2_24],
-        solver_name="CADICAL_EXT",
+        solver_name=solvers.CADICAL_EXT,
         unknown_window_size_configuration=unknown_window_size_configuration
     )
     assert trail['status'] == 'SATISFIABLE'

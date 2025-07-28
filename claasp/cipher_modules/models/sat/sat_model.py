@@ -286,15 +286,15 @@ class SatModel:
             if solver_specs['keywords']['is_dimacs_compliant']:
                 status, sat_time, sat_memory, values = utils.run_sat_solver(solver_specs, options,
                                                                             dimacs)
-            elif solver_specs['solver_name'] == 'MINISAT_EXT':
+            elif solver_specs['solver_name'] == solvers.MINISAT_EXT:
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
                 output_file = f'{self.cipher_id}_{file_id}_sat_output.cnf'
                 status, sat_time, sat_memory, values = utils.run_minisat(solver_specs, options, dimacs,
                                                                          input_file, output_file)
-            elif solver_specs['solver_name'] == 'PARKISSAT_EXT':
+            elif solver_specs['solver_name'] == solvers.PARKISSAT_EXT:
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
                 status, sat_time, sat_memory, values = utils.run_parkissat(solver_specs, options, dimacs, input_file)
-            elif solver_specs['solver_name'] == 'YICES_SAT_EXT':
+            elif solver_specs['solver_name'] == solvers.YICES_SAT_EXT:
                 input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
                 status, sat_time, sat_memory, values = utils.run_yices(solver_specs, options, dimacs, input_file)
 
@@ -486,8 +486,8 @@ class SatModel:
     def build_generic_sat_model_from_dictionary(self, component_and_model_types):
         self._variables_list = []
         self._model_constraints = []
-        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
-        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        operation_types = ('AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR')
 
         for component_and_model_type in component_and_model_types:
             component = component_and_model_type["component_object"]
