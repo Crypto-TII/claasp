@@ -65,21 +65,18 @@ def cms_add_clauses_to_solver(numerical_cnf, solver):
     """
     for clause in numerical_cnf:
         if clause.startswith('x '):
-            rhs = bool(True ^ (clause.count('-') % 2))
+            rhs = bool(1 ^ (clause.count('-') % 2))
             literals = clause.replace('-', '').split()[1:]
             solver.add_xor_clause([int(literal) for literal in literals], rhs)
         else:
             solver.add_clause([int(literal) for literal in clause.split()])
 
 
-def create_numerical_cnf(cnf):
+def create_numerical_cnf(cnf: list[str]) -> tuple[list[str], list[str]]:
     # creating dictionary (variable -> string, numeric_id -> int)
-    family_of_variables = ' '.join(cnf).replace('-', '')
-    if family_of_variables.startswith('x '):
-        family_of_variables = family_of_variables[2:]
-    family_of_variables = family_of_variables.replace(' x ', ' ')
-    variables = sorted(set(family_of_variables.split()))
-    variable2number = {variable: i + 1 for (i, variable) in enumerate(variables)}
+    variables = ' '.join(cnf).replace('-', '').replace('x ', ' ')
+    variables = sorted(set(variables.split()))
+    variable_to_number = {variable: i + 1 for i, variable in enumerate(variables)}
     # creating numerical CNF
     numerical_cnf = []
     for clause in cnf:
@@ -88,20 +85,21 @@ def create_numerical_cnf(cnf):
         if literals[0] == 'x':
             literals = literals[1:]
             numerical_literals = ['x']
-        lits_are_neg = (literal[0] == '-' for literal in literals)
-        numerical_literals.extend(tuple(f'{"-" * lit_is_neg}{variable2number[literal[lit_is_neg:]]}'
-                                  for lit_is_neg, literal in zip(lits_are_neg, literals)))
-        numerical_clause = ' '.join(numerical_literals)
-        numerical_cnf.append(numerical_clause)
+        signs = (literal[0] == '-' for literal in literals)
+        numerical_literals.extend(
+            [f'{"-" * sign}{variable_to_number[literal[sign:]]}' for sign, literal in zip(signs, literals)]
+        )
+        numerical_cnf.append(' '.join(numerical_literals))
 
-    return variable2number, numerical_cnf
+    return variables, numerical_cnf
 
 
-def numerical_cnf_to_dimacs(number_of_variables, numerical_cnf):
-    dimacs = f'p cnf {number_of_variables} {len(numerical_cnf)}\n'
-    dimacs_clauses = tuple(f'{numerical_clause} 0\n' for numerical_clause in numerical_cnf)
+def numerical_cnf_to_dimacs(variables: list[str], numerical_cnf: list[str]) -> str:
+    dimacs = [f'p cnf {len(variables)} {len(numerical_cnf)}']
+    dimacs.extend(f'{numerical_clause} 0' for numerical_clause in numerical_cnf)
+    dimacs = "\n".join(dimacs)
 
-    return dimacs + ''.join(dimacs_clauses)
+    return dimacs
 
 
 def cnf_n_window_heuristic_on_w_vars(hw_bit_ids):

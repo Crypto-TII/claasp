@@ -166,12 +166,10 @@ class SatModel:
 
         return value
 
-    def _get_solver_solution_parsed(self, variable2number, values):
-        variable2value = {}
-        for i, variable in enumerate(variable2number):
-            variable2value[variable] = 0 if values[i][0] == '-' else 1
+    def _get_solver_solution_parsed(self, variables, values):
+        variable_to_value = {variable: 0 if values[i][0] == '-' else 1 for i, variable in enumerate(variables)}
 
-        return variable2value
+        return variable_to_value
 
     def _parallel_counter(self, hw_list, weight):
         """
@@ -276,8 +274,8 @@ class SatModel:
             raise ValueError('{solver_name} not supported.')
 
         # creating the dimacs
-        variable2number, numerical_cnf = utils.create_numerical_cnf(self._model_constraints)
-        dimacs = utils.numerical_cnf_to_dimacs(len(variable2number), numerical_cnf)
+        variables, numerical_cnf = utils.create_numerical_cnf(self._model_constraints)
+        dimacs = utils.numerical_cnf_to_dimacs(variables, numerical_cnf)
 
         # running the SAT solver
         file_id = f'{uuid.uuid4()}'
@@ -302,21 +300,21 @@ class SatModel:
 
         # parsing the solution
         if status == 'SATISFIABLE':
-            variable2value = self._get_solver_solution_parsed(variable2number, values)
-            component2fields, total_weight = self._parse_solver_output(variable2value)
+            variable_to_value = self._get_solver_solution_parsed(variables, values)
+            component_to_fields, total_weight = self._parse_solver_output(variable_to_value)
 
         else:
-            component2fields, total_weight = {}, None
+            component_to_fields, total_weight = {}, None
         if total_weight is not None:
             total_weight = float(total_weight)
         solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, sat_time,
-                                                         sat_memory, component2fields, total_weight)
+                                                         sat_memory, component_to_fields, total_weight)
         solution['status'] = status
 
         return solution
 
     def _solve_with_sage_sat_solver(self, model_type, solver_name):
-        variable2number, numerical_cnf = utils.create_numerical_cnf(self._model_constraints)
+        variable_to_number, numerical_cnf = utils.create_numerical_cnf(self._model_constraints)
         solver = SAT(solver=solver_name)
         self._add_clauses_to_solver(numerical_cnf, solver)
         start_time = time.time()
@@ -327,16 +325,16 @@ class SatModel:
         sat_time = time.time() - start_time
         if values:
             values = [f'{v-1}' for v in values[1:]]
-            variable2value = self._get_solver_solution_parsed(variable2number, values)
-            component2fields, total_weight = self._parse_solver_output(variable2value)
+            variable_to_value = self._get_solver_solution_parsed(variable_to_number, values)
+            component_to_fields, total_weight = self._parse_solver_output(variable_to_value)
             status = 'SATISFIABLE'
         else:
-            component2fields, total_weight = {}, None
+            component_to_fields, total_weight = {}, None
             status = 'UNSATISFIABLE'
         if total_weight is not None:
             total_weight = float(total_weight)
         solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, sat_time,
-                                                         sat_memory, component2fields, total_weight)
+                                                         sat_memory, component_to_fields, total_weight)
         solution['status'] = status
 
         return solution
