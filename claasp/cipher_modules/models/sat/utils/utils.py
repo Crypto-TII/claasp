@@ -705,6 +705,34 @@ def modadd_truncated_msb(result, variable_0, variable_1, carry):
 
 
 def incompatibility(incompatibility_var, forward_var, backward_var):
+    """
+    Return a list of strings representing CNF clauses encoding incompatibility 
+    constraints between forward and backward variables with respect to an 
+    incompatibility variable.
+
+    INPUT:
+
+    - ``incompatibility_var`` -- **string**; variable representing the incompatibility condition
+    - ``forward_var`` -- **tuple of strings**; pair of variables related to the forward direction
+    - ``backward_var`` -- **tuple of strings**; pair of variables related to the backward direction
+
+    OUTPUT:
+
+    - **list of strings**; each string is a CNF clause encoding part of the incompatibility constraint
+
+    EXAMPLES::
+
+        sage: incompatibility_var = 'i'
+        sage: forward_var = ('f0', 'f1')
+        sage: backward_var = ('b0', 'b1')
+        sage: incompatibility(incompatibility_var, forward_var, backward_var)
+        ['-f0 -i',
+        '-b0 -i',
+        'f1 b1 -i',
+        '-f1 -b1 -i',
+        'f0 f1 b0 i -b1',
+        'f0 b0 b1 i -f1']
+    """
     return [f'-{forward_var[0]} -{incompatibility_var}',
             f'-{backward_var[0]} -{incompatibility_var}',
             f'{forward_var[1]} {backward_var[1]} -{incompatibility_var}',
