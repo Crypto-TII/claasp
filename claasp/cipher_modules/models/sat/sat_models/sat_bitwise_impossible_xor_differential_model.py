@@ -142,7 +142,8 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
         end = time.time()
         building_time = end - start
 
-        incompatibility_ids = [f"incompatibility_{i}" for i in range(out_size)]
+        incompatibility_ids = [f"incompatibility_{forward_output.id}_{i}" for i in range(out_size)]
+
         for i in range(out_size):
             self._model_constraints.extend(
                 utils.incompatibility(
@@ -266,25 +267,71 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
         return solution
 
     def _parse_solver_output(self, variable2value):
-        last_backward_component = self._backward_cipher.get_all_components()[-1]
-        last_backward_component_id = last_backward_component.id
-        last_backward_component_output_bit_size = last_backward_component.output_bit_size
-        values = []
-        for i in range(last_backward_component_output_bit_size):
-            variable_value = 0
-            if f"{last_backward_component_id}_{i}_0" in variable2value:
-                variable_value ^= variable2value[f"{last_backward_component_id}_{i}_0"] << 1
-            if f"{last_backward_component_id}_{i}_1" in variable2value:
-                variable_value ^= variable2value[f"{last_backward_component_id}_{i}_1"]
-            values.append(f"{variable_value}")
-        last_backward_component_value = "".join(values).replace("2", "?").replace("3", "?")
+        active_incompatibilities = [
+            var for var, val in variable2value.items() if var.startswith("incompatibility_") and val == 1
+        ]
+
+        incompatible_components = set()
+        for var in active_incompatibilities:
+            parts = var.split("_")
+            comp_id = "_".join(parts[1:-1])
+            incompatible_components.add(comp_id)
 
         components_solutions = self._get_cipher_inputs_components_solutions_double_ids(variable2value)
+
+        if not incompatible_components:
+            for component in self._cipher.get_all_components():
+                value = self._get_component_value_double_ids(component, variable2value)
+                components_solutions[component.id] = set_component_solution(value)
+            return components_solutions, None
+
+        incompatible_rounds = {}
+        for comp_id in incompatible_components:
+            round_num = self._cipher.get_round_from_component_id(comp_id)
+            incompatible_rounds.setdefault(round_num, set()).add(comp_id)
+
+        first_incompatible_round = min(incompatible_rounds)
+
         for component in self._cipher.get_all_components():
-            value = self._get_component_value_double_ids(component, variable2value)
-            component_solution = set_component_solution(value)
-            components_solutions[component.id] = component_solution
-            if component.id == last_backward_component_id[:-9]:
-                components_solutions[last_backward_component_id] = set_component_solution(last_backward_component_value)
+            comp_id = component.id
+            comp_round = self._cipher.get_round_from_component_id(comp_id)
+
+            if comp_round < first_incompatible_round:
+                value = self._get_component_value_from_cipher(component, variable2value, "forward")
+                components_solutions[comp_id] = set_component_solution(value)
+
+            elif comp_round in incompatible_rounds and comp_id in incompatible_rounds[comp_round]:
+                fwd = self._get_component_value_from_cipher(component, variable2value, "forward")
+                bwd = self._get_component_value_from_cipher(component, variable2value, "backward")
+                components_solutions[comp_id] = set_component_solution(fwd)
+                components_solutions[comp_id + "_backward"] = set_component_solution(bwd)
+
+            elif comp_round > first_incompatible_round:
+                bwd = self._get_component_value_from_cipher(component, variable2value, "backward")
+                components_solutions[comp_id + "_backward"] = set_component_solution(bwd)
+
+            else:
+                value = self._get_component_value_double_ids(component, variable2value)
+                components_solutions[comp_id] = set_component_solution(value)
 
         return components_solutions, None
+
+    def _get_component_value_from_cipher(self, component, variable2value, cipher_type):
+        if cipher_type == "forward":
+            forward_component = self._forward_cipher.get_component_from_id(component.id)
+            return self._get_component_value_double_ids(forward_component, variable2value)
+
+        if cipher_type == "backward":
+            backward_id = f"{component.id}_backward"
+            values = []
+            for i in range(component.output_bit_size):
+                variable_value = 0
+                if f"{backward_id}_{i}_0" in variable2value:
+                    variable_value ^= variable2value[f"{backward_id}_{i}_0"] << 1
+                if f"{backward_id}_{i}_1" in variable2value:
+                    variable_value ^= variable2value[f"{backward_id}_{i}_1"]
+                values.append(f"{variable_value}")
+            backward_component_value = "".join(values).replace("2", "?").replace("3", "?")
+            return backward_component_value
+
+        return self._get_component_value_double_ids(component, variable2value)
