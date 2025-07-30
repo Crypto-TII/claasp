@@ -60,15 +60,15 @@ After that you are ready to go and can use the library as specified in the [usag
 You can alternatively use `docker-compose`.
 
 1. **Create the service**  
-    Run `docker compose create environment` or `docker compose create environment-arm` (depending on your architecture).
+    Run `docker compose create environment`.
 2. **Start the container**  
-    Run `docker start -ia claasp-container` or `docker start -ia claasp-arm-container`
+    Run `docker start -ia claasp-container`.
 3. **Have fun with library**  
     Enter the Sage terminal with `sage` command and follow [usage](#usage).
 4. **Exit the container**  
     When you exit the container, you can restart whenever you want at point 2.
 5. **Clean (optionally)**  
-    If you want to regain some space, just run `docker rm claasp-container; docker rmi tiicrc/claasp:local` or `docker rm claasp-arm-container; docker rmi tiicrc/claasp:arm-local`.
+    If you want to regain some space, just run `docker rm claasp-container; docker rmi tiicrc/claasp:local`.
 
 ### Manual installation
 

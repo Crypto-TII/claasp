@@ -5,25 +5,34 @@ ARG COPY_CLAASP_LIBRARY=false
 ARG INSTALL_CLAASP_LIBRARY=false
 
 # Install dependencies with apt-get
-RUN apt-get -qq update
-RUN apt-get install --no-install-recommends -y gfortran \
-  gcc \
-  g++ \
+RUN apt-get -q update
+RUN apt-get install --no-install-recommends -y \
   libboost-program-options-dev \
   libsqlite3-dev \
-  libstdc++-9-dev \
+  libstdc++-9-dev
+
+RUN apt-get install --no-install-recommends -y \
+  gfortran \
+  gcc \
+  g++
+
+RUN apt-get install --no-install-recommends -y \
   openssl \
   sudo \
   zlib1g-dev
-RUN apt-get install -y build-essential \
+
+RUN apt-get install -y \
+  build-essential \
   cmake \
-  dieharder=3.31.1.2-1build1 \
   git \
+  wget
+
+RUN apt-get install -y \
+  dieharder=3.31.1.2-1build1 \
   latexmk=1:4.76-1 \
   python3-cryptominisat=5.8.0+dfsg1-2 \
   sagemath=9.5-4 \
-  wget \
-  z3
+  z3=4.8.12-1
 
 COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
@@ -102,15 +111,11 @@ RUN sage -pip install bitstring==4.0.1 \
   pytest-isolate==0.0.11
 
 # Installing nist sts
-COPY required_dependencies/assess.c /opt/
-COPY required_dependencies/utilities.c /opt/
-COPY required_dependencies/utilities.h /opt/
-
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \
     && unzip sts-2_1_2.zip
-RUN mv /opt/assess.c /opt/sts-2.1.2/sts-2.1.2/src/
-RUN mv /opt/utilities.c /opt/sts-2.1.2/sts-2.1.2/src/
-RUN mv /opt/utilities.h /opt/sts-2.1.2/sts-2.1.2/include/
+COPY required_dependencies/assess.c /opt/sts-2.1.2/sts-2.1.2/src/
+COPY required_dependencies/utilities.c /opt/sts-2.1.2/sts-2.1.2/src/
+COPY required_dependencies/utilities.h /opt/sts-2.1.2/sts-2.1.2/include/
 RUN cd /opt/sts-2.1.2/sts-2.1.2 \
     && make \
     && mv /opt/sts-2.1.2/sts-2.1.2 /usr/local/bin/ \
@@ -322,10 +327,20 @@ RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
 RUN apt-get install -y coinor-cbc coinor-libcbc-dev
 RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
 
-WORKDIR /home/sage/tii-claasp
-
 FROM claasp-base AS claasp-lib
 
-COPY . .
+# Create a non-root user "sage" with home directory
+ARG NAME=sage
+RUN adduser --uid 1000 ${NAME} \
+    && echo "sage ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
+RUN chown -R ${NAME}:${NAME} /usr/local/bin/sts-2.1.2
+RUN pip install ruff --prefix /usr
+
+USER sage
+
+WORKDIR /home/${NAME}/tii-claasp
+COPY . .
 RUN make install
+
+ENV TERM=xterm-color

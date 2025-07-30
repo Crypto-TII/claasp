@@ -1,36 +1,31 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
 
 
 WORD_NUM = 5
 WORD_SIZE = 64
-LINEAR_LAYER_ROT = [[19, 28],
-                    [61, 39],
-                    [1, 6],
-                    [10, 17],
-                    [7, 41]]
-PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 12}]
+LINEAR_LAYER_ROT = [[19, 28], [61, 39], [1, 6], [10, 17], [7, 41]]
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 12}]
 
 
 class AsconPermutation(Cipher):
@@ -57,11 +52,13 @@ class AsconPermutation(Cipher):
     def __init__(self, number_of_rounds=12):
         self.state_bit_size = WORD_NUM * WORD_SIZE
 
-        super().__init__(family_name='ascon',
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.state_bit_size],
-                         cipher_output_bit_size=self.state_bit_size)
+        super().__init__(
+            family_name="ascon",
+            cipher_type=PERMUTATION,
+            cipher_inputs=[INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.state_bit_size],
+            cipher_output_bit_size=self.state_bit_size,
+        )
 
         # word initialization
         state = []
@@ -75,7 +72,7 @@ class AsconPermutation(Cipher):
             self.add_round()
 
             # round parameter
-            ci = 0xf0 - r * 0x10 + r * 0x1
+            ci = 0xF0 - r * 0x10 + r * 0x1
 
             # round function
             state = self.round_function(state, ci)

@@ -20,6 +20,7 @@ import os
 import math
 import itertools
 import subprocess
+import time
 from copy import deepcopy
 
 from claasp.cipher_modules.models.cp.mzn_model import solve_satisfy, constraint_type_error
@@ -579,7 +580,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
 
         return cp_constraints
 
-    def find_all_impossible_xor_differential_trails(self, number_of_rounds=None, fixed_values=[], solver_name=None,
+    def find_all_impossible_xor_differential_trails(self, number_of_rounds=None, fixed_values=[], solver_name='Chuffed',
                                                     initial_round=1, middle_round=None, final_round=None,
                                                     intermediate_components=True, num_of_processors=None,
                                                     timelimit=None, solve_with_API=False, solve_external=True):
@@ -623,7 +624,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           solve_external=solve_external)
 
     def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[],
-                                                                 solver_name=None, initial_round=1, middle_round=None,
+                                                                 solver_name='Chuffed', initial_round=1, middle_round=None,
                                                                  final_round=None, intermediate_components=True,
                                                                  num_of_processors=None, timelimit=None,
                                                                  solve_with_API=False, solve_external=True):
@@ -668,7 +669,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           final_round=final_round, timeout_in_seconds_=timelimit, processes_=num_of_processors,
                           solve_external=solve_external)
 
-    def find_one_impossible_xor_differential_cluster(self, number_of_rounds=None, fixed_values=[], solver_name=None,
+    def find_one_impossible_xor_differential_cluster(self, number_of_rounds=None, fixed_values=[], solver_name='Chuffed',
                                                      initial_round=1, middle_round=None, final_round=None,
                                                      intermediate_components=True, num_of_processors=None,
                                                      timelimit=None, solve_with_API=False, solve_external=True):
@@ -714,7 +715,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           solve_external=solve_external)
 
     def find_one_impossible_xor_differential_trail_with_extensions(self, number_of_rounds=None, fixed_values=[],
-                                                                   solver_name=None, initial_round=1, middle_round=None,
+                                                                   solver_name='Chuffed', initial_round=1, middle_round=None,
                                                                    final_round=None, intermediate_components=True,
                                                                    num_of_processors=None, timelimit=None,
                                                                    solve_with_API=False, solve_external=True):
@@ -757,7 +758,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           final_round=final_round, timeout_in_seconds_=timelimit, processes_=num_of_processors,
                           solve_external=solve_external)
 
-    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name=None,
+    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name='Chuffed',
                                                    initial_round=1, middle_round=None, final_round=None,
                                                    intermediate_components=True, num_of_processors=None, timelimit=None,
                                                    solve_with_API=False, solve_external=True):
@@ -1105,8 +1106,11 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         input_file_path = f'{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, processes_,
                                                       timeout_in_seconds_)
+        start = time.time()
         solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        # os.remove(input_file_path)
+        end = time.time()
+        solve_time = end - start
+        os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
@@ -1115,12 +1119,12 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                               'impossible_xor_differential',
                               'impossible_xor_differential_one_solution',
                               'impossible_xor_differential_attack']:
-                solve_time, memory, components_values = self._parse_solver_output(solver_output, number_of_rounds,
+                solver_time, memory, components_values = self._parse_solver_output(solver_output, number_of_rounds,
                                                                                   initial_round, middle_round,
                                                                                   final_round)
                 total_weight = 0
             else:
-                solve_time, memory, components_values, total_weight = self._parse_solver_output(solver_output,
+                solver_time, memory, components_values, total_weight = self._parse_solver_output(solver_output,
                                                                                                 number_of_rounds,
                                                                                                 initial_round,
                                                                                                 middle_round,

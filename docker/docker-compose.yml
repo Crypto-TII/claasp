@@ -4,27 +4,10 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     image: tiicrc/claasp:local
+    platform: linux/amd64
     pull_policy: build
     container_name: claasp-container
     hostname: claasp
-    volumes:
-      - ..:/home/sage/tii-claasp
-    ports:
-      - "8887:8887"
-    working_dir: /home/sage/tii-claasp
-    stdin_open: true
-    tty: true
-    command: "/bin/bash"
-
-  environment-arm:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    image: tiicrc/claasp:arm-local
-    platform: linux/x86_64
-    pull_policy: build
-    container_name: claasp-arm-container
-    hostname: claasp-arm
     volumes:
       - ..:/home/sage/tii-claasp
     ports:

@@ -5,12 +5,13 @@ Test vectors from https://eprint.iacr.org/2016/660.pdf
 import pytest
 
 from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
+from claasp.name_mappings import BLOCK_CIPHER
 
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_skinny_block_cipher():
     skinny = SkinnyBlockCipher()
-    assert skinny.type == "block_cipher"
+    assert skinny.type == BLOCK_CIPHER
     assert skinny.family_name == "skinny"
     assert skinny.number_of_rounds == 32
     assert skinny.id == "skinny_p64_k64_o64_r32"
