@@ -1,0 +1,803 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Utils &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sage.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Sat cipher model" href="../sat_models/sat_cipher_model.html" />
+    <link rel="prev" title="N window heuristic helper" href="n_window_heuristic_helper.html" />
+    <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
+    <script src="../../../../_static/thebe.js" type="text/javascript"></script>
+    <script src="../../../../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../sat_models/sat_cipher_model.html" title="Sat cipher model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="n_window_heuristic_helper.html" title="N window heuristic helper"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../../../../index.html"><img src="../../../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Utils</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cipher_modules.models.sat.utils.utils">
+<span id="utils"></span><h1>Utils<a class="headerlink" href="#module-cipher_modules.models.sat.utils.utils" title="Permalink to this heading">¶</a></h1>
+<section id="general">
+<h2>General<a class="headerlink" href="#general" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="direct-building-of-cnfs-representing-boolean-equalities">
+<h2>Direct building of CNFs representing boolean equalities<a class="headerlink" href="#direct-building-of-cnfs-representing-boolean-equalities" title="Permalink to this heading">¶</a></h2>
+<p>Building a CNF representing a generic boolean equality can be time consuming.
+This module offers functions to directly build the CNF of basic boolean
+equalities. It also offers function to directly build CNFs for the
+Lipmaa-Moriai algorithm which is a cornerstone when searching XOR differential
+trails.</p>
+<p>Every function returns a list of strings representing clauses whose
+satisfiability is equivalent to the equality they represent.</p>
+</section>
+<section id="running-sat-solver">
+<h2>Running SAT solver<a class="headerlink" href="#running-sat-solver" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference internal" href="../sat_model.html#module-cipher_modules.models.sat.sat_model" title="cipher_modules.models.sat.sat_model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sat</span> <span class="pre">Model</span></code></a> allows to use many SAT solvers like CryptoMiniSat,
+Glucose, Minisat and others. Unfortunately, some of them do not take input from
+stdin and need an input file. Functions of this section supply the best running
+method for SAT solvers in <a class="reference internal" href="../sat_model.html#module-cipher_modules.models.sat.sat_model" title="cipher_modules.models.sat.sat_model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sat</span> <span class="pre">Model</span></code></a>.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cms_add_clauses_to_solver">
+<span class="sig-name descname"><span class="pre">cms_add_clauses_to_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numerical_cnf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cms_add_clauses_to_solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add clauses to the (internal) SAT solver.</p>
+<p>It needs to be overwritten in this class because it must handle the XOR clauses.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_and">
+<span class="sig-name descname"><span class="pre">cnf_and</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_and" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of strings.</p>
+<p>Representing the CNF of the Boolean equality <code class="docutils literal notranslate"><span class="pre">result</span> <span class="pre">=</span> <span class="pre">And(variable_0,</span> <span class="pre">variable_1,</span> <span class="pre">...,</span> <span class="pre">variable_{n-1})</span></code>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">result</span></code> – <strong>string</strong>; the variable for the result</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variables</span></code> – <strong>list</strong>; the list of variables which are operands</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_and</span>
+<span class="gp">sage: </span><span class="n">cnf_and</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
+<span class="go">[&#39;-r a&#39;, &#39;-r b&#39;, &#39;-r c&#39;, &#39;r -a -b -c&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_and_differential">
+<span class="sig-name descname"><span class="pre">cnf_and_differential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_in_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_in_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_and_differential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of strings representing the CNF of the probability of the differential relation.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">diff_in_0</span></code> – <strong>string</strong>; the difference for the bit of the first input</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">diff_in_1</span></code> – <strong>string</strong>; the difference for the bit of the second input</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">diff_out</span></code> – <strong>string</strong>; the difference for the bit of the output</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hw</span></code> – <strong>string</strong>; the bit for the hamming weight</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_and_differential</span>
+<span class="gp">sage: </span><span class="n">cnf_and_differential</span><span class="p">(</span><span class="s1">&#39;and_0&#39;</span><span class="p">,</span> <span class="s1">&#39;and_1&#39;</span><span class="p">,</span> <span class="s1">&#39;and_out&#39;</span><span class="p">,</span> <span class="s1">&#39;hw&#39;</span><span class="p">)</span>
+<span class="go">(&#39;-and_out hw&#39;, &#39;and_0 and_1 -hw&#39;, &#39;-and_0 hw&#39;, &#39;-and_1 hw&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_and_linear">
+<span class="sig-name descname"><span class="pre">cnf_and_linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_in_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_in_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_and_linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of strings representing the CNF of the probability of the linear relation.</p>
+<p><code class="docutils literal notranslate"><span class="pre">(mask_in_0</span> <span class="pre">&amp;</span> <span class="pre">in_0)</span> <span class="pre">^</span> <span class="pre">(mask_in_1</span> <span class="pre">&amp;</span> <span class="pre">in_1)</span> <span class="pre">=</span> <span class="pre">(mask_out</span> <span class="pre">&amp;</span> <span class="pre">out)</span></code>, being <code class="docutils literal notranslate"><span class="pre">out</span> <span class="pre">=</span> <span class="pre">in_0</span> <span class="pre">&amp;</span> <span class="pre">in_1</span></code>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">mask_in_0</span></code> – <strong>string</strong>; the mask for the bit of the first input</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mask_in_1</span></code> – <strong>string</strong>; the mask for the bit of the second input</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mask_out</span></code> – <strong>string</strong>; the mask for the bit of the output</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hw</span></code> – <strong>string</strong>; the bit for the hamming weight</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_and_linear</span>
+<span class="gp">sage: </span><span class="n">cnf_and_linear</span><span class="p">(</span><span class="s1">&#39;and_0&#39;</span><span class="p">,</span> <span class="s1">&#39;and_1&#39;</span><span class="p">,</span> <span class="s1">&#39;and_out&#39;</span><span class="p">,</span> <span class="s1">&#39;hw&#39;</span><span class="p">)</span>
+<span class="go">(&#39;-and_0 hw&#39;, &#39;-and_1 hw&#39;, &#39;-and_out hw&#39;, &#39;and_out -hw&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_and_seq">
+<span class="sig-name descname"><span class="pre">cnf_and_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_and_seq" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_carry">
+<span class="sig-name descname"><span class="pre">cnf_carry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">carry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_carry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_carry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of strings.</p>
+<p>Representing the CNF of the Boolean equality <code class="docutils literal notranslate"><span class="pre">carry</span> <span class="pre">=</span> <span class="pre">Or(And(x,</span> <span class="pre">y),</span> <span class="pre">And(x,</span> <span class="pre">previous_carry),</span>
+<span class="pre">And(y,</span> <span class="pre">previous_carry))</span></code>. It represents the general form of a carry when performing modular addition between two
+bitvectors.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">carry</span></code> – <strong>string</strong>; the carry to be comuted (current carry)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x</span></code> – <strong>string</strong>; the bit of the first addendum</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y</span></code> – <strong>string</strong>; the bit of the second addendum</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">previous_carry</span></code> – <strong>string</strong>; the previous carry</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_carry</span>
+<span class="gp">sage: </span><span class="n">cnf_carry</span><span class="p">(</span><span class="s1">&#39;c_3&#39;</span><span class="p">,</span> <span class="s1">&#39;x_3&#39;</span><span class="p">,</span> <span class="s1">&#39;y_3&#39;</span><span class="p">,</span> <span class="s1">&#39;c_2&#39;</span><span class="p">)</span>
+<span class="go">(&#39;x_3 y_3 -c_3&#39;,</span>
+<span class="go"> &#39;-x_3 -y_3 c_3&#39;,</span>
+<span class="go"> &#39;x_3 c_2 -c_3&#39;,</span>
+<span class="go"> &#39;-x_3 -c_2 c_3&#39;,</span>
+<span class="go"> &#39;y_3 c_2 -c_3&#39;,</span>
+<span class="go"> &#39;-y_3 -c_2 c_3&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_carry_comp2">
+<span class="sig-name descname"><span class="pre">cnf_carry_comp2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">carry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_carry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_carry_comp2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of strings.</p>
+<p>Representing the CNF of the Boolean equality <code class="docutils literal notranslate"><span class="pre">carry</span> <span class="pre">=</span> <span class="pre">And(Not(x),</span> <span class="pre">previous_carry)</span></code>. It represents the general
+form of a carry when performing modular addition between the notwise of a vector and 1.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">carry</span></code> – <strong>string</strong>; the carry to be comuted (current carry)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x</span></code> – <strong>string</strong>; the bit of the input addendum</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">previous_carry</span></code> – <strong>string</strong>; the previous carry</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_carry_comp2</span>
+<span class="gp">sage: </span><span class="n">cnf_carry_comp2</span><span class="p">(</span><span class="s1">&#39;c_3&#39;</span><span class="p">,</span> <span class="s1">&#39;x_2&#39;</span><span class="p">,</span> <span class="s1">&#39;c_2&#39;</span><span class="p">)</span>
+<span class="go">(&#39;-c_3 c_2&#39;, &#39;-c_3 -x_2&#39;, &#39;c_3 -c_2 x_2&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_equivalent">
+<span class="sig-name descname"><span class="pre">cnf_equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_equivalent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of strings.</p>
+<p>Representing the CNF of the equivalence of Boolean variables <code class="docutils literal notranslate"><span class="pre">variable_0</span> <span class="pre">=</span> <span class="pre">variable_1</span> <span class="pre">=</span> <span class="pre">...</span> <span class="pre">=</span> <span class="pre">variable_2</span></code>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">variables</span></code> – <strong>list</strong>; the variables that must be equivalent</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_equivalent</span>
+<span class="gp">sage: </span><span class="n">cnf_equivalent</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span>
+<span class="go">[&#39;a -b&#39;, &#39;b -a&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_hw_lipmaa">
+<span class="sig-name descname"><span class="pre">cnf_hw_lipmaa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_hw_lipmaa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of strings representing the CNF of the Boolean equality.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Not(hw_i)</span> <span class="pre">=</span> <span class="pre">And(Xor(Not(alpha_{i+1}),</span> <span class="pre">beta_{i+1}),</span> <span class="pre">Xor(Not(alpha_{i+1}),</span> <span class="pre">gamma_{i+1}))</span></code>
+(Lipmaa-Moriai algorithm).</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">hw</span></code> – <strong>string</strong>; the variable for the Hamming weight</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">alpha</span></code> – <strong>string</strong>; the bit in the first mask</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">beta</span></code> – <strong>string</strong>; the bit in the second mask</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gamma</span></code> – <strong>string</strong>; the bit in the result mask</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_hw_lipmaa</span>
+<span class="gp">sage: </span><span class="n">cnf_hw_lipmaa</span><span class="p">(</span><span class="s1">&#39;hw_6&#39;</span><span class="p">,</span> <span class="s1">&#39;alpha_7&#39;</span><span class="p">,</span> <span class="s1">&#39;beta_7&#39;</span><span class="p">,</span> <span class="s1">&#39;gamma_7&#39;</span><span class="p">)</span>
+<span class="go">(&#39;alpha_7 -gamma_7 hw_6&#39;,</span>
+<span class="go"> &#39;beta_7 -alpha_7 hw_6&#39;,</span>
+<span class="go"> &#39;gamma_7 -beta_7 hw_6&#39;,</span>
+<span class="go"> &#39;alpha_7 beta_7 gamma_7 -hw_6&#39;,</span>
+<span class="go"> &#39;-alpha_7 -beta_7 -gamma_7 -hw_6&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_inequality">
+<span class="sig-name descname"><span class="pre">cnf_inequality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">left_var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_var</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_inequality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of strings representing the CNF of the Boolean equality <code class="docutils literal notranslate"><span class="pre">left_var</span> <span class="pre">=</span> <span class="pre">Not(right_var)</span></code>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">left_var</span></code> – <strong>string</strong>; the left side variable</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">right_var</span></code> – <strong>string</strong>; the right side variable</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_inequality</span>
+<span class="gp">sage: </span><span class="n">cnf_inequality</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="go">(&#39;a b&#39;, &#39;-a -b&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_lipmaa">
+<span class="sig-name descname"><span class="pre">cnf_lipmaa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_lipmaa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of strings representing the CNF of the Boolean equalities.</p>
+<p><code class="docutils literal notranslate"><span class="pre">And(Not(hw_i),</span> <span class="pre">Xor(dummy_i,</span> <span class="pre">beta_{i-1}))</span> <span class="pre">=</span> <span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">dummy_i</span> <span class="pre">=</span> <span class="pre">Xor(alpha_i,</span> <span class="pre">beta_i,</span> <span class="pre">gamma_i)</span></code>
+(Lipmaa-Moriai algorithm).</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">hw</span></code> – <strong>string</strong>; the variable for the Hamming weight bit</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dummy</span></code> – <strong>string</strong>; the variable for the XOR of the three masks</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">beta_1</span></code> – <strong>string</strong>; the next bit in the second mask</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">alpha</span></code> – <strong>string</strong>; the bit in the first mask</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">beta</span></code> – <strong>string</strong>; the bit in the second mask</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gamma</span></code> – <strong>string</strong>; the bit in the result mask</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_lipmaa</span>
+<span class="gp">sage: </span><span class="n">cnf_lipmaa</span><span class="p">(</span><span class="s1">&#39;hw_10&#39;</span><span class="p">,</span> <span class="s1">&#39;dummy_10&#39;</span><span class="p">,</span> <span class="s1">&#39;beta_11&#39;</span><span class="p">,</span> <span class="s1">&#39;alpha_10&#39;</span><span class="p">,</span> <span class="s1">&#39;beta_10&#39;</span><span class="p">,</span> <span class="s1">&#39;gamma_10&#39;</span><span class="p">)</span>
+<span class="go">(&#39;beta_11 -dummy_10 hw_10&#39;,</span>
+<span class="go"> &#39;-beta_11 dummy_10 hw_10&#39;,</span>
+<span class="go"> &#39;alpha_10 beta_10 dummy_10 -gamma_10&#39;,</span>
+<span class="go"> &#39;alpha_10 beta_10 -dummy_10 gamma_10&#39;,</span>
+<span class="go"> &#39;alpha_10 -beta_10 dummy_10 gamma_10&#39;,</span>
+<span class="go"> &#39;-alpha_10 beta_10 dummy_10 gamma_10&#39;,</span>
+<span class="go"> &#39;alpha_10 -beta_10 -dummy_10 -gamma_10&#39;,</span>
+<span class="go"> &#39;-alpha_10 beta_10 -dummy_10 -gamma_10&#39;,</span>
+<span class="go"> &#39;-alpha_10 -beta_10 dummy_10 -gamma_10&#39;,</span>
+<span class="go"> &#39;-alpha_10 -beta_10 -dummy_10 gamma_10&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_modadd_inequality">
+<span class="sig-name descname"><span class="pre">cnf_modadd_inequality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_modadd_inequality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of strings representing the CNF of the Boolean inequality <code class="docutils literal notranslate"><span class="pre">z</span> <span class="pre">&gt;=</span> <span class="pre">Xor(u,</span> <span class="pre">v)</span></code>.</p>
+<p>It is needed for the XOR linear constraints of modular addition (see formula (1) in <a class="reference external" href="https://link.springer.com/content/pdf/10.1007%2F978-3-319-39555-5_26.pdf">Automatic Search of Linear
+Trails in ARX with Applications to SPECK and Chaskey</a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">z</span></code> – <strong>string</strong>; the bit of the hamming weight</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">u</span></code> – <strong>string</strong>; the bit of the result</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">v</span></code> – <strong>string</strong>; the bit of an addendum</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_modadd_inequality</span>
+<span class="gp">sage: </span><span class="n">cnf_modadd_inequality</span><span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">)</span>
+<span class="go">(&#39;z u -v&#39;, &#39;z -u v&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_n_window_heuristic_on_w_vars">
+<span class="sig-name descname"><span class="pre">cnf_n_window_heuristic_on_w_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hw_bit_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_n_window_heuristic_on_w_vars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_or">
+<span class="sig-name descname"><span class="pre">cnf_or</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_or" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of strings.</p>
+<p>Representing the CNF of the Boolean equality <code class="docutils literal notranslate"><span class="pre">result</span> <span class="pre">=</span> <span class="pre">Or(variable_0,</span> <span class="pre">variable_1,</span> <span class="pre">...,</span> <span class="pre">variable_{n-1})</span></code>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">result</span></code> – <strong>string</strong>; the variable for the result</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variables</span></code> – <strong>list</strong>; the list of variables which are operands</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_or</span>
+<span class="gp">sage: </span><span class="n">cnf_or</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
+<span class="go">[&#39;r -a&#39;, &#39;r -b&#39;, &#39;r -c&#39;, &#39;-r a b c&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_or_seq">
+<span class="sig-name descname"><span class="pre">cnf_or_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_or_seq" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_result_comp2">
+<span class="sig-name descname"><span class="pre">cnf_result_comp2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">carry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_result_comp2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of strings representing the CNF of the Boolean equality <code class="docutils literal notranslate"><span class="pre">result</span> <span class="pre">=</span> <span class="pre">Xor(Not(x),</span> <span class="pre">carry)</span></code>.</p>
+<p>It represents the general form of a result when performing modular addition between the notwise of a vector and 1.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">result</span></code> – <strong>string</strong>; the result to be comuted</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x</span></code> – <strong>string</strong>; the bit of the input addendum</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">carry</span></code> – <strong>string</strong>; the carry</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_result_comp2</span>
+<span class="gp">sage: </span><span class="n">cnf_result_comp2</span><span class="p">(</span><span class="s1">&#39;r_3&#39;</span><span class="p">,</span> <span class="s1">&#39;x_3&#39;</span><span class="p">,</span> <span class="s1">&#39;c_3&#39;</span><span class="p">)</span>
+<span class="go">(&#39;c_3 -r_3 -x_3&#39;, &#39;-c_3 r_3 -x_3&#39;, &#39;-c_3 -r_3 x_3&#39;, &#39;c_3 r_3 x_3&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_vshift_false">
+<span class="sig-name descname"><span class="pre">cnf_vshift_false</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_vshift_false" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of strings.</p>
+<p>Representing the CNF of the Boolean branch when shifting by variable amount and having to decide between a bit
+and false.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">out_id</span></code> – <strong>string</strong>; the bit of the new state</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">in_id</span></code> – <strong>string</strong>; the bit to be assigned to <code class="docutils literal notranslate"><span class="pre">out_id</span></code> if not shifted</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">shift_id</span></code> – <strong>string</strong>; the bit determining the shift</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_vshift_false</span>
+<span class="gp">sage: </span><span class="n">cnf_vshift_false</span><span class="p">(</span><span class="s1">&#39;s_1&#39;</span><span class="p">,</span> <span class="s1">&#39;i_1&#39;</span><span class="p">,</span> <span class="s1">&#39;k_7&#39;</span><span class="p">)</span>
+<span class="go">(&#39;-s_1 i_1&#39;, &#39;-s_1 -k_7&#39;, &#39;s_1 -i_1 k_7&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_vshift_id">
+<span class="sig-name descname"><span class="pre">cnf_vshift_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_shifted</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_vshift_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of strings.</p>
+<p>Representing the CNF of the Boolean branch when shifting by variable amount and having to decide between two bits.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">out_id</span></code> – <strong>string</strong>; the bit of the new state</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">in_id</span></code> – <strong>string</strong>; the bit to be assigned to <code class="docutils literal notranslate"><span class="pre">out_id</span></code> if not shifted</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">in_shifted</span></code> – <strong>string</strong>; the bit to be assigned to <code class="docutils literal notranslate"><span class="pre">out_id</span></code> if shifted</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">shift_id</span></code> – <strong>string</strong>; the bit determining the shift</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_vshift_id</span>
+<span class="gp">sage: </span><span class="n">cnf_vshift_id</span><span class="p">(</span><span class="s1">&#39;s_3&#39;</span><span class="p">,</span> <span class="s1">&#39;i_3&#39;</span><span class="p">,</span> <span class="s1">&#39;i_4&#39;</span><span class="p">,</span> <span class="s1">&#39;k_7&#39;</span><span class="p">)</span>
+<span class="go">(&#39;-s_3 i_3 k_7&#39;, &#39;s_3 -i_3 k_7&#39;, &#39;-s_3 i_4 -k_7&#39;, &#39;s_3 -i_4 -k_7&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_xor">
+<span class="sig-name descname"><span class="pre">cnf_xor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_xor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of strings.</p>
+<p>Representing the CNF of the Boolean equality <code class="docutils literal notranslate"><span class="pre">result</span> <span class="pre">=</span> <span class="pre">Xor(variable_0,</span> <span class="pre">variable_1,</span> <span class="pre">...,</span> <span class="pre">variable_{n-1})</span></code>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">result</span></code> – <strong>string</strong>; the variable for the result</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variables</span></code> – <strong>list</strong>; the variables</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_xor</span>
+<span class="gp">sage: </span><span class="n">cnf_xor</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
+<span class="go">[&#39;-r a b c&#39;,</span>
+<span class="go"> &#39;r -a b c&#39;,</span>
+<span class="go"> &#39;r a -b c&#39;,</span>
+<span class="go"> &#39;r a b -c&#39;,</span>
+<span class="go"> &#39;-r -a -b c&#39;,</span>
+<span class="go"> &#39;-r -a b -c&#39;,</span>
+<span class="go"> &#39;-r a -b -c&#39;,</span>
+<span class="go"> &#39;r -a -b -c&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_xor_seq">
+<span class="sig-name descname"><span class="pre">cnf_xor_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_xor_seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of strings.</p>
+<p>Representing the CNF of the Boolean equality <code class="docutils literal notranslate"><span class="pre">result</span> <span class="pre">=</span> <span class="pre">Xor(variable_0,</span> <span class="pre">variable_1,</span> <span class="pre">...,</span> <span class="pre">variables_n)</span></code> with <code class="docutils literal notranslate"><span class="pre">n</span></code>
+at least 3. Note that <code class="docutils literal notranslate"><span class="pre">results[:-1]</span></code> are intermediate results and <code class="docutils literal notranslate"><span class="pre">results[-1]</span></code> must be the string identifying
+the whole <code class="docutils literal notranslate"><span class="pre">result</span></code>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">results</span></code> – <strong>list</strong>; the results</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variables</span></code> – <strong>list</strong>; the variables</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_xor_seq</span>
+<span class="gp">sage: </span><span class="n">cnf_xor_seq</span><span class="p">([</span><span class="s1">&#39;i_0&#39;</span><span class="p">,</span> <span class="s1">&#39;i_1&#39;</span><span class="p">,</span> <span class="s1">&#39;r_7&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;a_7&#39;</span><span class="p">,</span> <span class="s1">&#39;b_7&#39;</span><span class="p">,</span> <span class="s1">&#39;c_7&#39;</span><span class="p">,</span> <span class="s1">&#39;d_7&#39;</span><span class="p">])</span>
+<span class="go">[&#39;-i_0 a_7 b_7&#39;,</span>
+<span class="go"> &#39;i_0 -a_7 b_7&#39;,</span>
+<span class="go"> &#39;i_0 a_7 -b_7&#39;,</span>
+<span class="go"> ...</span>
+<span class="go"> &#39;r_7 -i_1 d_7&#39;,</span>
+<span class="go"> &#39;r_7 i_1 -d_7&#39;,</span>
+<span class="go"> &#39;-r_7 -i_1 -d_7&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_xor_truncated">
+<span class="sig-name descname"><span class="pre">cnf_xor_truncated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_xor_truncated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of strings representing the CNF of the Boolean XOR when
+searching for DETERMINISTIC TRUNCATED XOR DIFFERENTIAL. I.e., an XOR
+behaving as in the following table:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>variable_0</p></th>
+<th class="head"><p>variable_1</p></th>
+<th class="head"><p>result</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>0</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+</tr>
+</tbody>
+</table>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">result</span></code> – <strong>tuple of two strings</strong>; the result variable</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variable_0</span></code> – <strong>tuple of two string</strong>; the first variable</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variable_1</span></code> – <strong>tuple of two string</strong>; the second variable</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_xor_truncated</span>
+<span class="gp">sage: </span><span class="n">cnf_xor_truncated</span><span class="p">((</span><span class="s1">&#39;r0&#39;</span><span class="p">,</span> <span class="s1">&#39;r1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;a0&#39;</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b0&#39;</span><span class="p">,</span> <span class="s1">&#39;b1&#39;</span><span class="p">))</span>
+<span class="go">[&#39;r0 -a0&#39;,</span>
+<span class="go"> &#39;r0 -b0&#39;,</span>
+<span class="go"> &#39;a0 b0 -r0&#39;,</span>
+<span class="go"> &#39;a1 b1 r0 -r1&#39;,</span>
+<span class="go"> &#39;a1 r0 r1 -b1&#39;,</span>
+<span class="go"> &#39;b1 r0 r1 -a1&#39;,</span>
+<span class="go"> &#39;r0 -a1 -b1 -r1&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.cnf_xor_truncated_seq">
+<span class="sig-name descname"><span class="pre">cnf_xor_truncated_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.cnf_xor_truncated_seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of strings representing the CNF of the Boolean XOR performed
+between more than 2 inputs when searching for DETERMINISTIC TRUNCATED XOR
+DIFFERENTIAL.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-meth docutils literal notranslate"><span class="pre">cnf_xor_truncated()</span></code></p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">results</span></code> – <strong>list</strong>; intermediate results + final result</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variables</span></code> – <strong>list</strong>; the variables</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.utils.utils</span> <span class="kn">import</span> <span class="n">cnf_xor_truncated_seq</span>
+<span class="gp">sage: </span><span class="n">cnf_xor_truncated_seq</span><span class="p">([(</span><span class="s1">&#39;i0&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;r0&#39;</span><span class="p">,</span> <span class="s1">&#39;r1&#39;</span><span class="p">)],</span> <span class="p">[(</span><span class="s1">&#39;a0&#39;</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b0&#39;</span><span class="p">,</span> <span class="s1">&#39;b1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c0&#39;</span><span class="p">,</span> <span class="s1">&#39;c1&#39;</span><span class="p">)])</span>
+<span class="go">[&#39;i0 -a0&#39;,</span>
+<span class="go"> &#39;i0 -b0&#39;,</span>
+<span class="go"> &#39;a0 b0 -i0&#39;,</span>
+<span class="go"> ...</span>
+<span class="go"> &#39;i1 r0 r1 -c1&#39;,</span>
+<span class="go"> &#39;c1 r0 r1 -i1&#39;,</span>
+<span class="go"> &#39;r0 -i1 -c1 -r1&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.create_numerical_cnf">
+<span class="sig-name descname"><span class="pre">create_numerical_cnf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cnf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.create_numerical_cnf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.get_cnf_bitwise_truncate_constraints">
+<span class="sig-name descname"><span class="pre">get_cnf_bitwise_truncate_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.get_cnf_bitwise_truncate_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.get_cnf_semi_deterministic_window_1">
+<span class="sig-name descname"><span class="pre">get_cnf_semi_deterministic_window_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.get_cnf_semi_deterministic_window_1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.get_cnf_semi_deterministic_window_2">
+<span class="sig-name descname"><span class="pre">get_cnf_semi_deterministic_window_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_t3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.get_cnf_semi_deterministic_window_2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.get_cnf_semi_deterministic_window_3">
+<span class="sig-name descname"><span class="pre">get_cnf_semi_deterministic_window_3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_t3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_t4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.get_cnf_semi_deterministic_window_3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.get_cnf_truncated_linear_constraints">
+<span class="sig-name descname"><span class="pre">get_cnf_truncated_linear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.get_cnf_truncated_linear_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.get_semi_deterministic_cnf_window_0">
+<span class="sig-name descname"><span class="pre">get_semi_deterministic_cnf_window_0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_v0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.get_semi_deterministic_cnf_window_0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.modadd_truncated">
+<span class="sig-name descname"><span class="pre">modadd_truncated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">carry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_carry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.modadd_truncated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.modadd_truncated_lsb">
+<span class="sig-name descname"><span class="pre">modadd_truncated_lsb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_carry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.modadd_truncated_lsb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.modadd_truncated_msb">
+<span class="sig-name descname"><span class="pre">modadd_truncated_msb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">carry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.modadd_truncated_msb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.numerical_cnf_to_dimacs">
+<span class="sig-name descname"><span class="pre">numerical_cnf_to_dimacs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_cnf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.numerical_cnf_to_dimacs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.run_minisat">
+<span class="sig-name descname"><span class="pre">run_minisat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_minisat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the MiniSat solver specified in <span class="math">solver_specs</span>, using input and output files.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.run_parkissat">
+<span class="sig-name descname"><span class="pre">run_parkissat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_parkissat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the Parkissat solver specified in <span class="math">solver_specs</span>, using input and output files.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.run_sat_solver">
+<span class="sig-name descname"><span class="pre">run_sat_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_vars_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_sat_solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the SAT solver specified in <span class="math">solver_specs</span>, using input and output pipes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.utils.utils.run_yices">
+<span class="sig-name descname"><span class="pre">run_yices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimacs_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.utils.utils.run_yices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the Yices SAT solver specified in <span class="math">solver_specs</span>, using input file.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Utils</a><ul>
+<li><a class="reference internal" href="#general">General</a></li>
+<li><a class="reference internal" href="#direct-building-of-cnfs-representing-boolean-equalities">Direct building of CNFs representing boolean equalities</a></li>
+<li><a class="reference internal" href="#running-sat-solver">Running SAT solver</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="n_window_heuristic_helper.html"
+                          title="previous chapter">N window heuristic helper</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../sat_models/sat_cipher_model.html"
+                          title="next chapter">Sat cipher model</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../../_sources/cipher_modules/models/sat/utils/utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../sat_models/sat_cipher_model.html" title="Sat cipher model"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="n_window_heuristic_helper.html" title="N window heuristic helper"
+             >previous</a> |</li>
+  
+    
+      <a href="../../../../../index.html"><img src="../../../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Utils</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>
