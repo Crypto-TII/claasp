@@ -62,7 +62,8 @@ class Cipher:
         EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: cipher = Cipher("cipher_name", "permutation", ["input"], [6], 6)
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [6], 6)
         sage: cipher.add_round()
         sage: sbox_0_0 = cipher.add_SBOX_component(["input"], [[0,1,2]], 4, [6,7,0,1,2,3,4,5])
         sage: sbox_0_1 = cipher.add_SBOX_component(["input"], [[3,4,5]], 4, [7,0,1,2,3,4,5,6])
@@ -222,6 +223,10 @@ class Cipher:
 
     def add_sigma_component(self, input_id_links, input_bit_positions, output_bit_size, rotation_amounts_parameter):
         return editor.add_sigma_component(self, input_id_links, input_bit_positions,
+                                          output_bit_size, rotation_amounts_parameter)
+
+    def add_theta_gaston_component(self, input_id_links, input_bit_positions, output_bit_size, rotation_amounts_parameter):
+        return editor.add_theta_gaston_component(self, input_id_links, input_bit_positions,
                                           output_bit_size, rotation_amounts_parameter)
 
     def add_theta_keccak_component(self, input_id_links, input_bit_positions, output_bit_size):
@@ -871,7 +876,8 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
         EXAMPLES::
 
             sage: from claasp.cipher import Cipher
-            sage: cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+            sage: from claasp.name_mappings import PERMUTATION
+            sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
             sage: cipher.add_round()
             sage: constant_0_0 = cipher.add_constant_component(4, 0xF)
             sage: constant_0_1 = cipher.add_constant_component(4, 0xF)
@@ -1104,7 +1110,8 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
         EXAMPLES::
 
             sage: from claasp.cipher import Cipher
-            sage: cipher = Cipher("cipher_name", "permutation", ["input"], [32], 32)
+            sage: from claasp.name_mappings import PERMUTATION
+            sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [32], 32)
             sage: cipher.add_round()
             sage: constant_0_0 = cipher.add_constant_component(16, 0xAB01)
             sage: constant_0_1 = cipher.add_constant_component(16, 0xAB01)
@@ -1158,7 +1165,8 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
         EXAMPLES::
 
             sage: from claasp.cipher import Cipher
-            sage: cipher = Cipher("cipher_name", "block_cipher", ["key", "plaintext"], [32, 32], 32)
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: cipher = Cipher("cipher_name", BLOCK_CIPHER, [INPUT_KEY, INPUT_PLAINTEXT], [32, 32], 32)
             sage: cipher.add_round()
             sage: constant_0_0 = cipher.add_constant_component(16, 0xAB01)
             sage: constant_0_1 = cipher.add_constant_component(16, 0xAB01)
@@ -1225,7 +1233,8 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
         EXAMPLES::
 
             sage: from claasp.cipher import Cipher
-            sage: cipher = Cipher("cipher_name", "block_cipher", ["key", "plaintext"], [32, 32], 32)
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: cipher = Cipher("cipher_name", BLOCK_CIPHER, [INPUT_KEY, INPUT_PLAINTEXT], [32, 32], 32)
             sage: cipher.print_as_python_dictionary_to_file("claasp/ciphers/dictionary_example.py")
             sage: os.remove("claasp/ciphers/dictionary_example.py")
         """
@@ -1381,8 +1390,8 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
         algebraic_model = AlgebraicModel(self)
         return algebraic_model.polynomial_system_at_round(r)
 
-    def remove_key_schedule(self):
-        return editor.remove_key_schedule(self)
+    def remove_key_schedule(self, keep_round_key_injection=True):
+        return editor.remove_key_schedule(self, keep_round_key_injection)
 
     def remove_round_component(self, round_id, component):
         editor.remove_round_component(self, round_id, component)

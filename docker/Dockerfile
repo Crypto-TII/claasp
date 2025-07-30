@@ -5,25 +5,34 @@ ARG COPY_CLAASP_LIBRARY=false
 ARG INSTALL_CLAASP_LIBRARY=false
 
 # Install dependencies with apt-get
-RUN apt-get -qq update
-RUN apt-get install --no-install-recommends -y gfortran \
-  gcc \
-  g++ \
+RUN apt-get -q update
+RUN apt-get install --no-install-recommends -y \
   libboost-program-options-dev \
   libsqlite3-dev \
-  libstdc++-9-dev \
+  libstdc++-9-dev
+
+RUN apt-get install --no-install-recommends -y \
+  gfortran \
+  gcc \
+  g++
+
+RUN apt-get install --no-install-recommends -y \
   openssl \
   sudo \
   zlib1g-dev
-RUN apt-get install -y build-essential \
+
+RUN apt-get install -y \
+  build-essential \
   cmake \
-  dieharder=3.31.1.2-1build1 \
   git \
+  wget
+
+RUN apt-get install -y \
+  dieharder=3.31.1.2-1build1 \
   latexmk=1:4.76-1 \
   python3-cryptominisat=5.8.0+dfsg1-2 \
   sagemath=9.5-4 \
-  wget \
-  z3
+  z3=4.8.12-1
 
 COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
@@ -51,6 +60,17 @@ RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-603.tar.gz 
     && make
 
 ENV SOPLEX_HOME="/opt/soplex-release-603/build"
+
+## Installing HiGHS
+
+RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-archive.tar.gz \
+    && tar -xf source-archive.tar.gz \
+    && rm source-archive.tar.gz \
+    && cd HiGHS \
+    && cmake -S. -B build \
+    && cmake --build build --parallel
+
+ENV PATH="${PATH}:/opt/HiGHS/build/bin"
 
 WORKDIR /opt
 
@@ -87,18 +107,15 @@ RUN sage -pip install bitstring==4.0.1 \
   networkx==2.8.8 \
   numpy==1.24.3 \
   joblib==1.4.2 \
-  gurobipy==11.0
+  gurobipy==11.0 \
+  pytest-isolate==0.0.11
 
 # Installing nist sts
-COPY required_dependencies/assess.c /opt/
-COPY required_dependencies/utilities.c /opt/
-COPY required_dependencies/utilities.h /opt/
-
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \
     && unzip sts-2_1_2.zip
-RUN mv /opt/assess.c /opt/sts-2.1.2/sts-2.1.2/src/
-RUN mv /opt/utilities.c /opt/sts-2.1.2/sts-2.1.2/src/
-RUN mv /opt/utilities.h /opt/sts-2.1.2/sts-2.1.2/include/
+COPY required_dependencies/assess.c /opt/sts-2.1.2/sts-2.1.2/src/
+COPY required_dependencies/utilities.c /opt/sts-2.1.2/sts-2.1.2/src/
+COPY required_dependencies/utilities.h /opt/sts-2.1.2/sts-2.1.2/include/
 RUN cd /opt/sts-2.1.2/sts-2.1.2 \
     && make \
     && mv /opt/sts-2.1.2/sts-2.1.2 /usr/local/bin/ \
@@ -172,12 +189,11 @@ WORKDIR /opt
 ENV PATH="/opt/glucose-syrup-4.1/simp:/opt/glucose-syrup-4.1/parallel:${PATH}"
 
 # Installing MathSat
-RUN wget https://mathsat.fbk.eu/download.php?file=mathsat-5.6.9-linux-x86_64.tar.gz \
-    && mv download.php?file=mathsat-5.6.9-linux-x86_64.tar.gz mathsat-5.6.9-linux-x86_64.tar.gz \
-    && tar -xf mathsat-5.6.9-linux-x86_64.tar.gz \
-    && rm mathsat-5.6.9-linux-x86_64.tar.gz
+RUN wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
+    && tar -xf mathsat-5.6.11-linux-x86_64.tar.gz \
+    && rm mathsat-5.6.11-linux-x86_64.tar.gz
 
-ENV PATH="/opt/mathsat-5.6.9-linux-x86_64/bin:${PATH}"
+ENV PATH="/opt/mathsat-5.6.11-linux-x86_64/bin:${PATH}"
 
 # Installing Minisat
 RUN wget https://github.com/stp/minisat/archive/refs/tags/releases/2.2.1.zip \
@@ -311,10 +327,20 @@ RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
 RUN apt-get install -y coinor-cbc coinor-libcbc-dev
 RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
 
-WORKDIR /home/sage/tii-claasp
-
 FROM claasp-base AS claasp-lib
 
-COPY . .
+# Create a non-root user "sage" with home directory
+ARG NAME=sage
+RUN adduser --uid 1000 ${NAME} \
+    && echo "sage ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
+RUN chown -R ${NAME}:${NAME} /usr/local/bin/sts-2.1.2
+RUN pip install ruff --prefix /usr
+
+USER sage
+
+WORKDIR /home/${NAME}/tii-claasp
+COPY . .
 RUN make install
+
+ENV TERM=xterm-color

@@ -1,15 +1,14 @@
-import numpy as np
 from claasp.cipher_modules.models.sat.sat_models.sat_probabilistic_xor_truncated_differential_model import (
     SatProbabilisticXorTruncatedDifferentialModel
 )
+
 from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, \
     _update_component_model_types_for_truncated_components
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, \
-    differential_truncated_checker_single_key
+    differential_truncated_checker_single_key, differential_truncated_checker_permutation
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.utils.utils import get_k_th_bit
-import math
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 
 WORD_SIZE = 16
 MASK_VAL = 2 ** WORD_SIZE - 1
@@ -173,7 +172,9 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
 
     sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
     trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
-        weight=8, num_unknown_vars=31, fixed_values=[intermediate_output_1_12, key, plaintext],
+        weight=8,
+        fixed_values=[intermediate_output_1_12, key, plaintext],
+        number_of_unknowns_per_component={'cipher_output_3_12': 31},
         solver_name="CRYPTOMINISAT_EXT"
     )
     assert trail['components_values']['cipher_output_3_12']['value'] == '????????00000000????????000000?1'
@@ -219,8 +220,11 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
     _update_component_model_types_for_truncated_components(component_model_types, truncated_components)
 
     sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
+
     trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
-        weight=8, num_unknown_vars=31, fixed_values=[intermediate_output_1_12, key, plaintext],
+        weight=8,
+        fixed_values=[intermediate_output_1_12, key, plaintext],
+        number_of_unknowns_per_component={'cipher_output_4_12': 31},
         solver_name="CRYPTOMINISAT_EXT"
     )
 
@@ -359,9 +363,9 @@ def test_wrong_fixed_variables_assignment():
     with pytest.raises(ValueError) as exc_info:
         sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
             8,
-            31,
-            [intermediate_output_1_12, key, plaintext, modadd_1_2],
-            "CRYPTOMINISAT_EXT"
+            fixed_values=[intermediate_output_1_12, key, plaintext, modadd_1_2],
+            number_of_unknowns_per_component={'cipher_output_4_12': 31},
+            solver_name="CRYPTOMINISAT_EXT"
         )
         assert str(exc_info.value) == "The fixed value in a regular XOR differential model cannot be 2"
 
@@ -396,11 +400,123 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     _update_component_model_types_for_truncated_components(component_model_types, bottom_part_components)
 
     sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(aradi, component_model_types)
-
     trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
-        weight=8, num_unknown_vars=127, fixed_values=[key, plaintext], solver_name="CADICAL_EXT"
+        weight=8,
+        fixed_values=[key, plaintext],
+        solver_name="CADICAL_EXT",
+        number_of_unknowns_per_component={'cipher_output_3_86': 127}
     )
 
     assert trail['components_values']['cipher_output_3_86']['value'] == ('?0???0??0??0?0??????00??????0?0??0???0??0??0'
                                                                          '?0??????00??????0?0??0???0??0??0?0??????00'
                                                                          '??????0?0??0???0??0??0?0??????00??????0?0?')
+
+
+def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
+    """Test for finding a XOR regular truncated differential trail with fixed weight for 4 rounds of ChaCha cipher."""
+    chacha = ChachaPermutation(number_of_rounds=3)
+    import itertools
+
+    top_part_components = []
+    bottom_part_components = []
+    for round_number in range(2, 3):
+        bottom_part_components.append(chacha.get_components_in_round(round_number))
+    bottom_part_components = list(itertools.chain(*bottom_part_components))
+    bottom_part_components = [component.id for component in bottom_part_components]
+    initial_state_positions = integer_to_bit_list(
+        int('00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008008000000000000000000000000',
+            16),
+        512,
+        'big'
+    )
+    plaintext = set_fixed_variables(
+        component_id='plaintext',
+        constraint_type='equal',
+        bit_positions=list(range(512)),
+        bit_values=initial_state_positions
+    )
+    intermediate_output_0_24_state = integer_to_bit_list(
+        int('00000000000000000000000000000000800008000000000000000000000000008008000000000000000000000000000080080000000000000000000000000000',
+            16),
+        512,
+        'big'
+    )
+    intermediate_output_1_24_state = integer_to_bit_list(
+        int('80000800000000000000000000000000000400040000000000000000000000008800000000000000000000000000000008080000000000000000000000000000',
+            16),
+        512,
+        'big'
+    )
+    intermediate_output_0_24 = set_fixed_variables(
+        component_id='intermediate_output_0_24',
+        constraint_type='equal',
+        bit_positions=list(range(512)),
+        bit_values=intermediate_output_0_24_state
+    )
+
+    intermediate_output_1_24 = set_fixed_variables(
+        component_id='intermediate_output_1_24',
+        constraint_type='equal',
+        bit_positions=list(range(512)),
+        bit_values=intermediate_output_1_24_state
+    )
+
+    cipher_output_2_24_state = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+                                0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0,
+                                0, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                                0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+                                0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    cipher_output_2_24 = set_fixed_variables(
+        component_id='cipher_output_2_24',
+        constraint_type='equal',
+        bit_positions=list(range(512)),
+        bit_values=cipher_output_2_24_state
+    )
+
+    component_model_types = _generate_component_model_types(chacha)
+    _update_component_model_types_for_truncated_components(
+        component_model_types,
+        bottom_part_components,
+        truncated_model_type="sat_semi_deterministic_truncated_xor_differential_constraints"
+    )
+
+    sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(chacha, component_model_types)
+
+    unknown_window_size_configuration = {
+        "max_number_of_sequences_window_size_0": 9,
+        "max_number_of_sequences_window_size_1": 9,
+        "max_number_of_sequences_window_size_2": 20
+    }
+
+    max_number_of_unknowns_per_component = {"cipher_output_2_24": 12}
+
+    trail = sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
+        weight=14,
+        number_of_unknowns_per_component=max_number_of_unknowns_per_component,
+        fixed_values=[plaintext, intermediate_output_0_24, intermediate_output_1_24, cipher_output_2_24],
+        solver_name="CADICAL_EXT",
+        unknown_window_size_configuration=unknown_window_size_configuration
+    )
+    assert trail['status'] == 'SATISFIABLE'
+
+    input_difference = int(trail['components_values']['plaintext']['value'], 16)
+    output_difference = trail['components_values']['cipher_output_2_24']['value']
+    prob = differential_truncated_checker_permutation(
+        chacha, input_difference, output_difference, 1 << 14, 512, seed=42
+    )
+
+    assert 0 < abs(prob) < 15
