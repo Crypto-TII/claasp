@@ -52,7 +52,7 @@ develop:
 	$(SAGE_BIN) -pip install --upgrade -e .
 
 remote-pytest:
-	pytest -v -n 16 --dist loadfile --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/
+	pytest -v -n 12 --dist loadfile --timeout=300 --cov-report xml:coverage.xml --cov=$(PACKAGE) tests/unit/
 
 pytest:
 	pytest -v -n=auto --dist loadfile tests/unit/
