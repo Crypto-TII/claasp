@@ -1,7 +1,5 @@
-import math
 import numpy as np
 
-from claasp.utils.utils import get_k_th_bit
 from claasp.components.modadd_component import MODADD
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
@@ -34,7 +32,7 @@ def extract_bits_from_hex(hex_value, bit_positions):
 
     last_bit_position = bit_positions[-1]
     for bit_position in bit_positions:
-        bit_value = get_k_th_bit(hex_value, last_bit_position - bit_position)
+        bit_value = 1 & (hex_value >> (last_bit_position - bit_position))
         bin_values.append(bit_value)
     extracted_value = binary_list_to_int(bin_values)
 

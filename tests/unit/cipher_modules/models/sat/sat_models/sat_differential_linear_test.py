@@ -1,4 +1,5 @@
 import itertools
+import math
 
 from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT
@@ -7,6 +8,7 @@ from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_b
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
 
 def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
@@ -26,14 +28,14 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
     bottom_part_components = [component.id for component in bottom_part_components]
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='equal',
         bit_positions=range(32),
         bit_values=integer_to_bit_list(0x05020402, 32, 'big')
     )
 
     key = set_fixed_variables(
-        component_id='key',
+        component_id=INPUT_KEY,
         constraint_type='equal',
         bit_positions=range(64),
         bit_values=(0,) * 64
@@ -76,14 +78,14 @@ def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
     bottom_part_components = [component.id for component in bottom_part_components]
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='not_equal',
         bit_positions=range(32),
-        bit_values=integer_to_bit_list(0x0, 32, 'big')
+        bit_values=(0,) * 32
     )
 
     key = set_fixed_variables(
-        component_id='key',
+        component_id=INPUT_KEY,
         constraint_type='equal',
         bit_positions=range(64),
         bit_values=(0,) * 64
@@ -93,7 +95,7 @@ def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
         component_id='cipher_output_5_12',
         constraint_type='not_equal',
         bit_positions=range(32),
-        bit_values=integer_to_bit_list(0x0, 32, 'big')
+        bit_values=(0,) * 32
     )
 
     component_model_list = {
@@ -112,7 +114,6 @@ def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
 def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     """Test for finding a differential-linear trail with fixed weight for 3 rounds of ChaCha permutation."""
     chacha = ChachaPermutation(number_of_rounds=6)
-    import itertools
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -130,7 +131,7 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     bottom_part_components = [component.id for component in bottom_part_components]
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='equal',
         bit_positions=range(512),
         bit_values=integer_to_bit_list(0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000, 512, 'big')
@@ -167,7 +168,6 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
 def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of Aradi block cipher."""
     aradi = AradiBlockCipherSBox(number_of_rounds=4)
-    import itertools
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -184,7 +184,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     bottom_part_components = [component.id for component in bottom_part_components]
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='equal',
         bit_positions=range(128),
         bit_values=integer_to_bit_list(0x00000000000080000000000000008000, 128, 'big')
@@ -198,7 +198,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     )
 
     key = set_fixed_variables(
-        component_id='key',
+        component_id=INPUT_KEY,
         constraint_type='equal',
         bit_positions=range(256),
         bit_values=[0] * 256
@@ -228,9 +228,6 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation."""
     chacha = ChachaPermutation(number_of_rounds=8)
-
-    import itertools
-
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -248,7 +245,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
     bottom_part_components = [component.id for component in bottom_part_components]
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='equal',
         bit_positions=range(512),
         bit_values=integer_to_bit_list(
@@ -282,9 +279,6 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation."""
     chacha = ChachaPermutation(number_of_rounds=8)
-
-    import itertools
-
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -302,7 +296,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case
     bottom_part_components = [component.id for component in bottom_part_components]
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='equal',
         bit_positions=range(512),
         bit_values=integer_to_bit_list(
@@ -316,7 +310,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case
         component_id=f'modadd_4_15',
         constraint_type='not_equal',
         bit_positions=range(32),
-        bit_values=[0] * 32
+        bit_values=(0,) * 32
     )
 
     component_model_list = {
@@ -340,8 +334,6 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     This test is using in the middle part the semi-deterministic model.
     """
     chacha = ChachaPermutation(number_of_rounds=8)
-    import itertools
-
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -363,7 +355,7 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     initial_state_positions[508] = 1
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='equal',
         bit_positions=list(range(state_size)),
         bit_values=integer_to_bit_list(
@@ -429,8 +421,6 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     """
     chacha = ChachaPermutation(number_of_rounds=8)
     # import ipdb; ipdb.set_trace()
-    import itertools
-
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -450,17 +440,17 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     state_size = 512
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='not_equal',
         bit_positions=list(range(state_size)),
-        bit_values=[0] * state_size
+        bit_values=(0,) * state_size
     )
 
     modadd_3_0 = set_fixed_variables(
         component_id='modadd_4_0',
         constraint_type='not_equal',
         bit_positions=list(range(32)),
-        bit_values=[0] * 32
+        bit_values=(0,) * 32
     )
 
     component_model_list = {
@@ -497,7 +487,6 @@ def test_diff_lin_chacha():
     corr = differential_linear_checker_for_permutation(
         chacha, input_difference, output_mask, number_of_samples, state_size
     )
-    import math
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 3
 
@@ -515,7 +504,6 @@ def test_diff_lin_chacha_8():
     corr = differential_linear_checker_for_permutation(
         chacha, input_difference, output_mask, number_of_samples, state_size
     )
-    import math
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 8
 
@@ -535,7 +523,6 @@ def test_diff_lin_speck():
     corr = differential_linear_checker_for_block_cipher_single_key(
         speck, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=42
     )
-    import math
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) <= 8
 
@@ -555,6 +542,5 @@ def test_diff_lin_aradi():
     corr = differential_linear_checker_for_block_cipher_single_key(
         speck, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=42
     )
-    import math
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 8

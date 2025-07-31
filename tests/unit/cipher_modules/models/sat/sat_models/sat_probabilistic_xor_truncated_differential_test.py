@@ -1,3 +1,6 @@
+import itertools
+import pytest
+
 from claasp.cipher_modules.models.sat.sat_models.sat_probabilistic_xor_truncated_differential_model import (
     SatProbabilisticXorTruncatedDifferentialModel
 )
@@ -10,69 +13,7 @@ from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_b
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-
-WORD_SIZE = 16
-MASK_VAL = 2 ** WORD_SIZE - 1
-ALPHA = 7
-BETA = 2
-
-
-def speck_rol(value, shift):
-    """Performs a left rotation on a 16-bit word."""
-    return ((value << shift) & MASK_VAL) | (value >> (WORD_SIZE - shift))
-
-
-def speck_ror(value, shift):
-    """Performs a right rotation on a 16-bit word."""
-    return (value >> shift) | ((value << (WORD_SIZE - shift)) & MASK_VAL)
-
-
-def speck_encrypt_round(plaintext, subkey):
-    """Performs one round of encryption for Speck32/64."""
-    left_part, right_part = plaintext
-    left_part = speck_ror(left_part, ALPHA)
-    left_part = (left_part + right_part) & MASK_VAL
-    left_part ^= subkey
-    right_part = speck_rol(right_part, BETA)
-    right_part ^= left_part
-    return left_part, right_part
-
-
-def speck_decrypt_round(ciphertext, subkey):
-    """Performs one round of decryption for Speck32/64."""
-    left_part, right_part = ciphertext
-    right_part ^= left_part
-    right_part = speck_ror(right_part, BETA)
-    left_part ^= subkey
-    left_part = (left_part - right_part) & MASK_VAL
-    left_part = speck_rol(left_part, ALPHA)
-    return left_part, right_part
-
-
-def speck_encrypt(plaintext, subkeys):
-    """Encrypts the given plaintext using the provided subkeys."""
-    left_part, right_part = plaintext
-    for subkey in subkeys:
-        left_part, right_part = speck_encrypt_round((left_part, right_part), subkey)
-    return left_part, right_part
-
-
-def speck_decrypt(ciphertext, subkeys):
-    """Decrypts the given ciphertext using the provided key schedule."""
-    left_part, right_part = ciphertext
-    for subkey in reversed(subkeys):
-        left_part, right_part = speck_decrypt_round((left_part, right_part), subkey)
-    return left_part, right_part
-
-
-def speck_key_expansion(key, rounds):
-    """Expands a key for the specified number of rounds of encryption."""
-    ks = [0] * rounds
-    ks[0] = key[-1]
-    left_words = list(reversed(key[:-1]))
-    for i in range(rounds - 1):
-        left_words[i % len(left_words)], ks[i + 1] = speck_encrypt_round((left_words[i % len(left_words)], ks[i]), i)
-    return ks
+from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
 
 def test_differential_truncated_in_single_key_scenario_speck3264():
@@ -119,10 +60,10 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
     speck = SpeckBlockCipher(number_of_rounds=4)
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='not_equal',
         bit_positions=range(32),
-        bit_values=[0] * 32
+        bit_values=(0,) * 32
     )
 
     intermediate_output_1_12 = set_fixed_variables(
@@ -133,7 +74,7 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
     )
 
     key = set_fixed_variables(
-        component_id='key',
+        component_id=INPUT_KEY,
         constraint_type='equal',
         bit_positions=range(64),
         bit_values=(0,) * 64
@@ -185,10 +126,10 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
     speck = SpeckBlockCipher(number_of_rounds=5)
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='not_equal',
         bit_positions=range(32),
-        bit_values=[0] * 32
+        bit_values=(0,) * 32
     )
 
     intermediate_output_1_12 = set_fixed_variables(
@@ -199,7 +140,7 @@ def test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weig
     )
 
     key = set_fixed_variables(
-        component_id='key',
+        component_id=INPUT_KEY,
         constraint_type='equal',
         bit_positions=range(64),
         bit_values=(0,) * 64
@@ -235,10 +176,10 @@ def test_find_lowest_xor_probabilistic_truncated_differential_trail_with_fixed_w
     speck = SpeckBlockCipher(number_of_rounds=5)
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='not_equal',
         bit_positions=range(32),
-        bit_values=[0] * 32
+        bit_values=(0,) * 32
     )
 
     intermediate_output_1_12 = set_fixed_variables(
@@ -249,7 +190,7 @@ def test_find_lowest_xor_probabilistic_truncated_differential_trail_with_fixed_w
     )
 
     key = set_fixed_variables(
-        component_id='key',
+        component_id=INPUT_KEY,
         constraint_type='equal',
         bit_positions=range(64),
         bit_values=(0,) * 64
@@ -281,17 +222,17 @@ def test_wrong_fixed_variables_assignment():
     speck = SpeckBlockCipher(number_of_rounds=5)
 
     key = set_fixed_variables(
-        component_id='key',
+        component_id=INPUT_KEY,
         constraint_type='equal',
         bit_positions=range(64),
         bit_values=(0,) * 64
     )
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='not_equal',
         bit_positions=range(32),
-        bit_values=[0] * 32
+        bit_values=(0,) * 32
     )
 
     intermediate_output_1_12 = set_fixed_variables(
@@ -358,7 +299,6 @@ def test_wrong_fixed_variables_assignment():
 
     sat_heterogeneous_model = SatProbabilisticXorTruncatedDifferentialModel(speck, component_model_types)
 
-    import pytest
     with pytest.raises(ValueError) as exc_info:
         sat_heterogeneous_model.find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
             8,
@@ -372,9 +312,6 @@ def test_wrong_fixed_variables_assignment():
 def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     """Test for finding a XOR regular truncated differential trail with fixed weight for 4 rounds of Aradi cipher."""
     aradi = AradiBlockCipherSBox(number_of_rounds=4)
-    import itertools
-
-    top_part_components = []
     bottom_part_components = []
     for round_number in range(2, 4):
         bottom_part_components.append(aradi.get_components_in_round(round_number))
@@ -382,14 +319,14 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     bottom_part_components = [component.id for component in bottom_part_components]
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='equal',
         bit_positions=range(128),
         bit_values=integer_to_bit_list(0x00080021000800210000000000000000, 128, 'big')
     )
 
     key = set_fixed_variables(
-        component_id='key',
+        component_id=INPUT_KEY,
         constraint_type='equal',
         bit_positions=range(256),
         bit_values=(0,) * 256
@@ -414,9 +351,6 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
 def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     """Test for finding a XOR regular truncated differential trail with fixed weight for 4 rounds of ChaCha cipher."""
     chacha = ChachaPermutation(number_of_rounds=3)
-    import itertools
-
-    top_part_components = []
     bottom_part_components = []
     for round_number in range(2, 3):
         bottom_part_components.append(chacha.get_components_in_round(round_number))
@@ -428,7 +362,7 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
         'big'
     )
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='equal',
         bit_positions=list(range(512)),
         bit_values=initial_state_positions
@@ -509,7 +443,7 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     )
     assert trail['status'] == 'SATISFIABLE'
 
-    input_difference = int(trail['components_values']['plaintext']['value'], 16)
+    input_difference = int(trail['components_values'][INPUT_PLAINTEXT]['value'], 16)
     output_difference = trail['components_values']['cipher_output_2_24']['value']
     prob = differential_truncated_checker_permutation(
         chacha, input_difference, output_difference, 1 << 14, 512, seed=42
