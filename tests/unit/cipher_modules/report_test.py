@@ -1,14 +1,12 @@
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
-from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.report import Report
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
 from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
@@ -123,7 +121,6 @@ def test_save_as_json():
 
     speck = SpeckBlockCipher(number_of_rounds=2)
 
-    # precomputed_results = load('tests/precomputed_results.sobj')
     neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests(nb_samples=10)
     blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
     blackbox_report.save_as_json(fixed_input='plaintext',fixed_output='round_output')
