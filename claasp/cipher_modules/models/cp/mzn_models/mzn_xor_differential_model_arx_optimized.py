@@ -20,6 +20,8 @@ from copy import deepcopy
 from minizinc import Status
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.milp.utils.mzn_predicates import WORD_OPERATIONS as MILP_WORD_OPERATIONS
+from claasp.cipher_modules.models.sat.utils.mzn_predicates import WORD_OPERATIONS as SAT_WORD_OPERATIONS
 from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION
 
 
@@ -522,12 +524,12 @@ class MznXorDifferentialModelARXOptimized(MznModel):
 
         self._model_constraints.extend(self.connect_rounds())
         if self.sat_or_milp == "sat":
-            from claasp.cipher_modules.models.sat.utils.mzn_predicates import get_word_operations
-        else:
-            from claasp.cipher_modules.models.milp.utils.mzn_predicates import get_word_operations
+            word_operations = SAT_WORD_OPERATIONS
+        elif self.sat_or_milp == "milp":
+            word_operations = MILP_WORD_OPERATIONS
 
         if self.include_word_operations_mzn_file:
-            self._model_constraints.extend([get_word_operations()])
+            self._model_constraints.extend([word_operations])
         self._model_constraints.extend([
             f'output [ \"{self.cipher_id}, and window_size={self.window_size_list}\" ++ \"\\n\"];'])
         self._model_constraints.extend(output_string_for_cipher_inputs)
@@ -604,7 +606,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
 
             objective_string.append(f'minimize max(sum({modadd_key_schedule_concatenation_vars}), sum({modadd_permutation_probability_vars}));')
         else:
-            raise NotImplementedError("Strategy {strategy} no implemented")
+            raise NotImplementedError(f"Strategy {strategy} no implemented")
 
         return objective_string
 

@@ -868,9 +868,8 @@ class MznModel:
         else:
             filename = f'{file_path}/{prefix}_{self.cipher_id}_mzn_{self.sat_or_milp}.mzn'
 
-        f = open(filename, "w")
-        f.write(model_string)
-        f.close()
+        with open(filename, "w") as file:
+            file.write(model_string)
 
     @property
     def cipher(self):

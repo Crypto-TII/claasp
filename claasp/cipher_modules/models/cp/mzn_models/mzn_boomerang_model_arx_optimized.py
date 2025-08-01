@@ -18,10 +18,11 @@ from copy import deepcopy
 from minizinc import Status
 
 from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import get_bct_operations
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import BCT_OPERATIONS
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import \
     MznXorDifferentialModelARXOptimized
 from claasp.cipher_modules.models.cp.minizinc_utils.utils import group_strings_by_pattern
+from claasp.cipher_modules.models.sat.utils.mzn_predicates import WORD_OPERATIONS
 
 
 class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
@@ -180,9 +181,8 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
 
         self.differential_model_top_cipher.extend_model_constraints(
             self.differential_model_top_cipher.weight_constraints(max_weight=None, weight=None, operator=">="))
-        from claasp.cipher_modules.models.sat.utils.mzn_predicates import get_word_operations
-        self._model_constraints.extend([get_word_operations()])
-        self._model_constraints.extend([get_bct_operations()])
+        self._model_constraints.extend([WORD_OPERATIONS])
+        self._model_constraints.extend([BCT_OPERATIONS])
 
         self._variables_list.extend(self.differential_model_top_cipher.get_variables() +
                                     self.differential_model_bottom_cipher.get_variables())
@@ -207,12 +207,10 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             filename += f'{self.differential_model_top_cipher.sat_or_milp}.mzn'
             self.filename = filename
 
-        f = open(filename, "w")
-        f.write(
-            model_string_top + "\n" + model_string_bottom + "\n" + "\n".join(self._variables_list) + "\n" + "\n".join(
-                self._model_constraints)
-        )
-        f.close()
+        with open (filename, "w") as file:
+            variables = "\n".join(self._variables_list)
+            constraints = "\n".join(self._model_constraints)
+            file.write(f"{model_string_top}\n{model_string_bottom}\n{variables}\n{constraints}")
 
     def parse_components_with_solution(self, result, solution):
         dict_of_component_value = {}
