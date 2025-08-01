@@ -36,7 +36,6 @@ from claasp.name_mappings import (
     INPUT_MESSAGE,
     INPUT_STATE,
 )
-from claasp.utils.utils import get_k_th_bit
 
 
 def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids):
@@ -812,7 +811,7 @@ def extract_bits(columns, positions):
         for j in range(num_columns):
             byte_index = (bit_size - positions[i] - 1) // 8
             bit_index = positions[i] % 8
-            result[i, j] = get_k_th_bit(columns[:, j][byte_index], bit_index)
+            result[i, j] = 1 & (columns[:, j][byte_index] >> bit_index)
     return result
 
 
