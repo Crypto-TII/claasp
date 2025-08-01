@@ -68,7 +68,7 @@ RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-arc
     && rm source-archive.tar.gz \
     && cd HiGHS \
     && cmake -S. -B build \
-    && cmake --build build --parallel
+    && cmake --build build
 
 ENV PATH="${PATH}:/opt/HiGHS/build/bin"
 
@@ -88,6 +88,7 @@ ENV PATH="${PATH}:/opt/scip-803/build/bin"
 
 # Installing SageMath tools
 RUN sage -pip install bitstring==4.0.1 \
+  kaleido==1.0.0 \
   keras==2.13.1 \
   minizinc==0.5.0 \
   pandas==1.5.2 \
@@ -100,6 +101,7 @@ RUN sage -pip install bitstring==4.0.1 \
   sphinx==5.0.0 \
   sphinxcontrib-bibtex==2.5.0 \
   tensorflow==2.13.0 \
+  plotly==6.2.0 \
   pytest==7.2.1 \
   pytest-cov==4.0.0 \
   pytest-xdist==3.2.0 \
@@ -122,16 +124,82 @@ RUN cd /opt/sts-2.1.2/sts-2.1.2 \
     && ln -s /usr/local/bin/sts-2.1.2/assess /usr/local/bin/niststs \
     && rm /opt/sts-2_1_2.zip
 
+# Installing Minizinc
+RUN wget https://github.com/MiniZinc/libminizinc/archive/refs/tags/2.9.3.tar.gz \
+    && tar -xf 2.9.3.tar.gz \
+    && rm 2.9.3.tar.gz
+
+RUN cd libminizinc-2.9.3 \
+    && cmake -B build -S . \
+    && cmake --build build \
+    && cmake --build build --target install
+
+# Installing Chuffed
+RUN wget https://github.com/chuffed/chuffed/archive/refs/tags/0.13.2.tar.gz \
+    && tar -xf 0.13.2.tar.gz \
+    && rm 0.13.2.tar.gz
+
+RUN cd chuffed-0.13.2 \
+    && cmake -B build -S . \
+    && cmake --build build \
+    && cmake --build build --target install
+
+# Installing OR-Tools
+RUN wget https://github.com/google/or-tools/releases/download/v9.2/or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz \
+    && tar -xf or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz \
+    && rm or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz
+
+RUN mv or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972/bin/* /usr/local/bin \
+    && mkdir /usr/local/lib/or-tools \
+    && mv or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972/lib/* /usr/local/lib/or-tools \
+    && mkdir /usr/local/share/minizinc/or-tools \
+    && mv or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972/share/minizinc/* /usr/local/share/minizinc/or-tools \
+    && echo "/usr/local/lib/or-tools" | sudo tee /etc/ld.so.conf.d/or-tools.conf \
+    && ldconfig
+
+RUN echo '\
+{\n\
+  "name": "Xor",\n\
+  "version": "9.2",\n\
+  "id": "Xor",\n\
+  "executable": "/usr/local/bin/fzn-or-tools",\n\
+  "mznlib": "/usr/local/share/minizinc/or-tools",\n\
+  "stdFlags": ["-a", "-p", "-r", "-f"],\n\
+  "needsPathsFile": false\n\
+}\
+' > /usr/local/share/minizinc/solvers/Xor.msc
+
+# Installing Choco
 WORKDIR /opt
 
-# Installing Minizinc
-RUN wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.6.4/MiniZincIDE-2.6.4-bundle-linux-x86_64.tgz \
-    && tar -xf MiniZincIDE-2.6.4-bundle-linux-x86_64.tgz \
-    && rm MiniZincIDE-2.6.4-bundle-linux-x86_64.tgz
+RUN wget https://github.com/chocoteam/choco-solver/archive/refs/tags/v4.10.18.tar.gz \
+    && tar -xf v4.10.18.tar.gz \
+    && rm v4.10.18.tar.gz
 
-ENV PATH="/opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/bin:${PATH}"
+RUN mv choco-solver-4.10.18/parsers/src/main/minizinc/fzn-choco* /usr/local/bin \
+    && mkdir /usr/local/share/minizinc/choco \
+    && mv choco-solver-4.10.18/parsers/src/main/minizinc/mzn_lib/* /usr/local/share/minizinc/choco
+
+RUN wget https://github.com/chocoteam/choco-solver/releases/download/v4.10.18/choco-solver-4.10.18-light.jar
+
+# Update files
+RUN sed -i 's&JAR_FILE=.*&JAR_FILE="/opt/choco-solver-4.10.18-light.jar"&g' /usr/local/bin/fzn-choco.py
+
+RUN echo '\
+{\n\
+  "name": "Choco-solver",\n\
+  "version": "4.10.18",\n\
+  "id": "org.choco.choco",\n\
+  "executable": "/usr/local/bin/fzn-choco.sh",\n\
+  "mznlib": "/usr/local/share/minizinc/choco",\n\
+  "tags": ["cp","int"],\n\
+  "stdFlags": ["-a","-n","-s","-p","-r","-f","-t","--cp-profiler"]\n\
+}\
+' > /usr/local/share/minizinc/solvers/choco.msc
 
 # Installing CryptoMiniSat
+WORKDIR /opt
+
 RUN wget https://github.com/msoos/cryptominisat/archive/refs/tags/5.11.4.tar.gz \
     && tar -xf 5.11.4.tar.gz \
     && rm 5.11.4.tar.gz
@@ -231,11 +299,11 @@ RUN cd cadical-rel-1.5.3 \
     && ./configure \
     && make
 
-WORKDIR /opt
-
 ENV PATH="/opt/cadical-rel-1.5.3/build:${PATH}"
 
-# Installing Yices-Sat
+# Installing Yices
+WORKDIR /opt
+
 RUN wget https://yices.csl.sri.com/releases/2.6.4/yices-2.6.4-x86_64-pc-linux-gnu.tar.gz  \
     && tar -xf yices-2.6.4-x86_64-pc-linux-gnu.tar.gz \
     && rm yices-2.6.4-x86_64-pc-linux-gnu.tar.gz
@@ -243,89 +311,17 @@ RUN wget https://yices.csl.sri.com/releases/2.6.4/yices-2.6.4-x86_64-pc-linux-gn
 RUN cd yices-2.6.4 \
     && ./install-yices
 
-WORKDIR /opt
-
-# Installing or-tools
-RUN wget https://github.com/google/or-tools/releases/download/v9.2/or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz \
-    && tar -xf or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz \
-    && rm or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz
-
-RUN mkdir -p /opt/minizinc/solvers/s
-
-RUN echo '\
-{ \n\
-"executable": "/opt/or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972/bin/fzn-or-tools", \n\
-"id": "Xor", \n\
-"isGUIApplication": false, \n\
-"mznlib": "/opt/or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972/lib", \n\
-"mznlibVersion": 1, \n\
-"name": "Xor", \n\
-"needsMznExecutable": false, \n\
-"needsPathsFile": false, \n\
-"needsSolns2Out": true, \n\
-"needsStdlibDir": false, \n\
-"stdFlags": [ \n\
-    "-a", \n\
-    "-p", \n\
-    "-r", \n\
-    "-f" \n\
-], \n\
-"supportsFzn": true, \n\
-"supportsMzn": false, \n\
-"supportsNL": false, \n\
-"version": "8.2" } \
-' > /opt/minizinc/solvers/Xor.msc
-
-# Installing Choco
-
-# Copy Choco's executable from the previous stage across
-RUN wget https://github.com/chocoteam/choco-solver/archive/refs/tags/v4.10.12.tar.gz \
-    && tar -xf v4.10.12.tar.gz \
-    && rm v4.10.12.tar.gz
-
-RUN wget https://github.com/chocoteam/choco-solver/releases/download/v4.10.12/choco-solver-4.10.12.jar
-
-# Update files
-RUN sed -i 's&CHOCO_JAR=.*&CHOCO_JAR=/opt/choco-solver-4.10.12.jar&g' /opt/choco-solver-4.10.12/parsers/src/main/minizinc/fzn-choco && \
-    sed -i 's&"mznlib".*&"mznlib":"/opt/choco-solver-4.10.12/parsers/src/main/minizinc/mzn-lib/",&g' /opt/choco-solver-4.10.12/parsers/src/main/minizinc/choco.msc && \
-    sed -i 's&"executable".*&"executable":"/opt/choco-solver-4.10.12/parsers/src/main/minizinc/fzn-choco",&g' /opt/choco-solver-4.10.12/parsers/src/main/minizinc/choco.msc
-
-ENV PATH="/opt/choco-solver-4.10.12:${PATH}"
-
-RUN echo '\
-{ \n\
-  "id": "org.choco.choco", \n\
-  "name": "Choco-solver", \n\
-  "description": "Choco FlatZinc executable", \n\
-  "version": "4.10.12", \n\
-  "mznlib": "/opt/choco-solver-4.10.12/parsers/src/main/minizinc/mzn_lib", \n\
-  "executable": "/opt/choco-solver-4.10.12/parsers/src/main/minizinc/fzn-choco", \n\
-  "tags": ["cp","int"], \n\
-  "stdFlags": ["-a","-f","-n","-p","-r","-s","-t"], \n\
-  "supportsMzn": false, \n\
-  "supportsFzn": true, \n\
-  "needsSolns2Out": true, \n\
-  "needsMznExecutable": false, \n\
-  "needsStdlibDir": false, \n\
-  "isGUIApplication": false \n\
-} \
-' > /opt/minizinc/solvers/choco.msc
-
-ENV MZN_SOLVER_PATH="/opt/minizinc/solvers"
-
-ENV LD_LIBRARY_PATH="/opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib:${LD_LIBRARY_PATH}"
-
-RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/liblzma.so.5
-RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libselinux.so.1
-RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libsystemd.so.0
-RUN rm -rf /opt/MiniZincIDE-2.6.4-bundle-linux-x86_64/lib/libcrypt.so.1
-
-RUN sage -pip install plotly -U kaleido
 COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
 RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
 
 RUN apt-get install -y coinor-cbc coinor-libcbc-dev
 RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
+
+# clean image
+RUN rm -r /opt/choco-solver-4.10.18
+RUN rm -r /opt/chuffed-0.13.2
+RUN rm -r /opt/libminizinc-2.9.3
+RUN rm -r /opt/or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972
 
 FROM claasp-base AS claasp-lib
 

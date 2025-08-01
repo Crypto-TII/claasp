@@ -86,13 +86,8 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``first_step_solver_name`` -- **string** (default: `Chuffed`); the name of the solver for the number of active sboxes search
-        - ``second_step_solver_name`` -- **string** (default: `Chuffed`); the name of the solver for the differential trails search. Available values for both the solver names are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
-          * ``'Xor'``
-          * ``'Choco-solver'``
+        - ``second_step_solver_name`` -- **string** (default: `Chuffed`); the name of the solver for the differential trails search.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
@@ -125,11 +120,8 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
@@ -161,11 +153,8 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
@@ -196,11 +185,8 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
 
         - ``fixed_weight`` -- **integer**; the value to which the weight is fixed, if non-negative
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
@@ -427,11 +413,8 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
 
             * 'xor_differential_first_step'
             * 'xor_differential_first_step_find_all_solutions'
-        - ``solver_name`` -- **string** (default: `None`); the name of the solver. Available values are:
-
-            * ``'Chuffed'``
-            * ``'Gecode'``
-            * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `None`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
