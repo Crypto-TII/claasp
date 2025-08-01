@@ -13,4 +13,3 @@ def test_a52():
     frame = 0b1000010000000000000000
     keystream = 0xf4512cac13593764460b722dadd51200350ca385a853735ee5c889944
     assert a52.evaluate([key, frame]) == keystream
-
