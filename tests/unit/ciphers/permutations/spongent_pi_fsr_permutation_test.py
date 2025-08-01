@@ -2,6 +2,13 @@ from claasp.ciphers.permutations.spongent_pi_fsr_permutation import SpongentPiFS
 
 
 def test_spongent_pi_fsr_permutation():
+    spongentpi = SpongentPiFSRPermutation()
+    assert spongentpi.family_name == 'spongent_pi_fsr'
+    assert spongentpi.type == 'permutation'
+    assert spongentpi.number_of_rounds == 80
+    assert spongentpi.id == 'spongent_pi_fsr_p160_o160_r80'
+    assert spongentpi.component_from(0, 0).id == 'constant_0_0'
+
     spongentpi = SpongentPiFSRPermutation(state_bit_size=160, number_of_rounds=4)
     assert spongentpi.number_of_rounds == 4
     assert spongentpi.id == 'spongent_pi_fsr_p160_o160_r4'
