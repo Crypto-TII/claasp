@@ -210,11 +210,8 @@ class MznXorDifferentialModel(MznModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
@@ -264,11 +261,8 @@ class MznXorDifferentialModel(MznModel):
         - ``min_weight`` -- **integer**; the weight from which to start the search
         - ``max_weight`` -- **integer** (default: 64); the weight at which the search stops
         - ``fixed_values`` -- **list**  (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
@@ -336,11 +330,8 @@ class MznXorDifferentialModel(MznModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
@@ -395,11 +386,8 @@ class MznXorDifferentialModel(MznModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
@@ -447,11 +435,8 @@ class MznXorDifferentialModel(MznModel):
 
         - ``fixed_weight`` -- **integer**; the value to which the weight is fixed, if non-negative
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
