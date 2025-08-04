@@ -4,6 +4,7 @@ from claasp.cipher_modules.models.utils import set_fixed_variables, differential
     integer_to_bit_list
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
 
 def test_find_one_semi_deterministic_truncated_xor_differential_trail():
@@ -11,7 +12,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail():
     sat = SatSemiDeterministicTruncatedXorDifferentialModel(speck)
     bit_values = [0]*32
     bit_values[10] = 1
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
+    plaintext = set_fixed_variables(component_id=INPUT_PLAINTEXT, constraint_type='equal', bit_positions=range(32),
                                     bit_values=bit_values)
 
     intermediate_output_0_6 = set_fixed_variables(
@@ -26,7 +27,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail():
         component_id='cipher_output_2_12', constraint_type='equal', bit_positions=range(32),
         bit_values=[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
 
-    key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64),
+    key = set_fixed_variables(component_id=INPUT_KEY, constraint_type='equal', bit_positions=range(64),
                               bit_values=(0,) * 64)
     trail = sat.find_one_semi_deterministic_truncated_xor_differential_trail(
         fixed_values=[plaintext, intermediate_output_0_6, intermediate_output_1_12, cipher_output_2_12, key]
@@ -39,7 +40,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatSemiDeterministicTruncatedXorDifferentialModel(speck)
 
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
+    plaintext = set_fixed_variables(component_id=INPUT_PLAINTEXT, constraint_type='equal', bit_positions=range(32),
                                     bit_values=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0,
                                                 0, 0, 0, 0, 0, 0, 0, 0])
 
@@ -55,7 +56,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
         component_id='cipher_output_2_12', constraint_type='equal', bit_positions=range(32),
         bit_values=[2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1])
 
-    key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64),
+    key = set_fixed_variables(component_id=INPUT_KEY, constraint_type='equal', bit_positions=range(64),
                               bit_values=(0,) * 64)
     trail = sat.find_one_semi_deterministic_truncated_xor_differential_trail(
         fixed_values=[plaintext, intermediate_output_0_6, intermediate_output_1_12, cipher_output_2_12, key],
@@ -73,7 +74,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatSemiDeterministicTruncatedXorDifferentialModel(speck)
 
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
+    plaintext = set_fixed_variables(component_id=INPUT_PLAINTEXT, constraint_type='equal', bit_positions=range(32),
                                     bit_values=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0,
                                                 0, 0, 0, 0, 0, 0, 0, 0])
 
@@ -89,7 +90,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
         component_id='cipher_output_2_12', constraint_type='equal', bit_positions=range(32),
         bit_values=[2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1])
 
-    key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64),
+    key = set_fixed_variables(component_id=INPUT_KEY, constraint_type='equal', bit_positions=range(64),
                               bit_values=(0,) * 64)
     trail = sat.find_one_semi_deterministic_truncated_xor_differential_trail(
         fixed_values=[plaintext, intermediate_output_0_6, intermediate_output_1_12, cipher_output_2_12, key],
@@ -109,7 +110,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
     state_size = 512
     initial_state = [0] * state_size
     initial_state[389] = 1
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(state_size),
+    plaintext = set_fixed_variables(component_id=INPUT_PLAINTEXT, constraint_type='equal', bit_positions=range(state_size),
                                     bit_values=initial_state)
 
     trail = sat.find_one_semi_deterministic_truncated_xor_differential_trail(
@@ -132,15 +133,13 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
     initial_state_positions[508] = 1
 
     plaintext = set_fixed_variables(
-        component_id='plaintext',
+        component_id=INPUT_PLAINTEXT,
         constraint_type='equal',
         bit_positions=list(range(state_size)),
         bit_values=initial_state_positions
     )
 
-    intermediate_output_0_24_int = int(
-        '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000',
-        2)
+    intermediate_output_0_24_int = 0x00000000000000000000000000000000000000000000000000000000800000000000000000000000000000000008000000000000000000000000000000080000
     intermediate_output_0_24 = set_fixed_variables(
         component_id='intermediate_output_0_24',
         constraint_type='equal',
@@ -148,8 +147,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
         bit_values=integer_to_bit_list(intermediate_output_0_24_int, state_size, 'big')
     )
 
-    cipher_output_1_24_int = list(
-        '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000010000000????100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????100000001000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000')
+    cipher_output_1_24_int = '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000010000000????100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????100000001000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000'
     cipher_output_1_24_int_temp = []
     for bit in cipher_output_1_24_int:
         if bit == '?':
@@ -176,7 +174,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
 
     assert trail['status'] == 'SATISFIABLE'
 
-    input_difference = int(trail['components_values']['plaintext']['value'], 2)
+    input_difference = int(trail['components_values'][INPUT_PLAINTEXT]['value'], 2)
     output_difference = trail['components_values']['cipher_output_1_24']['value']
     prob = differential_truncated_checker_permutation(
         chacha, input_difference, output_difference, 1 << 12, state_size, seed=42
