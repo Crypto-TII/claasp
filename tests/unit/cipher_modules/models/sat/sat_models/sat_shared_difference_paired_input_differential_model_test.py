@@ -1,5 +1,6 @@
 from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_model import \
     SharedDifferencePairedInputDifferentialModel
+from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT
 from claasp.cipher_modules.models.utils import set_fixed_variables, \
     shared_difference_paired_input_differential_checker_permutation, \
     integer_to_bit_list
@@ -35,7 +36,7 @@ def test_sat_shared_difference_paired_input_differential_model_on_chacha_permuta
     trail = sat_model.find_one_shared_difference_paired_input_differential_trail_with_fixed_weight(
         8,
         fixed_variables,
-        solver_name="CADICAL_EXT"
+        solver_name=CADICAL_EXT
     )
 
     assert trail['status'] == 'SATISFIABLE'

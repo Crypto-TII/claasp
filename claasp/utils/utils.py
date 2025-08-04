@@ -232,24 +232,6 @@ def get_number_of_rounds_from(block_bit_size, key_bit_size, number_of_rounds, pa
     return n
 
 
-def get_k_th_bit(n, k):
-    """
-    Return the k-th bit of the number n.
-
-    INPUT:
-
-    - ``n`` -- **integer**; integer number
-    - ``k`` -- **integer**; integer number representing the index of the bit we need
-
-    EXAMPLES::
-
-        sage: from claasp.utils.utils import get_k_th_bit
-        sage: get_k_th_bit(3, 0)
-        1
-    """
-    return 1 & (n >> k)
-
-
 def group_list_by_key(lst):
     """
     Group list of dictionaries by key.

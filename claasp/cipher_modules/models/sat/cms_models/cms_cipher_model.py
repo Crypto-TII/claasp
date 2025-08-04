@@ -22,7 +22,7 @@
 .. _cms-cipher-standard:
 
 CMS cipher model of a cipher
-------------------------------------
+----------------------------
 
 The target of this class is to override the methods of the superclass
 :py:class:`Sat Cipher Model <cipher_modules.models.sat.sat_models.sat_cipher_model>` to take the advantage given by
@@ -84,8 +84,8 @@ class CmsSatCipherModel(SatCipherModel):
         """
         variables = []
         constraints = SatModel.fix_variables_value_constraints(fixed_variables)
-        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
-        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        operation_types = ('AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR')
         self._model_constraints = constraints
         self._variables_list = []
 
