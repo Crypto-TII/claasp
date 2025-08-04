@@ -523,6 +523,36 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
              ...
              'output["key = "++ show(key) ++ "\\n" ++"intermediate_output_0_5 = "++ show(intermediate_output_0_5) ++ "\\n" ++"intermediate_output_0_6 = "++ show(intermediate_output_0_6) ++ "\\n" ++"inverse_intermediate_output_3_12 = "++ show(inverse_intermediate_output_3_12) ++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_0_6 = "++ show(intermediate_output_0_6)++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_1_12 = "++ show(intermediate_output_1_12)++ "\\n" ++ "0" ++ "\\n" ++"intermediate_output_2_12 = "++ show(intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_2_12 = "++ show(inverse_intermediate_output_2_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_intermediate_output_3_12 = "++ show(inverse_intermediate_output_3_12)++ "\\n" ++ "0" ++ "\\n" ++"inverse_cipher_output_4_12 = "++ show(inverse_cipher_output_4_12)++ "\\n" ++ "0" ++ "\\n" ];']
         """
+        def show_constraints_intermediate_components(component_list, key_schedule_components_ids, current_constraint, current_incompatibility_constraint):
+            for component in component_list:
+                if component.type != CONSTANT and component.id not in key_schedule_components_ids:
+                    component_id = component.id
+                    input_id_links = component.input_id_links
+                    input_bit_positions = component.input_bit_positions
+                    component_inputs = []
+                    input_bit_size = 0
+                    for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+                        component_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+                        input_bit_size += len(bit_positions)
+                        current_constraint = current_constraint + \
+                                         f'\"{id_link} = \"++ show({id_link})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                    current_constraint = current_constraint + \
+                                     f'\"inverse_{component_id} = \"++ show(inverse_{component_id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                    for i in range(input_bit_size):
+                        current_incompatibility_constraint += f'({component_inputs[i]}+inverse_{component_id}[{i}]=1) \\/ '
+            return current_constraint, current_incompatibility_constraint
+
+        def show_constraints(key_schedule_components_ids, current_constraint, current_incompatibility_constraint):
+            for component in self._cipher.get_all_components():
+                if 'output' in component.id and component.id not in key_schedule_components_ids:
+                    current_constraint = current_constraint + \
+                                     f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                    current_constraint = current_constraint + \
+                                     f'\"inverse_{component.id} = \"++ show(inverse_{component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                    for i in range(component.output_bit_size):
+                        current_incompatibility_constraint += f'({component.id}[{i}]+inverse_{component.id}[{i}]=1) \\/ '
+            return current_constraint, current_incompatibility_constraint
+
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
         if fully_automatic:
@@ -557,31 +587,9 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                     new_constraint = f'{new_constraint}\"inverse_{element} = \"++ show(inverse_{element}) ++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
             if intermediate_components:
                 component_list = cipher.get_all_components()
-                for component in component_list:
-                    if component.type != CONSTANT and component.id not in key_schedule_components_ids:
-                        component_id = component.id
-                        input_id_links = component.input_id_links
-                        input_bit_positions = component.input_bit_positions
-                        component_inputs = []
-                        input_bit_size = 0
-                        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                            component_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-                            input_bit_size += len(bit_positions)
-                            new_constraint = new_constraint + \
-                                             f'\"{id_link} = \"++ show({id_link})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                        new_constraint = new_constraint + \
-                                         f'\"inverse_{component_id} = \"++ show(inverse_{component_id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                        for i in range(input_bit_size):
-                            incompatibility_constraint += f'({component_inputs[i]}+inverse_{component_id}[{i}]=1) \\/ '
+                new_constraint, incompatibility_constraint = show_constraints_intermediate_components(component_list, key_schedule_components_ids, new_constraint, incompatibility_constraint)
             else:
-                for component in cipher.get_all_components():
-                    if 'output' in component.id and component.id not in key_schedule_components_ids:
-                        new_constraint = new_constraint + \
-                                         f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                        new_constraint = new_constraint + \
-                                         f'\"inverse_{component.id} = \"++ show(inverse_{component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                        for i in range(component.output_bit_size):
-                            incompatibility_constraint += f'({component.id}[{i}]+inverse_{component.id}[{i}]=1) \\/ '
+                    new_constraint, incompatibility_constraint = show_constraints(key_schedule_components_ids, new_constraint, incompatibility_constraint)
         else:
             for element in cipher_inputs:
                 new_constraint = f'{new_constraint}\"{element} = \"++ show({element}) ++ \"\\n\" ++'
@@ -593,22 +601,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                     component_list = cipher.get_components_in_round(middle_round - 1)
                 else:
                     component_list = cipher.get_all_components()
-                for component in component_list:
-                    if component.type != CONSTANT and component.id not in key_schedule_components_ids:
-                        component_id = component.id
-                        input_id_links = component.input_id_links
-                        input_bit_positions = component.input_bit_positions
-                        component_inputs = []
-                        input_bit_size = 0
-                        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-                            component_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-                            input_bit_size += len(bit_positions)
-                            new_constraint = new_constraint + \
-                                             f'\"{id_link} = \"++ show({id_link})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                        new_constraint = new_constraint + \
-                                         f'\"inverse_{component_id} = \"++ show(inverse_{component_id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                        for i in range(input_bit_size):
-                            incompatibility_constraint += f'({component_inputs[i]}+inverse_{component_id}[{i}]=1) \\/ '
+                new_constraint, incompatibility_constraint = show_constraints_intermediate_components(component_list, key_schedule_components_ids, new_constraint, incompatibility_constraint)
             else:
                 if middle_round is not None:
                     for component in cipher.get_all_components():
@@ -623,14 +616,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                                 for i in range(component.output_bit_size):
                                     incompatibility_constraint += f'({component.id}[{i}]+inverse_{component.id}[{i}]=1) \\/ '
                 else:
-                    for component in cipher.get_all_components():
-                        if 'output' in component.id and component.id not in key_schedule_components_ids:
-                            new_constraint = new_constraint + \
-                                             f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                            new_constraint = new_constraint + \
-                                             f'\"inverse_{component.id} = \"++ show(inverse_{component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                            for i in range(component.output_bit_size):
-                                incompatibility_constraint += f'({component.id}[{i}]+inverse_{component.id}[{i}]=1) \\/ '
+                    new_constraint, incompatibility_constraint = show_constraints(key_schedule_components_ids, new_constraint, incompatibility_constraint)
         cp_constraints.extend([incompatibility_constraint[:-4] + ';', new_constraint[:-2] + '];'])
 
         return cp_constraints
