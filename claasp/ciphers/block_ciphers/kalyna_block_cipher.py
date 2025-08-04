@@ -1,27 +1,38 @@
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 import numpy as np
 
-PARAMETERS_CONFIGURATION_LIST = [
-    {"word_size": 8, "state_size": 4, "number_of_rounds": 10}
-]
-
 
 class KalynaBlockCipher(Cipher):
-    """EXAMPLES::
+    """
+    Return a cipher object of Kalyna Block Cipher.
+    The technical specifications along with the test vectors can be found here: https://eprint.iacr.org/2015/650.pdf
+
+    EXAMPLES::
 
     sage: from claasp.ciphers.block_ciphers.kalyna_block_cipher import KalynaBlockCipher
     sage: kalyna = KalynaBlockCipher()
-    sage: key = 0x0F0E0D0C0B0A09080706050403020100 #0x000102030405060708090A0B0C0D0E0F
-    sage: plaintext =0x101112131415161718191A1B1C1D1E1F
-    sage: kalyna.evaluate([key, plaintext], verbosity = 1)
-
-    sage: from claasp.ciphers.block_ciphers.kalyna_block_cipher import KalynaBlockCipher
-    sage: kalyna = KalynaBlockCipher()
-    sage: key = 0x000102030405060708090A0B0C0D0E0F
-    sage: plaintext =0x101112131415161718191A1B1C1D1E1F
-    sage: ciphertext = 0x3ad77bb40d7a3660a89ecaf32466ef97
+    sage: key = 0x0F0E0D0C0B0A09080706050403020100
+    sage: plaintext = 0x1F1E1D1C1B1A19181716151413121110
+    sage: ciphertext = 0x06add2b439eac9e120ac9b777d1cbf81
     sage: kalyna.evaluate([key, plaintext]) == ciphertext
+    True
     """
 
     def __init__(self, number_of_rounds=10, word_size=8, state_size=8):
@@ -1077,13 +1088,10 @@ class KalynaBlockCipher(Cipher):
             0x61,
         ]
         sboxes = {0: pi0_e, 1: pi1_e, 2: pi2_e, 3: pi3_e}
-        # Define the byte-level mapping
         mapping = [0, 1, 2, 3, 12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7]
 
-        # Initialize a 128x128 binary matrix
         M = np.zeros((128, 128), dtype=int)
 
-        # Fill the matrix with 1s where output bits map from input bits
         for output_byte_index in range(16):
             input_byte_index = mapping[output_byte_index]
             for bit_index in range(8):
@@ -1116,37 +1124,21 @@ class KalynaBlockCipher(Cipher):
         self.kalyna_matrix_description = [
             self.kalyna_matrix,
             0x11D,
-            64,
+            8,
         ]
 
-        #######################
-        # Step A: Initial MODADD using round key K₀
         self.add_round()
-
-        ################### Key Scheduling (Sec 7)######################
-        # Computes K_sigma for Kalyna block cipher as specified in Section 7.1.
-        # Step 0: S₀ = 128-bit zero block 0x00000000000000050000000000000000
-        # S0 = self.add_constant_component(128, 0x0)
         S0 = self.add_constant_component(128, 0x00000000000000000000000000000005)
-
-        # Step 1: G1 = Enc_K(S0 + K)
         g1_first = self.add_MODADD_component(
             [INPUT_KEY, S0.id],
             [[i for i in range(64, 128)], [i for i in range(64, 128)]],
-            64,
+            self.CIPHER_BLOCK_SIZE / 2,
         )
         g1_second = self.add_MODADD_component(
             [INPUT_KEY, S0.id],
             [[i for i in range(64)], [i for i in range(64)]],
-            64,
+            self.CIPHER_BLOCK_SIZE / 2,
         )
-
-        """self.add_cipher_output_component(
-            [g1_second.id, g1_first.id],
-            [[i for i in range(64)], [i for i in range(64)]],
-            128,
-        )"""
-
         sboxes_components = []
         for i in range(8):
             sboxes_components.append(
@@ -1166,388 +1158,379 @@ class KalynaBlockCipher(Cipher):
                     sboxes[3 - (i % 4)],
                 )
             )
-
-        """self.add_cipher_output_component(
-            [sboxes_components[i].id for i in range(16)],
-            [[i for i in range(8)]] * 16,
-            self.CIPHER_BLOCK_SIZE,
-        )"""
-
-        """input_ids = [c.id for c in sboxes_components]
-        input_positions = [list(range(8)) for _ in range(16)]
-        after_circular_right_sheft = self.add_rotate_component(
-            [input_ids], [input_positions], 128, 32 * i
-        )"""
-
         input_ids = [c.id for c in sboxes_components]
         input_positions = [list(range(8)) for _ in range(16)]
         shift1 = self.add_linear_layer_component(
             input_ids, input_positions, 128, M.tolist()
         )
-        """self.add_cipher_output_component(
-            [shift1.id],
-            [[i for i in range(128)]],
-            self.CIPHER_BLOCK_SIZE,
-        )"""
-
-        """g1_first = self.add_mix_column_component(
+        g1_first = self.add_mix_column_component(
             [shift1.id], [[i for i in range(64)]], 64, self.kalyna_matrix_description
-        )"""
-
-        # g1_first = self.add_mix_column_component(
-        #     [shift1.id],
-        #     [[i + j for i in range(0, 128, 16) for j in range(8)]],
-        #     64,
-        #     self.kalyna_matrix_description,
-        # )
-        """g1_second = self.add_mix_column_component(
+        )
+        g1_second = self.add_mix_column_component(
             [shift1.id],
             [[i for i in range(64, 128)]],
-            64,
+            self.CIPHER_BLOCK_SIZE / 2,
             self.kalyna_matrix_description,
-        )"""
-        # g1_second = self.add_mix_column_component(
-        #     [shift1.id],
-        #     [[i + j for i in range(0, 128, 16) for j in range(8, 16)]],
-        #     64,
-        #     self.kalyna_matrix_description,
-        # )
-        col_2 = [i + j for i in range(0, 128, 16) for j in range(8, 16)]
-        col_1 = [i + j for i in range(0, 128, 16) for j in range(0, 8)]
-        g_matrix = self.add_mix_column_component(
-            [shift1.id, shift1.id], [col_1, col_2], 128, self.kalyna_matrix_description
         )
-        self.add_cipher_output_component(
-            [g_matrix.id],
-            [[i for i in range(128)]],
-            self.CIPHER_BLOCK_SIZE,
-        )
-        """self.add_cipher_output_component(
-            [g1_first.id, g1_second.id],
-            [[i for i in range(64)], [i for i in range(64)]],
-            self.CIPHER_BLOCK_SIZE,
-        )"""
-        '''
-        # Step 2: G2 = Enc_K(G1 XOR K)
         g2_first = self.add_XOR_component(
             [g1_first.id, INPUT_KEY],
             [[i for i in range(64)], [i for i in range(64)]],
-            64,
+            self.CIPHER_BLOCK_SIZE / 2,
         )
         g2_second = self.add_XOR_component(
             [g1_second.id, INPUT_KEY],
             [[i for i in range(64)], [i for i in range(64, 128)]],
-            64,
+            self.CIPHER_BLOCK_SIZE / 2,
         )
-
-        sboxes_components = []
+        sboxes_components_2 = []
         for i in range(8):
-            sboxes_components.append(
+            sboxes_components_2.append(
                 self.add_SBOX_component(
-                    [g2_first.id], [[i for i in range(8)]], 8, sboxes[i % 4]
+                    [g2_first.id],
+                    [list(range((8 * i), (8 * i + 8)))],
+                    8,
+                    sboxes[3 - (i % 4)],
                 )
             )
         for i in range(8, 16):
-            sboxes_components.append(
+            sboxes_components_2.append(
                 self.add_SBOX_component(
-                    [g2_second.id], [[i for i in range(8)]], 8, sboxes[i % 4]
+                    [g2_second.id],
+                    [list(range((8 * i) - 64, (8 * i + 8) - 64))],
+                    8,
+                    sboxes[3 - (i % 4)],
                 )
             )
-        input_ids = [c.id for c in sboxes_components]
-        input_positions = [list(range(8)) for _ in range(16)]
-        shift2 = self.add_linear_layer_component(
-            input_ids, input_positions, 128, M.tolist()
+
+        input_ids_2 = [c.id for c in sboxes_components_2]
+        input_positions_2 = [list(range(8)) for _ in range(16)]
+        shift_2 = self.add_linear_layer_component(
+            input_ids_2, input_positions_2, 128, M.tolist()
         )
         g2_first = self.add_mix_column_component(
-            [shift2.id], [[i for i in range(64)]], 64, self.kalyna_matrix_description
+            [shift_2.id], [[i for i in range(64)]], 64, self.kalyna_matrix_description
         )
         g2_second = self.add_mix_column_component(
-            [shift2.id],
+            [shift_2.id],
             [[i for i in range(64, 128)]],
-            64,
+            self.CIPHER_BLOCK_SIZE / 2,
             self.kalyna_matrix_description,
         )
-
-        # Step 3: K_sigma = Enc_K(G2 + K)
-        g3_first = self.add_MODADD_component(
+        g2_first_modadd = self.add_MODADD_component(
             [INPUT_KEY, g2_first.id],
-            [[i for i in range(64)], [i for i in range(64)]],
-            64,
-        )
-        g3_second = self.add_MODADD_component(
-            [INPUT_KEY, g2_second.id],
             [[i for i in range(64, 128)], [i for i in range(64)]],
-            64,
+            self.CIPHER_BLOCK_SIZE / 2,
         )
-
-        sboxes_components = []
+        g2_second_modadd = self.add_MODADD_component(
+            [INPUT_KEY, g2_second.id],
+            [[i for i in range(64)], [i for i in range(64)]],
+            self.CIPHER_BLOCK_SIZE / 2,
+        )
+        sboxes_components_3 = []
         for i in range(8):
-            sboxes_components.append(
+            sboxes_components_3.append(
                 self.add_SBOX_component(
-                    [g3_first.id], [[i for i in range(8)]], 8, sboxes[i % 4]
+                    [g2_second_modadd.id],
+                    [list(range((8 * i), (8 * i + 8)))],
+                    8,
+                    sboxes[3 - (i % 4)],
                 )
             )
         for i in range(8, 16):
-            sboxes_components.append(
+            sboxes_components_3.append(
                 self.add_SBOX_component(
-                    [g3_second.id], [[i for i in range(8)]], 8, sboxes[i % 4]
+                    [g2_first_modadd.id],
+                    [list(range((8 * i) - 64, (8 * i + 8) - 64))],
+                    8,
+                    sboxes[3 - (i % 4)],
                 )
             )
-        input_ids = [c.id for c in sboxes_components]
-        input_positions = [list(range(8)) for _ in range(16)]
-        shift3 = self.add_linear_layer_component(
-            input_ids, input_positions, 128, M.tolist()
-        )
 
-        k_sigma_first = self.add_mix_column_component(
-            [shift3.id], [[i for i in range(64)]], 64, self.kalyna_matrix_description
+        input_ids_3 = [c.id for c in sboxes_components_3]
+        input_positions_3 = [list(range(8)) for _ in range(16)]
+        shift_3 = self.add_linear_layer_component(
+            input_ids_3, input_positions_3, 128, M.tolist()
         )
-        k_sigma_second = self.add_mix_column_component(
-            [shift3.id],
+        g3_first = self.add_mix_column_component(
+            [shift_3.id], [[i for i in range(64)]], 64, self.kalyna_matrix_description
+        )
+        g3_second = self.add_mix_column_component(
+            [shift_3.id],
             [[i for i in range(64, 128)]],
-            64,
+            self.CIPHER_BLOCK_SIZE / 2,
             self.kalyna_matrix_description,
         )
-        # print(f"this is K_sigma{k_sigma_first}")
 
-        ############################# K_even #############################
-        # Even Round Key Generation (Matches Kalyna Spec Section 7.2)
-        for i in range(0, 10 + 1, 2):
-            print(f"this round {i}")
-            # Step 1: Generate round constant TMV_i (e.g., 0x00010001...)
-            base_tmv = self.add_constant_component(128, 0x0001000100010001)
-            # confirm if this << or <<<
+        const = self.add_constant_component(128, 0x0)
+        g3_second_128 = self.add_XOR_component(
+            [g3_second.id, const.id],
+            [[j for j in range(64)], [j for j in range(64)]],
+            self.CIPHER_BLOCK_SIZE,
+        )
+        g3_first_128 = self.add_XOR_component(
+            [const.id, g3_first.id],
+            [[j for j in range(64)], [j for j in range(64)]],
+            self.CIPHER_BLOCK_SIZE,
+        )
+        k_T = self.add_XOR_component(
+            [g3_second_128.id, g3_first_128.id],
+            [[j for j in range(128)], [j for j in range(128)]],
+            self.CIPHER_BLOCK_SIZE,
+        )
+        tmv_0 = self.add_constant_component(128, 0x00010001000100010001000100010001)
+        even_round_keys = {}
+        for k in range(0, self.NROUNDS + 1, 2):  # self.NROUNDS
             tmv = self.add_rotate_component(
-                [base_tmv.id], [list(range(128))], 128, -i // 2
+                [tmv_0.id], [list(range(128))], 128, -k // 2
             )
-            # Step 2: Rotate master key by 32 * i bits (4 * i bytes)
             rotated_key = self.add_rotate_component(
-                [INPUT_KEY], [list(range(128))], 128, 32 * i
+                [INPUT_KEY], [list(range(128))], 128, 32 * k
             )
-            # Step 3: XOR TMV_i with rotated key → produces K'_i
-            k_i_prime = self.add_XOR_component(
-                [tmv.id, rotated_key.id],
+            k_i_prime = self.add_MODADD_component(
+                [tmv.id, k_T.id],
                 [[j for j in range(128)], [j for j in range(128)]],
-                128,
+                self.CIPHER_BLOCK_SIZE,
             )
-            # Step 4: Encrypt K'_i using K_sigma as key:
-            k_i_prime_first = self.add_XOR_component(
-                [k_i_prime.id, k_sigma_first.id],  # XOR with first half of K_sigma
-                [[i for i in range(64)], [i for i in range(64)]],
-                64,
+            k_i_prime_int = self.add_MODADD_component(
+                [k_i_prime.id, rotated_key.id],
+                [[j for j in range(128)], [j for j in range(128)]],
+                self.CIPHER_BLOCK_SIZE,
             )
-            k_i_prime_second = self.add_XOR_component(
-                [k_i_prime.id, k_sigma_second.id],  # XOR with second half of K_sigma
-                [[i for i in range(64, 128)], [i for i in range(64)]],
-                64,
-            )
-            # - SubBytes (η)
-            sboxes_components = []
-            for j in range(8):
-                sboxes_components.append(
+            sboxes_components_E = []
+            for i in range(16):
+                sboxes_components_E.append(
                     self.add_SBOX_component(
-                        [k_i_prime_first.id], [[j for j in range(8)]], 8, sboxes[j % 4]
+                        [k_i_prime_int.id],
+                        [list(range((8 * i), (8 * i + 8)))],
+                        8,
+                        sboxes[3 - (i % 4)],
                     )
                 )
-            for j in range(8, 16):
-                sboxes_components.append(
+            input_ids_E = [c.id for c in sboxes_components_E]
+            input_positions_E = [list(range(8)) for _ in range(16)]
+            shift_E = self.add_linear_layer_component(
+                input_ids_E, input_positions_E, 128, M.tolist()
+            )
+            gE_first = self.add_mix_column_component(
+                [shift_E.id],
+                [[i for i in range(64)]],
+                self.CIPHER_BLOCK_SIZE / 2,
+                self.kalyna_matrix_description,
+            )
+            gE_second = self.add_mix_column_component(
+                [shift_E.id],
+                [[i for i in range(64, 128)]],
+                self.CIPHER_BLOCK_SIZE / 2,
+                self.kalyna_matrix_description,
+            )
+            # Step 5: XOR with k_t + tmv (k_i_prime)
+            k_i_prime_first_half = self.add_XOR_component(
+                [gE_second.id, k_i_prime.id],
+                [[j for j in range(64)], [j for j in range(64)]],
+                self.CIPHER_BLOCK_SIZE / 2,
+            )
+            k_i_prime_second_half = self.add_XOR_component(
+                [gE_first.id, k_i_prime.id],
+                [[j for j in range(64)], [j for j in range(64, 128)]],
+                self.CIPHER_BLOCK_SIZE / 2,
+            )
+            sboxes_components_E2 = []
+            for i in range(8):
+                sboxes_components_E2.append(
                     self.add_SBOX_component(
-                        [k_i_prime_second.id], [[j for j in range(8)]], 8, sboxes[j % 4]
+                        [k_i_prime_first_half.id],
+                        [list(range((8 * i), (8 * i + 8)))],
+                        8,
+                        sboxes[3 - (i % 4)],
+                    )
+                )
+            for i in range(8, 16):
+                sboxes_components_E2.append(
+                    self.add_SBOX_component(
+                        [k_i_prime_second_half.id],
+                        [list(range((8 * i) - 64, (8 * i + 8) - 64))],
+                        8,
+                        sboxes[3 - (i % 4)],
                     )
                 )
 
-            # - ShiftRows (π′), as binary matrix M
+            input_ids_E2 = [c.id for c in sboxes_components_E2]
+            input_positions_E2 = [list(range(8)) for _ in range(16)]
+            shift_E2 = self.add_linear_layer_component(
+                input_ids_E2, input_positions_E2, 128, M.tolist()
+            )
+            gE2_first = self.add_mix_column_component(
+                [shift_E2.id],
+                [[i for i in range(64)]],
+                self.CIPHER_BLOCK_SIZE / 2,
+                self.kalyna_matrix_description,
+            )
+            gE2_second = self.add_mix_column_component(
+                [shift_E2.id],
+                [[i for i in range(64, 128)]],
+                self.CIPHER_BLOCK_SIZE / 2,
+                self.kalyna_matrix_description,
+            )
+            k_2i_prime_first_half = self.add_MODADD_component(
+                [gE2_second.id, k_i_prime.id],
+                [[j for j in range(64)], [j for j in range(64)]],
+                self.CIPHER_BLOCK_SIZE / 2,
+            )
+            k_2i_prime_second_half = self.add_MODADD_component(
+                [gE2_first.id, k_i_prime.id],
+                [[j for j in range(64)], [j for j in range(64, 128)]],
+                self.CIPHER_BLOCK_SIZE / 2,
+            )
+            even_round_keys[k] = {
+                "first_half": k_2i_prime_first_half,
+                "second_half": k_2i_prime_second_half,
+            }
+
+        odd_round_keys = {}
+        for i in range(1, self.NROUNDS, 2):
+            even_first_id = even_round_keys[i - 1]["first_half"]
+            even_second_id = even_round_keys[i - 1]["second_half"]
+            left_shifted = self.add_rotate_component(
+                [even_second_id.id, even_first_id.id],  # input IDs
+                [[j for j in range(64)], [j for j in range(64)]],  # bit positions
+                self.CIPHER_BLOCK_SIZE,  # total size
+                -self.CIPHER_BLOCK_SIZE // 4 + 24,  # shift amount in bits
+            )
+            odd_round_keys[i] = left_shifted
+
+        k0_first = even_round_keys[0]["first_half"]
+        k0_second = even_round_keys[0]["second_half"]
+
+        self.add_round()
+        first_half = self.add_MODADD_component(
+            [k0_first.id, INPUT_PLAINTEXT],
+            [[i for i in range(64)], [i for i in range(64)]],
+            self.CIPHER_BLOCK_SIZE / 2,
+        )
+
+        second_half = self.add_MODADD_component(
+            [k0_second.id, INPUT_PLAINTEXT],
+            [[i for i in range(64)], [i for i in range(64, 128)]],
+            self.CIPHER_BLOCK_SIZE / 2,
+        )
+        for k in range(1, self.NROUNDS):
+            self.add_round()
+            sboxes_components = []
+            for i in range(8):
+                sboxes_components.append(
+                    self.add_SBOX_component(
+                        [first_half.id],
+                        [list(range((8 * i), (8 * i + 8)))],
+                        8,
+                        sboxes[3 - (i % 4)],
+                    )
+                )
+            for i in range(8, 16):
+                sboxes_components.append(
+                    self.add_SBOX_component(
+                        [second_half.id],
+                        [list(range((8 * i) - 64, (8 * i + 8) - 64))],
+                        8,
+                        sboxes[3 - (i % 4)],
+                    )
+                )
+
             input_ids = [c.id for c in sboxes_components]
             input_positions = [list(range(8)) for _ in range(16)]
             shift = self.add_linear_layer_component(
                 input_ids, input_positions, 128, M.tolist()
             )
-
-            # - MixColumns (ψₗ): apply separately to 1st and 2nd halves
-            even_first = self.add_mix_column_component(
-                [shift.id], [[k for k in range(64)]], 64, self.kalyna_matrix_description
-            )
-            even_second = self.add_mix_column_component(
+            g_first = self.add_mix_column_component(
                 [shift.id],
-                [[k for k in range(64, 128)]],
-                64,
+                [[i for i in range(64)]],
+                self.CIPHER_BLOCK_SIZE / 2,
                 self.kalyna_matrix_description,
             )
-            # Step 5: Store as round key K_i
-            self.round_keys[i] = (even_first.id, even_second.id)
-            print(
-                f"this round {i} first half {even_first} and second half {even_second}"
-            )
-        ################### K_odd ########################
-        # Generate odd round keys from the even ones (circular left shift)
-        for i in range(1, 10, 2):
-            print(f"this round {i}")
-            # Unpack the two halves of the even round key
-            even_first_id, even_second_id = self.round_keys[i - 1]
-            # Perform circular left shift (Kalyna: 128/4 + 24 = 56 bits)
-            left_shifted = self.add_rotate_component(
-                [even_first_id, even_second_id],  # input IDs
-                [[j for j in range(64)], [j for j in range(64)]],  # bit positions
-                128,  # total size
-                -128 // 4 + 24,  # shift amount in bits
-            )
-            print(left_shifted.id)
-
-            # Store the odd round key as a single component (shifted result)
-            self.round_keys[i] = left_shifted.id
-
-        # print(f"this is the key {self.round_keys}")
-        ##############################
-
-        k0_first_id, k0_second_id = self.round_keys[0]
-
-        # Get round key K₀ (even), tuple of halves
-        first_half_modadd_key = self.add_MODADD_component(
-            [k0_first_id, INPUT_PLAINTEXT],
-            [[i for i in range(64)], [i for i in range(64)]],
-            64,
-        )
-
-        second_half_modadd_key = self.add_MODADD_component(
-            [k0_second_id, INPUT_PLAINTEXT],
-            [[i for i in range(64)], [i for i in range(64, 128)]],
-            64,
-        )
-
-        current_first_half = first_half_modadd_key
-        current_second_half = second_half_modadd_key
-
-        # Step B: Middle Rounds (for r = 1 to NROUNDS - 1)
-        for r in range(1, self.NROUNDS):
-            self.add_round()
-            sboxes_components = []
-            for i in range(8):
-                sbox_new = self.add_SBOX_component(
-                    [current_first_half.id], [[i for i in range(8)]], 8, sboxes[i % 4]
-                )
-                sboxes_components.append(sbox_new)
-
-            for i in range(8, 16):
-                sbox_new = self.add_SBOX_component(
-                    [current_second_half.id], [[i for i in range(8)]], 8, sboxes[i % 4]
-                )
-                sboxes_components.append(sbox_new)
-
-            """self.add_cipher_output_component(
-                [sboxes_components],
-                [[i for i in range(64)]],
-                64,
-            )
-            self.add_cipher_output_component(
-                [sboxes_components[i].id for i in range(16)],
-                [[i for i in range(8)]] * 16,
-                self.CIPHER_BLOCK_SIZE,
-            )"""
-
-            input_ids = [c.id for c in sboxes_components]
-            input_bit_positions = [list(range(8)) for _ in range(16)]
-
-            after_shift_row = self.add_linear_layer_component(
-                input_ids, input_bit_positions, 128, M.tolist()
-            )
-
-            mix_column_1st_half = self.add_mix_column_component(
-                [after_shift_row.id],
-                [[i for i in range(64)]],
-                64,
-                self.kalyna_matrix_description,
-            )
-            mix_column_2nd_half = self.add_mix_column_component(
-                [after_shift_row.id],
+            g_second = self.add_mix_column_component(
+                [shift.id],
                 [[i for i in range(64, 128)]],
-                64,
+                self.CIPHER_BLOCK_SIZE / 2,
                 self.kalyna_matrix_description,
             )
-
-            # Use round key K_r
-            rk = self.round_keys[r]
-
-            # Use round key K_r
-            rk = self.round_keys[r]
-            if isinstance(rk, tuple):
-                # Even round key — tuple of (first_half, second_half), both 64-bit
-                rk_first, rk_second = rk
-                current_first_half = self.add_XOR_component(
-                    [mix_column_1st_half.id, rk_first],
-                    [[i for i in range(64)], [i for i in range(64)]],
-                    64,
+            if k % 2 == 1:
+                k_round = odd_round_keys[k]
+                first_half = self.add_XOR_component(
+                    [g_second.id, k_round.id],
+                    [[j for j in range(64)], [j for j in range(64)]],
+                    self.CIPHER_BLOCK_SIZE / 2,
                 )
-                current_second_half = self.add_XOR_component(
-                    [mix_column_2nd_half.id, rk_second],
-                    [[i for i in range(64)], [i for i in range(64)]],
-                    64,
+                second_half = self.add_XOR_component(
+                    [g_first.id, k_round.id],
+                    [[j for j in range(64)], [j for j in range(64, 128)]],
+                    self.CIPHER_BLOCK_SIZE / 2,
                 )
             else:
-                # Odd round key — single 128-bit ID, must split into halves
-                current_first_half = self.add_XOR_component(
-                    [mix_column_1st_half.id, rk],
-                    [[i for i in range(64)], [i for i in range(64)]],
-                    64,
+                k_round_first_half = even_round_keys[k]["first_half"]
+                k_round_second_half = even_round_keys[k]["second_half"]
+                first_half = self.add_XOR_component(
+                    [g_second.id, k_round_first_half.id],
+                    [[j for j in range(64)], [j for j in range(64)]],
+                    self.CIPHER_BLOCK_SIZE / 2,
                 )
-                current_second_half = self.add_XOR_component(
-                    [mix_column_2nd_half.id, rk],
-                    [[i for i in range(64)], [i for i in range(64, 128)]],
-                    64,
+                second_half = self.add_XOR_component(
+                    [g_first.id, k_round_second_half.id],
+                    [[j for j in range(64)], [j for j in range(64)]],
+                    self.CIPHER_BLOCK_SIZE / 2,
                 )
 
-        # Step C: Final Round (SubBytes + ShiftRows + MixColumn)
         self.add_round()
         sboxes_components = []
         for i in range(8):
-            sbox_new = self.add_SBOX_component(
-                [current_first_half.id], [[i for i in range(8)]], 8, sboxes[i % 4]
+            sboxes_components.append(
+                self.add_SBOX_component(
+                    [first_half.id],
+                    [list(range((8 * i), (8 * i + 8)))],
+                    8,
+                    sboxes[3 - (i % 4)],
+                )
             )
-            sboxes_components.append(sbox_new)
-
         for i in range(8, 16):
-            sbox_new = self.add_SBOX_component(
-                [current_second_half.id], [[i for i in range(8)]], 8, sboxes[i % 4]
+            sboxes_components.append(
+                self.add_SBOX_component(
+                    [second_half.id],
+                    [list(range((8 * i) - 64, (8 * i + 8) - 64))],
+                    8,
+                    sboxes[3 - (i % 4)],
+                )
             )
-            sboxes_components.append(sbox_new)
 
         input_ids = [c.id for c in sboxes_components]
-        input_bit_positions = [list(range(8)) for _ in range(16)]
-
-        after_shift_row = self.add_linear_layer_component(
-            input_ids, input_bit_positions, 128, M.tolist()
+        input_positions = [list(range(8)) for _ in range(16)]
+        shift = self.add_linear_layer_component(
+            input_ids, input_positions, 128, M.tolist()
         )
-
-        mix_column_1st_half = self.add_mix_column_component(
-            [after_shift_row.id],
+        g_first = self.add_mix_column_component(
+            [shift.id],
             [[i for i in range(64)]],
-            64,
+            self.CIPHER_BLOCK_SIZE / 2,
             self.kalyna_matrix_description,
         )
-        mix_column_2nd_half = self.add_mix_column_component(
-            [after_shift_row.id],
+        g_second = self.add_mix_column_component(
+            [shift.id],
             [[i for i in range(64, 128)]],
-            64,
+            self.CIPHER_BLOCK_SIZE / 2,
             self.kalyna_matrix_description,
         )
 
-        #  Step D: Final MODADD using K_N (last round key)
-        kN_first_id, kN_second_id = self.round_keys[self.NROUNDS]  # Get K_N
-
-        final_first_half = self.add_MODADD_component(
-            [kN_first_id, mix_column_1st_half.id],
-            [[i for i in range(64)], [i for i in range(64)]],
-            64,
+        k_round_first_half = even_round_keys[10]["first_half"]
+        k_round_second_half = even_round_keys[10]["second_half"]
+        first_half = self.add_MODADD_component(
+            [g_second.id, k_round_first_half.id],
+            [[j for j in range(64)], [j for j in range(64)]],
+            self.CIPHER_BLOCK_SIZE / 2,
         )
-        final_second_half = self.add_MODADD_component(
-            [kN_second_id, mix_column_2nd_half.id],
-            [[i for i in range(64)], [i for i in range(64)]],
-            64,
+        second_half = self.add_MODADD_component(
+            [g_first.id, k_round_second_half.id],
+            [[j for j in range(64)], [j for j in range(64)]],
+            self.CIPHER_BLOCK_SIZE / 2,
         )
-
-        # Step E: Output
-        """self.add_cipher_output_component(
-            [final_first_half.id, final_second_half.id],
+        self.add_cipher_output_component(
+            [first_half.id, second_half.id],
             [[i for i in range(64)], [i for i in range(64)]],
             self.CIPHER_BLOCK_SIZE,
         )
-        '''
