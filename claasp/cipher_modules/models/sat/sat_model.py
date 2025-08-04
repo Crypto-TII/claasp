@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -53,6 +52,7 @@ For any further information, refer to the file
 (MSB) is indexed by 0. Be careful whenever inspecting the code or, as well, a
 CNF.
 """
+
 import copy
 import math
 import time
@@ -65,12 +65,19 @@ from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
 from claasp.editor import remove_permutations, remove_rotations
-from claasp.name_mappings import SBOX, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, \
-    WORD_OPERATION
+from claasp.name_mappings import (
+    SBOX,
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    WORD_OPERATION,
+)
 
 
 class SatModel:
-    def __init__(self, cipher, counter='sequential', compact=False):
+    def __init__(self, cipher, counter="sequential", compact=False):
         """
         Initialise the sat model.
 
@@ -88,7 +95,7 @@ class SatModel:
             internal_cipher = remove_rotations(internal_cipher)
 
         # set the counter to fix the weight
-        if counter == 'sequential':
+        if counter == "sequential":
             self._counter = self._sequential_counter
         else:
             self._counter = self._parallel_counter
@@ -115,10 +122,10 @@ class SatModel:
             value = 0
             for i in range(bit_size):
                 value <<= 1
-                if f'{cipher_input}_{i}{out_suffix}' in variable2value:
-                    value ^= variable2value[f'{cipher_input}_{i}{out_suffix}']
+                if f"{cipher_input}_{i}{out_suffix}" in variable2value:
+                    value ^= variable2value[f"{cipher_input}_{i}{out_suffix}"]
             hex_digits = bit_size // 4 + (bit_size % 4 != 0)
-            hex_value = f'{value:0{hex_digits}x}'
+            hex_value = f"{value:#0{hex_digits + 2}x}"
             component_solution = set_component_solution(hex_value)
             components_solutions[cipher_input] = component_solution
 
@@ -130,12 +137,12 @@ class SatModel:
             values = []
             for i in range(bit_size):
                 value = 0
-                if f'{cipher_input}_{i}_0' in variable2value:
-                    value ^= variable2value[f'{cipher_input}_{i}_0'] << 1
-                if f'{cipher_input}_{i}_1' in variable2value:
-                    value ^= variable2value[f'{cipher_input}_{i}_1']
-                values.append(f'{value}')
-            component_solution = set_component_solution(''.join(values).replace('2', '?').replace('3', '?'))
+                if f"{cipher_input}_{i}_0" in variable2value:
+                    value ^= variable2value[f"{cipher_input}_{i}_0"] << 1
+                if f"{cipher_input}_{i}_1" in variable2value:
+                    value ^= variable2value[f"{cipher_input}_{i}_1"]
+                values.append(f"{value}")
+            component_solution = set_component_solution("".join(values).replace("2", "?").replace("3", "?"))
             components_solutions[cipher_input] = component_solution
 
         return components_solutions
@@ -145,10 +152,10 @@ class SatModel:
         value = 0
         for i in range(output_bit_size):
             value <<= 1
-            if f'{component.id}_{i}{out_suffix}' in variable2value:
-                value ^= variable2value[f'{component.id}_{i}{out_suffix}']
+            if f"{component.id}_{i}{out_suffix}" in variable2value:
+                value ^= variable2value[f"{component.id}_{i}{out_suffix}"]
             hex_digits = output_bit_size // 4 + (output_bit_size % 4 != 0)
-            hex_value = f'{value:0{hex_digits}x}'
+            hex_value = f"{value:#0{hex_digits + 2}x}"
 
         return hex_value
 
@@ -157,21 +164,19 @@ class SatModel:
         values = []
         for i in range(output_bit_size):
             variable_value = 0
-            if f'{component.id}_{i}_0' in variable2value:
-                variable_value ^= variable2value[f'{component.id}_{i}_0'] << 1
-            if f'{component.id}_{i}_1' in variable2value:
-                variable_value ^= variable2value[f'{component.id}_{i}_1']
-            values.append(f'{variable_value}')
-        value = ''.join(values).replace('2', '?').replace('3', '?')
+            if f"{component.id}_{i}_0" in variable2value:
+                variable_value ^= variable2value[f"{component.id}_{i}_0"] << 1
+            if f"{component.id}_{i}_1" in variable2value:
+                variable_value ^= variable2value[f"{component.id}_{i}_1"]
+            values.append(f"{variable_value}")
+        value = "".join(values).replace("2", "?").replace("3", "?")
 
         return value
 
-    def _get_solver_solution_parsed(self, variable2number, values):
-        variable2value = {}
-        for i, variable in enumerate(variable2number):
-            variable2value[variable] = 0 if values[i][0] == '-' else 1
+    def _get_solver_solution_parsed(self, variables, values):
+        variable_to_value = {variable: 0 if values[i][0] == "-" else 1 for i, variable in enumerate(variables)}
 
-        return variable2value
+        return variable_to_value
 
     def _parallel_counter(self, hw_list, weight):
         """
@@ -185,54 +190,77 @@ class SatModel:
         variables = []
         constraints = []
         num_of_orders = math.ceil(math.log2(len(hw_list)))
-        dummy_list = [f'dummy_hw_{i}' for i in range(len(hw_list), 2 ** num_of_orders)]
+        dummy_list = [f"dummy_hw_{i}" for i in range(len(hw_list), 2**num_of_orders)]
         variables.extend(dummy_list)
         hw_list.extend(dummy_list)
-        constraints.extend(f'-{d}' for d in dummy_list)
-        for i in range(0, 2 ** num_of_orders, 2):
-            variables.append(f'r_{num_of_orders - 1}_{i // 2}_0')
-            variables.append(f'r_{num_of_orders - 1}_{i // 2}_1')
-            constraints.extend(utils.cnf_and(f'r_{num_of_orders - 1}_{i // 2}_0',
-                                             (f'{hw_list[i]}', f'{hw_list[i + 1]}')))
-            constraints.extend(utils.cnf_xor(f'r_{num_of_orders - 1}_{i // 2}_1',
-                                             [f'{hw_list[i]}', f'{hw_list[i + 1]}']))
+        constraints.extend(f"-{d}" for d in dummy_list)
+        for i in range(0, 2**num_of_orders, 2):
+            variables.append(f"r_{num_of_orders - 1}_{i // 2}_0")
+            variables.append(f"r_{num_of_orders - 1}_{i // 2}_1")
+            constraints.extend(
+                utils.cnf_and(f"r_{num_of_orders - 1}_{i // 2}_0", (f"{hw_list[i]}", f"{hw_list[i + 1]}"))
+            )
+            constraints.extend(
+                utils.cnf_xor(f"r_{num_of_orders - 1}_{i // 2}_1", [f"{hw_list[i]}", f"{hw_list[i + 1]}"])
+            )
         # recursively summing couple words
         series = num_of_orders - 2
         for i in range(2, num_of_orders + 1):
-            for j in range(0, 2 ** num_of_orders, 2 ** i):
+            for j in range(0, 2**num_of_orders, 2**i):
                 # carries computed as usual (remember the library convention: MSB indexed by 0)
                 for k in range(0, i - 1):
-                    variables.append(f'c_{series}_{j // (2 ** i)}_{k}')
-                    constraints.extend(utils.cnf_carry(f'c_{series}_{j // (2 ** i)}_{k}',
-                                                       f'r_{series + 1}_{j // (2 ** (i - 1))}_{k}',
-                                                       f'r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{k}',
-                                                       f'c_{series}_{j // (2 ** i)}_{k + 1}'))
+                    variables.append(f"c_{series}_{j // (2**i)}_{k}")
+                    constraints.extend(
+                        utils.cnf_carry(
+                            f"c_{series}_{j // (2**i)}_{k}",
+                            f"r_{series + 1}_{j // (2 ** (i - 1))}_{k}",
+                            f"r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{k}",
+                            f"c_{series}_{j // (2**i)}_{k + 1}",
+                        )
+                    )
                 # the carry for the tens is the first not null
-                variables.append(f'c_{series}_{j // (2 ** i)}_{i - 1}')
-                constraints.extend(utils.cnf_and(f'c_{series}_{j // (2 ** i)}_{i - 1}',
-                                                 [f'r_{series + 1}_{j // (2 ** (i - 1))}_{i - 1}',
-                                                  f'r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{i - 1}']))
+                variables.append(f"c_{series}_{j // (2**i)}_{i - 1}")
+                constraints.extend(
+                    utils.cnf_and(
+                        f"c_{series}_{j // (2**i)}_{i - 1}",
+                        [
+                            f"r_{series + 1}_{j // (2 ** (i - 1))}_{i - 1}",
+                            f"r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{i - 1}",
+                        ],
+                    )
+                )
                 # first bit of the result (MSB) is simply the carry of the previous MSBs
-                variables.append(f'r_{series}_{j // (2 ** i)}_0')
-                constraints.extend(utils.cnf_equivalent([f'r_{series}_{j // (2 ** i)}_0',
-                                                         f'c_{series}_{j // (2 ** i)}_0']))
+                variables.append(f"r_{series}_{j // (2**i)}_0")
+                constraints.extend(utils.cnf_equivalent([f"r_{series}_{j // (2**i)}_0", f"c_{series}_{j // (2**i)}_0"]))
                 # remaining bits of the result except the last one are as usual
                 for k in range(1, i):
-                    variables.append(f'r_{series}_{j // (2 ** i)}_{k}')
-                    constraints.extend(utils.cnf_xor(f'r_{series}_{j // (2 ** i)}_{k}',
-                                                     [f'r_{series + 1}_{j // (2 ** (i - 1))}_{k - 1}',
-                                                      f'r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{k - 1}',
-                                                      f'c_{series}_{j // (2 ** i)}_{k}']))
+                    variables.append(f"r_{series}_{j // (2**i)}_{k}")
+                    constraints.extend(
+                        utils.cnf_xor(
+                            f"r_{series}_{j // (2**i)}_{k}",
+                            [
+                                f"r_{series + 1}_{j // (2 ** (i - 1))}_{k - 1}",
+                                f"r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{k - 1}",
+                                f"c_{series}_{j // (2**i)}_{k}",
+                            ],
+                        )
+                    )
                 # last bit of the result (LSB)
-                variables.append(f'r_{series}_{j // (2 ** i)}_{i}')
-                constraints.extend(utils.cnf_xor(f'r_{series}_{j // (2 ** i)}_{i}',
-                                                 [f'r_{series + 1}_{j // (2 ** (i - 1))}_{i - 1}',
-                                                  f'r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{i - 1}']))
+                variables.append(f"r_{series}_{j // (2**i)}_{i}")
+                constraints.extend(
+                    utils.cnf_xor(
+                        f"r_{series}_{j // (2**i)}_{i}",
+                        [
+                            f"r_{series + 1}_{j // (2 ** (i - 1))}_{i - 1}",
+                            f"r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{i - 1}",
+                        ],
+                    )
+                )
             series -= 1
         # bit length of hamming weight, needed to fix weight when building the model
         bit_length_of_hw = num_of_orders + 1
-        minus_signs = ['-' * (int(bit) ^ 1) for bit in f'{weight:0{bit_length_of_hw}b}']
-        constraints.extend([f'{minus_signs[i]}r_0_0_{i}' for i in range(bit_length_of_hw)])
+        minus_signs = ["-" * (int(bit) ^ 1) for bit in f"{weight:0{bit_length_of_hw}b}"]
+        constraints.extend([f"{minus_signs[i]}r_0_0_{i}" for i in range(bit_length_of_hw)])
 
         return variables, constraints
 
@@ -240,104 +268,110 @@ class SatModel:
         n = len(hw_list)
         if greater_or_equal:
             weight = n - weight
-            minus = ''
+            minus = ""
         else:
-            minus = '-'
-        dummy_variables = [[f'{dummy_id}_{i}_{j}' for j in range(weight)] for i in range(n - 1)]
-        constraints = [f'{minus}{hw_list[0]} {dummy_variables[0][0]}']
-        constraints.extend([f'-{dummy_variables[0][j]}' for j in range(1, weight)])
+            minus = "-"
+        dummy_variables = [[f"{dummy_id}_{i}_{j}" for j in range(weight)] for i in range(n - 1)]
+        constraints = [f"{minus}{hw_list[0]} {dummy_variables[0][0]}"]
+        constraints.extend([f"-{dummy_variables[0][j]}" for j in range(1, weight)])
         for i in range(1, n - 1):
-            constraints.append(f'{minus}{hw_list[i]} {dummy_variables[i][0]}')
-            constraints.append(f'-{dummy_variables[i - 1][0]} {dummy_variables[i][0]}')
-            constraints.extend([f'{minus}{hw_list[i]} -{dummy_variables[i - 1][j - 1]} {dummy_variables[i][j]}'
-                                for j in range(1, weight)])
-            constraints.extend([f'-{dummy_variables[i - 1][j]} {dummy_variables[i][j]}'
-                                for j in range(1, weight)])
-            constraints.append(f'{minus}{hw_list[i]} -{dummy_variables[i - 1][weight - 1]}')
-        constraints.append(f'{minus}{hw_list[n - 1]} -{dummy_variables[n - 2][weight - 1]}')
+            constraints.append(f"{minus}{hw_list[i]} {dummy_variables[i][0]}")
+            constraints.append(f"-{dummy_variables[i - 1][0]} {dummy_variables[i][0]}")
+            constraints.extend(
+                [
+                    f"{minus}{hw_list[i]} -{dummy_variables[i - 1][j - 1]} {dummy_variables[i][j]}"
+                    for j in range(1, weight)
+                ]
+            )
+            constraints.extend([f"-{dummy_variables[i - 1][j]} {dummy_variables[i][j]}" for j in range(1, weight)])
+            constraints.append(f"{minus}{hw_list[i]} -{dummy_variables[i - 1][weight - 1]}")
+        constraints.append(f"{minus}{hw_list[n - 1]} -{dummy_variables[n - 2][weight - 1]}")
         dummy_variables = [d for dummy_list in dummy_variables for d in dummy_list]
 
         return dummy_variables, constraints
 
-    def _sequential_counter(self, hw_list, weight, dummy_id='dummy_hw_0'):
+    def _sequential_counter(self, hw_list, weight, dummy_id="dummy_hw_0"):
         return self._sequential_counter_algorithm(hw_list, weight, dummy_id)
 
     def _sequential_counter_greater_or_equal(self, weight, dummy_id):
-        hw_list = [variable_id for variable_id in self._variables_list if variable_id.startswith('hw_')]
-        variables, constraints = self._sequential_counter_algorithm(hw_list, weight, dummy_id,
-                                                                    greater_or_equal=True)
+        hw_list = [variable_id for variable_id in self._variables_list if variable_id.startswith("hw_")]
+        variables, constraints = self._sequential_counter_algorithm(hw_list, weight, dummy_id, greater_or_equal=True)
         self._variables_list.extend(variables)
         self._model_constraints.extend(constraints)
 
     def _solve_with_external_sat_solver(self, model_type, solver_name, options, host=None, env_vars_string=""):
-        solver_specs = [specs for specs in solvers.SAT_SOLVERS_EXTERNAL
-                        if specs['solver_name'] == solver_name.upper()][0]
-        if host and (not solver_specs['keywords']['is_dimacs_compliant']):
-            raise ValueError('{solver_name} not supported.')
+        solver_specs = [specs for specs in solvers.SAT_SOLVERS_EXTERNAL if specs["solver_name"] == solver_name.upper()][
+            0
+        ]
+        if host and (not solver_specs["keywords"]["is_dimacs_compliant"]):
+            raise ValueError(f"{solver_name} not supported.")
 
         # creating the dimacs
-        variable2number, numerical_cnf = utils.create_numerical_cnf(self._model_constraints)
-        dimacs = utils.numerical_cnf_to_dimacs(len(variable2number), numerical_cnf)
+        variables, numerical_cnf = utils.create_numerical_cnf(self._model_constraints)
+        dimacs = utils.numerical_cnf_to_dimacs(variables, numerical_cnf)
 
         # running the SAT solver
-        file_id = f'{uuid.uuid4()}'
+        file_id = f"{uuid.uuid4()}"
         if host is not None:
-            status, sat_time, sat_memory, values = utils.run_sat_solver(solver_specs, options,
-                                                                        dimacs, host, env_vars_string)
+            status, sat_time, sat_memory, values = utils.run_sat_solver(
+                solver_specs, options, dimacs, host, env_vars_string
+            )
         else:
-            if solver_specs['keywords']['is_dimacs_compliant']:
-                status, sat_time, sat_memory, values = utils.run_sat_solver(solver_specs, options,
-                                                                            dimacs)
-            elif solver_specs['solver_name'] == 'MINISAT_EXT':
-                input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
-                output_file = f'{self.cipher_id}_{file_id}_sat_output.cnf'
-                status, sat_time, sat_memory, values = utils.run_minisat(solver_specs, options, dimacs,
-                                                                         input_file, output_file)
-            elif solver_specs['solver_name'] == 'PARKISSAT_EXT':
-                input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
+            if solver_specs["keywords"]["is_dimacs_compliant"]:
+                status, sat_time, sat_memory, values = utils.run_sat_solver(solver_specs, options, dimacs)
+            elif solver_specs["solver_name"] == solvers.MINISAT_EXT:
+                input_file = f"{self.cipher_id}_{file_id}_sat_input.cnf"
+                output_file = f"{self.cipher_id}_{file_id}_sat_output.cnf"
+                status, sat_time, sat_memory, values = utils.run_minisat(
+                    solver_specs, options, dimacs, input_file, output_file
+                )
+            elif solver_specs["solver_name"] == solvers.PARKISSAT_EXT:
+                input_file = f"{self.cipher_id}_{file_id}_sat_input.cnf"
                 status, sat_time, sat_memory, values = utils.run_parkissat(solver_specs, options, dimacs, input_file)
-            elif solver_specs['solver_name'] == 'YICES_SAT_EXT':
-                input_file = f'{self.cipher_id}_{file_id}_sat_input.cnf'
+            elif solver_specs["solver_name"] == solvers.YICES_SAT_EXT:
+                input_file = f"{self.cipher_id}_{file_id}_sat_input.cnf"
                 status, sat_time, sat_memory, values = utils.run_yices(solver_specs, options, dimacs, input_file)
 
         # parsing the solution
-        if status == 'SATISFIABLE':
-            variable2value = self._get_solver_solution_parsed(variable2number, values)
-            component2fields, total_weight = self._parse_solver_output(variable2value)
-
+        if status == "SATISFIABLE":
+            variable_to_value = self._get_solver_solution_parsed(variables, values)
+            component_to_fields, total_weight = self._parse_solver_output(variable_to_value)
         else:
-            component2fields, total_weight = {}, None
+            component_to_fields, total_weight = {}, None
+
         if total_weight is not None:
             total_weight = float(total_weight)
-        solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, sat_time,
-                                                         sat_memory, component2fields, total_weight)
-        solution['status'] = status
+        solution = convert_solver_solution_to_dictionary(
+            self._cipher, model_type, solver_name, sat_time, sat_memory, component_to_fields, total_weight
+        )
+        solution["status"] = status
 
         return solution
 
     def _solve_with_sage_sat_solver(self, model_type, solver_name):
-        variable2number, numerical_cnf = utils.create_numerical_cnf(self._model_constraints)
+        variable_to_number, numerical_cnf = utils.create_numerical_cnf(self._model_constraints)
         solver = SAT(solver=solver_name)
         self._add_clauses_to_solver(numerical_cnf, solver)
         start_time = time.time()
         tracemalloc.start()
         values = solver()
-        sat_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
+        sat_memory = tracemalloc.get_traced_memory()[1] / 10**6
         tracemalloc.stop()
         sat_time = time.time() - start_time
         if values:
-            values = [f'{v-1}' for v in values[1:]]
-            variable2value = self._get_solver_solution_parsed(variable2number, values)
-            component2fields, total_weight = self._parse_solver_output(variable2value)
-            status = 'SATISFIABLE'
+            values = [f"{v - 1}" for v in values[1:]]
+            variable_to_value = self._get_solver_solution_parsed(variable_to_number, values)
+            component_to_fields, total_weight = self._parse_solver_output(variable_to_value)
+            status = "SATISFIABLE"
         else:
-            component2fields, total_weight = {}, None
-            status = 'UNSATISFIABLE'
+            component_to_fields, total_weight = {}, None
+            status = "UNSATISFIABLE"
         if total_weight is not None:
             total_weight = float(total_weight)
-        solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, sat_time,
-                                                         sat_memory, component2fields, total_weight)
-        solution['status'] = status
+        solution = convert_solver_solution_to_dictionary(
+            self._cipher, model_type, solver_name, sat_time, sat_memory, component_to_fields, total_weight
+        )
+        solution["status"] = status
 
         return solution
 
@@ -380,27 +414,33 @@ class SatModel:
         """
         constraints = []
         for variable in fixed_variables:
-            component_id = variable['component_id']
-            is_equal = (variable['constraint_type'] == 'equal')
-            bit_positions = variable['bit_positions']
-            bit_values = variable['bit_values']
+            component_id = variable["component_id"]
+            is_equal = variable["constraint_type"] == "equal"
+            bit_positions = variable["bit_positions"]
+            bit_values = variable["bit_values"]
             variables_ids = []
             for position, value in zip(bit_positions, bit_values):
-                is_negative = '-' * (value ^ is_equal)
-                variables_ids.append(f'{is_negative}{component_id}_{position}')
+                is_negative = "-" * (value ^ is_equal)
+                variables_ids.append(f"{is_negative}{component_id}_{position}")
             if is_equal:
                 constraints.extend(variables_ids)
             else:
-                constraints.append(' '.join(variables_ids))
+                constraints.append(" ".join(variables_ids))
 
         return constraints
 
     def calculate_component_weight(self, component, out_suffix, output_values_dict):
         weight = 0
-        if ('MODSUB' in component.description or 'MODADD' in component.description or 'AND' in component.description
-                or 'OR' in component.description or SBOX in component.type):
-            weight = sum([output_values_dict[f'hw_{component.id}_{i}{out_suffix}']
-                          for i in range(component.output_bit_size)])
+        if (
+            "MODSUB" in component.description
+            or "MODADD" in component.description
+            or "AND" in component.description
+            or "OR" in component.description
+            or SBOX in component.type
+        ):
+            weight = sum(
+                [output_values_dict[f"hw_{component.id}_{i}{out_suffix}"] for i in range(component.output_bit_size)]
+            )
         return weight
 
     def solve(self, model_type, solver_name=solvers.SOLVER_DEFAULT, options=None):
@@ -446,11 +486,11 @@ class SatModel:
         """
         if options is None:
             options = []
-        if solver_name.endswith('_EXT'):
+        if solver_name.endswith("_EXT"):
             solution = self._solve_with_external_sat_solver(model_type, solver_name, options)
         else:
             if options:
-                raise ValueError('Options not allowed for SageMath solvers.')
+                raise ValueError("Options not allowed for SageMath solvers.")
             solution = self._solve_with_sage_sat_solver(model_type, solver_name)
 
         return solution
@@ -479,29 +519,32 @@ class SatModel:
               '-hw_modadd_2_7_14 -dummy_hw_0_77_6',
               '-hw_modadd_2_7_15 -dummy_hw_0_78_6'])
         """
-        hw_list = [variable_id for variable_id in self._variables_list if variable_id.startswith('hw_')]
+        hw_list = [variable_id for variable_id in self._variables_list if variable_id.startswith("hw_")]
         if weight == 0:
-            return [], [f'-{variable}' for variable in hw_list]
+            return [], [f"-{variable}" for variable in hw_list]
 
         return self._counter(hw_list, weight)
 
     def build_generic_sat_model_from_dictionary(self, component_and_model_types):
         self._variables_list = []
         self._model_constraints = []
-        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
-        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
 
         for component_and_model_type in component_and_model_types:
             component = component_and_model_type["component_object"]
             model_type = component_and_model_type["model_type"]
             operation = component.description[0]
             if component.type not in component_types or (
-                    WORD_OPERATION == component.type and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
+                WORD_OPERATION == component.type and operation not in operation_types
+            ):
+                print(f"{component.id} not yet implemented")
             else:
                 sat_xor_differential_propagation_constraints = getattr(component, model_type)
-                if model_type in ['sat_bitwise_deterministic_truncated_xor_differential_constraints',
-                                  'sat_semi_deterministic_truncated_xor_differential_constraints']:
+                if model_type in (
+                    "sat_bitwise_deterministic_truncated_xor_differential_constraints",
+                    "sat_semi_deterministic_truncated_xor_differential_constraints",
+                ):
                     variables, constraints = sat_xor_differential_propagation_constraints()
                 else:
                     variables, constraints = sat_xor_differential_propagation_constraints(self)
@@ -535,7 +578,7 @@ class SatModel:
             ValueError: No model generated
         """
         if not self._model_constraints:
-            raise ValueError('No model generated')
+            raise ValueError("No model generated")
         return self._model_constraints
 
     @property

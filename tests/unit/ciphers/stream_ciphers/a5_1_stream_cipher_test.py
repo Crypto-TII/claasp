@@ -13,4 +13,3 @@ def test_a51():
     frame = 0b0010110010000000000000
     keystream = 0x534eaa582fe8151ab6e1855a728c093f4d68d757ed949b4cbe41b7c6b
     assert a51.evaluate([key, frame]) == keystream
-

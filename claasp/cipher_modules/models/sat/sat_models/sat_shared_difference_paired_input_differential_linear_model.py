@@ -350,7 +350,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             ....:     fixed_values=[
             ....:         key, plaintext, cipher_output_4_12
             ....:     ],
-            ....:     solver_name="PARKISSAT_EXT"
+            ....:     solver_name="KISSAT_EXT"
             ....: )
             sage: trail["status"]
             'SATISFIABLE'
