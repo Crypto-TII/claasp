@@ -36,6 +36,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_a
     MznXorDifferentialNumberOfActiveSboxesModel)
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, CP_SOLVERS_INTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
+from claasp.cipher_modules.models.cp.minizinc_utils.utils import replace_existing_file_name
 
 
 class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
@@ -384,15 +385,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         end = tm.time()
         build_time += end - start
         input_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_mzn_xor_differential_{first_step_solver_name}.mzn'
-        att = 0
-        while os.path.exists(input_file_name):
-            input_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_mzn_xor_differential_{first_step_solver_name}_{att}.mzn'
-            att += 1
+        input_file_name = replace_existing_file_name(input_file_name)
         solution_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_table_of_solutions_{first_step_solver_name}.mzn'
-        att = 0
-        while os.path.exists(solution_file_name):
-            solution_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_table_of_solutions_{first_step_solver_name}_{att}.mzn'
-            att += 1
+        solution_file_name = replace_existing_file_name(solution_file_name)
         write_model_to_file(self._model_constraints, input_file_name)
 
         for i in range(len(CP_SOLVERS_EXTERNAL)):
@@ -491,10 +486,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         start = tm.time()
         cipher_name = self.cipher_id
         input_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
-        att = 0
-        while os.path.exists(input_file_name):
-            input_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}_{att}.mzn'
-            att += 1
+        input_file_name = replace_existing_file_name(input_file_name)
         for i in range(len(CP_SOLVERS_EXTERNAL)):
             if solver_name == CP_SOLVERS_EXTERNAL[i]['solver_name']:
                 command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
