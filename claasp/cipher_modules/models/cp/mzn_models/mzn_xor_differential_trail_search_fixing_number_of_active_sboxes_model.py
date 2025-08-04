@@ -50,25 +50,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         self._table_items = []
         self._first_step = []
         self._first_step_find_all_solutions = []
-        self._variables_list = []
-        self._model_constraints = []
-        self.c = 0
-        if self._cipher.is_spn():
-            for component in self._cipher.get_all_components():
-                if SBOX in component.type:
-                    self.word_size = int(component.output_bit_size)
-                    break
-        self._float_and_lat_values = []
-        self._probability = False
-        self.sbox_mant = []
-        self.mix_column_mant = []
-        self.modadd_twoterms_mant = []
-        self.input_sbox = []
-        self.table_of_solutions_length = 0
-        self.list_of_xor_components = []
-        self.list_of_xor_all_inputs = []
-        self.component_and_probability = {}
-        self._model_prefix = ['include "globals.mzn";', f'{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}']
+        super().initialise_model()
 
     def build_xor_differential_trail_second_step_model(self, weight=-1, fixed_variables=[]):
         """
