@@ -645,11 +645,8 @@ class MznModel:
           * 'deterministic_truncated_xor_differential'
           * 'deterministic_truncated_xor_differential_one_solution'
           * 'impossible_xor_differential'
-        - ``solver_name`` -- **string** (default: `None`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `None`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
         - ``num_of_processors`` -- **integer**; the number of processors to be used
         - ``timelimit`` -- **integer**; time limit to output a result
 
@@ -810,7 +807,15 @@ class MznModel:
 
         return result
 
-    def solver_names(self, verbose = False):
+    def solver_names(self, verbose: bool = False) -> None:
+        """
+        Print the available MiniZinc solvers.
+
+        INPUT:
+
+        - ``verbose`` -- **bool**; beside the solver name, it will be printed the brand name.
+
+        """
         if not verbose:
             print('Internal CP solvers:')
             print('solver brand name | solver name')
