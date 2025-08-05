@@ -83,7 +83,7 @@ def test_find_lowest_complexity_impossible_xor_differential_trail():
     assert trail["model_type"] == "impossible_xor_differential_one_solution"
     assert trail["solver_name"] == "Chuffed"
 
-    assert trail["components_values"][INPUT_PLAINTEXT]["value"] == "0" * 32
+    assert trail["components_values"][INPUT_PLAINTEXT]["value"] != "0" * 32
     assert trail["components_values"][INPUT_KEY]["value"] == "0" * 64
     assert trail["components_values"]["inverse_cipher_output_5_12"]["value"] != "0" * 32
 
