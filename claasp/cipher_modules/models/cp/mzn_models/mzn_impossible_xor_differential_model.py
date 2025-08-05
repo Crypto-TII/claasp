@@ -100,7 +100,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
 
     def build_impossible_xor_differential_trail_with_extensions_model(self, fixed_variables, number_of_rounds,
                                                                       initial_round, middle_round, final_round,
-                                                                      intermediate_components):
+                                                                      intermediate_components=True):
         """
         Build the CP model for the search of deterministic truncated XOR differential trails with extensions for key recovery.
 
@@ -215,16 +215,12 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: cp.build_impossible_xor_differential_trail_model(fixed_variables, 4, 1, 3, 4, False)
         """
+        initial_round, middle_round, final_round, number_of_rounds = self.validate_input_rounds(initial_round, middle_round, final_round, number_of_rounds)
         self.initialise_model()
         if fully_automatic:
             number_of_rounds = self._cipher.number_of_rounds
             initial_round = 1
             final_round = self._cipher.number_of_rounds
-        else:
-            if number_of_rounds is None:
-                number_of_rounds = self._cipher.number_of_rounds
-            if final_round is None:
-                final_round = self._cipher.number_of_rounds
         inverse_cipher = self.inverse_cipher
 
         self._variables_list = []
@@ -236,20 +232,12 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             forward_components = self._cipher.get_all_components()
             backward_components = inverse_cipher.get_all_components()
         else:
-            if middle_round is not None:
-                forward_components = []
-                for r in range(middle_round):
-                    forward_components.extend(self._cipher.get_components_in_round(r))
-                backward_components = []
-                for r in range(number_of_rounds - middle_round + 1):
-                    backward_components.extend(inverse_cipher.get_components_in_round(r))
-            else:
-                forward_components = []
-                for r in range(final_round):
-                    forward_components.extend(self._cipher.get_components_in_round(r))
-                backward_components = []
-                for r in range(final_round):
-                    backward_components.extend(inverse_cipher.get_components_in_round(r))
+            forward_components = []
+            for r in range(middle_round):
+                forward_components.extend(self._cipher.get_components_in_round(r))
+            backward_components = []
+            for r in range(number_of_rounds - middle_round + 1):
+                backward_components.extend(inverse_cipher.get_components_in_round(r))
 
         direct_variables, direct_constraints = self.build_impossible_forward_model(forward_components)
         self._variables_list.extend(direct_variables)
@@ -273,7 +261,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self._model_constraints = self._model_prefix + self.clean_constraints(set_of_constraints, initial_round,
                                                                               middle_round, final_round, fully_automatic)
 
-    def clean_constraints(self, set_of_constraints=[], initial_round=1, middle_round=None, final_round=None, fully_automatic=False):
+    def clean_constraints(self, set_of_constraints, initial_round, middle_round, final_round, fully_automatic=False):
         number_of_rounds = self._cipher.number_of_rounds
         input_component = 'plaintext'
         model_constraints = []
@@ -283,22 +271,13 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             forward_components = self._cipher.get_all_components()
             backward_components = self.inverse_cipher.get_all_components()
         else:
-            if middle_round is not None:
-                forward_components = []
-                for r in range(initial_round - 1, middle_round):
-                    forward_components.extend([component.id for component in self._cipher.get_components_in_round(r)])
-                backward_components = []
-                for r in range(number_of_rounds - final_round, number_of_rounds - middle_round + 1):
-                    backward_components.extend(
-                        ['inverse_' + component.id for component in self.inverse_cipher.get_components_in_round(r)])
-            else:
-                forward_components = []
-                for r in range(initial_round - 1, final_round):
-                    forward_components.extend([component.id for component in self._cipher.get_components_in_round(r)])
-                backward_components = []
-                for r in range(number_of_rounds - final_round, number_of_rounds - initial_round + 1):
-                    backward_components.extend(
-                        ['inverse_' + component.id for component in self.inverse_cipher.get_components_in_round(r)])
+            forward_components = []
+            for r in range(initial_round - 1, middle_round):
+                forward_components.extend([component.id for component in self._cipher.get_components_in_round(r)])
+            backward_components = []
+            for r in range(number_of_rounds - final_round, number_of_rounds - middle_round + 1):
+                backward_components.extend(
+                    ['inverse_' + component.id for component in self.inverse_cipher.get_components_in_round(r)])
             key_components, key_ids = self.extract_key_schedule()
             components_to_keep = forward_components + backward_components + key_ids + ['inverse_' + id_link for id_link in
                                                                                        key_ids] + ['array['] + [
@@ -597,32 +576,45 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                 if element != 'key':
                     new_constraint = f'{new_constraint}\"inverse_{element} = \"++ show(inverse_{element}) ++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
             if intermediate_components:
-                if middle_round is not None:
-                    component_list = cipher.get_components_in_round(middle_round - 1)
-                else:
-                    component_list = cipher.get_all_components()
+                component_list = cipher.get_components_in_round(middle_round - 1)
                 new_constraint, incompatibility_constraint = show_constraints_intermediate_components(component_list, key_schedule_components_ids, new_constraint, incompatibility_constraint)
             else:
-                if middle_round is not None:
-                    for component in cipher.get_all_components():
-                        if 'output' in component.id and component.id not in key_schedule_components_ids:
-                            if self.get_component_round(component.id) <= middle_round - 1:
-                                new_constraint = new_constraint + \
-                                                 f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                            if self.get_component_round(component.id) >= middle_round - 1:
-                                new_constraint = new_constraint + \
-                                                 f'\"inverse_{component.id} = \"++ show(inverse_{component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-                            if self.get_component_round(component.id) == middle_round - 1:
-                                for i in range(component.output_bit_size):
-                                    incompatibility_constraint += f'({component.id}[{i}]+inverse_{component.id}[{i}]=1) \\/ '
-                else:
-                    new_constraint, incompatibility_constraint = show_constraints(key_schedule_components_ids, new_constraint, incompatibility_constraint)
+                for component in cipher.get_all_components():
+                    if 'output' in component.id and component.id not in key_schedule_components_ids:
+                        if self.get_component_round(component.id) <= middle_round - 1:
+                            new_constraint = new_constraint + \
+                                             f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                        if self.get_component_round(component.id) >= middle_round - 1:
+                            new_constraint = new_constraint + \
+                                             f'\"inverse_{component.id} = \"++ show(inverse_{component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+                        if self.get_component_round(component.id) == middle_round - 1:
+                            for i in range(component.output_bit_size):
+                                incompatibility_constraint += f'({component.id}[{i}]+inverse_{component.id}[{i}]=1) \\/ '
         cp_constraints.extend([incompatibility_constraint[:-4] + ';', new_constraint[:-2] + '];'])
 
         return cp_constraints
 
-    def find_all_impossible_xor_differential_trails(self, number_of_rounds=None, fixed_values=[], solver_name='Chuffed',
-                                                    initial_round=1, middle_round=None, final_round=None,
+    def validate_input_rounds(self, initial_round, middle_round, final_round, number_of_rounds):
+        if initial_round < 1:
+            raise ValueError("Initial round must be at least 1.")
+        if final_round is None:
+            final_round = self._cipher.number_of_rounds
+        if middle_round is None:
+            middle_round = (final_round + initial_round) // 2
+        if middle_round is not None and middle_round < initial_round:
+            raise ValueError("Middle round must be greater than or equal to initial round.")
+        if final_round is not None and final_round < (middle_round if middle_round is not None else initial_round):
+            raise ValueError("Final round must be greater than or equal to middle round.")
+        if number_of_rounds is None:
+            number_of_rounds = final_round - initial_round + 1
+        if number_of_rounds != (final_round - initial_round + 1):
+            raise ValueError("Number of rounds is inconsistent with initial, middle, and final rounds.")
+        return initial_round, middle_round, final_round, number_of_rounds
+
+    def find_all_impossible_xor_differential_trails(self, number_of_rounds=None, 
+                                                    fixed_values=[], solver_name='Chuffed',
+                                                    initial_round=1, middle_round=None, 
+                                                    final_round=None,
                                                     intermediate_components=True, num_of_processors=None,
                                                     timelimit=None, solve_with_API=False, solve_external=True):
         """
@@ -653,6 +645,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: trail = cp.find_all_impossible_xor_differential_trails(4, fixed_variables, 'Chuffed', 1, 3, 4, False) #doctest: +SKIP
 
         """
+        initial_round, middle_round, final_round, number_of_rounds = self.validate_input_rounds(initial_round, middle_round, final_round, number_of_rounds)
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round,
                                                            final_round, intermediate_components)
 
@@ -664,9 +657,12 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           timeout_in_seconds_=timelimit, processes_=num_of_processors, all_solutions_=True,
                           solve_external=solve_external)
 
-    def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[],
-                                                                 solver_name='Chuffed', initial_round=1, middle_round=None,
-                                                                 final_round=None, intermediate_components=True,
+    def find_lowest_complexity_impossible_xor_differential_trail(self, number_of_rounds=None, 
+                                                                 fixed_values=[],
+                                                                 solver_name='Chuffed', initial_round=1, 
+                                                                 middle_round=None,
+                                                                 final_round=None, 
+                                                                 intermediate_components=True,
                                                                  num_of_processors=None, timelimit=None,
                                                                  solve_with_API=False, solve_external=True):
         """
@@ -696,6 +692,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: trail = cp.find_lowest_complexity_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 3, 4, intermediate_components = False)
         """
+        initial_round, middle_round, final_round, number_of_rounds = self.validate_input_rounds(initial_round, middle_round, final_round, number_of_rounds)
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round,
                                                            final_round, intermediate_components)
         self._model_constraints.remove(f'solve satisfy;')
@@ -710,8 +707,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           final_round=final_round, timeout_in_seconds_=timelimit, processes_=num_of_processors,
                           solve_external=solve_external)
 
-    def find_one_impossible_xor_differential_cluster(self, number_of_rounds=None, fixed_values=[], solver_name='Chuffed',
-                                                     initial_round=1, middle_round=None, final_round=None,
+    def find_one_impossible_xor_differential_cluster(self, number_of_rounds=None, 
+                                                     fixed_values=[], solver_name='Chuffed',
+                                                     initial_round=1, middle_round=None, 
+                                                     final_round=None,
                                                      intermediate_components=True, num_of_processors=None,
                                                      timelimit=None, solve_with_API=False, solve_external=True):
         """
@@ -741,6 +740,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: trail = cp.find_one_impossible_xor_differential_cluster(4, fixed_variables, 'Chuffed', 1, 3, 4, intermediate_components = False)
         """
+        initial_round, middle_round, final_round, number_of_rounds = self.validate_input_rounds(initial_round, middle_round, final_round, number_of_rounds)
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round,
                                                            final_round, intermediate_components)
         self._model_constraints.remove(f'solve satisfy;')
@@ -755,9 +755,11 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           final_round=final_round, timeout_in_seconds_=timelimit, processes_=num_of_processors,
                           solve_external=solve_external)
 
-    def find_one_impossible_xor_differential_trail_with_extensions(self, number_of_rounds=None, fixed_values=[],
-                                                                   solver_name='Chuffed', initial_round=1, middle_round=None,
-                                                                   final_round=None, intermediate_components=True,
+    def find_one_impossible_xor_differential_trail_with_extensions(self, number_of_rounds=None, 
+                                                                   fixed_values=[], solver_name='Chuffed', initial_round=1, 
+                                                                   middle_round=None,
+                                                                   final_round=None, 
+                                                                   intermediate_components=True,
                                                                    num_of_processors=None, timelimit=None,
                                                                    solve_with_API=False, solve_external=True):
         """
@@ -799,8 +801,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                           final_round=final_round, timeout_in_seconds_=timelimit, processes_=num_of_processors,
                           solve_external=solve_external)
 
-    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[], solver_name='Chuffed',
-                                                   initial_round=1, middle_round=None, final_round=None,
+    def find_one_impossible_xor_differential_trail(self, number_of_rounds=None, fixed_values=[],
+                                                   solver_name='Chuffed', initial_round=1,
+                                                   middle_round=None,
+                                                   final_round=None,
                                                    intermediate_components=True, num_of_processors=None, timelimit=None,
                                                    solve_with_API=False, solve_external=True):
         """
@@ -830,6 +834,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: trail = cp.find_one_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 3, 4, intermediate_components = False)
         """
+        initial_round, middle_round, final_round, number_of_rounds = self.validate_input_rounds(initial_round, middle_round, final_round, number_of_rounds)
         self.build_impossible_xor_differential_trail_model(fixed_values, number_of_rounds, initial_round, middle_round,
                                                            final_round, intermediate_components)
 
@@ -985,11 +990,9 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
 
         return key_bits
 
-    def input_impossible_constraints_with_extensions(self, number_of_rounds=None, initial_round=None, middle_round=None,
-                                                     final_round=None):
-
-        if number_of_rounds is None:
-            number_of_rounds = self._cipher.number_of_rounds
+    def input_impossible_constraints_with_extensions(self, number_of_rounds, initial_round,
+                                                     middle_round,
+                                                     final_round):
 
         cp_constraints = []
         cp_declarations = [f'array[0..{bit_size - 1}] of var 0..2: {input_};'
@@ -1057,10 +1060,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
 
         return cp_declarations, cp_constraints
 
-    def input_impossible_constraints(self, number_of_rounds=None, middle_round=None, fully_automatic=False):
-
-        if number_of_rounds is None:
-            number_of_rounds = self._cipher.number_of_rounds
+    def input_impossible_constraints(self, number_of_rounds, middle_round, fully_automatic=False):
 
         cp_constraints = []
         cp_declarations = [f'array[0..{bit_size - 1}] of var 0..2: {input_};'
@@ -1071,20 +1071,12 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             forward_components = cipher.get_all_components()
             backward_components = inverse_cipher.get_all_components()
         else:
-            if middle_round is not None:
-                forward_components = []
-                for r in range(middle_round):
-                    forward_components.extend(self._cipher.get_components_in_round(r))
-                backward_components = []
-                for r in range(number_of_rounds - middle_round + 1):
-                    backward_components.extend(inverse_cipher.get_components_in_round(r))
-            else:
-                forward_components = []
-                for r in range(number_of_rounds):
-                    forward_components.extend(self._cipher.get_components_in_round(r))
-                backward_components = []
-                for r in range(number_of_rounds):
-                    backward_components.extend(inverse_cipher.get_components_in_round(r))
+            forward_components = []
+            for r in range(middle_round):
+                forward_components.extend(self._cipher.get_components_in_round(r))
+            backward_components = []
+            for r in range(number_of_rounds - middle_round + 1):
+                backward_components.extend(inverse_cipher.get_components_in_round(r))
         cp_declarations.extend([f'array[0..{bit_size - 1}] of var 0..2: inverse_{input_};' for input_, bit_size in
                                 zip(inverse_cipher.inputs, inverse_cipher.inputs_bit_size) if input_ != 'key'])
         for component in forward_components:
@@ -1134,18 +1126,11 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             all_components.extend(['inverse_' + component.id for component in self.inverse_cipher.get_all_components()])
             all_components.extend(['inverse_' + component for component in self.inverse_cipher.inputs])
         else:
-            if middle_round is not None:
-                for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
-                    all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
-                for r in list(range(initial_round - 1)) + list(range(middle_round - 1, final_round)):
-                    all_components.extend(['inverse_' + component.id for component in
-                                           [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
-            else:
-                for r in list(range(initial_round - 1, number_of_rounds)):
-                    all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
-                for r in list(range(final_round)):
-                    all_components.extend(['inverse_' + component.id for component in
-                                           [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
+            for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
+                all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
+            for r in list(range(initial_round - 1)) + list(range(middle_round - 1, final_round)):
+                all_components.extend(['inverse_' + component.id for component in
+                                       [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]])
             all_components.extend(['inverse_' + id_link for id_link in [*self.inverse_cipher.inputs]])
             all_components.extend(['inverse_' + id_link for id_link in [*self._cipher.inputs]])
         for component_id in all_components:
@@ -1185,16 +1170,11 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
 
         return inverse_variables, inverse_constraints
 
-    def solve(self, model_type, solver_name=None, number_of_rounds=None, initial_round=1, middle_round=None,
+    def solve(self, model_type, solver_name=SOLVER_DEFAULT, number_of_rounds=None, initial_round=1, middle_round=None,
               final_round=None, processes_=None, timeout_in_seconds_=None, all_solutions_=False, solve_external=False, fully_automatic=False):
         if fully_automatic:
             number_of_rounds = self._cipher.number_of_rounds
             final_round = self._cipher.number_of_rounds
-        else:
-            if number_of_rounds is None:
-                number_of_rounds = self._cipher.number_of_rounds
-            if final_round is None:
-                final_round = self._cipher.number_of_rounds
         cipher_name = self.cipher_id
         input_file_path = f'{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, processes_,

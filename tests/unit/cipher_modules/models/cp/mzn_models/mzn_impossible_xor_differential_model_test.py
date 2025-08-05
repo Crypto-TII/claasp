@@ -122,10 +122,10 @@ def test_find_one_impossible_xor_differential_trail_with_initial_and_final_round
     assert trail['model_type'] == 'impossible_xor_differential_one_solution'
     assert trail['solver_name'] == 'Chuffed'
 
-    assert trail['components_values']['plaintext']['value'] == '00000000022200000021000000000000'
+    assert trail['components_values']['plaintext']['value'] == '00000000021000000010000000000000'
     assert trail['components_values']['inverse_cipher_output_5_12']['value'] == '10000000000000001000000000000010'
 
-    assert trail['components_values']['xor_1_10']['value'] ==        '2222222222100022'
+    assert trail['components_values']['xor_1_10']['value'] ==        '2222222221000022'
     assert trail['components_values']['inverse_rot_2_9']['value'] == '2222222210022222'
 
 
