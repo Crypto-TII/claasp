@@ -33,6 +33,7 @@ from minizinc import Instance, Model, Solver, Status
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
+from claasp.cipher_modules.models.cp.minizinc_utils.utils import replace_existing_file_name
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import SBOX
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
@@ -644,11 +645,8 @@ class MznModel:
           * 'deterministic_truncated_xor_differential'
           * 'deterministic_truncated_xor_differential_one_solution'
           * 'impossible_xor_differential'
-        - ``solver_name`` -- **string** (default: `None`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `None`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
         - ``num_of_processors`` -- **integer**; the number of processors to be used
         - ``timelimit`` -- **integer**; time limit to output a result
 
@@ -677,6 +675,7 @@ class MznModel:
         if solve_external:
             cipher_name = self.cipher_id
             input_file_path = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
+            input_file_path = replace_existing_file_name(input_file_path)
             command = self.get_command_for_solver_process(
                 input_file_path, model_type, solver_name, processes_, timeout_in_seconds_
             )
@@ -808,7 +807,15 @@ class MznModel:
 
         return result
 
-    def solver_names(self, verbose = False):
+    def solver_names(self, verbose: bool = False) -> None:
+        """
+        Print the available MiniZinc solvers.
+
+        INPUT:
+
+        - ``verbose`` -- **bool**; beside the solver name, it will be printed the brand name.
+
+        """
         if not verbose:
             print('Internal CP solvers:')
             print('solver brand name | solver name')

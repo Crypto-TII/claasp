@@ -49,6 +49,25 @@ def test_find_one_xor_differential_trail():
     assert solution['components_values']['key'] == {'value': '0x00000000000000000000000000000000', 'weight': 0}
     assert solution['components_values']['plaintext']['weight'] == 0
 
+    file = open('aes_block_cipher_k128_p128_o128_r2_mzn_xor_differential_Chuffed.mzn', 'w')
+    file.close()
+    file = open('aes_block_cipher_k128_p128_o128_r2_table_of_solutions_Chuffed.mzn', 'w')
+    file.close()
+    file = open('aes_block_cipher_k128_p128_o128_r2_Mzn_xor_differential_first_step_Chuffed.mzn', 'w')
+    file.close()
+    solution = mzn.find_one_xor_differential_trail(fixed_variables, 'Chuffed', 'Chuffed')
+
+    os.remove('aes_block_cipher_k128_p128_o128_r2_mzn_xor_differential_Chuffed.mzn')
+    os.remove('aes_block_cipher_k128_p128_o128_r2_table_of_solutions_Chuffed.mzn')
+    os.remove('aes_block_cipher_k128_p128_o128_r2_Mzn_xor_differential_first_step_Chuffed.mzn')
+
+    assert str(solution['cipher']) == 'aes_block_cipher_k128_p128_o128_r2'
+    assert solution['model_type'] == 'xor_differential'
+    assert solution['solver_name'] == 'Chuffed'
+    assert eval(solution['total_weight']) >= 0.0
+    assert solution['components_values']['key'] == {'value': '0x00000000000000000000000000000000', 'weight': 0}
+    assert solution['components_values']['plaintext']['weight'] == 0
+
 
 def test_find_one_xor_differential_trail_with_fixed_weight():
     aes = AESBlockCipher(number_of_rounds=2)
