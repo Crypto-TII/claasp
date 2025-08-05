@@ -32,6 +32,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_
 from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
                                   WORD_OPERATION, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, IMPOSSIBLE_XOR_DIFFERENTIAL)
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, SOLVER_DEFAULT
+from claasp.cipher_modules.models.cp.minizinc_utils.utils import replace_existing_file_name
 
 
 class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferentialModel):
@@ -1104,6 +1105,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             final_round = self._cipher.number_of_rounds
         cipher_name = self.cipher_id
         input_file_path = f'{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
+        input_file_path = replace_existing_file_name(input_file_path)
         command = self.get_command_for_solver_process(input_file_path, model_type, solver_name, processes_,
                                                       timeout_in_seconds_)
         start = time.time()

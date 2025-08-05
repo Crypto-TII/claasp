@@ -33,6 +33,7 @@ from minizinc import Instance, Model, Solver, Status
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
+from claasp.cipher_modules.models.cp.minizinc_utils.utils import replace_existing_file_name
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import SBOX
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
@@ -677,6 +678,7 @@ class MznModel:
         if solve_external:
             cipher_name = self.cipher_id
             input_file_path = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
+            input_file_path = replace_existing_file_name(input_file_path)
             command = self.get_command_for_solver_process(
                 input_file_path, model_type, solver_name, processes_, timeout_in_seconds_
             )
