@@ -35,6 +35,8 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model impor
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
     MznXorDifferentialNumberOfActiveSboxesModel)
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, CP_SOLVERS_INTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
+from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
+from claasp.cipher_modules.models.cp.minizinc_utils.utils import replace_existing_file_name
 
 
 class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
@@ -43,6 +45,12 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
     def __init__(self, cipher):
         self._table_items = []
         super().__init__(cipher)
+
+    def initialise_model(self):
+        self._table_items = []
+        self._first_step = []
+        self._first_step_find_all_solutions = []
+        super().initialise_model()
 
     def build_xor_differential_trail_second_step_model(self, weight=-1, fixed_variables=[]):
         """
@@ -210,7 +218,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         """
         return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name, nmax, repetition, num_of_processors, timelimit)
 
-    def generate_table_of_solutions(self, solution, solver_name):
+    def generate_table_of_solutions(self, solution, solver_name, solution_file_name):
         """
         Return a table with the solutions from the first step in the two steps model for xor differential trail search.
 
@@ -230,7 +238,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_first_step_model(-1,fixed_variables)
             sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step', 'Chuffed')
-            sage: cp.generate_table_of_solutions(first_step_solution, 'Chuffed')
+            sage: cp.generate_table_of_solutions(first_step_solution, 'Chuffed', 'aes_block_cipher_k128_p128_o128_r2_table_of_solutions_Chuffed.mzn')
         """
         cipher_name = self.cipher_id
         separator = '----------'
@@ -250,7 +258,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
                     value = value.replace(' = ', '')
                     table = table + value.replace('\n', '') + ','
         table = table[:-1] + ']);'
-        with open(f'{cipher_name}_table_of_solutions_{solver_name}.mzn', 'w') as table_of_solutions_file:
+        with open(solution_file_name, 'w') as table_of_solutions_file:
             table_of_solutions_file.write(table)
 
     def get_solutions_dictionaries_with_build_time(self, build_time, components_values, memory, solver_name, time,
@@ -327,6 +335,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
              'total_weight': '6.0',
              'building_time': 3.7489726543426514}
         """
+        self.initialise_model()
         possible_sboxes = 0
         if weight > 0:
             possible_sboxes = self.find_possible_number_of_active_sboxes(weight)
@@ -344,7 +353,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         end = tm.time()
         build_time += end - start
         input_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_mzn_xor_differential_{first_step_solver_name}.mzn'
+        input_file_name = replace_existing_file_name(input_file_name)
         solution_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_table_of_solutions_{first_step_solver_name}.mzn'
+        solution_file_name = replace_existing_file_name(solution_file_name)
         write_model_to_file(self._model_constraints, input_file_name)
 
         for i in range(len(CP_SOLVERS_EXTERNAL)):
@@ -360,20 +371,20 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
                 first_step_all_solutions, solve_first_step_time = self.solve_model(
                     'xor_differential_first_step_find_all_solutions', first_step_solver_name)
                 solve_time += solve_first_step_time
-                self.generate_table_of_solutions(first_step_all_solutions, first_step_solver_name)
+                self.generate_table_of_solutions(first_step_all_solutions, first_step_solver_name, solution_file_name)
                 
                 command_options['keywords']['command']['input_file'].append(input_file_name)
                 command_options['keywords']['command']['output_file'].append(solution_file_name)
                 command_options['keywords']['command']['options'].insert(0, '-a')
             elif model_type == 'xor_differential_all_solutions':
-                self.generate_table_of_solutions(first_step_solution, first_step_solver_name)
-                
+                self.generate_table_of_solutions(first_step_solution, first_step_solver_name, solution_file_name)
+
                 command_options['keywords']['command']['input_file'].append(input_file_name)
                 command_options['keywords']['command']['output_file'].append(solution_file_name)
                 command_options['keywords']['command']['options'].insert(0, '-a')
             else:
-                self.generate_table_of_solutions(first_step_solution, first_step_solver_name)
-                
+                self.generate_table_of_solutions(first_step_solution, first_step_solver_name, solution_file_name)
+
                 command_options['keywords']['command']['input_file'].append(input_file_name)
                 command_options['keywords']['command']['output_file'].append(solution_file_name)
             if num_of_processors is not None:
@@ -440,6 +451,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         start = tm.time()
         cipher_name = self.cipher_id
         input_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
+        input_file_name = replace_existing_file_name(input_file_name)
         for i in range(len(CP_SOLVERS_EXTERNAL)):
             if solver_name == CP_SOLVERS_EXTERNAL[i]['solver_name']:
                 command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
