@@ -1,3 +1,8 @@
+"""Kalyna tests
+
+Reference: https://eprint.iacr.org/2015/650.pdf
+"""
+
 from claasp.ciphers.block_ciphers.kalyna_block_cipher import KalynaBlockCipher
 
 
