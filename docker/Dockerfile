@@ -48,8 +48,7 @@ ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
 
 WORKDIR /opt
 
-## Installing Soplex (for SCIP)
-
+# Installing Soplex (for SCIP)
 RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-603.tar.gz \
     && tar -xf release-603.tar.gz \
     && rm release-603.tar.gz \
@@ -61,20 +60,19 @@ RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-603.tar.gz 
 
 ENV SOPLEX_HOME="/opt/soplex-release-603/build"
 
-## Installing HiGHS
-
+# Installing HiGHS
 RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-archive.tar.gz \
     && tar -xf source-archive.tar.gz \
     && rm source-archive.tar.gz \
     && cd HiGHS \
     && cmake -S. -B build \
-    && cmake --build build
+    && cmake --build build --parallel
 
 ENV PATH="${PATH}:/opt/HiGHS/build/bin"
 
 WORKDIR /opt
 
-## Installing SCIP
+# Installing SCIP
 RUN wget https://github.com/scipopt/scip/archive/refs/tags/v803.tar.gz \
     && tar -xf v803.tar.gz \
     && rm v803.tar.gz \
