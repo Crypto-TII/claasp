@@ -2,8 +2,6 @@ name: Publish CLAASP package on PyPi
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*.*.*'
 
@@ -20,18 +18,16 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install build tools
+      - name: Install build & upload tools
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install setuptools wheel
+          python3 -m pip install build twine
 
-      - name: Install twine
-        run: sudo apt install twine
+      - name: Build the package
+        run: python -m build
 
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          python3 setup.py sdist bdist_wheel
-          twine upload dist/*
+        run: twine upload dist/*
