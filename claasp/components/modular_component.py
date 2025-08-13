@@ -1124,7 +1124,8 @@ class Modular(Component):
             return clauses
 
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_len = self.output_bit_size
 
         A_t = in_ids_0[0:out_len]
         B_t = in_ids_0[out_len:2 * out_len]
