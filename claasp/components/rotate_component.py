@@ -637,12 +637,12 @@ class Rotate(Component):
               'key_40 -rot_1_1_15'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         rotation = self.description[1]
-        input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
+        rotated_input_bit_ids = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]]))
+        for output_bit_id, rotated_input_bit_id in zip(output_bit_ids, rotated_input_bit_ids):
+            constraints.extend(sat_utils.cnf_equivalent([output_bit_id, rotated_input_bit_id]))
 
         return output_bit_ids, constraints
 
@@ -760,14 +760,14 @@ class Rotate(Component):
               'rot_1_1_15_o -rot_1_1_8_i',
               'rot_1_1_8_i -rot_1_1_15_o'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
+        output_bit_ids = self._generate_output_ids(out_suffix)
         rotation = self.description[1]
-        input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
+        rotated_input_bit_ids = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]]))
+        for output_bit_id, rotated_input_bit_id in zip(output_bit_ids, rotated_input_bit_ids):
+            constraints.extend(sat_utils.cnf_equivalent([output_bit_id, rotated_input_bit_id]))
         result = input_bit_ids + output_bit_ids, constraints
 
         return result
@@ -802,12 +802,12 @@ class Rotate(Component):
               '(assert (= rot_0_0_15 plaintext_8))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         rotation = self.description[1]
-        input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
+        rotated_input_bit_ids = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]])
+        for output_bit_id, rotated_input_bit_id in zip(output_bit_ids, rotated_input_bit_ids):
+            equation = smt_utils.smt_equivalent([output_bit_id, rotated_input_bit_id])
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -875,14 +875,14 @@ class Rotate(Component):
               '(assert (= rot_0_0_14_o rot_0_0_7_i))',
               '(assert (= rot_0_0_15_o rot_0_0_8_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
+        output_bit_ids = self._generate_output_ids(out_suffix)
         rotation = self.description[1]
-        input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
+        rotated_input_bit_ids = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]])
+        for output_bit_id, rotated_input_bit_id in zip(output_bit_ids, rotated_input_bit_ids):
+            equation = smt_utils.smt_equivalent([output_bit_id, rotated_input_bit_id])
             constraints.append(smt_utils.smt_assert(equation))
         result = input_bit_ids + output_bit_ids, constraints
 

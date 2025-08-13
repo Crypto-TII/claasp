@@ -117,9 +117,10 @@ class Modular(Component):
               'hw_modadd_0_1_15_o modadd_0_1_15_o -modadd_0_1_31_i',
               'hw_modadd_0_1_15_o -modadd_0_1_15_o modadd_0_1_31_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_len = self.output_bit_size
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         constraints = [f'-{hw_bit_ids[0]}']
         constraints.append(f'x -{hw_bit_ids[1]} {output_bit_ids[0]} '
@@ -984,7 +985,8 @@ class Modular(Component):
                 constraints_.extend(new_constraints)
 
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
+        output_bit_len = self.output_bit_size
         dummy_bit_ids = [f'dummy_{output_bit_ids[i]}' for i in range(output_bit_len - 1)]
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         constraints = []
@@ -1227,9 +1229,10 @@ class Modular(Component):
               'hw_modadd_0_1_15_o modadd_0_1_15_o -modadd_0_1_31_i',
               'hw_modadd_0_1_15_o -modadd_0_1_15_o modadd_0_1_31_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_len = self.output_bit_size
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         constraints = [f'-{hw_bit_ids[0]}']
         constraints.extend(sat_utils.cnf_xor(hw_bit_ids[1],
@@ -1287,7 +1290,8 @@ class Modular(Component):
               '(assert (not (xor modadd_0_1_31 shift_0_0_31 key_31)))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
+        output_bit_len = self.output_bit_size
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         constraints = []
         # Hamming weight
@@ -1347,9 +1351,10 @@ class Modular(Component):
               '(assert (=> (xor modadd_0_1_30_o modadd_0_1_62_i) hw_modadd_0_1_30_o))',
               '(assert (=> (xor modadd_0_1_31_o modadd_0_1_63_i) hw_modadd_0_1_31_o))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_len = self.output_bit_size
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         constraints = [smt_utils.smt_assert(smt_utils.smt_not(hw_bit_ids[0]))]
         operation = smt_utils.smt_xor((output_bit_ids[0], input_bit_ids[0], input_bit_ids[output_bit_len]))

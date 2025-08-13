@@ -217,11 +217,11 @@ class XOR(Component):
               'x -xor_0_2_15 modadd_0_1_15 key_63'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            operands = [f'x -{output_bit_ids[i]}']
-            operands.extend(input_bit_ids[i::output_bit_len])
+        for i, output_bit_id in enumerate(output_bit_ids):
+            operands = [f'x -{output_bit_id}']
+            operands.extend(input_bit_ids[i::self.output_bit_size])
             constraints.append(' '.join(operands))
 
         return output_bit_ids, constraints
@@ -1129,12 +1129,12 @@ class XOR(Component):
               '-xor_0_2_15 -modadd_0_1_15 -key_63'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            result_bit_ids = [f'inter_{j}_{output_bit_ids[i]}'
-                              for j in range(self.description[1] - 2)] + [output_bit_ids[i]]
-            constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::output_bit_len]))
+        for i, output_bit_id in enumerate(output_bit_ids):
+            result_bit_ids = [f'inter_{j}_{output_bit_id}'
+                              for j in range(self.description[1] - 2)] + [output_bit_id]
+            constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::self.output_bit_size]))
 
         return output_bit_ids, constraints
 
@@ -1244,13 +1244,13 @@ class XOR(Component):
               'xor_0_2_31_i -xor_0_2_15_i',
               'xor_0_2_15_o -xor_0_2_31_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         bit_ids = input_bit_ids + output_bit_ids
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent(bit_ids[i::output_bit_len]))
+        for i in range(self.output_bit_size):
+            constraints.extend(sat_utils.cnf_equivalent(bit_ids[i::self.output_bit_size]))
         result = bit_ids, constraints
 
         return result
@@ -1354,13 +1354,13 @@ class XOR(Component):
               '(assert (= xor_0_2_14_o xor_0_2_14_i xor_0_2_30_i))',
               '(assert (= xor_0_2_15_o xor_0_2_15_i xor_0_2_31_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         bit_ids = output_bit_ids + input_bit_ids
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent(bit_ids[i::output_bit_len])
+        for i in range(self.output_bit_size):
+            equation = smt_utils.smt_equivalent(bit_ids[i::self.output_bit_size])
             constraints.append(smt_utils.smt_assert(equation))
         result = bit_ids, constraints
 

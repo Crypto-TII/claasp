@@ -210,7 +210,8 @@ class MODADD(Modular):
               'x -modadd_0_1_15 rot_0_0_15 plaintext_31'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
+        output_bit_len = self.output_bit_size
         carry_bit_ids = [f'carry_{output_bit_ids[i]}' for i in range(output_bit_len - 1)]
         constraints = []
         # carries
@@ -340,10 +341,10 @@ class MODADD(Modular):
               '-modadd_0_1_15 -rot_0_0_15 -plaintext_31'])
         """
         input_ids = self._generate_input_ids()
-        output_len, output_ids = self._generate_output_ids()
+        output_ids = self._generate_output_ids()
         num_of_addenda = self.description[1]
         # reformat of the in_ids
-        inputs_ids = [input_ids[i * output_len: (i + 1) * output_len] for i in range(num_of_addenda)]
+        inputs_ids = [input_ids[i * self.output_bit_size: (i + 1) * self.output_bit_size] for i in range(num_of_addenda)]
         # carries
         carries_ids = [[f'carry_{i}_{output_id}' for output_id in output_ids[:-1]] for i in range(num_of_addenda - 1)]
         # reformat of the outputs_ids
@@ -385,10 +386,10 @@ class MODADD(Modular):
               '(assert (= modadd_0_1_31 (xor shift_0_0_31 key_31)))'])
         """
         input_ids = self._generate_input_ids()
-        output_len, output_ids = self._generate_output_ids()
+        output_ids = self._generate_output_ids()
         num_of_addenda = self.description[1]
         # reformat of the in_ids
-        inputs_ids = [input_ids[i * output_len: (i + 1) * output_len] for i in range(num_of_addenda)]
+        inputs_ids = [input_ids[i * self.output_bit_size: (i + 1) * self.output_bit_size] for i in range(num_of_addenda)]
         # carries
         carries_ids = [[f'carry_{i}_{output_id}' for output_id in output_ids[:-1]] for i in range(num_of_addenda - 1)]
         # reformat of the outputs_ids

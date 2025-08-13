@@ -480,10 +480,10 @@ class CipherOutput(Component):
               'xor_2_10_15 -cipher_output_2_12_31'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i]]))
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
 
         return output_bit_ids, constraints
 
@@ -589,9 +589,9 @@ class CipherOutput(Component):
               'cipher_output_2_12_31_i -cipher_output_2_12_31_o',
               'cipher_output_2_12_31_o -cipher_output_2_12_31_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         constraints = []
         for input_bit_id, output_bit_id in zip(input_bit_ids, output_bit_ids):
             constraints.extend(sat_utils.cnf_equivalent([input_bit_id, output_bit_id]))
@@ -624,10 +624,10 @@ class CipherOutput(Component):
               '(assert (= cipher_output_2_12_31 xor_2_10_15))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids[i]])
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id])
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -684,9 +684,9 @@ class CipherOutput(Component):
               '(assert (= cipher_output_2_12_30_i cipher_output_2_12_30_o))',
               '(assert (= cipher_output_2_12_31_i cipher_output_2_12_31_o))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         constraints = []
         for ids in zip(input_bit_ids, output_bit_ids):
             equation = smt_utils.smt_equivalent(ids)
