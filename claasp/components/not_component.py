@@ -662,11 +662,11 @@ class NOT(Component):
               ...
               'not_0_8_30_o',
               'not_0_8_31_o'],
-             ['not_0_8_0_i -not_0_8_0_o',
-              'not_0_8_0_o -not_0_8_0_i',
+             ['not_0_8_0_o -not_0_8_0_i',
+              'not_0_8_0_i -not_0_8_0_o',
               ...
-              'not_0_8_31_i -not_0_8_31_o',
-              'not_0_8_31_o -not_0_8_31_i'])
+              'not_0_8_31_o -not_0_8_31_i',
+              'not_0_8_31_i -not_0_8_31_o'])
         """
         input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
