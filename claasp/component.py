@@ -143,11 +143,11 @@ class Component:
         for link, positions in zip(input_id_link, input_bit_positions):
             input_bit_ids.extend([f'{link}_{j}{suffix}' for j in positions])
 
-        return self.input_bit_size, input_bit_ids
+        return input_bit_ids
 
     def _generate_input_double_ids(self):
-        _, in_ids_0 = self._generate_input_ids(suffix='_0')
-        _, in_ids_1 = self._generate_input_ids(suffix='_1')
+        in_ids_0 = self._generate_input_ids(suffix='_0')
+        in_ids_1 = self._generate_input_ids(suffix='_1')
 
         return in_ids_0, in_ids_1
 

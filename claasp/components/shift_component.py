@@ -695,7 +695,7 @@ class SHIFT(Component):
               '-shift_0_0_30',
               '-shift_0_0_31'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         shift_amount = self.description[1]
         constraints = []
@@ -883,7 +883,7 @@ class SHIFT(Component):
               '(assert (not shift_0_0_30))',
               '(assert (not shift_0_0_31))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         shift_amount = self.description[1]
         constraints = []

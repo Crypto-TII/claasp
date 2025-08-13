@@ -209,7 +209,7 @@ class MODADD(Modular):
               'x -modadd_0_1_14 rot_0_0_14 plaintext_30 carry_modadd_0_1_14',
               'x -modadd_0_1_15 rot_0_0_15 plaintext_31'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         carry_bit_ids = [f'carry_{output_bit_ids[i]}' for i in range(output_bit_len - 1)]
         constraints = []

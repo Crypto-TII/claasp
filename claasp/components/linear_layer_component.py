@@ -124,13 +124,13 @@ class LinearLayer(Component):
               'x -linear_layer_0_6_22 sbox_0_0_2 sbox_0_2_2 sbox_0_3_2 sbox_0_4_3 sbox_0_5_0 sbox_0_5_1 sbox_0_5_3',
               'x -linear_layer_0_6_23 sbox_0_0_0 sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_3 sbox_0_2_1 sbox_0_3_1 sbox_0_3_2 sbox_0_3_3 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_1 sbox_0_5_2 sbox_0_5_3'])
         """
-        input_bit_len, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         matrix = self.description
         constraints = []
         for i in range(output_bit_len):
             operands = [f'x -{output_bit_ids[i]}']
-            operands.extend(input_bit_ids[j] for j in range(input_bit_len) if matrix[j][i])
+            operands.extend(input_bit_id for j, input_bit_id in enumerate(input_bit_ids) if matrix[j][i])
             constraints.append(' '.join(operands))
 
         return output_bit_ids, constraints
@@ -725,12 +725,12 @@ class LinearLayer(Component):
             sage: constraints[-1]
             'linear_layer_0_6_23 -sbox_0_0_0 -sbox_0_0_1 -sbox_0_0_2 -sbox_0_0_3 -sbox_0_1_3 -sbox_0_2_1 -sbox_0_3_1 -sbox_0_3_2 -sbox_0_3_3 -sbox_0_4_1 -sbox_0_4_2 -sbox_0_4_3 -sbox_0_5_1 -sbox_0_5_2 -sbox_0_5_3'
         """
-        input_bit_len, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         matrix = self.description
         constraints = []
         for i in range(output_bit_len):
-            operands = [input_bit_ids[j] for j in range(input_bit_len) if matrix[j][i]]
+            operands = [input_bit_id for j, input_bit_id in enumerate(input_bit_ids) if matrix[j][i]]
             constraints.extend(sat_utils.cnf_xor(output_bit_ids[i], operands))
 
         return output_bit_ids, constraints
@@ -863,7 +863,7 @@ class LinearLayer(Component):
             sage: constraints[-1]
             '(assert (= linear_layer_0_6_23 (xor sbox_0_0_0 sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_3 sbox_0_2_1 sbox_0_3_1 sbox_0_3_2 sbox_0_3_3 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_1 sbox_0_5_2 sbox_0_5_3)))'
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         matrix = self.description
         constraints = []
