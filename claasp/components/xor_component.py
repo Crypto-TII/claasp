@@ -1169,7 +1169,8 @@ class XOR(Component):
               'xor_0_2_15_0 -modadd_0_1_15_1 -key_63_1 -xor_0_2_15_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_len = self.output_bit_size
         in_ids = [(id_0, id_1) for id_0, id_1 in zip(in_ids_0, in_ids_1)]
         out_ids = [(id_0, id_1) for id_0, id_1 in zip(out_ids_0, out_ids_1)]
         constraints = []

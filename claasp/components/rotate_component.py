@@ -680,7 +680,7 @@ class Rotate(Component):
               'key_40_1 -rot_1_1_15_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         rotation = self.description[1]
         in_ids_0_rotated = in_ids_0[-rotation:] + in_ids_0[:-rotation]
         in_ids_1_rotated = in_ids_1[-rotation:] + in_ids_1[:-rotation]

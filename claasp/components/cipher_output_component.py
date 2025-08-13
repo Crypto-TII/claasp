@@ -517,7 +517,7 @@ class CipherOutput(Component):
               'xor_2_10_15_1 -cipher_output_2_12_31_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = []
         for out_id, in_id in zip(out_ids_0, in_ids_0):
             constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))

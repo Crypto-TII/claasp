@@ -1073,7 +1073,8 @@ class Modular(Component):
               'modadd_0_1_15_0 -rot_0_0_15_1 -plaintext_31_1 -modadd_0_1_15_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_len = self.output_bit_size
         carry_ids_0 = [f'carry_{out_id}_0' for out_id in out_ids_0]
         carry_ids_1 = [f'carry_{out_id}_1' for out_id in out_ids_1]
         constraints = [f'-{carry_ids_0[-1]} -{carry_ids_1[-1]}']
