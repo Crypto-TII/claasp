@@ -835,7 +835,7 @@ class SHIFT(Component):
               'shift_0_0_27_o -shift_0_0_31_i',
               'shift_0_0_31_i -shift_0_0_27_o'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         output_bit_len = self.output_bit_size
@@ -970,7 +970,7 @@ class SHIFT(Component):
               '(assert (= shift_0_0_26_o shift_0_0_30_i))',
               '(assert (= shift_0_0_27_o shift_0_0_31_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         output_bit_len = self.output_bit_size

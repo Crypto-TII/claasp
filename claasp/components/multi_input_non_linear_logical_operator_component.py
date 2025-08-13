@@ -512,7 +512,7 @@ class MultiInputNonlinearLogicalOperator(Component):
               '-and_0_8_11_o hw_and_0_8_11_o',
               'and_0_8_11_o -hw_and_0_8_11_o'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(out_suffix)
         hw_bit_ids = [f'hw_{output_bit_id}' for output_bit_id in output_bit_ids]
@@ -600,7 +600,7 @@ class MultiInputNonlinearLogicalOperator(Component):
               '(assert (or (and (not and_0_8_10_i) (not and_0_8_22_i) (not and_0_8_10_o) (not hw_and_0_8_10_o)) (and and_0_8_10_o hw_and_0_8_10_o)))',
               '(assert (or (and (not and_0_8_11_i) (not and_0_8_23_i) (not and_0_8_11_o) (not hw_and_0_8_11_o)) (and and_0_8_11_o hw_and_0_8_11_o)))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(out_suffix)
         hw_bit_ids = [f'hw_{output_bit_id}' for output_bit_id in output_bit_ids]

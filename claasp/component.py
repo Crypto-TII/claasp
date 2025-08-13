@@ -129,18 +129,14 @@ class Component:
         return var_definition_names
 
     def _generate_component_input_ids(self):
-        input_id_link = self.id
         in_suffix = constants.INPUT_BIT_ID_SUFFIX
-        input_bit_size = self.input_bit_size
-        input_bit_ids = [f'{input_id_link}_{i}{in_suffix}' for i in range(input_bit_size)]
+        input_bit_ids = [f'{self.id}_{i}{in_suffix}' for i in range(self.input_bit_size)]
 
-        return input_bit_size, input_bit_ids
+        return input_bit_ids
 
     def _generate_input_ids(self, suffix=''):
-        input_id_link = self.input_id_links
-        input_bit_positions = self.input_bit_positions
         input_bit_ids = []
-        for link, positions in zip(input_id_link, input_bit_positions):
+        for link, positions in zip(self.input_id_links, self.input_bit_positions):
             input_bit_ids.extend([f'{link}_{j}{suffix}' for j in positions])
 
         return input_bit_ids
@@ -152,9 +148,7 @@ class Component:
         return in_ids_0, in_ids_1
 
     def _generate_output_ids(self, suffix=''):
-        output_id_link = self.id
-        output_bit_size = self.output_bit_size
-        output_bit_ids = [f'{output_id_link}_{j}{suffix}' for j in range(output_bit_size)]
+        output_bit_ids = [f'{self.id}_{j}{suffix}' for j in range(self.output_bit_size)]
 
         return output_bit_ids
 

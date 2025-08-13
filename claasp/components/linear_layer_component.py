@@ -164,25 +164,24 @@ class LinearLayer(Component):
               'x -linear_layer_0_6_22_o dummy_0_linear_layer_0_6_22_o dummy_1_linear_layer_0_6_22_o dummy_2_linear_layer_0_6_22_o dummy_3_linear_layer_0_6_22_o dummy_4_linear_layer_0_6_22_o dummy_6_linear_layer_0_6_22_o dummy_9_linear_layer_0_6_22_o dummy_13_linear_layer_0_6_22_o dummy_14_linear_layer_0_6_22_o dummy_15_linear_layer_0_6_22_o dummy_16_linear_layer_0_6_22_o dummy_19_linear_layer_0_6_22_o dummy_20_linear_layer_0_6_22_o dummy_21_linear_layer_0_6_22_o',
               'x -linear_layer_0_6_23_o dummy_1_linear_layer_0_6_23_o dummy_5_linear_layer_0_6_23_o dummy_7_linear_layer_0_6_23_o dummy_8_linear_layer_0_6_23_o dummy_9_linear_layer_0_6_23_o dummy_14_linear_layer_0_6_23_o dummy_17_linear_layer_0_6_23_o dummy_18_linear_layer_0_6_23_o dummy_23_linear_layer_0_6_23_o'])
         """
-        input_bit_len, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        output_bit_len = self.output_bit_size
         inverse_matrix = Matrix(FiniteField(2), self.description).inverse()
-        dummy_variables = [[] for _ in range(output_bit_len)]
+        dummy_variables_lists = [[] for _ in range(self.output_bit_size)]
         constraints = []
-        for i in range(input_bit_len):
-            operands = [input_bit_ids[i]]
-            for j in range(output_bit_len):
+        for i, input_bit_id in enumerate(input_bit_ids):
+            operands = [input_bit_id]
+            for j, output_bit_id in enumerate(output_bit_ids):
                 if inverse_matrix[j][i]:
-                    variable = f'dummy_{i}_{output_bit_ids[j]}'
+                    variable = f'dummy_{i}_{output_bit_id}'
                     operands.append(variable)
-                    dummy_variables[j].append(variable)
+                    dummy_variables_lists[j].append(variable)
             constraints.extend(sat_utils.cnf_equivalent(operands))
-        for i in range(output_bit_len):
-            operands = [f'x -{output_bit_ids[i]}'] + dummy_variables[i]
+        for output_bit_id, dummy_variables_list in zip(output_bit_ids, dummy_variables_lists):
+            operands = [f'x -{output_bit_id}'] + dummy_variables_list
             constraints.append(' '.join(operands))
-        dummy_bit_ids = [d for i in range(output_bit_len) for d in dummy_variables[i]]
+        dummy_bit_ids = [d for dummy_variables_list in dummy_variables_lists for d in dummy_variables_list]
 
         return input_bit_ids + dummy_bit_ids + output_bit_ids, constraints
 
@@ -825,7 +824,7 @@ class LinearLayer(Component):
             sage: constraints[-1]
             'linear_layer_0_6_23_o -dummy_1_linear_layer_0_6_23_o -dummy_5_linear_layer_0_6_23_o -dummy_7_linear_layer_0_6_23_o -dummy_8_linear_layer_0_6_23_o -dummy_9_linear_layer_0_6_23_o -dummy_14_linear_layer_0_6_23_o -dummy_17_linear_layer_0_6_23_o -dummy_18_linear_layer_0_6_23_o -dummy_23_linear_layer_0_6_23_o'
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         inverse_matrix = Matrix(FiniteField(2), self.description).inverse()
@@ -919,29 +918,28 @@ class LinearLayer(Component):
             sage: constraints[-1]
             '(assert (= linear_layer_0_6_23_o (xor dummy_1_linear_layer_0_6_23_o dummy_5_linear_layer_0_6_23_o dummy_7_linear_layer_0_6_23_o dummy_8_linear_layer_0_6_23_o dummy_9_linear_layer_0_6_23_o dummy_14_linear_layer_0_6_23_o dummy_17_linear_layer_0_6_23_o dummy_18_linear_layer_0_6_23_o dummy_23_linear_layer_0_6_23_o)))'
         """
-        input_bit_len, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        output_bit_len = self.output_bit_size
         inverse_matrix = Matrix(FiniteField(2), self.description).inverse()
-        dummy_variables = [[] for _ in range(output_bit_len)]
+        dummy_variables_lists = [[] for _ in range(self.output_bit_size)]
         constraints = []
-        for i in range(input_bit_len):
-            operands = [input_bit_ids[i]]
-            for j in range(output_bit_len):
+        for i, input_bit_id in enumerate(input_bit_ids):
+            operands = [input_bit_id]
+            for j, output_bit_id in enumerate(output_bit_ids):
                 if inverse_matrix[j][i]:
-                    variable = f'dummy_{i}_{output_bit_ids[j]}'
+                    variable = f'dummy_{i}_{output_bit_id}'
                     operands.append(variable)
-                    dummy_variables[j].append(variable)
+                    dummy_variables_lists[j].append(variable)
             equivalence = smt_utils.smt_equivalent(operands)
             constraints.append(smt_utils.smt_assert(equivalence))
-        for i in range(output_bit_len):
-            if len(dummy_variables[i]) == 1:
-                operation = dummy_variables[i][0]
+        for output_bit_id, dummy_variables_list in zip(output_bit_ids, dummy_variables_lists):
+            if len(dummy_variables_list) == 1:
+                operation = dummy_variables_list[0]
             else:
-                operation = smt_utils.smt_xor(dummy_variables[i])
-            equation = smt_utils.smt_equivalent((output_bit_ids[i], operation))
+                operation = smt_utils.smt_xor(dummy_variables_list)
+            equation = smt_utils.smt_equivalent((output_bit_id, operation))
             constraints.append(smt_utils.smt_assert(equation))
-        dummy_bit_ids = [d for i in range(output_bit_len) for d in dummy_variables[i]]
+        dummy_bit_ids = [d for dummy_variables_list in dummy_variables_lists for d in dummy_variables_list]
 
         return input_bit_ids + dummy_bit_ids + output_bit_ids, constraints

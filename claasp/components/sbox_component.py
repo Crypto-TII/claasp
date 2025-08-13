@@ -1652,7 +1652,7 @@ class SBOX(Component):
               '-hw_sbox_0_2_1_o',
               '-hw_sbox_0_2_0_o'])
         """
-        input_bit_len, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         hw_bit_ids = [f'hw_{output_bit_id}' for output_bit_id in output_bit_ids]
@@ -1665,7 +1665,7 @@ class SBOX(Component):
             check_table_feasibility(lat, 'LAT', 'SAT')
 
             get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
-            template = sat_build_table_template(lat, get_hamming_weight_function, input_bit_len, self.output_bit_size)
+            template = sat_build_table_template(lat, get_hamming_weight_function, self.input_bit_size, self.output_bit_size)
             self.sboxes_lat_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -1804,7 +1804,7 @@ class SBOX(Component):
               '(assert (or (not hw_sbox_0_2_1_o)))',
               '(assert (or (not hw_sbox_0_2_0_o)))'])
         """
-        input_bit_len, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         hw_bit_ids = [f'hw_{output_bit_id}' for output_bit_id in output_bit_ids]
@@ -1818,7 +1818,7 @@ class SBOX(Component):
             check_table_feasibility(lat, 'LAT', 'SMT')
 
             get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
-            template = smt_build_table_template(lat, get_hamming_weight_function, input_bit_len, self.output_bit_size)
+            template = smt_build_table_template(lat, get_hamming_weight_function, self.input_bit_size, self.output_bit_size)
             sboxes_lat_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids

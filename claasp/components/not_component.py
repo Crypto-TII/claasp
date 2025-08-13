@@ -668,7 +668,7 @@ class NOT(Component):
               'not_0_8_31_i -not_0_8_31_o',
               'not_0_8_31_o -not_0_8_31_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         constraints = []
@@ -781,7 +781,7 @@ class NOT(Component):
               '(assert (= not_0_5_62_i not_0_5_62_o))',
               '(assert (= not_0_5_63_i not_0_5_63_o))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
+        input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         constraints = [smt_utils.smt_assert(smt_utils.smt_equivalent((input_bit_id, output_bit_id)))
