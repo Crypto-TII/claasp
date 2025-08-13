@@ -1285,11 +1285,11 @@ class XOR(Component):
               '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            operation = smt_utils.smt_xor(input_bit_ids[i::output_bit_len])
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], operation])
+        for i, output_bit_id in enumerate(output_bit_ids):
+            operation = smt_utils.smt_xor(input_bit_ids[i::self.output_bit_size])
+            equation = smt_utils.smt_equivalent([output_bit_id, operation])
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints

@@ -366,10 +366,10 @@ class AND(MultiInputNonlinearLogicalOperator):
               'and_0_8_11 -xor_0_7_11 -key_23'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_and(output_bit_ids[i], input_bit_ids[i::output_bit_len]))
+        for i, output_bit_id in enumerate(output_bit_ids):
+            constraints.extend(sat_utils.cnf_and(output_bit_id, input_bit_ids[i::self.output_bit_size]))
 
         return output_bit_ids, constraints
 
@@ -403,11 +403,11 @@ class AND(MultiInputNonlinearLogicalOperator):
               '(assert (= and_0_8_11 (and xor_0_7_11 key_23)))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            operation = smt_utils.smt_and(input_bit_ids[i::output_bit_len])
-            equation = smt_utils.smt_equivalent((output_bit_ids[i], operation))
+        for i, output_bit_id in enumerate(output_bit_ids):
+            operation = smt_utils.smt_and(input_bit_ids[i::self.output_bit_size])
+            equation = smt_utils.smt_equivalent((output_bit_id, operation))
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints

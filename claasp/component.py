@@ -156,13 +156,13 @@ class Component:
         output_bit_size = self.output_bit_size
         output_bit_ids = [f'{output_id_link}_{j}{suffix}' for j in range(output_bit_size)]
 
-        return output_bit_size, output_bit_ids
+        return output_bit_ids
 
     def _generate_output_double_ids(self):
-        out_len, out_ids_0 = self._generate_output_ids(suffix='_0')
-        _, out_ids_1 = self._generate_output_ids(suffix='_1')
+        out_ids_0 = self._generate_output_ids(suffix='_0')
+        out_ids_1 = self._generate_output_ids(suffix='_1')
 
-        return out_len, out_ids_0, out_ids_1
+        return out_ids_0, out_ids_1
 
     def _get_independent_input_output_variables(self):
         """

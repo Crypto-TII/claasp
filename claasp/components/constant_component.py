@@ -548,11 +548,10 @@ class Constant(Component):
               '-constant_2_0_14',
               'constant_2_0_15'])
         """
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         value = int(self.description[0], 16)
-        value_bits = [value >> i & 1 for i in reversed(range(output_bit_len))]
-        minus = ['-' * (not i) for i in value_bits]
-        constraints = [f'{minus[i]}{output_bit_ids[i]}' for i in range(output_bit_len)]
+        bits = map(int, f"{value:0{self.output_bit_size}b}")
+        constraints = [f'{"-" * (bit ^ 1)}{output_bit_id}' for bit, output_bit_id in zip(bits, output_bit_ids)]
 
         return output_bit_ids, constraints
 
@@ -589,7 +588,7 @@ class Constant(Component):
               '-constant_2_0_14_1',
               '-constant_2_0_15_1'])
         """
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = [f'-{out_id}' for out_id in out_ids_0] + [f'-{out_id}' for out_id in out_ids_1]
         return out_ids_0 + out_ids_1, constraints
 
@@ -627,7 +626,7 @@ class Constant(Component):
               '-constant_2_0_14',
               '-constant_2_0_15'])
         """
-        _, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = [f'-{output_bit_id}' for output_bit_id in output_bit_ids]
         result = output_bit_ids, constraints
         return result
@@ -661,7 +660,7 @@ class Constant(Component):
              [])
         """
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         result = output_bit_ids, []
         return result
 
@@ -692,11 +691,13 @@ class Constant(Component):
               '(assert (not constant_0_2_30))',
               '(assert constant_0_2_31)'])
         """
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         value = int(self.description[0], 16)
-        constraints = [smt_utils.smt_assert(output_bit_ids[i]) if value >> (output_bit_len - 1 - i) & 1
-                       else smt_utils.smt_assert(smt_utils.smt_not(output_bit_ids[i]))
-                       for i in range(output_bit_len)]
+        bits = map(int, f"{value:0{self.output_bit_size}b}")
+        constraints = [
+            smt_utils.smt_assert(output_bit_id) if bit else smt_utils.smt_assert(smt_utils.smt_not(output_bit_id))
+            for output_bit_id, bit in zip(output_bit_ids, bits)
+        ]
 
         return output_bit_ids, constraints
 
@@ -727,9 +728,10 @@ class Constant(Component):
               '(assert (not constant_0_2_30))',
               '(assert (not constant_0_2_31))'])
         """
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        constraints = [smt_utils.smt_assert(smt_utils.smt_not(output_bit_ids[i]))
-                       for i in range(output_bit_len)]
+        output_bit_ids = self._generate_output_ids()
+        constraints = [
+            smt_utils.smt_assert(smt_utils.smt_not(output_bit_id)) for output_bit_id in output_bit_ids
+        ]
         result = output_bit_ids, constraints
         return result
 
@@ -758,6 +760,6 @@ class Constant(Component):
              [])
         """
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        _, output_bit_ids = self._generate_output_ids(out_suffix)
+        output_bit_ids = self._generate_output_ids(out_suffix)
         result = output_bit_ids, []
         return result

@@ -542,10 +542,10 @@ class NOT(Component):
               '-not_0_8_31 -xor_0_6_31'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_inequality(output_bit_ids[i], input_bit_ids[i]))
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            constraints.extend(sat_utils.cnf_inequality(output_bit_id, input_bit_id))
 
         return output_bit_ids, constraints
 
@@ -584,7 +584,7 @@ class NOT(Component):
               'xor_0_6_31_0 -xor_0_6_31_1 -not_0_8_31_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = []
         for out_id, in_id in zip(out_ids_0, in_ids_0):
             constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
@@ -627,10 +627,10 @@ class NOT(Component):
               'xor_0_6_31 -not_0_8_31'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i]]))
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
         result = output_bit_ids, constraints
         return result
 
@@ -670,10 +670,10 @@ class NOT(Component):
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([input_bit_ids[i], output_bit_ids[i]]))
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
         result = input_bit_ids + output_bit_ids, constraints
         return result
 
@@ -708,10 +708,10 @@ class NOT(Component):
               '(assert (distinct not_0_5_63 xor_0_2_63))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_distinct(output_bit_ids[i], input_bit_ids[i])
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            equation = smt_utils.smt_distinct(output_bit_id, input_bit_id)
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -745,10 +745,10 @@ class NOT(Component):
               '(assert (= not_0_5_63 xor_0_2_63))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids[i]])
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id])
             constraints.append(smt_utils.smt_assert(equation))
         result = output_bit_ids, constraints
         return result
@@ -783,7 +783,7 @@ class NOT(Component):
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         constraints = [smt_utils.smt_assert(smt_utils.smt_equivalent((input_bit_id, output_bit_id)))
                        for input_bit_id, output_bit_id in zip(input_bit_ids, output_bit_ids)]
         result = input_bit_ids + output_bit_ids, constraints

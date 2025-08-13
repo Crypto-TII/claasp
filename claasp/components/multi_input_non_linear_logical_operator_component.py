@@ -434,7 +434,8 @@ class MultiInputNonlinearLogicalOperator(Component):
               'xor_0_7_11_0 key_23_0 xor_0_7_11_1 key_23_1 -and_0_8_11_0'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_len = self.output_bit_size
         constraints = []
         for i in range(out_len):
             constraints.extend([f'{out_ids_0[i]} -{in_id}' for in_id in in_ids_0[i::out_len]])
@@ -475,12 +476,13 @@ class MultiInputNonlinearLogicalOperator(Component):
               '-key_23 hw_and_0_8_11'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        output_bit_ids = self._generate_output_ids()
+        hw_bit_ids = [f'hw_{output_bit_id}' for output_bit_id in output_bit_ids]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_and_differential(input_bit_ids[i], input_bit_ids[output_bit_len + i],
-                                                              output_bit_ids[i], hw_bit_ids[i]))
+        for i in range(self.output_bit_size):
+            constraints.extend(sat_utils.cnf_and_differential(
+                input_bit_ids[i], input_bit_ids[self.output_bit_size + i], output_bit_ids[i], hw_bit_ids[i])
+            )
         result = output_bit_ids + hw_bit_ids, constraints
 
         return result
@@ -512,12 +514,13 @@ class MultiInputNonlinearLogicalOperator(Component):
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        output_bit_ids = self._generate_output_ids(out_suffix)
+        hw_bit_ids = [f'hw_{output_bit_id}' for output_bit_id in output_bit_ids]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_and_linear(input_bit_ids[i], input_bit_ids[output_bit_len + i],
-                                                        output_bit_ids[i], hw_bit_ids[i]))
+        for i in range(self.output_bit_size):
+            constraints.extend(sat_utils.cnf_and_linear(
+                input_bit_ids[i], input_bit_ids[self.output_bit_size + i], output_bit_ids[i], hw_bit_ids[i])
+            )
         result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
 
         return result
@@ -556,16 +559,16 @@ class MultiInputNonlinearLogicalOperator(Component):
               '(assert (or (and (not xor_0_7_11) (not key_23) (not and_0_8_11) (not hw_and_0_8_11)) (and xor_0_7_11 hw_and_0_8_11) (and key_23 hw_and_0_8_11)))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        output_bit_ids = self._generate_output_ids()
+        hw_bit_ids = [f'hw_{output_bit_id}' for output_bit_id in output_bit_ids]
         constraints = []
-        for i in range(output_bit_len):
+        for i in range(self.output_bit_size):
             minterm_0 = smt_utils.smt_and((smt_utils.smt_not(input_bit_ids[i]),
-                                           smt_utils.smt_not(input_bit_ids[output_bit_len + i]),
+                                           smt_utils.smt_not(input_bit_ids[self.output_bit_size + i]),
                                            smt_utils.smt_not(output_bit_ids[i]),
                                            smt_utils.smt_not(hw_bit_ids[i])))
             minterm_1 = smt_utils.smt_and((input_bit_ids[i], hw_bit_ids[i]))
-            minterm_2 = smt_utils.smt_and((input_bit_ids[output_bit_len + i], hw_bit_ids[i]))
+            minterm_2 = smt_utils.smt_and((input_bit_ids[self.output_bit_size + i], hw_bit_ids[i]))
             sop = smt_utils.smt_or((minterm_0, minterm_1, minterm_2))
             constraints.append(smt_utils.smt_assert(sop))
         result = output_bit_ids + hw_bit_ids, constraints
@@ -599,12 +602,12 @@ class MultiInputNonlinearLogicalOperator(Component):
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        output_bit_ids = self._generate_output_ids(out_suffix)
+        hw_bit_ids = [f'hw_{output_bit_id}' for output_bit_id in output_bit_ids]
         constraints = []
-        for i in range(output_bit_len):
+        for i in range(self.output_bit_size):
             minterm_0 = smt_utils.smt_and((smt_utils.smt_not(input_bit_ids[i]),
-                                           smt_utils.smt_not(input_bit_ids[output_bit_len + i]),
+                                           smt_utils.smt_not(input_bit_ids[self.output_bit_size + i]),
                                            smt_utils.smt_not(output_bit_ids[i]),
                                            smt_utils.smt_not(hw_bit_ids[i])))
             minterm_1 = smt_utils.smt_and((output_bit_ids[i], hw_bit_ids[i]))

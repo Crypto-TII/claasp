@@ -696,7 +696,8 @@ class SHIFT(Component):
               '-shift_0_0_31'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
+        output_bit_len = self.output_bit_size
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
@@ -747,7 +748,8 @@ class SHIFT(Component):
               '-shift_0_0_31_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_len = self.output_bit_size
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
@@ -835,7 +837,8 @@ class SHIFT(Component):
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_len = self.output_bit_size
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
@@ -884,7 +887,8 @@ class SHIFT(Component):
               '(assert (not shift_0_0_31))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
+        output_bit_len = self.output_bit_size
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
@@ -968,7 +972,8 @@ class SHIFT(Component):
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_len = self.output_bit_size
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:

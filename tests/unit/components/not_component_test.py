@@ -208,9 +208,9 @@ def test_sat_xor_linear_mask_propagation_constraints():
     assert output_bit_ids[1] == 'not_0_8_1_i'
     assert output_bit_ids[2] == 'not_0_8_2_i'
 
-    assert constraints[-3] == 'not_0_8_30_o -not_0_8_30_i'
-    assert constraints[-2] == 'not_0_8_31_i -not_0_8_31_o'
-    assert constraints[-1] == 'not_0_8_31_o -not_0_8_31_i'
+    assert constraints[-3] == 'not_0_8_30_i -not_0_8_30_o'
+    assert constraints[-2] == 'not_0_8_31_o -not_0_8_31_i'
+    assert constraints[-1] == 'not_0_8_31_i -not_0_8_31_o'
 
 
 def test_smt_constraints():
