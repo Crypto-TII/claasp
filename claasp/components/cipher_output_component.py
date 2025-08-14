@@ -431,8 +431,8 @@ class CipherOutput(Component):
         input_vars = [f'{component_id}_{model.input_postfix}{i}' for i in range(ninputs)]
         output_vars = [f'{component_id}_{model.output_postfix}{i}' for i in range(ninputs)]
 
-        for i in range(len(input_vars)):
-            intermediate_component_string.append(f'constraint {input_vars[i]} = {output_vars[i]};')
+        for input_var, output_var in zip(input_vars, output_vars):
+            intermediate_component_string.append(f'constraint {input_var} = {output_var};')
 
         mzn_input_array = self._create_minizinc_1d_array_from_list(input_vars)
         if self.description[0] in ["round_output", "cipher_output", "round_key_output"]:

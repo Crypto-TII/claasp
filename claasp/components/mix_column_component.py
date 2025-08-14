@@ -28,8 +28,7 @@ from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_mds_matrices import \
     update_dictionary_that_contains_wordwise_truncated_mds_inequalities, \
-    output_dictionary_that_contains_wordwise_truncated_mds_inequalities, \
-    delete_dictionary_that_contains_wordwise_truncated_mds_inequalities
+    output_dictionary_that_contains_wordwise_truncated_mds_inequalities
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.input import Input
 from claasp.component import Component, free_input
@@ -513,7 +512,7 @@ class MixColumn(LinearLayer):
         params_mix_column = ''
         mul_tables = ''
         if polynomial > 0 and polynomial != 257:
-            mul_tables = dict()
+            mul_tables = {}
             F2 = FiniteField(2)['x']
             _modulus = int_to_poly(polynomial, input_size + 1, F2.gen())
             F = FiniteField(pow(2, input_size), name='a', modulus=_modulus)
@@ -534,7 +533,7 @@ class MixColumn(LinearLayer):
         polynomial = self.description[1]
         input_size = self.description[2]
         if polynomial > 0 and polynomial != 257:  # check if in 0..2**n-1
-            mul_tables = dict()
+            mul_tables = {}
             F2 = FiniteField(2)['x']
             _modulus = int_to_poly(polynomial, input_size + 1, F2.gen())
             F = FiniteField(pow(2, input_size), name='a', modulus=_modulus)

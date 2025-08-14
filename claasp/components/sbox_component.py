@@ -28,8 +28,7 @@ from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.models.milp.utils.generate_undisturbed_bits_inequalities_for_sboxes import \
     update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits, \
-    get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits, \
-    delete_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits
+    get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFAULT_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.input import Input
@@ -340,7 +339,7 @@ class SBOX(Component):
         tested_inputs = all_fixed_inputs[:]
         inputs_to_combine = fixed_inputs_with_undisturbed_bits[:]
 
-        while (len(inputs_to_combine) != 0):
+        while len(inputs_to_combine) != 0:
             newly_combined_inputs = []
             for input_1, input_2 in combinations(inputs_to_combine, 2):
                 truncated_positions = list(map(xor, input_1, input_2))
@@ -528,7 +527,7 @@ class SBOX(Component):
                 max_number_of_sboxes = max(len(lst) for lst in list_of_component_number.values())
                 sbox_id = f"{max_number_of_sboxes*10}*r + 10*(index+1)"
             else:
-                sbox_id = f"100*r + 10*(index+1)"
+                sbox_id = "100*r + 10*(index+1)"
 
             sbox_declaration = f"predicate abstract_{output_id_link_sost}(array[int] of var int: x, array[int] of var int: y, int: r, int: index) =\n"
 
@@ -583,7 +582,7 @@ class SBOX(Component):
         table_input = '++'.join(all_inputs)
         table_output = '++'.join([f'[{output_id_link}[{i}]]' for i in range(output_size)])
 
-        already_in, output_id_link_sost, undisturbed_table_bits = _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
+        already_in, output_id_link_sost, _ = _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
             inv_output_id_link, undisturbed_bits, sbox_mant, inverse)
 
         if not already_in:
@@ -1374,7 +1373,7 @@ class SBOX(Component):
         variables = [(f"x_class[{var}]", x_class[var]) for var in input_class_vars + output_class_vars]
         constraints = []
 
-        input_sum = sum([x_class[input] for input in input_class_vars])
+        input_sum = sum(x_class[input] for input in input_class_vars)
         # if sum(x_class[input]) <= 0 (i.e. all x_class[input] == 0)
         d_leq, c_leq = milp_utils.milp_leq(model, input_sum, 0, 2 * len(input_class_vars))
         constraints += c_leq
