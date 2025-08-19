@@ -214,18 +214,16 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
             get_key_schedule_component_ids(self._cipher)
         )
 
-        # determine middle round
         rounds = [self._cipher.get_round_from_component_id(cid) for cid in component_id_list]
         assert len(set(rounds)) == 1, "All chosen components must be in the same round"
         middle = rounds[0]
 
-        # case: single round_output
         if len(component_id_list) == 1:
             comp = self._cipher.get_component_from_id(component_id_list[0])
             if comp.description == ["round_output"]:
                 return self.find_one_bitwise_impossible_xor_differential_trail(middle + 1, fixed_values, solver_name)
 
-        # build partial ciphers
+        assert middle < self._cipher.number_of_rounds - 1
         self._middle_round = middle
         self._forward_cipher = self._cipher.get_partial_cipher(0, middle, keep_key_schedule=True)
         backward_cipher = self._cipher.cipher_partial_inverse(
@@ -237,20 +235,16 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
             suffix, backward_cipher.get_all_components_ids()
         )
 
-        # build base model
         self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables=fixed_values)
 
-        # generate incompatibility constraints for each chosen component
         incompat_ids = []
         for cid in component_id_list:
-            # forward component
             fwd_comp = self._forward_cipher.get_component_from_id(cid)
             out_size, fwd_out_ids_0, fwd_out_ids_1 = fwd_comp._generate_output_double_ids()
-            # backward component
+
             bwd_in_ids_0 = ["_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in fwd_out_ids_0]
             bwd_in_ids_1 = ["_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in fwd_out_ids_1]
 
-            # add incompatibility for each bit of this component
             for i in range(out_size):
                 inv_id = f"incompatibility_{cid}_{i}"
                 incompat_ids.append(inv_id)
@@ -264,6 +258,97 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
 
         solution = self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name=solver_name)
         solution["building_time"] = time.time() - start
+        return solution
+
+    def find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model(
+        self, fixed_values=[], include_all_components=False, solver_name="cryptominisat"
+    ):
+        """
+        Returns one bitwise impossible XOR differential trail.
+
+        INPUTS:
+
+        - ``solver_name`` -- *str*, the solver to call
+        - ``fixed_values`` -- *list of dict*, the variables to be fixed in
+          standard format (see :py:meth:`~GenericModel.set_fixed_variables`)
+        - ``include_all_components`` -- **boolean** (default: `False`); when set to `True`, every component output can be
+          a source of incompatibility; otherwise, only round outputs are considered
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: simon = SimonBlockCipher(block_bit_size=32, number_of_rounds=11)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_impossible_xor_differential_model import SatBitwiseImpossibleXorDifferentialModel
+            sage: sat = SatBitwiseImpossibleXorDifferentialModel(simon)
+            sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0]*31 + [1])
+            sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
+            sage: key_backward = set_fixed_variables(component_id='key_backward', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
+            sage: ciphertext_backward = set_fixed_variables(component_id='cipher_output_10_13_backward', constraint_type='equal', bit_positions=range(32), bit_values=[0]*6 + [2,0,2] + [0]*23)
+            sage: trail = sat.find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model(fixed_values=[plaintext, key, key_backward, ciphertext_backward])
+
+
+            sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+            sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
+            sage: ascon = AsconSboxSigmaPermutation(number_of_rounds=5)
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_impossible_xor_differential_model import SatBitwiseImpossibleXorDifferentialModel
+            sage: sat = SatBitwiseImpossibleXorDifferentialModel(ascon)
+            sage: P = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(320), bit_values= [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] )
+            sage: trail = sat.find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model(fixed_values=[P])
+        """
+
+        start = time.time()
+        self._forward_cipher = self._cipher
+        self._backward_cipher = self._cipher.cipher_inverse().add_suffix_to_components("_backward")
+
+        self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables=fixed_values)
+
+        backward_components = []
+        forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
+        forward_output_id = forward_output.id + "_backward"
+
+        for comp in self._backward_cipher.get_all_components():
+            if comp.description == ["round_output"]:
+                if set(comp.input_id_links) == {forward_output_id}:
+                    continue
+                backward_components.append(comp)
+
+        if include_all_components:
+            key_flow = set(get_key_schedule_component_ids(self._cipher))
+            backward_key_ids = {f"{k_id}_backward" for k_id in key_flow}
+            backward_components = [
+                c for c in self._backward_cipher.get_all_components() if c.id not in backward_key_ids
+            ]
+
+        incompat_ids = []
+        for comp in backward_components:
+            comp_id = comp.id
+            try:
+                fwd_comp = self._forward_cipher.get_component_from_id(comp_id.replace("_backward", ""))
+            except ValueError:
+                # Skip this backward component because we can't map it to a forward component (es: plaintext_backward).
+                continue
+
+            out_size, fwd_out_ids_0, fwd_out_ids_1 = fwd_comp._generate_output_double_ids()
+
+            bwd_in_ids_0 = ["_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in fwd_out_ids_0]
+            bwd_in_ids_1 = ["_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in fwd_out_ids_1]
+
+            for i in range(out_size):
+                inv_id = f"incompatibility_{fwd_comp.id}_{i}"
+                incompat_ids.append(inv_id)
+                self._model_constraints.extend(
+                    utils.incompatibility(
+                        inv_id, (fwd_out_ids_0[i], fwd_out_ids_1[i]), (bwd_in_ids_0[i], bwd_in_ids_1[i])
+                    )
+                )
+
+        if incompat_ids:
+            self._model_constraints.append(" ".join(incompat_ids))
+
+        solution = self.solve(IMPOSSIBLE_XOR_DIFFERENTIAL, solver_name=solver_name)
+        solution["building_time"] = time.time() - start
+
         return solution
 
     def _parse_solver_output(self, variable2value):
