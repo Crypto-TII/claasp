@@ -199,7 +199,7 @@ class OR(MultiInputNonlinearLogicalOperator):
         model.component_and_probability[output_id_link] = 0
         p_count = 0
         for i in range(output_size):
-            new_constraint = f'constraint table('
+            new_constraint = 'constraint table('
             for j in range(num_add):
                 new_constraint = new_constraint + f'[{output_id_link}_i[{i + input_len * j}]]++'
             new_constraint = new_constraint + f'[{output_id_link}_o[{i}]]++[p_{output_id_link}[{p_count}]],and{num_add}inputs_LAT);'

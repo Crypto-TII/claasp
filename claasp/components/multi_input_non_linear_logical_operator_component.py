@@ -101,7 +101,7 @@ class MultiInputNonlinearLogicalOperator(Component):
             all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         cp_constraints = []
         for i in range(output_size):
-            operation = f' == 0 /\\ '.join(all_inputs[i::output_size])
+            operation = ' == 0 /\\ '.join(all_inputs[i::output_size])
             new_constraint = f'constraint if {operation} == 0 then {output_id_link}[{i}] = 0 ' \
                              f'else {output_id_link}[{i}] = 2 endif;'
             cp_constraints.append(new_constraint)
@@ -152,7 +152,7 @@ class MultiInputNonlinearLogicalOperator(Component):
         input_len = len(all_inputs_value) // numadd
         cp_constraints = []
         for i in range(input_len):
-            operation = f' == 0 /\\ '.join(all_inputs_active[i::input_len])
+            operation = ' == 0 /\\ '.join(all_inputs_active[i::input_len])
             new_constraint = f'constraint if {operation} == 0 then {output_id_link}_active[{i}] = 0 ' \
                              f'/\\ {output_id_link}_value[{i}] = 0 else {output_id_link}_active[{i}] = 3 ' \
                              f'/\\ {output_id_link}_value[{i}] = -2 endif;'
@@ -194,7 +194,7 @@ class MultiInputNonlinearLogicalOperator(Component):
         cp_constraints = []
         probability = []
         for i in range(output_size):
-            new_constraint = f'constraint table('
+            new_constraint = 'constraint table('
             for j in range(num_add):
                 new_constraint = new_constraint + f'[{all_inputs[i + input_len * j]}]++'
             new_constraint = new_constraint + f'[{output_id_link}[{i}]]++[p[{model.c}]],and{num_add}inputs_DDT);'
@@ -252,15 +252,16 @@ class MultiInputNonlinearLogicalOperator(Component):
         inequalities = and_LAT()
 
         for ineq in inequalities:
-            for index in range(len(output_vars)):
-                tmp = x[input_vars[index]] * ineq[1]
-                tmp += x[input_vars[index + len(output_vars)]] * ineq[2]
-                tmp += x[output_vars[index]] * ineq[3]
+            for i, output_var in enumerate(output_vars):
+                tmp = x[input_vars[i]] * ineq[1]
+                tmp += x[input_vars[i + len(output_vars)]] * ineq[2]
+                tmp += x[output_var] * ineq[3]
                 tmp += ineq[0]
                 constraints.append(tmp >= 0)
 
-        constraints.append(p[self.id + "_and_probability" + str(chunk_number)] ==
-                           sum(x[output_vars[i]] for i in range(len(output_vars))))
+        constraints.append(
+            p[f"{self.id}_and_probability{chunk_number}"] == sum(x[output_var] for output_var in output_vars)
+        )
 
         return variables, constraints
 
@@ -308,12 +309,12 @@ class MultiInputNonlinearLogicalOperator(Component):
         model.non_linear_component_id.append(component_id)
         inequalities = and_inequalities()
         for ineq in inequalities:
-            for index in range(len(output_vars)):
+            for i, output_var in enumerate(output_vars):
                 tmp = 0
                 for number_of_chunk in range(self.description[1]):
-                    tmp += x[input_vars[index + number_of_chunk * len(output_vars)]] * ineq[number_of_chunk + 1]
-                tmp += x[output_vars[index]] * ineq[self.description[1] + 1]
-                tmp += x[component_id + "_and_" + str(index)] * ineq[self.description[1] + 2]
+                    tmp += x[input_vars[i + number_of_chunk * len(output_vars)]] * ineq[number_of_chunk + 1]
+                tmp += x[output_var] * ineq[self.description[1] + 1]
+                tmp += x[f"{component_id}_and_{i}"] * ineq[self.description[1] + 2]
                 tmp += ineq[0]
                 constraints.append(tmp >= 0)
         constraints.append(p[component_id + "_probability"] == (10 ** model.weight_precision) * sum(x[component_id + "_and_" + str(i)]

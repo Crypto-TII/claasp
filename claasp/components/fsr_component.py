@@ -47,7 +47,7 @@ def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
 
     for _ in polynomial_index_list:
         m = 0  # presently it is for field of characteristic 2 only
-        cc = "{0:b}".format(_[0])
+        cc = f"{_[0]:b}"
         for i in range(len(cc)):
             if cc[i] == '1':  m = m + pow(y, len(cc) - 1 - i)
         for i in _[1]:
@@ -135,12 +135,10 @@ class FSR(Component):
             sage: S[480]
             fsr_0_714_y480 + fsr_0_714_x352 + fsr_0_714_x64 + fsr_0_714_x0
         """
-
         bits_inside_word = self.description[1]
         if bits_inside_word == 1:
             return self._algebraic_polynomials_binary(model)
-        else:
-            return self._algebraic_polynomials_word(model)
+        return self._algebraic_polynomials_word(model)
 
     def _algebraic_polynomials_binary(self, model):
         noutputs = self.output_bit_size

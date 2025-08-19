@@ -201,7 +201,7 @@ class Rotate(Component):
         for i in range(input_len):
             cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[(i - rot_amount) % input_len]};')
             cp_constraints.append(f'constraint {output_id_link}_value[{i}] = {all_inputs_value[(i - rot_amount) % input_len]};')
-        
+
         return cp_declarations, cp_constraints
 
     def cp_xor_differential_first_step_constraints(self, model):

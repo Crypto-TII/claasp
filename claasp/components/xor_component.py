@@ -1,4 +1,4 @@
-from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -19,7 +19,6 @@ from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constr
 
 from claasp.input import Input
 from claasp.component import Component
-from claasp.name_mappings import CONSTANT
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
@@ -30,6 +29,7 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_
     update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs,
     output_dictionary_that_contains_wordwise_truncated_xor_inequalities
 )
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 
 
 def cp_build_truncated_table(numadd):

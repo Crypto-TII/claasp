@@ -25,7 +25,6 @@ The logic minimizer espresso is required for this module. It is already installe
 import pickle, os
 import subprocess
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
-from sage.rings.integer_ring import ZZ
 
 large_sbox_file_name = "dictionary_that_contains_inequalities_for_large_sboxes.obj"
 large_sbox_xor_linear_file_name = "dictionary_that_contains_inequalities_for_large_sboxes_xor_linear.obj"
@@ -36,10 +35,6 @@ large_sboxes_xor_linear_inequalities_file_path = os.path.join(MILP_AUXILIARY_FIL
 
 
 def generate_espresso_input(input_size, output_size, value, valid_transformations_matrix):
-    # little_endian
-    def to_bits(x, size):
-        return ZZ(x).digits(base=2, padto=size)[::-1]
-
     espresso_input = [f"# there are {input_size + output_size} input variables\n"]
     espresso_input.append(f".i {input_size + output_size}")
     espresso_input.append("# there is only 1 output result\n")
@@ -49,7 +44,7 @@ def generate_espresso_input(input_size, output_size, value, valid_transformation
     n, m = input_size, output_size
     for i in range(0, 1 << n):
         for o in range(0, 1 << m):
-            io = "".join([str(i) for i in to_bits(i, input_size) + to_bits(o, output_size)])
+            io = f"{i:0{input_size}b}{o:0{output_size}b}"
             if i + o > 0 and valid_transformations_matrix[i][o] == value:
                 espresso_input.append(f"{io} 1\n")
             else:

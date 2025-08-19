@@ -1,4 +1,4 @@
-import numpy as np
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -248,15 +248,15 @@ class LinearLayer(Component):
         matrix = self.description
         cp_declarations = []
         all_inputs = []
-        
+
         for id_link, bit_positions in zip(input_id_links, input_bit_positions):
             all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         cp_constraints = []
         for i in range(output_size):
             addenda = [all_inputs[j] for j in range(len(matrix)) if matrix[j][i]]
-            operation = f' < 2) /\\ ('.join(addenda)
-            new_constraint = f'constraint if (('
-            new_constraint += operation + f'< 2)) then '
+            operation = ' < 2) /\\ ('.join(addenda)
+            new_constraint = 'constraint if (('
+            new_constraint += operation + '< 2)) then '
             operation2 = ' + '.join(addenda)
             new_constraint += f'{output_id_link}[{i}] = ({operation2}) mod 2 else {output_id_link}[{i}] = 2 endif;'
             cp_constraints.append(new_constraint)
@@ -299,7 +299,6 @@ class LinearLayer(Component):
                                      for j in range(len(bit_positions) // word_size)])
             all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
                                       for j in range(len(bit_positions) // word_size)])
-        input_len = len(all_inputs_value)
         cp_constraints = []
         for i in range(output_size):
             operation = ' == 0) /\\ ('.join(all_inputs_active[i::output_size])
@@ -308,7 +307,7 @@ class LinearLayer(Component):
             new_constraint += f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 else'\
                               f'{output_id_link}_active[{i}] = 3 /\\ {output_id_link}_value[{i}] = -2 endif;'
             cp_constraints.append(new_constraint)
-        
+
         return cp_declarations, cp_constraints
 
     def cp_xor_differential_propagation_constraints(self, model):
@@ -348,7 +347,7 @@ class LinearLayer(Component):
             for j in range(input_size):
                 if matrix[i][j] == 1:
                     new_constraint = new_constraint + f'{output_id_link}_o[{j}]+'
-            new_constraint = new_constraint[:-1] + f') mod 2;'
+            new_constraint = new_constraint[:-1] + ') mod 2;'
             cp_constraints.append(new_constraint)
 
         return cp_declarations, cp_constraints
