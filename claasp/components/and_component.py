@@ -365,7 +365,7 @@ class AND(MultiInputNonlinearLogicalOperator):
               '-and_0_8_11 key_23',
               'and_0_8_11 -xor_0_7_11 -key_23'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -402,7 +402,7 @@ class AND(MultiInputNonlinearLogicalOperator):
               '(assert (= and_0_8_10 (and xor_0_7_10 key_22)))',
               '(assert (= and_0_8_11 (and xor_0_7_11 key_23)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):

@@ -983,7 +983,7 @@ class Modular(Component):
                 new_constraints = generate_window_size_clauses(first_addend, second_addend, result, aux_var)
                 constraints_.extend(new_constraints)
 
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         dummy_bit_ids = [f'dummy_{output_bit_ids[i]}' for i in range(output_bit_len - 1)]
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
@@ -1286,7 +1286,7 @@ class Modular(Component):
               '(assert (or hw_modadd_0_1_30 (not (xor shift_0_0_30 key_30 modadd_0_1_30 key_31))))',
               '(assert (not (xor modadd_0_1_31 shift_0_0_31 key_31)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         constraints = []

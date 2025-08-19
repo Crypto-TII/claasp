@@ -479,7 +479,7 @@ class CipherOutput(Component):
               'cipher_output_2_12_31 -xor_2_10_15',
               'xor_2_10_15 -cipher_output_2_12_31'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -623,7 +623,7 @@ class CipherOutput(Component):
               '(assert (= cipher_output_2_12_30 xor_2_10_14))',
               '(assert (= cipher_output_2_12_31 xor_2_10_15))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):

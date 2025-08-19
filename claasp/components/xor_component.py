@@ -216,7 +216,7 @@ class XOR(Component):
               'x -xor_0_2_14 modadd_0_1_14 key_62',
               'x -xor_0_2_15 modadd_0_1_15 key_63'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -1128,7 +1128,7 @@ class XOR(Component):
               'xor_0_2_15 modadd_0_1_15 -key_63',
               '-xor_0_2_15 -modadd_0_1_15 -key_63'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -1284,7 +1284,7 @@ class XOR(Component):
               '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))',
               '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):

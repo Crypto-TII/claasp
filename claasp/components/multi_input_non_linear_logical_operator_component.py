@@ -474,7 +474,7 @@ class MultiInputNonlinearLogicalOperator(Component):
               '-xor_0_7_11 hw_and_0_8_11',
               '-key_23 hw_and_0_8_11'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         constraints = []
@@ -555,7 +555,7 @@ class MultiInputNonlinearLogicalOperator(Component):
               '(assert (or (and (not xor_0_7_10) (not key_22) (not and_0_8_10) (not hw_and_0_8_10)) (and xor_0_7_10 hw_and_0_8_10) (and key_22 hw_and_0_8_10)))',
               '(assert (or (and (not xor_0_7_11) (not key_23) (not and_0_8_11) (not hw_and_0_8_11)) (and xor_0_7_11 hw_and_0_8_11) (and key_23 hw_and_0_8_11)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         constraints = []

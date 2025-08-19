@@ -278,7 +278,7 @@ class OR(MultiInputNonlinearLogicalOperator):
               'or_0_4_31 -xor_0_1_31',
               '-or_0_4_31 xor_0_3_31 xor_0_1_31'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -315,7 +315,7 @@ class OR(MultiInputNonlinearLogicalOperator):
               '(assert (= or_0_4_30 (or xor_0_3_30 xor_0_1_30)))',
               '(assert (= or_0_4_31 (or xor_0_3_31 xor_0_1_31)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
