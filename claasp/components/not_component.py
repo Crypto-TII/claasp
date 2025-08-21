@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -21,14 +20,21 @@ from claasp.input import Input
 from claasp.component import Component
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
+from claasp.name_mappings import WORD_OPERATION
 
 
 class NOT(Component):
-    def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
-        component_id = f'not_{current_round_number}_{current_round_number_of_components}'
-        component_type = 'word_operation'
-        description = ['NOT', 0]
+    def __init__(
+        self,
+        current_round_number,
+        current_round_number_of_components,
+        input_id_links,
+        input_bit_positions,
+        output_bit_size,
+    ):
+        component_id = f"not_{current_round_number}_{current_round_number_of_components}"
+        component_type = WORD_OPERATION
+        description = ["NOT", 0]
         component_input = Input(output_bit_size, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
@@ -58,8 +64,8 @@ class NOT(Component):
         """
         ninputs = self.input_bit_size
         noutputs = self.output_bit_size
-        input_vars = [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)]
-        output_vars = [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)]
+        input_vars = [f"{self.id}_{model.input_postfix}{i}" for i in range(ninputs)]
+        output_vars = [f"{self.id}_{model.output_postfix}{i}" for i in range(noutputs)]
         ring_R = model.ring()
         x = list(map(ring_R, input_vars))
         y = list(map(ring_R, output_vars))
@@ -121,15 +127,11 @@ class NOT(Component):
              ...
               'constraint not_0_8[31] = (xor_0_6[31] + 1) mod 2;'])
         """
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-        cp_constraints = [f'constraint {output_id_link}[{i}] = ({input_} + 1) mod 2;'
-                          for i, input_ in enumerate(all_inputs)]
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
+        cp_constraints = [f"constraint {self.id}[{i}] = ({input_} + 1) mod 2;" for i, input_ in enumerate(all_inputs)]
 
         return cp_declarations, cp_constraints
 
@@ -152,15 +154,11 @@ class NOT(Component):
              ...
               'constraint not_0_8[31] = xor_0_6[31];'])
         """
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-        cp_constraints = [f'constraint {output_id_link}[{i}] = {input_};'
-                          for i, input_ in enumerate(all_inputs)]
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
+        cp_constraints = [f"constraint {self.id}[{i}] = {input_};" for i, input_ in enumerate(all_inputs)]
 
         return cp_declarations, cp_constraints
 
@@ -168,27 +166,33 @@ class NOT(Component):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs_value = []
         all_inputs_active = []
         word_size = model.word_size
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
-                                     for j in range(len(bit_positions) // word_size)])
-            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
-                                      for j in range(len(bit_positions) // word_size)])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs_value.extend(
+                [
+                    f"{id_link}_value[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
+            all_inputs_active.extend(
+                [
+                    f"{id_link}_active[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
         input_len = len(all_inputs_value)
         cp_constraints = []
         for i in range(input_len):
-            cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[i]};')
-            cp_constraints.append(f'if {all_inputs_value[i]} < 0 then {output_id_link}_value[{i}] = {all_inputs_value[i]} '\
-                                  f'else {output_id_link}_value[{i}] = {2**word_size - 1} - {all_inputs_value[i]}')
+            cp_constraints.append(f"constraint {self.id}_active[{i}] = {all_inputs_active[i]};")
+            cp_constraints.append(
+                f"if {all_inputs_value[i]} < 0 then {self.id}_value[{i}] = {all_inputs_value[i]} "
+                f"else {self.id}_value[{i}] = {2**word_size - 1} - {all_inputs_value[i]}"
+            )
 
         return cp_declarations, cp_constraints
-
 
     def cp_xor_differential_first_step_constraints(self, model):
         """
@@ -213,18 +217,17 @@ class NOT(Component):
               'constraint not_0_18[2] = sbox_0_10[0];',
               'constraint not_0_18[3] = sbox_0_14[0];'])
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         word_size = model.word_size
-        cp_declarations = [f'array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};']
+        cp_declarations = [f"array[0..{(self.output_bit_size - 1) // model.word_size}] of var 0..1: {self.id};"]
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{bit_positions[j * word_size] // word_size}]'
-                               for j in range(len(bit_positions) // word_size)])
-        cp_constraints = [f'constraint {output_id_link}[{i}] = {input_};'
-                          for i, input_ in enumerate(all_inputs)]
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend(
+                [
+                    f"{id_link}[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
+        cp_constraints = [f"constraint {self.id}[{i}] = {input_};" for i, input_ in enumerate(all_inputs)]
 
         return cp_declarations, cp_constraints
 
@@ -247,17 +250,13 @@ class NOT(Component):
              ...
               'constraint not_0_8[31] = xor_0_6[31];'])
         """
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-        cp_constraints = [f'constraint {output_id_link}[{i}] = {input_};'
-                          for i, input_ in enumerate(all_inputs)]
-        result = cp_declarations, cp_constraints
-        return result
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
+        cp_constraints = [f"constraint {self.id}[{i}] = {input_};" for i, input_ in enumerate(all_inputs)]
+
+        return cp_declarations, cp_constraints
 
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         return self.cp_xor_differential_first_step_constraints(model)
@@ -282,35 +281,32 @@ class NOT(Component):
               ...
               'constraint not_0_5_o[63]=not_0_5_i[63];'])
         """
-        input_size = int(self.input_bit_size)
-        output_size = int(self.output_bit_size)
-        output_id_link = self.id
-        cp_declarations = []
+        cp_declarations = [
+            f"array[0..{self.input_bit_size - 1}] of var 0..1:{self.id}_i;",
+            f"array[0..{self.output_bit_size - 1}] of var 0..1:{self.id}_o;",
+        ]
         cp_constraints = []
-        cp_declarations.append(f'array[0..{input_size - 1}] of var 0..1:{output_id_link}_i;')
-        cp_declarations.append(f'array[0..{output_size - 1}] of var 0..1:{output_id_link}_o;')
-        for i in range(input_size):
-            cp_constraints.append(f'constraint {output_id_link}_o[{i}]={output_id_link}_i[{i}];')
-        result = cp_declarations, cp_constraints
-        return result
+        for i in range(self.input_bit_size):
+            cp_constraints.append(f"constraint {self.id}_o[{i}]={self.id}_i[{i}];")
+
+        return cp_declarations, cp_constraints
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
-        return [f'  {self.id} = bit_vector_NOT([{",".join(params)} ])']
+        return [f"  {self.id} = bit_vector_NOT([{','.join(params)} ])"]
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} = byte_vector_NOT({params})']
+        return [f"  {self.id} = byte_vector_NOT({params})"]
 
     def get_word_operation_sign(self, sign, solution):
         output_id_link = self.id
-        input_size = self.input_bit_size
-        input_int = int(solution['components_values'][f'{output_id_link}_i']['value'], 16)
-        inputs = [int(digit) for digit in format(input_int, f'0{input_size}b')]
+        input_int = int(solution["components_values"][f"{output_id_link}_i"]["value"], 16)
+        inputs = [int(digit) for digit in format(input_int, f"0{self.input_bit_size}b")]
         component_sign = self.generic_sign_linear_constraints(inputs)
         sign = sign * component_sign
-        solution['components_values'][f'{output_id_link}_o']['sign'] = component_sign
-        solution['components_values'][output_id_link] = solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_i']
+        solution["components_values"][f"{output_id_link}_o"]["sign"] = component_sign
+        solution["components_values"][output_id_link] = solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_i"]
 
         return sign
 
@@ -332,11 +328,7 @@ class NOT(Component):
             sage: not_component.generic_sign_linear_constraints(inputs)
             1
         """
-        ones = 0
-        for entry in inputs:
-            if entry == 1:
-                ones += 1
-        parity = ones % 2
+        parity = inputs.count(1) % 2
         if parity == 1:
             sign = -1
         else:
@@ -589,8 +581,8 @@ class NOT(Component):
         for out_id, in_id in zip(out_ids_0, in_ids_0):
             constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
         for out_id, in_id_0, in_id_1 in zip(out_ids_1, in_ids_0, in_ids_1):
-            constraints.append(f'{in_id_0} {in_id_1} {out_id}')
-            constraints.append(f'{in_id_0} -{in_id_1} -{out_id}')
+            constraints.append(f"{in_id_0} {in_id_1} {out_id}")
+            constraints.append(f"{in_id_0} -{in_id_1} -{out_id}")
 
         return out_ids_0 + out_ids_1, constraints
 
@@ -784,7 +776,9 @@ class NOT(Component):
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        constraints = [smt_utils.smt_assert(smt_utils.smt_equivalent((input_bit_id, output_bit_id)))
-                       for input_bit_id, output_bit_id in zip(input_bit_ids, output_bit_ids)]
+        constraints = [
+            smt_utils.smt_assert(smt_utils.smt_equivalent((input_bit_id, output_bit_id)))
+            for input_bit_id, output_bit_id in zip(input_bit_ids, output_bit_ids)
+        ]
         result = input_bit_ids + output_bit_ids, constraints
         return result

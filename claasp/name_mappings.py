@@ -30,12 +30,12 @@ SBOX = "sbox"
 FSR = "fsr"
 
 # model types
-CIPHER = 'cipher'
-XOR_DIFFERENTIAL = 'xor_differential'
-XOR_LINEAR = 'xor_linear'
-DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL = 'deterministic_truncated_xor_differential'
-IMPOSSIBLE_XOR_DIFFERENTIAL = 'impossible_xor_differential'
-BOOMERANG_XOR_DIFFERENTIAL = 'boomerang_xor_differential'
+CIPHER = "cipher"
+XOR_DIFFERENTIAL = "xor_differential"
+XOR_LINEAR = "xor_linear"
+DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL = "deterministic_truncated_xor_differential"
+IMPOSSIBLE_XOR_DIFFERENTIAL = "impossible_xor_differential"
+BOOMERANG_XOR_DIFFERENTIAL = "boomerang_xor_differential"
 
 # cipher inverse
 CIPHER_INVERSE_SUFFIX = "_inverse"

@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -52,10 +51,10 @@ class TemplateManager:
 
 
 class Template:
-
     def __init__(self):
-        self._j2_env = Environment(loader=FileSystemLoader('claasp/utils/tii_reports'),
-                                   trim_blocks=True, autoescape=True)
+        self._j2_env = Environment(
+            loader=FileSystemLoader("claasp/utils/tii_reports"), trim_blocks=True, autoescape=True
+        )
         self.__header = None
         self.__footer = None
         self.__body = None
@@ -70,10 +69,9 @@ class Template:
         self.__footer = footer
 
     def render_template(self, rule_data_):
-        return self._j2_env.get_template(rule_data_['template_path']).render(header=self.__header.content,
-                                                                             body=self.__body.content,
-                                                                             footer=self.__footer.content,
-                                                                             rule_data=rule_data_)
+        return self._j2_env.get_template(rule_data_["template_path"]).render(
+            header=self.__header.content, body=self.__body.content, footer=self.__footer.content, rule_data=rule_data_
+        )
 
 
 class Builder(object):
@@ -84,9 +82,14 @@ class Builder(object):
 
     """
 
-    def get_header(self): pass
-    def get_footer(self): pass
-    def get_body(self): pass
+    def get_header(self):
+        pass
+
+    def get_footer(self):
+        pass
+
+    def get_body(self):
+        pass
 
 
 class LatexBuilder(Builder):
@@ -102,13 +105,13 @@ class LatexBuilder(Builder):
 
     def get_header(self):
         header = Header()
-        header.content = 'TII - Latex - Report'
+        header.content = "TII - Latex - Report"
 
         return header
 
     def get_footer(self):
         footer = Footer()
-        footer.content = ''
+        footer.content = ""
 
         return footer
 
@@ -132,13 +135,13 @@ class CSVBuilder(Builder):
 
     def get_header(self):
         header = Header()
-        header.content = 'TII - CSV - Report'
+        header.content = "TII - CSV - Report"
 
         return header
 
     def get_footer(self):
         footer = Footer()
-        footer.content = ''
+        footer.content = ""
 
         return footer
 

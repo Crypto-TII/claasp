@@ -84,14 +84,14 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
     assert constraints[0] == 'constraint if ((sbox_0_0[2] < 2) /\\ (sbox_0_0[3] < 2) /\\ (sbox_0_1[0] < 2) /\\ ' \
                              '(sbox_0_1[1] < 2) /\\ (sbox_0_1[3] < 2) /\\ (sbox_0_2[0] < 2) /\\ (sbox_0_2[1] < 2)' \
                              ' /\\ (sbox_0_3[1] < 2) /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_5[1] < 2) /\\ ' \
-                             '(sbox_0_5[3]< 2)) then linear_layer_0_6[0] = (sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[0] ' \
+                             '(sbox_0_5[3] < 2)) then linear_layer_0_6[0] = (sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[0] ' \
                              '+ sbox_0_1[1] + sbox_0_1[3] + sbox_0_2[0] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_4[2] + ' \
                              'sbox_0_5[1] + sbox_0_5[3]) mod 2 else linear_layer_0_6[0] = 2 endif;'
     assert constraints[-1] == 'constraint if ((sbox_0_0[0] < 2) /\\ (sbox_0_0[1] < 2) /\\ (sbox_0_0[2] < 2) /\\ ' \
                               '(sbox_0_0[3] < 2) /\\ (sbox_0_1[3] < 2) /\\ (sbox_0_2[1] < 2) /\\ (sbox_0_3[1] < 2) ' \
                               '/\\ (sbox_0_3[2] < 2) /\\ (sbox_0_3[3] < 2) /\\ (sbox_0_4[1] < 2) /\\ ' \
                               '(sbox_0_4[2] < 2) /\\ (sbox_0_4[3] < 2) /\\ (sbox_0_5[1] < 2) /\\ (sbox_0_5[2] < 2) ' \
-                              '/\\ (sbox_0_5[3]< 2)) then linear_layer_0_6[23] = (sbox_0_0[0] + sbox_0_0[1] + ' \
+                              '/\\ (sbox_0_5[3] < 2)) then linear_layer_0_6[23] = (sbox_0_0[0] + sbox_0_0[1] + ' \
                               'sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[3] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_3[2] + ' \
                               'sbox_0_3[3] + sbox_0_4[1] + sbox_0_4[2] + sbox_0_4[3] + sbox_0_5[1] + sbox_0_5[2] + ' \
                               'sbox_0_5[3]) mod 2 else linear_layer_0_6[23] = 2 endif;'
@@ -106,7 +106,7 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
                              '(sbox_0_1[0] < 2) /\\ (sbox_0_1[1] < 2) /\\ (sbox_0_1[3] < 2)' \
                              ' /\\ (sbox_0_2[0] < 2) /\\ (sbox_0_2[1] < 2) /\\ ' \
                              '(sbox_0_3[1] < 2) /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_5[1] < 2) ' \
-                             '/\\ (sbox_0_5[3]< 2)) then linear_layer_0_6[0] = (sbox_0_0[2]' \
+                             '/\\ (sbox_0_5[3] < 2)) then linear_layer_0_6[0] = (sbox_0_0[2]' \
                              ' + sbox_0_0[3] + sbox_0_1[0] + sbox_0_1[1] + ' \
                              'sbox_0_1[3] + sbox_0_2[0] + sbox_0_2[1] + sbox_0_3[1]' \
                              ' + sbox_0_4[2] + sbox_0_5[1] + sbox_0_5[3]) mod 2 else ' \
@@ -117,7 +117,7 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
                               ' /\\ (sbox_0_2[1] < 2) /\\ (sbox_0_3[1] < 2) /\\ ' \
                               '(sbox_0_3[2] < 2) /\\ (sbox_0_3[3] < 2) /\\ (sbox_0_4[1] < 2)' \
                               ' /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_4[3] < 2) /\\' \
-                              ' (sbox_0_5[1] < 2) /\\ (sbox_0_5[2] < 2) /\\ (sbox_0_5[3]< 2))' \
+                              ' (sbox_0_5[1] < 2) /\\ (sbox_0_5[2] < 2) /\\ (sbox_0_5[3] < 2))' \
                               ' then linear_layer_0_6[23] = (sbox_0_0[0] + sbox_0_0[1] +' \
                               ' sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[3] + sbox_0_2[1]' \
                               ' + sbox_0_3[1] + sbox_0_3[2] + sbox_0_3[3] + ' \

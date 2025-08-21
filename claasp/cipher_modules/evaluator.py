@@ -87,7 +87,6 @@ def evaluate_vectorized(
     intermediate_output=False,
     verbosity=False,
     evaluate_api=False,
-    bit_based=False,
 ):
     python_code_string = (
         code_generator.generate_byte_based_vectorized_python_code_string(
