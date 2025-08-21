@@ -93,7 +93,7 @@ class SatCipherModel(SatModel):
                 self._model_constraints.extend(constraints)
                 self._variables_list.extend(variables)
 
-    def find_missing_bits(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
+    def find_missing_bits(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
         Return the solution representing a generic flow of the cipher from plaintext and key to ciphertext.
 
@@ -132,7 +132,7 @@ class SatCipherModel(SatModel):
         start_building_time = time.time()
         self.build_cipher_model(fixed_variables=fixed_values)
         end_building_time = time.time()
-        solution = self.solve(CIPHER, solver_name=solver_name)
+        solution = self.solve(CIPHER, solver_name=solver_name, options=options)
         solution['building_time_seconds'] = end_building_time - start_building_time
 
         return solution

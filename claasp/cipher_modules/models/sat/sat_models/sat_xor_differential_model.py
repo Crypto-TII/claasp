@@ -161,7 +161,7 @@ class SatXorDifferentialModel(SatModel):
         self._model_constraints.extend(sat._model_constraints)
 
     def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                           solver_name=solvers.SOLVER_DEFAULT):
+                                                           solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
         Return a list of solutions containing all the XOR differential trails having the ``fixed_weight`` weight.
         By default, the search is set in the single-key setting.
@@ -207,7 +207,7 @@ class SatXorDifferentialModel(SatModel):
         if self._counter == self._sequential_counter:
             self._sequential_counter_greater_or_equal(fixed_weight, 'dummy_hw_1')
         end_building_time = time.time()
-        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
+        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
         solution['building_time_seconds'] = end_building_time - start_building_time
         solutions_list = []
         while solution['total_weight'] is not None:
@@ -226,13 +226,13 @@ class SatXorDifferentialModel(SatModel):
                     minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
                     literals.extend([f'{minus[i]}{component.id}_{i}' for i in range(bit_len)])
             self._model_constraints.append(' '.join(literals))
-            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
+            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
             solution['building_time_seconds'] = end_building_time - start_building_time
             solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
         return solutions_list
 
     def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
-                                                             solver_name=solvers.SOLVER_DEFAULT):
+                                                             solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
         Return a list of solutions.
         By default, the search is set in the single-key setting.
@@ -281,7 +281,8 @@ class SatXorDifferentialModel(SatModel):
         for weight in range(min_weight, max_weight + 1):
             solutions = self.find_all_xor_differential_trails_with_fixed_weight(weight,
                                                                                 fixed_values=fixed_values,
-                                                                                solver_name=solver_name)
+                                                                                solver_name=solver_name,
+                                                                                options=options)
 
             for solution in solutions:
                 solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
@@ -289,7 +290,7 @@ class SatXorDifferentialModel(SatModel):
 
         return solutions_list
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
+    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
         Return the solution representing a trail with the lowest weight.
         By default, the search is set in the single-key setting.
@@ -338,7 +339,7 @@ class SatXorDifferentialModel(SatModel):
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
         end_building_time = time.time()
-        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
+        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
         solution['building_time_seconds'] = end_building_time - start_building_time
         total_time = solution['solving_time_seconds']
         max_memory = solution['memory_megabytes']
@@ -347,7 +348,7 @@ class SatXorDifferentialModel(SatModel):
             start_building_time = time.time()
             self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
             end_building_time = time.time()
-            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
+            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
             solution['building_time_seconds'] = end_building_time - start_building_time
             total_time += solution['solving_time_seconds']
             max_memory = max((max_memory, solution['memory_megabytes']))
@@ -357,7 +358,7 @@ class SatXorDifferentialModel(SatModel):
 
         return solution
 
-    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
+    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
         Return the solution representing a XOR differential trail.
         By default, the search is set in the single-key setting.
@@ -400,14 +401,14 @@ class SatXorDifferentialModel(SatModel):
         start_building_time = time.time()
         self.build_xor_differential_trail_model(fixed_variables=fixed_values)
         end_building_time = time.time()
-        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
+        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
         solution['building_time_seconds'] = end_building_time - start_building_time
         solution['test_name'] = "find_one_xor_differential_trail"
 
         return solution
 
     def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                          solver_name=solvers.SOLVER_DEFAULT):
+                                                          solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
         Return the solution representing a XOR differential trail whose probability is ``2 ** fixed_weight``.
         By default, the search is set in the single-key setting.
@@ -454,7 +455,7 @@ class SatXorDifferentialModel(SatModel):
         if self._counter == self._sequential_counter:
             self._sequential_counter_greater_or_equal(fixed_weight, 'dummy_hw_1')
         end_building_time = time.time()
-        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
+        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
         solution['building_time_seconds'] = end_building_time - start_building_time
         solution['test_name'] = "find_one_xor_differential_trail_with_fixed_weight"
 

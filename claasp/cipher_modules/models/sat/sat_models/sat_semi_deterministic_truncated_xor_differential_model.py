@@ -122,7 +122,8 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
             fixed_values=[],
             solver_name=solvers.SOLVER_DEFAULT,
             unknown_window_size_configuration=None,
-            number_of_unknowns_per_component=None
+            number_of_unknowns_per_component=None,
+            options=None,
     ):
         """
         Returns one deterministic truncated XOR differential trail.
@@ -143,7 +144,7 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
         )
 
         end_building_time = time.time()
-        solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name)
+        solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
         solution['building_time_seconds'] = end_building_time - start_building_time
 
         return solution
