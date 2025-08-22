@@ -1,41 +1,48 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
+import json
 import math
 import os
-import sys
 from copy import deepcopy
 
 import numpy as np
 
-from claasp.name_mappings import CONSTANT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, LINEAR_LAYER, SBOX, \
-    MIX_COLUMN, \
-    INPUT_KEY, INPUT_PLAINTEXT, INPUT_MESSAGE, INPUT_STATE
-from claasp.utils.utils import get_k_th_bit
+from claasp.name_mappings import (
+    CONSTANT,
+    CIPHER_OUTPUT,
+    INTERMEDIATE_OUTPUT,
+    WORD_OPERATION,
+    LINEAR_LAYER,
+    SBOX,
+    MIX_COLUMN,
+    INPUT_KEY,
+    INPUT_PLAINTEXT,
+    INPUT_MESSAGE,
+    INPUT_STATE,
+)
 
 
 def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids):
     for i in range(input_bit_size):
         if component.type == INTERMEDIATE_OUTPUT:
             arcs_to_add = arcs[previous_output_bit_ids[i]] if previous_output_bit_ids[i] in arcs else []
-            intermediate_output_arcs[component.id][curr_input_bit_ids[i]] = \
-                [previous_output_bit_ids[i]] + arcs_to_add
+            intermediate_output_arcs[component.id][curr_input_bit_ids[i]] = [previous_output_bit_ids[i]] + arcs_to_add
         else:
             if previous_output_bit_ids[i] not in arcs:
                 arcs[previous_output_bit_ids[i]] = []
@@ -43,19 +50,18 @@ def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_o
 
 
 def check_if_implemented_component(component):
-    component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER,
-                       SBOX, MIX_COLUMN, WORD_OPERATION]
+    component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
     operation = component.description[0]
-    operation_types = ['AND', 'OR', 'MODADD', 'MODSUB', 'NOT', 'ROTATE', 'SHIFT', 'XOR']
-    if component.type not in component_types or \
-            (component.type == WORD_OPERATION and operation not in operation_types):
-        print(f'{component.id} not yet implemented')
+    operation_types = ("AND", "OR", "MODADD", "MODSUB", "NOT", "ROTATE", "SHIFT", "XOR")
+    if component.type not in component_types or (component.type == WORD_OPERATION and operation not in operation_types):
+        print(f"{component.id} not yet implemented")
         return False
     return True
 
 
-def convert_solver_solution_to_dictionary(cipher, model_type, solver_name, solve_time, memory,
-                                          components_values, total_weight):
+def convert_solver_solution_to_dictionary(
+    cipher, model_type, solver_name, solve_time, memory, components_values, total_weight
+):
     """
     Return a dictionary that represents the solution obtained from the solver.
 
@@ -89,39 +95,25 @@ def convert_solver_solution_to_dictionary(cipher, model_type, solver_name, solve
          'total_weight': 0}
     """
     return {
-        'cipher': cipher,
-        'model_type': model_type,
-        'solver_name': solver_name,
-        'solving_time_seconds': solve_time,
-        'memory_megabytes': memory,
-        'components_values': components_values,
-        'total_weight': total_weight
+        "cipher": cipher,
+        "model_type": model_type,
+        "solver_name": solver_name,
+        "solving_time_seconds": solve_time,
+        "memory_megabytes": memory,
+        "components_values": components_values,
+        "total_weight": total_weight,
     }
-
-
-def create_directory(file_path, library_path):
-    folder_path, file_name = os.path.split(file_path)
-    folder_path = os.path.join(library_path, folder_path)
-    if not os.path.isdir(folder_path):
-        os.makedirs(folder_path)
-
-
-def get_library_path():
-    library_path = os.path.dirname(os.path.abspath(__file__)).split(f'claasp{os.sep}')[0]
-
-    return library_path + 'claasp'
 
 
 def get_previous_output_bit_ids(input_bit_positions, input_id_links, format_func):
     previous_output_bit_ids = []
     for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-        previous_output_bit_ids.extend(
-            [format_func((id_link, f'{position}', 'o')) for position in bit_positions])
+        previous_output_bit_ids.extend([format_func((id_link, f"{position}", "o")) for position in bit_positions])
 
     return previous_output_bit_ids
 
 
-def integer_to_bit_list(int_value, list_length, endianness='little'):
+def integer_to_bit_list(int_value, list_length, endianness="little"):
     """
     Return a list that contains the binary value for each bit position.
 
@@ -141,7 +133,7 @@ def integer_to_bit_list(int_value, list_length, endianness='little'):
         [0, 0, 1, 0, 1]
     """
     binary_value = [int_value >> i & 1 for i in range(list_length)]
-    if endianness == 'big':
+    if endianness == "big":
         return binary_value[::-1]
 
     return binary_value
@@ -184,27 +176,27 @@ def print_components_values(solution):
     """
 
     def line_formatter(component_id):
-        value = solution['components_values'][component_id]['value']
-        weight = str(solution['components_values'][component_id]['weight'])
-        weight_cell = f'{"-": <6}'
-        if weight != '0':
-            weight_cell = f'{weight: <{7 - len(weight)}}'
-        line = f'│ {component_id: <25} │ {value: <40} │ {weight_cell} │'
+        value = solution["components_values"][component_id]["value"]
+        weight = str(solution["components_values"][component_id]["weight"])
+        weight_cell = f"{'-': <6}"
+        if weight != "0":
+            weight_cell = f"{weight: <{7 - len(weight)}}"
+        line = f"│ {component_id: <25} │ {value: <40} │ {weight_cell} │"
         return line
 
-    horizontal_separator = f'├{"─" * 27}┼{"─" * 42}┼{"─" * 8}┤'
+    horizontal_separator = f"├{'─' * 27}┼{'─' * 42}┼{'─' * 8}┤"
     # ------- header
-    print(f'┌{"─" * 27}┬{"─" * 42}┬{"─" * 8}┐')
-    print(f'│ {"COMPONENT ID": <26}│ {"VALUE": <41}│ {"WEIGHT"} │')
+    print(f"┌{'─' * 27}┬{'─' * 42}┬{'─' * 8}┐")
+    print(f"│ {'COMPONENT ID': <26}│ {'VALUE': <41}│ {'WEIGHT'} │")
     print(horizontal_separator)
     # ------- body
-    component_ids = list(solution['components_values'].keys())
+    component_ids = list(solution["components_values"].keys())
     for component_id in component_ids[:-1]:
         print(line_formatter(component_id))
         print(horizontal_separator)
     last_component_id = component_ids[-1]
     print(line_formatter(last_component_id))
-    print(f'└{"─" * 27}┴{"─" * 42}┴{"─" * 8}┘')
+    print(f"└{'─' * 27}┴{'─' * 42}┴{'─' * 8}┘")
 
 
 def set_component_value_weight_sign(value, weight=0, sign=1):
@@ -225,11 +217,7 @@ def set_component_value_weight_sign(value, weight=0, sign=1):
         sage: set_component_value_weight_sign('0x0000', 0, 1)
         {'sign': 1, 'value': '0x0000', 'weight': 0}
     """
-    return {
-        'value': value,
-        'weight': weight,
-        'sign': sign
-    }
+    return {"value": value, "weight": weight, "sign": sign}
 
 
 def set_component_solution(value, weight=None, sign=None):
@@ -249,11 +237,11 @@ def set_component_solution(value, weight=None, sign=None):
         sage: set_component_solution('abcd1234', 0, 1)
         {'sign': 1, 'value': 'abcd1234', 'weight': 0}
     """
-    component_solution = {'value': value}
+    component_solution = {"value": value}
     if weight is not None:
-        component_solution['weight'] = weight
+        component_solution["weight"] = weight
     if sign is not None:
-        component_solution['sign'] = sign
+        component_solution["sign"] = sign
     return component_solution
 
 
@@ -287,10 +275,10 @@ def set_fixed_variables(component_id, constraint_type, bit_positions, bit_values
          'constraint_type': 'equal'}
     """
     return {
-        'component_id': component_id,
-        'constraint_type': constraint_type,
-        'bit_positions': bit_positions,
-        'bit_values': bit_values
+        "component_id": component_id,
+        "constraint_type": constraint_type,
+        "bit_positions": bit_positions,
+        "bit_values": bit_values,
     }
 
 
@@ -319,29 +307,18 @@ def write_model_to_file(model_to_write, file_name):
         sage: write_model_to_file(['xor_differential', 'xor_linear'], file_name)
         sage: os.remove(file_name)
     """
-    with open(file_name, 'w') as output_file:
-        output_file.write('\n'.join(model_to_write) + '\n')
+    with open(file_name, "w") as output_file:
+        output_file.write("\n".join(model_to_write) + "\n")
         output_file.close()
 
 
-def write_solution_into_a_file(file_path, solution_to_write):
-    original_stdout = sys.stdout  # Save a reference to the original standard output
-    with open(file_path, 'w') as output_file:
-        sys.stdout = output_file  # Change the standard output to the file we created.
-        print("result = {")
-        for key, value in solution_to_write.items():
-            print(f"    {repr(key)}: {repr(value)},")
-        print("}")
-    sys.stdout = original_stdout  # Reset the standard output to its original value
-
-
-def write_solution_to_file(solution_to_write, file_path):
+def write_solution_to_file(solution, file_path):
     """
     Write the solver solution into a file.
 
     INPUT:
 
-    - ``solution_to_write`` -- **dictionary**; the solution in standard format
+    - ``solution`` -- **dictionary**; the solution in standard format
     - ``file_path`` -- **string**; the entire path of the file that will contain the solution
 
     .. SEEALSO::
@@ -369,10 +346,11 @@ def write_solution_to_file(solution_to_write, file_path):
         sage: write_solution_to_file(dict, file_name) # doctest: +SKIP
         sage: os.remove(file_name) # doctest: +SKIP
     """
-    library_path = get_library_path()
-    if os.sep in file_path:
-        create_directory(file_path, library_path)
-    write_solution_into_a_file(file_path, solution_to_write)
+    dirname = os.path.dirname(file_path)
+    os.makedirs(dirname, exist_ok=True)
+    solution["cipher"] = str(solution["cipher"])
+    with open(file_path, "w") as file:
+        file.write(json.dumps(solution, indent=4))
 
 
 def to_bias_for_xor_linear_trail(cipher, solution):
@@ -405,10 +383,10 @@ def to_bias_for_xor_linear_trail(cipher, solution):
          ...
          'total_weight': 4.0}
     """
-    if solution.get('measure') in [None, 'correlation']:
+    if solution.get("measure") in (None, "correlation"):
         return to_bias_for_correlation_measure(cipher, solution)
 
-    if solution.get('measure') == 'probability':
+    if solution.get("measure") == "probability":
         return to_bias_for_probability_measure(cipher, solution)
 
     return deepcopy(solution)
@@ -416,29 +394,31 @@ def to_bias_for_xor_linear_trail(cipher, solution):
 
 def to_bias_for_correlation_measure(cipher, solution):
     solution_with_bias = deepcopy(solution)
-    solution_with_bias['measure'] = 'bias'
-    solution_with_bias['total_weight'] += 1
+    solution_with_bias["measure"] = "bias"
+    solution_with_bias["total_weight"] += 1
     for component in cipher.get_all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
-            if solution_with_bias['components_values'][component.id + suffix]['weight']:
-                solution_with_bias['components_values'][component.id + suffix]['weight'] += 1
+            if solution_with_bias["components_values"][component.id + suffix]["weight"]:
+                solution_with_bias["components_values"][component.id + suffix]["weight"] += 1
 
     return solution_with_bias
 
 
 def to_bias_for_probability_measure(cipher, solution):
     solution_with_bias = deepcopy(solution)
-    solution_with_bias['measure'] = 'bias'
-    solution_with_bias['total_weight'] = \
-        round(-math.log(2 ** (-solution_with_bias['total_weight']) - 1 / 2., 2), 1)
+    solution_with_bias["measure"] = "bias"
+    solution_with_bias["total_weight"] = round(-math.log(2 ** (-solution_with_bias["total_weight"]) - 1 / 2.0, 2), 1)
     for component in cipher.get_all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
-            if solution_with_bias['components_values'][component.id + suffix]['weight']:
-                solution_with_bias['components_values'][component.id + suffix]['weight'] = \
-                    round(-math.log(2 ** (-solution_with_bias['components_values'][
-                        component.id + suffix]['weight']) - 1 / 2., 2), 1)
+            if solution_with_bias["components_values"][component.id + suffix]["weight"]:
+                solution_with_bias["components_values"][component.id + suffix]["weight"] = round(
+                    -math.log(
+                        2 ** (-solution_with_bias["components_values"][component.id + suffix]["weight"]) - 1 / 2.0, 2
+                    ),
+                    1,
+                )
 
     return solution_with_bias
 
@@ -473,10 +453,10 @@ def to_probability_for_xor_linear_trail(cipher, solution):
          ...
          'total_weight': 0.83}
     """
-    if solution.get('measure') in [None, 'correlation']:
+    if solution.get("measure") in (None, "correlation"):
         return to_probability_for_correlation_measure(cipher, solution)
 
-    elif solution.get('measure') == 'bias':
+    if solution.get("measure") == "bias":
         return to_probability_for_bias_measure(cipher, solution)
 
     return deepcopy(solution)
@@ -484,32 +464,38 @@ def to_probability_for_xor_linear_trail(cipher, solution):
 
 def to_probability_for_correlation_measure(cipher, solution):
     solution_with_proba = deepcopy(solution)
-    solution_with_proba['measure'] = 'probability'
-    solution_with_proba['total_weight'] = \
-        round(-math.log((2 ** (-solution_with_proba['total_weight']) + 1) / 2., 2), 3)
+    solution_with_proba["measure"] = "probability"
+    solution_with_proba["total_weight"] = round(
+        -math.log((2 ** (-solution_with_proba["total_weight"]) + 1) / 2.0, 2), 3
+    )
     for component in cipher.get_all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
-            if solution_with_proba['components_values'][component.id + suffix]['weight']:
-                solution_with_proba['components_values'][component.id + suffix]['weight'] = \
-                    round(-math.log((2 ** (-solution_with_proba['components_values'][
-                        component.id + suffix]['weight']) + 1) / 2., 2), 3)
+            if solution_with_proba["components_values"][component.id + suffix]["weight"]:
+                solution_with_proba["components_values"][component.id + suffix]["weight"] = round(
+                    -math.log(
+                        (2 ** (-solution_with_proba["components_values"][component.id + suffix]["weight"]) + 1) / 2.0, 2
+                    ),
+                    3,
+                )
 
     return solution_with_proba
 
 
 def to_probability_for_bias_measure(cipher, solution):
     solution_with_proba = deepcopy(solution)
-    solution_with_proba['measure'] = 'probability'
-    solution_with_proba['total_weight'] = \
-        round(-math.log(2 ** (-solution_with_proba['total_weight']) + 1 / 2., 2), 3)
+    solution_with_proba["measure"] = "probability"
+    solution_with_proba["total_weight"] = round(-math.log(2 ** (-solution_with_proba["total_weight"]) + 1 / 2.0, 2), 3)
     for component in cipher.get_all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
-            if solution_with_proba['components_values'][component.id + suffix]['weight']:
-                solution_with_proba['components_values'][component.id + suffix]['weight'] = \
-                    round(-math.log(2 ** (-solution_with_proba['components_values'][
-                        component.id + suffix]['weight']) + 1 / 2., 2), 3)
+            if solution_with_proba["components_values"][component.id + suffix]["weight"]:
+                solution_with_proba["components_values"][component.id + suffix]["weight"] = round(
+                    -math.log(
+                        2 ** (-solution_with_proba["components_values"][component.id + suffix]["weight"]) + 1 / 2.0, 2
+                    ),
+                    3,
+                )
 
     return solution_with_proba
 
@@ -542,15 +528,15 @@ def to_correlation_for_xor_linear_trail(cipher, solution):
          ...
          'total_weight': 3.0}
     """
-    if solution.get('measure') is None:
+    if solution.get("measure") is None:
         solution_with_correlation = deepcopy(solution)
-        solution_with_correlation['measure'] = 'correlation'
+        solution_with_correlation["measure"] = "correlation"
         return solution_with_correlation
 
-    if solution.get('measure') == 'bias':
+    if solution.get("measure") == "bias":
         return to_correlation_for_bias_measure(cipher, solution)
 
-    if solution.get('measure') == 'probability':
+    if solution.get("measure") == "probability":
         return to_correlation_for_probability_measure(cipher, solution)
 
     return deepcopy(solution)
@@ -558,29 +544,34 @@ def to_correlation_for_xor_linear_trail(cipher, solution):
 
 def to_correlation_for_bias_measure(cipher, solution):
     solution_with_correlation = deepcopy(solution)
-    solution_with_correlation['measure'] = 'correlation'
-    solution_with_correlation['total_weight'] -= 1
+    solution_with_correlation["measure"] = "correlation"
+    solution_with_correlation["total_weight"] -= 1
     for component in cipher.get_all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
-            if solution_with_correlation['components_values'][component.id + suffix]['weight']:
-                solution_with_correlation['components_values'][component.id + suffix]['weight'] -= 1
+            if solution_with_correlation["components_values"][component.id + suffix]["weight"]:
+                solution_with_correlation["components_values"][component.id + suffix]["weight"] -= 1
 
     return solution_with_correlation
 
 
 def to_correlation_for_probability_measure(cipher, solution):
     solution_with_correlation = deepcopy(solution)
-    solution_with_correlation['measure'] = 'correlation'
-    solution_with_correlation['total_weight'] = \
-        round(-math.log(2 * 2 ** (-solution_with_correlation['total_weight']) - 1, 2), 1)
+    solution_with_correlation["measure"] = "correlation"
+    solution_with_correlation["total_weight"] = round(
+        -math.log(2 * 2 ** (-solution_with_correlation["total_weight"]) - 1, 2), 1
+    )
     for component in cipher.get_all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
-            if solution_with_correlation['components_values'][component.id + suffix]['weight']:
-                solution_with_correlation['components_values'][component.id + suffix]['weight'] = \
-                    round(-math.log(2 * 2 ** (-solution_with_correlation['components_values'][
-                        component.id + suffix]['weight']) - 1, 2), 1)
+            if solution_with_correlation["components_values"][component.id + suffix]["weight"]:
+                solution_with_correlation["components_values"][component.id + suffix]["weight"] = round(
+                    -math.log(
+                        2 * 2 ** (-solution_with_correlation["components_values"][component.id + suffix]["weight"]) - 1,
+                        2,
+                    ),
+                    1,
+                )
 
     return solution_with_correlation
 
@@ -611,22 +602,22 @@ def find_sign_for_one_xor_linear_trail(cipher, solution):
     sign = +1
     for component in cipher.get_all_components():
         output_id_link = component.id
-        if 'sbox' in component.type:
-            input_int = int(solution['components_values'][f'{output_id_link}_i']['value'], 16)
-            output_int = int(solution['components_values'][f'{output_id_link}_o']['value'], 16)
+        if "sbox" in component.type:
+            input_int = int(solution["components_values"][f"{output_id_link}_i"]["value"], 16)
+            output_int = int(solution["components_values"][f"{output_id_link}_o"]["value"], 16)
             sbox_sign_lat = component.generate_sbox_sign_lat()
             component_sign = sbox_sign_lat[input_int][output_int]
             sign = sign * component_sign
-            solution['components_values'][f'{output_id_link}_o']['sign'] = component_sign
-        elif 'constant' in component.type:
+            solution["components_values"][f"{output_id_link}_o"]["sign"] = component_sign
+        elif "constant" in component.type:
             output_id_link = component.id
             constants[output_id_link] = component.description
-        elif 'word_operation' in component.type:
-            if component.description[0] == 'XOR':
+        elif "word_operation" in component.type:
+            if component.description[0] == "XOR":
                 sign = component.get_word_operation_sign(constants, sign, solution)
             else:
                 sign = component.get_word_operation_sign(sign, solution)
-    solution['final_sign'] = sign
+    solution["final_sign"] = sign
 
     return solution
 
@@ -695,8 +686,9 @@ def get_bit_bindings(cipher, format_func=(lambda x: x)):
           'intermediate_output_0_6_9_i': ['xor_0_2_9_o', 'xor_0_4_9_i']}}
     """
     arcs = {}
-    intermediate_output_arcs = {component.id: {} for component in cipher.get_all_components()
-                                if INTERMEDIATE_OUTPUT in component.type}
+    intermediate_output_arcs = {
+        component.id: {} for component in cipher.get_all_components() if INTERMEDIATE_OUTPUT in component.type
+    }
     for component in cipher.get_all_components():
         if component.type == CONSTANT:
             continue
@@ -704,7 +696,7 @@ def get_bit_bindings(cipher, format_func=(lambda x: x)):
         input_id_links = component.input_id_links
         input_bit_positions = component.input_bit_positions
         previous_output_bit_ids = get_previous_output_bit_ids(input_bit_positions, input_id_links, format_func)
-        curr_input_bit_ids = [format_func((component.id, f'{i}', 'i')) for i in range(input_bit_size)]
+        curr_input_bit_ids = [format_func((component.id, f"{i}", "i")) for i in range(input_bit_size)]
         add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids)
 
     return arcs, intermediate_output_arcs
@@ -736,10 +728,10 @@ def get_single_key_scenario_format_for_fixed_values(_cipher):
         fixed_variable = set_fixed_variables(INPUT_KEY, "equal", list(range(input_size)), list_of_0s)
         fixed_variables.append(fixed_variable)
     possible_inputs = {INPUT_PLAINTEXT, INPUT_MESSAGE, INPUT_STATE}
-    for input in set(_cipher.inputs).intersection(possible_inputs):
-        input_size = _cipher.inputs_bit_size[_cipher.inputs.index(input)]
+    for cipher_input in set(_cipher.inputs).intersection(possible_inputs):
+        input_size = _cipher.inputs_bit_size[_cipher.inputs.index(cipher_input)]
         list_of_0s = [0] * input_size
-        fixed_variable = set_fixed_variables(input, "not_equal", list(range(input_size)), list_of_0s)
+        fixed_variable = set_fixed_variables(cipher_input, "not_equal", list(range(input_size)), list_of_0s)
         fixed_variables.append(fixed_variable)
 
     return fixed_variables
@@ -764,7 +756,7 @@ def get_related_key_scenario_format_for_fixed_values(_cipher):
     """
     fixed_variables = []
     for input_index, input_name in enumerate(_cipher.inputs):
-        if input_name == "key":
+        if input_name == INPUT_KEY:
             input_size = _cipher.inputs_bit_size[input_index]
             list_bits_to_avoid = [0] * input_size
             fixed_variable = set_fixed_variables(input, "not_equal", list(range(input_size)), list_bits_to_avoid)
@@ -789,21 +781,21 @@ def _extract_bits(columns, positions):
 
 def _number_to_n_bit_binary_string(number, n_bits):
     """Converts a number to an n-bit binary string with leading zero padding."""
-    return format(number, f'0{n_bits}b')
+    return format(number, f"0{n_bits}b")
 
 
 def _extract_bit_positions(hex_number, state_size):
     """Extracts bit positions from a hex state_size-number."""
     binary_str = _number_to_n_bit_binary_string(hex_number, state_size)
     binary_str = binary_str[::-1]
-    positions = [i for i, bit in enumerate(binary_str) if bit == '1']
+    positions = [i for i, bit in enumerate(binary_str) if bit == "1"]
     return positions
 
 
 def extract_bit_positions(binary_str):
     """Extracts bit positions from a binary+unknows string."""
     binary_str = binary_str[::-1]
-    positions = [i for i, bit in enumerate(binary_str) if bit in ['1', '0']]
+    positions = [i for i, bit in enumerate(binary_str) if bit in ("0", "1")]
     return positions
 
 
@@ -819,19 +811,19 @@ def extract_bits(columns, positions):
         for j in range(num_columns):
             byte_index = (bit_size - positions[i] - 1) // 8
             bit_index = positions[i] % 8
-            result[i, j] = get_k_th_bit(columns[:, j][byte_index], bit_index)
+            result[i, j] = 1 & (columns[:, j][byte_index] >> bit_index)
     return result
 
 
 def _repeat_input_difference(input_difference, num_samples, num_bytes):
     """Function to repeat the input difference for a large sample size."""
-    bytes_array = np.frombuffer(input_difference.to_bytes(num_bytes, 'big'), dtype=np.uint8)
+    bytes_array = np.frombuffer(input_difference.to_bytes(num_bytes, "big"), dtype=np.uint8)
     repeated_array = np.broadcast_to(bytes_array[:, np.newaxis], (num_bytes, num_samples))
     return repeated_array
 
 
 def differential_linear_checker_for_permutation(
-        cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
 ):
     """
     This method helps to verify experimentally differential-linear distinguishers for permutations using the vectorized evaluator
@@ -855,7 +847,7 @@ def differential_linear_checker_for_permutation(
 
 
 def differential_linear_checker_for_block_cipher_single_key(
-        cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None
+    cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None
 ):
     """
     Verifies experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator
@@ -883,7 +875,7 @@ def differential_linear_checker_for_block_cipher_single_key(
 
 
 def differential_checker_permutation(
-        cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
 ):
     """
     Verifies experimentally differential distinguishers for permutations using the vectorized evaluator
@@ -902,13 +894,13 @@ def differential_checker_permutation(
     ciphertext2 = cipher.evaluate_vectorized([plaintext2])
     rows_all_true = np.all((ciphertext1[0] ^ ciphertext2[0] == output_difference_data.T), axis=1)
     total = np.count_nonzero(rows_all_true)
-    import math
+
     total_prob_weight = math.log(total / number_of_samples, 2)
     return total_prob_weight
 
 
 def differential_truncated_checker_permutation(
-        cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
 ):
     """
     Verifies experimentally differential-truncated distinguishers for permutations in the single-key scenario
@@ -931,7 +923,7 @@ def differential_truncated_checker_permutation(
     np.set_printoptions(linewidth=400)
 
     inv_output_diff = output_difference[::-1]
-    filled_bits = [int(bit) for bit in inv_output_diff if bit in ["0", "1"]]
+    filled_bits = [int(bit) for bit in inv_output_diff if bit in ("0", "1")]
     total = 0
     for i in range(len(known_bits[0])):
         if np.all(known_bits[:, i] == filled_bits):
@@ -942,7 +934,7 @@ def differential_truncated_checker_permutation(
 
 
 def differential_truncated_checker_single_key(
-        cipher, input_difference, output_difference, number_of_samples, state_size, fixed_key, key_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, fixed_key, key_size, seed=None
 ):
     """
     Verifies experimentally differential-truncated distinguishers for block_ciphers in the single-key scenario
@@ -965,7 +957,7 @@ def differential_truncated_checker_single_key(
     known_bits = extract_bits(diff_ciphertext.T, bit_positions)
 
     inv_output_diff = output_difference[::-1]
-    filled_bits = [int(bit) for bit in inv_output_diff if bit in ["0", "1"]]
+    filled_bits = [int(bit) for bit in inv_output_diff if bit in ("0", "1")]
 
     total = 0
     for i in range(len(known_bits[0])):
@@ -977,7 +969,7 @@ def differential_truncated_checker_single_key(
 
 
 def shared_difference_paired_input_differential_checker_permutation(
-        cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
 ):
     """
     Verifies experimentally SharedDifferencePairedInputDifferential distinguishers for permutations using the vectorized evaluator
@@ -1005,13 +997,13 @@ def shared_difference_paired_input_differential_checker_permutation(
         (ciphertext1[0] ^ ciphertext2[0] ^ ciphertext11[0] ^ ciphertext22[0] == output_difference_data.T), axis=1
     )
     total = np.count_nonzero(rows_all_true)
-    import math
+
     total_prob_weight = math.log(total / number_of_samples, 2)
     return total_prob_weight
 
 
 def shared_difference_paired_input_differential_linear_checker_permutation(
-        cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
 ):
     """
     This method helps to verify experimentally SharedDifferencePairedInputDifferentialLinear distinguishers for permutations using the vectorized evaluator

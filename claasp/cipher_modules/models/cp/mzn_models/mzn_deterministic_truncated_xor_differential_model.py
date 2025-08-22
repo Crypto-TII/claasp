@@ -165,11 +165,8 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
@@ -225,11 +222,8 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         - ``number_of_rounds`` -- **integer**; number of rounds
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `None`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `None`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 
@@ -277,11 +271,8 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver. Available values are:
-
-          * ``'Chuffed'``
-          * ``'Gecode'``
-          * ``'COIN-BC'``
+        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+          See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
 

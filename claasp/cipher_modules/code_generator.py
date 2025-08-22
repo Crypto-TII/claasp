@@ -329,15 +329,6 @@ def prepare_input_bit_based_vectorized_python_code_string(component):
     return params
 
 
-def constant_to_bitstring(val, output_size):
-    ret = []
-    _val = int(val, 0)
-    for i in range(output_size):
-        ret.append((_val >> (output_size - 1 - i)) & 1)
-
-    return ret
-
-
 def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False, verbosity=False, integers_inputs_and_outputs = False):
     r"""
     Return string python code needed to evaluate a cipher using a vectorized implementation byte based oriented.

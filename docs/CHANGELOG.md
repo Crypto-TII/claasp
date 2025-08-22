@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2025-07-30
+
+### Added
+
+- Pytest isolate plugin.
+- Create baksheesh block cipher.
+- Gaston permutation with theta layer.
+- Shareddifferencepairedinputdifferentiallinearmodel.
+- Shareddifferencepairedinputdifferentialmodel.
+- Satpnbhighorderxordifferentialmodel.
+- Adding semi-deterministic truncated model.
+- Adding algebraic_polynomails function in fsr component.
+
+### Changed
+
+- Unify docker images.
+- Discard model dependency for building sat constraints of components.
+- Refactoring semideterministic model.
+- Move fsr polynomials and conversion functions to top level in generic_functions.py for reuse in fsr_component.py to avoid duplication.
+
+### Fixed
+
+- Borken dockerfile fixed.
+- Adapt pytest to the new hex value representation.
+- Add 0x to the solution values.
+- Output parsing for cp.
+- Raise exception according to s5632.
+- Code generator module.
+- Fix skinny cipher for all configurations.
+- Update dockerfile for the new mathsat.
+- Skinny block cipher.
+- 6 reliability issues by sonarcloud.
+
 ## [3.0.0] - 2025-03-14
 
 ### Added
@@ -275,6 +308,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything! First public release.
 
+[3.1.0]: https://github.com/Crypto-TII/claasp/compare/v3.1.0..v3.0.0
 [3.0.0]: https://github.com/Crypto-TII/claasp/compare/v3.0.0..v2.6.0
 [2.6.0]: https://github.com/Crypto-TII/claasp/compare/v2.6.0..v2.5.0
 [2.5.0]: https://github.com/Crypto-TII/claasp/compare/v2.5.0..v2.4.0

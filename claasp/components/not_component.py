@@ -541,7 +541,7 @@ class NOT(Component):
               'not_0_8_31 xor_0_6_31',
               '-not_0_8_31 -xor_0_6_31'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -626,7 +626,7 @@ class NOT(Component):
               'not_0_8_31 -xor_0_6_31',
               'xor_0_6_31 -not_0_8_31'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -707,7 +707,7 @@ class NOT(Component):
               '(assert (distinct not_0_5_62 xor_0_2_62))',
               '(assert (distinct not_0_5_63 xor_0_2_63))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -744,7 +744,7 @@ class NOT(Component):
               '(assert (= not_0_5_62 xor_0_2_62))',
               '(assert (= not_0_5_63 xor_0_2_63))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):

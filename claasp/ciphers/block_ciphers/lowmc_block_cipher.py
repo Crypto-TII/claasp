@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -23,26 +22,25 @@ from os.path import realpath
 
 from claasp.cipher import Cipher
 from claasp.ciphers.block_ciphers import lowmc_generate_matrices
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
     # See https://tches.iacr.org/index.php/TCHES/article/view/8680/8239 Table 6
     # for a complete description of the parameter sets of Picnic
     # picnic-L1-FS/UR
-    {'block_bit_size': 128, 'key_bit_size': 128, 'number_of_rounds': 20, 'number_of_sboxes': 10},
+    {"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 20, "number_of_sboxes": 10},
     # picnic-L1-full / picnic3-L1
-    {'block_bit_size': 129, 'key_bit_size': 129, 'number_of_rounds': 4, 'number_of_sboxes': 43},
+    {"block_bit_size": 129, "key_bit_size": 129, "number_of_rounds": 4, "number_of_sboxes": 43},
     # picnic3-5-L1
-    {'block_bit_size': 129, 'key_bit_size': 129, 'number_of_rounds': 5, 'number_of_sboxes': 43},
-
+    {"block_bit_size": 129, "key_bit_size": 129, "number_of_rounds": 5, "number_of_sboxes": 43},
     # picnic-L3-FS
-    {'block_bit_size': 192, 'key_bit_size': 192, 'number_of_rounds': 30, 'number_of_sboxes': 10},
-    {'block_bit_size': 192, 'key_bit_size': 192, 'number_of_rounds': 4, 'number_of_sboxes': 64},
-    {'block_bit_size': 192, 'key_bit_size': 192, 'number_of_rounds': 5, 'number_of_sboxes': 64},
+    {"block_bit_size": 192, "key_bit_size": 192, "number_of_rounds": 30, "number_of_sboxes": 10},
+    {"block_bit_size": 192, "key_bit_size": 192, "number_of_rounds": 4, "number_of_sboxes": 64},
+    {"block_bit_size": 192, "key_bit_size": 192, "number_of_rounds": 5, "number_of_sboxes": 64},
     # L5
-    {'block_bit_size': 256, 'key_bit_size': 256, 'number_of_rounds': 38, 'number_of_sboxes': 10},
-    {'block_bit_size': 255, 'key_bit_size': 255, 'number_of_rounds': 4, 'number_of_sboxes': 85},
-    {'block_bit_size': 255, 'key_bit_size': 255, 'number_of_rounds': 5, 'number_of_sboxes': 85}
+    {"block_bit_size": 256, "key_bit_size": 256, "number_of_rounds": 38, "number_of_sboxes": 10},
+    {"block_bit_size": 255, "key_bit_size": 255, "number_of_rounds": 4, "number_of_sboxes": 85},
+    {"block_bit_size": 255, "key_bit_size": 255, "number_of_rounds": 5, "number_of_sboxes": 85},
 ]
 
 
@@ -220,23 +218,25 @@ class LowMCBlockCipher(Cipher):
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=0, number_of_sboxes=0):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
-        self.WORD_SIZE = self.block_bit_size // 2
+        self.word_size = self.block_bit_size // 2
         self.sbox = [0x0, 0x7, 0x6, 0x5, 0x4, 0x1, 0x3, 0x2]
         self.matrices_for_linear_layer = []
-        self.ROUND_CONSTANTS = []
+        self.round_constants = []
         # Round key derivation matrices
-        self.KMATRICES = []
+        self.kmatrices = []
 
-        super().__init__(family_name="lowmc",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
-                         cipher_output_bit_size=self.block_bit_size)
+        super().__init__(
+            family_name="lowmc",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
+            cipher_output_bit_size=self.block_bit_size,
+        )
 
         number_of_rounds = self.define_number_of_rounds(number_of_rounds)
-        self.N_SBOX = self.define_number_of_sboxes(number_of_rounds, number_of_sboxes)
+        self.n_sbox = self.define_number_of_sboxes(number_of_rounds, number_of_sboxes)
 
-        self.constants = f'lowmc_constants_p{block_bit_size}_k{key_bit_size}_r{number_of_rounds}.dat'
+        self.constants = f"lowmc_constants_p{block_bit_size}_k{key_bit_size}_r{number_of_rounds}.dat"
 
         # Only generate constant data if needed
         if not exists(dirname(realpath(__file__)) + "/" + self.constants):
@@ -265,36 +265,36 @@ class LowMCBlockCipher(Cipher):
 
     def add_output_component(self, number_of_rounds, plaintext_id, r, round_key):
         if r == number_of_rounds - 1:
-            self.add_cipher_output_component([round_key],
-                                             [list(range(self.block_bit_size))],
-                                             self.block_bit_size)
+            self.add_cipher_output_component([round_key], [list(range(self.block_bit_size))], self.block_bit_size)
         else:
-            plaintext_id = self.add_round_output_component([round_key],
-                                                           [list(range(self.block_bit_size))],
-                                                           self.block_bit_size).id
+            plaintext_id = self.add_round_output_component(
+                [round_key], [list(range(self.block_bit_size))], self.block_bit_size
+            ).id
             self.add_round()
 
         return plaintext_id
 
-    def add_round_constant(self, plaintext_id, round):
-        constant_id = self.add_constant_component(self.block_bit_size, self.ROUND_CONSTANTS[round]).id
+    def add_round_constant(self, plaintext_id, round_number):
+        constant_id = self.add_constant_component(self.block_bit_size, self.round_constants[round_number]).id
 
-        return self.add_XOR_component([plaintext_id, constant_id],
-                                      [list(range(self.block_bit_size))] * 2,
-                                      self.block_bit_size).id
+        return self.add_XOR_component(
+            [plaintext_id, constant_id], [list(range(self.block_bit_size))] * 2, self.block_bit_size
+        ).id
 
     def add_round_key(self, plaintext_id, rk_id):
-        return self.add_XOR_component([plaintext_id, rk_id],
-                                      [list(range(self.block_bit_size))] * 2,
-                                      self.block_bit_size).id
+        return self.add_XOR_component(
+            [plaintext_id, rk_id], [list(range(self.block_bit_size))] * 2, self.block_bit_size
+        ).id
 
     def define_number_of_rounds(self, number_of_rounds):
         if number_of_rounds == 0:
             custom_number_of_rounds = None
             for parameters in PARAMETERS_CONFIGURATION_LIST:
-                if parameters['block_bit_size'] == self.block_bit_size \
-                        and parameters['key_bit_size'] == self.key_bit_size:
-                    custom_number_of_rounds = parameters['number_of_rounds']
+                if (
+                    parameters["block_bit_size"] == self.block_bit_size
+                    and parameters["key_bit_size"] == self.key_bit_size
+                ):
+                    custom_number_of_rounds = parameters["number_of_rounds"]
                     break
             if custom_number_of_rounds is None:
                 raise ValueError("No available number of rounds for the given parameters.")
@@ -308,10 +308,12 @@ class LowMCBlockCipher(Cipher):
             number_of_sboxes = None
 
             for parameters in PARAMETERS_CONFIGURATION_LIST:
-                if parameters['block_bit_size'] == self.block_bit_size \
-                        and parameters['key_bit_size'] == self.key_bit_size \
-                        and parameters['number_of_rounds'] == number_of_rounds:
-                    number_of_sboxes = parameters['number_of_sboxes']
+                if (
+                    parameters["block_bit_size"] == self.block_bit_size
+                    and parameters["key_bit_size"] == self.key_bit_size
+                    and parameters["number_of_rounds"] == number_of_rounds
+                ):
+                    number_of_sboxes = parameters["number_of_sboxes"]
                     break
 
             if number_of_sboxes is None:
@@ -321,11 +323,13 @@ class LowMCBlockCipher(Cipher):
 
         return number_of_sboxes
 
-    def linear_layer(self, plaintext_id, round):
-        return self.add_linear_layer_component([plaintext_id],
-                                               [list(range(self.block_bit_size))],
-                                               self.block_bit_size,
-                                               self.matrices_for_linear_layer[round]).id
+    def linear_layer(self, plaintext_id, round_number):
+        return self.add_linear_layer_component(
+            [plaintext_id],
+            [list(range(self.block_bit_size))],
+            self.block_bit_size,
+            self.matrices_for_linear_layer[round_number],
+        ).id
 
     def load_constants(self, n):
         """
@@ -335,8 +339,8 @@ class LowMCBlockCipher(Cipher):
         from a .dat file generated using lowmc_generate_matrices.py
         """
 
-        with open(dirname(realpath(__file__)) + "/" + self.constants, 'r') as f:
-            data = f.read().split('\n')
+        with open(dirname(realpath(__file__)) + "/" + self.constants, "r") as f:
+            data = f.read().split("\n")
 
         # Checking file
         assert data[0] == str(self.block_bit_size), "Wrong blocksize in data file."
@@ -346,7 +350,7 @@ class LowMCBlockCipher(Cipher):
 
         # Linear layer matrices
         lines_offset = 3
-        lin_layer = data[lines_offset:(lines_offset + n * self.block_bit_size)]
+        lin_layer = data[lines_offset : (lines_offset + n * self.block_bit_size)]
         lin_layer_array = [list([int(i) for i in j]) for j in lin_layer]
 
         for r in range(n):
@@ -358,8 +362,8 @@ class LowMCBlockCipher(Cipher):
             self.matrices_for_linear_layer.append([list(i) for i in zip(*mat)])
 
         # Round constants
-        lines_offset += (n * self.block_bit_size)
-        round_consts = data[lines_offset:(lines_offset + n)]
+        lines_offset += n * self.block_bit_size
+        round_consts = data[lines_offset : (lines_offset + n)]
 
         """
         EDIT: The following is not needed since the new round constant addition
@@ -395,36 +399,36 @@ class LowMCBlockCipher(Cipher):
         round_consts_array = [int(j, 2) for j in round_consts]
 
         for line in round_consts_array:
-            self.ROUND_CONSTANTS.append(line)
+            self.round_constants.append(line)
 
         # Round key matrices
         lines_offset += n
-        round_key_mats = data[lines_offset:(lines_offset + (n + 1) * self.block_bit_size)]
+        round_key_mats = data[lines_offset : (lines_offset + (n + 1) * self.block_bit_size)]
         round_key_mats_array = [list([int(i) for i in j]) for j in round_key_mats]
 
         for r in range(n + 1):
             mat = []
             for s in range(self.block_bit_size):
                 mat.append(round_key_mats_array[(r * self.block_bit_size) + s])
-            self.KMATRICES.append([list(i) for i in zip(*mat)])
+            self.kmatrices.append([list(i) for i in zip(*mat)])
 
     def sbox_layer(self, plaintext_id):
-        sbox_output = [''] * self.N_SBOX
+        sbox_output = [""] * self.n_sbox
 
         # m computations of 3 - bit sbox
         # remaining n - 3m bits remain the same
-        for i in range(self.N_SBOX):
+        for i in range(self.n_sbox):
             sbox_output[i] = self.add_SBOX_component([plaintext_id], [list(range(3 * i, 3 * (i + 1)))], 3, self.sbox).id
 
-        return self.add_concatenate_component(sbox_output + [plaintext_id],
-                                              [list(range(3))] * self.N_SBOX +
-                                              [list(range(3 * self.N_SBOX, self.block_bit_size))],
-                                              self.block_bit_size).id
+        return self.add_concatenate_component(
+            sbox_output + [plaintext_id],
+            [list(range(3))] * self.n_sbox + [list(range(3 * self.n_sbox, self.block_bit_size))],
+            self.block_bit_size,
+        ).id
 
-    def update_key_register(self, key_id, round):
-        rk_id = self.add_linear_layer_component([key_id],
-                                                [list(range(self.key_bit_size))],
-                                                self.key_bit_size,
-                                                self.KMATRICES[round]).id
+    def update_key_register(self, key_id, round_number):
+        rk_id = self.add_linear_layer_component(
+            [key_id], [list(range(self.key_bit_size))], self.key_bit_size, self.kmatrices[round_number]
+        ).id
 
         return self.add_round_key_output_component([rk_id], [list(range(self.key_bit_size))], self.key_bit_size).id

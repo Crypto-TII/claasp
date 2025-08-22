@@ -229,7 +229,7 @@ class VariableShift(Component):
               '-var_shift_0_2_31 -key_91',
               'var_shift_0_2_31 -state_3_var_shift_0_2_31 key_91'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         input_ids = input_bit_ids[:output_bit_len]
         shift_ids = input_bit_ids[output_bit_len:]
@@ -285,7 +285,7 @@ class VariableShift(Component):
               '(assert (ite key_91 (not var_shift_0_2_30) (= var_shift_0_2_30 state_3_var_shift_0_2_30)))',
               '(assert (ite key_91 (not var_shift_0_2_31) (= var_shift_0_2_31 state_3_var_shift_0_2_31)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         input_ids = input_bit_ids[:output_bit_len]
         shift_ids = input_bit_ids[output_bit_len:]

@@ -201,7 +201,7 @@ class Rotate(Component):
         for i in range(input_len):
             cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[(i - rot_amount) % input_len]};')
             cp_constraints.append(f'constraint {output_id_link}_value[{i}] = {all_inputs_value[(i - rot_amount) % input_len]};')
-        
+
         return cp_declarations, cp_constraints
 
     def cp_xor_differential_first_step_constraints(self, model):
@@ -636,7 +636,7 @@ class Rotate(Component):
               'rot_1_1_15 -key_40',
               'key_40 -rot_1_1_15'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         rotation = self.description[1]
         input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
@@ -801,7 +801,7 @@ class Rotate(Component):
               '(assert (= rot_0_0_14 plaintext_7))',
               '(assert (= rot_0_0_15 plaintext_8))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         rotation = self.description[1]
         input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]

@@ -50,6 +50,9 @@ import itertools
 import os
 import re
 import subprocess
+import time
+
+from claasp.cipher_modules.models.sat import solvers
 
 
 # ----------------- #
@@ -65,21 +68,18 @@ def cms_add_clauses_to_solver(numerical_cnf, solver):
     """
     for clause in numerical_cnf:
         if clause.startswith('x '):
-            rhs = bool(True ^ (clause.count('-') % 2))
+            rhs = bool(1 ^ (clause.count('-') % 2))
             literals = clause.replace('-', '').split()[1:]
             solver.add_xor_clause([int(literal) for literal in literals], rhs)
         else:
             solver.add_clause([int(literal) for literal in clause.split()])
 
 
-def create_numerical_cnf(cnf):
+def create_numerical_cnf(cnf: list[str]) -> tuple[list[str], list[str]]:
     # creating dictionary (variable -> string, numeric_id -> int)
-    family_of_variables = ' '.join(cnf).replace('-', '')
-    if family_of_variables.startswith('x '):
-        family_of_variables = family_of_variables[2:]
-    family_of_variables = family_of_variables.replace(' x ', ' ')
-    variables = sorted(set(family_of_variables.split()))
-    variable2number = {variable: i + 1 for (i, variable) in enumerate(variables)}
+    variables = ' '.join(cnf).replace('-', '').replace('x ', ' ')
+    variables = sorted(set(variables.split()))
+    variable_to_number = {variable: i + 1 for i, variable in enumerate(variables)}
     # creating numerical CNF
     numerical_cnf = []
     for clause in cnf:
@@ -88,20 +88,21 @@ def create_numerical_cnf(cnf):
         if literals[0] == 'x':
             literals = literals[1:]
             numerical_literals = ['x']
-        lits_are_neg = (literal[0] == '-' for literal in literals)
-        numerical_literals.extend(tuple(f'{"-" * lit_is_neg}{variable2number[literal[lit_is_neg:]]}'
-                                  for lit_is_neg, literal in zip(lits_are_neg, literals)))
-        numerical_clause = ' '.join(numerical_literals)
-        numerical_cnf.append(numerical_clause)
+        signs = (literal[0] == '-' for literal in literals)
+        numerical_literals.extend(
+            [f'{"-" * sign}{variable_to_number[literal[sign:]]}' for sign, literal in zip(signs, literals)]
+        )
+        numerical_cnf.append(' '.join(numerical_literals))
 
-    return variable2number, numerical_cnf
+    return variables, numerical_cnf
 
 
-def numerical_cnf_to_dimacs(number_of_variables, numerical_cnf):
-    dimacs = f'p cnf {number_of_variables} {len(numerical_cnf)}\n'
-    dimacs_clauses = tuple(f'{numerical_clause} 0\n' for numerical_clause in numerical_cnf)
+def numerical_cnf_to_dimacs(variables: list[str], numerical_cnf: list[str]) -> str:
+    dimacs = [f'p cnf {len(variables)} {len(numerical_cnf)}']
+    dimacs.extend(f'{numerical_clause} 0' for numerical_clause in numerical_cnf)
+    dimacs = "\n".join(dimacs)
 
-    return dimacs + ''.join(dimacs_clauses)
+    return dimacs
 
 
 def cnf_n_window_heuristic_on_w_vars(hw_bit_ids):
@@ -767,7 +768,7 @@ def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_stri
             if line.startswith('v'):
                 values.extend(line.split()[1:])
         values = values[:-1]
-    if solver_name == 'kissat':
+    if solver_name == solvers.KISSAT_EXT:
         data_keywords = solver_specs['keywords']['time']
         lines = solver_output
         data_line = [line for line in lines if data_keywords in line][0]
@@ -776,20 +777,20 @@ def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_stri
         while data_line[seconds_str_index] != " ":
             output_str += data_line[seconds_str_index]
             seconds_str_index -= 1
-        time = float(output_str[::-1])
+        solver_time = float(output_str[::-1])
     else:
-        time = _get_data(solver_specs['keywords']['time'], solver_output)
-    memory = float('inf')
+        solver_time = _get_data(solver_specs['keywords']['time'], solver_output)
+    solver_memory = float('inf')
     memory_keywords = solver_specs['keywords']['memory']
     if memory_keywords:
-        if not (solver_name == 'glucose-syrup' and status != 'SATISFIABLE'):
-            memory = _get_data(memory_keywords, solver_output)
-    if solver_name == 'kissat':
-        memory = memory / 10**6
-    if solver_name == 'cryptominisat':
-        memory = memory / 10**3
+        if not (solver_name == solvers.GLUCOSE_SYRUP_EXT and status != 'SATISFIABLE'):
+            solver_memory = _get_data(memory_keywords, solver_output)
+    if solver_name == solvers.KISSAT_EXT:
+        solver_memory = solver_memory / 10**6
+    if solver_name == solvers.CRYPTOMINISAT_EXT:
+        solver_memory = solver_memory / 10**3
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_file_name):
@@ -801,8 +802,8 @@ def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_fil
     command.append(output_file_name)
     solver_process = subprocess.run(command, capture_output=True, text=True)
     solver_output = solver_process.stdout.splitlines()
-    time = _get_data(solver_specs['keywords']['time'], solver_output)
-    memory = _get_data(solver_specs['keywords']['memory'], solver_output)
+    solver_time = _get_data(solver_specs['keywords']['time'], solver_output)
+    solver_memory = _get_data(solver_specs['keywords']['memory'], solver_output)
     status = solver_output[-1]
     values = []
     if status == 'SATISFIABLE':
@@ -811,22 +812,21 @@ def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_fil
     os.remove(input_file_name)
     os.remove(output_file_name)
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
     """Call the Parkissat solver specified in `solver_specs`, using input and output files."""
     with open(input_file_name, 'wt') as input_file:
         input_file.write(dimacs_input)
-    import time
     command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options'] + options
     command.append(input_file_name)
     start = time.time()
     solver_process = subprocess.run(command, capture_output=True, text=True)
     end = time.time()
     solver_output = solver_process.stdout.splitlines()
-    time = end - start
-    memory = 0
+    solver_time = end - start
+    solver_memory = 0
     status = solver_output[0].split()[1]
     values = ""
     if status == 'SATISFIABLE':
@@ -838,7 +838,7 @@ def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
             values.extend(substrings)
     os.remove(input_file_name)
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def run_yices(solver_specs, options, dimacs_input, input_file_name):
@@ -850,15 +850,15 @@ def run_yices(solver_specs, options, dimacs_input, input_file_name):
     solver_process = subprocess.run(command, capture_output=True, text=True)
     solver_stats = solver_process.stderr.splitlines()
     solver_output = solver_process.stdout.splitlines()
-    time = _get_data(solver_specs['keywords']['time'], solver_stats)
-    memory = _get_data(solver_specs['keywords']['memory'], solver_stats)
+    solver_time = _get_data(solver_specs['keywords']['time'], solver_stats)
+    solver_memory = _get_data(solver_specs['keywords']['memory'], solver_stats)
     status = 'SATISFIABLE' if solver_output[0] == 'sat' else 'UNSATISFIABLE'
     values = []
     if status == 'SATISFIABLE':
         values = solver_output[1].split()[:-1]
     os.remove(input_file_name)
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def _generate_component_model_types(speck_cipher):

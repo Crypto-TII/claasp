@@ -26,7 +26,6 @@ CP_SOLVERS_INTERNAL = [{'solver_brand_name': 'Choco', 'solver_name': 'choco'},
                        {'solver_brand_name': 'COIN-BC', 'solver_name': 'coin-bc'},
                        {'solver_brand_name': 'IBM ILOG CPLEX', 'solver_name': 'cplex'},
                        {'solver_brand_name': 'MiniZinc findMUS', 'solver_name': 'findmus'},
-                       {'solver_brand_name': 'Gecode', 'solver_name': 'gecode'},
                        {'solver_brand_name': 'MiniZinc Globalizer', 'solver_name': 'globalizer'},
                        {'solver_brand_name': 'Gurobi Optimizer', 'solver_name': 'gurobi'},
                        {'solver_brand_name': 'SCIP', 'solver_name': 'scip'},
@@ -47,20 +46,6 @@ CP_SOLVERS_EXTERNAL = [
                 'format': ['executable', 'options', 'solver', 'input_file', 'output_file'],
             },
         },
-    },
-    {
-        'solver_brand_name': 'Gecode',
-        'solver_name': 'gecode', # keyword to call the solver  
-        'keywords': {
-            'command': {
-                'executable': ['minizinc'],
-                'options': ['--solver-statistics'],
-                'input_file': [],
-                'output_file': [],
-                'solver': ['--solver', 'Gecode'],
-                'format': ['executable', 'options', 'solver', 'input_file', 'output_file'],
-            },
-        },    
     },
     {
         'solver_brand_name': 'OR Tools',

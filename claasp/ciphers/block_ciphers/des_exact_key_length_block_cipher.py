@@ -1,26 +1,25 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
-PARAMETERS_CONFIGURATION_LIST = [{'number_of_sboxes': 8, 'number_of_rounds': 16}]
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_sboxes": 8, "number_of_rounds": 16}]
 
 
 class DESExactKeyLengthBlockCipher(Cipher):
@@ -53,21 +52,24 @@ class DESExactKeyLengthBlockCipher(Cipher):
         if number_of_rounds > 16:
             raise ValueError("number_of_rounds incorrect (it should be less or equal than 16).")
 
-        self.CIPHER_BLOCK_SIZE = number_of_sboxes * 4 * 2
-        self.KEY_BLOCK_SIZE = number_of_sboxes * 7
-        self.HALF_ROUND_KEY_SIZE = int(number_of_sboxes / 2) * 7
-        self.NROUNDS = number_of_rounds
-        self.SBOX_BIT_SIZE = 6
-        self.NUM_SBOXES = number_of_sboxes
+        self.cipher_block_size = number_of_sboxes * 4 * 2
+        self.key_block_size = number_of_sboxes * 7
+        self.half_round_key_size = int(number_of_sboxes / 2) * 7
+        self.nrounds = number_of_rounds
+        self.sbox_bit_size = 6
+        self.num_sboxes = number_of_sboxes
 
-        super().__init__(family_name="des_exact_key_length_block_cipher",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.KEY_BLOCK_SIZE, self.CIPHER_BLOCK_SIZE],
-                         cipher_output_bit_size=self.CIPHER_BLOCK_SIZE)
+        super().__init__(
+            family_name="des_exact_key_length_block_cipher",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.key_block_size, self.cipher_block_size],
+            cipher_output_bit_size=self.cipher_block_size,
+        )
 
         # As many as number_of_sboxes
-        self.SBOX = {
+        # fmt: off
+        self.sbox = {
             1: [
                 0xE, 0x0, 0x4, 0xF, 0xD, 0x7, 0x1, 0x4,
                 0x2, 0xE, 0xF, 0x2, 0xB, 0xD, 0x8, 0x1,
@@ -151,7 +153,7 @@ class DESExactKeyLengthBlockCipher(Cipher):
         }
 
         # In function of number_of_sboxes
-        self.INITIAL_PERMUTATION = {
+        self.initial_permutation = {
             2: [
                 9, 1, 11, 3,
                 13, 5, 15, 7,
@@ -179,7 +181,7 @@ class DESExactKeyLengthBlockCipher(Cipher):
         }
 
         # In function of number_of_sboxes
-        self.ROUND_PERMUTATION = {
+        self.round_permutation = {
             2: [
                 1, 5, 0, 7,
                 2, 3, 6, 4,
@@ -199,7 +201,7 @@ class DESExactKeyLengthBlockCipher(Cipher):
         }
 
         # In function of number_of_sboxes
-        self.KEY_PERMUTATION = {
+        self.key_permutation = {
             2: [
                 7, 0, 8,
                 1, 9, 2, 10,
@@ -227,7 +229,7 @@ class DESExactKeyLengthBlockCipher(Cipher):
         }
 
         # In function of number_of_sboxes
-        self.EXPANSION_PERMUTATION = {
+        self.expansion_permutation = {
             2: [
                 7, 0, 8,
                 1, 9, 2, 10,
@@ -255,7 +257,7 @@ class DESExactKeyLengthBlockCipher(Cipher):
         }
 
         # In function of number_of_sboxes
-        self.KEY_SUBSET = {
+        self.key_subset = {
             2: [
                 0, 4, 2,
                 3, 6, 1,
@@ -283,7 +285,7 @@ class DESExactKeyLengthBlockCipher(Cipher):
         }
 
         # In function of number_of_sboxes
-        self.FINAL_PERMUTATION = {
+        self.final_permutation = {
             2: [
                 9, 1, 11, 3,
                 13, 5, 15, 7,
@@ -309,20 +311,22 @@ class DESExactKeyLengthBlockCipher(Cipher):
                 60, 52, 44, 36, 28, 20, 12, 4, 62, 54, 46, 38, 30, 22, 14, 6,
             ],
         }
+        # fmt: on
 
         # Rounds definition :
         # Round 0 different from others since it starts with FirstAddRoundKey
         self.add_round()
 
-        state = self.add_permutation_component([INPUT_PLAINTEXT],
-                                               [self.INITIAL_PERMUTATION[number_of_sboxes]],
-                                               self.CIPHER_BLOCK_SIZE,
-                                               list(range(self.CIPHER_BLOCK_SIZE)))
+        state = self.add_permutation_component(
+            [INPUT_PLAINTEXT],
+            [self.initial_permutation[number_of_sboxes]],
+            self.cipher_block_size,
+            list(range(self.cipher_block_size)),
+        )
 
-        key_state = self.add_permutation_component([INPUT_KEY],
-                                                   [list(range(number_of_sboxes * 7))],
-                                                   number_of_sboxes * 7,
-                                                   list(range(number_of_sboxes * 7)))
+        key_state = self.add_permutation_component(
+            [INPUT_KEY], [list(range(number_of_sboxes * 7))], number_of_sboxes * 7, list(range(number_of_sboxes * 7))
+        )
 
         for round_number in range(number_of_rounds):
             # Key Schedule
@@ -330,94 +334,107 @@ class DESExactKeyLengthBlockCipher(Cipher):
             if round_number == 0:
                 left_key = self.add_permutation_component(
                     [key_state.id],
-                    [self.KEY_PERMUTATION[number_of_sboxes][:self.HALF_ROUND_KEY_SIZE]],
-                    self.HALF_ROUND_KEY_SIZE,
-                    list(range(self.HALF_ROUND_KEY_SIZE)))
+                    [self.key_permutation[number_of_sboxes][: self.half_round_key_size]],
+                    self.half_round_key_size,
+                    list(range(self.half_round_key_size)),
+                )
                 right_key = self.add_permutation_component(
                     [key_state.id],
-                    [self.KEY_PERMUTATION[number_of_sboxes][self.HALF_ROUND_KEY_SIZE:]],
-                    self.HALF_ROUND_KEY_SIZE,
-                    list(range(self.HALF_ROUND_KEY_SIZE)))
+                    [self.key_permutation[number_of_sboxes][self.half_round_key_size :]],
+                    self.half_round_key_size,
+                    list(range(self.half_round_key_size)),
+                )
             else:
                 left_key = left_round_key
                 right_key = right_round_key
 
             if round_number in (0, 1, 8, 15):
-                left_round_key = self.add_rotate_component([left_key.id],
-                                                           [list(range(self.HALF_ROUND_KEY_SIZE))],
-                                                           self.HALF_ROUND_KEY_SIZE,
-                                                           -1)
-                right_round_key = self.add_rotate_component([right_key.id],
-                                                            [list(range(self.HALF_ROUND_KEY_SIZE))],
-                                                            self.HALF_ROUND_KEY_SIZE,
-                                                            -1)
+                left_round_key = self.add_rotate_component(
+                    [left_key.id], [list(range(self.half_round_key_size))], self.half_round_key_size, -1
+                )
+                right_round_key = self.add_rotate_component(
+                    [right_key.id], [list(range(self.half_round_key_size))], self.half_round_key_size, -1
+                )
             else:
-                left_round_key = self.add_rotate_component([left_key.id],
-                                                           [list(range(self.HALF_ROUND_KEY_SIZE))],
-                                                           self.HALF_ROUND_KEY_SIZE,
-                                                           -2)
-                right_round_key = self.add_rotate_component([right_key.id],
-                                                            [list(range(self.HALF_ROUND_KEY_SIZE))],
-                                                            self.HALF_ROUND_KEY_SIZE,
-                                                            -2)
+                left_round_key = self.add_rotate_component(
+                    [left_key.id], [list(range(self.half_round_key_size))], self.half_round_key_size, -2
+                )
+                right_round_key = self.add_rotate_component(
+                    [right_key.id], [list(range(self.half_round_key_size))], self.half_round_key_size, -2
+                )
 
             # KeyOutput
             round_key = self.add_permutation_component(
                 [left_round_key.id, right_round_key.id],
-                [self.KEY_SUBSET[number_of_sboxes][:number_of_sboxes * 3],
-                 [self.KEY_SUBSET[number_of_sboxes][i] - self.HALF_ROUND_KEY_SIZE for i in
-                  range(number_of_sboxes * 3, number_of_sboxes * 6)]],
+                [
+                    self.key_subset[number_of_sboxes][: number_of_sboxes * 3],
+                    [
+                        self.key_subset[number_of_sboxes][i] - self.half_round_key_size
+                        for i in range(number_of_sboxes * 3, number_of_sboxes * 6)
+                    ],
+                ],
                 number_of_sboxes * 6,
-                list(range(number_of_sboxes * 6)))
+                list(range(number_of_sboxes * 6)),
+            )
 
             # AddRoundKey to Expanded State
             keyed_state = self.add_XOR_component(
                 [state.id, round_key.id],
-                [[self.EXPANSION_PERMUTATION[number_of_sboxes][i] + number_of_sboxes * 4 for i in
-                  range(number_of_sboxes * 6)], list(range(number_of_sboxes * 6))],
-                number_of_sboxes * 6)
+                [
+                    [
+                        self.expansion_permutation[number_of_sboxes][i] + number_of_sboxes * 4
+                        for i in range(number_of_sboxes * 6)
+                    ],
+                    list(range(number_of_sboxes * 6)),
+                ],
+                number_of_sboxes * 6,
+            )
 
             # Sbox
             sbox_state = []
             for i in range(number_of_sboxes):
-                sbox_output = self.add_SBOX_component([keyed_state.id],
-                                                      [list(range(6 * i, 6 * i + 6))],
-                                                      4,
-                                                      self.SBOX[i + 1])
+                sbox_output = self.add_SBOX_component(
+                    [keyed_state.id], [list(range(6 * i, 6 * i + 6))], 4, self.sbox[i + 1]
+                )
 
                 sbox_state.append(sbox_output)
 
             # Sbox Permutation
-            right_state_to_xor = self.add_permutation_component([sbox_state[i].id for i in range(number_of_sboxes)],
-                                                                [list(range(4)) for _ in range(number_of_sboxes)],
-                                                                number_of_sboxes * 4,
-                                                                self.ROUND_PERMUTATION[number_of_sboxes])
+            right_state_to_xor = self.add_permutation_component(
+                [sbox_state[i].id for i in range(number_of_sboxes)],
+                [list(range(4)) for _ in range(number_of_sboxes)],
+                number_of_sboxes * 4,
+                self.round_permutation[number_of_sboxes],
+            )
 
             # XOR with Left Half
-            right_state = self.add_XOR_component([state.id, right_state_to_xor.id],
-                                                 [list(range(number_of_sboxes * 4)), list(range(number_of_sboxes * 4))],
-                                                 number_of_sboxes * 4)
+            right_state = self.add_XOR_component(
+                [state.id, right_state_to_xor.id],
+                [list(range(number_of_sboxes * 4)), list(range(number_of_sboxes * 4))],
+                number_of_sboxes * 4,
+            )
 
             # Round Output
             if round_number == number_of_rounds - 1:
                 output = self.add_permutation_component(
                     [right_state.id, state.id],
                     [list(range(number_of_sboxes * 4)), list(range(number_of_sboxes * 4, number_of_sboxes * 8))],
-                    self.CIPHER_BLOCK_SIZE,
-                    self.FINAL_PERMUTATION[number_of_sboxes])
-                self.add_cipher_output_component([output.id],
-                                                 [list(range(self.CIPHER_BLOCK_SIZE))],
-                                                 self.CIPHER_BLOCK_SIZE)
+                    self.cipher_block_size,
+                    self.final_permutation[number_of_sboxes],
+                )
+                self.add_cipher_output_component(
+                    [output.id], [list(range(self.cipher_block_size))], self.cipher_block_size
+                )
                 state = output
             else:
                 output = self.add_permutation_component(
                     [state.id, right_state.id],
                     [list(range(number_of_sboxes * 4, number_of_sboxes * 8)), list(range(number_of_sboxes * 4))],
-                    self.CIPHER_BLOCK_SIZE,
-                    list(range(self.CIPHER_BLOCK_SIZE)))
+                    self.cipher_block_size,
+                    list(range(self.cipher_block_size)),
+                )
                 state = output
-                self.add_intermediate_output_component([state.id],
-                                                       [list(range(self.CIPHER_BLOCK_SIZE))],
-                                                       self.CIPHER_BLOCK_SIZE,
-                                                       "round_output")
+                self.add_intermediate_output_component(
+                    [state.id], [list(range(self.cipher_block_size))], self.cipher_block_size, "round_output"
+                )
                 self.add_round()

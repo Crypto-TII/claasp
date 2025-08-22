@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -20,26 +19,20 @@
 from copy import deepcopy
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
 
 WORD_SIZE = 32
-AZ_ROTATE = [(31, 24),
-             (17, 17),
-             (0, 31),
-             (24, 16)]
-CI = [0xB7E15162, 0xBF715880,
-      0x38B4DA56, 0x324E7738,
-      0xBB1185EB, 0x4F7C7B57,
-      0xCFBFA1C8, 0xC2B3293D]
+AZ_ROTATE = [(31, 24), (17, 17), (0, 31), (24, 16)]
+CI = [0xB7E15162, 0xBF715880, 0x38B4DA56, 0x324E7738, 0xBB1185EB, 0x4F7C7B57, 0xCFBFA1C8, 0xC2B3293D]
 PARAMETERS_CONFIGURATION_LIST = [
-    {'number_of_blocks': 4, 'number_of_steps': 7},
-    {'number_of_blocks': 4, 'number_of_steps': 10},
-    {'number_of_blocks': 6, 'number_of_steps': 7},
-    {'number_of_blocks': 6, 'number_of_steps': 11},
-    {'number_of_blocks': 8, 'number_of_steps': 8},
-    {'number_of_blocks': 8, 'number_of_steps': 12},
+    {"number_of_blocks": 4, "number_of_steps": 7},
+    {"number_of_blocks": 4, "number_of_steps": 10},
+    {"number_of_blocks": 6, "number_of_steps": 7},
+    {"number_of_blocks": 6, "number_of_steps": 11},
+    {"number_of_blocks": 8, "number_of_steps": 8},
+    {"number_of_blocks": 8, "number_of_steps": 12},
 ]
 
 
@@ -68,11 +61,13 @@ class SparklePermutation(Cipher):
     def __init__(self, number_of_blocks=4, number_of_steps=7):
         self.state_bit_size = WORD_SIZE * number_of_blocks * 2
 
-        super().__init__(family_name="sparkle",
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.state_bit_size],
-                         cipher_output_bit_size=self.state_bit_size)
+        super().__init__(
+            family_name="sparkle",
+            cipher_type=PERMUTATION,
+            cipher_inputs=[INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.state_bit_size],
+            cipher_output_bit_size=self.state_bit_size,
+        )
 
         self.add_round()
 
@@ -139,8 +134,9 @@ class SparklePermutation(Cipher):
     def ell_function(self, state_i):
         # lx = (x <<< 16) xor (x and 0xffff)
         state_left = ComponentState(state_i.id, [[state_i.input_bit_positions[0][k] for k in range(WORD_SIZE // 2)]])
-        state_right = ComponentState(state_i.id,
-                                     [[state_i.input_bit_positions[0][k] for k in range(WORD_SIZE // 2, WORD_SIZE)]])
+        state_right = ComponentState(
+            state_i.id, [[state_i.input_bit_positions[0][k] for k in range(WORD_SIZE // 2, WORD_SIZE)]]
+        )
         inputs_id, inputs_pos = get_inputs_parameter([state_left, state_right])
         self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE // 2)
         state_left = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE // 2))])
@@ -175,15 +171,13 @@ class SparklePermutation(Cipher):
         #     }
         state_old = deepcopy(state)
         for i in range(omega - 1):
-            inputs_id, inputs_pos = get_inputs_parameter([state_old[(omega + i + 1) * 2],
-                                                          state_old[(i + 1) * 2],
-                                                          ty])
+            inputs_id, inputs_pos = get_inputs_parameter([state_old[(omega + i + 1) * 2], state_old[(i + 1) * 2], ty])
             self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
             state[i * 2] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             state[(omega + i + 1) * 2] = state_old[2 * (i + 1)]
-            inputs_id, inputs_pos = get_inputs_parameter([state_old[(omega + i + 1) * 2 + 1],
-                                                          state_old[(i + 1) * 2 + 1],
-                                                          tx])
+            inputs_id, inputs_pos = get_inputs_parameter(
+                [state_old[(omega + i + 1) * 2 + 1], state_old[(i + 1) * 2 + 1], tx]
+            )
             self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
             state[i * 2 + 1] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             state[(omega + i + 1) * 2 + 1] = state_old[2 * (i + 1) + 1]

@@ -431,8 +431,8 @@ class CipherOutput(Component):
         input_vars = [f'{component_id}_{model.input_postfix}{i}' for i in range(ninputs)]
         output_vars = [f'{component_id}_{model.output_postfix}{i}' for i in range(ninputs)]
 
-        for i in range(len(input_vars)):
-            intermediate_component_string.append(f'constraint {input_vars[i]} = {output_vars[i]};')
+        for input_var, output_var in zip(input_vars, output_vars):
+            intermediate_component_string.append(f'constraint {input_var} = {output_var};')
 
         mzn_input_array = self._create_minizinc_1d_array_from_list(input_vars)
         if self.description[0] in ["round_output", "cipher_output", "round_key_output"]:
@@ -479,7 +479,7 @@ class CipherOutput(Component):
               'cipher_output_2_12_31 -xor_2_10_15',
               'xor_2_10_15 -cipher_output_2_12_31'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -623,7 +623,7 @@ class CipherOutput(Component):
               '(assert (= cipher_output_2_12_30 xor_2_10_14))',
               '(assert (= cipher_output_2_12_31 xor_2_10_15))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):

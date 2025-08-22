@@ -1,3 +1,4 @@
+import os
 
 def filter_out_strings_containing_substring(strings_list, substring):
     return [string for string in strings_list if substring not in string]
@@ -17,3 +18,11 @@ def group_strings_by_pattern(list_of_data):
             results.append(sublist)
 
     return results
+
+def replace_existing_file_name(file_name):
+    name, extension = file_name.split('.')
+    att = 0
+    while os.path.exists(file_name):
+        file_name = f'{name}_{att}.{extension}'
+        att += 1
+    return file_name

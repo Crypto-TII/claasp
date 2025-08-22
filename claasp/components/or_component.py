@@ -199,7 +199,7 @@ class OR(MultiInputNonlinearLogicalOperator):
         model.component_and_probability[output_id_link] = 0
         p_count = 0
         for i in range(output_size):
-            new_constraint = f'constraint table('
+            new_constraint = 'constraint table('
             for j in range(num_add):
                 new_constraint = new_constraint + f'[{output_id_link}_i[{i + input_len * j}]]++'
             new_constraint = new_constraint + f'[{output_id_link}_o[{i}]]++[p_{output_id_link}[{p_count}]],and{num_add}inputs_LAT);'
@@ -278,7 +278,7 @@ class OR(MultiInputNonlinearLogicalOperator):
               'or_0_4_31 -xor_0_1_31',
               '-or_0_4_31 xor_0_3_31 xor_0_1_31'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -315,7 +315,7 @@ class OR(MultiInputNonlinearLogicalOperator):
               '(assert (= or_0_4_30 (or xor_0_3_30 xor_0_1_30)))',
               '(assert (= or_0_4_31 (or xor_0_3_31 xor_0_1_31)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):

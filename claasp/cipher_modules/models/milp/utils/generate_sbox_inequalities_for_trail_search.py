@@ -1,21 +1,19 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 
 """
 The target of this module is to generate MILP inequalities for small sboxes (4 bits) by using the convex hull method.
@@ -26,21 +24,21 @@ Generate inequalities for 8-bit sboxes is infeasible with this module.
 The module generate_inequalities_for_large_sboxes.py take care of both cases, small and large sboxes.
 Hence, this module can be removed, but we decide to keep it for comparison purpose.
 """
-import pickle, os
-from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
-from sage.rings.integer_ring import ZZ
 
+import os
+import pickle
+
+from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 
 small_sbox_file_name = "dictionary_that_contains_inequalities_for_small_sboxes.obj"
 small_sbox_xor_linear_file_name = "dictionary_that_contains_inequalities_for_small_sboxes_xor_linear.obj"
 
 inequalities_for_small_sboxes_path = os.path.join(MILP_AUXILIARY_FILE_PATH, small_sbox_file_name)
-inequalities_for_small_sboxes_xor_linear_path = os.path.join(MILP_AUXILIARY_FILE_PATH,
-                                                             small_sbox_xor_linear_file_name)
+inequalities_for_small_sboxes_xor_linear_path = os.path.join(MILP_AUXILIARY_FILE_PATH, small_sbox_xor_linear_file_name)
 
 
-def sbox_inequalities(sbox, analysis="differential", algorithm="milp", big_endian=False):
+def sbox_inequalities(sbox, analysis="differential", algorithm="milp"):
     """
     Compute inequalities for modeling the given S-box.
 
@@ -50,7 +48,6 @@ def sbox_inequalities(sbox, analysis="differential", algorithm="milp", big_endia
     - ``analysis`` -- **string** (default: `differential`); choosing between 'differential' and 'linear' cryptanalysis
     - ``algorithm`` -- **string** (default: `greedy`); choosing the algorithm for computing the S-box model, one of
       ['none', 'greedy', 'milp']
-    - ``big_endian`` -- **boolean** (default: `False`); representation of transitions vectors
 
         EXAMPLES::
 
@@ -61,7 +58,7 @@ def sbox_inequalities(sbox, analysis="differential", algorithm="milp", big_endia
         sage: sbox_ineqs[2][1]
         An inequality (0, 0, 0, 1, 1, 0, 1, 0) x - 1 >= 0
     """
-    ch = convex_hull(sbox, analysis, big_endian)
+    ch = convex_hull(sbox, analysis)
     if algorithm == "greedy":
         return cutting_off_greedy(ch)
     elif algorithm == "milp":
@@ -72,7 +69,7 @@ def sbox_inequalities(sbox, analysis="differential", algorithm="milp", big_endia
         raise ValueError("algorithm (%s) has to be one of ['greedy', 'milp']" % (algorithm,))
 
 
-def convex_hull(sbox, analysis="differential", big_endian=False):
+def convex_hull(sbox, analysis="differential"):
     """
     Compute the convex hull of the differential or linear behaviour of the given S-box.
 
@@ -80,7 +77,6 @@ def convex_hull(sbox, analysis="differential", big_endian=False):
 
     - ``sbox`` -- **SBox object**; the S-box for which the convex hull should be computed
     - ``analysis`` -- **string** (default: `differential`); choosing between differential and linear behaviour
-    - ``big_endian`` -- **boolean** (default: `False`); representation of transitions vectors
     """
     from sage.geometry.polyhedron.constructor import Polyhedron
 
@@ -100,20 +96,13 @@ def convex_hull(sbox, analysis="differential", big_endian=False):
         dict_points[value] = []
     for i in range(0, 1 << n):
         for o in range(0, 1 << m):
-            if i+o > 0 and valid_transformations_matrix[i][o] != 0:
-                dict_points[valid_transformations_matrix[i][o]].append(
-                    to_bits(n, i, big_endian) + to_bits(n, o, big_endian))
+            if i + o > 0 and valid_transformations_matrix[i][o] != 0:
+                dict_points[valid_transformations_matrix[i][o]].append(list(map(int, f"{i:0{n}b}{o:0{n}b}")))
     for value in values_in_matrix:
         if dict_points[value]:
             dict_polyhedron[value] = Polyhedron(vertices=dict_points[value])
 
     return dict_polyhedron
-
-
-def to_bits(n, x, big_endian=False):
-    if big_endian:
-        return ZZ(x).digits(base=2, padto=n)
-    return ZZ(x).digits(base=2, padto=n)[::-1]
 
 
 def cutting_off_greedy(dict_polyhedron):
@@ -133,13 +122,16 @@ def cutting_off_greedy(dict_polyhedron):
         chosen_ineqs = []
         poly_points = dict_polyhedron[proba].integral_points()
         remaining_ineqs = list(dict_polyhedron[proba].inequalities())
-        impossible = [vector(dict_polyhedron[proba].base_ring(), v)
-                      for v in VectorSpace(GF(2), dict_polyhedron[proba].ambient_dim())
-                      if v not in poly_points]
+        impossible = [
+            vector(dict_polyhedron[proba].base_ring(), v)
+            for v in VectorSpace(GF(2), dict_polyhedron[proba].ambient_dim())
+            if v not in poly_points
+        ]
         while impossible != []:
             if len(remaining_ineqs) == 0:
-                raise ValueError("no more inequalities to choose, but still "
-                                 "%d impossible points left" % len(impossible))
+                raise ValueError(
+                    "no more inequalities to choose, but still %d impossible points left" % len(impossible)
+                )
 
             # find inequality in remaining_ineqs that cuts off the most
             # impossible points and add this to the chosen_ineqs
@@ -153,10 +145,7 @@ def cutting_off_greedy(dict_polyhedron):
             remaining_ineqs.remove(chosen_ineqs[-1])
 
             # remove all cut off impossible points
-            impossible = [v
-                          for v in impossible
-                          if chosen_ineqs[-1].contains(v)
-                          ]
+            impossible = [v for v in impossible if chosen_ineqs[-1].contains(v)]
         dict_chosen_inequalities[proba] = chosen_ineqs
 
     return dict_chosen_inequalities
@@ -188,16 +177,14 @@ def cutting_off_milp(dict_polyhedron, number_of_ineqs=None):
     for proba in dict_polyhedron.keys():
         ineqs = list(dict_polyhedron[proba].inequalities())
         poly_points = dict_polyhedron[proba].integral_points()
-        impossible = [vector(dict_polyhedron[proba].base_ring(), v)
-                      for v in VectorSpace(GF(2), dict_polyhedron[proba].ambient_dim())
-                      if v not in poly_points]
+        impossible = [
+            vector(dict_polyhedron[proba].base_ring(), v)
+            for v in VectorSpace(GF(2), dict_polyhedron[proba].ambient_dim())
+            if v not in poly_points
+        ]
 
         # precompute which inequality removes which impossible point
-        precomputation = matrix(
-            [[int(not (ineq.contains(p)))
-              for p in impossible]
-             for ineq in ineqs]
-        )
+        precomputation = matrix([[int(not (ineq.contains(p))) for p in impossible] for ineq in ineqs])
         milp = MixedIntegerLinearProgram(maximization=False, solver=SOLVER_DEFAULT)
         var_ineqs = milp.new_variable(binary=True, name="ineqs")
 
@@ -206,26 +193,17 @@ def cutting_off_milp(dict_polyhedron, number_of_ineqs=None):
             milp.set_objective(sum([var_ineqs[i] for i in range(len(ineqs))]))
         # or the given number
         else:
-            milp.add_constraint(sum(
-                [var_ineqs[i]
-                 for i in range(len(ineqs))]
-            ) == number_of_ineqs)
+            milp.add_constraint(sum([var_ineqs[i] for i in range(len(ineqs))]) == number_of_ineqs)
 
         nrows, ncols = precomputation.dimensions()
         for c in range(ncols):
-            lhs = sum([var_ineqs[r]
-                       for r in range(nrows)
-                       if precomputation[r][c] == 1])
-            if (not isinstance(lhs, int)):
+            lhs = sum([var_ineqs[r] for r in range(nrows) if precomputation[r][c] == 1])
+            if not isinstance(lhs, int):
                 milp.add_constraint(lhs >= 1)
 
         milp.solve()
 
-        remaining_ineqs = [
-            ineq
-            for ineq, (var, val) in zip(ineqs, milp.get_values(var_ineqs).items())
-            if val == 1
-        ]
+        remaining_ineqs = [ineq for ineq, (var, val) in zip(ineqs, milp.get_values(var_ineqs).items()) if val == 1]
         dict_chosen_inequalities[proba] = remaining_ineqs
 
     return dict_chosen_inequalities
@@ -239,8 +217,12 @@ def get_dictionary_that_contains_inequalities_for_small_sboxes(analysis="differe
 
     - ``analysis`` - **string** (default: `differential`);
     """
-    file_path = inequalities_for_small_sboxes_path if analysis == "differential" else inequalities_for_small_sboxes_xor_linear_path
-    read_file = open(file_path, 'rb')
+    file_path = (
+        inequalities_for_small_sboxes_path
+        if analysis == "differential"
+        else inequalities_for_small_sboxes_xor_linear_path
+    )
+    read_file = open(file_path, "rb")
     dictio = pickle.load(read_file)
     read_file.close()
 
@@ -248,9 +230,13 @@ def get_dictionary_that_contains_inequalities_for_small_sboxes(analysis="differe
 
 
 def update_dictionary_that_contains_inequalities_for_small_sboxes(sbox, analysis="differential"):
-    file_path = inequalities_for_small_sboxes_path if analysis == "differential" else inequalities_for_small_sboxes_xor_linear_path
+    file_path = (
+        inequalities_for_small_sboxes_path
+        if analysis == "differential"
+        else inequalities_for_small_sboxes_xor_linear_path
+    )
     try:
-        read_file = open(file_path, 'rb')
+        read_file = open(file_path, "rb")
         dictio = pickle.load(read_file)
         read_file.close()
     except OSError:
@@ -260,13 +246,17 @@ def update_dictionary_that_contains_inequalities_for_small_sboxes(sbox, analysis
         print("Adding sbox inequalities in pre-saved dictionary")
         dict_inequalities = sbox_inequalities(sbox, analysis)
         dictio[str(sbox)] = dict_inequalities
-        write_file = open(file_path, 'wb')
+        write_file = open(file_path, "wb")
         pickle.dump(dictio, write_file)
         write_file.close()
 
 
 def delete_dictionary_that_contains_inequalities_for_small_sboxes(analysis="differential"):
-    file_path = inequalities_for_small_sboxes_path if analysis == "differential" else inequalities_for_small_sboxes_xor_linear_path
-    write_file = open(file_path, 'wb')
+    file_path = (
+        inequalities_for_small_sboxes_path
+        if analysis == "differential"
+        else inequalities_for_small_sboxes_xor_linear_path
+    )
+    write_file = open(file_path, "wb")
     pickle.dump({}, write_file)
     write_file.close()

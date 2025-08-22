@@ -1,4 +1,4 @@
-import numpy as np
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 # 
@@ -124,13 +124,13 @@ class LinearLayer(Component):
               'x -linear_layer_0_6_22 sbox_0_0_2 sbox_0_2_2 sbox_0_3_2 sbox_0_4_3 sbox_0_5_0 sbox_0_5_1 sbox_0_5_3',
               'x -linear_layer_0_6_23 sbox_0_0_0 sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_3 sbox_0_2_1 sbox_0_3_1 sbox_0_3_2 sbox_0_3_3 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_1 sbox_0_5_2 sbox_0_5_3'])
         """
-        input_bit_len, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         matrix = self.description
         constraints = []
         for i in range(output_bit_len):
             operands = [f'x -{output_bit_ids[i]}']
-            operands.extend(input_bit_ids[j] for j in range(input_bit_len) if matrix[j][i])
+            operands.extend(input_bit_id for j, input_bit_id in enumerate(input_bit_ids) if matrix[j][i])
             constraints.append(' '.join(operands))
 
         return output_bit_ids, constraints
@@ -248,15 +248,15 @@ class LinearLayer(Component):
         matrix = self.description
         cp_declarations = []
         all_inputs = []
-        
+
         for id_link, bit_positions in zip(input_id_links, input_bit_positions):
             all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         cp_constraints = []
         for i in range(output_size):
             addenda = [all_inputs[j] for j in range(len(matrix)) if matrix[j][i]]
-            operation = f' < 2) /\\ ('.join(addenda)
-            new_constraint = f'constraint if (('
-            new_constraint += operation + f'< 2)) then '
+            operation = ' < 2) /\\ ('.join(addenda)
+            new_constraint = 'constraint if (('
+            new_constraint += operation + '< 2)) then '
             operation2 = ' + '.join(addenda)
             new_constraint += f'{output_id_link}[{i}] = ({operation2}) mod 2 else {output_id_link}[{i}] = 2 endif;'
             cp_constraints.append(new_constraint)
@@ -299,7 +299,6 @@ class LinearLayer(Component):
                                      for j in range(len(bit_positions) // word_size)])
             all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
                                       for j in range(len(bit_positions) // word_size)])
-        input_len = len(all_inputs_value)
         cp_constraints = []
         for i in range(output_size):
             operation = ' == 0) /\\ ('.join(all_inputs_active[i::output_size])
@@ -308,7 +307,7 @@ class LinearLayer(Component):
             new_constraint += f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 else'\
                               f'{output_id_link}_active[{i}] = 3 /\\ {output_id_link}_value[{i}] = -2 endif;'
             cp_constraints.append(new_constraint)
-        
+
         return cp_declarations, cp_constraints
 
     def cp_xor_differential_propagation_constraints(self, model):
@@ -348,7 +347,7 @@ class LinearLayer(Component):
             for j in range(input_size):
                 if matrix[i][j] == 1:
                     new_constraint = new_constraint + f'{output_id_link}_o[{j}]+'
-            new_constraint = new_constraint[:-1] + f') mod 2;'
+            new_constraint = new_constraint[:-1] + ') mod 2;'
             cp_constraints.append(new_constraint)
 
         return cp_declarations, cp_constraints
@@ -725,12 +724,12 @@ class LinearLayer(Component):
             sage: constraints[-1]
             'linear_layer_0_6_23 -sbox_0_0_0 -sbox_0_0_1 -sbox_0_0_2 -sbox_0_0_3 -sbox_0_1_3 -sbox_0_2_1 -sbox_0_3_1 -sbox_0_3_2 -sbox_0_3_3 -sbox_0_4_1 -sbox_0_4_2 -sbox_0_4_3 -sbox_0_5_1 -sbox_0_5_2 -sbox_0_5_3'
         """
-        input_bit_len, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         matrix = self.description
         constraints = []
         for i in range(output_bit_len):
-            operands = [input_bit_ids[j] for j in range(input_bit_len) if matrix[j][i]]
+            operands = [input_bit_id for j, input_bit_id in enumerate(input_bit_ids) if matrix[j][i]]
             constraints.extend(sat_utils.cnf_xor(output_bit_ids[i], operands))
 
         return output_bit_ids, constraints
@@ -863,7 +862,7 @@ class LinearLayer(Component):
             sage: constraints[-1]
             '(assert (= linear_layer_0_6_23 (xor sbox_0_0_0 sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_3 sbox_0_2_1 sbox_0_3_1 sbox_0_3_2 sbox_0_3_3 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_1 sbox_0_5_2 sbox_0_5_3)))'
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         matrix = self.description
         constraints = []

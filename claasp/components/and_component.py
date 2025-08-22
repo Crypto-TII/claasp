@@ -214,7 +214,7 @@ class AND(MultiInputNonlinearLogicalOperator):
         model.component_and_probability[output_id_link] = 0
         probability = []
         for i in range(output_size):
-            new_constraint = f'constraint table('
+            new_constraint = 'constraint table('
             for j in range(num_add):
                 new_constraint = new_constraint + f'[{output_id_link}_i[{i + input_len * j}]]++'
             if model.float_and_lat_values:
@@ -288,7 +288,7 @@ class AND(MultiInputNonlinearLogicalOperator):
         upper_bound = model._model.get_max(x_class)
 
         for i in range(output_bit_size):
-            input_sum = sum([a[i][chunk] for chunk in range(number_of_inputs)])
+            input_sum = sum(a[i][chunk] for chunk in range(number_of_inputs))
             # if d_leq == 1 if sum(a_i) <= 0
             d_leq, c_leq = milp_utils.milp_leq(model, input_sum, 0, number_of_inputs * upper_bound)
             constraints += c_leq
@@ -330,7 +330,7 @@ class AND(MultiInputNonlinearLogicalOperator):
         return [f'  {self.id} = bit_vector_AND([{",".join(params)} ], {self.description[1]}, {self.output_bit_size})']
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} =byte_vector_AND({params})']
+        return [f'  {self.id} = byte_vector_AND({params})']
 
     def sat_constraints(self):
         """
@@ -365,7 +365,7 @@ class AND(MultiInputNonlinearLogicalOperator):
               '-and_0_8_11 key_23',
               'and_0_8_11 -xor_0_7_11 -key_23'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -402,7 +402,7 @@ class AND(MultiInputNonlinearLogicalOperator):
               '(assert (= and_0_8_10 (and xor_0_7_10 key_22)))',
               '(assert (= and_0_8_11 (and xor_0_7_11 key_23)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):

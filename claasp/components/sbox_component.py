@@ -28,8 +28,7 @@ from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.models.milp.utils.generate_undisturbed_bits_inequalities_for_sboxes import \
     update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits, \
-    get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits, \
-    delete_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits
+    get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFAULT_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.input import Input
@@ -248,6 +247,8 @@ def _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(inv_outpu
     return already_in, output_id_link_sost, undisturbed_table_bits
 
 class SBOX(Component):
+    sboxes_ddt_templates = {}
+    sboxes_lat_templates = {}
     def __init__(self, current_round_number, current_round_number_of_components,
                  input_id_links, input_bit_positions, output_bit_size, s_box_description):
         component_id = f'sbox_{current_round_number}_{current_round_number_of_components}'
@@ -338,7 +339,7 @@ class SBOX(Component):
         tested_inputs = all_fixed_inputs[:]
         inputs_to_combine = fixed_inputs_with_undisturbed_bits[:]
 
-        while (len(inputs_to_combine) != 0):
+        while len(inputs_to_combine) != 0:
             newly_combined_inputs = []
             for input_1, input_2 in combinations(inputs_to_combine, 2):
                 truncated_positions = list(map(xor, input_1, input_2))
@@ -526,7 +527,7 @@ class SBOX(Component):
                 max_number_of_sboxes = max(len(lst) for lst in list_of_component_number.values())
                 sbox_id = f"{max_number_of_sboxes*10}*r + 10*(index+1)"
             else:
-                sbox_id = f"100*r + 10*(index+1)"
+                sbox_id = "100*r + 10*(index+1)"
 
             sbox_declaration = f"predicate abstract_{output_id_link_sost}(array[int] of var int: x, array[int] of var int: y, int: r, int: index) =\n"
 
@@ -581,7 +582,7 @@ class SBOX(Component):
         table_input = '++'.join(all_inputs)
         table_output = '++'.join([f'[{output_id_link}[{i}]]' for i in range(output_size)])
 
-        already_in, output_id_link_sost, undisturbed_table_bits = _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
+        already_in, output_id_link_sost, _ = _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
             inv_output_id_link, undisturbed_bits, sbox_mant, inverse)
 
         if not already_in:
@@ -1372,7 +1373,7 @@ class SBOX(Component):
         variables = [(f"x_class[{var}]", x_class[var]) for var in input_class_vars + output_class_vars]
         constraints = []
 
-        input_sum = sum([x_class[input] for input in input_class_vars])
+        input_sum = sum(x_class[input] for input in input_class_vars)
         # if sum(x_class[input]) <= 0 (i.e. all x_class[input] == 0)
         d_leq, c_leq = milp_utils.milp_leq(model, input_sum, 0, 2 * len(input_class_vars))
         constraints += c_leq
@@ -1485,12 +1486,12 @@ class SBOX(Component):
               '-xor_0_0_4 -xor_0_0_5 -xor_0_0_6 -xor_0_0_7 sbox_0_2_2',
               '-xor_0_0_4 -xor_0_0_5 -xor_0_0_6 -xor_0_0_7 -sbox_0_2_3'])
         """
-        input_bit_len, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         sbox_outputs = self.description
         constraints = []
         for sbox_input, sbox_output in enumerate(sbox_outputs):
-            input_signs = ('-' * (sbox_input >> j & 1) for j in reversed(range(input_bit_len)))
+            input_signs = ('-' * (sbox_input >> j & 1) for j in reversed(range(self.input_bit_size)))
             current_input_bit_ids = (f'{sign}{bit_id}' for sign, bit_id in zip(input_signs, input_bit_ids))
             output_signs = ('-' * ((sbox_output >> j & 1) ^ 1) for j in reversed(range(output_bit_len)))
             current_output_bit_ids = (f'{sign}{bit_id}' for sign, bit_id in zip(output_signs, output_bit_ids))
@@ -1554,7 +1555,7 @@ class SBOX(Component):
 
         return output_ids, constraints
 
-    def sat_xor_differential_propagation_constraints(self, model):
+    def sat_xor_differential_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing S-BOX for SAT XOR DIFFERENTIAL model
 
@@ -1589,24 +1590,23 @@ class SBOX(Component):
               'xor_0_0_5 xor_0_0_6 sbox_0_2_0 sbox_0_2_2 -hw_sbox_0_2_1',
               '-hw_sbox_0_2_0'])
         """
-        input_bit_len, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         sbox_values = self.description
-        sboxes_ddt_templates = model.sboxes_ddt_templates
 
         # if optimized SAT DDT template is not initialized in instance fields, compute it
-        if f'{sbox_values}' not in sboxes_ddt_templates:
+        if f'{sbox_values}' not in self.sboxes_ddt_templates:
             ddt = SBox(sbox_values).difference_distribution_table()
 
             check_table_feasibility(ddt, 'DDT', 'SAT')
 
             get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
-            template = sat_build_table_template(ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
-            sboxes_ddt_templates[f'{sbox_values}'] = template
+            template = sat_build_table_template(ddt, get_hamming_weight_function, self.input_bit_size, output_bit_len)
+            self.sboxes_ddt_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
-        template = sboxes_ddt_templates[f'{sbox_values}']
+        template = self.sboxes_ddt_templates[f'{sbox_values}']
         constraints = []
         for clause in template:
             literals = ['-' * value[0] + bit_ids[value[1]] for value in clause]
@@ -1614,7 +1614,7 @@ class SBOX(Component):
 
         return output_bit_ids + hw_bit_ids, constraints
 
-    def sat_xor_linear_mask_propagation_constraints(self, model):
+    def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing S-BOX for SAT XOR LINEAR model
 
@@ -1656,20 +1656,19 @@ class SBOX(Component):
         output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(input_bit_len)]
         sbox_values = self.description
-        sboxes_lat_templates = model.sboxes_lat_templates
 
         # if optimized SAT LAT template is not initialized in instance fields, compute it
-        if f'{sbox_values}' not in sboxes_lat_templates:
+        if f'{sbox_values}' not in self.sboxes_lat_templates:
             lat = SBox(sbox_values).linear_approximation_table()
 
             check_table_feasibility(lat, 'LAT', 'SAT')
 
             get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1)
             template = sat_build_table_template(lat, get_hamming_weight_function, input_bit_len, output_bit_len)
-            sboxes_lat_templates[f'{sbox_values}'] = template
+            self.sboxes_lat_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
-        template = sboxes_lat_templates[f'{sbox_values}']
+        template = self.sboxes_lat_templates[f'{sbox_values}']
         constraints = []
         for clause in template:
             literals = ['-' * value[0] + bit_ids[value[1]] for value in clause]
@@ -1702,21 +1701,23 @@ class SBOX(Component):
               '(assert (=> (and xor_0_0_0 xor_0_0_1 xor_0_0_2 (not xor_0_0_3)) (and (not sbox_0_1_0) (not sbox_0_1_1) (not sbox_0_1_2) sbox_0_1_3)))',
               '(assert (=> (and xor_0_0_0 xor_0_0_1 xor_0_0_2 xor_0_0_3) (and (not sbox_0_1_0) (not sbox_0_1_1) sbox_0_1_2 (not sbox_0_1_3))))'])
         """
-        input_bit_len, input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        sbox_values = self.description
+        input_bit_ids = self._generate_input_ids()
+        _, output_bit_ids = self._generate_output_ids()
+        sbox = self.description
         constraints = []
-        for i in range(len(sbox_values)):
-            input_difference_lits = [input_bit_ids[j]
-                                     if i >> (input_bit_len - 1 - j) & 1
-                                     else smt_utils.smt_not(input_bit_ids[j])
-                                     for j in range(input_bit_len)]
-            input_difference = smt_utils.smt_and(input_difference_lits)
-            output_difference_lits = [output_bit_ids[j]
-                                      if sbox_values[i] >> (output_bit_len - 1 - j) & 1
-                                      else smt_utils.smt_not(output_bit_ids[j])
-                                      for j in range(output_bit_len)]
-            output_difference = smt_utils.smt_and(output_difference_lits)
+        for in_value, out_value in enumerate(sbox):
+            bits = map(int, f"{in_value:0{self.input_bit_size}b}")
+            input_literals = [
+                input_bit_id if bit else smt_utils.smt_not(input_bit_id)
+                for input_bit_id, bit in zip(input_bit_ids, bits)
+            ]
+            input_difference = smt_utils.smt_and(input_literals)
+            bits = map(int, f"{out_value:0{self.input_bit_size}b}")
+            output_literals = [
+                output_bit_id if bit else smt_utils.smt_not(output_bit_id)
+                for output_bit_id, bit in zip(output_bit_ids, bits)
+            ]
+            output_difference = smt_utils.smt_and(output_literals)
             implication = smt_utils.smt_implies(input_difference, output_difference)
             constraints.append(smt_utils.smt_assert(implication))
 
@@ -1751,7 +1752,7 @@ class SBOX(Component):
               '(assert (or (not hw_sbox_0_5_1)))',
               '(assert (or (not hw_sbox_0_5_0)))'])
         """
-        input_bit_len, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         sbox_values = self.description
@@ -1764,7 +1765,7 @@ class SBOX(Component):
             check_table_feasibility(ddt, 'DDT', 'SMT')
 
             get_hamming_weight_function = (lambda input_bit_len, entry: input_bit_len - int(math.log2(entry)))
-            template = smt_build_table_template(ddt, get_hamming_weight_function, input_bit_len, output_bit_len)
+            template = smt_build_table_template(ddt, get_hamming_weight_function, self.input_bit_size, output_bit_len)
             sboxes_ddt_templates[f'{sbox_values}'] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids

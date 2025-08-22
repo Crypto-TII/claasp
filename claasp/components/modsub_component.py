@@ -50,7 +50,8 @@ class MODSUB(Modular):
 
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: from claasp.cipher import Cipher
-            sage: cipher = Cipher("cipher_name", "permutation", ["input"], [8], 8)
+            sage: from claasp.name_mappings import PERMUTATION
+            sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [8], 8)
             sage: cipher.add_round()
             sage: modsub_0_0 = cipher.add_MODSUB_component(["input","input"], [[0,1,2,3],[4,5,6,7]], 4)
             sage: modsub_component = cipher.get_component_from_id('modsub_0_0')
@@ -254,7 +255,7 @@ class MODSUB(Modular):
               'modsub_0_7_31 modadd_0_4_31 -temp_input_plaintext_63',
               '-modsub_0_7_31 -modadd_0_4_31 -temp_input_plaintext_63'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         temp_carry_bit_ids = [f'temp_carry_{input_bit_ids[output_bit_len + i]}' for i in range(output_bit_len - 1)]
         temp_input_bit_ids = [f'temp_input_{input_bit_ids[output_bit_len + i]}' for i in range(output_bit_len)]
@@ -326,7 +327,7 @@ class MODSUB(Modular):
               '(assert (= modsub_0_7_30 (xor modadd_0_4_30 temp_input_plaintext_62 carry_modsub_0_7_30)))',
               '(assert (= modsub_0_7_31 (xor modadd_0_4_31 temp_input_plaintext_63)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         temp_carry_bit_ids = [f'temp_carry_{input_bit_ids[output_bit_len + i]}' for i in range(output_bit_len - 1)]
         temp_input_bit_ids = [f'temp_input_{input_bit_ids[output_bit_len + i]}' for i in range(output_bit_len)]

@@ -22,11 +22,38 @@ from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 from claasp.input import Input
 from claasp.component import Component
-from claasp.cipher_modules.generic_functions import _get_polynomial_from_binary_polynomial_index_list
-from claasp.cipher_modules.generic_functions import   _get_polynomial_from_word_polynomial_index_list
 from claasp.cipher_modules.generic_functions import   _bits_to_words_array
 
 
+
+def _get_polynomial_from_binary_polynomial_index_list(polynomial_index_list, R):
+    if polynomial_index_list == []:
+        return R(1)
+    p = 0
+    x = R.gens()
+    for _ in polynomial_index_list:
+        m = 1
+        for i in _:
+            m = m * x[i]
+        p += m
+    return p
+
+def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
+    if polynomial_index_list == []:
+        return R(1)
+    p = 0
+    x = R.gens()
+    y = R.construction()[1].gen()
+
+    for _ in polynomial_index_list:
+        m = 0  # presently it is for field of characteristic 2 only
+        cc = f"{_[0]:b}"
+        for i in range(len(cc)):
+            if cc[i] == '1':  m = m + pow(y, len(cc) - 1 - i)
+        for i in _[1]:
+            m = m * x[i]
+        p += m
+    return p
 
 def _words_array_to_bits(word_array, word_gf):
     bits_inside_word = word_gf.degree()
@@ -108,12 +135,10 @@ class FSR(Component):
             sage: S[480]
             fsr_0_714_y480 + fsr_0_714_x352 + fsr_0_714_x64 + fsr_0_714_x0
         """
-
         bits_inside_word = self.description[1]
         if bits_inside_word == 1:
             return self._algebraic_polynomials_binary(model)
-        else:
-            return self._algebraic_polynomials_word(model)
+        return self._algebraic_polynomials_word(model)
 
     def _algebraic_polynomials_binary(self, model):
         noutputs = self.output_bit_size

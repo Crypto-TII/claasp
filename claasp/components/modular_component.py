@@ -246,8 +246,8 @@ class Modular(Component):
         cp_declarations.append(f'array[0..{input_len}] of var 0..2: carry_{output_id_link};')
         cp_constraints.append(f'constraint carry_{output_id_link}[0] = 0;')
         for i in range(input_len):
-            new_constraint = f'constraint if '
-            operation = f' == 0 /\\ '.join(all_inputs_active[i::num_add])
+            new_constraint = 'constraint if '
+            operation = ' == 0 /\\ '.join(all_inputs_active[i::self.description[1]])
             new_constraint += operation
             new_constraint += f' == 0 /\\ carry_{output_id_link}[{i}] == 0 then {output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 /\\ carry_{output_id_link}[{i + 1}] = 0 else ' \
                               f'{output_id_link}_active[{i}] = 3 /\\ {output_id_link}_value[{i}] = -2 /\\ carry_{output_id_link}[{i + 1}] = 3 endif;'
@@ -332,7 +332,6 @@ class Modular(Component):
             sage: constraints[6]
             'constraint pre_modadd_1_9_1[0] = sbox_1_0[0];'
         """
-        output_size = int(self.output_bit_size)
         input_id_links = self.input_id_links
         output_id_link = self.id
         input_bit_positions = self.input_bit_positions
@@ -931,7 +930,7 @@ class Modular(Component):
         result = variables, constraints
         return result
 
-    def sat_xor_differential_propagation_constraints(self, model):
+    def sat_xor_differential_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing MODULAR ADDITION/SUBTRACTION for SAT XOR DIFFERENTIAL model
 
@@ -983,7 +982,7 @@ class Modular(Component):
                 new_constraints = generate_window_size_clauses(first_addend, second_addend, result, aux_var)
                 constraints_.extend(new_constraints)
 
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         dummy_bit_ids = [f'dummy_{output_bit_ids[i]}' for i in range(output_bit_len - 1)]
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
@@ -1286,7 +1285,7 @@ class Modular(Component):
               '(assert (or hw_modadd_0_1_30 (not (xor shift_0_0_30 key_30 modadd_0_1_30 key_31))))',
               '(assert (not (xor modadd_0_1_31 shift_0_0_31 key_31)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
         constraints = []

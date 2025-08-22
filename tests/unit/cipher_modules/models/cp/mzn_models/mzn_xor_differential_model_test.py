@@ -1,3 +1,5 @@
+import os
+
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import (
@@ -50,14 +52,25 @@ def test_find_lowest_weight_xor_differential_trail():
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r5'
     assert trail['total_weight'] == '9.0'
-    assert eval('0x' + trail['components_values']['cipher_output_4_12']['value']) >= 0
+    assert eval(trail['components_values']['cipher_output_4_12']['value']) >= 0
     assert trail['components_values']['cipher_output_4_12']['weight'] == 0
+
+    file = open('speck_p32_k64_o32_r5_Mzn_xor_differential_one_solution_Chuffed.mzn', 'w')
+    file.close()
+    trail = mzn.find_lowest_weight_xor_differential_trail(solver_name='Chuffed', solve_external=True)
+
+    assert str(trail['cipher']) == 'speck_p32_k64_o32_r5'
+    assert trail['total_weight'] == '9.0'
+    assert eval(trail['components_values']['cipher_output_4_12']['value']) >= 0
+    assert trail['components_values']['cipher_output_4_12']['weight'] == 0
+
+    os.remove('speck_p32_k64_o32_r5_Mzn_xor_differential_one_solution_Chuffed.mzn')
 
     trail = mzn.find_lowest_weight_xor_differential_trail(solver_name='chuffed', solve_external=False)
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r5'
     assert trail['total_weight'] == '9.0'
-    assert eval('0x' + trail['components_values']['cipher_output_4_12']['value']) >= 0
+    assert eval(trail['components_values']['cipher_output_4_12']['value']) >= 0
     assert trail['components_values']['cipher_output_4_12']['weight'] == 0
 
 
@@ -70,7 +83,7 @@ def test_find_one_xor_differential_trail():
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r2'
     assert trail['model_type'] == 'xor_differential_one_solution'
-    assert eval('0x' + trail['components_values']['cipher_output_1_12']['value']) >= 0
+    assert eval(trail['components_values']['cipher_output_1_12']['value']) >= 0
     assert trail['components_values']['cipher_output_1_12']['weight'] == 0
     assert eval(trail['total_weight']) >= 0
 
@@ -78,7 +91,7 @@ def test_find_one_xor_differential_trail():
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r2'
     assert trail['model_type'] == 'xor_differential_one_solution'
-    assert eval('0x' + trail['components_values']['cipher_output_1_12']['value']) >= 0
+    assert eval(trail['components_values']['cipher_output_1_12']['value']) >= 0
     assert trail['components_values']['cipher_output_1_12']['weight'] == 0
     assert eval(trail['total_weight']) >= 0
 
@@ -92,11 +105,11 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r5'
     assert trail['model_type'] == 'xor_differential_one_solution'
-    assert eval('0x' + trail['components_values']['intermediate_output_0_5']['value']) >= 0
+    assert eval(trail['components_values']['intermediate_output_0_5']['value']) >= 0
     assert trail['components_values']['intermediate_output_0_5']['weight'] == 0
-    assert eval('0x' +  trail['components_values']['intermediate_output_1_11']['value']) >= 0
+    assert eval(trail['components_values']['intermediate_output_1_11']['value']) >= 0
     assert trail['components_values']['intermediate_output_1_11']['weight'] == 0
-    assert eval('0x' + trail['components_values']['xor_3_8']['value']) >= 0
+    assert eval(trail['components_values']['xor_3_8']['value']) >= 0
     assert trail['components_values']['xor_3_8']['weight'] == 0
     assert trail['total_weight'] == '9.0'
 
@@ -104,10 +117,10 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
 
     assert str(trail['cipher']) == 'speck_p32_k64_o32_r5'
     assert trail['model_type'] == 'xor_differential_one_solution'
-    assert eval('0x' + trail['components_values']['intermediate_output_0_5']['value']) >= 0
+    assert eval(trail['components_values']['intermediate_output_0_5']['value']) >= 0
     assert trail['components_values']['intermediate_output_0_5']['weight'] == 0
-    assert eval('0x' +  trail['components_values']['intermediate_output_1_11']['value']) >= 0
+    assert eval(trail['components_values']['intermediate_output_1_11']['value']) >= 0
     assert trail['components_values']['intermediate_output_1_11']['weight'] == 0
-    assert eval('0x' + trail['components_values']['xor_3_8']['value']) >= 0
+    assert eval(trail['components_values']['xor_3_8']['value']) >= 0
     assert trail['components_values']['xor_3_8']['weight'] == 0
     assert trail['total_weight'] == '9.0'
