@@ -276,7 +276,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         return components_solutions, total_weight_diff + 2 * total_weight_lin
 
     def find_one_shared_difference_paired_input_differential_linear_trail_with_fixed_weight(
-            self, weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
+            self, weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
         Finds a high-order differential-linear trail with fixed weight using paired inputs and a shared difference.
 
@@ -365,7 +365,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         )
         self.model_constraints.extend(constraints)
 
-        solution = self.solve("SHARED_DIFFERENCE_PAIRED_INPUT_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name)
+        solution = self.solve("SHARED_DIFFERENCE_PAIRED_INPUT_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name, options=options)
         solution['building_time_seconds'] = time.time() - start_time
         solution['test_name'] = "find_one_shared_difference_paired_input_differential_linear_model_trail"
 

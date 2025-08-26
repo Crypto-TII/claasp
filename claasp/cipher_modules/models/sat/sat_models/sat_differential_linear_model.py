@@ -369,7 +369,8 @@ class SatDifferentialLinearModel(SatModel):
             num_unknown_vars=None,
             fixed_values=[],
             solver_name=solvers.SOLVER_DEFAULT,
-            unknown_window_size_configuration=None
+            unknown_window_size_configuration=None,
+            options=None,
     ):
         """
         Finds one XOR differential-linear trail with a fixed weight. The weight must be the sum of the probability weight
@@ -443,14 +444,14 @@ class SatDifferentialLinearModel(SatModel):
         )
         self.model_constraints.extend(constraints)
 
-        solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name)
+        solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name, options=options)
         solution['building_time_seconds'] = time.time() - start_time
         solution['test_name'] = "find_one_differential_linear_trail"
 
         return solution
 
     def find_lowest_weight_xor_differential_linear_trail(
-            self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, num_unknown_vars=1
+            self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, num_unknown_vars=1, options=None
     ):
         """
         Finds the differential-linear trail with the lowest weight.
@@ -474,7 +475,7 @@ class SatDifferentialLinearModel(SatModel):
         )
         self.model_constraints.extend(constraints)
         end_building_time = time.time()
-        solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name)
+        solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name, options=options)
         solution['building_time_seconds'] = end_building_time - start_building_time
         total_time = solution['solving_time_seconds']
         max_memory = solution['memory_megabytes']
@@ -482,7 +483,7 @@ class SatDifferentialLinearModel(SatModel):
             current_weight += 1
             self.build_xor_differential_linear_model(current_weight, num_unknown_vars)
             self.model_constraints.extend(constraints)
-            solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name)
+            solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name, options=options)
             total_time += solution['solving_time_seconds']
             max_memory = max(max_memory, solution['memory_megabytes'])
 

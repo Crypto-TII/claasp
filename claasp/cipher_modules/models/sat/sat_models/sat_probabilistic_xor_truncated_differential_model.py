@@ -256,7 +256,8 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
             number_of_unknowns_per_component=None,
             fixed_values=[],
             solver_name=solvers.SOLVER_DEFAULT,
-            unknown_window_size_configuration=None
+            unknown_window_size_configuration=None,
+            options=None
     ):
         """
         Finds one XOR probabilistic truncated differential trail with a fixed weight.
@@ -284,14 +285,15 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         )
         self.model_constraints.extend(constraints)
 
-        solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
+        solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name, options=options)
         solution['building_time_seconds'] = time.time() - start_time
         solution['test_name'] = "find_one_regular_truncated_xor_differential_trail"
 
         return solution
 
     def find_lowest_weight_xor_probabilistic_truncated_differential_trail(self, fixed_values=[],
-                                                                          solver_name=solvers.SOLVER_DEFAULT):
+                                                                          solver_name=solvers.SOLVER_DEFAULT,
+                                                                          options=None):
         """
         Finds the XOR probabilistic truncated differential trail with the lowest weight.
 
@@ -309,7 +311,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
                                                            self.truncated_components)
         end_building_time = time.time()
         self.model_constraints.extend(constraints)
-        solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
+        solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name, options=options)
         solution['building_time_seconds'] = end_building_time - start_building_time
         total_time = solution['solving_time_seconds']
         max_memory = solution['memory_megabytes']
@@ -319,7 +321,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
             start_building_time = time.time()
             self.build_xor_probabilistic_truncated_differential_model(current_weight)
             self.model_constraints.extend(constraints)
-            solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name)
+            solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name, options=options)
             end_building_time = time.time()
 
             solution['building_time_seconds'] = end_building_time - start_building_time

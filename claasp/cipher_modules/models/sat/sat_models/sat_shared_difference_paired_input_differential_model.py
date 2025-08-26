@@ -114,7 +114,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
         self.differential_model._model_constraints.extend(new_constraints)
 
     def find_one_shared_difference_paired_input_differential_trail_with_fixed_weight(
-            self, weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT
+            self, weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
     ):
         """
         Return a single solution representing a high-order XOR differential trail for paired inputs (`x`, `y`)
@@ -182,7 +182,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
         start_time = time.time()
         self.build_shared_difference_paired_input_differential_model(weight, fixed_variables=fixed_values)
         solution = self.differential_model.solve(
-            "SHARED_DIFFERENCE_PAIRED_INPUT_DIFFERENTIAL_MODEL", solver_name=solver_name
+            "SHARED_DIFFERENCE_PAIRED_INPUT_DIFFERENTIAL_MODEL", solver_name=solver_name, options=options
         )
         solution['building_time_seconds'] = time.time() - start_time
         solution['test_name'] = "find_one_shared_difference_paired_input_differential_model_trail"
