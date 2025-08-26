@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -28,20 +27,28 @@ from sage.crypto.sbox import SBox
 
 
 from claasp.name_mappings import XOR_DIFFERENTIAL, CONSTANT, SBOX, WORD_OPERATION
-from claasp.cipher_modules.models.cp.mzn_model import solve_satisfy
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import (
-    MznXorDifferentialModel, update_and_or_ddt_valid_probabilities)
+    MznXorDifferentialModel,
+    update_and_or_ddt_valid_probabilities,
+)
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
-    MznXorDifferentialNumberOfActiveSboxesModel)
-from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, CP_SOLVERS_INTERNAL, MODEL_DEFAULT_PATH, SOLVER_DEFAULT
+    MznXorDifferentialNumberOfActiveSboxesModel,
+)
+from claasp.cipher_modules.models.cp.solvers import (
+    CP_SOLVERS_EXTERNAL,
+    CP_SOLVERS_INTERNAL,
+    MODEL_DEFAULT_PATH,
+    SOLVER_DEFAULT,
+)
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
 from claasp.cipher_modules.models.cp.minizinc_utils.utils import replace_existing_file_name
 
 
-class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
-                                                       MznXorDifferentialNumberOfActiveSboxesModel):
-
+class MznXorDifferentialFixingNumberOfActiveSboxesModel(
+    MznXorDifferentialModel, MznXorDifferentialNumberOfActiveSboxesModel
+):
     def __init__(self, cipher):
         self._table_items = []
         super().__init__(cipher)
@@ -85,7 +92,18 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
         self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
 
-    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_all_xor_differential_trails_with_fixed_weight(
+        self,
+        fixed_weight,
+        fixed_values=[],
+        first_step_solver_name=SOLVER_DEFAULT,
+        second_step_solver_name=SOLVER_DEFAULT,
+        nmax=2,
+        repetition=1,
+        num_of_processors=None,
+        timelimit=None,
+        solve_with_API=False,
+    ):
         """
         Return a list of solutions containing all the differential trails having the ``fixed_weight`` weight of correlation.
 
@@ -114,9 +132,29 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
             sage: len(trails) # long # doctest: +SKIP
             8
         """
-        return self.solve_full_two_steps_xor_differential_model('xor_differential_all_solutions', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name, nmax, repetition, num_of_processors, timelimit)
+        return self.solve_full_two_steps_xor_differential_model(
+            "xor_differential_all_solutions",
+            fixed_weight,
+            fixed_values,
+            first_step_solver_name,
+            second_step_solver_name,
+            nmax,
+            repetition,
+            num_of_processors,
+            timelimit,
+        )
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_lowest_weight_xor_differential_trail(
+        self,
+        fixed_values=[],
+        first_step_solver_name=SOLVER_DEFAULT,
+        second_step_solver_name=SOLVER_DEFAULT,
+        nmax=2,
+        repetition=1,
+        num_of_processors=None,
+        timelimit=None,
+        solve_with_API=False,
+    ):
         """
         Return the solution representing a differential trail with the lowest weight.
 
@@ -152,9 +190,29 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
               ...
              'total_weight': '30.0'}
         """
-        return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', -1, fixed_values, first_step_solver_name, second_step_solver_name, nmax, repetition, num_of_processors, timelimit)
+        return self.solve_full_two_steps_xor_differential_model(
+            "xor_differential_one_solution",
+            -1,
+            fixed_values,
+            first_step_solver_name,
+            second_step_solver_name,
+            nmax,
+            repetition,
+            num_of_processors,
+            timelimit,
+        )
 
-    def find_one_xor_differential_trail(self, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_one_xor_differential_trail(
+        self,
+        fixed_values=[],
+        first_step_solver_name=SOLVER_DEFAULT,
+        second_step_solver_name=SOLVER_DEFAULT,
+        nmax=2,
+        repetition=1,
+        num_of_processors=None,
+        timelimit=None,
+        solve_with_API=False,
+    ):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -183,9 +241,30 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
              'cipher_output_1_32':{'value': 'ffffffffffffffffffffffffffffffff', 'weight': 0.0}},
              'total_weight': '224.0'}
         """
-        return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', 0, fixed_values, first_step_solver_name, second_step_solver_name, nmax, repetition, num_of_processors, timelimit)
+        return self.solve_full_two_steps_xor_differential_model(
+            "xor_differential_one_solution",
+            0,
+            fixed_values,
+            first_step_solver_name,
+            second_step_solver_name,
+            nmax,
+            repetition,
+            num_of_processors,
+            timelimit,
+        )
 
-    def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[], first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1, num_of_processors=None, timelimit=None, solve_with_API=False):
+    def find_one_xor_differential_trail_with_fixed_weight(
+        self,
+        fixed_weight=-1,
+        fixed_values=[],
+        first_step_solver_name=SOLVER_DEFAULT,
+        second_step_solver_name=SOLVER_DEFAULT,
+        nmax=2,
+        repetition=1,
+        num_of_processors=None,
+        timelimit=None,
+        solve_with_API=False,
+    ):
         """
         Return the solution representing a differential trail with any weight.
 
@@ -216,7 +295,17 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
              'total_weight': '224.0',
              'building_time_seconds':  19.993147134780884}
         """
-        return self.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', fixed_weight, fixed_values, first_step_solver_name, second_step_solver_name, nmax, repetition, num_of_processors, timelimit)
+        return self.solve_full_two_steps_xor_differential_model(
+            "xor_differential_one_solution",
+            fixed_weight,
+            fixed_values,
+            first_step_solver_name,
+            second_step_solver_name,
+            nmax,
+            repetition,
+            num_of_processors,
+            timelimit,
+        )
 
     def generate_table_of_solutions(self, solution, solver_name, solution_file_name):
         """
@@ -241,34 +330,45 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
             sage: cp.generate_table_of_solutions(first_step_solution, 'Chuffed', 'aes_block_cipher_k128_p128_o128_r2_table_of_solutions_Chuffed.mzn')
         """
         cipher_name = self.cipher_id
-        separator = '----------'
+        separator = "----------"
         count_separator = solution.count(separator)
-        table_of_solutions_length = ''
+        table_of_solutions_length = ""
         for line in solution:
-            if 'table_of_solution_length' in line:
-                line = line.replace(' table_of_solution_length = ', '')
-                table_of_solutions_length = line.rstrip('\n')
-        table = f'array [0..{count_separator - 1}, 1..{table_of_solutions_length}] of int: ' \
-                f'{cipher_name}_table_of_solutions = ' \
-                f'array2d(0..{count_separator - 1}, 1..{table_of_solutions_length}, ['
+            if "table_of_solution_length" in line:
+                line = line.replace(" table_of_solution_length = ", "")
+                table_of_solutions_length = line.rstrip("\n")
+        table = (
+            f"array [0..{count_separator - 1}, 1..{table_of_solutions_length}] of int: "
+            f"{cipher_name}_table_of_solutions = "
+            f"array2d(0..{count_separator - 1}, 1..{table_of_solutions_length}, ["
+        )
         for line in solution:
             for item in self.input_sbox:
                 if item[0] in line:
-                    value = line.replace(item[0], '')
-                    value = value.replace(' = ', '')
-                    table = table + value.replace('\n', '') + ','
-        table = table[:-1] + ']);'
-        with open(solution_file_name, 'w') as table_of_solutions_file:
+                    value = line.replace(item[0], "")
+                    value = value.replace(" = ", "")
+                    table = table + value.replace("\n", "") + ","
+        table = table[:-1] + "]);"
+        with open(solution_file_name, "w") as table_of_solutions_file:
             table_of_solutions_file.write(table)
 
-    def get_solutions_dictionaries_with_build_time(self, build_time, components_values, memory, solver_name, time,
-                                                   total_weight):
-        solutions = [convert_solver_solution_to_dictionary(self.cipher_id, XOR_DIFFERENTIAL, solver_name, time,
-                                                           memory, components_values[f'solution{i + 1}'],
-                                                           total_weight[i])
-                     for i in range(len(total_weight))]
+    def get_solutions_dictionaries_with_build_time(
+        self, build_time, components_values, memory, solver_name, time, total_weight
+    ):
+        solutions = [
+            convert_solver_solution_to_dictionary(
+                self.cipher_id,
+                XOR_DIFFERENTIAL,
+                solver_name,
+                time,
+                memory,
+                components_values[f"solution{i + 1}"],
+                total_weight[i],
+            )
+            for i in range(len(total_weight))
+        ]
         for solution in solutions:
-            solution['building_time_seconds'] = build_time
+            solution["building_time_seconds"] = build_time
         if len(solutions) == 1:
             solutions = solutions[0]
         return solutions
@@ -296,13 +396,23 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         """
         cp_declarations, cp_constraints = super().input_xor_differential_constraints()
 
-        table = '++'.join(self._table_items)
-        cp_constraints = f'constraint table({table}, {self.cipher_id}_table_of_solutions);'
+        table = "++".join(self._table_items)
+        cp_constraints = f"constraint table({table}, {self.cipher_id}_table_of_solutions);"
 
         return cp_declarations, cp_constraints
 
-    def solve_full_two_steps_xor_differential_model(self, model_type='xor_differential_one_solution', weight=-1, fixed_variables=[],
-                                                    first_step_solver_name=SOLVER_DEFAULT, second_step_solver_name=SOLVER_DEFAULT, nmax=2, repetition=1, num_of_processors=None, timelimit=None):
+    def solve_full_two_steps_xor_differential_model(
+        self,
+        model_type="xor_differential_one_solution",
+        weight=-1,
+        fixed_variables=[],
+        first_step_solver_name=SOLVER_DEFAULT,
+        second_step_solver_name=SOLVER_DEFAULT,
+        nmax=2,
+        repetition=1,
+        num_of_processors=None,
+        timelimit=None,
+    ):
         """
         Return the solution of the model for an SPN cipher.
 
@@ -340,28 +450,30 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         if weight > 0:
             possible_sboxes = self.find_possible_number_of_active_sboxes(weight)
             if not possible_sboxes:
-                raise ValueError('There are no trails with the fixed weight!')
+                raise ValueError("There are no trails with the fixed weight!")
 
         cipher_name = self.cipher_id
         start = tm.time()
         self.build_xor_differential_trail_first_step_model(weight, fixed_variables, nmax, repetition, possible_sboxes)
         end = tm.time()
         build_time = end - start
-        first_step_solution, solve_time = self.solve_model('xor_differential_first_step', first_step_solver_name, num_of_processors, timelimit)
+        first_step_solution, solve_time = self.solve_model(
+            "xor_differential_first_step", first_step_solver_name, num_of_processors, timelimit
+        )
         start = tm.time()
         self.build_xor_differential_trail_second_step_model(weight, fixed_variables)
         end = tm.time()
         build_time += end - start
-        input_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_mzn_xor_differential_{first_step_solver_name}.mzn'
+        input_file_name = f"{MODEL_DEFAULT_PATH}/{cipher_name}_mzn_xor_differential_{first_step_solver_name}.mzn"
         input_file_name = replace_existing_file_name(input_file_name)
-        solution_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_table_of_solutions_{first_step_solver_name}.mzn'
+        solution_file_name = f"{MODEL_DEFAULT_PATH}/{cipher_name}_table_of_solutions_{first_step_solver_name}.mzn"
         solution_file_name = replace_existing_file_name(solution_file_name)
         write_model_to_file(self._model_constraints, input_file_name)
 
         for i in range(len(CP_SOLVERS_EXTERNAL)):
-            if second_step_solver_name == CP_SOLVERS_EXTERNAL[i]['solver_name']:
+            if second_step_solver_name == CP_SOLVERS_EXTERNAL[i]["solver_name"]:
                 command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
-                        
+
         for attempt in range(10000):
             if weight == -1:
                 start = tm.time()
@@ -369,46 +481,50 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
                 end = tm.time()
                 build_time += end - start
                 first_step_all_solutions, solve_first_step_time = self.solve_model(
-                    'xor_differential_first_step_find_all_solutions', first_step_solver_name)
+                    "xor_differential_first_step_find_all_solutions", first_step_solver_name
+                )
                 solve_time += solve_first_step_time
                 self.generate_table_of_solutions(first_step_all_solutions, first_step_solver_name, solution_file_name)
-                
-                command_options['keywords']['command']['input_file'].append(input_file_name)
-                command_options['keywords']['command']['output_file'].append(solution_file_name)
-                command_options['keywords']['command']['options'].insert(0, '-a')
-            elif model_type == 'xor_differential_all_solutions':
+
+                command_options["keywords"]["command"]["input_file"].append(input_file_name)
+                command_options["keywords"]["command"]["output_file"].append(solution_file_name)
+                command_options["keywords"]["command"]["options"].insert(0, "-a")
+            elif model_type == "xor_differential_all_solutions":
                 self.generate_table_of_solutions(first_step_solution, first_step_solver_name, solution_file_name)
 
-                command_options['keywords']['command']['input_file'].append(input_file_name)
-                command_options['keywords']['command']['output_file'].append(solution_file_name)
-                command_options['keywords']['command']['options'].insert(0, '-a')
+                command_options["keywords"]["command"]["input_file"].append(input_file_name)
+                command_options["keywords"]["command"]["output_file"].append(solution_file_name)
+                command_options["keywords"]["command"]["options"].insert(0, "-a")
             else:
                 self.generate_table_of_solutions(first_step_solution, first_step_solver_name, solution_file_name)
 
-                command_options['keywords']['command']['input_file'].append(input_file_name)
-                command_options['keywords']['command']['output_file'].append(solution_file_name)
+                command_options["keywords"]["command"]["input_file"].append(input_file_name)
+                command_options["keywords"]["command"]["output_file"].append(solution_file_name)
             if num_of_processors is not None:
-                command_options['keywords']['command']['options'].insert(0, f'-p {num_of_processors}')
+                command_options["keywords"]["command"]["options"].insert(0, f"-p {num_of_processors}")
             if timelimit is not None:
-                command_options['keywords']['command']['options'].append('--time-limit')
-                command_options['keywords']['command']['options'].append(str(timelimit))
+                command_options["keywords"]["command"]["options"].append("--time-limit")
+                command_options["keywords"]["command"]["options"].append(str(timelimit))
             command = []
-            for key in command_options['keywords']['command']['format']:
-                command.extend(command_options['keywords']['command'][key])
+            for key in command_options["keywords"]["command"]["format"]:
+                command.extend(command_options["keywords"]["command"][key])
 
             solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
             if solver_process.returncode < 0:
-                raise ValueError('something went wrong with solver subprocess... sorry!')
+                raise ValueError("something went wrong with solver subprocess... sorry!")
 
             solver_output = solver_process.stdout.splitlines()
-            if any('UNSATISFIABLE' in line for line in solver_output) and weight not in (-1, 0):
+            if any("UNSATISFIABLE" in line for line in solver_output) and weight not in (-1, 0):
                 os.remove(input_file_name)
                 os.remove(solution_file_name)
-                return 'Unsatisfiable'
+                return "Unsatisfiable"
 
-            time, memory, components_values, total_weight = self._parse_solver_output(solver_output, model_type, False, True, second_step_solver_name)
-            solutions = self.get_solutions_dictionaries_with_build_time(build_time, components_values, memory,
-                                                                        second_step_solver_name, time, total_weight)
+            time, memory, components_values, total_weight = self._parse_solver_output(
+                solver_output, model_type, False, True, second_step_solver_name
+            )
+            solutions = self.get_solutions_dictionaries_with_build_time(
+                build_time, components_values, memory, second_step_solver_name, time, total_weight
+            )
             os.remove(input_file_name)
             os.remove(solution_file_name)
 
@@ -450,43 +566,43 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         """
         start = tm.time()
         cipher_name = self.cipher_id
-        input_file_name = f'{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}.mzn'
+        input_file_name = f"{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}.mzn"
         input_file_name = replace_existing_file_name(input_file_name)
         for i in range(len(CP_SOLVERS_EXTERNAL)):
-            if solver_name == CP_SOLVERS_EXTERNAL[i]['solver_name']:
+            if solver_name == CP_SOLVERS_EXTERNAL[i]["solver_name"]:
                 command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
-        command_options['keywords']['command']['input_file'].append(input_file_name)
-            
-        if model_type == 'xor_differential_first_step_find_all_solutions':
+        command_options["keywords"]["command"]["input_file"].append(input_file_name)
+
+        if model_type == "xor_differential_first_step_find_all_solutions":
             write_model_to_file(self._first_step_find_all_solutions, input_file_name)
-            command_options['keywords']['command']['options'].insert(0, '-a')
+            command_options["keywords"]["command"]["options"].insert(0, "-a")
         else:
-            if model_type == 'xor_differential_first_step':
+            if model_type == "xor_differential_first_step":
                 write_model_to_file(self._first_step, input_file_name)
             else:
                 write_model_to_file(self._model_constraints, input_file_name)
         if num_of_processors is not None:
-            command_options['keywords']['command']['options'].insert(0, f'-p {num_of_processors}')
+            command_options["keywords"]["command"]["options"].insert(0, f"-p {num_of_processors}")
         if timelimit is not None:
-            command_options['keywords']['command']['options'].append('--time-limit')
-            command_options['keywords']['command']['options'].append(str(timelimit))
-                
+            command_options["keywords"]["command"]["options"].append("--time-limit")
+            command_options["keywords"]["command"]["options"].append(str(timelimit))
+
         command = []
-        for key in command_options['keywords']['command']['format']:
-            command.extend(command_options['keywords']['command'][key])
-        command.remove('--solver-statistics')
-        solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+        for key in command_options["keywords"]["command"]["format"]:
+            command.extend(command_options["keywords"]["command"][key])
+        command.remove("--solver-statistics")
+        solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
         os.remove(input_file_name)
         solution = []
         temp = []
         for c in solver_process.stdout:
-            if c == '\n':
-                solution.append(''.join(temp))
+            if c == "\n":
+                solution.append("".join(temp))
                 temp = []
             else:
                 temp.append(c)
         if temp:
-            solution.append(''.join(temp))
+            solution.append("".join(temp))
         end = tm.time()
 
         return solution, end - start
@@ -524,22 +640,25 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         print(active_sboxes)
         self._first_step_find_all_solutions = []
         for line in self._first_step:
-            if ': number_of_active_sBoxes;' in line:
+            if ": number_of_active_sBoxes;" in line:
                 if weight != -1:
                     possible_sboxes = self.find_possible_number_of_active_sboxes(weight)
-                    self._first_step_find_all_solutions += \
-                        [f'var {str(possible_sboxes)}:number_of_active_sBoxes;']
+                    self._first_step_find_all_solutions += [f"var {str(possible_sboxes)}:number_of_active_sBoxes;"]
                 else:
-                    self._first_step_find_all_solutions += \
-                        [f'var int:number_of_active_sBoxes = {int(active_sboxes) + attempt};']
-            elif 'solve minimize' in line:
-                self._first_step_find_all_solutions += [solve_satisfy]
-                new_constraint = 'output[show(number_of_active_sBoxes) ++ \"\\n\" ++ \" table_of_solution_length = ' \
-                                 '\"++ show(table_of_solutions_length) ++ \"\\n\" ++'
+                    self._first_step_find_all_solutions += [
+                        f"var int:number_of_active_sBoxes = {int(active_sboxes) + attempt};"
+                    ]
+            elif "solve minimize" in line:
+                self._first_step_find_all_solutions += [SOLVE_SATISFY]
+                new_constraint = (
+                    'output[show(number_of_active_sBoxes) ++ "\\n" ++ " table_of_solution_length = '
+                    '"++ show(table_of_solutions_length) ++ "\\n" ++'
+                )
                 for i in range(len(self.input_sbox)):
-                    new_constraint = f'{new_constraint}\" {self.input_sbox[i][0]} = ' \
-                                     f'\"++ show({self.input_sbox[i][0]})++ \"\\n\" ++'
-                self._first_step_find_all_solutions += [new_constraint[:-2] + '];\n']
+                    new_constraint = (
+                        f'{new_constraint}" {self.input_sbox[i][0]} = "++ show({self.input_sbox[i][0]})++ "\\n" ++'
+                    )
+                self._first_step_find_all_solutions += [new_constraint[:-2] + "];\n"]
                 break
             else:
                 self._first_step_find_all_solutions += [line]
@@ -550,12 +669,12 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(MznXorDifferentialModel,
         super().update_sbox_ddt_valid_probabilities(component, valid_probabilities)
         input_id_link = component.input_id_links[0]
         input_bit_positions = component.input_bit_positions[0]
-        all_inputs = [f'{input_id_link}[{position}]' for position in input_bit_positions]
+        all_inputs = [f"{input_id_link}[{position}]" for position in input_bit_positions]
         for i in range(input_size // self.word_size):
-            ineq_left_side = '+'.join([f'{all_inputs[i * self.word_size + j]}'
-                                       for j in range(self.word_size)])
-            new_declaration = f'constraint ({ineq_left_side} > 0) = word_{output_id_link}[{i}];'
+            ineq_left_side = "+".join([f"{all_inputs[i * self.word_size + j]}" for j in range(self.word_size)])
+            new_declaration = f"constraint ({ineq_left_side} > 0) = word_{output_id_link}[{i}];"
             self._cp_xor_differential_constraints.append(new_declaration)
         self._cp_xor_differential_constraints.append(
-            f'array[0..{input_size // self.word_size - 1}] of var 0..1: word_{output_id_link};')
-        self._table_items.append(f'[word_{output_id_link}[s] | s in 0..{input_size // self.word_size - 1}]')
+            f"array[0..{input_size // self.word_size - 1}] of var 0..1: word_{output_id_link};"
+        )
+        self._table_items.append(f"[word_{output_id_link}[s] | s in 0..{input_size // self.word_size - 1}]")

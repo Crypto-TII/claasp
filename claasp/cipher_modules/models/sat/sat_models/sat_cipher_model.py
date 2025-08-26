@@ -113,21 +113,16 @@ class SatCipherModel(SatModel):
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
             sage: sat = SatCipherModel(speck)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: ciphertext_id = speck.get_all_components_ids()[-1]
             sage: ciphertext = set_fixed_variables(
-            ....:         component_id=speck.get_all_components_ids()[-1],
-            ....:         constraint_type='equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=integer_to_bit_list(endianness='big', list_length=32, int_value=0xaffec7ed))
-            sage: sat.find_missing_bits(fixed_values=[ciphertext]) # random
-            {'cipher_id': 'speck_p32_k64_o32_r22',
-             'model_type': 'cipher',
-             'solver_name': 'CRYPTOMINISAT_EXT',
-             ...
-              'intermediate_output_21_11': {'value': '1411'},
-              'cipher_output_21_12': {'value': 'affec7ed'}},
-             'total_weight': None,
-             'status': 'SATISFIABLE',
-             'building_time_seconds': 0.019376516342163086}
+            ....:     component_id=ciphertext_id,
+            ....:     constraint_type="equal",
+            ....:     bit_positions=range(32),
+            ....:     bit_values=integer_to_bit_list(endianness="big", list_length=32, int_value=0xaffec7ed)
+            ....: )
+            sage: trail = sat.find_missing_bits(fixed_values=[ciphertext])
+            sage: trail["components_values"][ciphertext_id]["value"]
+            '0xaffec7ed'
         """
         start_building_time = time.time()
         self.build_cipher_model(fixed_variables=fixed_values)
