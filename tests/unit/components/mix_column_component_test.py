@@ -71,11 +71,11 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
     assert declarations == []
 
     assert constraints[0] == 'constraint if ((rot_0_17[1] < 2) /\\ (rot_0_18[0] < 2) /\\ (rot_0_18[1] < 2) /\\ ' \
-                             '(rot_0_19[0] < 2) /\\ (rot_0_20[0]< 2)) then mix_column_0_21[0] = (rot_0_17[1] + ' \
+                             '(rot_0_19[0] < 2) /\\ (rot_0_20[0] < 2)) then mix_column_0_21[0] = (rot_0_17[1] + ' \
                              'rot_0_18[0] + rot_0_18[1] + rot_0_19[0] + rot_0_20[0]) mod 2 else ' \
                              'mix_column_0_21[0] = 2 endif;'
     assert constraints[-1] == 'constraint if ((rot_0_17[0] < 2) /\\ (rot_0_17[7] < 2) /\\ (rot_0_18[7] < 2) /\\ ' \
-                              '(rot_0_19[7] < 2) /\\ (rot_0_20[0]< 2)) then mix_column_0_21[31] = (rot_0_17[0] + ' \
+                              '(rot_0_19[7] < 2) /\\ (rot_0_20[0] < 2)) then mix_column_0_21[31] = (rot_0_17[0] + ' \
                               'rot_0_17[7] + rot_0_18[7] + rot_0_19[7] + rot_0_20[0]) mod 2 else ' \
                               'mix_column_0_21[31] = 2 endif;'
 

@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -27,6 +26,15 @@ from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.DTOs.power_of_2_word_based_dto import PowerOf2WordBasedDTO
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONCATENATE,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SBOX,
+    WORD_OPERATION,
+)
 
 
 def check_size(position_list, size):
@@ -37,7 +45,7 @@ def check_size(position_list, size):
         if position_list[j] % size == 0 and (position_list[j + size - 1] + 1) % size == 0:
             # check consecutive positions
             i = position_list[j]
-            for position in position_list[j + 1:j + size]:
+            for position in position_list[j + 1 : j + size]:
                 i += 1
                 if i != position:
                     return False
@@ -55,7 +63,7 @@ def linear_layer_to_binary_matrix(linear_layer_function, input_bit_size, output_
         for i in range(p_matrix.nrows()):
             p_matrix[i] = vector_space.random_element()
 
-    c_matrix = matrix(GF(2), input_bit_size, output_bit_size)#, input_bit_size)
+    c_matrix = matrix(GF(2), input_bit_size, output_bit_size)  # , input_bit_size)
     for i in range(c_matrix.nrows()):
         result = linear_layer_function(BitArray(list(p_matrix[i])), *list_specific_inputs)
         c_matrix[i] = vector(GF(2), result)
@@ -64,11 +72,18 @@ def linear_layer_to_binary_matrix(linear_layer_function, input_bit_size, output_
 
 
 def free_input(code):
-    code.append('\tdelete_bitstring(input);\n')
+    code.append("\tdelete_bitstring(input);\n")
 
 
 class Component:
-    def __init__(self, component_id, component_type, component_input, output_bit_size, description):
+    def __init__(
+        self,
+        component_id,
+        component_type,
+        component_input,
+        output_bit_size,
+        description,
+    ):
         if not isinstance(component_input.id_links, list):
             print("type of [input_id_link] should be a list")
             return
@@ -97,13 +112,13 @@ class Component:
         self._input = deepcopy(component_input)
         self._output_bit_size = output_bit_size
         self._description = description
-        self._suffixes = ['_i', '_o']
+        self._suffixes = ("_i", "_o")
 
     def _create_minizinc_1d_array_from_list(self, mzn_list):
         mzn_list_size = len(mzn_list)
-        lst_temp = f'[{",".join(mzn_list)}]'
+        lst_temp = f"[{','.join(mzn_list)}]"
 
-        return f'array1d(0..{mzn_list_size}-1, {lst_temp})'
+        return f"array1d(0..{mzn_list_size}-1, {lst_temp})"
 
     def _define_var(self, input_postfix, output_postfix, data_type):
         """
@@ -121,10 +136,10 @@ class Component:
         output_size = self.output_bit_size
         var_names_temp = []
         if self.type != "constant":
-            var_names_temp += [component_id + "_" + input_postfix + str(i) for i in range(input_size)]
-        var_names_temp += [component_id + "_" + output_postfix + str(i) for i in range(output_size)]
+            var_names_temp += [f"{component_id}_{input_postfix}{i}" for i in range(input_size)]
+        var_names_temp += [f"{component_id}_{output_postfix}{i}" for i in range(output_size)]
         for i in range(len(var_names_temp)):
-            var_definition_names.append(f'var {data_type}: {var_names_temp[i]};')
+            var_definition_names.append(f"var {data_type}: {var_names_temp[i]};")
 
         return var_definition_names
 
@@ -132,35 +147,35 @@ class Component:
         input_id_link = self.id
         in_suffix = constants.INPUT_BIT_ID_SUFFIX
         input_bit_size = self.input_bit_size
-        input_bit_ids = [f'{input_id_link}_{i}{in_suffix}' for i in range(input_bit_size)]
+        input_bit_ids = [f"{input_id_link}_{i}{in_suffix}" for i in range(input_bit_size)]
 
         return input_bit_size, input_bit_ids
 
-    def _generate_input_ids(self, suffix=''):
+    def _generate_input_ids(self, suffix=""):
         input_id_link = self.input_id_links
         input_bit_positions = self.input_bit_positions
         input_bit_ids = []
         for link, positions in zip(input_id_link, input_bit_positions):
-            input_bit_ids.extend([f'{link}_{j}{suffix}' for j in positions])
+            input_bit_ids.extend([f"{link}_{j}{suffix}" for j in positions])
 
         return input_bit_ids
 
     def _generate_input_double_ids(self):
-        in_ids_0 = self._generate_input_ids(suffix='_0')
-        in_ids_1 = self._generate_input_ids(suffix='_1')
+        in_ids_0 = self._generate_input_ids(suffix="_0")
+        in_ids_1 = self._generate_input_ids(suffix="_1")
 
         return in_ids_0, in_ids_1
 
-    def _generate_output_ids(self, suffix=''):
+    def _generate_output_ids(self, suffix=""):
         output_id_link = self.id
         output_bit_size = self.output_bit_size
-        output_bit_ids = [f'{output_id_link}_{j}{suffix}' for j in range(output_bit_size)]
+        output_bit_ids = [f"{output_id_link}_{j}{suffix}" for j in range(output_bit_size)]
 
         return output_bit_size, output_bit_ids
 
     def _generate_output_double_ids(self):
-        out_len, out_ids_0 = self._generate_output_ids(suffix='_0')
-        _, out_ids_1 = self._generate_output_ids(suffix='_1')
+        out_len, out_ids_0 = self._generate_output_ids(suffix="_0")
+        _, out_ids_1 = self._generate_output_ids(suffix="_1")
 
         return out_len, out_ids_0, out_ids_1
 
@@ -283,11 +298,17 @@ class Component:
         """
 
         tuple_size = 2
-        output_ids_tuple = [tuple(f"{self.id}_{i}_class_bit_{j}" for j in range(tuple_size)) for i in range(self.output_bit_size)]
+        output_ids_tuple = [
+            tuple(f"{self.id}_{i}_class_bit_{j}" for j in range(tuple_size)) for i in range(self.output_bit_size)
+        ]
         input_ids_tuple = []
         for index, link in enumerate(self.input_id_links):
-            input_ids_tuple.extend([tuple(f"{link}_{pos}_class_bit_{j}" for j in range(tuple_size)) for pos in self.input_bit_positions[index]])
-
+            input_ids_tuple.extend(
+                [
+                    tuple(f"{link}_{pos}_class_bit_{j}" for j in range(tuple_size))
+                    for pos in self.input_bit_positions[index]
+                ]
+            )
 
         return input_ids_tuple, output_ids_tuple
 
@@ -329,13 +350,12 @@ class Component:
              'rot_0_18_word_3_class']
         """
 
-        output_class_ids = [self.id + '_word_' + str(i) + '_class' for i in
-                        range(self.output_bit_size // model.word_size)]
+        output_class_ids = [f"{self.id}_word_{i}_class" for i in range(self.output_bit_size // model.word_size)]
         input_class_ids = []
 
         for index, link in enumerate(self.input_id_links):
-            for pos in self.input_bit_positions[index][::model.word_size]:
-                input_class_ids.append(link + '_word_' + str(pos // model.word_size) + '_class')
+            for pos in self.input_bit_positions[index][:: model.word_size]:
+                input_class_ids.append(f"{link}_word_{pos // model.word_size}_class")
 
         return input_class_ids, output_class_ids
 
@@ -372,13 +392,10 @@ class Component:
         tuple_size = 2
         input_class, output_class = self._get_wordwise_input_output_linked_class(model)
 
-        output_class_tuples = [tuple(f"{id}_bit_{i}" for i in range(tuple_size)) for id in
-                              output_class]
-        input_class_tuples = [tuple(f"{id}_bit_{i}" for i in range(tuple_size)) for id in
-                             input_class]
+        output_class_tuples = [tuple(f"{id}_bit_{i}" for i in range(tuple_size)) for id in output_class]
+        input_class_tuples = [tuple(f"{id}_bit_{i}" for i in range(tuple_size)) for id in input_class]
 
         return input_class_tuples, output_class_tuples
-
 
     def _get_wordwise_input_output_full_tuples(self, model):
         """
@@ -420,23 +437,26 @@ class Component:
         input_ids, output_ids = self._get_input_output_variables()
         input_class_id_tuples, output_class_id_tuples = self._get_wordwise_input_output_linked_class_tuples(model)
 
-        input_full_tuple = [tuple(list(input_class_id_tuples[i]) + input_ids[i * word_size: (i + 1) * word_size]) for i in
-                            range(len(input_ids) // word_size)]
-        output_full_tuple = [tuple(list(output_class_id_tuples[i]) + output_ids[i * word_size: (i + 1) * word_size]) for i in
-                             range(len(output_ids) // word_size)]
+        input_full_tuple = [
+            tuple(list(input_class_id_tuples[i]) + input_ids[i * word_size : (i + 1) * word_size])
+            for i in range(len(input_ids) // word_size)
+        ]
+        output_full_tuple = [
+            tuple(list(output_class_id_tuples[i]) + output_ids[i * word_size : (i + 1) * word_size])
+            for i in range(len(output_ids) // word_size)
+        ]
 
         return input_full_tuple, output_full_tuple
 
-
     def as_python_dictionary(self):
         return {
-            'id': self._id,
-            'type': self._type,
-            'input_bit_size': self.input_bit_size,
-            'input_id_link': self.input_id_links,
-            'input_bit_positions': self.input_bit_positions,
-            'output_bit_size': self._output_bit_size,
-            'description': self._description
+            "id": self._id,
+            "type": self._type,
+            "input_bit_size": self.input_bit_size,
+            "input_id_link": self.input_id_links,
+            "input_bit_positions": self.input_bit_positions,
+            "output_bit_size": self._output_bit_size,
+            "description": self._description,
         }
 
     def get_graph_representation(self):
@@ -447,18 +467,18 @@ class Component:
             "input_id_link": deepcopy(self._input.id_links),
             "input_bit_positions": deepcopy(self._input.bit_positions),
             "output_bit_size": self._output_bit_size,
-            "description": self._description
+            "description": self._description,
         }
 
     def is_id_equal_to(self, component_id):
         return self._id == component_id
 
     def is_power_of_2_word_based(self, dto):
-        available_word_sizes = [64, 32, 16, 8]
+        available_word_sizes = (64, 32, 16, 8)
         fixed = dto.fixed
         word_size = dto.word_size
 
-        if self._type in ('sbox', 'mix_column', 'linear_layer'):
+        if self._type in (SBOX, MIX_COLUMN, LINEAR_LAYER):
             return PowerOf2WordBasedDTO(False, fixed)
 
         # Check output size
@@ -467,7 +487,7 @@ class Component:
             return PowerOf2WordBasedDTO(False, fixed)
 
         # Check input positions and size
-        if self._type != 'constant':
+        if self._type != "constant":
             valid_sizes = [positions for positions in self.input_bit_positions if not check_size(positions, word_size)]
             if valid_sizes or self.input_bit_size % word_size != 0:
                 return PowerOf2WordBasedDTO(False, fixed)
@@ -475,7 +495,7 @@ class Component:
         return PowerOf2WordBasedDTO(word_size, fixed)
 
     def check_output_size(self, available_word_sizes, fixed, word_size):
-        if self._type in ('concatenate', 'intermediate_output', 'cipher_output'):
+        if self._type in (CONCATENATE, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
             word_size = self.output_size_for_concatenate(available_word_sizes, fixed, word_size)
             if word_size is None:
                 return None, fixed
@@ -494,8 +514,11 @@ class Component:
             if word_sizes:
                 word_size = word_sizes[0]
         else:
-            word_sizes = [size for size in available_word_sizes[available_word_sizes.index(word_size):]
-                          if self._output_bit_size % size != 0]
+            word_sizes = [
+                size
+                for size in available_word_sizes[available_word_sizes.index(word_size) :]
+                if self._output_bit_size % size != 0
+            ]
             if (fixed and self._output_bit_size % word_size != 0) or (not fixed and not word_sizes):
                 word_size = None
             elif not fixed:
@@ -506,7 +529,7 @@ class Component:
     def is_forbidden(self, forbidden_types, forbidden_descriptions):
         if self._type in forbidden_types:
             return True
-        if self._type == "word_operation" and self._description[0] in forbidden_descriptions:
+        if self._type == WORD_OPERATION and self._description[0] in forbidden_descriptions:
             return True
 
         return False
@@ -521,8 +544,8 @@ class Component:
         print(f"    description =", self._description)
 
     def print_as_python_dictionary(self):
-        print("    'id': '" + self._id + "',")
-        print("    'type': '" + self._type + "',")
+        print(f"    'id': '{self._id}',")
+        print(f"    'type': '{self._type}',")
         print(f"    'input_bit_size': {self.input_bit_size},")
         print(f"    'input_id_link': {self.input_id_links},")
         print(f"    'input_bit_positions': {self.input_bit_positions},")
@@ -540,29 +563,29 @@ class Component:
 
     def print_values(self, code):
         code.append(f'\tprintf("{self.id}_input = ");')
-        code.append('\tprint_bitstring(input, 16);')
+        code.append("\tprint_bitstring(input, 16);")
         code.append(f'\tprintf("{self.id}_output = ");')
-        code.append(f'\tprint_bitstring({self.id}, 16);\n')
+        code.append(f"\tprint_bitstring({self.id}, 16);\n")
 
     def print_word_values(self, code):
         code.append(f'\tprintf("{self.id}_input = ");')
-        code.append('\tprint_wordstring(input, 16);')
+        code.append("\tprint_wordstring(input, 16);")
         code.append(f'\tprintf("{self.id}_output = ");')
-        code.append(f'\tprint_wordstring({self.id}, 16);\n')
+        code.append(f"\tprint_wordstring({self.id}, 16);\n")
 
     def select_bits(self, code):
         n = len(self.input_id_links)
 
-        code.append((f'\tinput_id = (BitString*[]) {{{", ".join(self.input_id_links)}}};\n'
-                     f'\tinput_positions = (uint16_t*[]) {{'))
+        code.append(
+            (f"\tinput_id = (BitString*[]) {{{', '.join(self.input_id_links)}}};\n\tinput_positions = (uint16_t*[]) {{")
+        )
 
         for position_list in self.input_bit_positions:
-            code.append(
-                (f'\t\t(uint16_t[]) {{{len(position_list)}, {", ".join([str(p) for p in position_list])}}},'))
+            code.append((f"\t\t(uint16_t[]) {{{len(position_list)}, {', '.join(map(str, position_list))}}},"))
 
-        code.append('\t};')
+        code.append("\t};")
 
-        code.append(f'\tinput = select_bits({n}, input_id, input_positions, {self.output_bit_size});')
+        code.append(f"\tinput = select_bits({n}, input_id, input_positions, {self.output_bit_size});")
 
     def select_words(self, code, word_size, input=True):
         word_list = []
@@ -570,18 +593,18 @@ class Component:
 
         for position_list in self.input_bit_positions:
             for j in range(0, len(position_list), word_size):
-                word_list.append(f'{self.input_id_links[i]} -> list[{position_list[j] // word_size}]')
+                word_list.append(f"{self.input_id_links[i]} -> list[{position_list[j] // word_size}]")
 
             i += 1
 
         if input:
-            code.append(f'\tinput -> list = (Word[]) {{{", ".join(word_list)}}};')
-            code.append(f'\tinput -> string_size = {len(word_list)};')
+            code.append(f"\tinput -> list = (Word[]) {{{', '.join(word_list)}}};")
+            code.append(f"\tinput -> string_size = {len(word_list)};")
         else:
-            code.append(f'\tWordString* {self.id} = create_wordstring({len(word_list)}, false);')
+            code.append(f"\tWordString* {self.id} = create_wordstring({len(word_list)}, false);")
             code.append(
-                f'\tmemcpy({self.id} -> '
-                f'list, (Word[]) {{{", ".join(word_list)}}}, {len(word_list)} * sizeof(Word));')
+                f"\tmemcpy({self.id} -> list, (Word[]) {{{', '.join(word_list)}}}, {len(word_list)} * sizeof(Word));"
+            )
 
     def set_id(self, id_string):
         self._id = id_string

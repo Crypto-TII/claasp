@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -21,14 +20,22 @@ from claasp.input import Input
 from claasp.component import Component
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
+from claasp.name_mappings import WORD_OPERATION
 
 
 class Rotate(Component):
-    def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, parameter):
-        component_id = f'rot_{current_round_number}_{current_round_number_of_components}'
-        component_type = 'word_operation'
-        description = ['ROTATE', parameter]
+    def __init__(
+        self,
+        current_round_number,
+        current_round_number_of_components,
+        input_id_links,
+        input_bit_positions,
+        output_bit_size,
+        parameter,
+    ):
+        component_id = f"rot_{current_round_number}_{current_round_number_of_components}"
+        component_type = WORD_OPERATION
+        description = ["ROTATE", parameter]
         component_input = Input(output_bit_size, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
@@ -60,8 +67,8 @@ class Rotate(Component):
 
         rotation_const = self.description[1]
         ninputs = noutputs = self.output_bit_size
-        input_vars = [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)]
-        output_vars = [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)]
+        input_vars = [f"{self.id}_{model.input_postfix}{i}" for i in range(ninputs)]
+        output_vars = [f"{self.id}_{model.output_postfix}{i}" for i in range(noutputs)]
         ring_R = model.ring()
         x = list(map(ring_R, input_vars))
         y = list(map(ring_R, output_vars))
@@ -122,22 +129,22 @@ class Rotate(Component):
               ...
               'constraint rot_0_0[15] = plaintext[8];'])
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         rot_amount = abs(self.description[1])
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_declarations = []
         input_len = len(all_inputs)
         if rot_amount == self.description[1]:
-            cp_constraints = [f'constraint {output_id_link}[{i}] = {all_inputs[(i - rot_amount) % input_len]};'
-                              for i in range(output_size)]
+            cp_constraints = [
+                f"constraint {self.id}[{i}] = {all_inputs[(i - rot_amount) % input_len]};"
+                for i in range(self.output_bit_size)
+            ]
         else:
-            cp_constraints = [f'constraint {output_id_link}[{i}] = {all_inputs[(i + rot_amount) % input_len]};'
-                              for i in range(output_size)]
+            cp_constraints = [
+                f"constraint {self.id}[{i}] = {all_inputs[(i + rot_amount) % input_len]};"
+                for i in range(self.output_bit_size)
+            ]
 
         return cp_declarations, cp_constraints
 
@@ -163,44 +170,53 @@ class Rotate(Component):
               ...
               'constraint rot_0_0_inverse[15] = plaintext[8];'])
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         rot_amount = abs(self.description[1])
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_declarations = []
         input_len = len(all_inputs)
         if rot_amount == self.description[1]:
-            cp_constraints = [f'constraint {output_id_link}_inverse[{i}] = {all_inputs[(i - rot_amount) % input_len]};'
-                              for i in range(output_size)]
+            cp_constraints = [
+                f"constraint {self.id}_inverse[{i}] = {all_inputs[(i - rot_amount) % input_len]};"
+                for i in range(self.output_bit_size)
+            ]
         else:
-            cp_constraints = [f'constraint {output_id_link}_inverse[{i}] = {all_inputs[(i + rot_amount) % input_len]};'
-                              for i in range(output_size)]
+            cp_constraints = [
+                f"constraint {self.id}_inverse[{i}] = {all_inputs[(i + rot_amount) % input_len]};"
+                for i in range(self.output_bit_size)
+            ]
 
         return cp_declarations, cp_constraints
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs_value = []
         all_inputs_active = []
         word_size = model.word_size
         rot_amount = self.description[1] // word_size
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
-                                     for j in range(len(bit_positions) // word_size)])
-            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
-                                      for j in range(len(bit_positions) // word_size)])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs_value.extend(
+                [
+                    f"{id_link}_value[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
+            all_inputs_active.extend(
+                [
+                    f"{id_link}_active[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
         input_len = len(all_inputs_value)
         cp_constraints = []
         for i in range(input_len):
-            cp_constraints.append(f'constraint {output_id_link}_active[{i}] = {all_inputs_active[(i - rot_amount) % input_len]};')
-            cp_constraints.append(f'constraint {output_id_link}_value[{i}] = {all_inputs_value[(i - rot_amount) % input_len]};')
+            cp_constraints.append(
+                f"constraint {self.id}_active[{i}] = {all_inputs_active[(i - rot_amount) % input_len]};"
+            )
+            cp_constraints.append(
+                f"constraint {self.id}_value[{i}] = {all_inputs_value[(i - rot_amount) % input_len]};"
+            )
 
         return cp_declarations, cp_constraints
 
@@ -226,7 +242,6 @@ class Rotate(Component):
               'constraint rot_0_18[2] = sbox_0_14[0];',
               'constraint rot_0_18[3] = sbox_0_2[0];'])
         """
-        output_size = int(self.output_bit_size)
         input_id_link = self.input_id_links
         output_id_link = self.id
         input_bit_positions = self.input_bit_positions
@@ -238,11 +253,11 @@ class Rotate(Component):
         is_mix = False
         for i in range(numb_of_inp):
             for j in range(len(input_bit_positions[i]) // word_size):
-                all_inputs.append(f'{input_id_link[i]}[{input_bit_positions[i][j * word_size] // word_size}]')
+                all_inputs.append(f"{input_id_link[i]}[{input_bit_positions[i][j * word_size] // word_size}]")
             rem = len(input_bit_positions[i]) % word_size
             if rem != 0:
                 rem = word_size - (len(input_bit_positions[i]) % word_size)
-                all_inputs.append(f'{output_id_link}_i[{number_of_mix}]')
+                all_inputs.append(f"{output_id_link}_i[{number_of_mix}]")
                 number_of_mix += 1
                 is_mix = True
                 l = 1
@@ -251,16 +266,20 @@ class Rotate(Component):
                     del input_bit_positions[i + l][0:rem]
                     rem -= length
                     l += 1
-        cp_declarations = [f'array[0..{(output_size - 1) // word_size}] of var 0..1: {output_id_link};']
+        cp_declarations = [f"array[0..{(self.output_bit_size - 1) // word_size}] of var 0..1: {output_id_link};"]
         if is_mix:
-            cp_declarations.append(f'array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;')
+            cp_declarations.append(f"array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;")
         input_len = len(all_inputs)
         if rot_amount == self.description[1]:
-            cp_constraints = [f'constraint {output_id_link}[{i}] = {all_inputs[(i - rot_amount) % input_len]};'
-                              for i in range(output_size // word_size)]
+            cp_constraints = [
+                f"constraint {output_id_link}[{i}] = {all_inputs[(i - rot_amount) % input_len]};"
+                for i in range(self.output_bit_size // word_size)
+            ]
         else:
-            cp_constraints = [f'constraint {output_id_link}[{i}] = {all_inputs[(i + rot_amount) % input_len]};'
-                              for i in range(output_size // word_size)]
+            cp_constraints = [
+                f"constraint {output_id_link}[{i}] = {all_inputs[(i + rot_amount) % input_len]};"
+                for i in range(self.output_bit_size // word_size)
+            ]
 
         return cp_declarations, cp_constraints
 
@@ -290,29 +309,27 @@ class Rotate(Component):
               ...
               'constraint rot_0_0_o[15]=rot_0_0_i[8];'])
         """
+        cp_declarations = [
+            f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id}_i;",
+            f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id}_o;",
+        ]
         output_size = int(self.output_bit_size)
-        output_id_link = self.id
         rot_amount = abs(self.description[1])
         cp_constraints = []
-        cp_declarations = [f'array[0..{output_size - 1}] of var 0..1: {output_id_link}_i;',
-                           f'array[0..{output_size - 1}] of var 0..1: {output_id_link}_o;']
         if rot_amount == self.description[1]:
             for i in range(output_size):
-                cp_constraints.append(
-                    f'constraint {output_id_link}_o[{i}]={output_id_link}_i[{(i - rot_amount) % output_size}];')
+                cp_constraints.append(f"constraint {self.id}_o[{i}]={self.id}_i[{(i - rot_amount) % output_size}];")
         else:
             for i in range(output_size):
-                cp_constraints.append(
-                    f'constraint {output_id_link}_o[{i}]={output_id_link}_i[{(i + rot_amount) % output_size}];')
-        result = cp_declarations, cp_constraints
+                cp_constraints.append(f"constraint {self.id}_o[{i}]={self.id}_i[{(i + rot_amount) % output_size}];")
 
-        return result
+        return cp_declarations, cp_constraints
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
-        return [f'  {self.id} = bit_vector_ROTATE([{",".join(params)} ], {self.description[1]})']
+        return [f"  {self.id} = bit_vector_ROTATE([{','.join(params)} ], {self.description[1]})"]
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} = byte_vector_ROTATE({params}, {self.description[1]}, {self.input_bit_size})']
+        return [f"  {self.id} = byte_vector_ROTATE({params}, {self.description[1]}, {self.input_bit_size})"]
 
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):
         rotate_code = []
@@ -321,8 +338,8 @@ class Rotate(Component):
         wordstring_variables.append(self.id)
         direction = "RIGHT" if self.description[1] >= 0 else "LEFT"
         rotate_code.append(
-            f'\tWordString *{self.id} = '
-            f'{direction}_{self.description[0]}(input, {abs(self.description[1])});')
+            f"\tWordString *{self.id} = {direction}_{self.description[0]}(input, {abs(self.description[1])});"
+        )
 
         if verbosity:
             self.print_word_values(rotate_code)
@@ -333,10 +350,10 @@ class Rotate(Component):
         output_id_link = self.id
         component_sign = 1
         sign = sign * component_sign
-        solution['components_values'][f'{output_id_link}_o']['sign'] = component_sign
-        solution['components_values'][output_id_link] = solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_i']
+        solution["components_values"][f"{output_id_link}_o"]["sign"] = component_sign
+        solution["components_values"][output_id_link] = solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_i"]
 
         return sign
 
@@ -371,7 +388,6 @@ class Rotate(Component):
             x_31 == x_8]
         """
         x = model.binary_variable
-        output_bit_size = self.output_bit_size
         rotation_step = self.description[1]
         abs_rotation_step = abs(rotation_step)
         input_vars, output_vars = self._get_input_output_variables()
@@ -384,8 +400,8 @@ class Rotate(Component):
         elif rotation_step > 0:
             tmp = input_vars[-abs_rotation_step:]
             input_vars = tmp + input_vars[:-abs_rotation_step]
-        for i in range(output_bit_size):
-            constraints.append(x[output_vars[i]] == x[input_vars[i]])
+        for output_var, input_var in zip(output_vars, input_vars):
+            constraints.append(x[output_var] == x[input_var])
 
         return variables, constraints
 
@@ -481,10 +497,8 @@ class Rotate(Component):
              x_31 == x_8]
 
         """
-
         x_class = model.trunc_binvar
 
-        output_size = self.output_bit_size
         rotation_step = self.description[1]
         abs_rotation_step = abs(rotation_step)
         input_class_vars, output_class_vars = self._get_input_output_variables()
@@ -497,8 +511,8 @@ class Rotate(Component):
         elif rotation_step > 0:
             tmp = input_class_vars[-abs_rotation_step:]
             input_class_vars = tmp + input_class_vars[:-abs_rotation_step]
-        for i in range(output_size):
-            constraints.append(x_class[output_class_vars[i]] == x_class[input_class_vars[i]])
+        for output_class_var, input_class_var in zip(output_class_vars, input_class_vars):
+            constraints.append(x_class[output_class_var] == x_class[input_class_var])
 
         return class_variables, constraints
 
@@ -536,7 +550,6 @@ class Rotate(Component):
             x_31 == x_8]
         """
         x = model.binary_variable
-        output_bit_size = self.output_bit_size
         rotation_step = self.description[1]
         abs_rotation_step = abs(rotation_step)
         input_vars, output_vars = self._get_independent_input_output_variables()
@@ -548,11 +561,10 @@ class Rotate(Component):
         elif rotation_step > 0:
             tmp = input_vars[-abs_rotation_step:]
             input_vars = tmp + input_vars[:-abs_rotation_step]
-        for i in range(output_bit_size):
-            constraints.append(x[output_vars[i]] == x[input_vars[i]])
-        result = variables, constraints
+        for output_var, input_var in zip(output_vars, input_vars):
+            constraints.append(x[output_var] == x[input_var])
 
-        return result
+        return variables, constraints
 
     def minizinc_constraints(self, model):
         r"""
@@ -581,8 +593,8 @@ class Rotate(Component):
         var_names = self._define_var(input_postfix, output_postfix, model.data_type)
         rotation_const = self.description[1]
         ninputs = noutputs = self.output_bit_size
-        input_vars = [self.id + "_" + input_postfix + str(i) for i in range(ninputs)]
-        output_vars = [self.id + "_" + output_postfix + str(i) for i in range(noutputs)]
+        input_vars = [f"{self.id}_{input_postfix}{i}" for i in range(ninputs)]
+        output_vars = [f"{self.id}_{output_postfix}{i}" for i in range(noutputs)]
         input_vars_1 = input_vars
         mzn_input_array_1 = self._create_minizinc_1d_array_from_list(input_vars_1)
         output_vars_1 = output_vars
@@ -590,10 +602,12 @@ class Rotate(Component):
 
         if rotation_const < 0:
             rotate_mzn_constraints = [
-                f'constraint LRot({mzn_input_array_1}, {int(-1*rotation_const)})={mzn_output_array_1};\n']
+                f"constraint LRot({mzn_input_array_1}, {int(-1 * rotation_const)})={mzn_output_array_1};\n"
+            ]
         else:
             rotate_mzn_constraints = [
-                f'constraint RRot({mzn_input_array_1}, {int(rotation_const)})={mzn_output_array_1};\n']
+                f"constraint RRot({mzn_input_array_1}, {int(rotation_const)})={mzn_output_array_1};\n"
+            ]
 
         return var_names, rotate_mzn_constraints
 

@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -24,12 +23,14 @@ from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
     output_dictionary_that_contains_xor_inequalities,
-    update_dictionary_that_contains_xor_inequalities_between_n_input_bits)
+    update_dictionary_that_contains_xor_inequalities_between_n_input_bits,
+)
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
     update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs,
-    output_dictionary_that_contains_wordwise_truncated_xor_inequalities
+    output_dictionary_that_contains_wordwise_truncated_xor_inequalities,
 )
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
+from claasp.name_mappings import WORD_OPERATION
 
 
 def cp_build_truncated_table(numadd):
@@ -46,13 +47,15 @@ def cp_build_truncated_table(numadd):
         sage: cp_build_truncated_table(3)
         'array[0..4, 1..3] of int: xor_truncated_table_3 = array2d(0..4, 1..3, [0,0,0,0,1,1,1,0,1,1,1,0,1,1,1]);'
     """
-    size = 2 ** numadd
-    binary_list = (f'{i:0{numadd}b}' for i in range(size))
-    table_items = [','.join(i) for i in binary_list if i.count('1') != 1]
-    table = ','.join(table_items)
-    xor_table = f'array[0..{size - numadd - 1}, 1..{numadd}] of int: ' \
-                f'xor_truncated_table_{numadd} = array2d(0..{size - numadd - 1}, 1..{numadd}, ' \
-                f'[{table}]);'
+    size = 2**numadd
+    binary_list = (f"{i:0{numadd}b}" for i in range(size))
+    table_items = [",".join(i) for i in binary_list if i.count("1") != 1]
+    table = ",".join(table_items)
+    xor_table = (
+        f"array[0..{size - numadd - 1}, 1..{numadd}] of int: "
+        f"xor_truncated_table_{numadd} = array2d(0..{size - numadd - 1}, 1..{numadd}, "
+        f"[{table}]);"
+    )
 
     return xor_table
 
@@ -94,16 +97,16 @@ def get_transformed_xor_input_links_and_positions(word_size, all_inputs, i, inpu
     for j in range(numadd + 1):
         if all_inputs[i + input_len * j][0] not in input_id_link:
             input_id_link.append(all_inputs[i + input_len * j][0])
-            input_bit_positions[new_numb_of_inp] += [all_inputs[i + input_len * j][1] * word_size + k
-                                                     for k in range(word_size)]
+            input_bit_positions[new_numb_of_inp] += [
+                all_inputs[i + input_len * j][1] * word_size + k for k in range(word_size)
+            ]
             new_numb_of_inp += 1
         else:
             index = 0
             for c in range(len(input_id_link)):
                 if input_id_link[c] == all_inputs[i + input_len * j][0]:
                     index += c
-            input_bit_positions[index] += [all_inputs[i + input_len * j][1] * word_size + k
-                                           for k in range(word_size)]
+            input_bit_positions[index] += [all_inputs[i + input_len * j][1] * word_size + k for k in range(word_size)]
     input_bit_positions = [x for x in input_bit_positions if x != []]
 
     return input_bit_positions, input_id_link
@@ -134,12 +137,18 @@ def get_milp_constraints_from_inequalities(inequalities, input_vars, number_of_i
 
 
 class XOR(Component):
-    def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
-        component_id = f'xor_{current_round_number}_{current_round_number_of_components}'
-        component_type = 'word_operation'
+    def __init__(
+        self,
+        current_round_number,
+        current_round_number_of_components,
+        input_id_links,
+        input_bit_positions,
+        output_bit_size,
+    ):
+        component_id = f"xor_{current_round_number}_{current_round_number_of_components}"
+        component_type = WORD_OPERATION
         input_len = sum(map(len, input_bit_positions))
-        description = ['XOR', int(input_len / output_bit_size)]
+        description = ["XOR", int(input_len / output_bit_size)]
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
@@ -175,10 +184,10 @@ class XOR(Component):
         ninputs = self.input_bit_size
         noutputs = self.output_bit_size
         word_size = noutputs
-        input_vars = [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)]
-        output_vars = [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)]
+        input_vars = [f"{self.id}_{model.input_postfix}{i}" for i in range(ninputs)]
+        output_vars = [f"{self.id}_{model.output_postfix}{i}" for i in range(noutputs)]
         ring_R = model.ring()
-        words_vars = [list(map(ring_R, input_vars))[i:i + word_size] for i in range(0, ninputs, word_size)]
+        words_vars = [list(map(ring_R, input_vars))[i : i + word_size] for i in range(0, ninputs, word_size)]
 
         x = [ring_R.zero() for _ in range(noutputs)]
         for word_vars in words_vars:
@@ -220,9 +229,9 @@ class XOR(Component):
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
-            operands = [f'x -{output_bit_ids[i]}']
+            operands = [f"x -{output_bit_ids[i]}"]
             operands.extend(input_bit_ids[i::output_bit_len])
-            constraints.append(' '.join(operands))
+            constraints.append(" ".join(operands))
 
         return output_bit_ids, constraints
 
@@ -251,19 +260,14 @@ class XOR(Component):
               ...
               'constraint xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2;'])
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = []
-        for i in range(output_size):
-            operation = ' + '.join(all_inputs[i::output_size])
-            new_constraint = f'constraint {output_id_link}[{i}] = ({operation}) mod 2;'
-            cp_constraints.append(new_constraint)
+        for i in range(self.output_bit_size):
+            operation = " + ".join(all_inputs[i::self.output_bit_size])
+            cp_constraints.append(f"constraint {self.id}[{i}] = ({operation}) mod 2;")
 
         return cp_declarations, cp_constraints
 
@@ -286,21 +290,17 @@ class XOR(Component):
                ...
               'constraint if ((modadd_0_1[15] < 2) /\\ (key[63]< 2)) then xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2 else xor_0_2[15] = 2 endif;'])
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = []
-        for i in range(output_size):
-            operation = ' < 2) /\\ ('.join(all_inputs[i::output_size])
-            new_constraint = 'constraint if (('
-            new_constraint += operation + '< 2)) then '
-            operation2 = ' + '.join(all_inputs[i::output_size])
-            new_constraint += f'{output_id_link}[{i}] = ({operation2}) mod 2 else {output_id_link}[{i}] = 2 endif;'
+        for i in range(self.output_bit_size):
+            operation = " < 2) /\\ (".join(all_inputs[i::self.output_bit_size])
+            new_constraint = "constraint if (("
+            new_constraint += operation + "< 2)) then "
+            operation2 = " + ".join(all_inputs[i::self.output_bit_size])
+            new_constraint += f"{self.id}[{i}] = ({operation2}) mod 2 else {self.id}[{i}] = 2 endif;"
             cp_constraints.append(new_constraint)
 
         return cp_declarations, cp_constraints
@@ -325,31 +325,22 @@ class XOR(Component):
                ...
               'constraint if (modadd_0_1[15] < 2) /\\ (key[63] < 2) then xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2 elseif (modadd_0_1[15] + key[63] = modadd_0_1[15]) then xor_0_2[15] = modadd_0_1[15] elseif (modadd_0_1[15] + key[63] = key[63]) then xor_0_2[15] = key[63] else xor_0_2[15] = 2 endif;'])
         """
-
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = [
-            f'{id_link}[{position}]'
-            for id_link, bit_positions in zip(input_id_links, input_bit_positions)
+            f"{id_link}[{position}]"
+            for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions)
             for position in bit_positions
         ]
         cp_constraints = []
-        for i in range(output_size):
-            inputs = all_inputs[i::output_size]
-            condition = ' < 2) /\\ ('.join(inputs) + ' < 2'
-            operation_sum = ' + '.join(inputs)
-
+        for i in range(self.output_bit_size):
+            inputs = all_inputs[i::self.output_bit_size]
+            condition = " < 2) /\\ (".join(inputs) + " < 2"
+            operation_sum = " + ".join(inputs)
             new_constraint = (
-                f'constraint if ({condition}) then '
-                f'{output_id_link}[{i}] = ({operation_sum}) mod 2 '
-                f'elseif ({operation_sum} = {inputs[0]}) then '
-                f'{output_id_link}[{i}] = {inputs[0]} '
-                f'elseif ({operation_sum} = {inputs[1]}) then '
-                f'{output_id_link}[{i}] = {inputs[1]} '
-                f'else {output_id_link}[{i}] = 2 endif;'
+                f"constraint if ({condition}) then {self.id}[{i}] = ({operation_sum}) mod 2 "
+                f"elseif ({operation_sum} = {inputs[0]}) then {self.id}[{i}] = {inputs[0]} "
+                f"elseif ({operation_sum} = {inputs[1]}) then {self.id}[{i}] = {inputs[1]} "
+                f"else {self.id}[{i}] = 2 endif;"
             )
             cp_constraints.append(new_constraint)
 
@@ -381,75 +372,111 @@ class XOR(Component):
                ...
               'constraint if xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active > 2 then xor_0_0_active[15] == 3 /\\ xor_0_0_value[15] = -2 elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 1 then xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 elseif xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value < 0 then xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elseif xor_0_0_temp_0_15_value == xor_0_0_temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum([(((floor(xor_0_0_temp_0_15_value/pow(2,j)) + floor(xor_0_0_temp_1_15_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..xor_0_0_bound_value_0_15]) endif;'])
         """
-        input_id_links = self.input_id_links
         output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs_value = []
         all_inputs_active = []
         numadd = self.description[1]
         word_size = model.word_size
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
-                                     for j in range(len(bit_positions) // word_size)])
-            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
-                                      for j in range(len(bit_positions) // word_size)])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs_value.extend(
+                [
+                    f"{id_link}_value[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
+            all_inputs_active.extend(
+                [
+                    f"{id_link}_active[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
         input_len = len(all_inputs_value) // numadd
         cp_constraints = []
         initial_constraints = []
         for i in range(2 * numadd - 2):
             for j in range(input_len):
-                cp_declarations.append(
-                    f'var -2..{2**word_size - 1}: {output_id_link}_temp_{i}_{j}_value;')
-                cp_declarations.append(
-                    f'var 0..3: {output_id_link}_temp_{i}_{j}_active;')
+                cp_declarations.append(f"var -2..{2**word_size - 1}: {output_id_link}_temp_{i}_{j}_value;")
+                cp_declarations.append(f"var 0..3: {output_id_link}_temp_{i}_{j}_active;")
         for i in range(input_len):
             for summand in range(numadd - 2):
-                cp_declarations.append(f'var 0..{word_size + 1}: {output_id_link}_bound_value_{numadd + summand - 1}_{i} = if {output_id_link}_temp_{numadd + summand - 1}_{i}_value ' \
-                                       f'+ {output_id_link}_temp_{summand}_{i}_value > 0 then ceil(log2({output_id_link}_temp_{numadd + summand - 1}_{i}_value ' \
-                                       f'+ {output_id_link}_temp_{summand}_{i}_value)) else 0 endif;')
-            cp_declarations.append(f'var 0..{word_size + 1}: {output_id_link}_bound_value_{numadd - 2}_{i} = if {output_id_link}_temp_{numadd - 2}_{i}_value ' \
-                                   f'+ {output_id_link}_temp_{2 * numadd - 3}_{i}_value > 0 then ceil(log2({output_id_link}_temp_{numadd - 2}_{i}_value ' \
-                                   f'+ {output_id_link}_temp_{2 * numadd - 3}_{i}_value)) else 0 endif;')
+                cp_declarations.append(
+                    f"var 0..{word_size + 1}: {output_id_link}_bound_value_{numadd + summand - 1}_{i} = if {output_id_link}_temp_{numadd + summand - 1}_{i}_value "
+                    f"+ {output_id_link}_temp_{summand}_{i}_value > 0 then ceil(log2({output_id_link}_temp_{numadd + summand - 1}_{i}_value "
+                    f"+ {output_id_link}_temp_{summand}_{i}_value)) else 0 endif;"
+                )
+            cp_declarations.append(
+                f"var 0..{word_size + 1}: {output_id_link}_bound_value_{numadd - 2}_{i} = if {output_id_link}_temp_{numadd - 2}_{i}_value "
+                f"+ {output_id_link}_temp_{2 * numadd - 3}_{i}_value > 0 then ceil(log2({output_id_link}_temp_{numadd - 2}_{i}_value "
+                f"+ {output_id_link}_temp_{2 * numadd - 3}_{i}_value)) else 0 endif;"
+            )
         for i in range(numadd):
             for j in range(input_len):
                 initial_constraints.append(
-                    f'constraint {output_id_link}_temp_{i}_{j}_value = {all_inputs_value[i * input_len + j]} /\\ '
-                    f'{output_id_link}_temp_{i}_{j}_active = {all_inputs_active[i * input_len + j]};')
+                    f"constraint {output_id_link}_temp_{i}_{j}_value = {all_inputs_value[i * input_len + j]} /\\ "
+                    f"{output_id_link}_temp_{i}_{j}_active = {all_inputs_active[i * input_len + j]};"
+                )
         cp_constraints += initial_constraints
         for i in range(input_len):
-            new_constraint = ''
+            new_constraint = ""
             for summand in range(numadd - 2):
-                new_constraint += f'constraint if {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active > 2 then ' \
-                                  f'{output_id_link}_temp_{numadd + summand}_{i}_active = 3 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = -2 '
-                new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active == 1 then' \
-                                  f' {output_id_link}_temp_{numadd + summand}_{i}_active = 1 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value =' \
-                                  f' {output_id_link}_temp_{numadd + summand - 1}_{i}_value + {output_id_link}_temp_{summand}_{i}_value '
-                new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active == 0 then' \
-                                  f' {output_id_link}_temp_{numadd + summand}_{i}_active = 0 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = 0 '
-                new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_value + {output_id_link}_temp_{summand}_{i}_value < 0 then ' \
-                                  f'{output_id_link}_temp_{numadd + summand}_{i}_active = 2 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = -1 '
-                new_constraint += f'elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_value == {output_id_link}_temp_{summand}_{i}_value then ' \
-                                  f'{output_id_link}_temp_{numadd + summand}_{i}_active = 0 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = 0 '
-                xor_to_int = f'sum([(((floor({output_id_link}_temp_{numadd + summand - 1}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{summand}_{i}' \
-                             f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{output_id_link}_bound_value_{numadd + summand - 1}_{i}])'
-                new_constraint += f'else {output_id_link}_temp_{numadd + summand}_{i}_active = 1 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value' \
-                                  f' = {xor_to_int} endif;\n'
-            new_constraint += f'constraint if {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active > 2 then ' \
-                              f'{output_id_link}_active[{i}] == 3 /\\ {output_id_link}_value[{i}] = -2 '
-            new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active == 1 then ' \
-                              f'{output_id_link}_active[{i}] = 1 /\\ {output_id_link}_value[{i}] = {output_id_link}_temp_{numadd - 2}_' \
-                              f'{i}_value + {output_id_link}_temp_{2 * numadd - 3}_{i}_value '
-            new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active == 0 then ' \
-                              f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 '
-            new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_value + {output_id_link}_temp_{2 * numadd - 3}_{i}_value < 0 then ' \
-                              f'{output_id_link}_active[{i}] = 2 /\\ {output_id_link}_value[{i}] = -1 '
-            new_constraint += f'elseif {output_id_link}_temp_{numadd - 2}_{i}_value == {output_id_link}_temp_{2 * numadd - 3}_{i}_value then ' \
-                              f'{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 '
-            xor_to_int = f'sum([(((floor({output_id_link}_temp_{numadd - 2}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{2 * numadd - 3}_{i}' \
-                         f'_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{output_id_link}_bound_value_{numadd - 2}_{i}])'
-            new_constraint += f'else {output_id_link}_active[{i}] = 1 /\\ {output_id_link}_value[{i}] =' \
-                              f' {xor_to_int} endif;'
+                new_constraint += (
+                    f"constraint if {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active > 2 then "
+                    f"{output_id_link}_temp_{numadd + summand}_{i}_active = 3 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = -2 "
+                )
+                new_constraint += (
+                    f"elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active == 1 then"
+                    f" {output_id_link}_temp_{numadd + summand}_{i}_active = 1 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value ="
+                    f" {output_id_link}_temp_{numadd + summand - 1}_{i}_value + {output_id_link}_temp_{summand}_{i}_value "
+                )
+                new_constraint += (
+                    f"elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_active + {output_id_link}_temp_{summand}_{i}_active == 0 then"
+                    f" {output_id_link}_temp_{numadd + summand}_{i}_active = 0 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = 0 "
+                )
+                new_constraint += (
+                    f"elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_value + {output_id_link}_temp_{summand}_{i}_value < 0 then "
+                    f"{output_id_link}_temp_{numadd + summand}_{i}_active = 2 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = -1 "
+                )
+                new_constraint += (
+                    f"elseif {output_id_link}_temp_{numadd + summand - 1}_{i}_value == {output_id_link}_temp_{summand}_{i}_value then "
+                    f"{output_id_link}_temp_{numadd + summand}_{i}_active = 0 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value = 0 "
+                )
+                xor_to_int = (
+                    f"sum([(((floor({output_id_link}_temp_{numadd + summand - 1}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{summand}_{i}"
+                    f"_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{output_id_link}_bound_value_{numadd + summand - 1}_{i}])"
+                )
+                new_constraint += (
+                    f"else {output_id_link}_temp_{numadd + summand}_{i}_active = 1 /\\ {output_id_link}_temp_{numadd + summand}_{i}_value"
+                    f" = {xor_to_int} endif;\n"
+                )
+            new_constraint += (
+                f"constraint if {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active > 2 then "
+                f"{output_id_link}_active[{i}] == 3 /\\ {output_id_link}_value[{i}] = -2 "
+            )
+            new_constraint += (
+                f"elseif {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active == 1 then "
+                f"{output_id_link}_active[{i}] = 1 /\\ {output_id_link}_value[{i}] = {output_id_link}_temp_{numadd - 2}_"
+                f"{i}_value + {output_id_link}_temp_{2 * numadd - 3}_{i}_value "
+            )
+            new_constraint += (
+                f"elseif {output_id_link}_temp_{numadd - 2}_{i}_active + {output_id_link}_temp_{2 * numadd - 3}_{i}_active == 0 then "
+                f"{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 "
+            )
+            new_constraint += (
+                f"elseif {output_id_link}_temp_{numadd - 2}_{i}_value + {output_id_link}_temp_{2 * numadd - 3}_{i}_value < 0 then "
+                f"{output_id_link}_active[{i}] = 2 /\\ {output_id_link}_value[{i}] = -1 "
+            )
+            new_constraint += (
+                f"elseif {output_id_link}_temp_{numadd - 2}_{i}_value == {output_id_link}_temp_{2 * numadd - 3}_{i}_value then "
+                f"{output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 "
+            )
+            xor_to_int = (
+                f"sum([(((floor({output_id_link}_temp_{numadd - 2}_{i}_value/pow(2,j)) + floor({output_id_link}_temp_{2 * numadd - 3}_{i}"
+                f"_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..{output_id_link}_bound_value_{numadd - 2}_{i}])"
+            )
+            new_constraint += (
+                f"else {output_id_link}_active[{i}] = 1 /\\ {output_id_link}_value[{i}] = {xor_to_int} endif;"
+            )
             cp_constraints.append(new_constraint)
 
         return cp_declarations, cp_constraints
@@ -477,18 +504,21 @@ class XOR(Component):
             (['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);'],
              'constraint table([rot_2_16[0]]++[xor_2_26[0]], xor_truncated_table_2);')
         """
-        input_id_links = self.input_id_links
-        input_bit_positions = self.input_bit_positions
-        description = self.description
-        numadd = description[1]
+        numadd = self.description[1]
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{bit_positions[j * model.word_size] // model.word_size}]'
-                               for j in range(len(bit_positions) // model.word_size)])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend(
+                [
+                    f"{id_link}[{bit_positions[j * model.word_size] // model.word_size}]"
+                    for j in range(len(bit_positions) // model.word_size)
+                ]
+            )
         input_len = len(all_inputs) // numadd
-        cp_constraints = 'constraint table(' \
-                         + '++'.join([f'[{all_inputs[input_len * j]}]' for j in range(numadd)]) \
-                         + f', xor_truncated_table_{numadd});'
+        cp_constraints = (
+            "constraint table("
+            + "++".join(f"[{all_inputs[input_len * j]}]" for j in range(numadd))
+            + f", xor_truncated_table_{numadd});"
+        )
         xor_table = cp_build_truncated_table(numadd)
         cp_declarations = []
         if xor_table not in variables_list:
@@ -516,45 +546,47 @@ class XOR(Component):
               ...
               'constraint xor_0_2_o[15] = xor_0_2_i[31];'])
         """
-        input_size = self.input_bit_size
-        output_size = self.output_bit_size
-        output_id_link = self.id
+        cp_declarations = [
+            f"array[0..{self.input_bit_size - 1}] of var 0..1: {self.id}_i;",
+            f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id}_o;",
+        ]
         num_of_addenda = self.description[1]
-        input_len = input_size // num_of_addenda
-        cp_declarations = [f'array[0..{input_size - 1}] of var 0..1: {output_id_link}_i;',
-                           f'array[0..{output_size - 1}] of var 0..1: {output_id_link}_o;']
+        input_len = self.input_bit_size // num_of_addenda
         cp_constraints = []
-        for i in range(output_size):
-            cp_constraints.extend([f'constraint {output_id_link}_o[{i}] = {output_id_link}_i[{i + input_len * j}];'
-                                   for j in range(num_of_addenda)])
+        for i in range(self.output_bit_size):
+            cp_constraints.extend(
+                [
+                    f"constraint {self.id}_o[{i}] = {self.id}_i[{i + input_len * j}];"
+                    for j in range(num_of_addenda)
+                ]
+            )
         result = cp_declarations, cp_constraints
 
         return result
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
-        return [f'  {self.id} = bit_vector_XOR([{",".join(params)} ], {self.description[1]}, {self.output_bit_size})']
+        return [f"  {self.id} = bit_vector_XOR([{','.join(params)} ], {self.description[1]}, {self.output_bit_size})"]
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} = byte_vector_XOR({params})']
+        return [f"  {self.id} = byte_vector_XOR({params})"]
 
     def get_word_operation_sign(self, constants, sign, solution):
         output_id_link = self.id
-        input_id_links = self.input_id_links
-        input_size = self.input_bit_size
-        for i, input_id_link in enumerate(input_id_links):
-            if 'constant' in input_id_link:
-                int_const_mask = int(solution['components_values'][f'{input_id_link}_o']['value'])
-                bit_const_mask = [int(digit) for digit in format(int_const_mask, f'0{input_size}b')]
+        for i, input_id_link in enumerate(self.input_id_links):
+            if "constant" in input_id_link:
+                int_const_mask = int(solution["components_values"][f"{input_id_link}_o"]["value"])
+                bit_const_mask = [int(digit) for digit in format(int_const_mask, f"0{self.input_bit_size}b")]
                 input_bit_positions = self.input_bit_positions[i]
                 constant = int(constants[input_id_link])
-                bit_constant = [int(digit) for digit in format(constant, f'0{input_size}b')]
-                component_sign = generic_with_constant_sign_linear_constraints(bit_constant, bit_const_mask,
-                                                                               input_bit_positions)
+                bit_constant = [int(digit) for digit in format(constant, f"0{self.input_bit_size}b")]
+                component_sign = generic_with_constant_sign_linear_constraints(
+                    bit_constant, bit_const_mask, input_bit_positions
+                )
                 sign = sign * component_sign
-                solution['components_values'][f'{output_id_link}_o']['sign'] = component_sign
-        solution['components_values'][output_id_link] = solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_i']
+                solution["components_values"][f"{output_id_link}_o"]["sign"] = component_sign
+        solution["components_values"][output_id_link] = solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_i"]
 
         return sign
 
@@ -607,8 +639,9 @@ class XOR(Component):
         update_dictionary_that_contains_xor_inequalities_between_n_input_bits(number_of_input_bits)
         dict_inequalities = output_dictionary_that_contains_xor_inequalities()
         inequalities = dict_inequalities[number_of_input_bits]
-        constraints.extend(get_milp_constraints_from_inequalities(inequalities, input_vars,
-                                                                  number_of_input_bits, output_vars, x))
+        constraints.extend(
+            get_milp_constraints_from_inequalities(inequalities, input_vars, number_of_input_bits, output_vars, x)
+        )
 
         return variables, constraints
 
@@ -724,22 +757,31 @@ class XOR(Component):
         input_id_tuples, output_id_tuples = self._get_input_output_variables_tuples()
         input_ids, output_ids = self._get_input_output_variables()
 
-        variables = [(f"x[{var_elt}]", x[var_elt]) for var_tuple in input_id_tuples + output_id_tuples for var_elt in
-                     var_tuple]
+        variables = [
+            (f"x[{var_elt}]", x[var_elt]) for var_tuple in input_id_tuples + output_id_tuples for var_elt in var_tuple
+        ]
 
-        linking_constraints = model.link_binary_tuples_to_integer_variables(input_id_tuples + output_id_tuples,
-                                                                            input_ids + output_ids)
+        linking_constraints = model.link_binary_tuples_to_integer_variables(
+            input_id_tuples + output_id_tuples, input_ids + output_ids
+        )
         number_of_inputs = self.description[1]
         constraints = [] + linking_constraints
 
         for i, output_id in enumerate(output_id_tuples):
-            result_ids = [(f'temp_xor_{j}_{self.id}_{i}_0', f'temp_xor_{j}_{self.id}_{i}_1')
-                          for j in range(number_of_inputs - 2)] + [output_id]
-            constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][0],
-                                                             input_id_tuples[i::output_bit_size][1], result_ids[0]))
+            result_ids = [
+                (f"temp_xor_{j}_{self.id}_{i}_0", f"temp_xor_{j}_{self.id}_{i}_1") for j in range(number_of_inputs - 2)
+            ] + [output_id]
+            constraints.extend(
+                milp_utils.milp_xor_truncated(
+                    model, input_id_tuples[i::output_bit_size][0], input_id_tuples[i::output_bit_size][1], result_ids[0]
+                )
+            )
             for chunk in range(1, number_of_inputs - 1):
-                constraints.extend(milp_utils.milp_xor_truncated(model, input_id_tuples[i::output_bit_size][chunk + 1],
-                                                                 result_ids[chunk - 1], result_ids[chunk]))
+                constraints.extend(
+                    milp_utils.milp_xor_truncated(
+                        model, input_id_tuples[i::output_bit_size][chunk + 1], result_ids[chunk - 1], result_ids[chunk]
+                    )
+                )
 
         return variables, constraints
 
@@ -789,8 +831,10 @@ class XOR(Component):
 
         # if a_i < 2 for all i then b = XOR(a_i, i in range(num_inputs))
         # else b = 2
-        a = [[x_class[input_vars[i + chunk * input_bit_size]] for chunk in range(num_of_inputs)] for i in
-             range(input_bit_size)]
+        a = [
+            [x_class[input_vars[i + chunk * input_bit_size]] for chunk in range(num_of_inputs)]
+            for i in range(input_bit_size)
+        ]
         b = [x_class[output_vars[i]] for i in range(output_bit_size)]
 
         for i in range(output_bit_size):
@@ -808,8 +852,9 @@ class XOR(Component):
             # if all_ai_less_2 == 1 then b = XOR(a_i, i in range(num_inputs))
             # else b = 2
             xor_constr = milp_utils.milp_generalized_xor(a[i], b[i])
-            constr = milp_utils.milp_if_then_else(all_ai_less_2, xor_constr, [b[i] == 2],
-                                                  model._model.get_max(x_class) * num_of_inputs)
+            constr = milp_utils.milp_if_then_else(
+                all_ai_less_2, xor_constr, [b[i] == 2], model._model.get_max(x_class) * num_of_inputs
+            )
             constraints.extend(constr)
 
         return variables, constraints
@@ -872,8 +917,9 @@ class XOR(Component):
         variables = [(f"x[{var}]", x[var]) for sublist in input_vars + output_vars for var in sublist]
 
         constraints = []
-        update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs(model.word_size,
-                                                                                             num_of_inputs)
+        update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs(
+            model.word_size, num_of_inputs
+        )
         dict_inequalities = output_dictionary_that_contains_wordwise_truncated_xor_inequalities()
         inequalities = dict_inequalities[model.word_size][num_of_inputs]
 
@@ -931,18 +977,24 @@ class XOR(Component):
         constraints = []
 
         for i, output_var in enumerate(output_vars):
-            result_ids = [tuple([f'temp_xor_{j}_{self.id}_word_{i}_0', f'temp_xor_{j}_{self.id}_word_{i}_1'] + [
-                f'temp_xor_{j}_{self.id}_word_{i}_bit_{k}' for k in range(model.word_size)]) for j in
-                          range(number_of_inputs - 2)] + [output_var]
-            constraints.extend(milp_utils.milp_xor_truncated_wordwise(model,
-                                                                      input_vars[i::output_word_size][0],
-                                                                      input_vars[i::output_word_size][1],
-                                                                      result_ids[0]))
+            result_ids = [
+                tuple(
+                    [f"temp_xor_{j}_{self.id}_word_{i}_0", f"temp_xor_{j}_{self.id}_word_{i}_1"]
+                    + [f"temp_xor_{j}_{self.id}_word_{i}_bit_{k}" for k in range(model.word_size)]
+                )
+                for j in range(number_of_inputs - 2)
+            ] + [output_var]
+            constraints.extend(
+                milp_utils.milp_xor_truncated_wordwise(
+                    model, input_vars[i::output_word_size][0], input_vars[i::output_word_size][1], result_ids[0]
+                )
+            )
             for chunk in range(1, number_of_inputs - 1):
-                constraints.extend(milp_utils.milp_xor_truncated_wordwise(model,
-                                                                          input_vars[i::output_word_size][chunk + 1],
-                                                                          result_ids[chunk - 1],
-                                                                          result_ids[chunk]))
+                constraints.extend(
+                    milp_utils.milp_xor_truncated_wordwise(
+                        model, input_vars[i::output_word_size][chunk + 1], result_ids[chunk - 1], result_ids[chunk]
+                    )
+                )
 
         return variables, constraints
 
@@ -988,7 +1040,7 @@ class XOR(Component):
         output_vars = [x_class[var] for var in output_class_vars]
 
         for i in range(len(output_class_vars)):
-            input_words = input_vars[i::len(output_class_vars)]
+            input_words = input_vars[i :: len(output_class_vars)]
             input_a = input_words[0]
             input_b = input_words[1]
             output_c = output_vars[i]
@@ -996,8 +1048,9 @@ class XOR(Component):
             then_constraints_list = []
 
             # if dX0 + dX1 > 2 then dY = 3
-            a_b_greater_2, geq_2_constraints = milp_utils.milp_geq(model, input_a + input_b, 2,
-                                                                   2 * model._model.get_max(x_class) + 1)
+            a_b_greater_2, geq_2_constraints = milp_utils.milp_geq(
+                model, input_a + input_b, 2, 2 * model._model.get_max(x_class) + 1
+            )
             var_if_list.append(a_b_greater_2)
             constraints.extend(geq_2_constraints)
             then_constraints_list.append([output_c == 3])
@@ -1017,8 +1070,15 @@ class XOR(Component):
             # else dY = 2
             else_constraints = [output_c == 2]
 
-            constraints.extend(milp_utils.milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraints,
-                                                            num_of_inputs * model._model.get_max(x_class)))
+            constraints.extend(
+                milp_utils.milp_if_elif_else(
+                    model,
+                    var_if_list,
+                    then_constraints_list,
+                    else_constraints,
+                    num_of_inputs * model._model.get_max(x_class),
+                )
+            )
 
             return variables, constraints
 
@@ -1047,13 +1107,17 @@ class XOR(Component):
             mzn_input_array_2 = self._create_minizinc_1d_array_from_list(input_vars_2_temp)
             mzn_output_array = self._create_minizinc_1d_array_from_list(output_varstrs_temp)
             if model.sat_or_milp == "sat":
-                mzn_block_variables = ''
-                mzn_block_constraints = f'constraint xor_word(\n{mzn_input_array_1},' \
-                                        f'\n{mzn_input_array_2},\n{mzn_output_array})={model.true_value};\n'
+                mzn_block_variables = ""
+                mzn_block_constraints = (
+                    f"constraint xor_word(\n{mzn_input_array_1},"
+                    f"\n{mzn_input_array_2},\n{mzn_output_array})={model.true_value};\n"
+                )
             else:
-                mzn_block_variables = f'array [0..{noutputs}-1] of var 0..1: dummy_{component_id}_{i};\n'
-                mzn_block_constraints = f'constraint xor_word(\n{mzn_input_array_1},\n{mzn_input_array_2},' \
-                                        f'\n{mzn_output_array},\ndummy_{component_id}_{i})={model.true_value};\n'
+                mzn_block_variables = f"array [0..{noutputs}-1] of var 0..1: dummy_{component_id}_{i};\n"
+                mzn_block_constraints = (
+                    f"constraint xor_word(\n{mzn_input_array_1},\n{mzn_input_array_2},"
+                    f"\n{mzn_output_array},\ndummy_{component_id}_{i})={model.true_value};\n"
+                )
             return mzn_block_variables, mzn_block_constraints
 
         if self.description[0].lower() != "xor":
@@ -1069,23 +1133,25 @@ class XOR(Component):
         output_vars = [component_id + "_" + model.output_postfix + str(i) for i in range(noutputs)]
         ninput_words = int(self.description[1])
         word_chunk = noutputs
-        new_output_vars = [input_vars[0 * word_chunk:0 * word_chunk + word_chunk]]
+        new_output_vars = [input_vars[0 * word_chunk : 0 * word_chunk + word_chunk]]
         for i in range(ninput_words - 2):
             new_output_vars_temp = []
             for output_var in output_vars:
-                mzn_constraints += [f'var {model.data_type}: {output_var}_{str(i)};\n']
+                mzn_constraints += [f"var {model.data_type}: {output_var}_{str(i)};\n"]
                 new_output_vars_temp.append(output_var + "_" + str(i))
             new_output_vars.append(new_output_vars_temp)
 
         for i in range(1, ninput_words):
-            input_vars_1 = input_vars[i * word_chunk:i * word_chunk + word_chunk]
+            input_vars_1 = input_vars[i * word_chunk : i * word_chunk + word_chunk]
             input_vars_2 = new_output_vars[i - 1]
             if i == ninput_words - 1:
-                mzn_variables_and_constraints = create_block_of_xor_constraints(input_vars_1, input_vars_2,
-                                                                                output_vars, i)
+                mzn_variables_and_constraints = create_block_of_xor_constraints(
+                    input_vars_1, input_vars_2, output_vars, i
+                )
             else:
-                mzn_variables_and_constraints = create_block_of_xor_constraints(input_vars_1, input_vars_2,
-                                                                                new_output_vars[i], i)
+                mzn_variables_and_constraints = create_block_of_xor_constraints(
+                    input_vars_1, input_vars_2, new_output_vars[i], i
+                )
 
             var_names += [mzn_variables_and_constraints[0]]
             mzn_constraints += [mzn_variables_and_constraints[1]]
@@ -1132,8 +1198,9 @@ class XOR(Component):
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
-            result_bit_ids = [f'inter_{j}_{output_bit_ids[i]}'
-                              for j in range(self.description[1] - 2)] + [output_bit_ids[i]]
+            result_bit_ids = [f"inter_{j}_{output_bit_ids[i]}" for j in range(self.description[1] - 2)] + [
+                output_bit_ids[i]
+            ]
             constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::output_bit_len]))
 
         return output_bit_ids, constraints
@@ -1174,8 +1241,9 @@ class XOR(Component):
         out_ids = [(id_0, id_1) for id_0, id_1 in zip(out_ids_0, out_ids_1)]
         constraints = []
         for i, out_id in enumerate(out_ids):
-            result_ids = [(f'inter_{j}_{self.id}_{i}_0', f'inter_{j}_{self.id}_{i}_1')
-                          for j in range(self.description[1] - 2)] + [out_id]
+            result_ids = [
+                (f"inter_{j}_{self.id}_{i}_0", f"inter_{j}_{self.id}_{i}_1") for j in range(self.description[1] - 2)
+            ] + [out_id]
             constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::out_len]))
 
         return out_ids_0 + out_ids_1, constraints
@@ -1388,11 +1456,10 @@ class XOR(Component):
         input_id_link = self.input_id_links
         output_id_link = self.id
         input_bit_positions = self.input_bit_positions
-        description = self.description
-        numadd = description[1]
+        numadd = self.description[1]
         numb_of_inp = len(input_id_link)
         all_inputs = []
-        cp_declarations = [f'array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};']
+        cp_declarations = [f"array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};"]
         number_of_mix = 0
         is_mix = False
         for i in range(numb_of_inp):
@@ -1401,7 +1468,7 @@ class XOR(Component):
             rem = len(input_bit_positions[i]) % model.word_size
             if rem != 0:
                 rem = model.word_size - (len(input_bit_positions[i]) % model.word_size)
-                all_inputs.append([f'{output_id_link}_i', number_of_mix])
+                all_inputs.append([f"{output_id_link}_i", number_of_mix])
                 number_of_mix += 1
                 is_mix = True
                 l = 1
@@ -1411,18 +1478,18 @@ class XOR(Component):
                     rem -= length
                     l += 1
         if is_mix:
-            cp_declarations.append(f'array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;')
+            cp_declarations.append(f"array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;")
         all_inputs += [[output_id_link, i] for i in range(output_size // model.word_size)]
         input_len = output_size // model.word_size
         for i in range(input_len):
-            input_bit_positions, input_id_link = \
-                get_transformed_xor_input_links_and_positions(model.word_size, all_inputs, i,
-                                                              input_len, numadd, numb_of_inp)
+            input_bit_positions, input_id_link = get_transformed_xor_input_links_and_positions(
+                model.word_size, all_inputs, i, input_len, numadd, numb_of_inp
+            )
             input_bits = 0
             for input_bit in input_bit_positions:
                 input_bits += len(input_bit)
             xor_component = XOR("", "", input_id_link, input_bit_positions, input_bits)
-            xor_component.set_description(['XOR', numadd + 1])
+            xor_component.set_description(["XOR", numadd + 1])
             model.list_of_xor_components.append(xor_component)
         cp_constraints = []
 
