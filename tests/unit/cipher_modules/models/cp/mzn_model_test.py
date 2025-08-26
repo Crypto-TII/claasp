@@ -5,11 +5,13 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import \
-        MznXorDifferentialModelARXOptimized
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
+    MznXorDifferentialModelARXOptimized,
+)
 from claasp.cipher_modules.models.cp.mzn_models.mzn_cipher_model_arx_optimized import MznCipherModelARXOptimized
-from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized \
-    import MznDeterministicTruncatedXorDifferentialModelARXOptimized
+from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized import (
+    MznDeterministicTruncatedXorDifferentialModelARXOptimized,
+)
 
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
@@ -17,40 +19,26 @@ def test_build_mix_column_truncated_table():
     aes = AESBlockCipher(number_of_rounds=3)
     mzn = MznModel(aes)
     mix_column = aes.component_from(0, 21)
-    assert mzn.build_mix_column_truncated_table(mix_column) == 'array[0..93, 1..8] of int: ' \
-                                                              'mix_column_truncated_table_mix_column_0_21 = ' \
-                                                              'array2d(0..93, 1..8, [0,0,0,0,0,0,0,0,0,0,0,1,1,' \
-                                                              '1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,' \
-                                                              '0,1,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,0,0,0,1,1,1,' \
-                                                              '1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,' \
-                                                              '0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,0,0,1,0,1,1,' \
-                                                              '1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,' \
-                                                              '1,0,1,0,1,1,0,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,' \
-                                                              '0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,0,1,1,1,0,' \
-                                                              '1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,1,0,1,0,0,1,1,1,1,' \
-                                                              '0,1,1,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,1,1,1,' \
-                                                              '1,1,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,' \
-                                                              '1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,' \
-                                                              '1,1,0,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,' \
-                                                              '0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,' \
-                                                              '1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,' \
-                                                              '1,1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,' \
-                                                              '0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,' \
-                                                              '1,0,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,0,' \
-                                                              '1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,' \
-                                                              '1,1,0,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,' \
-                                                              '1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,1,' \
-                                                              '0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,' \
-                                                              '1,0,0,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,' \
-                                                              '1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,' \
-                                                              '1,1,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,' \
-                                                              '0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,' \
-                                                              '1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,0,' \
-                                                              '0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,1,1,1,1,0,' \
-                                                              '1,0,0,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,0,' \
-                                                              '1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,1,' \
-                                                              '0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,' \
-                                                              '1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1]);'
+    assert (
+        mzn.build_mix_column_truncated_table(mix_column) == "array[0..93, 1..8] of int: "
+        "mix_column_truncated_table_mix_column_0_21 = array2d(0..93, 1..8, ["
+        "0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,"
+        "1,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,"
+        "0,1,0,1,0,1,1,1,1,0,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,"
+        "1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,0,1,1,1,0,1,1,1,0,1,1,1,"
+        "1,0,0,1,0,1,1,1,1,0,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,0,1,1,"
+        "1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,"
+        "0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,1,"
+        "0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,0,"
+        "1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,"
+        "1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,"
+        "0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,"
+        "1,0,0,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,"
+        "0,1,1,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,"
+        "0,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,1,1,"
+        "1,1,0,1,0,0,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,1,"
+        "1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1]);"
+    )
 
 
 def test_find_possible_number_of_active_sboxes():
@@ -61,36 +49,38 @@ def test_find_possible_number_of_active_sboxes():
 
 
 def test_fix_variables_value_constraints():
-
     raiden = RaidenBlockCipher(number_of_rounds=1)
     mzn = MznXorDifferentialModelARXOptimized(raiden)
     mzn.build_xor_differential_trail_model()
-    fixed_variables = [{
-        'component_id': 'key',
-        'constraint_type': 'equal',
-        'bit_positions': [0, 1, 2, 3],
-        'bit_values': [0, 1, 0, 1]}]
+    fixed_variables = [
+        {"component_id": "key", "constraint_type": "equal", "bit_positions": [0, 1, 2, 3], "bit_values": [0, 1, 0, 1]}
+    ]
 
-    constraint_key_y_0 = 'constraint key_y0 = 0;'
+    constraint_key_y_0 = "constraint key_y0 = 0;"
     assert mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0] == constraint_key_y_0
 
-    fixed_variables = [{'component_id': 'plaintext',
-                        'constraint_type': 'sum',
-                        'bit_positions': [0, 1, 2, 3],
-                        'operator': '>',
-                        'value': '0'}]
+    fixed_variables = [
+        {
+            "component_id": "plaintext",
+            "constraint_type": "sum",
+            "bit_positions": [0, 1, 2, 3],
+            "operator": ">",
+            "value": "0",
+        }
+    ]
 
-    assert mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0] == f'constraint plaintext_y0+plaintext_y1+' \
-                                                                           f'plaintext_y2+plaintext_y3>0;'
+    assert (
+        mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0]
+        == "constraint plaintext_y0+plaintext_y1+plaintext_y2+plaintext_y3>0;"
+    )
 
     raiden = RaidenBlockCipher(number_of_rounds=1)
     mzn = MznDeterministicTruncatedXorDifferentialModelARXOptimized(raiden)
     mzn.build_deterministic_truncated_xor_differential_trail_model()
 
-    fixed_variables = [{'component_id': 'key',
-                       'constraint_type': 'equal',
-                        'bit_positions': [0, 1, 2, 3],
-                        'bit_values': [0, 1, 0, 1]}]
+    fixed_variables = [
+        {"component_id": "key", "constraint_type": "equal", "bit_positions": [0, 1, 2, 3], "bit_values": [0, 1, 0, 1]}
+    ]
 
     assert mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0] == constraint_key_y_0
 
@@ -98,10 +88,9 @@ def test_fix_variables_value_constraints():
     mzn = MznCipherModelARXOptimized(raiden)
     mzn.build_cipher_model()
 
-    fixed_variables = [{'component_id': 'key',
-                        'constraint_type': 'equal',
-                        'bit_positions': [0, 1, 2, 3],
-                        'bit_values': [0, 1, 0, 1]}]
+    fixed_variables = [
+        {"component_id": "key", "constraint_type": "equal", "bit_positions": [0, 1, 2, 3], "bit_values": [0, 1, 0, 1]}
+    ]
 
     assert mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0] == constraint_key_y_0
 
