@@ -1,11 +1,30 @@
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
+
 import time
 
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
-from claasp.cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model import \
-    SatSemiDeterministicTruncatedXorDifferentialModel
-from claasp.cipher_modules.models.sat.sat_models.sat_truncated_xor_differential_model import \
-    SatTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model import (
+    SatSemiDeterministicTruncatedXorDifferentialModel,
+)
+from claasp.cipher_modules.models.sat.sat_models.sat_truncated_xor_differential_model import (
+    SatTruncatedXorDifferentialModel,
+)
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.utils import set_component_solution
@@ -25,24 +44,26 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         - ``dict_of_components`` -- **dict**; Dictionary mapping component IDs to their respective models and types.
         """
         self.dict_of_components = dict_of_components
-        model_types = set(component['model_type'] for component in self.dict_of_components)
+        model_types = set(component["model_type"] for component in self.dict_of_components)
 
-        truncated_model_types = {item for item in model_types if item != 'sat_xor_differential_propagation_constraints'}
+        truncated_model_types = {item for item in model_types if item != "sat_xor_differential_propagation_constraints"}
 
         allow_truncated_models_types = {
-            'sat_semi_deterministic_truncated_xor_differential_constraints',
-            'sat_bitwise_deterministic_truncated_xor_differential_constraints'
+            "sat_semi_deterministic_truncated_xor_differential_constraints",
+            "sat_bitwise_deterministic_truncated_xor_differential_constraints",
         }
 
-        if len(truncated_model_types & allow_truncated_models_types) == 0 or len(
-                truncated_model_types & allow_truncated_models_types) == 2:
+        if (
+            len(truncated_model_types & allow_truncated_models_types) == 0
+            or len(truncated_model_types & allow_truncated_models_types) == 2
+        ):
             raise ValueError(f"Model types should be one of {allow_truncated_models_types}")
 
         truncated_model_type = list(truncated_model_types)[0]
         self.truncated_model_type = truncated_model_type
-        self.regular_components = self._get_components_by_type('sat_xor_differential_propagation_constraints')
+        self.regular_components = self._get_components_by_type("sat_xor_differential_propagation_constraints")
         self.truncated_components = self._get_components_by_type(truncated_model_type)
-        super().__init__(cipher, "sequential", False)
+        super().__init__(cipher=cipher, counter="sequential", compact=False)
 
     def _get_components_by_type(self, model_type):
         """
@@ -54,7 +75,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         RETURN:
         - **list**; A list of components of the specified type.
         """
-        return [component for component in self.dict_of_components if component['model_type'] == model_type]
+        return [component for component in self.dict_of_components if component["model_type"] == model_type]
 
     def _get_regular_xor_differential_components_in_border(self):
         """
@@ -63,11 +84,11 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         RETURN:
         - **list**; A list of regular components at the border.
         """
-        regular_component_ids = {item['component_id'] for item in self.regular_components}
+        regular_component_ids = {item["component_id"] for item in self.regular_components}
         border_components = []
 
         for truncated_component in self.truncated_components:
-            component_obj = self.cipher.get_component_from_id(truncated_component['component_id'])
+            component_obj = self.cipher.get_component_from_id(truncated_component["component_id"])
             for input_id in component_obj.input_id_links:
                 if input_id in regular_component_ids:
                     border_components.append(input_id)
@@ -84,12 +105,12 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
             component = self.cipher.get_component_from_id(component_id)
             for idx in range(component.output_bit_size):
                 constraints = sat_utils.get_cnf_bitwise_truncate_constraints(
-                    f'{component_id}_{idx}', f'{component_id}_{idx}_0', f'{component_id}_{idx}_1'
+                    f"{component_id}_{idx}", f"{component_id}_{idx}_0", f"{component_id}_{idx}_1"
                 )
                 self._model_constraints.extend(constraints)
-                self._variables_list.extend([
-                    f'{component_id}_{idx}', f'{component_id}_{idx}_0', f'{component_id}_{idx}_1'
-                ])
+                self._variables_list.extend(
+                    [f"{component_id}_{idx}", f"{component_id}_{idx}_0", f"{component_id}_{idx}_1"]
+                )
 
     def _build_weight_constraints(self, top_part_weight, truncated_part_weight_configuration=None):
         """
@@ -104,13 +125,16 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         variables = []
         constraints = []
         hw_variables = [
-            var_id for var_id in self._variables_list if
-            var_id.startswith('hw_') and not var_id.startswith('hw_p') and not var_id.startswith(
-                'hw_q') and not var_id.startswith('hw_r')
+            var_id
+            for var_id in self._variables_list
+            if var_id.startswith("hw_")
+            and not var_id.startswith("hw_p")
+            and not var_id.startswith("hw_q")
+            and not var_id.startswith("hw_r")
         ]
 
         if top_part_weight == 0:
-            return [], [f'-{var}' for var in hw_variables]
+            return [], [f"-{var}" for var in hw_variables]
 
         top_part_weight_variables, top_part_weight_constraints = self._counter(hw_variables, top_part_weight)
         variables.extend(top_part_weight_variables)
@@ -119,11 +143,11 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         return variables, constraints
 
     def build_xor_probabilistic_truncated_differential_model(
-            self,
-            weight=-1,
-            number_of_unknowns_per_component=None,
-            unknown_window_size_configuration=None,
-            fixed_variables=[]
+        self,
+        weight=-1,
+        number_of_unknowns_per_component=None,
+        unknown_window_size_configuration=None,
+        fixed_variables=[],
     ):
         """
         Constructs a model to search for probabilistic truncated XOR differential trails.
@@ -173,10 +197,12 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
             self._model_constraints.extend(constraints)
 
         if unknown_window_size_configuration is not None:
-            variables, constraints = SatSemiDeterministicTruncatedXorDifferentialModel.unknown_window_size_configuration_constraints(
-                unknown_window_size_configuration,
-                variables_list=self._variables_list,
-                cardinality_constraint_method=self._counter
+            variables, constraints = (
+                SatSemiDeterministicTruncatedXorDifferentialModel.unknown_window_size_configuration_constraints(
+                    unknown_window_size_configuration,
+                    variables_list=self._variables_list,
+                    cardinality_constraint_method=self._counter,
+                )
             )
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
@@ -201,7 +227,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         for var in fixed_variables:
             component_id = var["component_id"]
 
-            if component_id in [comp["component_id"] for comp in regular_components] and 2 in var['bit_values']:
+            if component_id in [comp["component_id"] for comp in regular_components] and 2 in var["bit_values"]:
                 raise ValueError("The fixed value in a regular XOR differential component cannot be 2")
 
             if component_id in [comp["component_id"] for comp in truncated_components]:
@@ -210,8 +236,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
                 regular_vars.append(var)
 
         regular_constraints = SatModel.fix_variables_value_constraints(regular_vars)
-        truncated_constraints = SatTruncatedXorDifferentialModel.fix_variables_value_constraints(
-            truncated_vars)
+        truncated_constraints = SatTruncatedXorDifferentialModel.fix_variables_value_constraints(truncated_vars)
 
         return regular_constraints + truncated_constraints
 
@@ -225,39 +250,40 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         RETURN:
         - **tuple**; a tuple containing the dictionary of component solutions and the total weight.
         """
-        out_suffix = ''
+        out_suffix = ""
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
         total_weight_truncated = 0
         for component in self._cipher.get_all_components():
-            if component.id in [d['component_id'] for d in self.regular_components]:
-                hex_value = self._get_component_hex_value(component, '', variable2value)
-                weight = self.calculate_component_weight(component, '', variable2value)
+            if component.id in [d["component_id"] for d in self.regular_components]:
+                hex_value = self._get_component_hex_value(component, "", variable2value)
+                weight = self.calculate_component_weight(component, "", variable2value)
                 components_solutions[component.id] = set_component_solution(hex_value, weight)
                 total_weight += weight
-            elif component.id in [d['component_id'] for d in self.truncated_components]:
-
+            elif component.id in [d["component_id"] for d in self.truncated_components]:
                 value = self._get_component_value_double_ids(component, variable2value)
                 weight = 0
 
-                if component.description[
-                    0] == 'MODADD' and self.truncated_model_type == 'sat_semi_deterministic_truncated_xor_differential_constraints':
-                    weight = SatSemiDeterministicTruncatedXorDifferentialModel._calculate_component_weight(component,
-                                                                                                           variable2value,
-                                                                                                           self._variables_list)
+                if (
+                    component.description[0] == "MODADD"
+                    and self.truncated_model_type == "sat_semi_deterministic_truncated_xor_differential_constraints"
+                ):
+                    weight = SatSemiDeterministicTruncatedXorDifferentialModel._calculate_component_weight(
+                        component, variable2value, self._variables_list
+                    )
                     total_weight += weight
                     total_weight_truncated += weight
                 components_solutions[component.id] = set_component_solution(value, weight)
         return components_solutions, total_weight
 
     def find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight(
-            self,
-            weight,
-            number_of_unknowns_per_component=None,
-            fixed_values=[],
-            solver_name=solvers.SOLVER_DEFAULT,
-            unknown_window_size_configuration=None,
-            options=None
+        self,
+        weight,
+        number_of_unknowns_per_component=None,
+        fixed_values=[],
+        solver_name=solvers.SOLVER_DEFAULT,
+        unknown_window_size_configuration=None,
+        options=None,
     ):
         """
         Finds one XOR probabilistic truncated differential trail with a fixed weight.
@@ -278,7 +304,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         self.build_xor_probabilistic_truncated_differential_model(
             weight,
             number_of_unknowns_per_component=number_of_unknowns_per_component,
-            unknown_window_size_configuration=unknown_window_size_configuration
+            unknown_window_size_configuration=unknown_window_size_configuration,
         )
         constraints = self.fix_variables_value_constraints(
             fixed_values, self.regular_components, self.truncated_components
@@ -286,14 +312,14 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         self.model_constraints.extend(constraints)
 
         solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = time.time() - start_time
-        solution['test_name'] = "find_one_regular_truncated_xor_differential_trail"
+        solution["building_time_seconds"] = time.time() - start_time
+        solution["test_name"] = "find_one_regular_truncated_xor_differential_trail"
 
         return solution
 
-    def find_lowest_weight_xor_probabilistic_truncated_differential_trail(self, fixed_values=[],
-                                                                          solver_name=solvers.SOLVER_DEFAULT,
-                                                                          options=None):
+    def find_lowest_weight_xor_probabilistic_truncated_differential_trail(
+        self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Finds the XOR probabilistic truncated differential trail with the lowest weight.
 
@@ -307,16 +333,17 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         current_weight = 0
         start_building_time = time.time()
         self.build_xor_probabilistic_truncated_differential_model(current_weight)
-        constraints = self.fix_variables_value_constraints(fixed_values, self.regular_components,
-                                                           self.truncated_components)
+        constraints = self.fix_variables_value_constraints(
+            fixed_values, self.regular_components, self.truncated_components
+        )
         end_building_time = time.time()
         self.model_constraints.extend(constraints)
         solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
-        total_time = solution['solving_time_seconds']
-        max_memory = solution['memory_megabytes']
+        solution["building_time_seconds"] = end_building_time - start_building_time
+        total_time = solution["solving_time_seconds"]
+        max_memory = solution["memory_megabytes"]
 
-        while solution['total_weight'] is None:
+        while solution["total_weight"] is None:
             current_weight += 1
             start_building_time = time.time()
             self.build_xor_probabilistic_truncated_differential_model(current_weight)
@@ -324,13 +351,13 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
             solution = self.solve("XOR_REGULAR_DETERMINISTIC_DIFFERENTIAL", solver_name=solver_name, options=options)
             end_building_time = time.time()
 
-            solution['building_time_seconds'] = end_building_time - start_building_time
-            total_time += solution['solving_time_seconds']
-            max_memory = max(max_memory, solution['memory_megabytes'])
+            solution["building_time_seconds"] = end_building_time - start_building_time
+            total_time += solution["solving_time_seconds"]
+            max_memory = max(max_memory, solution["memory_megabytes"])
 
-        solution['solving_time_seconds'] = total_time
-        solution['memory_megabytes'] = max_memory
-        solution['test_name'] = "find_lowest_weight_xor_probabilistic_truncated_differential_trail"
+        solution["solving_time_seconds"] = total_time
+        solution["memory_megabytes"] = max_memory
+        solution["test_name"] = "find_lowest_weight_xor_probabilistic_truncated_differential_trail"
 
         return solution
 

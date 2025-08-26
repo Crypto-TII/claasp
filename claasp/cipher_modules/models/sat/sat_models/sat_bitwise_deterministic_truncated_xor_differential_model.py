@@ -1,38 +1,47 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 import time
 
 from claasp.cipher_modules.models.sat import solvers
-from claasp.cipher_modules.models.sat.sat_models.sat_truncated_xor_differential_model import \
-    SatTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.sat.sat_models.sat_truncated_xor_differential_model import (
+    SatTruncatedXorDifferentialModel,
+)
 from claasp.cipher_modules.models.utils import set_component_solution
-from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
-                                  INTERMEDIATE_OUTPUT, INPUT_PLAINTEXT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
+    INTERMEDIATE_OUTPUT,
+    INPUT_PLAINTEXT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SBOX,
+    WORD_OPERATION,
+)
 
 
 class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferentialModel):
-    def __init__(self, cipher, counter='sequential', compact=False):
+    def __init__(self, cipher, counter="sequential", compact=False):
         super().__init__(cipher, counter, compact)
 
-    def build_bitwise_deterministic_truncated_xor_differential_trail_model(self, number_of_unknown_variables=None,
-                                                                           fixed_variables=[]):
+    def build_bitwise_deterministic_truncated_xor_differential_trail_model(
+        self, number_of_unknown_variables=None, fixed_variables=[]
+    ):
         """
         Build the model for the search of deterministic truncated XOR DIFFERENTIAL trails.
 
@@ -57,18 +66,20 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
             ...
         """
         variables = []
-        constraints = SatBitwiseDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints(fixed_variables)
+        constraints = SatBitwiseDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints(
+            fixed_variables
+        )
         self._variables_list = []
         self._model_constraints = constraints
         component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
-        operation_types = ('AND', 'MODADD', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR')
+        operation_types = ("AND", "MODADD", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
         for component in self._cipher.get_all_components():
             operation = component.description[0]
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             else:
-                print(f'{component.id} not yet implemented')
+                print(f"{component.id} not yet implemented")
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
@@ -78,9 +89,9 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def find_one_bitwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[],
-                                                                        solver_name=solvers.SOLVER_DEFAULT,
-                                                                        options=None):
+    def find_one_bitwise_deterministic_truncated_xor_differential_trail(
+        self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Returns one deterministic truncated XOR differential trail.
 
@@ -128,11 +139,13 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
         self.build_bitwise_deterministic_truncated_xor_differential_trail_model(fixed_variables=fixed_values)
         end_building_time = time.time()
         solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
+        solution["building_time_seconds"] = end_building_time - start_building_time
 
         return solution
 
-    def find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
+    def find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(
+        self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Return the solution representing a differential trail with the lowest number of unknown variables.
 
@@ -160,24 +173,26 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
         current_unknowns_count = 1
         start_building_time = time.time()
         self.build_bitwise_deterministic_truncated_xor_differential_trail_model(
-            number_of_unknown_variables=current_unknowns_count, fixed_variables=fixed_values)
+            number_of_unknown_variables=current_unknowns_count, fixed_variables=fixed_values
+        )
         end_building_time = time.time()
         solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
-        total_time = solution['solving_time_seconds']
-        max_memory = solution['memory_megabytes']
-        while solution['status'] != 'SATISFIABLE':
+        solution["building_time_seconds"] = end_building_time - start_building_time
+        total_time = solution["solving_time_seconds"]
+        max_memory = solution["memory_megabytes"]
+        while solution["status"] != "SATISFIABLE":
             current_unknowns_count += 1
             start_building_time = time.time()
             self.build_bitwise_deterministic_truncated_xor_differential_trail_model(
-                number_of_unknown_variables=current_unknowns_count, fixed_variables=fixed_values)
+                number_of_unknown_variables=current_unknowns_count, fixed_variables=fixed_values
+            )
             end_building_time = time.time()
             solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-            solution['building_time_seconds'] = end_building_time - start_building_time
-            total_time += solution['solving_time_seconds']
-            max_memory = max((max_memory, solution['memory_megabytes']))
-        solution['solving_time_seconds'] = total_time
-        solution['memory_megabytes'] = max_memory
+            solution["building_time_seconds"] = end_building_time - start_building_time
+            total_time += solution["solving_time_seconds"]
+            max_memory = max((max_memory, solution["memory_megabytes"]))
+        solution["solving_time_seconds"] = total_time
+        solution["memory_megabytes"] = max_memory
 
         return solution
 
@@ -207,10 +222,13 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
               '-cipher_output_2_12_31_0 -dummy_hw_0_62_3'])
         """
         cipher_output_id = self._cipher.get_all_components_ids()[-1]
-        set_to_be_minimized = [f"{INPUT_PLAINTEXT}_{i}_0"
-                               for i in range(self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_PLAINTEXT)])]
-        set_to_be_minimized.extend([bit_id for bit_id in self._variables_list
-                                    if bit_id.startswith(cipher_output_id) and bit_id.endswith("_0")])
+        set_to_be_minimized = [
+            f"{INPUT_PLAINTEXT}_{i}_0"
+            for i in range(self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_PLAINTEXT)])
+        ]
+        set_to_be_minimized.extend(
+            [bit_id for bit_id in self._variables_list if bit_id.startswith(cipher_output_id) and bit_id.endswith("_0")]
+        )
 
         return self._counter(set_to_be_minimized, number_of_unknown_variables)
 
@@ -219,6 +237,6 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
         for component in self._cipher.get_all_components():
             value = self._get_component_value_double_ids(component, variable2value)
             component_solution = set_component_solution(value)
-            components_solutions[f'{component.id}'] = component_solution
+            components_solutions[f"{component.id}"] = component_solution
 
         return components_solutions, None

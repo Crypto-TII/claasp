@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 import time
 from copy import deepcopy
 
@@ -23,12 +22,20 @@ from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values
-from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
-                                  MIX_COLUMN, SBOX, WORD_OPERATION, XOR_DIFFERENTIAL)
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SBOX,
+    WORD_OPERATION,
+    XOR_DIFFERENTIAL,
+)
 
 
 class SatXorDifferentialModel(SatModel):
-    def __init__(self, cipher, counter='sequential', compact=False):
+    def __init__(self, cipher, counter="sequential", compact=False):
         self._window_size_by_component_id_values = None
         self._window_size_by_round_values = None
         self._window_size_full_window_vars = None
@@ -66,13 +73,14 @@ class SatXorDifferentialModel(SatModel):
         constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         self._model_constraints = constraints
         component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
-        operation_types = ('AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR')
+        operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
         for component in self._cipher.get_all_components():
             operation = component.description[0]
             if component.type not in component_types or (
-                    WORD_OPERATION == component.type and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
+                WORD_OPERATION == component.type and operation not in operation_types
+            ):
+                print(f"{component.id} not yet implemented")
             else:
                 variables, constraints = component.sat_xor_differential_propagation_constraints(self)
 
@@ -89,46 +97,46 @@ class SatXorDifferentialModel(SatModel):
 
             if self._window_size_number_of_full_window == 0:
                 self._variables_list.extend([])
-                self._model_constraints.extend([f'-{variable}' for variable in self._window_size_full_window_vars])
+                self._model_constraints.extend([f"-{variable}" for variable in self._window_size_full_window_vars])
                 return
 
-            if self._window_size_full_window_operator == 'at_least':
+            if self._window_size_full_window_operator == "at_least":
                 all_ones_dummy_variables, all_ones_constraints = self._sequential_counter_algorithm(
                     self._window_size_full_window_vars,
                     self._window_size_number_of_full_window - 1,
-                    'dummy_all_ones_at_least',
-                    greater_or_equal=True
+                    "dummy_all_ones_at_least",
+                    greater_or_equal=True,
                 )
-            elif self._window_size_full_window_operator == 'at_most':
+            elif self._window_size_full_window_operator == "at_most":
                 all_ones_dummy_variables, all_ones_constraints = self._sequential_counter_algorithm(
                     self._window_size_full_window_vars,
                     self._window_size_number_of_full_window,
-                    'dummy_all_ones_at_most',
-                    greater_or_equal=False
+                    "dummy_all_ones_at_most",
+                    greater_or_equal=False,
                 )
-            elif self._window_size_full_window_operator == 'exactly':
+            elif self._window_size_full_window_operator == "exactly":
                 all_ones_dummy_variables1, all_ones_constraints1 = self._sequential_counter_algorithm(
                     self._window_size_full_window_vars,
                     self._window_size_number_of_full_window,
-                    'dummy_all_ones_at_least',
-                    greater_or_equal=True
+                    "dummy_all_ones_at_least",
+                    greater_or_equal=True,
                 )
                 all_ones_dummy_variables2, all_ones_constraints2 = self._sequential_counter_algorithm(
                     self._window_size_full_window_vars,
                     self._window_size_number_of_full_window,
-                    'dummy_all_ones_at_most',
-                    greater_or_equal=False
+                    "dummy_all_ones_at_most",
+                    greater_or_equal=False,
                 )
                 all_ones_dummy_variables = all_ones_dummy_variables1 + all_ones_dummy_variables2
                 all_ones_constraints = all_ones_constraints1 + all_ones_constraints2
             else:
-                raise ValueError(f'Unknown operator {self._window_size_full_window_operator}')
+                raise ValueError(f"Unknown operator {self._window_size_full_window_operator}")
 
             self._variables_list.extend(all_ones_dummy_variables)
             self._model_constraints.extend(all_ones_constraints)
 
     def build_xor_differential_trail_and_checker_model_at_intermediate_output_level(
-            self, weight=-1, fixed_variables=[]
+        self, weight=-1, fixed_variables=[]
     ):
         """
         Build the model for the search of XOR DIFFERENTIAL trails and the model to check that there is at least one pair
@@ -160,8 +168,9 @@ class SatXorDifferentialModel(SatModel):
         self._variables_list.extend(sat._variables_list)
         self._model_constraints.extend(sat._model_constraints)
 
-    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                           solver_name=solvers.SOLVER_DEFAULT, options=None):
+    def find_all_xor_differential_trails_with_fixed_weight(
+        self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Return a list of solutions containing all the XOR differential trails having the ``fixed_weight`` weight.
         By default, the search is set in the single-key setting.
@@ -205,34 +214,36 @@ class SatXorDifferentialModel(SatModel):
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
         if self._counter == self._sequential_counter:
-            self._sequential_counter_greater_or_equal(fixed_weight, 'dummy_hw_1')
+            self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
+        solution["building_time_seconds"] = end_building_time - start_building_time
         solutions_list = []
-        while solution['total_weight'] is not None:
+        while solution["total_weight"] is not None:
             solutions_list.append(solution)
             literals = []
             for input_, bit_len in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-                value_to_avoid = int(solution['components_values'][input_]['value'], base=16)
-                minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                literals.extend([f'{minus[i]}{input_}_{i}' for i in range(bit_len)])
+                value_to_avoid = int(solution["components_values"][input_]["value"], base=16)
+                minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
+                literals.extend([f"{minus[i]}{input_}_{i}" for i in range(bit_len)])
             for component in self._cipher.get_all_components():
                 bit_len = component.output_bit_size
-                if component.type == SBOX or \
-                        (component.type == WORD_OPERATION and
-                         component.description[0] in ('AND', 'MODADD', 'MODSUB', 'OR', 'SHIFT_BY_VARIABLE_AMOUNT')):
-                    value_to_avoid = int(solution['components_values'][component.id]['value'], base=16)
-                    minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                    literals.extend([f'{minus[i]}{component.id}_{i}' for i in range(bit_len)])
-            self._model_constraints.append(' '.join(literals))
+                if component.type == SBOX or (
+                    component.type == WORD_OPERATION
+                    and component.description[0] in ("AND", "MODADD", "MODSUB", "OR", "SHIFT_BY_VARIABLE_AMOUNT")
+                ):
+                    value_to_avoid = int(solution["components_values"][component.id]["value"], base=16)
+                    minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
+                    literals.extend([f"{minus[i]}{component.id}_{i}" for i in range(bit_len)])
+            self._model_constraints.append(" ".join(literals))
             solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-            solution['building_time_seconds'] = end_building_time - start_building_time
-            solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
+            solution["building_time_seconds"] = end_building_time - start_building_time
+            solution["test_name"] = "find_all_xor_differential_trails_with_fixed_weight"
         return solutions_list
 
-    def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
-                                                             solver_name=solvers.SOLVER_DEFAULT, options=None):
+    def find_all_xor_differential_trails_with_weight_at_most(
+        self, min_weight, max_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Return a list of solutions.
         By default, the search is set in the single-key setting.
@@ -279,18 +290,19 @@ class SatXorDifferentialModel(SatModel):
         """
         solutions_list = []
         for weight in range(min_weight, max_weight + 1):
-            solutions = self.find_all_xor_differential_trails_with_fixed_weight(weight,
-                                                                                fixed_values=fixed_values,
-                                                                                solver_name=solver_name,
-                                                                                options=options)
+            solutions = self.find_all_xor_differential_trails_with_fixed_weight(
+                weight, fixed_values=fixed_values, solver_name=solver_name, options=options
+            )
 
             for solution in solutions:
-                solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
+                solution["test_name"] = "find_all_xor_differential_trails_with_weight_at_most"
             solutions_list.extend(solutions)
 
         return solutions_list
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
+    def find_lowest_weight_xor_differential_trail(
+        self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Return the solution representing a trail with the lowest weight.
         By default, the search is set in the single-key setting.
@@ -340,21 +352,21 @@ class SatXorDifferentialModel(SatModel):
         self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
-        total_time = solution['solving_time_seconds']
-        max_memory = solution['memory_megabytes']
-        while solution['total_weight'] is None:
+        solution["building_time_seconds"] = end_building_time - start_building_time
+        total_time = solution["solving_time_seconds"]
+        max_memory = solution["memory_megabytes"]
+        while solution["total_weight"] is None:
             current_weight += 1
             start_building_time = time.time()
             self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
             end_building_time = time.time()
             solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-            solution['building_time_seconds'] = end_building_time - start_building_time
-            total_time += solution['solving_time_seconds']
-            max_memory = max((max_memory, solution['memory_megabytes']))
-        solution['solving_time_seconds'] = total_time
-        solution['memory_megabytes'] = max_memory
-        solution['test_name'] = "find_lowest_weight_xor_differential_trail"
+            solution["building_time_seconds"] = end_building_time - start_building_time
+            total_time += solution["solving_time_seconds"]
+            max_memory = max((max_memory, solution["memory_megabytes"]))
+        solution["solving_time_seconds"] = total_time
+        solution["memory_megabytes"] = max_memory
+        solution["test_name"] = "find_lowest_weight_xor_differential_trail"
 
         return solution
 
@@ -402,13 +414,14 @@ class SatXorDifferentialModel(SatModel):
         self.build_xor_differential_trail_model(fixed_variables=fixed_values)
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
-        solution['test_name'] = "find_one_xor_differential_trail"
+        solution["building_time_seconds"] = end_building_time - start_building_time
+        solution["test_name"] = "find_one_xor_differential_trail"
 
         return solution
 
-    def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                          solver_name=solvers.SOLVER_DEFAULT, options=None):
+    def find_one_xor_differential_trail_with_fixed_weight(
+        self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Return the solution representing a XOR differential trail whose probability is ``2 ** fixed_weight``.
         By default, the search is set in the single-key setting.
@@ -453,32 +466,32 @@ class SatXorDifferentialModel(SatModel):
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
         if self._counter == self._sequential_counter:
-            self._sequential_counter_greater_or_equal(fixed_weight, 'dummy_hw_1')
+            self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
-        solution['test_name'] = "find_one_xor_differential_trail_with_fixed_weight"
+        solution["building_time_seconds"] = end_building_time - start_building_time
+        solution["test_name"] = "find_one_xor_differential_trail_with_fixed_weight"
 
         return solution
 
     def _parse_solver_output(self, variable2value):
-        out_suffix = ''
+        out_suffix = ""
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
         for component in self._cipher.get_all_components():
             hex_value = self._get_component_hex_value(component, out_suffix, variable2value)
             weight = self.calculate_component_weight(component, out_suffix, variable2value)
             component_solution = set_component_solution(hex_value, weight)
-            components_solutions[f'{component.id}{out_suffix}'] = component_solution
+            components_solutions[f"{component.id}{out_suffix}"] = component_solution
             total_weight += weight
 
         return components_solutions, total_weight
 
     def set_window_size_heuristic_by_round(
-            self, window_size_by_round_values, number_of_full_windows=None, full_window_operator='at_least'
+        self, window_size_by_round_values, number_of_full_windows=None, full_window_operator="at_least"
     ):
         if not self._cipher.is_arx():
-            raise Exception('Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.')
+            raise Exception("Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.")
         self._window_size_by_round_values = window_size_by_round_values
         if number_of_full_windows is not None:
             self._window_size_full_window_vars = []
@@ -486,10 +499,10 @@ class SatXorDifferentialModel(SatModel):
             self._window_size_full_window_operator = full_window_operator
 
     def set_window_size_heuristic_by_component_id(
-            self, window_size_by_component_id_values, number_of_full_windows=None, full_window_operator='at_least'
+        self, window_size_by_component_id_values, number_of_full_windows=None, full_window_operator="at_least"
     ):
         if not self._cipher.is_arx():
-            raise Exception('Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.')
+            raise Exception("Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.")
         self._window_size_by_component_id_values = window_size_by_component_id_values
         if number_of_full_windows is not None:
             self._window_size_full_window_vars = []

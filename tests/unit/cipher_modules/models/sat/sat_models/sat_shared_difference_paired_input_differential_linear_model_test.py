@@ -1,13 +1,16 @@
-
 import itertools
 import os
 import pickle
 
-from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_linear_model import \
-    SharedDifferencePairedInputDifferentialLinearModel
+from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_linear_model import (
+    SharedDifferencePairedInputDifferentialLinearModel,
+)
 from claasp.cipher_modules.models.sat.solvers import KISSAT_EXT
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, \
-    shared_difference_paired_input_differential_linear_checker_permutation
+from claasp.cipher_modules.models.utils import (
+    set_fixed_variables,
+    integer_to_bit_list,
+    shared_difference_paired_input_differential_linear_checker_permutation,
+)
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.components.intermediate_output_component import IntermediateOutput
 from claasp.components.modsub_component import MODSUB
@@ -16,7 +19,7 @@ from claasp.components.modsub_component import MODSUB
 def add_prefix_id_to_inputs(chacha_permutation, prefix):
     new_inputs = []
     for chacha_permutation_input in chacha_permutation.inputs:
-        new_inputs.append(f'{prefix}_{chacha_permutation_input}')
+        new_inputs.append(f"{prefix}_{chacha_permutation_input}")
     chacha_permutation.set_inputs(new_inputs, chacha_permutation.inputs_bit_size)
 
 
@@ -32,10 +35,9 @@ def add_ciphertext_and_new_plaintext_to_inputs(chacha_permutation):
             0,
             round_object.get_number_of_components(),
             ["ciphertext_final", "fake_plaintext"],
-            [list(range(i * 32, (i) * 32 + 32)),
-             list(range(i * 32, (i) * 32 + 32))],
+            [list(range(i * 32, (i) * 32 + 32)), list(range(i * 32, (i) * 32 + 32))],
             32,
-            None
+            None,
         )
         round_object.add_component(new_modsub_component)
 
@@ -46,7 +48,7 @@ def add_ciphertext_and_new_plaintext_to_inputs(chacha_permutation):
         modsub_ids,
         [list(range(32)) for _ in range(16)],
         512,
-        "round_output"
+        "round_output",
     )
     round_object.add_component(new_intermediate_output_component)
     new_intermediate_output_component.set_id(chacha_permutation.inputs[0])
@@ -57,8 +59,8 @@ def add_ciphertext_and_new_plaintext_to_inputs(chacha_permutation):
 def add_prefix_id_to_components(chacha_permutation, prefix):
     all_components = chacha_permutation.rounds.get_all_components()
     for component in all_components:
-        component.set_id(f'{prefix}_{component.id}')
-        new_input_id_links = [f'{prefix}_{input_id_link}' for input_id_link in component.input_id_links]
+        component.set_id(f"{prefix}_{component.id}")
+        new_input_id_links = [f"{prefix}_{input_id_link}" for input_id_link in component.input_id_links]
         component.set_input_id_links(new_input_id_links)
     return 0
 
@@ -95,77 +97,60 @@ def test_backward_direction_distinguisher():
     bottom_part_components = [component.id for component in bottom_part_components]
 
     ciphertext_final = set_fixed_variables(
-        component_id='bottom_ciphertext_final',
-        constraint_type='equal',
+        component_id="bottom_ciphertext_final",
+        constraint_type="equal",
         bit_positions=range(512),
-        bit_values=integer_to_bit_list(
-            0x0,
-            512,
-            'big'
-        )
+        bit_values=integer_to_bit_list(0x0, 512, "big"),
     )
 
     plaintext = set_fixed_variables(
-        component_id='bottom_fake_plaintext',
-        constraint_type='equal',
+        component_id="bottom_fake_plaintext",
+        constraint_type="equal",
         bit_positions=range(512),
         bit_values=integer_to_bit_list(
             0x00000000000000000000000000000000080000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
             512,
-            'big'
-        )
+            "big",
+        ),
     )
 
     plaintext_constants = set_fixed_variables(
-        component_id='bottom_fake_plaintext',
-        constraint_type='equal',
+        component_id="bottom_fake_plaintext",
+        constraint_type="equal",
         bit_positions=range(128),
-        bit_values=integer_to_bit_list(
-            0x0,
-            128,
-            'big'
-        )
+        bit_values=integer_to_bit_list(0x0, 128, "big"),
     )
 
     plaintext_nonce = set_fixed_variables(
-        component_id='bottom_fake_plaintext',
-        constraint_type='equal',
+        component_id="bottom_fake_plaintext",
+        constraint_type="equal",
         bit_positions=range(384, 512),
-        bit_values=integer_to_bit_list(
-            0x0,
-            128,
-            'big'
-        )
+        bit_values=integer_to_bit_list(0x0, 128, "big"),
     )
 
     bottom_cipher_output_1_24 = set_fixed_variables(
-        component_id='bottom_cipher_output_3_24',
-        constraint_type='not_equal',
+        component_id="bottom_cipher_output_3_24",
+        constraint_type="not_equal",
         bit_positions=range(512),
-        bit_values=integer_to_bit_list(
-            0x0,
-            512,
-            'big'
-        )
+        bit_values=integer_to_bit_list(0x0, 512, "big"),
     )
 
     bottom_plaintext = set_fixed_variables(
-        component_id='bottom_plaintext',
-        constraint_type='equal',
+        component_id="bottom_plaintext",
+        constraint_type="equal",
         bit_positions=range(512),
         bit_values=integer_to_bit_list(
             0x00000000000000010000000000000000000000000000000100000000000000000000000000000001000000000000000000000000000000000000000000000000,
             512,
-            'big'
-        )
+            "big",
+        ),
     )
 
-    component_model_list = {
-        'bottom_part_components': bottom_part_components
-    }
+    component_model_list = {"bottom_part_components": bottom_part_components}
 
-    sat_heterogeneous_model = SharedDifferencePairedInputDifferentialLinearModel(chacha_stream_cipher,
-                                                                                 component_model_list)
+    sat_heterogeneous_model = SharedDifferencePairedInputDifferentialLinearModel(
+        chacha_stream_cipher, component_model_list
+    )
     trail = sat_heterogeneous_model.find_one_shared_difference_paired_input_differential_linear_trail_with_fixed_weight(
         weight=40,
         fixed_values=[
@@ -174,23 +159,18 @@ def test_backward_direction_distinguisher():
             bottom_cipher_output_1_24,
             bottom_plaintext,
             plaintext_constants,
-            plaintext_nonce
+            plaintext_nonce,
         ],
-        solver_name=KISSAT_EXT
+        solver_name=KISSAT_EXT,
     )
 
     assert trail["status"] == "SATISFIABLE"
 
-    input_difference = int(trail['components_values']['bottom_fake_plaintext']['value'], 16)
-    output_difference1 = int(trail['components_values']['bottom_plaintext']['value'], 16)
+    input_difference = int(trail["components_values"]["bottom_fake_plaintext"]["value"], 16)
+    output_difference1 = int(trail["components_values"]["bottom_plaintext"]["value"], 16)
 
     prob = shared_difference_paired_input_differential_linear_checker_permutation(
-        chacha_stream_cipher,
-        input_difference,
-        output_difference1,
-        1 << 8,
-        512,
-        1
+        chacha_stream_cipher, input_difference, output_difference1, 1 << 8, 512, 1
     )
 
     assert prob < 14
