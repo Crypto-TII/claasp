@@ -527,6 +527,10 @@ class SatXorDifferentialModel(SatModel):
     @property
     def window_size_by_round_values(self):
         return self._window_size_by_round_values
+    
+    @window_size_by_round_values.setter
+    def window_size_by_round_values(self, window_size_by_round_values):
+        self._window_size_by_round_values = window_size_by_round_values
 
     @property
     def window_size_by_component_id_values(self):
