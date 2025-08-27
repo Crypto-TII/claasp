@@ -22,6 +22,7 @@ The target of this module is to generate MILP inequalities for a wordwise trunca
 using model 5 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
 
 """
+
 from itertools import product
 from math import ceil, log
 import pickle, os
@@ -32,10 +33,9 @@ wordwise_truncated_mds_file_name = "dictionary_containing_truncated_mds_inequali
 wordwise_truncated_mds_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH, wordwise_truncated_mds_file_name)
 
 
-
-def generate_valid_points_for_truncated_mds_matrix(dimensions=(4,4), max_pattern_value=3):
+def generate_valid_points_for_truncated_mds_matrix(dimensions=(4, 4), max_pattern_value=3):
     """
-        Model 5 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
+    Model 5 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
     """
 
     nrows, ncols = dimensions
@@ -53,19 +53,19 @@ def generate_valid_points_for_truncated_mds_matrix(dimensions=(4,4), max_pattern
             else:
                 delta_output = [3 for _ in range(nrows)]
 
-            tmp = ''.join(format(delta[i], '0' + str(bit_len) + 'b')  for i in range(ncols)) + \
-                  ''.join(format(delta_output[i], '0' + str(bit_len) + 'b') for i in range(nrows))
+            tmp = "".join(format(delta[i], "0" + str(bit_len) + "b") for i in range(ncols)) + "".join(
+                format(delta_output[i], "0" + str(bit_len) + "b") for i in range(nrows)
+            )
             valid_points.append(tmp)
     else:
         raise NotImplementedError
 
-
     return valid_points
 
 
-def update_dictionary_that_contains_wordwise_truncated_mds_inequalities(wordsize=8, dimensions=(4,4)):
+def update_dictionary_that_contains_wordwise_truncated_mds_inequalities(wordsize=8, dimensions=(4, 4)):
     try:
-        read_file = open(wordwise_truncated_mds_file_path, 'rb')
+        read_file = open(wordwise_truncated_mds_file_path, "rb")
         dictio = pickle.load(read_file)
         read_file.close()
     except OSError:
@@ -76,11 +76,12 @@ def update_dictionary_that_contains_wordwise_truncated_mds_inequalities(wordsize
 
     if dimensions not in dictio[wordsize].keys():
         print(
-            f"Adding wordwise mds inequalities for {dimensions[0]} x {dimensions[1]} matrices for words of {wordsize} bits in pre-saved dictionary")
+            f"Adding wordwise mds inequalities for {dimensions[0]} x {dimensions[1]} matrices for words of {wordsize} bits in pre-saved dictionary"
+        )
         valid_points = generate_valid_points_for_truncated_mds_matrix(dimensions)
         inequalities = milp_utils.generate_product_of_sum_from_espresso(valid_points)
         dictio[wordsize][dimensions] = inequalities
-        write_file = open(wordwise_truncated_mds_file_path, 'wb')
+        write_file = open(wordwise_truncated_mds_file_path, "wb")
         pickle.dump(dictio, write_file)
         write_file.close()
 
