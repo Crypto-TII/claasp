@@ -509,12 +509,13 @@ class SatXorDifferentialModel(SatModel):
             self._window_size_number_of_full_window = number_of_full_windows
             self._window_size_full_window_operator = full_window_operator
 
-    def set_window_size_weight_pr_vars(self, window_size_weight_pr_vars):
-        self._window_size_weight_pr_vars = window_size_weight_pr_vars
-
     @property
     def window_size_weight_pr_vars(self):
         return self._window_size_weight_pr_vars
+
+    @window_size_weight_pr_vars.setter
+    def window_size_weight_pr_vars(self, window_size_weight_pr_vars):
+        self._window_size_weight_pr_vars = window_size_weight_pr_vars
 
     @property
     def window_size_number_of_full_window(self):
@@ -527,7 +528,7 @@ class SatXorDifferentialModel(SatModel):
     @property
     def window_size_by_round_values(self):
         return self._window_size_by_round_values
-    
+
     @window_size_by_round_values.setter
     def window_size_by_round_values(self, window_size_by_round_values):
         self._window_size_by_round_values = window_size_by_round_values

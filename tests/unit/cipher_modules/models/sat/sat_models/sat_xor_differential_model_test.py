@@ -70,7 +70,7 @@ speck_4rounds = SpeckBlockCipher(number_of_rounds=4)
 
 def test_find_all_xor_differential_trails_with_fixed_weight():
     sat = SatXorDifferentialModel(speck_5rounds)
-    sat.set_window_size_weight_pr_vars(1)
+    sat.window_size_weight_pr_vars = 1
 
     assert int(sat.find_all_xor_differential_trails_with_fixed_weight(9)[0]["total_weight"]) == 9
 
