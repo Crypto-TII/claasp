@@ -15,31 +15,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-import os
-import math
-import itertools
-import subprocess
-
-from minizinc import Instance, Model, Solver, Status
+from minizinc import Status
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
+from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import (
-    write_model_to_file,
-    convert_solver_solution_to_dictionary,
     check_if_implemented_component,
+    convert_solver_solution_to_dictionary,
 )
 from claasp.name_mappings import (
-    CONSTANT,
-    INTERMEDIATE_OUTPUT,
     CIPHER_OUTPUT,
-    LINEAR_LAYER,
+    CONSTANT,
     SBOX,
-    MIX_COLUMN,
-    WORD_OPERATION,
-    DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
 )
-from claasp.cipher_modules.models.cp.solvers import MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 
 class MznDeterministicTruncatedXorDifferentialModel(MznModel):

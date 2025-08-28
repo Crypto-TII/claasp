@@ -557,11 +557,10 @@ class MznModel:
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
-            sage: write_model_to_file(cp._model_constraints,'doctesting_file.mzn')
-            sage: command = ['minizinc', '--solver-statistics', '--solver', 'chuffed', 'doctesting_file.mzn']
+            sage: command = ['minizinc', '--input-from-stdin', '--solver-statistics', '--solver', 'chuffed']
             sage: import subprocess
-            sage: solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-            sage: os.remove('doctesting_file.mzn')
+            sage: model = '\n'.join(cp._model_constraints) + '\n'
+            sage: solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             sage: solver_output = solver_process.stdout.splitlines()
             sage: cp._parse_solver_output(solver_output, model_type = 'xor_differential_one_solution', solve_external = True) # random
             (0.018,

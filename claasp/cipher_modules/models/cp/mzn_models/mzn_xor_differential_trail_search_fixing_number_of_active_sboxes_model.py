@@ -313,9 +313,11 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)), (0,)*128)]
-            sage: cp.build_xor_differential_trail_first_step_model(-1,fixed_variables)
+            sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
             sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step', 'chuffed')
-            sage: cp.generate_table_of_solutions(first_step_solution, 'chuffed', 'aes_block_cipher_k128_p128_o128_r2_table_of_solutions_Chuffed.mzn')
+            sage: table_of_solutions = cp.generate_table_of_solutions(first_step_solution)
+            sage: table_of_solutions[:26]
+            'array [0..0, 1..40] of int'
         """
         cipher_name = self.cipher_id
         separator = "----------"
@@ -590,17 +592,18 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: MznXorDifferentialFixingNumberOfActiveSboxesModel)
+            ....:     MznXorDifferentialFixingNumberOfActiveSboxesModel,
+            ....: )
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
-            sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128),
-            ....: integer_to_bit_list(0, 128, 'little'))]
+            sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128), integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
             sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step','chuffed')
             sage: cp.transform_first_step_model(0, first_step_solution[0])
-            1
+            sage: first_step_solution[0]
+            '1'
         """
         self._first_step_find_all_solutions = []
         for line in self._first_step:

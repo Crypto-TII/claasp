@@ -15,8 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import os
-
 # solvers definition
 CHOCO = "choco"
 CHUFFED = "chuffed"
@@ -29,8 +27,9 @@ SCIP = "scip"
 XOR = "Xor"
 XPRESS = "xpress"
 
+
 SOLVER_DEFAULT = CHUFFED
-MODEL_DEFAULT_PATH = os.getcwd()
+
 
 CP_SOLVERS_INTERNAL = [
     {"solver_brand_name": "Choco", "solver_name": CHOCO},
@@ -44,6 +43,7 @@ CP_SOLVERS_INTERNAL = [
     {"solver_brand_name": "OR Tools", "solver_name": XOR},
     {"solver_brand_name": "FICO Xpress", "solver_name": XPRESS},
 ]
+
 
 CP_SOLVERS_EXTERNAL = [
     {
