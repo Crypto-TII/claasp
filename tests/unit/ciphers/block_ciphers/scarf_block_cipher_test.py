@@ -6,7 +6,7 @@ def test_scarf_block_cipher():
     assert cipher.type == 'block_cipher'
     assert cipher.family_name == 'scarf'
     assert cipher.number_of_rounds == 8
-    assert cipher.id == 'scarf_p10_k240_i48_o10_r8'
+    assert cipher.id == 'scarf_p10_k240_t48_o10_r8'
     assert cipher.component_from(0, 0).id == 'constant_0_0'
 
     plaintext = 0x0
