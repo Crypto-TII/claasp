@@ -1651,9 +1651,13 @@ def is_linear_layer_permutation(matrix, matrix_transposed):
 
 
 def make_cipher_id(family_name, inputs, inputs_bit_size, output_bit_size, number_of_rounds):
-    tokens = (f"{family_name}",)
-    tokens += tuple(f"{input_[0]}{size}" for input_, size in zip(inputs, inputs_bit_size))
-    tokens += (f"o{output_bit_size}", f"r{number_of_rounds}")
+    tokens = [f"{family_name}",]
+    for input_, size in zip(inputs, inputs_bit_size):
+        if not input_.startswith("input_"):
+            tokens += [f"{input_[0]}{size}"]
+        else:
+            tokens +=[f"{input_[6]}{size}"]
+    tokens += [f"o{output_bit_size}", f"r{number_of_rounds}"]
     cipher_id = "_".join(tokens)
 
     return cipher_id
