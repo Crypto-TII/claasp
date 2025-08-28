@@ -44,7 +44,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         - ``dict_of_components`` -- **dict**; Dictionary mapping component IDs to their respective models and types.
         """
         self.dict_of_components = dict_of_components
-        model_types = set(component["model_type"] for component in self.dict_of_components)
+        model_types = {component["model_type"] for component in self.dict_of_components}
 
         truncated_model_types = {item for item in model_types if item != "sat_xor_differential_propagation_constraints"}
 

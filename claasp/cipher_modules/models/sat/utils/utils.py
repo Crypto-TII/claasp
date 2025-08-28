@@ -799,7 +799,7 @@ def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
     values = ""
     if status == "SATISFIABLE":
         solver_output = solver_output[1:]
-        solver_output = list(map(lambda s: s.replace("v ", ""), solver_output))
+        solver_output = [s.replace("v ", "") for s in solver_output]
         values = []
         for element in solver_output:
             substrings = element.split()

@@ -631,7 +631,7 @@ class MznModel:
                 )
                 solutions["status"] = UNSATISFIABLE
             else:
-                if output_to_parse.statistics["nSolutions"] == 1 or type(output_to_parse.solution) != list:
+                if output_to_parse.statistics["nSolutions"] == 1 or (not isinstance(output_to_parse.solution, list)):
                     components_values, total_weight = set_solution_values_internal(output_to_parse.solution)
                     solutions = convert_solver_solution_to_dictionary(
                         self._cipher, model_type, solver_name, time, memory, components_values, total_weight

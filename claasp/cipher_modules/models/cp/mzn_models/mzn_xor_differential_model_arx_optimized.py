@@ -660,7 +660,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         objective_string.append(
             f"solve:: int_search({modular_addition_concatenation}, smallest, indomain_min, complete)"
         )
-        objective_string.append(f"satisfy;")
+        objective_string.append("satisfy;")
         self.mzn_output_directives.append(
             f'output ["Total_Probability: "++show(sum({modular_addition_concatenation}))];'
         )

@@ -491,7 +491,7 @@ class SatXorDifferentialModel(SatModel):
         self, window_size_by_round_values, number_of_full_windows=None, full_window_operator="at_least"
     ):
         if not self._cipher.is_arx():
-            raise Exception("Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.")
+            raise TypeError("Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.")
         self._window_size_by_round_values = window_size_by_round_values
         if number_of_full_windows is not None:
             self._window_size_full_window_vars = []
@@ -502,7 +502,7 @@ class SatXorDifferentialModel(SatModel):
         self, window_size_by_component_id_values, number_of_full_windows=None, full_window_operator="at_least"
     ):
         if not self._cipher.is_arx():
-            raise Exception("Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.")
+            raise TypeError("Cipher is not ARX. Window Size Heuristic is only supported for ARX ciphers.")
         self._window_size_by_component_id_values = window_size_by_component_id_values
         if number_of_full_windows is not None:
             self._window_size_full_window_vars = []

@@ -807,7 +807,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self.build_impossible_xor_differential_trail_model(
             fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components
         )
-        self._model_constraints.remove(f"solve satisfy;")
+        self._model_constraints.remove("solve satisfy;")
         self._model_constraints.append(
             f"solve minimize count(plaintext, 2) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 2);"
         )
@@ -875,7 +875,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self.build_impossible_xor_differential_trail_model(
             fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components
         )
-        self._model_constraints.remove(f"solve satisfy;")
+        self._model_constraints.remove("solve satisfy;")
         self._model_constraints.append(
             f"solve maximize count(plaintext, 2) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 2);"
         )

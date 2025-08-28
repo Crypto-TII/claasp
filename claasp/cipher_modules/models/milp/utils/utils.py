@@ -785,12 +785,10 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
                 id + f"{MILP_BACKWARD_SUFFIX}"
             )
             input_ids, _ = backward_incompatible_component._get_input_output_variables()
-            renamed_input_ids = set(
-                [
-                    "_".join(id.split("_")[:-2]) if MILP_BACKWARD_SUFFIX in id else "_".join(id.split("_")[:-1])
-                    for id in input_ids
-                ]
-            )
+            renamed_input_ids = {
+                "_".join(id.split("_")[:-2]) if MILP_BACKWARD_SUFFIX in id else "_".join(id.split("_")[:-1])
+                for id in input_ids
+            }
             indices += sorted(indices + [full_cipher_components.index(c) for c in renamed_input_ids])
 
         updated_cipher_components = full_cipher_components[: indices[0]] + [
@@ -853,7 +851,7 @@ def _set_weight_precision(model, analysis_type):
         for id in model.non_linear_component_id:
             sb = tuple(model._cipher.get_component_from_id(id).description)
             for proba in dict_product_of_sum[str(sb)].keys():
-                if not (proba & (proba - 1) == 0):
+                if (proba & (proba - 1)) != 0:  # proba not power of two
                     model._has_non_integer_weight = True
                     break
             else:
