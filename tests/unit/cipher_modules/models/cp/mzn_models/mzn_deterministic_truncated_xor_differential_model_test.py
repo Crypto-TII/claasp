@@ -1,6 +1,7 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import (
     MznDeterministicTruncatedXorDifferentialModel,
 )
+from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
@@ -27,27 +28,25 @@ def test_find_all_deterministic_truncated_xor_differential_trails():
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    trail = mzn.find_all_deterministic_truncated_xor_differential_trails(
-        3, [plaintext, key], "Chuffed", solve_external=True
+    trails = mzn.find_all_deterministic_truncated_xor_differential_trails(
+        3, [plaintext, key], CHUFFED, solve_external=True
     )
 
-    assert len(trail) == 4
-    for i in range(len(trail)):
-        assert str(trail[i]["cipher"]) == "speck_p32_k64_o32_r3"
-        assert trail[i]["model_type"] == "deterministic_truncated_xor_differential"
-        assert trail[i]["model_type"] == "deterministic_truncated_xor_differential"
-        assert trail[i]["solver_name"] == "Chuffed"
+    assert len(trails) == 4
+    for trail in trails:
+        assert str(trail["cipher"]) == "speck_p32_k64_o32_r3"
+        assert trail["model_type"] == "deterministic_truncated_xor_differential"
+        assert trail["solver_name"] == CHUFFED
 
-    trail = mzn.find_all_deterministic_truncated_xor_differential_trails(
-        3, [plaintext, key], "chuffed", solve_external=False
+    trails = mzn.find_all_deterministic_truncated_xor_differential_trails(
+        3, [plaintext, key], CHUFFED, solve_external=False
     )
 
-    assert len(trail) == 4
-    for i in range(len(trail)):
-        assert str(trail[i]["cipher"]) == "speck_p32_k64_o32_r3"
-        assert trail[i]["model_type"] == "deterministic_truncated_xor_differential"
-        assert trail[i]["model_type"] == "deterministic_truncated_xor_differential"
-        assert trail[i]["solver_name"] == "chuffed"
+    assert len(trails) == 4
+    for trail in trails:
+        assert str(trail["cipher"]) == "speck_p32_k64_o32_r3"
+        assert trail["model_type"] == "deterministic_truncated_xor_differential"
+        assert trail["solver_name"] == CHUFFED
 
 
 def test_find_one_deterministic_truncated_xor_differential_trail():
@@ -60,7 +59,7 @@ def test_find_one_deterministic_truncated_xor_differential_trail():
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
     trail = mzn.find_one_deterministic_truncated_xor_differential_trail(
-        1, [plaintext, key], "Chuffed", solve_external=True
+        1, [plaintext, key], CHUFFED, solve_external=True
     )
 
     assert str(trail[0]["cipher"]) == "speck_p32_k64_o32_r1"
@@ -70,13 +69,13 @@ def test_find_one_deterministic_truncated_xor_differential_trail():
         == "0000000000000000000000000000000000000000000000000000000000000000"
     )
     assert trail[0]["model_type"] == "deterministic_truncated_xor_differential_one_solution"
-    assert trail[0]["solver_name"] == "Chuffed"
+    assert trail[0]["solver_name"] == CHUFFED
 
     trail = mzn.find_one_deterministic_truncated_xor_differential_trail(
-        1, [plaintext, key], "chuffed", solve_external=False
+        1, [plaintext, key], CHUFFED, solve_external=False
     )
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r1"
 
     assert trail["model_type"] == "deterministic_truncated_xor_differential_one_solution"
-    assert trail["solver_name"] == "chuffed"
+    assert trail["solver_name"] == CHUFFED

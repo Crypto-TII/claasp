@@ -32,7 +32,6 @@ component.
 import ast
 import itertools
 import math
-import os
 import subprocess
 
 from sage.combinat.permutation import Permutation
@@ -44,19 +43,21 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_
 )
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import update_and_or_ddt_valid_probabilities
 from claasp.cipher_modules.models.utils import (
-    convert_solver_solution_to_dictionary,
     check_if_implemented_component,
+    convert_solver_solution_to_dictionary,
     get_bit_bindings,
 )
 from claasp.name_mappings import (
-    CONSTANT,
-    INTERMEDIATE_OUTPUT,
     CIPHER_OUTPUT,
-    SBOX,
-    WORD_OPERATION,
+    CONSTANT,
     IMPOSSIBLE_XOR_DIFFERENTIAL,
-    INPUT_PLAINTEXT,
     INPUT_KEY,
+    INPUT_PLAINTEXT,
+    INTERMEDIATE_OUTPUT,
+    SATISFIABLE,
+    SBOX,
+    UNSATISFIABLE,
+    WORD_OPERATION,
 )
 
 
@@ -492,7 +493,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(76), [0]*76)]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(64), [0]*64))
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_19', 'equal', range(64), [0]*64))
-            sage: trails = mzn.find_all_impossible_xor_differential_trails(4, fixed_variables, 'Chuffed', 1, 2, 4, intermediate_components=False)
+            sage: trails = mzn.find_all_impossible_xor_differential_trails(4, fixed_variables, 'chuffed', 1, 2, 4, intermediate_components=False)
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hybrid_impossible_xor_differential_model import MznHybridImpossibleXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
@@ -502,7 +503,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             sage: fixed_variables = [set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(80), bit_values=[0] * 49 + [1] + [0]*30)] #long# doctest: +SKIP
             sage: fixed_variables.append(set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions= range(64), bit_values= [0] * 60 + [1,0,0,0])) #long# doctest: +SKIP
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_17_19', 'equal', range(64), [0]*64)) #long# doctest: +SKIP
-            sage: trails = mzn.find_all_impossible_xor_differential_trails(18, fixed_variables, 'Chuffed', 1, 9, 18, intermediate_components=False, probabilistic=True) #long# doctest: +SKIP
+            sage: trails = mzn.find_all_impossible_xor_differential_trails(18, fixed_variables, 'chuffed', 1, 9, 18, intermediate_components=False, probabilistic=True) #long# doctest: +SKIP
             sage: len(trails) #long# doctest: +SKIP
             6
 
@@ -579,7 +580,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(80), [0]*10+[1]+[0]*69)]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(64), [0]*64))
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_19', 'equal', range(64), [0]*64))
-            sage: trail = mzn.find_one_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 2, 4, intermediate_components=False)
+            sage: trail = mzn.find_one_impossible_xor_differential_trail(4, fixed_variables, 'chuffed', 1, 2, 4, intermediate_components=False)
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hybrid_impossible_xor_differential_model import MznHybridImpossibleXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
@@ -589,7 +590,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(80), integer_to_bit_list(0x800, 80, 'big'))] #long# doctest: +SKIP
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(64), [0]*64)) #long# doctest: +SKIP
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_15_19', 'equal', range(64), [0]*64)) #long# doctest: +SKIP
-            sage: trail = mzn.find_one_impossible_xor_differential_trail(16, fixed_variables, 'Chuffed', 1, 8, 16, intermediate_components=False) #long# doctest: +SKIP
+            sage: trail = mzn.find_one_impossible_xor_differential_trail(16, fixed_variables, 'chuffed', 1, 8, 16, intermediate_components=False) #long# doctest: +SKIP
             ...
 
         """
@@ -834,13 +835,9 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             number_of_rounds = self._cipher.number_of_rounds
         if final_round is None:
             final_round = self._cipher.number_of_rounds
-        cipher_name = self.cipher_id
-        input_file_path = f"{cipher_name}_Mzn_{model_type}_{solver_name}.mzn"
-        command = self.get_command_for_solver_process(
-            input_file_path, model_type, solver_name, processes_, timeout_in_seconds_
-        )
-        solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        os.remove(input_file_path)
+        command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
+        model = "\n".join(self._model_constraints) + "\n"
+        solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
@@ -855,10 +852,10 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
                 solution = convert_solver_solution_to_dictionary(
                     self.cipher_id, model_type, solver_name, solve_time, memory, components_values, total_weight
                 )
-                if "UNSATISFIABLE" in solver_output[0]:
-                    solution["status"] = "UNSATISFIABLE"
+                if UNSATISFIABLE in solver_output[0]:
+                    solution["status"] = UNSATISFIABLE
                 else:
-                    solution["status"] = "SATISFIABLE"
+                    solution["status"] = SATISFIABLE
                 solutions.append(solution)
             else:
                 MznModel.add_solutions_from_components_values(

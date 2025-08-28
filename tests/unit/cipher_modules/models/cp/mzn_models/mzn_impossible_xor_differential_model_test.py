@@ -1,10 +1,11 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import (
     MznImpossibleXorDifferentialModel,
 )
+from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, UNSATISFIABLE
 
 
 def test_build_impossible_xor_differential_trail_with_extensions_model():
@@ -54,10 +55,10 @@ def test_find_all_impossible_xor_differential_trails():
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
     trail = mzn.find_all_impossible_xor_differential_trails(
-        7, [plaintext, ciphertext, key], "Chuffed", 1, 3, 7, False, solve_external=True
+        7, [plaintext, ciphertext, key], CHUFFED, 1, 3, 7, False, solve_external=True
     )
 
-    assert trail[0]["status"] == "UNSATISFIABLE"
+    assert trail[0]["status"] == UNSATISFIABLE
 
 
 def test_find_lowest_complexity_impossible_xor_differential_trail():
@@ -74,12 +75,12 @@ def test_find_lowest_complexity_impossible_xor_differential_trail():
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
     trail = mzn.find_lowest_complexity_impossible_xor_differential_trail(
-        6, [plaintext, ciphertext, key], "Chuffed", 1, 3, 6, True, solve_external=True
+        6, [plaintext, ciphertext, key], CHUFFED, 1, 3, 6, True, solve_external=True
     )
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r6"
     assert trail["model_type"] == "impossible_xor_differential_one_solution"
-    assert trail["solver_name"] == "Chuffed"
+    assert trail["solver_name"] == CHUFFED
 
     assert trail["components_values"][INPUT_PLAINTEXT]["value"] != "0" * 32
     assert trail["components_values"][INPUT_KEY]["value"] == "0" * 64
@@ -101,7 +102,7 @@ def test_find_one_impossible_xor_differential_trail():
     )
     trail = mzn.find_one_impossible_xor_differential_trail(
         fixed_values=[plaintext, ciphertext, key],
-        solver_name="Chuffed",
+        solver_name=CHUFFED,
         middle_round=3,
         intermediate_components=True,
         solve_external=True,
@@ -109,7 +110,7 @@ def test_find_one_impossible_xor_differential_trail():
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r6"
     assert trail["model_type"] == "impossible_xor_differential_one_solution"
-    assert trail["solver_name"] == "Chuffed"
+    assert trail["solver_name"] == CHUFFED
 
     assert trail["components_values"][INPUT_PLAINTEXT]["value"] != "0" * 32
     assert trail["components_values"][INPUT_KEY]["value"] == "0" * 64
@@ -130,7 +131,7 @@ def test_find_one_impossible_xor_differential_trail_with_fully_automatic_model()
         bit_values=[0] * 6 + [2, 0, 2] + [0] * 23,
     )
     trail = mzn.find_one_impossible_xor_differential_trail_with_fully_automatic_model(
-        fixed_values=[plaintext, key, ciphertext], solver_name="Chuffed", intermediate_components=False
+        fixed_values=[plaintext, key, ciphertext], solver_name=CHUFFED, intermediate_components=False
     )
 
     assert trail["status"] == "SATISFIABLE"
@@ -157,7 +158,7 @@ def test_find_one_impossible_xor_differential_trail_with_initial_and_final_round
     )
     trail = mzn.find_one_impossible_xor_differential_trail(
         fixed_values=[plaintext, ciphertext, key],
-        solver_name="Chuffed",
+        solver_name=CHUFFED,
         initial_round=1,
         final_round=6,
         intermediate_components=True,
@@ -166,7 +167,7 @@ def test_find_one_impossible_xor_differential_trail_with_initial_and_final_round
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r6"
     assert trail["model_type"] == "impossible_xor_differential_one_solution"
-    assert trail["solver_name"] == "Chuffed"
+    assert trail["solver_name"] == CHUFFED
 
     assert trail["components_values"][INPUT_PLAINTEXT]["value"] != "0" * 32
     assert trail["components_values"][INPUT_KEY]["value"] == "0" * 64
@@ -187,12 +188,12 @@ def test_find_one_impossible_xor_differential_trail_with_extensions():
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
     trail = mzn.find_one_impossible_xor_differential_trail_with_extensions(
-        6, [plaintext, ciphertext, key], "Chuffed", 2, 3, 5, True, solve_external=True
+        6, [plaintext, ciphertext, key], CHUFFED, 2, 3, 5, True, solve_external=True
     )
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r6"
     assert trail["model_type"] == "impossible_xor_differential_one_solution"
-    assert trail["solver_name"] == "Chuffed"
+    assert trail["solver_name"] == CHUFFED
 
     assert trail["components_values"]["inverse_plaintext"]["value"] != "0" * 32
     assert trail["components_values"]["inverse_cipher_output_5_12"]["value"] != "0" * 32
@@ -207,10 +208,10 @@ def test_find_one_impossible_xor_differential_cluster():
         set_fixed_variables("inverse_cipher_output_3_12", "not_equal", range(32), (0,) * 32),
     ]
     trail = mzn.find_one_impossible_xor_differential_cluster(
-        4, fixed_variables, "Chuffed", 1, 3, 4, intermediate_components=False
+        4, fixed_variables, CHUFFED, 1, 3, 4, intermediate_components=False
     )
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r4"
     assert trail["model_type"] == "impossible_xor_differential_one_solution"
-    assert trail["solver_name"] == "Chuffed"
+    assert trail["solver_name"] == CHUFFED
     assert trail["components_values"][INPUT_KEY]["value"] == "0" * 64
     assert trail["status"] == "SATISFIABLE"

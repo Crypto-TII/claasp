@@ -17,6 +17,7 @@
 
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
+from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CIPHER,
@@ -83,7 +84,7 @@ class MznCipherModel(MznModel):
         if not second:
             self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
 
-    def find_missing_bits(self, fixed_values=[], solver_name="Chuffed", solver_external=True):
+    def find_missing_bits(self, fixed_values=[], solver_name=SOLVER_DEFAULT, solver_external=True):
         self.build_cipher_model(fixed_variables=fixed_values)
         solution = self.solve(CIPHER, solver_name=solver_name, solve_external=solver_external)
 
