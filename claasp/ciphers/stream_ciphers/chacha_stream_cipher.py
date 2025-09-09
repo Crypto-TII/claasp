@@ -124,3 +124,5 @@ class ChachaStreamCipher(ChachaPermutation):
             component = self.component_from(last_round, component_number)
             if component.type == "cipher_output":
                 component.set_input_id_links(lst_ids)
+
+        self.sort_cipher()
