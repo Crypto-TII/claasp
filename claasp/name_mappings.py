@@ -1,11 +1,11 @@
-# cipher_type
+# cipher types
 BLOCK_CIPHER = "block_cipher"
 STREAM_CIPHER = "stream_cipher"
 TWEAKABLE_BLOCK_CIPHER = "tweakable_block_cipher"
 PERMUTATION = "permutation"
 HASH_FUNCTION = "hash_function"
 
-# CIPHER INPUTS
+# cipher inputs
 INPUT_KEY = "key"
 INPUT_PLAINTEXT = "plaintext"
 INPUT_INITIALIZATION_VECTOR = "initialization_vector"
@@ -39,3 +39,7 @@ BOOMERANG_XOR_DIFFERENTIAL = "boomerang_xor_differential"
 
 # cipher inverse
 CIPHER_INVERSE_SUFFIX = "_inverse"
+
+# models
+SATISFIABLE = "SATISFIABLE"
+UNSATISFIABLE = "UNSATISFIABLE"

@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -22,6 +21,7 @@ The target of this module is to generate MILP inequalities for small and large s
 
 The logic minimizer espresso is required for this module. It is already installed in the docker.
 """
+
 import pickle, os
 import subprocess
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
@@ -30,8 +30,7 @@ large_sbox_file_name = "dictionary_that_contains_inequalities_for_large_sboxes.o
 large_sbox_xor_linear_file_name = "dictionary_that_contains_inequalities_for_large_sboxes_xor_linear.obj"
 
 large_sboxes_inequalities_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH, large_sbox_file_name)
-large_sboxes_xor_linear_inequalities_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH,
-                                                             large_sbox_xor_linear_file_name)
+large_sboxes_xor_linear_inequalities_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH, large_sbox_xor_linear_file_name)
 
 
 def generate_espresso_input(input_size, output_size, value, valid_transformations_matrix):
@@ -53,10 +52,10 @@ def generate_espresso_input(input_size, output_size, value, valid_transformation
     espresso_input.append("# end of the PLA data\n")
     espresso_input.append(".e")
 
-    return ''.join(espresso_input)
+    return "".join(espresso_input)
+
 
 def generate_product_of_sum_from_espresso(sbox, analysis="differential"):
-
     dict_espresso_outputs = {}
     if analysis == "differential":
         valid_transformations_matrix = sbox.difference_distribution_table()
@@ -70,9 +69,12 @@ def generate_product_of_sum_from_espresso(sbox, analysis="differential"):
         raise TypeError("analysis (%s) has to be one of ['differential', 'linear']" % (analysis,))
 
     for value in values_in_matrix:
-        espresso_input = generate_espresso_input(sbox.input_size(), sbox.output_size(), value, valid_transformations_matrix)
-        espresso_process = subprocess.run(['espresso', '-epos', '-okiss'], input=espresso_input,
-                                          capture_output=True, text=True)
+        espresso_input = generate_espresso_input(
+            sbox.input_size(), sbox.output_size(), value, valid_transformations_matrix
+        )
+        espresso_process = subprocess.run(
+            ["espresso", "-epos", "-okiss"], input=espresso_input, capture_output=True, text=True
+        )
         espresso_output = espresso_process.stdout.splitlines()
         dict_espresso_outputs[value] = [line[:-2] for line in espresso_output[4:]]
 
@@ -91,20 +93,27 @@ def get_dictionary_that_contains_inequalities_for_large_sboxes(analysis="differe
     - then Espresso is used to compute the minimum product-of-sum representation of each pb-DDT,
       seen as a boolean function
     """
-    file_path = large_sboxes_inequalities_file_path if analysis == "differential" else large_sboxes_xor_linear_inequalities_file_path
+    file_path = (
+        large_sboxes_inequalities_file_path
+        if analysis == "differential"
+        else large_sboxes_xor_linear_inequalities_file_path
+    )
 
-    read_file = open(file_path, 'rb')
+    read_file = open(file_path, "rb")
     inequalities = pickle.load(read_file)
     read_file.close()
     return inequalities
 
 
 def update_dictionary_that_contains_inequalities_for_large_sboxes(sbox, analysis="differential"):
-
-    file_path = large_sboxes_inequalities_file_path if analysis == "differential" else large_sboxes_xor_linear_inequalities_file_path
+    file_path = (
+        large_sboxes_inequalities_file_path
+        if analysis == "differential"
+        else large_sboxes_xor_linear_inequalities_file_path
+    )
 
     try:
-        read_file = open(file_path, 'rb')
+        read_file = open(file_path, "rb")
         dictio = pickle.load(read_file)
         read_file.close()
     except OSError:
@@ -115,13 +124,17 @@ def update_dictionary_that_contains_inequalities_for_large_sboxes(sbox, analysis
         dict_product_of_sum = generate_product_of_sum_from_espresso(sbox, analysis)
         dictio[str(sbox)] = dict_product_of_sum
 
-        write_file = open(file_path, 'wb')
+        write_file = open(file_path, "wb")
         pickle.dump(dictio, write_file)
         write_file.close()
 
 
 def delete_dictionary_that_contains_inequalities_for_large_sboxes(analysis="differential"):
-    file_path = large_sboxes_inequalities_file_path if analysis == "differential" else large_sboxes_xor_linear_inequalities_file_path
-    write_file = open(file_path, 'wb')
+    file_path = (
+        large_sboxes_inequalities_file_path
+        if analysis == "differential"
+        else large_sboxes_xor_linear_inequalities_file_path
+    )
+    write_file = open(file_path, "wb")
     pickle.dump({}, write_file)
     write_file.close()

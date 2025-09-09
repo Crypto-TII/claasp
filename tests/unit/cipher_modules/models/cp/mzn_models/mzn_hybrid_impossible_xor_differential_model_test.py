@@ -1,7 +1,7 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_hybrid_impossible_xor_differential_model import \
     MznHybridImpossibleXorDifferentialModel
 from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+from claasp.cipher_modules.models.utils import set_fixed_variables
 
 
 def test_build_impossible_xor_differential_trail_model():

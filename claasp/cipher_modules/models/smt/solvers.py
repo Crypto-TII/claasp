@@ -29,8 +29,12 @@ Docker container running the default image for the library no further action is
 needed.
 """
 
+# external solvers definition
+MATHSAT_EXT = "MATHSAT_EXT"
+YICES_EXT = "YICES_EXT"
+Z3_EXT = "Z3_EXT"
 
-SOLVER_DEFAULT = "Z3_EXT"
+SOLVER_DEFAULT = Z3_EXT
 
 
 SMT_SOLVERS_INTERNAL = []
@@ -39,11 +43,11 @@ SMT_SOLVERS_INTERNAL = []
 SMT_SOLVERS_EXTERNAL = [
     {
         "solver_brand_name": "MathSAT 5",
-        "solver_name": "MATHSAT_EXT",
+        "solver_name": MATHSAT_EXT,
         "keywords": {
             "command": {
                 "executable": "mathsat",
-                "options": ['-model', '-stats'],
+                "options": ["-model", "-stats"],
                 "input_file": "",
                 "solve": "",
                 "output_file": "",
@@ -57,7 +61,7 @@ SMT_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "Yices2",
-        "solver_name": "YICES_EXT",
+        "solver_name": YICES_EXT,
         "keywords": {
             "command": {
                 "executable": "yices-smt2",
@@ -75,7 +79,7 @@ SMT_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "Z3 Theorem Prover",
-        "solver_name": "Z3_EXT",
+        "solver_name": Z3_EXT,
         "keywords": {
             "command": {
                 "executable": "z3",

@@ -1,5 +1,3 @@
-import os
-
 from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import (
     MznImpossibleXorDifferentialModel,
 )
@@ -121,18 +119,27 @@ def test_find_one_impossible_xor_differential_trail():
 def test_find_one_impossible_xor_differential_trail_with_fully_automatic_model():
     simon = SimonBlockCipher(block_bit_size=32, number_of_rounds=11)
     mzn = MznImpossibleXorDifferentialModel(simon)
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0] * 31 + [1])
-    key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0] * 64)
-    ciphertext = set_fixed_variables(component_id='inverse_cipher_output_10_13', constraint_type='equal', bit_positions=range(32), bit_values=[0] * 6 + [2, 0, 2] + [0] * 23)
-    trail = mzn.find_one_impossible_xor_differential_trail_with_fully_automatic_model(fixed_values=[plaintext, key, ciphertext], solver_name='Chuffed', intermediate_components=False)
+    plaintext = set_fixed_variables(
+        component_id="plaintext", constraint_type="equal", bit_positions=range(32), bit_values=[0] * 31 + [1]
+    )
+    key = set_fixed_variables(component_id="key", constraint_type="equal", bit_positions=range(64), bit_values=[0] * 64)
+    ciphertext = set_fixed_variables(
+        component_id="inverse_cipher_output_10_13",
+        constraint_type="equal",
+        bit_positions=range(32),
+        bit_values=[0] * 6 + [2, 0, 2] + [0] * 23,
+    )
+    trail = mzn.find_one_impossible_xor_differential_trail_with_fully_automatic_model(
+        fixed_values=[plaintext, key, ciphertext], solver_name="Chuffed", intermediate_components=False
+    )
 
-    assert trail['status'] == 'SATISFIABLE'
+    assert trail["status"] == "SATISFIABLE"
 
-    assert trail['components_values']['plaintext']['value'] == '00000000000000000000000000000001'
-    assert trail['components_values']['inverse_cipher_output_10_13']['value'] == '00000020200000000000000000000000'
+    assert trail["components_values"]["plaintext"]["value"] == "00000000000000000000000000000001"
+    assert trail["components_values"]["inverse_cipher_output_10_13"]["value"] == "00000020200000000000000000000000"
 
-    assert trail['components_values']['intermediate_output_5_12']['value'] ==         '22222222222222220222222122222202'
-    assert trail['components_values']['inverse_intermediate_output_5_12']['value'] == '22222222002222202222222022222222'
+    assert trail["components_values"]["intermediate_output_5_12"]["value"] == "22222222222222220222222122222202"
+    assert trail["components_values"]["inverse_intermediate_output_5_12"]["value"] == "22222222002222202222222022222222"
 
 
 def test_find_one_impossible_xor_differential_trail_with_initial_and_final_round():

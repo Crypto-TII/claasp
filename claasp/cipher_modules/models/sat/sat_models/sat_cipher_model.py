@@ -1,33 +1,39 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 
 import time
 
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.utils import set_component_solution
-from claasp.name_mappings import (CIPHER, WORD_OPERATION, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
-                                  MIX_COLUMN, SBOX)
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CIPHER,
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SBOX,
+    WORD_OPERATION,
+)
 
 
 class SatCipherModel(SatModel):
-    def __init__(self, cipher, counter='sequential', compact=False):
+    def __init__(self, cipher, counter="sequential", compact=False):
         super().__init__(cipher, counter, compact)
 
     def build_cipher_model(self, fixed_variables=[]):
@@ -54,14 +60,15 @@ class SatCipherModel(SatModel):
         constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
-        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
-        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
 
         for component in self._cipher.get_all_components():
             operation = component.description[0]
             if component.type not in component_types or (
-                    WORD_OPERATION == component.type and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
+                WORD_OPERATION == component.type and operation not in operation_types
+            ):
+                print(f"{component.id} not yet implemented")
             else:
                 variables, constraints = component.sat_constraints()
 
@@ -73,19 +80,20 @@ class SatCipherModel(SatModel):
         constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
-        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
-        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
 
         for component_and_model_type in component_and_model_types:
             component = component_and_model_type["component_object"]
             model_type = component_and_model_type["model_type"]
             operation = component.description[0]
             if component.type not in component_types or (
-                    WORD_OPERATION == component.type and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
+                WORD_OPERATION == component.type and operation not in operation_types
+            ):
+                print(f"{component.id} not yet implemented")
             else:
                 sat_xor_differential_propagation_constraints = getattr(component, model_type)
-                if model_type == 'sat_bitwise_deterministic_truncated_xor_differential_constraints':
+                if model_type == "sat_bitwise_deterministic_truncated_xor_differential_constraints":
                     variables, constraints = sat_xor_differential_propagation_constraints()
                 else:
                     variables, constraints = sat_xor_differential_propagation_constraints(self)
@@ -113,32 +121,27 @@ class SatCipherModel(SatModel):
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
             sage: sat = SatCipherModel(speck)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: ciphertext_id = speck.get_all_components_ids()[-1]
             sage: ciphertext = set_fixed_variables(
-            ....:         component_id=speck.get_all_components_ids()[-1],
-            ....:         constraint_type='equal',
-            ....:         bit_positions=range(32),
-            ....:         bit_values=integer_to_bit_list(endianness='big', list_length=32, int_value=0xaffec7ed))
-            sage: sat.find_missing_bits(fixed_values=[ciphertext]) # random
-            {'cipher_id': 'speck_p32_k64_o32_r22',
-             'model_type': 'cipher',
-             'solver_name': 'CRYPTOMINISAT_EXT',
-             ...
-              'intermediate_output_21_11': {'value': '1411'},
-              'cipher_output_21_12': {'value': 'affec7ed'}},
-             'total_weight': None,
-             'status': 'SATISFIABLE',
-             'building_time_seconds': 0.019376516342163086}
+            ....:     component_id=ciphertext_id,
+            ....:     constraint_type="equal",
+            ....:     bit_positions=range(32),
+            ....:     bit_values=integer_to_bit_list(endianness="big", list_length=32, int_value=0xaffec7ed)
+            ....: )
+            sage: trail = sat.find_missing_bits(fixed_values=[ciphertext])
+            sage: trail["components_values"][ciphertext_id]["value"]
+            '0xaffec7ed'
         """
         start_building_time = time.time()
         self.build_cipher_model(fixed_variables=fixed_values)
         end_building_time = time.time()
         solution = self.solve(CIPHER, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
+        solution["building_time_seconds"] = end_building_time - start_building_time
 
         return solution
 
     def _parse_solver_output(self, variable2value):
-        out_suffix = ''
+        out_suffix = ""
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         for component in self._cipher.get_all_components():
             hex_value = self._get_component_hex_value(component, out_suffix, variable2value)

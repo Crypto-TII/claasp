@@ -1,38 +1,48 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 import time
 
 from claasp.cipher_modules.models.sat import solvers
-from claasp.cipher_modules.models.sat.utils import constants, utils
 from claasp.cipher_modules.models.sat.sat_model import SatModel
+from claasp.cipher_modules.models.sat.utils import constants, utils
 from claasp.cipher_modules.models.sat.utils.constants import OUTPUT_BIT_ID_SUFFIX, INPUT_BIT_ID_SUFFIX
-from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution, \
-    get_single_key_scenario_format_for_fixed_values
-from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER,
-                                  MIX_COLUMN, SBOX, WORD_OPERATION, XOR_LINEAR, INPUT_KEY)
+from claasp.cipher_modules.models.utils import (
+    get_bit_bindings,
+    set_component_solution,
+    get_single_key_scenario_format_for_fixed_values,
+)
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INPUT_KEY,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SBOX,
+    WORD_OPERATION,
+    XOR_LINEAR,
+)
 
 
 class SatXorLinearModel(SatModel):
-    def __init__(self, cipher, counter='sequential', compact=False):
+    def __init__(self, cipher, counter="sequential", compact=False):
         super().__init__(cipher, counter, compact)
-        self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
+        self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, "_".join)
 
     @staticmethod
     def branch_xor_linear_constraints(bindings):
@@ -89,7 +99,7 @@ class SatXorLinearModel(SatModel):
         variables = []
         if INPUT_KEY not in [variable["component_id"] for variable in fixed_variables]:
             self._cipher = self._cipher.remove_key_schedule()
-            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self._cipher, '_'.join)
+            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self._cipher, "_".join)
         if fixed_variables == []:
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = SatXorLinearModel.fix_variables_value_xor_linear_constraints(fixed_variables)
@@ -102,7 +112,7 @@ class SatXorLinearModel(SatModel):
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.sat_xor_linear_mask_propagation_constraints(self)
             else:
-                print(f'{component.id} not yet implemented')
+                print(f"{component.id} not yet implemented")
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
@@ -115,8 +125,9 @@ class SatXorLinearModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                     solver_name=solvers.SOLVER_DEFAULT, options=None):
+    def find_all_xor_linear_trails_with_fixed_weight(
+        self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Return a list of solutions containing all the XOR linear trails having weight equal to ``fixed_weight``.
         By default, the search removes the key schedule, if any.
@@ -156,19 +167,19 @@ class SatXorLinearModel(SatModel):
         start_building_time = time.time()
         self.build_xor_linear_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
         if self._counter == self._sequential_counter:
-            self._sequential_counter_greater_or_equal(fixed_weight, 'dummy_hw_1')
+            self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
+        solution["building_time_seconds"] = end_building_time - start_building_time
         solutions_list = []
-        while solution['total_weight'] is not None:
+        while solution["total_weight"] is not None:
             solutions_list.append(solution)
             literals = []
-            for component in solution['components_values']:
-                value_as_hex_string = solution['components_values'][component]['value']
+            for component in solution["components_values"]:
+                value_as_hex_string = solution["components_values"][component]["value"]
                 value_to_avoid = int(value_as_hex_string, base=16)
                 bit_len = (len(value_as_hex_string) - 2) * 4
-                minus = ['-' * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
+                minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
                 if CONSTANT in component and component.endswith(INPUT_BIT_ID_SUFFIX):
                     continue
                 elif component.endswith(INPUT_BIT_ID_SUFFIX) or component.endswith(OUTPUT_BIT_ID_SUFFIX):
@@ -177,15 +188,16 @@ class SatXorLinearModel(SatModel):
                 else:
                     component_id = component
                     suffix = OUTPUT_BIT_ID_SUFFIX
-                literals.extend([f'{minus[i]}{component_id}_{i}{suffix}' for i in range(bit_len)])
-            self._model_constraints.append(' '.join(literals))
+                literals.extend([f"{minus[i]}{component_id}_{i}{suffix}" for i in range(bit_len)])
+            self._model_constraints.append(" ".join(literals))
             solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
-            solution['building_time_seconds'] = end_building_time - start_building_time
-            solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
+            solution["building_time_seconds"] = end_building_time - start_building_time
+            solution["test_name"] = "find_all_xor_linear_trails_with_fixed_weight"
         return solutions_list
 
-    def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
-                                                       solver_name=solvers.SOLVER_DEFAULT, options=None):
+    def find_all_xor_linear_trails_with_weight_at_most(
+        self, min_weight, max_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Return a list of solutions.
         By default, the search removes the key schedule, if any.
@@ -227,12 +239,11 @@ class SatXorLinearModel(SatModel):
         """
         solutions_list = []
         for weight in range(min_weight, max_weight + 1):
-            solutions = self.find_all_xor_linear_trails_with_fixed_weight(weight,
-                                                                          fixed_values=fixed_values,
-                                                                          solver_name=solver_name,
-                                                                          options=options)
+            solutions = self.find_all_xor_linear_trails_with_fixed_weight(
+                weight, fixed_values=fixed_values, solver_name=solver_name, options=options
+            )
             for solution in solutions:
-                solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
+                solution["test_name"] = "find_all_xor_linear_trails_with_weight_at_most"
             solutions_list.extend(solutions)
 
         return solutions_list
@@ -283,21 +294,21 @@ class SatXorLinearModel(SatModel):
         self.build_xor_linear_trail_model(weight=current_weight, fixed_variables=fixed_values)
         end_building_time = time.time()
         solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
-        total_time = solution['solving_time_seconds']
-        max_memory = solution['memory_megabytes']
-        while solution['total_weight'] is None:
+        solution["building_time_seconds"] = end_building_time - start_building_time
+        total_time = solution["solving_time_seconds"]
+        max_memory = solution["memory_megabytes"]
+        while solution["total_weight"] is None:
             current_weight += 1
             start_building_time = time.time()
             self.build_xor_linear_trail_model(weight=current_weight, fixed_variables=fixed_values)
             end_building_time = time.time()
             solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
-            solution['building_time_seconds'] = end_building_time - start_building_time
-            total_time += solution['solving_time_seconds']
-            max_memory = max((max_memory, solution['memory_megabytes']))
-        solution['solving_time_seconds'] = total_time
-        solution['memory_megabytes'] = max_memory
-        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
+            solution["building_time_seconds"] = end_building_time - start_building_time
+            total_time += solution["solving_time_seconds"]
+            max_memory = max((max_memory, solution["memory_megabytes"]))
+        solution["solving_time_seconds"] = total_time
+        solution["memory_megabytes"] = max_memory
+        solution["test_name"] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
@@ -347,13 +358,14 @@ class SatXorLinearModel(SatModel):
         self.build_xor_linear_trail_model(fixed_variables=fixed_values)
         end_building_time = time.time()
         solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
-        solution['test_name'] = "find_one_xor_linear_trail"
+        solution["building_time_seconds"] = end_building_time - start_building_time
+        solution["test_name"] = "find_one_xor_linear_trail"
 
         return solution
 
-    def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                    solver_name=solvers.SOLVER_DEFAULT, options=None):
+    def find_one_xor_linear_trail_with_fixed_weight(
+        self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Return the solution representing a XOR linear trail whose weight is ``fixed_weight``.
         By default, the search removes the key schedule, if any.
@@ -393,11 +405,11 @@ class SatXorLinearModel(SatModel):
         start_building_time = time.time()
         self.build_xor_linear_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
         if self._counter == self._sequential_counter:
-            self._sequential_counter_greater_or_equal(fixed_weight, 'dummy_hw_1')
+            self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
-        solution['building_time_seconds'] = end_building_time - start_building_time
-        solution['test_name'] = "find_one_xor_linear_trail_with_fixed_weight"
+        solution["building_time_seconds"] = end_building_time - start_building_time
+        solution["test_name"] = "find_one_xor_linear_trail_with_fixed_weight"
 
         return solution
 
@@ -441,18 +453,18 @@ class SatXorLinearModel(SatModel):
         constraints = []
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         for variable in fixed_variables:
-            component_id = variable['component_id']
-            is_equal = (variable['constraint_type'] == 'equal')
-            bit_positions = variable['bit_positions']
-            bit_values = variable['bit_values']
+            component_id = variable["component_id"]
+            is_equal = variable["constraint_type"] == "equal"
+            bit_positions = variable["bit_positions"]
+            bit_values = variable["bit_values"]
             variables_ids = []
             for position, value in zip(bit_positions, bit_values):
-                is_negative = '-' * (value ^ is_equal)
-                variables_ids.append(f'{is_negative}{component_id}_{position}{out_suffix}')
+                is_negative = "-" * (value ^ is_equal)
+                variables_ids.append(f"{is_negative}{component_id}_{position}{out_suffix}")
             if is_equal:
                 constraints.extend(variables_ids)
             else:
-                constraints.append(' '.join(variables_ids))
+                constraints.append(" ".join(variables_ids))
 
         return constraints
 
@@ -468,11 +480,11 @@ class SatXorLinearModel(SatModel):
             hex_solution = self._get_component_hex_value(component, out_suffix, variable2value)
             weight = self.calculate_component_weight(component, out_suffix, variable2value)
             component_solution = set_component_solution(hex_solution, weight)
-            components_solutions[f'{component.id}{out_suffix}'] = component_solution
+            components_solutions[f"{component.id}{out_suffix}"] = component_solution
             total_weight += weight
 
             input_hex_value = self._get_component_hex_value(component, in_suffix, variable2value)
             component_solution = set_component_solution(input_hex_value, 0)
-            components_solutions[f'{component.id}{in_suffix}'] = component_solution
+            components_solutions[f"{component.id}{in_suffix}"] = component_solution
 
         return components_solutions, total_weight
