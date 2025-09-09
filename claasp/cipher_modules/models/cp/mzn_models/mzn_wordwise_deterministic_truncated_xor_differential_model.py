@@ -15,28 +15,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-import os
-import math
-import itertools
-import subprocess
-
 from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import (
     MznDeterministicTruncatedXorDifferentialModel,
     SOLVE_SATISFY,
 )
-from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
+from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.name_mappings import (
-    CONSTANT,
-    INTERMEDIATE_OUTPUT,
     CIPHER_OUTPUT,
-    LINEAR_LAYER,
-    SBOX,
-    MIX_COLUMN,
-    WORD_OPERATION,
-    DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
+    CONSTANT,
 )
-from claasp.cipher_modules.models.cp.solvers import MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 
 class MznWordwiseDeterministicTruncatedXorDifferentialModel(MznDeterministicTruncatedXorDifferentialModel):

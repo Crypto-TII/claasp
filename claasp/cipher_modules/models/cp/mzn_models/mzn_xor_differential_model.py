@@ -234,7 +234,7 @@ class MznXorDifferentialModel(MznModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -244,7 +244,7 @@ class MznXorDifferentialModel(MznModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: cp = MznXorDifferentialModel(speck)
-            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(9, solver_name='Chuffed', solve_external=True)
+            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(9, solver_name='chuffed', solve_external=True)
             sage: len(trails)
             2
 
@@ -307,7 +307,7 @@ class MznXorDifferentialModel(MznModel):
         - ``min_weight`` -- **integer**; the weight from which to start the search
         - ``max_weight`` -- **integer** (default: 64); the weight at which the search stops
         - ``fixed_values`` -- **list**  (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -317,7 +317,7 @@ class MznXorDifferentialModel(MznModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: cp = MznXorDifferentialModel(speck)
-            sage: trails = cp.find_all_xor_differential_trails_with_weight_at_most(9,10, solver_name='Chuffed', solve_external=True)
+            sage: trails = cp.find_all_xor_differential_trails_with_weight_at_most(9,10, solver_name='chuffed', solve_external=True)
             sage: len(trails)
             28
 
@@ -412,7 +412,7 @@ class MznXorDifferentialModel(MznModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -422,10 +422,10 @@ class MznXorDifferentialModel(MznModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: cp = MznXorDifferentialModel(speck)
-            sage: cp.find_lowest_weight_xor_differential_trail(solver_name='Chuffed', solve_external=True) # random
+            sage: cp.find_lowest_weight_xor_differential_trail(solver_name='chuffed', solve_external=True) # random
             {'cipher': speck_p32_k64_o32_r5,
              'model_type': 'xor_differential_one_solution',
-             'solver_name': 'Chuffed',
+             'solver_name': 'chuffed',
              'solving_time_seconds': 120.349,
              'memory_megabytes': 0.28,
              'components_values': {'plaintext': {'value': '28000010', 'weight': 0},
@@ -485,7 +485,7 @@ class MznXorDifferentialModel(MznModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -495,7 +495,7 @@ class MznXorDifferentialModel(MznModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialModel(speck)
-            sage: cp.find_one_xor_differential_trail(solver_name='Chuffed', solve_external=True) # random
+            sage: cp.find_one_xor_differential_trail(solver_name='chuffed', solve_external=True) # random
             {'cipher_id': 'speck_p32_k64_o32_r2',
              'model_type': 'xor_differential_one_solution',
               ...
@@ -551,7 +551,7 @@ class MznXorDifferentialModel(MznModel):
 
         - ``fixed_weight`` -- **integer**; the value to which the weight is fixed, if non-negative
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -561,7 +561,7 @@ class MznXorDifferentialModel(MznModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: cp = MznXorDifferentialModel(speck)
-            sage: trail = cp.find_one_xor_differential_trail_with_fixed_weight(3, solver_name='Chuffed', solve_external=True) # random
+            sage: trail = cp.find_one_xor_differential_trail_with_fixed_weight(3, solver_name='chuffed', solve_external=True) # random
             sage: trail['total_weight']
             '3.0'
 

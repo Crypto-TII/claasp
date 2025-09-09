@@ -15,35 +15,23 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 import os
-import math
 import subprocess
 import time as tm
 
 from copy import deepcopy
 
-from sage.crypto.sbox import SBox
-
-
-from claasp.name_mappings import XOR_DIFFERENTIAL, CONSTANT, SBOX, WORD_OPERATION
 from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY
-from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import (
-    MznXorDifferentialModel,
-    update_and_or_ddt_valid_probabilities,
-)
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
     MznXorDifferentialNumberOfActiveSboxesModel,
 )
 from claasp.cipher_modules.models.cp.solvers import (
     CP_SOLVERS_EXTERNAL,
-    CP_SOLVERS_INTERNAL,
-    MODEL_DEFAULT_PATH,
     SOLVER_DEFAULT,
 )
-from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
-from claasp.cipher_modules.models.cp.minizinc_utils.utils import replace_existing_file_name
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
+from claasp.name_mappings import UNSATISFIABLE, XOR_DIFFERENTIAL
 
 
 class MznXorDifferentialFixingNumberOfActiveSboxesModel(
@@ -111,8 +99,8 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``first_step_solver_name`` -- **string** (default: `Chuffed`); the name of the solver for the number of active sboxes search
-        - ``second_step_solver_name`` -- **string** (default: `Chuffed`); the name of the solver for the differential trails search.
+        - ``first_step_solver_name`` -- **string** (default: `chuffed`); the name of the solver for the number of active sboxes search
+        - ``second_step_solver_name`` -- **string** (default: `chuffed`); the name of the solver for the differential trails search.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -127,7 +115,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
-            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(224, fixed_variables, 'Chuffed', 'Chuffed') # long # doctest: +SKIP
+            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(224, fixed_variables, 'chuffed', 'chuffed') # long # doctest: +SKIP
             ...
             sage: len(trails) # long # doctest: +SKIP
             8
@@ -166,7 +154,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -181,11 +169,11 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
-            sage: cp.find_lowest_weight_xor_differential_trail(fixed_variables, 'Chuffed', 'Chuffed') # random
+            sage: cp.find_lowest_weight_xor_differential_trail(fixed_variables, 'chuffed', 'chuffed') # random
             5
             {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
              'model_type': 'xor_differential',
-             'solver_name': 'Chuffed',
+             'solver_name': 'chuffed',
              'components_values': {'key': {'value': '00000000000000000000000000000000', 'weight': 0},
               ...
              'total_weight': '30.0'}
@@ -219,7 +207,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -234,7 +222,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
-            sage: cp.find_one_xor_differential_trail(fixed_variables, 'Chuffed', 'Chuffed') # random
+            sage: cp.find_one_xor_differential_trail(fixed_variables, 'chuffed', 'chuffed') # random
             {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
              'model_type': 'xor_differential',
               ...
@@ -272,7 +260,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         - ``fixed_weight`` -- **integer**; the value to which the weight is fixed, if non-negative
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -287,10 +275,10 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
-            sage: cp.find_one_xor_differential_trail_with_fixed_weight(224, fixed_variables, 'Chuffed', 'Chuffed') # random
+            sage: cp.find_one_xor_differential_trail_with_fixed_weight(224, fixed_variables, 'chuffed', 'chuffed') # random
             {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
              'model_type': 'xor_differential',
-             'solver_name': 'Chuffed',
+             'solver_name': 'chuffed',
              ...
              'total_weight': '224.0',
              'building_time_seconds':  19.993147134780884}
@@ -307,7 +295,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             timelimit,
         )
 
-    def generate_table_of_solutions(self, solution, solver_name, solution_file_name):
+    def generate_table_of_solutions(self, solution):
         """
         Return a table with the solutions from the first step in the two steps model for xor differential trail search.
 
@@ -318,16 +306,18 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: MznXorDifferentialFixingNumberOfActiveSboxesModel)
+            ....:     MznXorDifferentialFixingNumberOfActiveSboxesModel,
+            ....: )
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
-            sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)),
-            ....: integer_to_bit_list(0, 128, 'little'))]
-            sage: cp.build_xor_differential_trail_first_step_model(-1,fixed_variables)
-            sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step', 'Chuffed')
-            sage: cp.generate_table_of_solutions(first_step_solution, 'Chuffed', 'aes_block_cipher_k128_p128_o128_r2_table_of_solutions_Chuffed.mzn')
+            sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)), (0,)*128)]
+            sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
+            sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step', 'chuffed')
+            sage: table_of_solutions = cp.generate_table_of_solutions(first_step_solution)
+            sage: table_of_solutions[:26]
+            'array [0..0, 1..40] of int'
         """
         cipher_name = self.cipher_id
         separator = "----------"
@@ -337,7 +327,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             if "table_of_solution_length" in line:
                 line = line.replace(" table_of_solution_length = ", "")
                 table_of_solutions_length = line.rstrip("\n")
-        table = (
+        table_of_solutions = (
             f"array [0..{count_separator - 1}, 1..{table_of_solutions_length}] of int: "
             f"{cipher_name}_table_of_solutions = "
             f"array2d(0..{count_separator - 1}, 1..{table_of_solutions_length}, ["
@@ -347,10 +337,10 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
                 if item[0] in line:
                     value = line.replace(item[0], "")
                     value = value.replace(" = ", "")
-                    table = table + value.replace("\n", "") + ","
-        table = table[:-1] + "]);"
-        with open(solution_file_name, "w") as table_of_solutions_file:
-            table_of_solutions_file.write(table)
+                    table_of_solutions = table_of_solutions + value.replace("\n", "") + ","
+        table_of_solutions = table_of_solutions[:-1] + "]);"
+        
+        return table_of_solutions
 
     def get_solutions_dictionaries_with_build_time(
         self, build_time, components_values, memory, solver_name, time, total_weight
@@ -438,7 +428,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)),
             ....: integer_to_bit_list(0, 128, 'little'))]
-            sage: cp.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', -1, fixed_variables, 'Chuffed', 'Chuffed') # random
+            sage: cp.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', -1, fixed_variables, 'chuffed', 'chuffed') # random
             1
             {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
               ...
@@ -452,7 +442,6 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             if not possible_sboxes:
                 raise ValueError("There are no trails with the fixed weight!")
 
-        cipher_name = self.cipher_id
         start = tm.time()
         self.build_xor_differential_trail_first_step_model(weight, fixed_variables, nmax, repetition, possible_sboxes)
         end = tm.time()
@@ -464,15 +453,10 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         self.build_xor_differential_trail_second_step_model(weight, fixed_variables)
         end = tm.time()
         build_time += end - start
-        input_file_name = f"{MODEL_DEFAULT_PATH}/{cipher_name}_mzn_xor_differential_{first_step_solver_name}.mzn"
-        input_file_name = replace_existing_file_name(input_file_name)
-        solution_file_name = f"{MODEL_DEFAULT_PATH}/{cipher_name}_table_of_solutions_{first_step_solver_name}.mzn"
-        solution_file_name = replace_existing_file_name(solution_file_name)
-        write_model_to_file(self._model_constraints, input_file_name)
 
         for i in range(len(CP_SOLVERS_EXTERNAL)):
             if second_step_solver_name == CP_SOLVERS_EXTERNAL[i]["solver_name"]:
-                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
+                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i]["keywords"]["command"])
 
         for attempt in range(10000):
             if weight == -1:
@@ -484,49 +468,38 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
                     "xor_differential_first_step_find_all_solutions", first_step_solver_name
                 )
                 solve_time += solve_first_step_time
-                self.generate_table_of_solutions(first_step_all_solutions, first_step_solver_name, solution_file_name)
-
-                command_options["keywords"]["command"]["input_file"].append(input_file_name)
-                command_options["keywords"]["command"]["output_file"].append(solution_file_name)
-                command_options["keywords"]["command"]["options"].insert(0, "-a")
+                table_of_solutions = self.generate_table_of_solutions(first_step_all_solutions)
+                command_options["options"].insert(0, "-a")
             elif model_type == "xor_differential_all_solutions":
-                self.generate_table_of_solutions(first_step_solution, first_step_solver_name, solution_file_name)
-
-                command_options["keywords"]["command"]["input_file"].append(input_file_name)
-                command_options["keywords"]["command"]["output_file"].append(solution_file_name)
-                command_options["keywords"]["command"]["options"].insert(0, "-a")
+                table_of_solutions = self.generate_table_of_solutions(first_step_solution)
+                command_options["options"].insert(0, "-a")
             else:
-                self.generate_table_of_solutions(first_step_solution, first_step_solver_name, solution_file_name)
-
-                command_options["keywords"]["command"]["input_file"].append(input_file_name)
-                command_options["keywords"]["command"]["output_file"].append(solution_file_name)
+                table_of_solutions = self.generate_table_of_solutions(first_step_solution)
             if num_of_processors is not None:
-                command_options["keywords"]["command"]["options"].insert(0, f"-p {num_of_processors}")
+                command_options["options"].insert(0, f"-p {num_of_processors}")
             if timelimit is not None:
-                command_options["keywords"]["command"]["options"].append("--time-limit")
-                command_options["keywords"]["command"]["options"].append(str(timelimit))
+                command_options["options"].append(["--time-limit", str(timelimit)])
             command = []
-            for key in command_options["keywords"]["command"]["format"]:
-                command.extend(command_options["keywords"]["command"][key])
+            for key in command_options["format"]:
+                command.extend(command_options[key])
 
-            solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+            model = table_of_solutions + "\n" + "\n".join(self._model_constraints) + "\n"
+            solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             if solver_process.returncode < 0:
                 raise ValueError("something went wrong with solver subprocess... sorry!")
 
             solver_output = solver_process.stdout.splitlines()
-            if any("UNSATISFIABLE" in line for line in solver_output) and weight not in (-1, 0):
-                os.remove(input_file_name)
-                os.remove(solution_file_name)
-                return "Unsatisfiable"
+
+            if any(UNSATISFIABLE in line for line in solver_output) and weight not in (-1, 0):
+                return UNSATISFIABLE
 
             time, memory, components_values, total_weight = self._parse_solver_output(
                 solver_output, model_type, False, True, second_step_solver_name
             )
+
             solutions = self.get_solutions_dictionaries_with_build_time(
                 build_time, components_values, memory, second_step_solver_name, time, total_weight
             )
-            os.remove(input_file_name)
-            os.remove(solution_file_name)
 
             return solutions
 
@@ -554,7 +527,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)),
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
-            sage: cp.solve_model('xor_differential_first_step', 'Chuffed') # random
+            sage: cp.solve_model('xor_differential_first_step', 'chuffed') # random
             ['1',
              ' table_of_solution_length = 40',
              ' xor_0_0[0] = 0',
@@ -565,34 +538,28 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
              0.19837307929992676)]
         """
         start = tm.time()
-        cipher_name = self.cipher_id
-        input_file_name = f"{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}.mzn"
-        input_file_name = replace_existing_file_name(input_file_name)
         for i in range(len(CP_SOLVERS_EXTERNAL)):
             if solver_name == CP_SOLVERS_EXTERNAL[i]["solver_name"]:
-                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i])
-        command_options["keywords"]["command"]["input_file"].append(input_file_name)
+                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i]["keywords"]["command"])
 
         if model_type == "xor_differential_first_step_find_all_solutions":
-            write_model_to_file(self._first_step_find_all_solutions, input_file_name)
-            command_options["keywords"]["command"]["options"].insert(0, "-a")
+            model = "\n".join(self._first_step_find_all_solutions) + "\n"
+            command_options["options"].insert(0, "-a")
         else:
             if model_type == "xor_differential_first_step":
-                write_model_to_file(self._first_step, input_file_name)
+                model = "\n".join(self._first_step) + "\n"
             else:
-                write_model_to_file(self._model_constraints, input_file_name)
+                model = "\n".join(self._model_constraints) + "\n"
         if num_of_processors is not None:
-            command_options["keywords"]["command"]["options"].insert(0, f"-p {num_of_processors}")
+            command_options["options"].insert(0, f"-p {num_of_processors}")
         if timelimit is not None:
-            command_options["keywords"]["command"]["options"].append("--time-limit")
-            command_options["keywords"]["command"]["options"].append(str(timelimit))
+            command_options["options"].append(["--time-limit", str(timelimit)])
 
         command = []
-        for key in command_options["keywords"]["command"]["format"]:
-            command.extend(command_options["keywords"]["command"][key])
+        for key in command_options["format"]:
+            command.extend(command_options[key])
         command.remove("--solver-statistics")
-        solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        os.remove(input_file_name)
+        solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
         solution = []
         temp = []
         for c in solver_process.stdout:
@@ -625,19 +592,19 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
-            ....: MznXorDifferentialFixingNumberOfActiveSboxesModel)
+            ....:     MznXorDifferentialFixingNumberOfActiveSboxesModel,
+            ....: )
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
-            sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128),
-            ....: integer_to_bit_list(0, 128, 'little'))]
+            sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128), integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
-            sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step','Chuffed')
+            sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step','chuffed')
             sage: cp.transform_first_step_model(0, first_step_solution[0])
-            1
+            sage: first_step_solution[0]
+            '1'
         """
-        print(active_sboxes)
         self._first_step_find_all_solutions = []
         for line in self._first_step:
             if ": number_of_active_sBoxes;" in line:

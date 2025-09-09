@@ -15,31 +15,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-import os
-import math
-import itertools
-import subprocess
-
-from minizinc import Instance, Model, Solver, Status
+from minizinc import Status
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
+from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import (
-    write_model_to_file,
-    convert_solver_solution_to_dictionary,
     check_if_implemented_component,
+    convert_solver_solution_to_dictionary,
 )
 from claasp.name_mappings import (
-    CONSTANT,
-    INTERMEDIATE_OUTPUT,
     CIPHER_OUTPUT,
-    LINEAR_LAYER,
+    CONSTANT,
     SBOX,
-    MIX_COLUMN,
-    WORD_OPERATION,
-    DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
 )
-from claasp.cipher_modules.models.cp.solvers import MODEL_DEFAULT_PATH, SOLVER_DEFAULT
 
 
 class MznDeterministicTruncatedXorDifferentialModel(MznModel):
@@ -195,7 +183,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -230,7 +218,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                'xor_0_4': {'value': '2222222222222220', 'weight': 0}},
               'memory_megabytes': 0.01,
               'model_type': 'deterministic_truncated_xor_differential_one_solution',
-              'solver_name': 'Chuffed',
+              'solver_name': 'chuffed',
               'solving_time_seconds': 0.0,
               'total_weight': '0.0'}]
         """
@@ -295,7 +283,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
               ...
               'memory_megabytes': 0.02,
               'model_type': 'deterministic_truncated_xor_differential',
-              'solver_name': 'Chuffed',
+              'solver_name': 'chuffed',
               'solving_time_seconds': 0.002,
               'total_weight': '0.0'}]
         """
@@ -337,7 +325,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -372,7 +360,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                'xor_0_4': {'value': '2222222222222220', 'weight': 0}},
               'memory_megabytes': 0.01,
               'model_type': 'deterministic_truncated_xor_differential_one_solution',
-              'solver_name': 'Chuffed',
+              'solver_name': 'chuffed',
               'solving_time_seconds': 0.0,
               'total_weight': '0.0'}]
         """

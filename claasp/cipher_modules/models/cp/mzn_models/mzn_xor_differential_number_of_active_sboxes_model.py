@@ -326,14 +326,14 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
              'array[0..15] of var 0..1: plaintext;']
         """
         if possible_sboxes != 0:
-            number_of_active_sBoxes_declaration = "var {"
+            number_of_active_sboxes_declaration = "var {"
             for sboxes_n in possible_sboxes:
-                number_of_active_sBoxes_declaration += str(sboxes_n)
-                number_of_active_sBoxes_declaration += ", "
-            number_of_active_sBoxes_declaration = (
-                number_of_active_sBoxes_declaration[:-2] + "}: number_of_active_sBoxes;"
+                number_of_active_sboxes_declaration += str(sboxes_n)
+                number_of_active_sboxes_declaration += ", "
+            number_of_active_sboxes_declaration = (
+                number_of_active_sboxes_declaration[:-2] + "}: number_of_active_sBoxes;"
             )
-            cp_declarations = [number_of_active_sBoxes_declaration]
+            cp_declarations = [number_of_active_sboxes_declaration]
         else:
             active_sboxes_count = 0
             for component in self._cipher.get_all_components():

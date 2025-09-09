@@ -15,8 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-import os
 import math
 import itertools
 import subprocess
@@ -31,13 +29,11 @@ from minizinc import Instance, Model, Solver, Status
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
-from claasp.cipher_modules.models.cp.minizinc_utils.utils import replace_existing_file_name
-from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 from claasp.name_mappings import CIPHER, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, SATISFIABLE, SBOX, UNSATISFIABLE
 from claasp.cipher_modules.models.cp.solvers import (
     CP_SOLVERS_INTERNAL,
     CP_SOLVERS_EXTERNAL,
-    MODEL_DEFAULT_PATH,
     SOLVER_DEFAULT,
 )
 
@@ -449,7 +445,7 @@ class MznModel:
 
         return value
 
-    def get_command_for_solver_process(self, input_file_path, model_type, solver_name, num_of_processors, timelimit):
+    def get_command_for_solver_process(self, model_type, solver_name, num_of_processors, timelimit):
         solvers = (
             "deterministic_truncated_xor_differential_one_solution",
             "differential_pair_one_solution",
@@ -458,7 +454,6 @@ class MznModel:
             "xor_linear_one_solution",
             CIPHER,
         )
-        write_model_to_file(self._model_constraints, input_file_path)
         found_name = False
         for i in range(len(CP_SOLVERS_EXTERNAL)):
             if solver_name == CP_SOLVERS_EXTERNAL[i]["solver_name"]:
@@ -466,7 +461,6 @@ class MznModel:
                 found_name = True
         if not found_name:
             raise NameError(f"Solver {solver_name} not defined. Specify a valid solver name.")
-        command_options["input_file"].append(input_file_path)
         if model_type not in solvers:
             command_options["options"].insert(0, "-a")
         if num_of_processors is not None:
@@ -563,11 +557,10 @@ class MznModel:
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
-            sage: write_model_to_file(cp._model_constraints,'doctesting_file.mzn')
-            sage: command = ['minizinc', '--solver-statistics', '--solver', 'Chuffed', 'doctesting_file.mzn']
+            sage: command = ['minizinc', '--input-from-stdin', '--solver-statistics', '--solver', 'chuffed']
             sage: import subprocess
-            sage: solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-            sage: os.remove('doctesting_file.mzn')
+            sage: model = '\n'.join(cp._model_constraints) + '\n'
+            sage: solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             sage: solver_output = solver_process.stdout.splitlines()
             sage: cp._parse_solver_output(solver_output, model_type = 'xor_differential_one_solution', solve_external = True) # random
             (0.018,
@@ -638,7 +631,7 @@ class MznModel:
                 )
                 solutions["status"] = UNSATISFIABLE
             else:
-                if output_to_parse.statistics["nSolutions"] == 1 or type(output_to_parse.solution) != list:
+                if output_to_parse.statistics["nSolutions"] == 1 or (not isinstance(output_to_parse.solution, list)):
                     components_values, total_weight = set_solution_values_internal(output_to_parse.solution)
                     solutions = convert_solver_solution_to_dictionary(
                         self._cipher, model_type, solver_name, time, memory, components_values, total_weight
@@ -737,17 +730,12 @@ class MznModel:
             truncated = True
         solutions = []
         if solve_external:
-            cipher_name = self.cipher_id
-            input_file_path = f"{MODEL_DEFAULT_PATH}/{cipher_name}_Mzn_{model_type}_{solver_name}.mzn"
-            input_file_path = replace_existing_file_name(input_file_path)
-            command = self.get_command_for_solver_process(
-                input_file_path, model_type, solver_name, processes_, timeout_in_seconds_
-            )
+            command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
+            model = "\n".join(self._model_constraints) + "\n"
             start = time.time()
-            solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+            solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             end = time.time()
             solve_time = end - start
-            os.remove(input_file_path)
             if solver_process.returncode >= 0:
                 solver_output = solver_process.stdout.splitlines()
         else:

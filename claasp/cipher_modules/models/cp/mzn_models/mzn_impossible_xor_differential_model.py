@@ -15,38 +15,26 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-import os
-import math
-import itertools
 import subprocess
 import time
-from copy import deepcopy
 
-from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, CONSTRAINT_TYPE_ERROR
-from claasp.cipher_modules.models.utils import (
-    write_model_to_file,
-    convert_solver_solution_to_dictionary,
-    check_if_implemented_component,
-    set_fixed_variables,
-)
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY
 from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import (
     MznDeterministicTruncatedXorDifferentialModel,
 )
-
-from claasp.name_mappings import (
-    CONSTANT,
-    INTERMEDIATE_OUTPUT,
-    CIPHER_OUTPUT,
-    LINEAR_LAYER,
-    SBOX,
-    MIX_COLUMN,
-    WORD_OPERATION,
-    DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
-    IMPOSSIBLE_XOR_DIFFERENTIAL,
+from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.utils import (
+    check_if_implemented_component,
+    convert_solver_solution_to_dictionary,
+    set_fixed_variables,
 )
-from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, SOLVER_DEFAULT
-from claasp.cipher_modules.models.cp.minizinc_utils.utils import replace_existing_file_name
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    IMPOSSIBLE_XOR_DIFFERENTIAL,
+    SATISFIABLE,
+    UNSATISFIABLE,
+)
 
 
 class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferentialModel):
@@ -707,7 +695,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self,
         number_of_rounds=None,
         fixed_values=[],
-        solver_name="Chuffed",
+        solver_name=SOLVER_DEFAULT,
         initial_round=1,
         middle_round=None,
         final_round=None,
@@ -742,7 +730,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_all_impossible_xor_differential_trails(4, fixed_variables, 'Chuffed', 1, 3, 4, False) #doctest: +SKIP
+            sage: trail = cp.find_all_impossible_xor_differential_trails(4, fixed_variables, 'chuffed', 1, 3, 4, False) #doctest: +SKIP
 
         """
         initial_round, middle_round, final_round, number_of_rounds = self.validate_input_rounds(
@@ -776,7 +764,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self,
         number_of_rounds=None,
         fixed_values=[],
-        solver_name="Chuffed",
+        solver_name=SOLVER_DEFAULT,
         initial_round=1,
         middle_round=None,
         final_round=None,
@@ -811,7 +799,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_lowest_complexity_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 3, 4, intermediate_components = False)
+            sage: trail = cp.find_lowest_complexity_impossible_xor_differential_trail(4, fixed_variables, 'chuffed', 1, 3, 4, intermediate_components = False)
         """
         initial_round, middle_round, final_round, number_of_rounds = self.validate_input_rounds(
             initial_round, middle_round, final_round, number_of_rounds
@@ -819,7 +807,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self.build_impossible_xor_differential_trail_model(
             fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components
         )
-        self._model_constraints.remove(f"solve satisfy;")
+        self._model_constraints.remove("solve satisfy;")
         self._model_constraints.append(
             f"solve minimize count(plaintext, 2) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 2);"
         )
@@ -844,7 +832,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self,
         number_of_rounds=None,
         fixed_values=[],
-        solver_name="Chuffed",
+        solver_name=SOLVER_DEFAULT,
         initial_round=1,
         middle_round=None,
         final_round=None,
@@ -879,7 +867,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_one_impossible_xor_differential_cluster(4, fixed_variables, 'Chuffed', 1, 3, 4, intermediate_components = False)
+            sage: trail = cp.find_one_impossible_xor_differential_cluster(4, fixed_variables, 'chuffed', 1, 3, 4, intermediate_components = False)
         """
         initial_round, middle_round, final_round, number_of_rounds = self.validate_input_rounds(
             initial_round, middle_round, final_round, number_of_rounds
@@ -887,7 +875,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self.build_impossible_xor_differential_trail_model(
             fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components
         )
-        self._model_constraints.remove(f"solve satisfy;")
+        self._model_constraints.remove("solve satisfy;")
         self._model_constraints.append(
             f"solve maximize count(plaintext, 2) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 2);"
         )
@@ -912,7 +900,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self,
         number_of_rounds=None,
         fixed_values=[],
-        solver_name="Chuffed",
+        solver_name=SOLVER_DEFAULT,
         initial_round=1,
         middle_round=None,
         final_round=None,
@@ -947,7 +935,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('cipher_output_6_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_one_impossible_xor_differential_trail_with_extensions(7, fixed_variables, 'Chuffed', 2, 4, 6, intermediate_components = False)
+            sage: trail = cp.find_one_impossible_xor_differential_trail_with_extensions(7, fixed_variables, 'chuffed', 2, 4, 6, intermediate_components = False)
         """
         self.build_impossible_xor_differential_trail_with_extensions_model(
             fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components
@@ -973,7 +961,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         self,
         number_of_rounds=None,
         fixed_values=[],
-        solver_name="Chuffed",
+        solver_name=SOLVER_DEFAULT,
         initial_round=1,
         middle_round=None,
         final_round=None,
@@ -1008,7 +996,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_one_impossible_xor_differential_trail(4, fixed_variables, 'Chuffed', 1, 3, 4, intermediate_components = False)
+            sage: trail = cp.find_one_impossible_xor_differential_trail(4, fixed_variables, 'chuffed', 1, 3, 4, intermediate_components = False)
         """
         initial_round, middle_round, final_round, number_of_rounds = self.validate_input_rounds(
             initial_round, middle_round, final_round, number_of_rounds
@@ -1036,7 +1024,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
     def find_one_impossible_xor_differential_trail_with_fully_automatic_model(
         self,
         fixed_values=[],
-        solver_name="Chuffed",
+        solver_name=SOLVER_DEFAULT,
         intermediate_components=True,
         num_of_processors=None,
         timelimit=None,
@@ -1068,7 +1056,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(64), integer_to_bit_list(0, 64, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
             sage: fixed_variables.append(set_fixed_variables('inverse_cipher_output_3_12', 'not_equal', range(32), integer_to_bit_list(0, 32, 'little')))
-            sage: trail = cp.find_one_impossible_xor_differential_trail_with_fully_automatic_model(fixed_variables, 'Chuffed', intermediate_components = False)
+            sage: trail = cp.find_one_impossible_xor_differential_trail_with_fully_automatic_model(fixed_variables, 'chuffed', intermediate_components = False)
         """
         self.build_impossible_xor_differential_trail_model(
             fixed_variables=fixed_values, intermediate_components=intermediate_components, fully_automatic=True
@@ -1420,17 +1408,12 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         if fully_automatic:
             number_of_rounds = self._cipher.number_of_rounds
             final_round = self._cipher.number_of_rounds
-        cipher_name = self.cipher_id
-        input_file_path = f"{cipher_name}_Mzn_{model_type}_{solver_name}.mzn"
-        input_file_path = replace_existing_file_name(input_file_path)
-        command = self.get_command_for_solver_process(
-            input_file_path, model_type, solver_name, processes_, timeout_in_seconds_
-        )
+        command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
+        model = "\n".join(self._model_constraints) + "\n"
         start = time.time()
-        solver_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+        solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
         end = time.time()
         solve_time = end - start
-        os.remove(input_file_path)
         if solver_process.returncode >= 0:
             solutions = []
             solver_output = solver_process.stdout.splitlines()
@@ -1453,10 +1436,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                 solution = convert_solver_solution_to_dictionary(
                     self.cipher_id, model_type, solver_name, solve_time, memory, components_values, total_weight
                 )
-                if "UNSATISFIABLE" in solver_output[0]:
-                    solution["status"] = "UNSATISFIABLE"
+                if UNSATISFIABLE in solver_output[0]:
+                    solution["status"] = UNSATISFIABLE
                 else:
-                    solution["status"] = "SATISFIABLE"
+                    solution["status"] = SATISFIABLE
                 solutions.append(solution)
             else:
                 self.add_solutions_from_components_values(
@@ -1471,10 +1454,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                     solve_external,
                 )
             if model_type in [
-                "xor_differential_one_solution",
-                "xor_linear_one_solution",
                 "deterministic_truncated_one_solution",
                 "impossible_xor_differential_one_solution",
+                "xor_differential_one_solution",
+                "xor_linear_one_solution",
             ]:
                 return solutions[0]
             else:

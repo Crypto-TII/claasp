@@ -2,42 +2,34 @@ import os
 import numpy as np
 
 from claasp.cipher_modules.models.cp.mzn_models.mzn_boomerang_model_arx_optimized import MznBoomerangModelARXOptimized
+from claasp.cipher_modules.models.cp.solvers import XOR
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.name_mappings import BOOMERANG_XOR_DIFFERENTIAL
 
 
-def speck32_64_word_size():
-    return 16
-
-
-def speck32_64_alpha():
-    return 7
-
-
-def speck32_64_beta():
-    return 2
-
-
-MASK_VAL = 2 ** speck32_64_word_size() - 1
+SPECK32_64_WORD_SIZE = 16
+SPECK32_64_ALPHA = 7
+SPECK32_64_BETA = 2
+MASK_VAL = 2 ** SPECK32_64_WORD_SIZE - 1
 
 
 def speck32_64_rol(x, k):
-    return ((x << k) & MASK_VAL) | (x >> (speck32_64_word_size() - k))
+    return ((x << k) & MASK_VAL) | (x >> (SPECK32_64_WORD_SIZE - k))
 
 
 def speck32_64_ror(x, k):
-    return (x >> k) | ((x << (speck32_64_word_size() - k)) & MASK_VAL)
+    return (x >> k) | ((x << (SPECK32_64_WORD_SIZE - k)) & MASK_VAL)
 
 
 def speck32_64_decrypt(ciphertext, ks):
     def dec_one_round(c, subkey_):
         c0, c1 = c
         c1 = c1 ^ c0
-        c1 = speck32_64_ror(c1, speck32_64_beta())
+        c1 = speck32_64_ror(c1, SPECK32_64_BETA)
         c0 = c0 ^ subkey_
         c0 = (c0 - c1) & MASK_VAL
-        c0 = speck32_64_rol(c0, speck32_64_alpha())
+        c0 = speck32_64_rol(c0, SPECK32_64_ALPHA)
         return c0, c1
 
     x, y = ciphertext
@@ -48,10 +40,10 @@ def speck32_64_decrypt(ciphertext, ks):
 
 def speck32_64_enc_one_round(plaintext, subkey):
     c0, c1 = plaintext
-    c0 = speck32_64_ror(c0, speck32_64_alpha())
+    c0 = speck32_64_ror(c0, SPECK32_64_ALPHA)
     c0 = (c0 + c1) & MASK_VAL
     c0 = c0 ^ subkey
-    c1 = speck32_64_rol(c1, speck32_64_beta())
+    c1 = speck32_64_rol(c1, SPECK32_64_BETA)
     c1 = c1 ^ c0
     return c0, c1
 
@@ -130,25 +122,25 @@ def test_build_boomerang_model_speck_single_key():
             "component_id": "key_0_2",
             "constraint_type": "equal",
             "bit_positions": list(range(16)),
-            "bit_values": [0] * 16,
+            "bit_values": (0,) * 16,
         },
         {
             "component_id": "key_1_2",
             "constraint_type": "equal",
             "bit_positions": list(range(16)),
-            "bit_values": [0] * 16,
+            "bit_values": (0,) * 16,
         },
         {
             "component_id": "key_2_2",
             "constraint_type": "equal",
             "bit_positions": list(range(16)),
-            "bit_values": [0] * 16,
+            "bit_values": (0,) * 16,
         },
         {
             "component_id": "key_3_2",
             "constraint_type": "equal",
             "bit_positions": list(range(16)),
-            "bit_values": [0] * 16,
+            "bit_values": (0,) * 16,
         },
         {
             "component_id": "xor_3_10",
@@ -171,32 +163,32 @@ def test_build_boomerang_model_speck_single_key():
             "component_id": "key_4_2",
             "constraint_type": "equal",
             "bit_positions": list(range(16)),
-            "bit_values": [0] * 16,
+            "bit_values": (0,) * 16,
         },
         {
             "component_id": "key_5_2",
             "constraint_type": "equal",
             "bit_positions": list(range(16)),
-            "bit_values": [0] * 16,
+            "bit_values": (0,) * 16,
         },
         {
             "component_id": "key_6_2",
             "constraint_type": "equal",
             "bit_positions": list(range(16)),
-            "bit_values": [0] * 16,
+            "bit_values": (0,) * 16,
         },
         {
             "component_id": "key_7_2",
             "constraint_type": "equal",
             "bit_positions": list(range(16)),
-            "bit_values": [0] * 16,
+            "bit_values": (0,) * 16,
         },
     ]
 
     mzn_bct_model.create_boomerang_model(fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher)
-    result = mzn_bct_model.solve_for_ARX(solver_name="Xor")
+    result = mzn_bct_model.solve_for_ARX(solver_name=XOR)
     total_weight = MznBoomerangModelARXOptimized._get_total_weight(result)
-    parsed_result = mzn_bct_model.bct_parse_result(result, "Xor", total_weight, BOOMERANG_XOR_DIFFERENTIAL)
+    parsed_result = mzn_bct_model.bct_parse_result(result, XOR, total_weight, BOOMERANG_XOR_DIFFERENTIAL)
     filename = "."
     mzn_bct_model.write_minizinc_model_to_file(filename)
 
@@ -299,9 +291,9 @@ def test_build_boomerang_model_chacha():
     ]
 
     mzn_bct_model.create_boomerang_model(fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher)
-    result = mzn_bct_model.solve_for_ARX(solver_name="Xor")
+    result = mzn_bct_model.solve_for_ARX(solver_name=XOR)
     total_weight = MznBoomerangModelARXOptimized._get_total_weight(result)
-    parsed_result = mzn_bct_model.bct_parse_result(result, "Xor", total_weight, BOOMERANG_XOR_DIFFERENTIAL)
+    parsed_result = mzn_bct_model.bct_parse_result(result, XOR, total_weight, BOOMERANG_XOR_DIFFERENTIAL)
     filename = "."
     mzn_bct_model.write_minizinc_model_to_file(filename)
 

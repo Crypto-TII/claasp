@@ -1,4 +1,5 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
+from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -29,7 +30,7 @@ def test_find_all_xor_linear_trails_with_fixed_weight():
 
     assert len(trails) == 12
 
-    trails = mzn.find_all_xor_linear_trails_with_fixed_weight(1, solver_name="chuffed", solve_external=False)
+    trails = mzn.find_all_xor_linear_trails_with_fixed_weight(1, solver_name=CHUFFED, solve_external=False)
 
     assert len(trails) == 12
 
@@ -41,7 +42,7 @@ def test_find_all_xor_linear_trails_with_weight_at_most():
 
     assert len(trails) == 13
 
-    trails = mzn.find_all_xor_linear_trails_with_weight_at_most(0, 1, solver_name="chuffed", solve_external=False)
+    trails = mzn.find_all_xor_linear_trails_with_weight_at_most(0, 1, solver_name=CHUFFED, solve_external=False)
 
     assert len(trails) == 13
 
@@ -56,7 +57,7 @@ def test_find_lowest_weight_xor_linear_trail():
     assert trail["components_values"]["cipher_output_3_12_o"]["weight"] == 0
     assert trail["total_weight"] == "3.0"
 
-    trail = mzn.find_lowest_weight_xor_linear_trail(solver_name="chuffed", solve_external=False)
+    trail = mzn.find_lowest_weight_xor_linear_trail(solver_name=CHUFFED, solve_external=False)
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r4"
     assert trail["total_weight"] == "3.0"
@@ -74,7 +75,7 @@ def test_find_one_xor_linear_trail():
     assert eval(trail["components_values"]["cipher_output_3_12_o"]["value"]) >= 0
     assert eval(trail["total_weight"]) >= 0
 
-    trail = mzn.find_one_xor_linear_trail(solver_name="chuffed", solve_external=False)
+    trail = mzn.find_one_xor_linear_trail(solver_name=CHUFFED, solve_external=False)
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r4"
     assert trail["components_values"]["plaintext"]["weight"] == 0
@@ -91,7 +92,7 @@ def test_find_one_xor_linear_trail_with_fixed_weight():
     assert trail["model_type"] == "xor_linear_one_solution"
     assert trail["total_weight"] == "3.0"
 
-    trail = mzn.find_one_xor_linear_trail_with_fixed_weight(3, solver_name="chuffed", solve_external=False)
+    trail = mzn.find_one_xor_linear_trail_with_fixed_weight(3, solver_name=CHUFFED, solve_external=False)
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r4"
     assert trail["model_type"] == "xor_linear_one_solution"

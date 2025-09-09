@@ -74,7 +74,7 @@ class SatDifferentialLinearModel(SatModel):
         self.dict_of_components = component_model_types
         self.regular_components = self._get_components_by_type("sat_xor_differential_propagation_constraints")
 
-        model_types = set(component["model_type"] for component in self.dict_of_components)
+        model_types = {component["model_type"] for component in self.dict_of_components}
 
         truncated_model_types = [
             item
