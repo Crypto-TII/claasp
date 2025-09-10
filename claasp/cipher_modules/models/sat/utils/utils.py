@@ -842,8 +842,6 @@ def _set_model_type_for_components(
         model_type="sat_bitwise_deterministic_truncated_xor_differential_constraints"
 ):
     """Sets the model type for components marked as truncated."""
-    import ipdb
-    ipdb.set_trace()
     for component_model_type in component_model_types:
         if component_model_type["component_id"] in components:
             component_model_type["model_type"] = model_type

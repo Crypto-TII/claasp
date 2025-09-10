@@ -909,6 +909,3 @@ class MznModel:
                     variables, constraints = minizinc_xor_differential_propagation_constraints(self)
                 self._model_constraints.extend(constraints)
                 self._variables_list.extend(variables)
-            # if component.id == 'upper_modadd_0_1':
-            #     import ipdb
-            #     ipdb.set_trace()
