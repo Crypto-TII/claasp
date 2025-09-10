@@ -431,6 +431,7 @@ class Component:
     def add_prefix(self, prefix='upper_'):
         self._id = prefix + self.id
         self._input._id_links = [prefix + i for i in self.input_id_links]
+        
         # new_input = []
         # for input in self.input_id_links:
         #     new_input.append(prefix + input)

@@ -292,6 +292,7 @@ class XOR(Component):
         input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
+        print('I am in the determinist propagation!!!!!!!')
         for id_link, bit_positions in zip(input_id_links, input_bit_positions):
             all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         cp_constraints = []
@@ -455,6 +456,9 @@ class XOR(Component):
         return cp_declarations, cp_constraints
 
     def cp_xor_differential_propagation_constraints(self, model=None):
+        return self.cp_constraints()
+    
+    def cp_xor_differential_propagation_constraints_boomerang(self, model=None):
         return self.cp_constraints()
 
     def cp_xor_differential_propagation_first_step_constraints(self, model, variables_list=None):

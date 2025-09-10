@@ -267,6 +267,12 @@ class Rotate(Component):
     def cp_xor_differential_propagation_constraints(self, model=None):
         return self.cp_constraints()
 
+    def cp_xor_differential_propagation_constraints_boomerang(self, model=None):
+        return self.cp_constraints()
+    
+    def cp_deterministic_truncated_xor_differential_constraints(self, model=None):
+        return self.cp_constraints()
+
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         return self.cp_xor_differential_first_step_constraints(model)
 

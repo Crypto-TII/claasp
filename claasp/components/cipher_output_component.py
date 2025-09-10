@@ -191,6 +191,9 @@ class CipherOutput(Component):
 
     def cp_xor_differential_propagation_constraints(self, model):
         return self.cp_constraints()
+    
+    def cp_xor_differential_propagation_constraints_boomerang(self, model):
+        return self.cp_constraints()
 
     def cp_xor_linear_mask_propagation_constraints(self, model=None):
         """

@@ -1271,6 +1271,7 @@ def sort_cipher_graph(cipher):
     return cipher
 
 def remove_components_from_rounds(cipher, start_round, end_round, keep_key_schedule):
+    copy_of_the_cipher = deepcopy(cipher)
     list_of_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1:]
     key_schedule_component_ids = get_key_schedule_component_ids(cipher)
     key_schedule_components = [cipher.get_component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id]
@@ -1288,6 +1289,16 @@ def remove_components_from_rounds(cipher, start_round, end_round, keep_key_sched
                 intermediate_outputs[current_round.id] = component
             cipher.rounds.remove_round_component(current_round.id, component)
             removed_component_ids.append(component.id)
+    
+    if not keep_key_schedule:
+        for current_round in cipher.rounds_as_list:
+        ######## we move the key_schedule elements survived in the input id links in the cipher input
+            for components in current_round.components:
+                for inputs in components.input_id_links:
+                    if inputs in key_schedule_component_ids and inputs not in cipher.inputs:
+                        cipher.inputs.append(inputs)
+                        # print(f'size of input {inputs} removed of key scheduel {copy_of_the_cipher.get_component_from_id(inputs).output_bit_size}')
+                        cipher.inputs_bit_size.append(copy_of_the_cipher.get_component_from_id(inputs).output_bit_size)
 
     return removed_component_ids, intermediate_outputs
 

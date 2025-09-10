@@ -271,31 +271,82 @@ class MODADD(Modular):
             cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};')
             cp_constraints.extend([f'constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};'
                                    for j in range(input_len)])
+        # constraint forall(j in 0..15)(if eq_upper_modadd_0_1[j] = 1 then (sum([pre_upper_modadd_0_1_1[j], pre_upper_modadd_0_1_0[j], upper_modadd_0_1[j]]) mod 2) = Shi_pre_upper_modadd_0_1_0[j] else true endif) /\ p[0] = 1600-100 * sum(eq_upper_modadd_0_1);
         for i in range(num_add, 2 * num_add - 2):
             cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};')
+            print('Hello world!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         for i in range(num_add - 2):
             cp_twoterms(f'pre_{output_id_link}_{num_add - 1}', f'pre_{output_id_link}_{i + 1}',
                         f'pre_{output_id_link}_{num_add + i}', output_size,
                         cp_constraints, cp_declarations)
+            
+        print('Hello world 2!')
         cp_twoterms(f'pre_{output_id_link}_{2 * num_add - 3}', f'pre_{output_id_link}_0', f'{output_id_link}',
                     output_size, cp_constraints, cp_declarations)
 
         return cp_declarations, cp_constraints
 
     def cp_twoterms_xor_differential_probability(self, inp1, inp2, out, inplen, cp_constraints, cp_declarations, c, model):
+        print('Hello WORLDDDDDDDDDDDDDDDDDD!!!!!!!!!!!!!!!!!!!!!!!!!!')
         if inp1 not in model.modadd_twoterms_mant:
             cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{inp1} = LShift({inp1},1);')
             model.modadd_twoterms_mant.append(inp1)
+            print('case 1 modadd component')
         if inp2 not in model.modadd_twoterms_mant:
             cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{inp2} = LShift({inp2},1);')
             model.modadd_twoterms_mant.append(inp2)
+            print('case 2 modadd component')
         if out not in model.modadd_twoterms_mant:
             cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{out} = LShift({out},1);')
             model.modadd_twoterms_mant.append(out)
+            print('case 3 modadd component')
         cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: eq_{out} = Eq(Shi_{inp1}, Shi_{inp2}, Shi_{out});')
-        cp_constraints.append(
-            f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = 1 then (sum([{inp1}[j], {inp2}[j], '
-            f'{out}[j]]) mod 2) = Shi_{inp2}[j] else true endif) /\\ p[{c}] = {100 * inplen}-100 * sum(eq_{out});')
+        print(f'component: {self.id}')
+        print(f'top num rounds: {model.top_part_number_of_rounds}')
+        # if 'upper_' not in out and 'lower' not in out:
+        cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
+                              f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
+                              f'true endif) /\\ p[{c}] = {inplen}-sum(eq_{out});')
+        # elif 'upper_' in out:
+        #     cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
+        #                       f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
+        #                       f'true endif) /\\ upper_p[{c}] = {inplen}-sum(eq_{out});')
+        # elif 'lower_' in out:
+        #     cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
+        #                       f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
+        #                       f'true endif) /\\ lower_p[{c}] = {inplen}-sum(eq_{out});')
+
+        return cp_declarations, cp_constraints
+    
+    def cp_twoterms_xor_differential_probability_boomerang(self, inp1, inp2, out, inplen, cp_constraints, cp_declarations, c, model):
+        print('Hello WORLDDDDDDDDDDDDDDDDDD!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        if inp1 not in model.modadd_twoterms_mant:
+            cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{inp1} = LShift({inp1},1);')
+            model.modadd_twoterms_mant.append(inp1)
+            print('case 1 modadd component')
+        if inp2 not in model.modadd_twoterms_mant:
+            cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{inp2} = LShift({inp2},1);')
+            model.modadd_twoterms_mant.append(inp2)
+            print('case 2 modadd component')
+        if out not in model.modadd_twoterms_mant:
+            cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{out} = LShift({out},1);')
+            model.modadd_twoterms_mant.append(out)
+            print('case 3 modadd component')
+        cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: eq_{out} = Eq(Shi_{inp1}, Shi_{inp2}, Shi_{out});')
+        print(f'component: {self.id}')
+        print(f'top num rounds: {model.top_part_number_of_rounds}')
+        if 'upper_' not in out and 'lower' not in out:
+            cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
+                              f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
+                              f'true endif) /\\ p[{c}] = ({inplen}-sum(eq_{out})=*100;')
+        elif 'upper_' in out:
+            cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
+                              f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
+                              f'true endif) /\\ upper_p[{c}] = ({inplen}-sum(eq_{out}))*100;')
+        elif 'lower_' in out:
+            cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
+                              f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
+                              f'true endif) /\\ lower_p[{c}] = ({inplen}-sum(eq_{out}))*100;')
 
         return cp_declarations, cp_constraints
 
