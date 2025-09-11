@@ -8,6 +8,7 @@ import pytest
 from claasp.ciphers.block_ciphers.led_block_cipher import LedBlockCipher
 from claasp.name_mappings import BLOCK_CIPHER
 
+
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_led_block_cipher():
     led = LedBlockCipher()

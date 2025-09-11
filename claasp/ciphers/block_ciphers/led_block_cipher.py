@@ -69,11 +69,11 @@ class LedBlockCipher(Cipher):
                 self.add_cipher_output_component(state.id, state.input_bit_positions, self.block_bit_size)
 
     def get_round_register(self, round_number):
-        rc = [0, 0, 0, 0, 0, 0]         
+        rc = [0, 0, 0, 0, 0, 0]
         for _ in range(round_number + 1):
-            new_rc0 = rc[0] ^ rc[1] ^ 1  
-            rc = rc[1:] + [new_rc0]     
-        return rc  
+            new_rc0 = rc[0] ^ rc[1] ^ 1
+            rc = rc[1:] + [new_rc0]
+        return rc
 
     def get_round_constant(self, round_number):
         register = self.get_round_register(round_number)
