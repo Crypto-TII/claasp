@@ -198,30 +198,54 @@ class MilpModel:
         """
         x = self._binary_variable
         constraints = []
+
         for fixed_variable in fixed_variables:
-            component_id = fixed_variable["component_id"]
-            if fixed_variable["constraint_type"] == "equal":
-                for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                    constraints.append(x[f"{component_id}_{bit_position}"] == fixed_variable["bit_values"][index])
-            else:
-                for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                    if fixed_variable["bit_values"][index]:
+            if fixed_variable["bit_values"][0] not in [0,1]:
+                variables_values = []
+                for v in fixed_variable["bit_values"]:
+                    variables_values.extend([(v[0], i) for i in v[1]])
+
+                component_id = fixed_variable["component_id"]
+                if fixed_variable["constraint_type"] == "equal":
+                    for index, bit_position in enumerate(fixed_variable["bit_positions"]):
+                        constraints.append(x[f"{component_id}_{bit_position}"] == x[f"{variables_values[index][0]}_{variables_values[index][1]}"])
+                else:
+                    for index, bit_position in enumerate(fixed_variable["bit_positions"]):
                         constraints.append(
                             x[f"{component_id}{bit_position}_not_equal_{self._number_of_trails_found}"]
-                            == 1 - x[f"{component_id}_{bit_position}"]
+                            == x[f"{component_id}_{bit_position}"] + x[f"{variables_values[index][0]}_{variables_values[index][1]}"] - 2 * x[f"{component_id}_{bit_position}"] * x[f"{variables_values[index][0]}_{variables_values[index][1]}"]
                         )
-                    else:
-                        constraints.append(
-                            x[f"{component_id}{bit_position}_not_equal_{self._number_of_trails_found}"]
-                            == x[f"{component_id}_{bit_position}"]
+                    constraints.append(
+                        sum(
+                            x[f"{component_id}{i}_not_equal_{self._number_of_trails_found}"]
+                            for i in fixed_variable["bit_positions"]
                         )
-                constraints.append(
-                    sum(
-                        x[f"{component_id}{i}_not_equal_{self._number_of_trails_found}"]
-                        for i in fixed_variable["bit_positions"]
+                        >= 1
                     )
-                    >= 1
-                )
+            else:
+                component_id = fixed_variable["component_id"]
+                if fixed_variable["constraint_type"] == "equal":
+                    for index, bit_position in enumerate(fixed_variable["bit_positions"]):
+                        constraints.append(x[f"{component_id}_{bit_position}"] == fixed_variable["bit_values"][index])
+                else:
+                    for index, bit_position in enumerate(fixed_variable["bit_positions"]):
+                        if fixed_variable["bit_values"][index]:
+                            constraints.append(
+                                x[f"{component_id}{bit_position}_not_equal_{self._number_of_trails_found}"]
+                                == 1 - x[f"{component_id}_{bit_position}"]
+                            )
+                        else:
+                            constraints.append(
+                                x[f"{component_id}{bit_position}_not_equal_{self._number_of_trails_found}"]
+                                == x[f"{component_id}_{bit_position}"]
+                            )
+                    constraints.append(
+                        sum(
+                            x[f"{component_id}{i}_not_equal_{self._number_of_trails_found}"]
+                            for i in fixed_variable["bit_positions"]
+                        )
+                        >= 1
+                    )
 
         return constraints
 
