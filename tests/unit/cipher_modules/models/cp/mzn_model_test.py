@@ -5,6 +5,7 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
     MznXorDifferentialModelARXOptimized,
 )
@@ -12,6 +13,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_cipher_model_arx_optimized i
 from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized import (
     MznDeterministicTruncatedXorDifferentialModelARXOptimized,
 )
+from claasp.cipher_modules.models.utils import set_fixed_variables
 
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
@@ -93,6 +95,24 @@ def test_fix_variables_value_constraints():
     ]
 
     assert mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0] == constraint_key_y_0
+
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    mzn = MznXorDifferentialModel(speck)
+    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    trail = mzn.find_one_xor_differential_trail(fixed_values=fixed_values)
+    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+
+    mzn.initialise_model()
+    fixed_values = [set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    trail = mzn.find_one_xor_differential_trail(fixed_values=fixed_values)
+    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+
+    mzn.initialise_model()
+    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[0]*31+[1])]
+    fixed_values.append(set_fixed_variables(speck.get_all_components_ids()[-1],'equal',range(32),[0]*31+[1]))
+    fixed_values.append(set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))]))
+    trail = mzn.find_one_xor_differential_trail(fixed_values=fixed_values)
+    assert trail['status'] == 'UNSATISFIABLE'
 
 
 def test_model_constraints():
