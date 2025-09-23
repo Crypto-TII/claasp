@@ -15,7 +15,6 @@ def test_chacha_stream_cipher():
     assert chacha.component_from(3, 0).id == 'modadd_3_0'
 
     cipher = ChachaStreamCipher(number_of_rounds=40)
-    cipher.sort_cipher()
     plaintext = 0x61707865_3320646e_79622d32_6b206574_03020100_07060504_0b0a0908_0f0e0d0c_13121110_17161514_1b1a1918_1f1e1d1c_00000001_09000000_4a000000_00000000
     key = 0x00010203_04050607_08090a0b_0c0d0e0f_10111213_14151617_18191a1b_1c1d1e1f
     nonce = 0x00000000_00000009_0000004a_00000000

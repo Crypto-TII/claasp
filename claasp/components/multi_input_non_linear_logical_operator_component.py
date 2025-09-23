@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -21,17 +20,26 @@ from claasp.input import Input
 from claasp.component import Component
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_and_operation_2_input_bits import (and_LAT,
-                                                                                                          and_inequalities)
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_and_operation_2_input_bits import (
+    and_LAT,
+    and_inequalities,
+)
+from claasp.name_mappings import WORD_OPERATION
 
 
 class MultiInputNonlinearLogicalOperator(Component):
-
-    def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, operation):
-        component_id = f'{operation}_{current_round_number}_{current_round_number_of_components}'
-        component_type = 'word_operation'
-        input_len = sum(len(bits) for bits in input_bit_positions)
+    def __init__(
+        self,
+        current_round_number,
+        current_round_number_of_components,
+        input_id_links,
+        input_bit_positions,
+        output_bit_size,
+        operation,
+    ):
+        component_id = f"{operation}_{current_round_number}_{current_round_number_of_components}"
+        component_type = WORD_OPERATION
+        input_len = sum(map(len, input_bit_positions))
         description = [operation.upper(), int(input_len / output_bit_size)]
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
@@ -91,20 +99,15 @@ class MultiInputNonlinearLogicalOperator(Component):
                ...
               'constraint if xor_0_7[11] == 0 /\\ key[23] == 0 then and_0_8[11] = 0 else and_0_8[11] = 2 endif;'])
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = []
-        for i in range(output_size):
-            operation = ' == 0 /\\ '.join(all_inputs[i::output_size])
-            new_constraint = f'constraint if {operation} == 0 then {output_id_link}[{i}] = 0 ' \
-                             f'else {output_id_link}[{i}] = 2 endif;'
-            cp_constraints.append(new_constraint)
+        for i in range(self.output_bit_size):
+            operation = " == 0 /\\ ".join(all_inputs[i :: self.output_bit_size])
+            cp_constraint = f"constraint if {operation} == 0 then {self.id}[{i}] = 0 else {self.id}[{i}] = 2 endif;"
+            cp_constraints.append(cp_constraint)
 
         return cp_declarations, cp_constraints
 
@@ -135,27 +138,33 @@ class MultiInputNonlinearLogicalOperator(Component):
                ...
               'constraint if sbox_0_14_active[0] == 0 then and_0_18_active[3] = 0 /\\ and_0_18_value[3] = 0 else and_0_18_active[3] = 3 /\\ and_0_18_value[3] = -2 endif;'])
         """
-        
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs_value = []
         all_inputs_active = []
         numadd = self.description[1]
         word_size = model.word_size
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
-                                     for j in range(len(bit_positions) // word_size)])
-            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
-                                      for j in range(len(bit_positions) // word_size)])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs_value.extend(
+                [
+                    f"{id_link}_value[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
+            all_inputs_active.extend(
+                [
+                    f"{id_link}_active[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
         input_len = len(all_inputs_value) // numadd
         cp_constraints = []
         for i in range(input_len):
-            operation = ' == 0 /\\ '.join(all_inputs_active[i::input_len])
-            new_constraint = f'constraint if {operation} == 0 then {output_id_link}_active[{i}] = 0 ' \
-                             f'/\\ {output_id_link}_value[{i}] = 0 else {output_id_link}_active[{i}] = 3 ' \
-                             f'/\\ {output_id_link}_value[{i}] = -2 endif;'
+            operation = " == 0 /\\ ".join(all_inputs_active[i::input_len])
+            new_constraint = (
+                f"constraint if {operation} == 0 then {self.id}_active[{i}] = 0 "
+                f"/\\ {self.id}_value[{i}] = 0 else {self.id}_active[{i}] = 3 "
+                f"/\\ {self.id}_value[{i}] = -2 endif;"
+            )
             cp_constraints.append(new_constraint)
 
         return cp_declarations, cp_constraints
@@ -181,30 +190,23 @@ class MultiInputNonlinearLogicalOperator(Component):
                ...
               'constraint table([xor_0_7[11]]++[key[23]]++[and_0_8[11]]++[p[11]],and2inputs_DDT);'])
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         num_add = self.description[1]
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         input_len = len(all_inputs) // num_add
         cp_declarations = []
         cp_constraints = []
         probability = []
-        for i in range(output_size):
-            new_constraint = 'constraint table('
-            for j in range(num_add):
-                new_constraint = new_constraint + f'[{all_inputs[i + input_len * j]}]++'
-            new_constraint = new_constraint + f'[{output_id_link}[{i}]]++[p[{model.c}]],and{num_add}inputs_DDT);'
-            cp_constraints.append(new_constraint)
+        for i in range(self.output_bit_size):
+            inputs = "++".join(f"[{all_inputs[i + input_len * j]}]" for j in range(num_add))
+            cp_constraint = f"constraint table({inputs}++[{self.id}[{i}]]++[p[{model.c}]],and{num_add}inputs_DDT);"
+            cp_constraints.append(cp_constraint)
             model.c += 1
             probability.append(model.c)
-        model.component_and_probability[output_id_link] = probability
-        result = cp_declarations, cp_constraints
+        model.component_and_probability[self.id] = probability
 
-        return result
+        return cp_declarations, cp_constraints
 
     def generic_sign_linear_constraints(self, inputs, outputs):
         """AND component and OR component override this method."""
@@ -212,23 +214,22 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def get_word_operation_sign(self, sign, solution):
         output_id_link = self.id
-        input_size = self.input_bit_size
-        output_size = self.output_bit_size
-        input_int = int(solution['components_values'][f'{output_id_link}_i']['value'], 16)
-        output_int = int(solution['components_values'][f'{output_id_link}_o']['value'], 16)
-        inputs = [int(digit) for digit in format(input_int, f'0{input_size}b')]
-        outputs = [int(digit) for digit in format(output_int, f'0{output_size}b')]
+        input_int = int(solution["components_values"][f"{output_id_link}_i"]["value"], 16)
+        output_int = int(solution["components_values"][f"{output_id_link}_o"]["value"], 16)
+        inputs = [int(digit) for digit in format(input_int, f"0{self.input_bit_size}b")]
+        outputs = [int(digit) for digit in format(output_int, f"0{self.output_bit_size}b")]
         component_sign = self.generic_sign_linear_constraints(inputs, outputs)
         sign = sign * component_sign
-        solution['components_values'][f'{output_id_link}_o']['sign'] = component_sign
-        solution['components_values'][output_id_link] = solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_i']
+        solution["components_values"][f"{output_id_link}_o"]["sign"] = component_sign
+        solution["components_values"][output_id_link] = solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_i"]
 
         return sign
 
-    def milp_twoterms_xor_linear_probability_constraints(self, binary_variable, integer_variable,
-                                                         input_vars, output_vars, chunk_number):
+    def milp_twoterms_xor_linear_probability_constraints(
+        self, binary_variable, integer_variable, input_vars, output_vars, chunk_number
+    ):
         """
         Return a variables list and a constraints list to compute the probability for AND component, for two inputs for MILP xor linear probability.
 
@@ -317,8 +318,10 @@ class MultiInputNonlinearLogicalOperator(Component):
                 tmp += x[f"{component_id}_and_{i}"] * ineq[self.description[1] + 2]
                 tmp += ineq[0]
                 constraints.append(tmp >= 0)
-        constraints.append(p[component_id + "_probability"] == (10 ** model.weight_precision) * sum(x[component_id + "_and_" + str(i)]
-                                                                        for i in range(len(output_vars))))
+        constraints.append(
+            p[component_id + "_probability"]
+            == (10**model.weight_precision) * sum(x[component_id + "_and_" + str(i)] for i in range(len(output_vars)))
+        )
         result = variables, constraints
 
         return result
@@ -373,34 +376,45 @@ class MultiInputNonlinearLogicalOperator(Component):
         constraints = []
         if number_of_inputs == 2:
             variables, constraints = self.milp_twoterms_xor_linear_probability_constraints(
-                binary_variable, integer_variable, input_vars, output_vars, 0)
-            constraints.append(p[component_id + "_probability"] == (10 ** model.weight_precision) * p[component_id + "_and_probability" + str(0)])
+                binary_variable, integer_variable, input_vars, output_vars, 0
+            )
+            constraints.append(
+                p[component_id + "_probability"]
+                == (10**model.weight_precision) * p[component_id + "_and_probability" + str(0)]
+            )
 
         elif number_of_inputs > 2:
-            temp_output_vars = [[f"{var}_temp_and_{i}" for var in output_vars]
-                                for i in range(number_of_inputs - 2)]
+            temp_output_vars = [[f"{var}_temp_and_{i}" for var in output_vars] for i in range(number_of_inputs - 2)]
             variables, constraints = self.milp_twoterms_xor_linear_probability_constraints(
-                binary_variable, integer_variable, input_vars[:2 * output_bit_size], temp_output_vars[0], 0)
+                binary_variable, integer_variable, input_vars[: 2 * output_bit_size], temp_output_vars[0], 0
+            )
             for i in range(1, number_of_inputs - 2):
                 temp_output_vars.extend([[f"{var}_temp_and_{i}" for var in output_vars]])
-                temp_variables, temp_constraints = \
-                    self.milp_twoterms_xor_linear_probability_constraints(
-                        binary_variable, integer_variable,
-                        input_vars[(i + 1) * output_bit_size:(i + 2) * output_bit_size] + temp_output_vars[i - 1],
-                        temp_output_vars[i], i)
+                temp_variables, temp_constraints = self.milp_twoterms_xor_linear_probability_constraints(
+                    binary_variable,
+                    integer_variable,
+                    input_vars[(i + 1) * output_bit_size : (i + 2) * output_bit_size] + temp_output_vars[i - 1],
+                    temp_output_vars[i],
+                    i,
+                )
                 variables.extend(temp_variables)
                 constraints.extend(temp_constraints)
 
-            temp_variables, temp_constraints = \
-                self.milp_twoterms_xor_linear_probability_constraints(
-                    binary_variable, integer_variable,
-                    input_vars[(number_of_inputs - 1) * output_bit_size: number_of_inputs * output_bit_size] +
-                    temp_output_vars[number_of_inputs - 3], output_vars, number_of_inputs - 2)
+            temp_variables, temp_constraints = self.milp_twoterms_xor_linear_probability_constraints(
+                binary_variable,
+                integer_variable,
+                input_vars[(number_of_inputs - 1) * output_bit_size : number_of_inputs * output_bit_size]
+                + temp_output_vars[number_of_inputs - 3],
+                output_vars,
+                number_of_inputs - 2,
+            )
             variables.extend(temp_variables)
             constraints.extend(temp_constraints)
             constraints.append(
-                p[component_id + "_probability"] == (10 ** model.weight_precision) * sum(p[component_id + "_and_probability" + str(i)]
-                                                             for i in range(number_of_inputs - 1)))
+                p[component_id + "_probability"]
+                == (10**model.weight_precision)
+                * sum(p[component_id + "_and_probability" + str(i)] for i in range(number_of_inputs - 1))
+            )
         result = variables, constraints
 
         return result
@@ -438,10 +452,10 @@ class MultiInputNonlinearLogicalOperator(Component):
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = []
         for i in range(out_len):
-            constraints.extend([f'{out_ids_0[i]} -{in_id}' for in_id in in_ids_0[i::out_len]])
-            constraints.extend([f'{out_ids_0[i]} -{in_id}' for in_id in in_ids_1[i::out_len]])
-            constraints.append(f'{out_ids_0[i]} -{out_ids_1[i]}')
-            clause = f'{" ".join(in_ids_0[i::out_len])} {" ".join(in_ids_1[i::out_len])} -{out_ids_0[i]}'
+            constraints.extend([f"{out_ids_0[i]} -{in_id}" for in_id in in_ids_0[i::out_len]])
+            constraints.extend([f"{out_ids_0[i]} -{in_id}" for in_id in in_ids_1[i::out_len]])
+            constraints.append(f"{out_ids_0[i]} -{out_ids_1[i]}")
+            clause = f"{' '.join(in_ids_0[i::out_len])} {' '.join(in_ids_1[i::out_len])} -{out_ids_0[i]}"
             constraints.append(clause)
 
         return out_ids_0 + out_ids_1, constraints
@@ -477,11 +491,14 @@ class MultiInputNonlinearLogicalOperator(Component):
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
         constraints = []
         for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_and_differential(input_bit_ids[i], input_bit_ids[output_bit_len + i],
-                                                              output_bit_ids[i], hw_bit_ids[i]))
+            constraints.extend(
+                sat_utils.cnf_and_differential(
+                    input_bit_ids[i], input_bit_ids[output_bit_len + i], output_bit_ids[i], hw_bit_ids[i]
+                )
+            )
         result = output_bit_ids + hw_bit_ids, constraints
 
         return result
@@ -514,11 +531,14 @@ class MultiInputNonlinearLogicalOperator(Component):
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
         constraints = []
         for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_and_linear(input_bit_ids[i], input_bit_ids[output_bit_len + i],
-                                                        output_bit_ids[i], hw_bit_ids[i]))
+            constraints.extend(
+                sat_utils.cnf_and_linear(
+                    input_bit_ids[i], input_bit_ids[output_bit_len + i], output_bit_ids[i], hw_bit_ids[i]
+                )
+            )
         result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
 
         return result
@@ -558,13 +578,17 @@ class MultiInputNonlinearLogicalOperator(Component):
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
         constraints = []
         for i in range(output_bit_len):
-            minterm_0 = smt_utils.smt_and((smt_utils.smt_not(input_bit_ids[i]),
-                                           smt_utils.smt_not(input_bit_ids[output_bit_len + i]),
-                                           smt_utils.smt_not(output_bit_ids[i]),
-                                           smt_utils.smt_not(hw_bit_ids[i])))
+            minterm_0 = smt_utils.smt_and(
+                (
+                    smt_utils.smt_not(input_bit_ids[i]),
+                    smt_utils.smt_not(input_bit_ids[output_bit_len + i]),
+                    smt_utils.smt_not(output_bit_ids[i]),
+                    smt_utils.smt_not(hw_bit_ids[i]),
+                )
+            )
             minterm_1 = smt_utils.smt_and((input_bit_ids[i], hw_bit_ids[i]))
             minterm_2 = smt_utils.smt_and((input_bit_ids[output_bit_len + i], hw_bit_ids[i]))
             sop = smt_utils.smt_or((minterm_0, minterm_1, minterm_2))
@@ -601,13 +625,17 @@ class MultiInputNonlinearLogicalOperator(Component):
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
         constraints = []
         for i in range(output_bit_len):
-            minterm_0 = smt_utils.smt_and((smt_utils.smt_not(input_bit_ids[i]),
-                                           smt_utils.smt_not(input_bit_ids[output_bit_len + i]),
-                                           smt_utils.smt_not(output_bit_ids[i]),
-                                           smt_utils.smt_not(hw_bit_ids[i])))
+            minterm_0 = smt_utils.smt_and(
+                (
+                    smt_utils.smt_not(input_bit_ids[i]),
+                    smt_utils.smt_not(input_bit_ids[output_bit_len + i]),
+                    smt_utils.smt_not(output_bit_ids[i]),
+                    smt_utils.smt_not(hw_bit_ids[i]),
+                )
+            )
             minterm_1 = smt_utils.smt_and((output_bit_ids[i], hw_bit_ids[i]))
             sop = smt_utils.smt_or((minterm_0, minterm_1))
             constraints.append(smt_utils.smt_assert(sop))

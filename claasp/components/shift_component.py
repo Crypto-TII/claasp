@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -21,14 +20,22 @@ from claasp.input import Input
 from claasp.component import Component
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
+from claasp.name_mappings import WORD_OPERATION
 
 
 class SHIFT(Component):
-    def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, parameter):
-        component_id = f'shift_{current_round_number}_{current_round_number_of_components}'
-        component_type = 'word_operation'
-        description = ['SHIFT', parameter]
+    def __init__(
+        self,
+        current_round_number,
+        current_round_number_of_components,
+        input_id_links,
+        input_bit_positions,
+        output_bit_size,
+        parameter,
+    ):
+        component_id = f"shift_{current_round_number}_{current_round_number_of_components}"
+        component_type = WORD_OPERATION
+        description = ["SHIFT", parameter]
         component_input = Input(output_bit_size, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
@@ -60,14 +67,15 @@ class SHIFT(Component):
 
         ninputs = noutputs = self.output_bit_size
         shift_constant = self.description[1] % noutputs
-        input_vars = [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)]
-        output_vars = [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)]
+        input_vars = [f"{self.id}_{model.input_postfix}{i}" for i in range(ninputs)]
+        output_vars = [f"{self.id}_{model.output_postfix}{i}" for i in range(noutputs)]
         ring_R = model.ring()
         x = list(map(ring_R, input_vars))
         y = list(map(ring_R, output_vars))
 
-        polynomials = [y[i] for i in range(shift_constant)] + \
-                      [y[shift_constant:][i] + x[i] for i in range(noutputs - shift_constant)]
+        polynomials = [y[i] for i in range(shift_constant)] + [
+            y[shift_constant:][i] + x[i] for i in range(noutputs - shift_constant)
+        ]
 
         return polynomials
 
@@ -128,24 +136,30 @@ class SHIFT(Component):
               'constraint shift_0_0[30] = 0;',
               'constraint shift_0_0[31] = 0;'])
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         shift_amount = abs(self.description[1])
         cp_declarations = []
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         if shift_amount == self.description[1]:
-            cp_constraints = [f'constraint {output_id_link}[{i}] = 0;' for i in range(shift_amount)]
-            cp_constraints.extend([f'constraint {output_id_link}[{i}] = {all_inputs[i - shift_amount]};'
-                                   for i in range(shift_amount, output_size)])
+            cp_constraints = [f"constraint {self.id}[{i}] = 0;" for i in range(shift_amount)]
+            cp_constraints.extend(
+                [
+                    f"constraint {self.id}[{i}] = {all_inputs[i - shift_amount]};"
+                    for i in range(shift_amount, self.output_bit_size)
+                ]
+            )
         else:
-            cp_constraints = [f'constraint {output_id_link}[{i}] = {all_inputs[i + shift_amount]};'
-                              for i in range(output_size - shift_amount)]
-            cp_constraints.extend([f'constraint {output_id_link}[{i}] = 0;'
-                                   for i in range(output_size - shift_amount, output_size)])
+            cp_constraints = [
+                f"constraint {self.id}[{i}] = {all_inputs[i + shift_amount]};"
+                for i in range(self.output_bit_size - shift_amount)
+            ]
+            cp_constraints.extend(
+                [
+                    f"constraint {self.id}[{i}] = 0;"
+                    for i in range(self.output_bit_size - shift_amount, self.output_bit_size)
+                ]
+            )
 
         return cp_declarations, cp_constraints
 
@@ -174,24 +188,30 @@ class SHIFT(Component):
                ...
               'constraint shift_0_0_inverse[31] = 0;'])
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         shift_amount = abs(self.description[1])
         cp_declarations = []
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         if shift_amount == self.description[1]:
-            cp_constraints = [f'constraint {output_id_link}_inverse[{i}] = 0;' for i in range(shift_amount)]
-            cp_constraints.extend([f'constraint {output_id_link}_inverse[{i}] = {all_inputs[i - shift_amount]};'
-                                   for i in range(shift_amount, output_size)])
+            cp_constraints = [f"constraint {self.id}_inverse[{i}] = 0;" for i in range(shift_amount)]
+            cp_constraints.extend(
+                [
+                    f"constraint {self.id}_inverse[{i}] = {all_inputs[i - shift_amount]};"
+                    for i in range(shift_amount, self.output_bit_size)
+                ]
+            )
         else:
-            cp_constraints = [f'constraint {output_id_link}_inverse[{i}] = {all_inputs[i + shift_amount]};'
-                              for i in range(output_size - shift_amount)]
-            cp_constraints.extend([f'constraint {output_id_link}_inverse[{i}] = 0;'
-                                   for i in range(output_size - shift_amount, output_size)])
+            cp_constraints = [
+                f"constraint {self.id}_inverse[{i}] = {all_inputs[i + shift_amount]};"
+                for i in range(self.output_bit_size - shift_amount)
+            ]
+            cp_constraints.extend(
+                [
+                    f"constraint {self.id}_inverse[{i}] = 0;"
+                    for i in range(self.output_bit_size - shift_amount, self.output_bit_size)
+                ]
+            )
 
         return cp_declarations, cp_constraints
 
@@ -220,38 +240,64 @@ class SHIFT(Component):
               'constraint shift_0_18_value[3] = 0;'])
         """
         output_size = int(self.output_bit_size)
-        input_id_link = self.input_id_links
         output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         word_size = model.word_size
         shift_amount = abs(self.description[1]) // word_size
         all_inputs_active = []
         all_inputs_value = []
         cp_declarations = []
-        for id_link, bit_positions in zip(input_id_link, input_bit_positions):
-            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
-                                      for j in range(len(bit_positions) // word_size)])
-        for id_link, bit_positions in zip(input_id_link, input_bit_positions):
-            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
-                                     for j in range(len(bit_positions) // word_size)])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs_active.extend(
+                [
+                    f"{id_link}_active[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs_value.extend(
+                [
+                    f"{id_link}_value[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
         if shift_amount == self.description[1]:
-            cp_constraints = [f'constraint {output_id_link}_active[{i}] = 0;' for i in range(shift_amount)]
-            cp_constraints.extend([f'constraint {output_id_link}_active[{i}] = {all_inputs_active[i - shift_amount]};'
-                                   for i in range(shift_amount, output_size // word_size)])
-            cp_constraints.extend([f'constraint {output_id_link}_value[{i}] = 0;' for i in range(shift_amount)])
-            cp_constraints.extend([f'constraint {output_id_link}_value[{i}] = {all_inputs_active[i - shift_amount]};'
-                                   for i in range(shift_amount, output_size // word_size)])
+            cp_constraints = [f"constraint {output_id_link}_active[{i}] = 0;" for i in range(shift_amount)]
+            cp_constraints.extend(
+                [
+                    f"constraint {output_id_link}_active[{i}] = {all_inputs_active[i - shift_amount]};"
+                    for i in range(shift_amount, output_size // word_size)
+                ]
+            )
+            cp_constraints.extend([f"constraint {output_id_link}_value[{i}] = 0;" for i in range(shift_amount)])
+            cp_constraints.extend(
+                [
+                    f"constraint {output_id_link}_value[{i}] = {all_inputs_active[i - shift_amount]};"
+                    for i in range(shift_amount, output_size // word_size)
+                ]
+            )
         else:
-            cp_constraints = [f'constraint {output_id_link}_active[{i}] = {all_inputs_active[i + shift_amount]};'
-                              for i in range(output_size // word_size - shift_amount)]
-            cp_constraints.extend([f'constraint {output_id_link}_active[{i}] = 0;'
-                                   for i in
-                                   range(output_size // word_size - shift_amount, output_size // word_size)])
-            cp_constraints.extend([f'constraint {output_id_link}_value[{i}] = {all_inputs_active[i + shift_amount]};'
-                                   for i in range(output_size // word_size - shift_amount)])
-            cp_constraints.extend([f'constraint {output_id_link}_value[{i}] = 0;'
-                                   for i in
-                                   range(output_size // word_size - shift_amount, output_size // word_size)])
+            cp_constraints = [
+                f"constraint {output_id_link}_active[{i}] = {all_inputs_active[i + shift_amount]};"
+                for i in range(output_size // word_size - shift_amount)
+            ]
+            cp_constraints.extend(
+                [
+                    f"constraint {output_id_link}_active[{i}] = 0;"
+                    for i in range(output_size // word_size - shift_amount, output_size // word_size)
+                ]
+            )
+            cp_constraints.extend(
+                [
+                    f"constraint {output_id_link}_value[{i}] = {all_inputs_active[i + shift_amount]};"
+                    for i in range(output_size // word_size - shift_amount)
+                ]
+            )
+            cp_constraints.extend(
+                [
+                    f"constraint {output_id_link}_value[{i}] = 0;"
+                    for i in range(output_size // word_size - shift_amount, output_size // word_size)
+                ]
+            )
 
         return cp_declarations, cp_constraints
 
@@ -290,11 +336,12 @@ class SHIFT(Component):
         for i in range(numb_of_inp):
             for j in range(len(input_bit_positions[i]) // model.word_size):
                 all_inputs.append(
-                    f'{input_id_link[i]}[{input_bit_positions[i][j * model.word_size] // model.word_size}]')
+                    f"{input_id_link[i]}[{input_bit_positions[i][j * model.word_size] // model.word_size}]"
+                )
             rem = len(input_bit_positions[i]) % model.word_size
             if rem != 0:
                 rem = model.word_size - (len(input_bit_positions[i]) % model.word_size)
-                all_inputs.append(f'{output_id_link}_i[{number_of_mix}]')
+                all_inputs.append(f"{output_id_link}_i[{number_of_mix}]")
                 number_of_mix += 1
                 is_mix = True
                 l = 1
@@ -303,20 +350,29 @@ class SHIFT(Component):
                     del input_bit_positions[i + l][0:rem]
                     rem -= length
                     l += 1
-        cp_declarations = [f'array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};']
+        cp_declarations = [f"array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};"]
 
         if is_mix:
-            cp_declarations.append(f'array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;')
+            cp_declarations.append(f"array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;")
         if shift_amount == self.description[1]:
-            cp_constraints = [f'constraint {output_id_link}[{i}] = 0;' for i in range(shift_amount)]
-            cp_constraints.extend([f'constraint {output_id_link}[{i}] = {all_inputs[i - shift_amount]};'
-                                   for i in range(shift_amount, output_size // model.word_size)])
+            cp_constraints = [f"constraint {output_id_link}[{i}] = 0;" for i in range(shift_amount)]
+            cp_constraints.extend(
+                [
+                    f"constraint {output_id_link}[{i}] = {all_inputs[i - shift_amount]};"
+                    for i in range(shift_amount, output_size // model.word_size)
+                ]
+            )
         else:
-            cp_constraints = [f'constraint {output_id_link}[{i}] = {all_inputs[i + shift_amount]};'
-                              for i in range(output_size // model.word_size - shift_amount)]
-            cp_constraints.extend([
-                f'constraint {output_id_link}[{i}] = 0;'
-                for i in range(output_size // model.word_size - shift_amount, output_size // model.word_size)])
+            cp_constraints = [
+                f"constraint {output_id_link}[{i}] = {all_inputs[i + shift_amount]};"
+                for i in range(output_size // model.word_size - shift_amount)
+            ]
+            cp_constraints.extend(
+                [
+                    f"constraint {output_id_link}[{i}] = 0;"
+                    for i in range(output_size // model.word_size - shift_amount, output_size // model.word_size)
+                ]
+            )
 
         return cp_declarations, cp_constraints
 
@@ -350,31 +406,33 @@ class SHIFT(Component):
                ...
               'constraint shift_0_0_i[3]=0;'])
         """
-        output_size = int(self.output_bit_size)
+        output_size = self.output_bit_size
         output_id_link = self.id
         shift_amount = abs(self.description[1])
+        cp_declarations = [
+            f"array[0..{output_size - 1}] of var 0..1: {output_id_link}_i;",
+            f"array[0..{output_size - 1}] of var 0..1: {output_id_link}_o;",
+        ]
         cp_constraints = []
-        cp_declarations = [f'array[0..{output_size - 1}] of var 0..1: {output_id_link}_i;',
-                           f'array[0..{output_size - 1}] of var 0..1: {output_id_link}_o;']
         if shift_amount == self.description[1]:
             for i in range(output_size - shift_amount, output_size):
-                cp_constraints.append(f'constraint {output_id_link}_i[{i}]=0;')
+                cp_constraints.append(f"constraint {output_id_link}_i[{i}]=0;")
             for i in range(shift_amount, output_size):
-                cp_constraints.append(f'constraint {output_id_link}_o[{i}]={output_id_link}_i[{i - shift_amount}];')
+                cp_constraints.append(f"constraint {output_id_link}_o[{i}]={output_id_link}_i[{i - shift_amount}];")
         else:
             for i in range(output_size - shift_amount):
-                cp_constraints.append(f'constraint {output_id_link}_o[{i}]={output_id_link}_i[{i + shift_amount}];')
+                cp_constraints.append(f"constraint {output_id_link}_o[{i}]={output_id_link}_i[{i + shift_amount}];")
             for i in range(shift_amount):
-                cp_constraints.append(f'constraint {output_id_link}_i[{i}]=0;')
+                cp_constraints.append(f"constraint {output_id_link}_i[{i}]=0;")
         result = cp_declarations, cp_constraints
 
         return result
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
-        return [f'  {self.id} = bit_vector_SHIFT([{",".join(params)} ], {self.description[1]})']
+        return [f"  {self.id} = bit_vector_SHIFT([{','.join(params)} ], {self.description[1]})"]
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} = byte_vector_SHIFT({params}, {self.description[1]})']
+        return [f"  {self.id} = byte_vector_SHIFT({params}, {self.description[1]})"]
 
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):
         shift_code = []
@@ -383,8 +441,8 @@ class SHIFT(Component):
         wordstring_variables.append(self.id)
         direction = "RIGHT" if self.description[1] >= 0 else "LEFT"
         shift_code.append(
-            f'\tWordString *{self.id} = '
-            f'{direction}_{self.description[0]}(input, {abs(self.description[1])});')
+            f"\tWordString *{self.id} = {direction}_{self.description[0]}(input, {abs(self.description[1])});"
+        )
 
         if verbosity:
             self.print_word_values(shift_code)
@@ -395,10 +453,10 @@ class SHIFT(Component):
         output_id_link = self.id
         component_sign = 1
         sign = sign * component_sign
-        solution['components_values'][f'{output_id_link}_o']['sign'] = component_sign
-        solution['components_values'][output_id_link] = solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_i']
+        solution["components_values"][f"{output_id_link}_o"]["sign"] = component_sign
+        solution["components_values"][output_id_link] = solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_i"]
 
         return sign
 
@@ -648,10 +706,12 @@ class SHIFT(Component):
 
         if shift_const < 0:
             shift_mzn_constraints = [
-                f'constraint LSHIFT({mzn_input_array_1}, {int(-1*shift_const)})={mzn_output_array_1};\n']
+                f"constraint LSHIFT({mzn_input_array_1}, {int(-1 * shift_const)})={mzn_output_array_1};\n"
+            ]
         else:
             shift_mzn_constraints = [
-                f'constraint RSHIFT({mzn_input_array_1}, {int(shift_const)})={mzn_output_array_1};\n']
+                f"constraint RSHIFT({mzn_input_array_1}, {int(shift_const)})={mzn_output_array_1};\n"
+            ]
 
         return var_names, shift_mzn_constraints
 
@@ -704,10 +764,10 @@ class SHIFT(Component):
             for i in range(output_bit_len - shift_amount):
                 constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i + shift_amount]]))
             for i in range(output_bit_len - shift_amount, output_bit_len):
-                constraints.append(f'-{output_bit_ids[i]}')
+                constraints.append(f"-{output_bit_ids[i]}")
         else:
             for i in range(shift_amount):
-                constraints.append(f'-{output_bit_ids[i]}')
+                constraints.append(f"-{output_bit_ids[i]}")
             for i in range(shift_amount, output_bit_len):
                 constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i - shift_amount]]))
 
@@ -756,12 +816,12 @@ class SHIFT(Component):
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_0[i], in_ids_0[i + shift_amount]]))
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_1[i], in_ids_1[i + shift_amount]]))
             for i in range(out_len - shift_amount, out_len):
-                constraints.append(f'-{out_ids_0[i]}')
-                constraints.append(f'-{out_ids_1[i]}')
+                constraints.append(f"-{out_ids_0[i]}")
+                constraints.append(f"-{out_ids_1[i]}")
         else:
             for i in range(shift_amount):
-                constraints.append(f'-{out_ids_0[i]}')
-                constraints.append(f'-{out_ids_1[i]}')
+                constraints.append(f"-{out_ids_0[i]}")
+                constraints.append(f"-{out_ids_1[i]}")
             for i in range(shift_amount, out_len):
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_0[i], in_ids_0[i - shift_amount]]))
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_1[i], in_ids_1[i - shift_amount]]))
@@ -840,14 +900,13 @@ class SHIFT(Component):
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            constraints.extend([f'-{input_bit_ids[i]}' for i in range(shift_amount)])
+            constraints.extend([f"-{input_bit_ids[i]}" for i in range(shift_amount)])
             for i in range(output_bit_len - shift_amount):
                 constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i + shift_amount]]))
         else:
             for i in range(shift_amount, output_bit_len):
                 constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i - shift_amount]]))
-            constraints.extend([f'-{input_bit_ids[i]}'
-                                for i in range(output_bit_len - shift_amount, output_bit_len)])
+            constraints.extend([f"-{input_bit_ids[i]}" for i in range(output_bit_len - shift_amount, output_bit_len)])
         result = input_bit_ids + output_bit_ids, constraints
 
         return result
@@ -973,8 +1032,7 @@ class SHIFT(Component):
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            constraints.extend([smt_utils.smt_assert(smt_utils.smt_not(input_bit_ids[i]))
-                                for i in range(shift_amount)])
+            constraints.extend([smt_utils.smt_assert(smt_utils.smt_not(input_bit_ids[i])) for i in range(shift_amount)])
             for i in range(output_bit_len - shift_amount):
                 equation = smt_utils.smt_equivalent((output_bit_ids[i], input_bit_ids[i + shift_amount]))
                 constraints.append(smt_utils.smt_assert(equation))
@@ -982,8 +1040,12 @@ class SHIFT(Component):
             for i in range(shift_amount, output_bit_len):
                 equation = smt_utils.smt_equivalent((output_bit_ids[i], input_bit_ids[i - shift_amount]))
                 constraints.append(smt_utils.smt_assert(equation))
-            constraints.extend([smt_utils.smt_assert(smt_utils.smt_not(input_bit_ids[i]))
-                                for i in range(output_bit_len - shift_amount, output_bit_len)])
+            constraints.extend(
+                [
+                    smt_utils.smt_assert(smt_utils.smt_not(input_bit_ids[i]))
+                    for i in range(output_bit_len - shift_amount, output_bit_len)
+                ]
+            )
         result = input_bit_ids + output_bit_ids, constraints
 
         return result

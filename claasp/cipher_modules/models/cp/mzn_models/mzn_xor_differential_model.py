@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -21,10 +20,18 @@ import math
 import time as tm
 from sage.crypto.sbox import SBox
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, solve_satisfy
+from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
 from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, MIX_COLUMN, WORD_OPERATION,
-                                  XOR_DIFFERENTIAL, LINEAR_LAYER)
+from claasp.name_mappings import (
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    CIPHER_OUTPUT,
+    SBOX,
+    MIX_COLUMN,
+    WORD_OPERATION,
+    XOR_DIFFERENTIAL,
+    LINEAR_LAYER,
+)
 from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 
 
@@ -52,9 +59,9 @@ def and_xor_differential_probability_ddt(numadd):
             count = 0
             for j in range(n):
                 k = i ^ j
-                binary_j = format(j, f'0{numadd}b')
+                binary_j = f"{j:0{numadd}b}"
                 result_j = 1
-                binary_k = format(k, f'0{numadd}b')
+                binary_k = f"{k:0{numadd}b}"
                 result_k = 1
                 for index in range(numadd):
                     result_j *= int(binary_j[index])
@@ -73,26 +80,28 @@ def update_and_or_ddt_valid_probabilities(and_already_added, component, cp_decla
         ddt_table = and_xor_differential_probability_ddt(numadd)
         dim_ddt = len([i for i in ddt_table if i])
         ddt_entries = []
-        ddt_values = ''
+        ddt_values = ""
         set_of_occurrences = set(ddt_table)
         set_of_occurrences -= {0}
-        valid_probabilities.update({round(100 * math.log2(2 ** numadd / occurrence))
-                                    for occurrence in set_of_occurrences})
+        valid_probabilities.update(
+            {round(100 * math.log2(2**numadd / occurrence)) for occurrence in set_of_occurrences}
+        )
         for i in range(pow(2, numadd + 1)):
             if ddt_table[i] != 0:
-                binary_i = format(i, f'0{numadd + 1}b')
-                ddt_entries += [f'{binary_i[j]}' for j in range(numadd + 1)]
+                binary_i = f"{i:0{numadd + 1}b}"
+                ddt_entries += [f"{binary_i[j]}" for j in range(numadd + 1)]
                 ddt_entries.append(str(round(100 * math.log2(pow(2, numadd) / ddt_table[i]))))
-            ddt_values = ','.join(ddt_entries)
-        and_declaration = f'array [1..{dim_ddt}, 1..{numadd + 2}] of int: ' \
-                          f'and{numadd}inputs_DDT = array2d(1..{dim_ddt}, 1..{numadd + 2}, ' \
-                          f'[{ddt_values}]);'
+            ddt_values = ",".join(ddt_entries)
+        and_declaration = (
+            f"array [1..{dim_ddt}, 1..{numadd + 2}] of int: "
+            f"and{numadd}inputs_DDT = array2d(1..{dim_ddt}, 1..{numadd + 2}, "
+            f"[{ddt_values}]);"
+        )
         cp_declarations.append(and_declaration)
         and_already_added.append(numadd)
 
 
 class MznXorDifferentialModel(MznModel):
-
     def __init__(self, cipher):
         self._first_step = []
         self._first_step_find_all_solutions = []
@@ -137,16 +146,17 @@ class MznXorDifferentialModel(MznModel):
         if fixed_variables == []:
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_constraints(fixed_variables)
-        component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION]
-        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
+        component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
+        operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
         self._model_constraints = constraints
 
         for component in self._cipher.get_all_components():
             operation = component.description[0]
             if component.type not in component_types or (
-                    WORD_OPERATION == component.type and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
-            elif operation in ('MODADD', 'MODSUB') and milp_modadd:
+                WORD_OPERATION == component.type and operation not in operation_types
+            ):
+                print(f"{component.id} not yet implemented")
+            elif operation in ("MODADD", "MODSUB") and milp_modadd:
                 variables, constraints = component.cp_xor_differential_propagation_constraints_arx_optimized(self)
             else:
                 variables, constraints = component.cp_xor_differential_propagation_constraints(self)
@@ -159,7 +169,7 @@ class MznXorDifferentialModel(MznModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-    def final_xor_differential_constraints(self, weight, milp_modadd = False):
+    def final_xor_differential_constraints(self, weight, milp_modadd=False):
         """
         Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
 
@@ -180,28 +190,42 @@ class MznXorDifferentialModel(MznModel):
         cipher_inputs = self._cipher.inputs
         cp_constraints = []
         if weight == -1 and self._probability:
-            cp_constraints.append('solve:: int_search(p, smallest, indomain_min, complete) minimize weight;')
+            cp_constraints.append("solve:: int_search(p, smallest, indomain_min, complete) minimize weight;")
         else:
-            cp_constraints.append(solve_satisfy)
-        new_constraint = 'output['
+            cp_constraints.append(SOLVE_SATISFY)
+        new_constraint = "output["
         for element in cipher_inputs:
-            new_constraint = new_constraint + f'\"{element} = \"++ show({element}) ++ \"\\n\" ++'
+            new_constraint = new_constraint + f'"{element} = "++ show({element}) ++ "\\n" ++'
         for component in self._cipher.get_all_components():
             if SBOX in component.type:
-                new_constraint = new_constraint + \
-                    f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ ' \
-                    f'show(p[{self.component_and_probability[component.id]}]/100) ++ \"\\n\" ++'
+                new_constraint = (
+                    new_constraint + f'"{component.id} = "++ show({component.id})++ "\\n" ++ '
+                    f'show(p[{self.component_and_probability[component.id]}]/100) ++ "\\n" ++'
+                )
             elif WORD_OPERATION in component.type:
-                new_constraint = self.get_word_operation_xor_differential_constraints(component, new_constraint, milp_modadd)
+                new_constraint = self.get_word_operation_xor_differential_constraints(
+                    component, new_constraint, milp_modadd
+                )
             else:
-                new_constraint = new_constraint + f'\"{component.id} = \"++ ' \
-                                                  f'show({component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
-        new_constraint = new_constraint + '\"Trail weight = \" ++ show(weight)];'
+                new_constraint = (
+                    new_constraint + f'"{component.id} = "++ show({component.id})++ "\\n" ++ "0" ++ "\\n" ++'
+                )
+        new_constraint = new_constraint + '"Trail weight = " ++ show(weight)];'
         cp_constraints.append(new_constraint)
 
         return cp_constraints
 
-    def find_all_xor_differential_trails_with_fixed_weight(self, fixed_weight, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
+    def find_all_xor_differential_trails_with_fixed_weight(
+        self,
+        fixed_weight,
+        fixed_values=[],
+        solver_name=SOLVER_DEFAULT,
+        num_of_processors=None,
+        timelimit=None,
+        solve_with_API=False,
+        milp_modadd=False,
+        solve_external=False,
+    ):
         """
         Return a list of solutions containing all the differential trails having the ``fixed_weight`` weight.
         By default, the search is set in the single-key setting.
@@ -210,7 +234,7 @@ class MznXorDifferentialModel(MznModel):
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -220,7 +244,7 @@ class MznXorDifferentialModel(MznModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: cp = MznXorDifferentialModel(speck)
-            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(9, solver_name='Chuffed', solve_external=True)
+            sage: trails = cp.find_all_xor_differential_trails_with_fixed_weight(9, solver_name='chuffed', solve_external=True)
             sage: len(trails)
             2
 
@@ -240,17 +264,39 @@ class MznXorDifferentialModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solutions = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
+            solutions = self.solve_for_ARX(
+                solver_name=solver_name,
+                timeout_in_seconds_=timelimit,
+                processes_=num_of_processors,
+                all_solutions_=True,
+            )
         else:
-            solutions = self.solve(XOR_DIFFERENTIAL, solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True, solve_external = solve_external)
+            solutions = self.solve(
+                XOR_DIFFERENTIAL,
+                solver_name=solver_name,
+                timeout_in_seconds_=timelimit,
+                processes_=num_of_processors,
+                all_solutions_=True,
+                solve_external=solve_external,
+            )
             if solve_external:
                 for solution in solutions:
-                    solution['building_time_seconds'] = build_time
-                    solution['test_name'] = "find_all_xor_differential_trails_with_fixed_weight"
+                    solution["building_time_seconds"] = build_time
+                    solution["test_name"] = "find_all_xor_differential_trails_with_fixed_weight"
         return solutions
 
-    def find_all_xor_differential_trails_with_weight_at_most(self, min_weight, max_weight=64, fixed_values=[],
-                                                             solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
+    def find_all_xor_differential_trails_with_weight_at_most(
+        self,
+        min_weight,
+        max_weight=64,
+        fixed_values=[],
+        solver_name=SOLVER_DEFAULT,
+        num_of_processors=None,
+        timelimit=None,
+        solve_with_API=False,
+        milp_modadd=False,
+        solve_external=False,
+    ):
         """
         Return a list of solutions containing all the differential trails.
         By default, the search is set in the single-key setting.
@@ -261,7 +307,7 @@ class MznXorDifferentialModel(MznModel):
         - ``min_weight`` -- **integer**; the weight from which to start the search
         - ``max_weight`` -- **integer** (default: 64); the weight at which the search stops
         - ``fixed_values`` -- **list**  (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -271,7 +317,7 @@ class MznXorDifferentialModel(MznModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: cp = MznXorDifferentialModel(speck)
-            sage: trails = cp.find_all_xor_differential_trails_with_weight_at_most(9,10, solver_name='Chuffed', solve_external=True)
+            sage: trails = cp.find_all_xor_differential_trails_with_weight_at_most(9,10, solver_name='chuffed', solve_external=True)
             sage: len(trails)
             28
 
@@ -289,35 +335,71 @@ class MznXorDifferentialModel(MznModel):
         """
         start = tm.time()
         self.build_xor_differential_trail_model(0, fixed_values, milp_modadd)
-        self._model_constraints.append(f'constraint weight >= {100 * min_weight} /\\ weight <= {100 * max_weight} ')
+        self._model_constraints.append(f"constraint weight >= {100 * min_weight} /\\ weight <= {100 * max_weight} ")
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solutions = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True)
+            solutions = self.solve_for_ARX(
+                solver_name=solver_name,
+                timeout_in_seconds_=timelimit,
+                processes_=num_of_processors,
+                all_solutions_=True,
+            )
         else:
-            solutions = self.solve(XOR_DIFFERENTIAL, solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, all_solutions_ = True, solve_external = solve_external)
+            solutions = self.solve(
+                XOR_DIFFERENTIAL,
+                solver_name=solver_name,
+                timeout_in_seconds_=timelimit,
+                processes_=num_of_processors,
+                all_solutions_=True,
+                solve_external=solve_external,
+            )
             for solution in solutions:
-                solution['building_time_seconds'] = build_time
-                solution['test_name'] = "find_all_xor_differential_trails_with_weight_at_most"
+                solution["building_time_seconds"] = build_time
+                solution["test_name"] = "find_all_xor_differential_trails_with_weight_at_most"
 
         return solutions
 
-    def find_differential_weight(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
+    def find_differential_weight(
+        self,
+        fixed_values=[],
+        solver_name=SOLVER_DEFAULT,
+        num_of_processors=None,
+        timelimit=None,
+        solve_with_API=False,
+        milp_modadd=False,
+        solve_external=False,
+    ):
         probability = 0
         self.build_xor_differential_trail_model(-1, fixed_values, milp_modadd)
         if solve_with_API:
-            solutions = self.solve_for_ARX(solver_name = solver_name, all_solutions_ = True)
+            solutions = self.solve_for_ARX(solver_name=solver_name, all_solutions_=True)
         else:
-            solutions = self.solve(XOR_DIFFERENTIAL, solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
+            solutions = self.solve(
+                XOR_DIFFERENTIAL,
+                solver_name=solver_name,
+                timeout_in_seconds_=timelimit,
+                processes_=num_of_processors,
+                solve_external=solve_external,
+            )
         if isinstance(solutions, list):
             for solution in solutions:
-                weight = solution['total_weight']
-                probability += 1 / 2 ** weight
+                weight = solution["total_weight"]
+                probability += 1 / 2**weight
             return math.log2(1 / probability)
         else:
-            return solutions['total_weight']
+            return solutions["total_weight"]
 
-    def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
+    def find_lowest_weight_xor_differential_trail(
+        self,
+        fixed_values=[],
+        solver_name=SOLVER_DEFAULT,
+        num_of_processors=None,
+        timelimit=None,
+        solve_with_API=False,
+        milp_modadd=False,
+        solve_external=False,
+    ):
         """
         Return the solution representing a differential trail with the lowest probability weight.
         By default, the search is set in the single-key setting.
@@ -330,7 +412,7 @@ class MznXorDifferentialModel(MznModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -340,10 +422,10 @@ class MznXorDifferentialModel(MznModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: cp = MznXorDifferentialModel(speck)
-            sage: cp.find_lowest_weight_xor_differential_trail(solver_name='Chuffed', solve_external=True) # random
+            sage: cp.find_lowest_weight_xor_differential_trail(solver_name='chuffed', solve_external=True) # random
             {'cipher': speck_p32_k64_o32_r5,
              'model_type': 'xor_differential_one_solution',
-             'solver_name': 'Chuffed',
+             'solver_name': 'chuffed',
              'solving_time_seconds': 120.349,
              'memory_megabytes': 0.28,
              'components_values': {'plaintext': {'value': '28000010', 'weight': 0},
@@ -371,14 +453,31 @@ class MznXorDifferentialModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solution = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+            solution = self.solve_for_ARX(
+                solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
+            )
         else:
-            solution = self.solve('xor_differential_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
-            solution['building_time_seconds'] = build_time
-            solution['test_name'] = "find_lowest_weight_xor_differential_trail"
+            solution = self.solve(
+                "xor_differential_one_solution",
+                solver_name=solver_name,
+                timeout_in_seconds_=timelimit,
+                processes_=num_of_processors,
+                solve_external=solve_external,
+            )
+            solution["building_time_seconds"] = build_time
+            solution["test_name"] = "find_lowest_weight_xor_differential_trail"
         return solution
 
-    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
+    def find_one_xor_differential_trail(
+        self,
+        fixed_values=[],
+        solver_name=SOLVER_DEFAULT,
+        num_of_processors=None,
+        timelimit=None,
+        solve_with_API=False,
+        milp_modadd=False,
+        solve_external=False,
+    ):
         """
         Return the solution representing a differential trail with any weight.
         By default, the search is set in the single-key setting.
@@ -386,7 +485,7 @@ class MznXorDifferentialModel(MznModel):
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -396,7 +495,7 @@ class MznXorDifferentialModel(MznModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialModel(speck)
-            sage: cp.find_one_xor_differential_trail(solver_name='Chuffed', solve_external=True) # random
+            sage: cp.find_one_xor_differential_trail(solver_name='chuffed', solve_external=True) # random
             {'cipher_id': 'speck_p32_k64_o32_r2',
              'model_type': 'xor_differential_one_solution',
               ...
@@ -418,15 +517,32 @@ class MznXorDifferentialModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solution = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+            solution = self.solve_for_ARX(
+                solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
+            )
         else:
-            solution = self.solve('xor_differential_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
-            solution['building_time_seconds'] = build_time
-            solution['test_name'] = "find_one_xor_differential_trail"
+            solution = self.solve(
+                "xor_differential_one_solution",
+                solver_name=solver_name,
+                timeout_in_seconds_=timelimit,
+                processes_=num_of_processors,
+                solve_external=solve_external,
+            )
+            solution["building_time_seconds"] = build_time
+            solution["test_name"] = "find_one_xor_differential_trail"
         return solution
 
-    def find_one_xor_differential_trail_with_fixed_weight(self, fixed_weight=-1, fixed_values=[],
-                                                          solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None, solve_with_API=False, milp_modadd=False, solve_external = False):
+    def find_one_xor_differential_trail_with_fixed_weight(
+        self,
+        fixed_weight=-1,
+        fixed_values=[],
+        solver_name=SOLVER_DEFAULT,
+        num_of_processors=None,
+        timelimit=None,
+        solve_with_API=False,
+        milp_modadd=False,
+        solve_external=False,
+    ):
         """
         Return the solution representing a differential trail with the weight of probability equal to ``fixed_weight``.
         By default, the search is set in the single-key setting.
@@ -435,7 +551,7 @@ class MznXorDifferentialModel(MznModel):
 
         - ``fixed_weight`` -- **integer**; the value to which the weight is fixed, if non-negative
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Chuffed`); the name of the solver.
+        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -445,7 +561,7 @@ class MznXorDifferentialModel(MznModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: cp = MznXorDifferentialModel(speck)
-            sage: trail = cp.find_one_xor_differential_trail_with_fixed_weight(3, solver_name='Chuffed', solve_external=True) # random
+            sage: trail = cp.find_one_xor_differential_trail_with_fixed_weight(3, solver_name='chuffed', solve_external=True) # random
             sage: trail['total_weight']
             '3.0'
 
@@ -465,24 +581,31 @@ class MznXorDifferentialModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
-            solution = self.solve_for_ARX(solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors)
+            solution = self.solve_for_ARX(
+                solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
+            )
         else:
-            solution = self.solve('xor_differential_one_solution', solver_name = solver_name, timeout_in_seconds_ = timelimit, processes_ = num_of_processors, solve_external = solve_external)
+            solution = self.solve(
+                "xor_differential_one_solution",
+                solver_name=solver_name,
+                timeout_in_seconds_=timelimit,
+                processes_=num_of_processors,
+                solve_external=solve_external,
+            )
             if solve_external:
-                solution['building_time_seconds'] = build_time
-                solution['test_name'] = "find_one_xor_differential_trail_with_fixed_weight"
+                solution["building_time_seconds"] = build_time
+                solution["test_name"] = "find_one_xor_differential_trail_with_fixed_weight"
 
         return solution
 
-    def get_word_operation_xor_differential_constraints(self, component, new_constraint, milp_modadd = False):
-        if 'AND' in component.description[0] or ('MODADD' in component.description[0] and not milp_modadd):
-            new_constraint = new_constraint + f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ show('
+    def get_word_operation_xor_differential_constraints(self, component, new_constraint, milp_modadd=False):
+        if "AND" in component.description[0] or ("MODADD" in component.description[0] and not milp_modadd):
+            new_constraint = new_constraint + f'"{component.id} = "++ show({component.id})++ "\\n" ++ show('
             for i in range(len(self.component_and_probability[component.id])):
-                new_constraint = new_constraint + f'p[{self.component_and_probability[component.id][i]}]/100+'
-            new_constraint = new_constraint[:-1] + ') ++ \"\\n\" ++'
+                new_constraint = new_constraint + f"p[{self.component_and_probability[component.id][i]}]/100+"
+            new_constraint = new_constraint[:-1] + ') ++ "\\n" ++'
         else:
-            new_constraint = new_constraint + f'\"{component.id} = \"++ ' \
-                                              f'show({component.id})++ \"\\n\" ++ \"0\" ++ \"\\n\" ++'
+            new_constraint = new_constraint + f'"{component.id} = "++ show({component.id})++ "\\n" ++ "0" ++ "\\n" ++'
 
         return new_constraint
 
@@ -509,8 +632,10 @@ class MznXorDifferentialModel(MznModel):
               'var int: weight = sum(p);'],
              [])
         """
-        self._cp_xor_differential_constraints = [f'array[0..{bit_size - 1}] of var 0..1: {input_};'
-                           for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)]
+        self._cp_xor_differential_constraints = [
+            f"array[0..{bit_size - 1}] of var 0..1: {input_};"
+            for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
+        ]
         self.sbox_mant = []
         prob_count = 0
         valid_probabilities = {0}
@@ -518,25 +643,28 @@ class MznXorDifferentialModel(MznModel):
         for component in self._cipher.get_all_components():
             if CONSTANT not in component.type:
                 output_id_link = component.id
-                self._cp_xor_differential_constraints.append(f'array[0..{int(component.output_bit_size) - 1}] of var 0..1: {output_id_link};')
+                self._cp_xor_differential_constraints.append(
+                    f"array[0..{int(component.output_bit_size) - 1}] of var 0..1: {output_id_link};"
+                )
                 if SBOX in component.type:
                     prob_count += 1
                     self.update_sbox_ddt_valid_probabilities(component, valid_probabilities)
                 elif WORD_OPERATION in component.type:
-                    if 'AND' in component.description[0] or component.description[0] == 'OR':
+                    if "AND" in component.description[0] or component.description[0] == "OR":
                         prob_count += component.description[1] * component.output_bit_size
-                        update_and_or_ddt_valid_probabilities(and_already_added, component, self._cp_xor_differential_constraints,
-                                                              valid_probabilities)
-                    elif 'MODADD' in component.description[0]:
+                        update_and_or_ddt_valid_probabilities(
+                            and_already_added, component, self._cp_xor_differential_constraints, valid_probabilities
+                        )
+                    elif "MODADD" in component.description[0]:
                         prob_count += component.description[1] - 1
                         output_size = component.output_bit_size
                         valid_probabilities |= set(range(100 * output_size)[::100])
-        cp_declarations_weight = 'int: weight = 0;'
+        cp_declarations_weight = "int: weight = 0;"
         if prob_count > 0:
             self._probability = True
-            new_declaration = f'array[0..{prob_count - 1}] of var {valid_probabilities}: p;'
+            new_declaration = f"array[0..{prob_count - 1}] of var {valid_probabilities}: p;"
             self._cp_xor_differential_constraints.append(new_declaration)
-            cp_declarations_weight = 'var int: weight = sum(p);'
+            cp_declarations_weight = "var int: weight = sum(p);"
         self._cp_xor_differential_constraints.append(cp_declarations_weight)
         cp_constraints = []
 
@@ -556,6 +684,7 @@ class MznXorDifferentialModel(MznModel):
             for i in range(sbox_ddt.nrows()):
                 set_of_occurrences = set(sbox_ddt.rows()[i])
                 set_of_occurrences -= {0}
-                valid_probabilities.update({round(100 * math.log2(2 ** input_size / occurrence))
-                                            for occurrence in set_of_occurrences})
+                valid_probabilities.update(
+                    {round(100 * math.log2(2**input_size / occurrence)) for occurrence in set_of_occurrences}
+                )
             self.sbox_mant.append((description, output_id_link))

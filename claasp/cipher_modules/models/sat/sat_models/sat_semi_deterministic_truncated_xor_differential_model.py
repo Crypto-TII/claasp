@@ -1,29 +1,37 @@
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 import time
 
 from claasp.cipher_modules.models.sat import solvers
-from claasp.cipher_modules.models.sat.sat_models.sat_truncated_xor_differential_model import \
-    SatTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.sat.sat_models.sat_truncated_xor_differential_model import (
+    SatTruncatedXorDifferentialModel,
+)
 from claasp.cipher_modules.models.utils import set_component_solution
-from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
-                                  INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SBOX,
+    WORD_OPERATION,
+)
 
 
 def group_triples(var_names):
@@ -38,7 +46,7 @@ def group_triples(var_names):
     grouped = {}
     for name in var_names:
         if "hw_p_modadd" in name or "hw_q_modadd" in name or "hw_r_modadd" in name:
-            parts = name.split('_')
+            parts = name.split("_")
             probability_component = parts[1]
             round_index = parts[3]
             component_index = parts[4]
@@ -46,24 +54,24 @@ def group_triples(var_names):
             key = (round_index, component_index, position_index)
 
             if key not in grouped:
-                grouped[key] = {'p': None, 'q': None, 'r': None}
+                grouped[key] = {"p": None, "q": None, "r": None}
             grouped[key][probability_component] = name
 
     triples_dict = {}
     for k, bit_map in grouped.items():
-        p_name = bit_map['p']
-        q_name = bit_map['q']
-        r_name = bit_map['r']
+        p_name = bit_map["p"]
+        q_name = bit_map["q"]
+        r_name = bit_map["r"]
         triples_dict[k] = (p_name, q_name, r_name)
     return triples_dict
 
 
 class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferentialModel):
-    def __init__(self, cipher, counter='sequential', compact=False):
+    def __init__(self, cipher, counter="sequential", compact=False):
         super().__init__(cipher, counter, compact)
 
     def build_semi_deterministic_truncated_xor_differential_trail_model(
-            self, number_of_unknowns_per_component=None, unknown_window_size_configuration=None, fixed_variables=[]
+        self, number_of_unknowns_per_component=None, unknown_window_size_configuration=None, fixed_variables=[]
     ):
         """
         Build the model for the search of deterministic truncated XOR DIFFERENTIAL trails.
@@ -93,14 +101,14 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
         self._variables_list = []
         self._model_constraints = constraints
         component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
-        operation_types = ('AND', 'MODADD', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR')
+        operation_types = ("AND", "MODADD", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
         for component in self._cipher.get_all_components():
             operation = component.description[0]
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.sat_semi_deterministic_truncated_xor_differential_constraints()
             else:
-                print(f'{component.id} not yet implemented')
+                print(f"{component.id} not yet implemented")
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
@@ -109,20 +117,23 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
             self._build_unknown_variable_constraints(number_of_unknowns_per_component)
 
         if unknown_window_size_configuration is not None:
-            variables, constraints = SatSemiDeterministicTruncatedXorDifferentialModel.unknown_window_size_configuration_constraints(
-                unknown_window_size_configuration,
-                variables_list=self._variables_list,
-                cardinality_constraint_method=self._counter
+            variables, constraints = (
+                SatSemiDeterministicTruncatedXorDifferentialModel.unknown_window_size_configuration_constraints(
+                    unknown_window_size_configuration,
+                    variables_list=self._variables_list,
+                    cardinality_constraint_method=self._counter,
+                )
             )
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
     def find_one_semi_deterministic_truncated_xor_differential_trail(
-            self,
-            fixed_values=[],
-            solver_name=solvers.SOLVER_DEFAULT,
-            unknown_window_size_configuration=None,
-            number_of_unknowns_per_component=None
+        self,
+        fixed_values=[],
+        solver_name=solvers.SOLVER_DEFAULT,
+        unknown_window_size_configuration=None,
+        number_of_unknowns_per_component=None,
+        options=None,
     ):
         """
         Returns one deterministic truncated XOR differential trail.
@@ -139,18 +150,18 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
         self.build_semi_deterministic_truncated_xor_differential_trail_model(
             fixed_variables=fixed_values,
             unknown_window_size_configuration=unknown_window_size_configuration,
-            number_of_unknowns_per_component=number_of_unknowns_per_component
+            number_of_unknowns_per_component=number_of_unknowns_per_component,
         )
 
         end_building_time = time.time()
-        solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name)
-        solution['building_time_seconds'] = end_building_time - start_building_time
+        solution = self.solve(DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
+        solution["building_time_seconds"] = end_building_time - start_building_time
 
         return solution
 
     @staticmethod
     def unknown_window_size_configuration_constraints(
-            unknown_window_size_configuration, variables_list=None, cardinality_constraint_method=None
+        unknown_window_size_configuration, variables_list=None, cardinality_constraint_method=None
     ):
         """
         Return lists of variables and constraints that fix the number of unknown
@@ -166,11 +177,11 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
         new_variables_list = []
         new_constraints_list = []
 
-        max_number_of_seq_window_size_0 = unknown_window_size_configuration['max_number_of_sequences_window_size_0']
-        max_number_of_seq_window_size_1 = unknown_window_size_configuration['max_number_of_sequences_window_size_1']
-        max_number_of_seq_window_size_2 = unknown_window_size_configuration['max_number_of_sequences_window_size_2']
+        max_number_of_seq_window_size_0 = unknown_window_size_configuration["max_number_of_sequences_window_size_0"]
+        max_number_of_seq_window_size_1 = unknown_window_size_configuration["max_number_of_sequences_window_size_1"]
+        max_number_of_seq_window_size_2 = unknown_window_size_configuration["max_number_of_sequences_window_size_2"]
 
-        hw_variables = [var_id for var_id in variables_list if var_id.startswith('hw_')]
+        hw_variables = [var_id for var_id in variables_list if var_id.startswith("hw_")]
 
         def x_iff_abc_cnf(a: str, b: str, c: str, x: str) -> list:
             """
@@ -192,7 +203,7 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
                 f"{negate(x)} {a}",
                 f"{negate(x)} {b}",
                 f"{negate(x)} {c}",
-                f"{negate(a)} {negate(b)} {negate(c)} {x}"
+                f"{negate(a)} {negate(b)} {negate(c)} {x}",
             ]
             return clauses
 
@@ -203,18 +214,14 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
         for tuple_key, tuple_value in triples_dict.items():
             window_1_var = "hw_window_1_" + "_".join(tuple_key)
             window_1_vars.append(window_1_var)
-            constraints = x_iff_abc_cnf(
-                tuple_value[0], "-" + tuple_value[1], tuple_value[2], window_1_var
-            )
+            constraints = x_iff_abc_cnf(tuple_value[0], "-" + tuple_value[1], tuple_value[2], window_1_var)
 
             new_variables_list.extend([window_1_var])
             new_constraints_list.extend(constraints)
 
             window_2_var = "hw_window_2_" + "_".join(tuple_key)
             window_2_vars.append(window_2_var)
-            constraints = x_iff_abc_cnf(
-                tuple_value[0], "-" + tuple_value[1], "-" + tuple_value[2], window_2_var
-            )
+            constraints = x_iff_abc_cnf(tuple_value[0], "-" + tuple_value[1], "-" + tuple_value[2], window_2_var)
             new_variables_list.extend([window_2_var])
             new_constraints_list.extend(constraints)
         cardinality_variables_window_1, cardinality_constraints_window_1 = cardinality_constraint_method(
@@ -302,10 +309,14 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
             return counts
 
         weight = 0
-        if ('MODSUB' in component.description or 'MODADD' in component.description or 'AND' in component.description
-                or 'OR' in component.description or SBOX in component.type):
-
-            hw_variables = [var_id for var_id in variables_list if var_id.startswith('hw_')]
+        if (
+            "MODSUB" in component.description
+            or "MODADD" in component.description
+            or "AND" in component.description
+            or "OR" in component.description
+            or SBOX in component.type
+        ):
+            hw_variables = [var_id for var_id in variables_list if var_id.startswith("hw_")]
             hw_variables = [var_id for var_id in hw_variables if component.id in var_id]
             triples_dict = group_triples(hw_variables)
 
@@ -328,6 +339,6 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
             total_weight += weight
             component_solution = set_component_solution(value, weight)
 
-            components_solutions[f'{component.id}'] = component_solution
+            components_solutions[f"{component.id}"] = component_solution
 
         return components_solutions, total_weight

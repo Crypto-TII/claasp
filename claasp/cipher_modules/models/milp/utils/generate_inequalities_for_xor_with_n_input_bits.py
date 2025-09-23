@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -20,6 +19,7 @@
 """
 The target of this module is to generate MILP inequalities for a XOR operation between n input bits.
 """
+
 import pickle, os
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 
@@ -56,9 +56,7 @@ def update_dictionary_that_contains_xor_inequalities_between_n_input_bits(number
     if number_of_input_bits not in dictio.keys():
         print(f"Adding xor inequalities between {number_of_input_bits} input bits in pre-saved dictionary")
         dictio[number_of_input_bits] = generate_impossible_points_for_xor_between_n_input_bits(number_of_input_bits)
-        write_file = open(
-            xor_inequalities_between_n_input_bits_file_path,
-            'wb')
+        write_file = open(xor_inequalities_between_n_input_bits_file_path, "wb")
         pickle.dump(dictio, write_file)
         write_file.close()
 
@@ -80,7 +78,7 @@ def update_dictionary_that_contains_xor_inequalities_for_specific_matrix(mat):
 
 def output_dictionary_that_contains_xor_inequalities():
     try:
-        read_file = open(xor_inequalities_between_n_input_bits_file_path, 'rb')
+        read_file = open(xor_inequalities_between_n_input_bits_file_path, "rb")
         dictio = pickle.load(read_file)
         read_file.close()
     except (OSError, EOFError):
@@ -89,6 +87,6 @@ def output_dictionary_that_contains_xor_inequalities():
 
 
 def delete_dictionary_that_contains_xor_inequalities():
-    write_file = open(xor_inequalities_between_n_input_bits_file_path, 'wb')
+    write_file = open(xor_inequalities_between_n_input_bits_file_path, "wb")
     pickle.dump({}, write_file)
     write_file.close()

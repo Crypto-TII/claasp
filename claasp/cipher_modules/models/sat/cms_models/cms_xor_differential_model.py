@@ -1,21 +1,19 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 
 """CryptoMiniSat model of Cipher.
 
@@ -42,16 +40,23 @@ XOR operations were overridden.
 For any further information, visit `CryptoMiniSat - XOR clauses
 <https://www.msoos.org/xor-clauses/>`_.
 """
+
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
-from claasp.name_mappings import WORD_OPERATION, CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, \
-    LINEAR_LAYER, SBOX, MIX_COLUMN
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SBOX,
+    WORD_OPERATION,
+)
 
 
 class CmsSatXorDifferentialModel(SatXorDifferentialModel):
-
-    def __init__(self, cipher, counter='sequential', compact=False):
+    def __init__(self, cipher, counter="sequential", compact=False):
         super().__init__(cipher, counter, compact)
 
     def _add_clauses_to_solver(self, numerical_cnf, solver):
@@ -88,17 +93,18 @@ class CmsSatXorDifferentialModel(SatXorDifferentialModel):
         variables = []
         self._variables_list = []
         constraints = SatModel.fix_variables_value_constraints(fixed_variables)
-        component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION]
-        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
+        component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
+        operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
         self._model_constraints = constraints
 
         for component in self._cipher.get_all_components():
             operation = component.description[0]
             if component.type not in component_types or (
-                    WORD_OPERATION == component.type and operation not in operation_types):
+                WORD_OPERATION == component.type and operation not in operation_types
+            ):
                 variables, constraints = component.cms_xor_differential_propagation_constraints(self)
             else:
-                print(f'{component.id} not yet implemented')
+                print(f"{component.id} not yet implemented")
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
