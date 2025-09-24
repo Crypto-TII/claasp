@@ -1,4 +1,4 @@
-def get_ebct_operations():
+def get_lbct_operations():
     lbct_string = """
     include \"table.mzn\";
     int: num_workers = 8;

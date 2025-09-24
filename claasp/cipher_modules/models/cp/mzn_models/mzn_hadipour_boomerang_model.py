@@ -217,8 +217,8 @@ class MznHadipourBoomerangModel(MznModel):
             branch_size = self.cipher.get_component_from_id(middle_non_linear_transition_ids_up).output_bit_size
             # self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size))
             # self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size))
-            # self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
-            self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size))
+            self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
+            # self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size))
 
         cp_declarations_weight_middle = 'var int: middle_weight = sum(middle_p);'
         self._cp_xor_differential_constraints.append(cp_declarations_weight_middle)
@@ -436,7 +436,7 @@ class MznHadipourBoomerangModel(MznModel):
         delta_left_left = f'array1d(0..{branch_size}-1, [{delta_left_left_str}])'
 
         constraint = [
-            f"constraint onlyLargeSwitch_EBCT_enum({delta_left}, {delta_right}, "
+            f"constraint onlyLargeSwitch_UBCT_enum({delta_left}, {delta_right}, "
             f"{nabla_left}, {nabla_right}, {delta_left_left}, 1, {branch_size}) = true;\n"
         ]
         return constraint
@@ -508,9 +508,9 @@ class MznHadipourBoomerangModel(MznModel):
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
         self._model_constraints = self._model_prefix + self._model_constraints
         # self._model_constraints.extend([get_bct_operations()])
-        # self._model_constraints.extend([get_lbct_operations()])
+        self._model_constraints.extend([get_lbct_operations()])
         # self._model_constraints.extend([get_ubct_operations()])
-        self._model_constraints.extend([get_ebct_operations()])
+        # self._model_constraints.extend([get_ebct_operations()])
 
         self.write_minizinc_model_to_file(".")
 

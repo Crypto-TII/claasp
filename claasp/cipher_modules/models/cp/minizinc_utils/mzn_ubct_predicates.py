@@ -1,4 +1,4 @@
-def get_ebct_operations():
+def get_ubct_operations():
     ubct_string = """
     include \"table.mzn\";
     int: num_workers = 4;
@@ -154,7 +154,7 @@ def get_ebct_operations():
       ]);
     
     
-    predicate onlyLargeSwitch_LBCT_enum(
+    predicate onlyLargeSwitch_UBCT_enum(
       array[int] of var 0..1: dL,
       array[int] of var 0..1:dR,
       array[int] of var 0..1: nL,
@@ -182,7 +182,7 @@ def get_ebct_operations():
         forall(i in 0..branchSize-2) (
             forall(cn in 0..3) (
                  let {
-                    array[0..9] of var 0..1: column = array1d(0..9, [dL[i], dR[i], nL[i], nR[i], dLL[i], matrix[i, 0*4+cn], matrix[i, 1*4+cn], matrix[i, 4*8+cn], matrix[i, 3*4+cn], halfSize[i, cn]])
+                    array[0..9] of var 0..1: column = array1d(0..9, [dL[i], dR[i], nL[i], nR[i], dLL[i], matrix[i, 0*4+cn], matrix[i, 1*4+cn], matrix[i,2*4+cn], matrix[i, 3*4+cn], halfSize[i, cn]])
                 } in
                 BVAssign(column, cn)
             ) /\\
@@ -217,7 +217,7 @@ def get_ebct_operations():
                 (
                     not(dp[i + 1,r]) -> (not(literals[i,r * 4 + 0]) /\\ not(literals[i,r * 4 + 1]) /\\ not(literals[i,r * 4 + 2]) /\\ not(literals[i,r * 4 + 3]))
                 ) /\\
-                forall(li in 0..7) (
+                forall(li in 0..3) (
                     dp[i + 1,r] >= literals[i, r * 4 + li] 
                 ) /\\
                 (
