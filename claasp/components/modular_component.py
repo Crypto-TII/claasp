@@ -200,7 +200,7 @@ class Modular(Component):
             model.modadd_twoterms_mant.append(out)
         cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: eq_{out} = '
                                f'Eq(Shi_{input_1}, Shi_{input_2}, Shi_{out});')
-        print(f'component: {self.id}')
+        # print(f'component: {self.id}')
         cp_constraints.append(f'constraint forall(j in 0..{input_length - 1})(if eq_{out}[j] = '
                               f'1 then (sum([{input_1}[j], {input_2}[j], {out}[j]]) mod 2) = Shi_{input_2}[j] else '
                               f'true endif) /\\ p[{c}] = {input_length}-sum(eq_{out});')
@@ -213,18 +213,18 @@ class Modular(Component):
         if input_1 not in model.modadd_twoterms_mant:
             cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: Shi_{input_1} = LShift({input_1},1);')
             model.modadd_twoterms_mant.append(input_1)
-            print('case 1')
+            # print('case 1')
         if input_2 not in model.modadd_twoterms_mant:
             cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: Shi_{input_2} = LShift({input_2},1);')
             model.modadd_twoterms_mant.append(input_2)
-            print('case 2')
+            # print('case 2')
         if out not in model.modadd_twoterms_mant:
             cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: Shi_{out} = LShift({out},1);')
             model.modadd_twoterms_mant.append(out)
-            print('case 3')
+            # print('case 3')
         cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: eq_{out} = '
                                f'Eq(Shi_{input_1}, Shi_{input_2}, Shi_{out});')
-        print(f'component: {self.id}')
+        # print(f'component: {self.id}')
         if 'upper_' not in out and 'lower' not in out:
             cp_constraints.append(f'constraint forall(j in 0..{input_length - 1})(if eq_{out}[j] = '
                               f'1 then (sum([{input_1}[j], {input_2}[j], {out}[j]]) mod 2) = Shi_{input_2}[j] else '
@@ -341,7 +341,7 @@ class Modular(Component):
             probability.append(model.c)
             model.c += 1
 
-        print(output_id_link)
+        # print(output_id_link)
         self.cp_twoterms_xor_differential_probability(f'pre_{output_id_link}_{2 * num_add - 3}',
                                                       f'pre_{output_id_link}_0', f'{output_id_link}',
                                                       output_size, cp_constraints, cp_declarations, model.c, model)
@@ -395,7 +395,7 @@ class Modular(Component):
         probability = []
         probability_upper = []
         probability_lower = []
-        print('I AM INSIDE BOOOOOOOOOMERAAAAAAAAANG')
+        # print('I AM INSIDE BOOOOOOOOOMERAAAAAAAAANG')
         for i in range(num_add - 2):
             self.cp_twoterms_xor_differential_probability_boomerang(f'pre_{output_id_link}_{num_add - 1}',
                                                           f'pre_{output_id_link}_{i + 1}',
@@ -404,7 +404,7 @@ class Modular(Component):
             probability.append(model.c)
             model.c += 1
 
-        print(output_id_link)
+        # print(output_id_link)
         if 'upper_' not in output_id_link and 'lower_' not in output_id_link:
             self.cp_twoterms_xor_differential_probability_boomerang(f'pre_{output_id_link}_{2 * num_add - 3}',
                                                       f'pre_{output_id_link}_0', f'{output_id_link}',
@@ -418,14 +418,14 @@ class Modular(Component):
                                                       output_size, cp_constraints, cp_declarations, model.c_upper, model)
             probability_upper.append(model.c_upper)
             model.component_and_probability[output_id_link] = probability_upper
-            model.upper_probabilities_and_index[output_id_link] = model.c_upper
+            # model.upper_probabilities_and_index[output_id_link] = model.c_upper
             model.c_upper += 1 
         elif 'lower_' in output_id_link:
             self.cp_twoterms_xor_differential_probability_boomerang(f'pre_{output_id_link}_{2 * num_add - 3}',
                                                       f'pre_{output_id_link}_0', f'{output_id_link}',
                                                       output_size, cp_constraints, cp_declarations, model.c_lower, model)
             probability_lower.append(model.c_lower)
-            model.lower_probabilities_and_index[output_id_link] = model.c_lower
+            # model.lower_probabilities_and_index[output_id_link] = model.c_lower
             model.c_lower += 1
             model.component_and_probability[output_id_link] = probability_lower
 

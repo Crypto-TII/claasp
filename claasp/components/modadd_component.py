@@ -293,8 +293,8 @@ class MODADD(Modular):
             cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{out} = LShift({out},1);')
             model.modadd_twoterms_mant.append(out)
         cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: eq_{out} = Eq(Shi_{inp1}, Shi_{inp2}, Shi_{out});')
-        print(f'component: {self.id}')
-        print(f'top num rounds: {model.top_part_number_of_rounds}')
+        # print(f'component: {self.id}')
+        # print(f'top num rounds: {model.top_part_number_of_rounds}')
         cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
                               f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
                               f'true endif) /\\ p[{c}] = {inplen}-sum(eq_{out});')
@@ -312,8 +312,8 @@ class MODADD(Modular):
             cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{out} = LShift({out},1);')
             model.modadd_twoterms_mant.append(out)
         cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: eq_{out} = Eq(Shi_{inp1}, Shi_{inp2}, Shi_{out});')
-        print(f'component: {self.id}')
-        print(f'top num rounds: {model.top_part_number_of_rounds}')
+        # print(f'component: {self.id}')
+        # print(f'top num rounds: {model.top_part_number_of_rounds}')
         if 'upper_' not in out and 'lower' not in out:
             cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
                               f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
