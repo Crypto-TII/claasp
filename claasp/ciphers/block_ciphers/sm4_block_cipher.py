@@ -114,17 +114,26 @@ class SM4(Cipher):
 
                 t1 = self.add_XOR_component(
                     [K[i + 3].id, CK_const.id],
-                    [[j for j in range(32)], [j for j in range(32)]],
+                    [
+                        [j for j in range(self.KEY_BLOCK_SIZE // 4)],
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
                 t2 = self.add_XOR_component(
                     [t1.id, K[i + 2].id],
-                    [[j for j in range(32)], [j for j in range(32)]],
+                    [
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                        [j for j in range(self.KEY_BLOCK_SIZE // 4)],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
                 temp_k = self.add_XOR_component(
                     [t2.id, K[i + 1].id],
-                    [[j for j in range(32)], [j for j in range(32)]],
+                    [
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                        [j for j in range(self.KEY_BLOCK_SIZE // 4)],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
 
@@ -141,7 +150,10 @@ class SM4(Cipher):
                 rot23 = self.add_rotate_component(ids_k, pos_k, word_bits, -23)
                 xor_rot = self.add_XOR_component(
                     [rot13.id, rot23.id],
-                    [[j for j in range(32)], [j for j in range(32)]],
+                    [
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
 
@@ -153,7 +165,10 @@ class SM4(Cipher):
 
                 Ki4 = self.add_XOR_component(
                     [L_prime.id, K[i].id],
-                    [[j for j in range(32)], [j for j in range(32)]],
+                    [
+                        [j for j in range(self.KEY_BLOCK_SIZE // 4)],
+                        [j for j in range(self.KEY_BLOCK_SIZE // 4)],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
                 K.append(Ki4)
@@ -161,17 +176,26 @@ class SM4(Cipher):
 
                 t1 = self.add_XOR_component(
                     [X[i + 3]["id"], rk_i.id],
-                    [X[i + 3]["bit_position"], [j for j in range(32)]],
+                    [
+                        X[i + 3]["bit_position"],
+                        [j for j in range(self.KEY_BLOCK_SIZE // 4)],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
                 t2 = self.add_XOR_component(
                     [t1.id, X[i + 2]["id"]],
-                    [[j for j in range(32)], X[i + 2]["bit_position"]],
+                    [
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                        X[i + 2]["bit_position"],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
                 temp_x = self.add_XOR_component(
                     [t2.id, X[i + 1]["id"]],
-                    [[j for j in range(32)], X[i + 1]["bit_position"]],
+                    [
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                        X[i + 1]["bit_position"],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
 
@@ -191,40 +215,62 @@ class SM4(Cipher):
 
                 xor_rot2_10 = self.add_XOR_component(
                     [rot2.id, rot10.id],
-                    [[j for j in range(32)], [j for j in range(32)]],
+                    [
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
                 xor_rot18_24 = self.add_XOR_component(
                     [rot18.id, rot24.id],
-                    [[j for j in range(32)], [j for j in range(32)]],
+                    [
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
                 xor_all = self.add_XOR_component(
                     [xor_rot2_10.id, xor_rot18_24.id],
-                    [[j for j in range(32)], [j for j in range(32)]],
+                    [
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
 
                 L_out = self.add_XOR_component(
                     [sboxes_x[b].id for b in range(4)] + [xor_all.id],
-                    [list(range(8)) for _ in range(4)] + [list(range(32))],
+                    [list(range(8)) for _ in range(4)]
+                    + [list(range(self.CIPHER_BLOCK_SIZE // 4))],
                     32,
                 )
 
                 Xi4 = self.add_XOR_component(
                     [L_out.id, X[i]["id"]],
-                    [[j for j in range(32)], X[i]["bit_position"]],
+                    [
+                        [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
+                        X[i]["bit_position"],
+                    ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
 
                 self.add_round_key_output_component(
-                    [rk_i.id], [list(range(32))], self.CIPHER_BLOCK_SIZE // 4
+                    [rk_i.id],
+                    [list(range(self.CIPHER_BLOCK_SIZE // 4))],
+                    self.CIPHER_BLOCK_SIZE // 4,
                 )
                 self.add_round_output_component(
-                    [Xi4.id], [list(range(32))], self.CIPHER_BLOCK_SIZE // 4
+                    [Xi4.id],
+                    [list(range(self.CIPHER_BLOCK_SIZE // 4))],
+                    self.CIPHER_BLOCK_SIZE // 4,
                 )
 
-                X.append({"id": Xi4.id, "bit_position": list(range(32))})
+                X.append(
+                    {
+                        "id": Xi4.id,
+                        "bit_position": list(range(self.CIPHER_BLOCK_SIZE // 4)),
+                    }
+                )
                 if i < self.NROUNDS - 1:
                     self.add_round()
 
