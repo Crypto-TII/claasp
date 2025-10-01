@@ -61,14 +61,14 @@ RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-603.tar.gz 
 ENV SOPLEX_HOME="/opt/soplex-release-603/build"
 
 # Installing HiGHS
-RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-archive.tar.gz \
-    && tar -xf source-archive.tar.gz \
-    && rm source-archive.tar.gz \
-    && cd HiGHS \
-    && cmake -S. -B build \
-    && cmake --build build --parallel
-
-ENV PATH="${PATH}:/opt/HiGHS/build/bin"
+#RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-archive.tar.gz \
+#    && tar -xf source-archive.tar.gz \
+#    && rm source-archive.tar.gz \
+#    && cd HiGHS \
+#    && cmake -S. -B build \
+#    && cmake --build build --parallel
+#
+#ENV PATH="${PATH}:/opt/HiGHS/build/bin"
 
 WORKDIR /opt
 

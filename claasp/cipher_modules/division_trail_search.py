@@ -17,13 +17,17 @@
 # ****************************************************************************
 
 import time
+from gurobipy import *
 from sage.crypto.sbox import SBox
 from collections import Counter
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_predecessors_subgraph
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
-from gurobipy import Model, GRB, Env
+from gurobipy import Model, GRB
 import os
+import random
+from sage.all import GF
+from pprint import pprint
 
 verbosity = False
 
@@ -48,19 +52,16 @@ class MilpDivisionTrailModel():
         self._variables_as_list = []
         self._unused_variables = []
         self._used_predecessors_sorted = None
-        self._output_id = None
-        self._output_bit_index_previous_comp = None
-        self._block_needed = None
-        self._input_id_link_needed = None
+        self._constants = {}
+        self._nb_clocks = None
 
     def get_all_variables_as_list(self):
         for component_id in list(self._variables.keys())[:-1]:
             for bit_position in self._variables[component_id].keys():
-                for value in self._variables[component_id][bit_position].keys():
-                    if value != "current":
-                        varname = self._variables[component_id][bit_position][value].VarName
-                        if varname not in self._variables_as_list:  # rot and intermediate has the same name than original
-                            self._variables_as_list.append(varname)
+                self._variables_as_list.append(self._variables[component_id][bit_position]["original"].VarName)
+                copies = self._variables[component_id][bit_position]["copies"]
+                for copy in copies:
+                    self._variables_as_list.append(copy.VarName)
 
     def get_unused_variables(self):
         self.get_all_variables_as_list()
@@ -75,13 +76,37 @@ class MilpDivisionTrailModel():
             self._model.addConstr(var == 0)
 
     def set_as_used_variables(self, variables):
+        self._model.update()
         for v in variables:
-            if v.VarName not in self._used_variables:
-                self._used_variables.append(v.VarName)
-                if "copy" in v.VarName.split("_"):
-                    tmp1 = v.VarName.split("_")[2:]
-                    tmp2 = "_".join(tmp1)
-                    self._used_variables.append(tmp2)
+            try:
+                if v.VarName not in self._used_variables:
+                    self._used_variables.append(v.VarName)
+                    if "copy" in v.VarName.split("_"):
+                        i = v.VarName.split("_").index("copy")
+                        tmp1 = v.VarName.split("_")[(i + 2):]
+                        tmp2 = "_".join(tmp1)
+                        self._used_variables.append(tmp2)
+                    if "fsr" in v.VarName.split("_"):
+                        lst = v.VarName.split("_")
+                        last_index = len(lst) - 1 - lst[::-1].index('fsr')
+                        tmp1 = v.VarName.split("_")[last_index + 1:]
+                        tmp2 = "_".join(tmp1)
+                        self._used_variables.append(tmp2)
+                self._unused_variables = [x for x in self._unused_variables if x != v.VarName]
+            except:
+                continue
+
+    def create_all_copies(self):
+        for name in list(self._variables.keys())[:-1]:
+            for bit_position in self._variables[name].keys():
+                copies = self._variables[name][bit_position]["copies"]
+                original_var = self._variables[name][bit_position]["original"]
+
+                if copies != []:
+                    for i in range(len(copies)):
+                        self._model.addConstr(original_var >= copies[i])
+                    self._model.addConstr(sum(copies[i] for i in range(len(copies))) >= original_var)
+                self._model.update()
 
     def build_gurobi_model(self):
         env = Env(empty=True)
@@ -186,6 +211,7 @@ class MilpDivisionTrailModel():
     def add_sbox_constraints(self, component):
         output_vars = self.get_output_vars(component)
         input_vars_concat = self.get_input_vars(component)
+        self._model.update()
 
         B = BooleanPolynomialRing(component.input_bit_size, 'x')
         x = B.variable_names()
@@ -236,7 +262,7 @@ class MilpDivisionTrailModel():
             copies[index]["current"] = current
             self.set_as_used_variables([var])
             new_vars = self._model.addVars(list(range(number_of_1s)), vtype=GRB.BINARY,
-                                                 name="copy_" + var.VarName)
+                                           name="copy_" + var.VarName)
             self._model.update()
             for i in range(number_of_1s):
                 self._model.addConstr(var >= new_vars[i])
@@ -253,6 +279,7 @@ class MilpDivisionTrailModel():
 
         if component.type == "linear_layer":
             binary_matrix = component.description
+            binary_matrix = list(zip(*binary_matrix))
         else:
             binary_matrix = binary_matrix_of_linear_component(component)
 
@@ -268,44 +295,88 @@ class MilpDivisionTrailModel():
             self._model.addConstr(output_vars[index_row] == constr)
         self._model.update()
 
+    def add_rotate_constraints(self, component):
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+        self._model.update()
+
+        rotate_offset = component.description[1]
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+            self._model.addConstr(
+                output_vars[index] == input_vars_concat[(bit_pos - rotate_offset) % component.output_bit_size])
+            self.set_as_used_variables([input_vars_concat[(bit_pos - rotate_offset) % component.output_bit_size]])
+        self._model.update()
+
+    def add_shift_constraints(self, component):
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+        self._model.update()
+
+        shift_offset = component.description[1]
+
+        for index, bit_pos in enumerate(self._occurences[component.id].keys()):
+            target = bit_pos - shift_offset
+
+            if target < 0 or target >= component.output_bit_size:
+                self._model.addConstr(output_vars[index] == 0)
+            else:
+                self._model.addConstr(output_vars[index] == input_vars_concat[target])
+                self.set_as_used_variables([input_vars_concat[target]])
+
+        self._model.update()
+
     def add_xor_constraints(self, component):
         output_vars = self.get_output_vars(component)
+        output_size = component.output_bit_size
 
-        input_vars_concat = []
-        constant_flag = []
-        for index, input_name in enumerate(component.input_id_links):
-            for pos in component.input_bit_positions[index]:
-                current = self._variables[input_name][pos]["current"]
-                if input_name[:8] == "constant":
+        # Initialize storage per output bit
+        var_inputs_per_bit = [[] for _ in range(output_size)]
+        const_bits_per_bit = [[] for _ in range(output_size)]
+
+        # Keep track of output bit position for each chunk
+        current_output_index = 0
+
+        for input_idx, input_name in enumerate(component.input_id_links):
+            bit_positions = component.input_bit_positions[input_idx]
+
+            for local_idx, pos in enumerate(bit_positions):
+                # Map this input bit to the correct output bit
+                # Sequential mapping per chunk (works for small or large chunks)
+                output_index = current_output_index % output_size
+
+                if input_name.startswith("constant"):
                     const_comp = self._cipher.get_component_from_id(input_name)
-                    constant_flag.append(
-                        (int(const_comp.description[0], 16) >> (const_comp.output_bit_size - 1 - pos)) & 1)
+                    value = (int(const_comp.description[0], 16) >>
+                             (const_comp.output_bit_size - 1 - pos)) & 1
+                    const_bits_per_bit[output_index].append(value)
                 else:
-                    input_vars_concat.append(self._variables[input_name][pos][current])
-                    self._variables[input_name][pos]["current"] += 1
+                    # Create a copy of the variable for this XOR instance
+                    copy_index = len(self._variables[input_name][pos]["copies"])
+                    copy_var = self._model.addVar(
+                        vtype=GRB.BINARY,
+                        name=f"copy_{copy_index}_{input_name}[{pos}]"
+                    )
+                    self._variables[input_name][pos]["copies"].append(copy_var)
+                    var_inputs_per_bit[output_index].append(copy_var)
 
-        block_size = component.output_bit_size
-        nb_blocks = component.description[1]
-        if constant_flag != []:
-            nb_blocks -= 1
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
-            constr = 0
-            for j in range(nb_blocks):
-                constr += input_vars_concat[index + block_size * j]
-                self.set_as_used_variables([input_vars_concat[index + block_size * j]])
-            if (constant_flag != []) and (constant_flag[index]):
-                self._model.addConstr(output_vars[index] >= constr)
+                current_output_index += 1  # move to next output bit for sequential mapping
+
+        self._model.update()
+
+        # Add XOR constraints per output bit
+        for bit_idx in range(output_size):
+            vars_sum = sum(var_inputs_per_bit[bit_idx])
+            for v in var_inputs_per_bit[bit_idx]:
+                self.set_as_used_variables([v])
+
+            const_val = sum(const_bits_per_bit[bit_idx]) % 2
+
+            if const_val == 0:
+                self._model.addConstr(output_vars[bit_idx] == vars_sum)
             else:
-                self._model.addConstr(output_vars[index] == constr)
-        self._model.update()
+                self._model.addConstr(output_vars[bit_idx] >= vars_sum)
 
-    def create_copies(self, nb_copies, var_to_copy):
-        copies = self._model.addVars(list(range(nb_copies)), vtype=GRB.BINARY)
-        for i in range(nb_copies):
-            self._model.addConstr(var_to_copy >= copies[i])
-        self._model.addConstr(sum(copies[i] for i in range(nb_copies)) >= var_to_copy)
         self._model.update()
-        return list(copies.values())
 
     def get_output_vars(self, component):
         output_vars = []
@@ -313,15 +384,18 @@ class MilpDivisionTrailModel():
         tmp.sort()
         for i in tmp:
             output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        self._model.update()
         return output_vars
 
     def get_input_vars(self, component):
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
             for pos in component.input_bit_positions[index]:
-                current = self._variables[input_name][pos]["current"]
-                input_vars_concat.append(self._variables[input_name][pos][current])
-                self._variables[input_name][pos]["current"] += 1
+                copy_index = len(self._variables[input_name][pos]["copies"])
+                copy = self._model.addVar(vtype=GRB.BINARY, name=f"copy_{copy_index}_{input_name}[{pos}]")
+                self._variables[input_name][pos]["copies"].append(copy)
+                input_vars_concat.append(copy)
+        self._model.update()
         return input_vars_concat
 
     def add_modadd_constraints(self, component):
@@ -331,10 +405,12 @@ class MilpDivisionTrailModel():
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
             for pos in component.input_bit_positions[index]:
-                current = self._variables[input_name][pos]["current"]
-                input_vars_concat.append(self._variables[input_name][pos][current])
-                self._variables[input_name][pos]["current"] += 1
-                self.set_as_used_variables([self._variables[input_name][pos][current]])
+                copy_index = len(self._variables[input_name][pos]["copies"])
+                copy = self._model.addVar(vtype=GRB.BINARY, name=f"copy_{copy_index}_{input_name}[{pos}]")
+                self._variables[input_name][pos]["copies"].append(copy)
+                input_vars_concat.append(copy)
+                self._model.update()
+                self.set_as_used_variables([copy])
 
         len_concat = len(input_vars_concat)
         n = int(len_concat / 2)
@@ -346,6 +422,7 @@ class MilpDivisionTrailModel():
         v = [self._model.addVar()]
         self._model.addConstr(v[0] == copies["a"][n - 1][1])
         self._model.addConstr(v[0] == copies["b"][n - 1][1])
+        self._model.update()
 
         g0, r0 = self.create_copies(2, v[0])
         g = [g0]
@@ -390,9 +467,9 @@ class MilpDivisionTrailModel():
         self._model.update()
 
     def add_and_constraints(self, component):
-        # Constraints taken from Misuse-free paper
         output_vars = self.get_output_vars(component)
         input_vars_concat = self.get_input_vars(component)
+        self._model.update()
 
         block_size = int(len(input_vars_concat) // component.description[1])
         for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
@@ -401,13 +478,223 @@ class MilpDivisionTrailModel():
             self.set_as_used_variables([input_vars_concat[index], input_vars_concat[index + block_size]])
         self._model.update()
 
+    def get_original_var(self, var_to_copy):
+        name = var_to_copy.VarName
+        l = name.split("_")
+        l = l[2:]
+        original_name = "_".join(l)
+        index = original_name.split("[")[1].split("]")[0]
+        original_name = original_name.split("[")[0]
+        return original_name, int(index)
+
+    def create_copies(self, nb_copies, var_to_copy):
+        copies = self._model.addVars(list(range(nb_copies)), vtype=GRB.BINARY)
+        for i in range(nb_copies):
+            self._model.addConstr(var_to_copy >= copies[i])
+        self._model.addConstr(sum(copies[i] for i in range(nb_copies)) >= var_to_copy)
+        self._model.update()
+        return list(copies.values())
+
+    def add_fsr_constraints(self, component):
+        output_bit_size = component.output_bit_size
+
+        output_vars = {}
+        tmp = list(self._occurences[component.id].keys())
+        tmp.sort()
+        for i in tmp:
+            output_vars[i] = self._model.getVarByName(f"{component.id}[{i}]")
+
+        input_vars_concat = self.get_input_vars(component)
+        self._model.update()
+
+        interm_input_vars = self._model.addVars(list(range(output_bit_size)), vtype=GRB.BINARY, name=f"interm_input")
+        for i in range(output_bit_size):
+            self._model.addConstr(interm_input_vars[i] == input_vars_concat[i])
+            self.set_as_used_variables([input_vars_concat[i]])
+
+        if len(component.description) == 2:
+            number_of_initialization_clocks = 1
+        else:
+            number_of_initialization_clocks = component.description[-1]  # component.description[-1] 590 self._nb_clocks
+
+        registers = component.description[0]
+        registers_lengths = [registers[i][0] for i in range(len(registers))]
+        registers_lengths_accumulated = [0]
+        for value in registers_lengths:
+            registers_lengths_accumulated.append(registers_lengths_accumulated[-1] + value)
+
+        s = {}
+        s[0] = list(interm_input_vars.values())
+
+        for clock in range(number_of_initialization_clocks):
+            # print(f"clock = {clock}")
+
+            tmp = s[clock][:]
+            self._model.update()
+
+            new_bits = []
+            for register in registers:
+                polynomial = 0
+                monomials_indexes = register[1]
+                for indexes in monomials_indexes:
+                    if len(indexes) > 1:
+                        a = self._model.addVar(vtype=GRB.BINARY)
+                        self._model.update()
+                        y = self._model.addVars(indexes, vtype=GRB.BINARY)
+                        for index in indexes:
+                            self._model.addConstr(y[index] <= tmp[index])
+                            self._model.addConstr(a <= tmp[index])
+                            self._model.addConstr(y[index] + a >= tmp[index])
+                            tmp[index] = y[index]
+                        monomial = a
+                    else:
+                        index = indexes[0]
+                        if index not in registers_lengths_accumulated:
+                            y = self._model.addVar(vtype=GRB.BINARY)
+                            z = self._model.addVar(vtype=GRB.BINARY)
+                            self._model.addConstr(y <= tmp[index])
+                            self._model.addConstr(z <= tmp[index])
+                            self._model.addConstr(y + z >= tmp[index])
+                            monomial = z
+                            tmp[index] = y
+                        else:
+                            monomial = tmp[index]
+                    polynomial += monomial
+                polynomial_var = self._model.addVar(vtype=GRB.BINARY, name=f"product_{register[0]}_clock_{clock}")
+                self._model.update()
+                self._model.addConstr(polynomial_var == polynomial)
+                new_bits.append(polynomial_var)
+            self._model.update()
+
+            new_bits = new_bits[-1:] + new_bits[:-1]
+            for index, length in enumerate(registers_lengths_accumulated[:-1]):
+                tmp[length] = new_bits[index]
+
+            self._model.update()
+            s[clock + 1] = []
+            for index in range(output_bit_size):
+                s[clock + 1].append(tmp[(index + 1) % output_bit_size])
+
+            # print(f"\n||||||||||| clock = {clock} after |||||||||||||||")
+            # for i in range(output_bit_size):
+            #     if i in registers_lengths_accumulated[1:]:
+            #         print("---------------------")
+            #     print(i, s[clock + 1][i])
+
+        interm_output_vars = self._model.addVars(list(range(output_bit_size)), vtype=GRB.BINARY,
+                                                 name=f"interm_{component.id}_output")
+        self._model.update()
+        self._variables[f"interm_{component.id}_output"] = {}
+        for index, var in enumerate(interm_output_vars.values()):
+            self._variables[f"interm_{component.id}_output"][index] = {"original": var, "copies": []}
+
+        for position in range(component.output_bit_size):
+            self._model.addConstr(interm_output_vars[position] == s[number_of_initialization_clocks][position])
+
+        self._model.update()
+        for position in list(self._occurences[component.id].keys()):
+            self._model.addConstr(output_vars[position] == interm_output_vars[position])
+            self.set_as_used_variables([interm_output_vars[position]])
+
+        self._model.update()
+
     def add_not_constraints(self, component):
         output_vars = self.get_output_vars(component)
         input_vars_concat = self.get_input_vars(component)
+        self._model.update()
 
         for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
             self._model.addConstr(output_vars[index] >= input_vars_concat[index])
             self.set_as_used_variables([input_vars_concat[index]])
+        self._model.update()
+
+    def add_constant_constraints(self, component):
+        self._constants[component.id] = {}
+        output_vars = self.get_output_vars(component)
+
+        if component.description[0].startswith("0b"):
+            const = int(component.description[0], 2)
+        elif component.description[0].startswith("0x"):
+            const = int(component.description[0], 16)
+        else:
+            raise ValueError("Unknown format: must start with 0b or 0x")
+
+        for i, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+            if (const >> (component.output_bit_size - 1 - i)) & 1 == 0:  # component.output_bit_size - 1 - i if 0x7
+                self._model.addConstr(output_vars[i] == 0)
+                self._constants[component.id][i] = 0
+            else:
+                self._constants[component.id][i] = 1
+        self._model.update()
+
+    def add_or_constraints(self, component):
+        """
+        Add MILP constraints for an OR operation in a 3-subset division property
+        without unknown subsets.
+
+        Assumes:
+        - component.input_id_links contains variable inputs.
+        - component.input_bit_positions aligns bits for OR.
+        - component.output_bit_size is the number of output bits.
+
+        The OR operation is modeled as:
+            y = OR(x1, x2, ..., xn)   (per bit)
+        Linearization:
+            - y >= xi  for each input xi
+            - y <= sum(xi)  (upper bound)
+        """
+        output_vars = self.get_output_vars(component)
+        output_size = component.output_bit_size
+
+        # Initialize per-output-bit storage
+        var_inputs_per_bit = [[] for _ in range(output_size)]
+
+        # Collect variable inputs per output bit
+        for input_idx, input_name in enumerate(component.input_id_links):
+            bit_positions = component.input_bit_positions[input_idx]
+
+            for local_idx, pos in enumerate(bit_positions):
+                output_index = pos % output_size  # map to output bit
+
+                # Only variable inputs are considered (no unknown subset)
+                copy_index = len(self._variables[input_name][pos]["copies"])
+                copy_var = self._model.addVar(
+                    vtype=GRB.BINARY,
+                    name=f"copy_{copy_index}_{input_name}[{pos}]"
+                )
+                self._variables[input_name][pos]["copies"].append(copy_var)
+                var_inputs_per_bit[output_index].append(copy_var)
+
+        self._model.update()
+
+        # Add OR constraints per output bit
+        for bit_idx in range(output_size):
+            input_vars = var_inputs_per_bit[bit_idx]
+            output_var = output_vars[bit_idx]
+
+            if not input_vars:
+                continue  # no input for this bit
+
+            # Lower bound: y >= xi for all xi
+            for v in input_vars:
+                self._model.addConstr(output_var >= v)
+
+            # Upper bound: y <= sum(xi)
+            self._model.addConstr(output_var <= sum(input_vars))
+
+            # Mark variables as used
+            self.set_as_used_variables(input_vars)
+
+        self._model.update()
+
+    def add_intermediate_output_constraints(self, component):
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+        self._model.update()
+
+        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+            self._model.addConstr(output_vars[index] == input_vars_concat[bit_pos])
+            self.set_as_used_variables([input_vars_concat[bit_pos]])
         self._model.update()
 
     def get_cipher_output_component_id(self):
@@ -424,25 +711,36 @@ class MilpDivisionTrailModel():
         for component_id in used_predecessors_sorted:
             if component_id not in self._cipher.inputs:
                 component = self._cipher.get_component_from_id(component_id)
+                print(f"---> {component.id}") if verbosity else None
                 if component.type == "sbox":
                     self.add_sbox_constraints(component)
+                elif component.type == "fsr":
+                    self.add_fsr_constraints(component)
+                elif component.type == "constant":
+                    self.add_constant_constraints(component)
                 elif component.type in ["linear_layer", "mix_column"]:
                     self.add_linear_layer_constraints(component)
-                elif component.type in ["cipher_output", "constant", "intermediate_output"]:
-                    continue
+                elif component.type in ["cipher_output", "intermediate_output"]:
+                    self.add_intermediate_output_constraints(component)
                 elif component.type == "word_operation":
                     if component.description[0] == "XOR":
                         self.add_xor_constraints(component)
                     elif component.description[0] == "ROTATE":
-                        continue
+                        self.add_rotate_constraints(component)
+                    elif component.description[0] == "SHIFT":
+                        self.add_shift_constraints(component)
                     elif component.description[0] == "AND":
                         self.add_and_constraints(component)
                     elif component.description[0] == "NOT":
                         self.add_not_constraints(component)
+                    elif component.description[0] == "OR":
+                        self.add_or_constraints(component)
                     elif component.description[0] == "MODADD":
                         self.add_modadd_constraints(component)
+                    else:
+                        raise NotImplementedError(f"Component {component.description[0]} is not yet implemented")
                 else:
-                    print(f"---> {component.id} not yet implemented")
+                    raise NotImplementedError(f"Component {component.description[0]} is not yet implemented")
 
         return self._model
 
@@ -452,7 +750,7 @@ class MilpDivisionTrailModel():
         for name in ids:
             for component_id in predecessors:
                 component = self._cipher.get_component_from_id(component_id)
-                if (name in component.input_id_links) and (component.type not in ["cipher_output"]):
+                if name in component.input_id_links:
                     indexes = [i for i, j in enumerate(component.input_id_links) if j == name]
                     if name not in occurences.keys():
                         occurences[name] = []
@@ -463,6 +761,11 @@ class MilpDivisionTrailModel():
         else:
             component = self._cipher.get_component_from_id(input_id_link_needed)
             occurences[input_id_link_needed] = [[i for i in range(component.output_bit_size)]]
+
+        cipher_id = self.get_cipher_output_component_id()
+        if input_id_link_needed == cipher_id:
+            component = self._cipher.get_component_from_id(cipher_id)
+            occurences[cipher_id] = [[i for i in range(component.output_bit_size)]]
 
         occurences_final = {}
         for component_id in occurences.keys():
@@ -508,149 +811,44 @@ class MilpDivisionTrailModel():
         occurences = self.get_where_component_is_used(predecessors, input_id_link_needed, block_needed)
         all_vars = {}
         used_predecessors_sorted = self.order_predecessors(list(occurences.keys()))
+        cipher_id = self.get_cipher_output_component_id()
+        # print("used_predecessors_sorted")
+        # print(used_predecessors_sorted)
+        # print("***************")
         for component_id in used_predecessors_sorted:
             all_vars[component_id] = {}
-            # We need the inputs vars to be the first ones defined by gurobi in order to find their values with X.values method.
-            # That's why we split the following loop: we first created the original vars, and then the copies vars when necessary.
-            if component_id[:3] == "rot":
-                component = self._cipher.get_component_from_id(component_id)
-                rotate_offset = component.description[1]
-                tmp = []
-                for index, input_id_link in enumerate(component.input_id_links):
-                    for j, pos in enumerate(component.input_bit_positions[index]):
-                        current = all_vars[input_id_link][pos]["current"]
-                        tmp.append(all_vars[input_id_link][pos][current])
-                        all_vars[input_id_link][pos]["current"] += 1
-
-                tmp2 = []
-                for j in range(len(tmp)):
-                    all_vars[component_id][j] = {}
-                    all_vars[component_id][j][0] = tmp[(j - rotate_offset) % component.output_bit_size]
-                    tmp2.append(all_vars[component_id][j][0])
-                    all_vars[component_id][j]["current"] = 0
-
-                for pos, gurobi_var in enumerate(tmp2):
-                    if pos in list(occurences[component_id].keys()):
-                        nb_copies_needed = occurences[component_id][pos]
-                        if nb_copies_needed >= 2:
-                            all_vars[component_id][pos]["current"] = 1
-                            for i in range(nb_copies_needed):
-                                all_vars[component_id][pos][i + 1] = self._model.addVar(vtype=GRB.BINARY,
-                                                                                        name=f"copy_{i + 1}_" + gurobi_var.VarName)
-                                self._model.addConstr(
-                                    all_vars[component_id][pos][0] >= all_vars[component_id][pos][i + 1])
-                            self._model.addConstr(
-                                sum(all_vars[component_id][pos][i + 1] for i in range(nb_copies_needed)) >=
-                                all_vars[component_id][pos][0])
-            elif component_id[:5] == "inter":
-                component = self._cipher.get_component_from_id(component_id)
-                tmp = []
-                for index, input_id_link in enumerate(component.input_id_links):
-                    for j, pos in enumerate(component.input_bit_positions[index]):
-                        current = all_vars[input_id_link][pos]["current"]
-                        tmp.append(all_vars[input_id_link][pos][current])
-                        all_vars[input_id_link][pos]["current"] += 1
-
-                for j in range(len(tmp)):
-                    all_vars[component_id][j] = {}
-                    all_vars[component_id][j][0] = tmp[j]
-                    all_vars[component_id][j]["current"] = 0
-
-                for pos, gurobi_var in enumerate(tmp):
-                    if pos in list(occurences[component_id].keys()):
-                        nb_copies_needed = occurences[component_id][pos]
-                        if nb_copies_needed >= 2:
-                            all_vars[component_id][pos]["current"] = 1
-                            for i in range(nb_copies_needed):
-                                all_vars[component_id][pos][i + 1] = self._model.addVar(vtype=GRB.BINARY,
-                                                                                        name=f"copy_{i + 1}_" + gurobi_var.VarName)
-                                self._model.addConstr(
-                                    all_vars[component_id][pos][0] >= all_vars[component_id][pos][i + 1])
-                            self._model.addConstr(
-                                sum(all_vars[component_id][pos][i + 1] for i in range(nb_copies_needed)) >=
-                                all_vars[component_id][pos][0])
-            else:
+            if component_id != cipher_id:
                 for pos in list(occurences[component_id].keys()):
                     all_vars[component_id][pos] = {}
-                    all_vars[component_id][pos][0] = self._model.addVar(vtype=GRB.BINARY,
-                                                                        name=component_id + f"[{pos}]")
-                    all_vars[component_id][pos]["current"] = 0
-                for pos in list(occurences[component_id].keys()):
-                    nb_copies_needed = occurences[component_id][pos]
-                    if nb_copies_needed >= 2:
-                        all_vars[component_id][pos]["current"] = 1
-                        for i in range(nb_copies_needed):
-                            all_vars[component_id][pos][i + 1] = self._model.addVar(vtype=GRB.BINARY,
-                                                                                    name=f"copy_{i + 1}_" + component_id + f"[{pos}]")
-                            self._model.addConstr(all_vars[component_id][pos][0] >= all_vars[component_id][pos][i + 1])
-                        self._model.addConstr(
-                            sum(all_vars[component_id][pos][i + 1] for i in range(nb_copies_needed)) >=
-                            all_vars[component_id][pos][0])
-            self._model.update()
+                    all_vars[component_id][pos]["original"] = self._model.addVar(vtype=GRB.BINARY,
+                                                                                 name=component_id + f"[{pos}]")
+                    all_vars[component_id][pos]["copies"] = []
+            else:
+                component = self._cipher.get_component_from_id(cipher_id)
+                for pos in range(component.output_bit_size):
+                    all_vars[component_id][pos] = {}
+                    all_vars[component_id][pos]["original"] = self._model.addVar(vtype=GRB.BINARY,
+                                                                                 name=component_id + f"[{pos}]")
+                    all_vars[component_id][pos]["copies"] = []
 
-        self._model.update()
-        # print("all_vars")
-        # print(all_vars)
         self._model.update()
         self._variables = all_vars
 
     def find_index_second_input(self):
         occurences = self._occurences
-        count = 0
-        for pos in list(occurences[self._cipher.inputs[0]].keys()):
-            if occurences[self._cipher.inputs[0]][pos] > 1:
-                count += occurences[self._cipher.inputs[0]][pos] + 1
-            else:
-                count += occurences[self._cipher.inputs[0]][pos]
-        return count
-
-    def get_output_bit_index_previous_component(self, output_bit_index_ciphertext, chosen_cipher_output=None):
-        if chosen_cipher_output != None:
-            pivot = 0
-            for comp in self._cipher.get_all_components():
-                for index, id_link in enumerate(comp.input_id_links):
-                    if chosen_cipher_output == id_link:
-                        output_id = comp.id
-                        block_needed = comp.input_bit_positions[index]
-                        input_id_link_needed = chosen_cipher_output
-                        output_bit_index_previous_comp = output_bit_index_ciphertext
-                        return output_id, output_bit_index_previous_comp, block_needed, input_id_link_needed, pivot
-        else:
-            output_id = self.get_cipher_output_component_id()
-            component = self._cipher.get_component_from_id(output_id)
-            pivot = 0
-            output_bit_index_previous_comp = output_bit_index_ciphertext
-            for index, block in enumerate(component.input_bit_positions):
-                if pivot <= output_bit_index_ciphertext < pivot + len(block):
-                    output_bit_index_previous_comp = block[output_bit_index_ciphertext - pivot]
-                    block_needed = block
-                    input_id_link_needed = component.input_id_links[index]
-                    break
-                pivot += len(block)
-
-            if input_id_link_needed[:5] == "inter":
-                pivot = 0
-                component_inter = self._cipher.get_component_from_id(input_id_link_needed)
-                for index, block in enumerate(component_inter.input_bit_positions):
-                    if pivot <= block_needed[output_bit_index_previous_comp] < pivot + len(block):
-                        output_bit_index_before_inter = block[block_needed[output_bit_index_previous_comp] - pivot]
-                        input_id_link_needed = component_inter.input_id_links[index]
-                        block_needed = block
-                        break
-                    pivot += len(block)
-                output_bit_index_previous_comp = output_bit_index_before_inter
-            return output_id, output_bit_index_previous_comp, block_needed, input_id_link_needed, pivot
+        return len(list(occurences[self._cipher.inputs[0]].keys()))
 
     def build_generic_model_for_specific_output_bit(self, output_bit_index_ciphertext, fixed_degree=None,
                                                     chosen_cipher_output=None):
         start = time.time()
-        output_id, output_bit_index_previous_comp, block_needed, input_id_link_needed, pivot = self.get_output_bit_index_previous_component(
-            output_bit_index_ciphertext, chosen_cipher_output)
 
-        self._output_id = output_id
-        self._output_bit_index_previous_comp = output_bit_index_previous_comp
-        self._block_needed = block_needed
-        self._input_id_link_needed = input_id_link_needed
+        if chosen_cipher_output != None:
+            input_id_link_needed = chosen_cipher_output
+        else:
+            input_id_link_needed = self.get_cipher_output_component_id()
+        component = self._cipher.get_component_from_id(input_id_link_needed)
+        block_needed = list(range(component.output_bit_size))
+        output_bit_index_previous_comp = output_bit_index_ciphertext
 
         G = create_networkx_graph_from_input_ids(self._cipher)
         predecessors = list(_get_predecessors_subgraph(G, [input_id_link_needed]))
@@ -662,11 +860,10 @@ class MilpDivisionTrailModel():
 
         var_from_block_needed = []
         for i in block_needed:
-            var_from_block_needed.append(self._variables[input_id_link_needed][i][0])
+            var_from_block_needed.append(self._variables[input_id_link_needed][i]["original"])
 
-        output_vars = self._model.addVars(list(range(pivot, pivot + len(block_needed))), vtype=GRB.BINARY,
-                                          name=output_id)
-        self._variables[output_id] = output_vars
+        output_vars = self._model.addVars(list(range(len(block_needed))), vtype=GRB.BINARY, name="output")
+        self._variables["output"] = output_vars
         output_vars = list(output_vars.values())
         self._model.update()
 
@@ -688,6 +885,7 @@ class MilpDivisionTrailModel():
                 sum(plaintext_vars[i] for i in range(self._cipher.inputs_bit_size[0])) == fixed_degree)
 
         self.set_unused_variables_to_zero()
+        self.create_all_copies()
         self._model.update()
         end = time.time()
         building_time = end - start
@@ -695,62 +893,44 @@ class MilpDivisionTrailModel():
             print(f"########## building_time : {building_time}")
         self._model.update()
 
+    def _prefix_for_input(self, name: str) -> str:
+        return name[:1].lower()
+
     def get_solutions(self):
         start = time.time()
-        index_second_input = self.find_index_second_input()
-        nb_inputs_used = 0
-        for input_id in self._cipher.inputs:
-            if input_id in list(self._occurences.keys()):
-                nb_inputs_used += 1
-        if nb_inputs_used == 2:
-            max_input_bit_pos = index_second_input + len(list(self._occurences[self._cipher.inputs[1]].keys()))
-            first_input_bit_positions = list(self._occurences[self._cipher.inputs[0]].keys())
-            second_input_bit_positions = list(self._occurences[self._cipher.inputs[1]].keys())
-        else:
-            max_input_bit_pos = index_second_input
-            first_input_bit_positions = list(self._occurences[self._cipher.inputs[0]].keys())
-
         solCount = self._model.SolCount
-        monomials = []
-        for sol in range(solCount):
-            self._model.setParam(GRB.Param.SolutionNumber, sol)
-            values = self._model.Xn
+        # collect all original input vars with a stable order
+        inputs = []  # list of (input_priority, prefix, bit_index, var)
+        for prio, inp_name in enumerate(self._cipher.inputs):
+            if inp_name not in self._variables:
+                continue
+            prefix = self._prefix_for_input(inp_name)
+            for idx, d in self._variables[inp_name].items():
+                inputs.append((prio, prefix, idx, d["original"]))
+        # deterministic ordering: by input list order, then prefix, then bit index
+        inputs.sort(key=lambda t: (t[0], t[1], t[2]))
 
-            tmp = ""
-            for index, v in enumerate(values[:max_input_bit_pos]):
-                if v == 1:
-                    if nb_inputs_used > 1:
-                        if index < len(list(self._occurences[self._cipher.inputs[0]].keys())):
-                            tmp += self._cipher.inputs[0][0] + str(first_input_bit_positions[index])
-                        elif index_second_input <= index < index_second_input + len(
-                                list(self._occurences[self._cipher.inputs[1]].keys())):
-                            tmp += self._cipher.inputs[1][0] + str(
-                                second_input_bit_positions[abs(index_second_input - index)])
-                    else:
-                        if index < len(list(self._occurences[self._cipher.inputs[0]].keys())):
-                            tmp += self._cipher.inputs[0][0] + str(first_input_bit_positions[index])
-            if 1 not in values[:max_input_bit_pos]:
-                tmp += str(1)
+        mono_set = set()
+        for sn in range(solCount):
+            self._model.setParam(GRB.Param.SolutionNumber, sn)
+            toks = []
+            for _, prefix, idx, var in inputs:
+                if var.Xn > 0.5:
+                    toks.append(f"{prefix}{idx}")
+            mono = "1" if not toks else "".join(toks)
+            if mono in mono_set:
+                mono_set.remove(mono)
             else:
-                if nb_inputs_used == 1:
-                    input1_prefix = self._cipher.inputs[0][0]
-                    l = tmp.split(input1_prefix)[1:]
-                    sorted_l = sorted(l, key=lambda x: (x == '', int(x) if x else 0))
-                    l = [''] + sorted_l
-                    tmp = input1_prefix.join(l)
-
-            if tmp in monomials:
-                monomials.remove(tmp)
-            else:
-                monomials.append(tmp)
-
+                mono_set.add(mono)
+        # return a list (optionally sorted for stable output)
         end = time.time()
         printing_time = end - start
         if verbosity:
             print('Number of solutions (might cancel each other) found: ' + str(solCount))
             print(f"########## printing_time : {printing_time}")
-            print(f'Number of monomials found: {len(monomials)}')
-        return monomials
+            print(f'Number of monomials found: {len(mono_set)}')
+        monomials_list = sorted(mono_set)
+        return self.anf_list_to_boolean_poly(monomials_list)
 
     def optimize_model(self):
         start = time.time()
@@ -762,40 +942,154 @@ class MilpDivisionTrailModel():
             print(f"########## solving_time : {solving_time}")
 
     def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None, chosen_cipher_output=None):
+        """
+            from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            cipher = SimonBlockCipher(number_of_rounds=1)
+            from claasp.cipher_modules.division_trail_search_in_PR import *
+            milp = MilpDivisionTrailModel(cipher)
+            milp.find_anf_of_specific_output_bit(0)
+        """
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, chosen_cipher_output)
-        self._model.setParam("PoolSolutions", 200000000)  # 200000000 to be large
+        self._model.setParam("PoolSolutions",
+                             200000000)  # 10000, 200000000 to be large = max number of monomials that can be found
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
-        self._model.write("division_trail_model.lp")
 
+        self._model.write("division_trail_model.lp")
         self.optimize_model()
         return self.get_solutions()
 
-    def check_presence_of_particular_monomial_in_specific_anf(self, monomial, output_bit_index, fixed_degree=None,
-                                                              chosen_cipher_output=None):
+    def check_anf_correctness(self, output_bit_index, num_tests=10):
+        """
+        Check correctness of the ANF of a specific output bit.
+
+        Example:
+            from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            cipher = SimonBlockCipher(number_of_rounds=2)
+            from claasp.cipher_modules.division_trail_search_in_PR import *
+            milp = MilpDivisionTrailModel(cipher)
+            milp.check_anf_correctness(0)
+        """
+
+        # 1) generate random test vectors for *all* inputs
+        test_vectors = []
+        for _ in range(num_tests):
+            assignment = {}
+            for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+                assignment[inp] = random.getrandbits(size)
+            test_vectors.append(assignment)
+
+        # 2) generate ANF for the given output bit
+        anf_poly = self.find_anf_of_specific_output_bit(output_bit_index)
+        print("ANF:", anf_poly) if verbosity else None
+
+        # Boolean ring
+        B = self.get_boolean_polynomial_ring()
+
+        # helper: evaluate polynomial with given input assignment
+        def evaluate_poly(assignments):
+            var_values = {}
+            for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+                val = assignments[inp]
+                for i in range(size):
+                    # MSB-first convention: inp0 = MSB, inp{n-1} = LSB
+                    bit = (val >> (size - 1 - i)) & 1
+                    var_values[f"{inp[0]}{i}"] = bit
+            return int(GF(2)(anf_poly(**var_values)))
+
+        # 3) evaluate & check
+        output_size = self._cipher.output_bit_size
+        for trial, assign in enumerate(test_vectors):
+            print(f"trial = {trial}") if verbosity else None
+            cipher_output = self._cipher.evaluate(
+                [assign[inp] for inp in self._cipher.inputs]
+            )
+
+            # Correct: output_bit_index=0 = MSB
+            real_index = output_size - 1 - output_bit_index
+            expected_bit = (cipher_output >> real_index) & 1
+
+            computed_bit = evaluate_poly(assign)
+
+            if expected_bit != computed_bit:
+                return False
+        return True
+
+    def var_list_to_input_positions(self, var_list):
+        """
+        Map variables like ['p1', 'p8'] to structured form
+        [('plaintext', 1), ('plaintext', 8)] based on self._cipher.inputs.
+        """
+
+        # Build a map: first_letter -> (input_name, bit_size)
+        input_map = {}
+        for index, input_name in enumerate(self._cipher.inputs):
+            bit_size = self._cipher.inputs_bit_size[index]
+            prefix = input_name[0]  # e.g., 'p' for plaintext, 'k' for key
+            input_map[prefix] = (input_name, bit_size)
+
+        results = []
+        for var in var_list:
+            prefix = var[0]
+            index = int(var[1:])
+            input_name, bit_size = input_map[prefix]
+
+            if index >= bit_size:
+                raise ValueError(f"Index {index} out of range for input '{input_name}' (size {bit_size})")
+
+            results.append((input_name, index))
+
+        return results
+
+    def find_superpoly_of_specific_output_bit(self, cube, output_bit_index, chosen_cipher_output=None):
+        """
+        from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+        cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=590)
+        from claasp.cipher_modules.division_trail_search_in_PR import *
+        milp = MilpDivisionTrailModel(cipher)
+        milp.find_superpoly_of_specific_output_bit(cube=["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"], output_bit_index=0)
+        """
+        fixed_degree = None
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, chosen_cipher_output)
         self._model.setParam("PoolSolutions", 200000000)  # 200000000 to be large
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
 
-        for term in monomial:
+        cube_verbose = self.var_list_to_input_positions(cube)
+        for term in cube_verbose:
             var_term = self._model.getVarByName(f"{term[0]}[{term[1]}]")
+            self._model.update()
             self._model.addConstr(var_term == 1)
         self._model.update()
         self._model.write("division_trail_model.lp")
 
         self.optimize_model()
-        return self.get_solutions()
+        poly = self.get_solutions()
 
-    def check_presence_of_particular_monomial_in_all_anf(self, monomial, fixed_degree=None,
-                                                         chosen_cipher_output=None):
-        s = ""
-        for term in monomial:
-            s += term[0][0] + str(term[1])
+        assignments = {v: 1 for v in cube}
+        poly_sub = poly.subs(assignments)
+        return poly_sub
+
+    def find_superpoly_of_all_output_bits(self, cube, chosen_cipher_output=None):
+        """
+        from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        cipher = SimonBlockCipher(number_of_rounds=2)
+        from claasp.cipher_modules.division_trail_search_in_PR import *
+        milp = MilpDivisionTrailModel(cipher)
+        milp.find_superpoly_of_all_output_bits(cube=["p1"])
+        """
+        superpolies = []
         for i in range(self._cipher.output_bit_size):
-            print(f"\nSearch of {s} in anf {i} :")
-            self.check_presence_of_particular_monomial_in_specific_anf(monomial, i, fixed_degree,
-                                                                       chosen_cipher_output)
+            print(f"\nSearch of superpoly based on the cube {cube} in anf {i} :") if verbosity else None
+            superpolies.append(self.find_superpoly_of_specific_output_bit(cube, i, chosen_cipher_output))
+        return superpolies
 
-    def find_degree_of_specific_output_bit(self, output_bit_index, chosen_cipher_output=None, cube_index=[]):
+    def find_degree_of_specific_output_bit(self, output_bit_index, chosen_cipher_output=None):
+        """
+        from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        cipher = SimonBlockCipher(number_of_rounds=2)
+        from claasp.cipher_modules.division_trail_search_in_PR import *
+        milp = MilpDivisionTrailModel(cipher)
+        milp.find_degree_of_specific_output_bit(0)
+        """
         fixed_degree = None
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, chosen_cipher_output)
         self._model.setParam(GRB.Param.PoolSearchMode, 1)
@@ -804,18 +1098,21 @@ class MilpDivisionTrailModel():
         self._model.setParam("MIPGap", 0)  # when set to 0, best solution = optimal solution
         self._model.setParam('Cuts', 2)
 
-        index_plaintext = self._cipher.inputs.index("plaintext")
-        plaintext_bit_size = self._cipher.inputs_bit_size[index_plaintext]
-        p = []
-        nb_plaintext_bits_used = len(list(self._occurences["plaintext"].keys()))
-        for i in range(nb_plaintext_bits_used):
-            p.append(self._model.getVarByName(f"plaintext[{i}]"))
-        self._model.setObjective(sum(p[i] for i in range(nb_plaintext_bits_used)), GRB.MAXIMIZE)
+        # Collect indices of all inputs that are not "key"
+        non_key_inputs = [
+            (inp, size)
+            for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
+            if inp != "key"
+        ]
 
-        if cube_index:
-            for i in range(plaintext_bit_size):
-                if i not in cube_index:
-                    self._model.addConstr(p[i] == 0)
+        # Build the list of variables
+        vars_non_key = []
+        for inp, size in non_key_inputs:
+            for i in range(size):
+                vars_non_key.append(self._model.getVarByName(f"{inp}[{i}]"))
+
+        # Set objective
+        self._model.setObjective(sum(vars_non_key), GRB.MAXIMIZE)
 
         self._model.update()
         self._model.write("division_trail_model.lp")
@@ -831,9 +1128,65 @@ class MilpDivisionTrailModel():
         self._used_variables = []
         self._variables_as_list = []
         self._unused_variables = []
+        self._used_predecessors_sorted = None
+        self._constants = {}
+        self._nb_clocks = None
 
     def find_degree_of_all_output_bits(self, chosen_cipher_output=None):
+        """
+        from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        cipher = SimonBlockCipher(number_of_rounds=4)
+        from claasp.cipher_modules.division_trail_search_in_PR import *
+        milp = MilpDivisionTrailModel(cipher)
+        milp.find_degree_of_all_output_bits()
+        """
+        degrees = []
         for i in range(self._cipher.output_bit_size):
             self.re_init()
             degree = self.find_degree_of_specific_output_bit(i, chosen_cipher_output)
-            print(f"Degree of anf corresponding to output bit at position {i} = {degree}\n")
+            degrees.append(degree)
+        return degrees
+
+    def anf_list_to_boolean_poly(self, anf_list):
+        # Collect all variable names from the cipher inputs
+        variables = []
+        for index, input_name in enumerate(self._cipher.inputs):
+            bit_size = self._cipher.inputs_bit_size[index]
+            variables.extend([f"{input_name[0]}{i}" for i in range(bit_size)])
+
+        # Create Boolean polynomial ring
+        B = BooleanPolynomialRing(names=variables)
+        var_map = {str(v): B(str(v)) for v in variables}
+
+        # Build polynomial
+        poly = B(0)
+        for term in anf_list:
+            if term == "1":  # constant term
+                term_poly = B(1)
+            else:
+                i = 0
+                factors = []
+                while i < len(term):
+                    var = term[i]
+                    i += 1
+                    digits = ''
+                    while i < len(term) and term[i].isdigit():
+                        digits += term[i]
+                        i += 1
+                    factors.append(var_map[f"{var}{digits}"])
+                # Multiply factors if more than one
+                term_poly = factors[0]
+                for f in factors[1:]:
+                    term_poly *= f
+            # Add to polynomial
+            poly += term_poly
+
+        return poly
+
+    def get_boolean_polynomial_ring(self):
+        variables = []
+        for index, input_name in enumerate(self._cipher.inputs):
+            bit_size = self._cipher.inputs_bit_size[index]
+            variables.extend([f"{input_name[0]}{i}" for i in range(bit_size)])
+        R = BooleanPolynomialRing(names=variables)
+        return R
