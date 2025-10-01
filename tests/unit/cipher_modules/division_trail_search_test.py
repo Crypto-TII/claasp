@@ -22,8 +22,8 @@ def test_find_anf_of_specific_output_bit():
     cipher = GimliPermutation(number_of_rounds=1)
     milp = MilpDivisionTrailModel(cipher)
     R = milp.get_boolean_polynomial_ring()
-    poly = milp.find_anf_of_specific_output_bit(0)
-    expected = R("p59*p172 + p169 + p288 + 1")
+    poly = milp.find_anf_of_specific_output_bit(0, chosen_cipher_output="xor_0_16")
+    expected = R("p24 + p25*p257 + p25 + p137 + p257")
     assert poly == expected
 
     cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=13)
@@ -33,17 +33,19 @@ def test_find_anf_of_specific_output_bit():
     expected = R("k0 + k27 + i9 + i24")
     assert poly == expected
 
+    cipher = AsconPermutation(number_of_rounds=1)
+    milp = MilpDivisionTrailModel(cipher)
+    R = milp.get_boolean_polynomial_ring()
+    poly = milp.find_anf_of_specific_output_bit(0, chosen_cipher_output="xor_0_15")
+    expected = R("p0 + p64*p128 + p128 + p256")
+    assert poly == expected
+
 def test_find_degree_of_specific_output_bit():
     # Return the degree of the anf of the chosen output bit
     cipher = PresentBlockCipher(number_of_rounds=1)
     milp = MilpDivisionTrailModel(cipher)
-    degree = milp.find_degree_of_specific_output_bit(0)
+    degree = milp.find_degree_of_specific_output_bit(0, chosen_cipher_output="linear_layer_0_17")
     assert degree == 3
-
-    cipher = SpeckBlockCipher(number_of_rounds=1)
-    milp = MilpDivisionTrailModel(cipher)
-    degree = milp.find_anf_of_specific_output_bit(14)
-    assert degree == 2
 
 def test_find_superpoly_of_specific_output_bit():
     cipher = SimonBlockCipher(number_of_rounds=3)
@@ -54,7 +56,7 @@ def test_find_superpoly_of_specific_output_bit():
     assert superpoly == expected
 
 def test_check_anf_correctness():
-    cipher = AsconPermutation(number_of_rounds=1)
+    cipher = SpeckBlockCipher(number_of_rounds=1)
     milp = MilpDivisionTrailModel(cipher)
-    check = milp.find_anf_of_specific_output_bit(64)
+    check = milp.check_anf_correctness(14)
     assert check == True

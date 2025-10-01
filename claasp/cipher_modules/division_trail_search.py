@@ -27,9 +27,8 @@ from gurobipy import Model, GRB
 import os
 import random
 from sage.all import GF
-from pprint import pprint
 
-verbosity = False
+verbosity = True
 
 class MilpDivisionTrailModel():
     """

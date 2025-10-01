@@ -67,7 +67,7 @@ ENV SOPLEX_HOME="/opt/soplex-release-603/build"
 #    && cd HiGHS \
 #    && cmake -S. -B build \
 #    && cmake --build build --parallel
-#
+
 #ENV PATH="${PATH}:/opt/HiGHS/build/bin"
 
 WORKDIR /opt
