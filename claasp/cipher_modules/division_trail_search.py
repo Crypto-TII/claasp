@@ -25,7 +25,7 @@ from claasp.cipher_modules.graph_generator import create_networkx_graph_from_inp
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
 from gurobipy import Model, GRB
 import os
-import random
+import secrets
 from sage.all import GF
 
 verbosity = True
@@ -974,7 +974,7 @@ class MilpDivisionTrailModel():
         for _ in range(num_tests):
             assignment = {}
             for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-                assignment[inp] = random.getrandbits(size)
+                assignment[inp] = secrets.randbits(size)
             test_vectors.append(assignment)
 
         # 2) generate ANF for the given output bit
