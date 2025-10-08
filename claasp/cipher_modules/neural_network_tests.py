@@ -498,11 +498,11 @@ class NeuralNetworkTests:
             x_eval, y_eval = data_generator(samples=testing_samples, nr=nr)
             if save_prefix is None:
                 h = neural_network.fit(x, y, epochs=int(epochs), batch_size=bs,
-                                       validation_data=(x_eval, y_eval))
+                                       validation_data=(x_eval, y_eval), verbose=2)
             else:
                 h = neural_network.fit(x, y, epochs=int(epochs), batch_size=bs,
                                                validation_data=(x_eval, y_eval),
-                                               callbacks=[self.make_checkpoint(save_prefix + str(nr)+'.h5')])
+                                               callbacks=[self.make_checkpoint(save_prefix + str(nr)+'.h5')], verbose=2)
             acc[nr] = np.max(h.history["val_acc"])
             print(f'Validation accuracy at {nr} rounds :{acc[nr]}')
             nr +=1
