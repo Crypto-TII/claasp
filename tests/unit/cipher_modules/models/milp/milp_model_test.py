@@ -87,7 +87,7 @@ def test_fix_variables_value_constraints():
     assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.get_all_components_ids()[-1]]['value']
 
     fixed_values = [set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
-    trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values)
+    trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values, solver_name='SCIP_EXT')
     assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.get_all_components_ids()[-1]]['value']
 
     fixed_values = [set_fixed_variables('plaintext','equal',range(32),[0]*31+[1])]
