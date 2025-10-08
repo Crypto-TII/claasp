@@ -391,6 +391,8 @@ class NeuralNetworkTests:
 
     def get_neural_network(self, network_name, input_size, word_size=None, depth=1):
         from tensorflow.keras.optimizers import Adam
+        if input_size is None:
+            input_size = self.cipher.output_bit_size
         input_size = int(input_size)
         word_size = int(word_size)
         depth = int(depth)
