@@ -391,15 +391,14 @@ class NeuralNetworkTests:
 
     def get_neural_network(self, network_name, input_size, word_size=None, depth=1):
         from tensorflow.keras.optimizers import Adam
-        if input_size is None:
+        if input_size is None or input_size==0:
             input_size = self.cipher.output_bit_size
+        if word_size is None or word_size == 0:
+            word_size = self.cipher.output_bit_size
         input_size = int(input_size)
         word_size = int(word_size)
         depth = int(depth)
         if network_name == 'gohr_resnet':
-            if word_size is None or word_size == 0:
-                print("Word size not specified for ", network_name, ", defaulting to ciphertext size...")
-                word_size = self.cipher.output_bit_size
             neural_network = self._make_resnet(word_size=word_size, input_size=input_size, depth=depth)
         elif network_name == 'dbitnet':
             neural_network = self._make_dbitnet(input_size=input_size)
