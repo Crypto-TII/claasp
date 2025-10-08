@@ -427,15 +427,15 @@ class SatModel:
                 variables_ids = []
                 if is_equal:
                     for position, value in zip(bit_positions, variables_values):
-                        constraints.append(f"-{component_id}_{position} {value[0]}_{value[1]}")
-                        constraints.append(f"{component_id}_{position} -{value[0]}_{value[1]}")
+                        constraints.extend(utils.cnf_equivalent(
+                            [f"{component_id}_{position}", f"{value[0]}_{value[1]}"]
+                        ))
                 else:
                     for position, value in zip(bit_positions, variables_values):
-                        constraints.append(f"{component_id}_fix_{position} {component_id}_{position} -{value[0]}_{value[1]}")
-                        constraints.append(f"{component_id}_fix_{position} -{component_id}_{position} {value[0]}_{value[1]}")
-                        constraints.append(f"-{component_id}_fix_{position} {component_id}_{position} {value[0]}_{value[1]}")
-                        constraints.append(f"-{component_id}_fix_{position} -{component_id}_{position} -{value[0]}_{value[1]}")
-                    constraints.append(" ".join([f"{component_id}_fix_{position}" for position in bit_positions]))
+                        constraints.extend(utils.cnf_xor(
+                            f"{component_id}_fix_{position}", [f"{component_id}_{position}", f"{value[0]}_{value[1]}"]
+                        ))
+                    constraints.append(" ".join(f"{component_id}_fix_{position}" for position in bit_positions))
 
             else:
                 component_id = variable["component_id"]
