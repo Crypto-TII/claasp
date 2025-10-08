@@ -391,6 +391,9 @@ class NeuralNetworkTests:
 
     def get_neural_network(self, network_name, input_size, word_size=None, depth=1):
         from tensorflow.keras.optimizers import Adam
+        input_size = int(input_size)
+        word_size = int(word_size)
+        depth = int(depth)
         if network_name == 'gohr_resnet':
             if word_size is None or word_size == 0:
                 print("Word size not specified for ", network_name, ", defaulting to ciphertext size...")
