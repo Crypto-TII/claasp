@@ -721,6 +721,7 @@ def incompatibility(incompatibility_var, forward_var, backward_var):
 
     EXAMPLES::
 
+        sage: from claasp.cipher_modules.models.sat.utils.utils import incompatibility
         sage: incompatibility_var = 'i'
         sage: forward_var = ('f0', 'f1')
         sage: backward_var = ('b0', 'b1')
