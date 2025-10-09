@@ -24,7 +24,7 @@ from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_trunc
 )
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.utils import set_component_solution
-from claasp.name_mappings import CIPHER_OUTPUT, IMPOSSIBLE_XOR_DIFFERENTIAL
+from claasp.name_mappings import CIPHER_OUTPUT, IMPOSSIBLE_XOR_DIFFERENTIAL, INPUT_KEY
 
 
 class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedXorDifferentialModel):
@@ -33,6 +33,7 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
         self._forward_cipher = None
         self._backward_cipher = None
         self._middle_round = None
+        self._incompatible_components = None
 
     def build_bitwise_impossible_xor_differential_trail_model(self, fixed_variables=[]):
         """
@@ -223,6 +224,8 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
             middle, self._cipher.number_of_rounds - 1, keep_key_schedule=False
         )
 
+        self._incompatible_components = component_id_list
+
         suffix = "_backward"
         self._backward_cipher = backward_cipher.add_suffix_to_components(
             suffix, backward_cipher.get_all_components_ids()
@@ -234,12 +237,10 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
         for cid in component_id_list:
             fwd_comp = self._forward_cipher.get_component_from_id(cid)
             out_size, fwd_out_ids_0, fwd_out_ids_1 = fwd_comp._generate_output_double_ids()
-            print(fwd_out_ids_0)
 
             backward_cid = cid + "_backward"
             bwd_comp = self._backward_cipher.get_component_from_id(backward_cid)
             bwd_in_ids_0, bwd_in_ids_1 = bwd_comp._generate_input_double_ids()
-            print(bwd_in_ids_0)
 
             for i in range(out_size):
                 inv_id = f"incompatibility_{cid}_{i}"
@@ -317,6 +318,7 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
             ]
 
         incompat_ids = []
+
         for comp in backward_components:
             comp_id = comp.id
             try:
@@ -325,20 +327,46 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
                 # Skip this backward component because we can't map it to a forward component (es: plaintext_backward).
                 continue
 
-            out_size, fwd_out_ids_0, fwd_out_ids_1 = fwd_comp._generate_output_double_ids()
+            _, fwd_out_ids_0, fwd_out_ids_1 = fwd_comp._generate_output_double_ids()
+            forward_pairs = list(zip(fwd_out_ids_0, fwd_out_ids_1))
 
-            bwd_in_ids_0 = ["_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in fwd_out_ids_0]
-            bwd_in_ids_1 = ["_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in fwd_out_ids_1]
+            if include_all_components:
+                bwd_in_ids_0, bwd_in_ids_1 = comp._generate_input_double_ids()
 
-            for i in range(out_size):
+                inputs_to_be_kept = []
+                unique_input_bases = ["_".join(i.split("_")[:-1]) for i in set(comp.input_id_links)]
+                for input_base in unique_input_bases:
+                    if INPUT_KEY not in input_base:
+                        try:
+                            input_comp = self._cipher.get_component_from_id(input_base)
+                        except ValueError:
+                            continue
+                        linked_backward_ids = [link + "_backward" for link in input_comp.input_id_links]
+                        if linked_backward_ids == [comp_id]:
+                            inputs_to_be_kept.extend([_ for _ in bwd_in_ids_0 + bwd_in_ids_1 if input_base in _])
+
+                if inputs_to_be_kept:
+                    bwd_ids_filtered_0 = [id_ for id_ in bwd_in_ids_0 if id_ in inputs_to_be_kept]
+                    bwd_ids_filtered_1 = [id_ for id_ in bwd_in_ids_1 if id_ in inputs_to_be_kept]
+                else:
+                    bwd_ids_filtered_0 = bwd_in_ids_0
+                    bwd_ids_filtered_1 = bwd_in_ids_1
+
+                backward_pairs = list(zip(bwd_ids_filtered_0, bwd_ids_filtered_1))
+
+            else:
+                bwd_out_ids_0 = [
+                    "_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in fwd_out_ids_0
+                ]
+                bwd_out_ids_1 = [
+                    "_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in fwd_out_ids_1
+                ]
+                backward_pairs = list(zip(bwd_out_ids_0, bwd_out_ids_1))
+
+            for i, (fwd_pair, bwd_pair) in enumerate(zip(forward_pairs, backward_pairs)):
                 inv_id = f"incompatibility_{fwd_comp.id}_{i}"
                 incompat_ids.append(inv_id)
-                self._model_constraints.extend(
-                    utils.incompatibility(
-                        inv_id, (fwd_out_ids_0[i], fwd_out_ids_1[i]), (bwd_in_ids_0[i], bwd_in_ids_1[i])
-                    )
-                )
-
+                self._model_constraints.extend(utils.incompatibility(inv_id, fwd_pair, bwd_pair))
         if incompat_ids:
             self._model_constraints.append(" ".join(incompat_ids))
 
@@ -360,39 +388,39 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
 
         components_solutions = self._get_cipher_inputs_components_solutions_double_ids(variable2value)
 
-        if not incompatible_components:
-            for component in self._cipher.get_all_components():
-                value = self._get_component_value_double_ids(component, variable2value)
-                components_solutions[component.id] = set_component_solution(value)
-            return components_solutions, None
-
         incompatible_rounds = {}
         for comp_id in incompatible_components:
             round_num = self._cipher.get_round_from_component_id(comp_id)
             incompatible_rounds.setdefault(round_num, set()).add(comp_id)
 
-        first_incompatible_round = min(incompatible_rounds)
-
         start_backward = False
+        if self._incompatible_components is not None:
+            all_backward_input_ids = set()
+            for i_component in self._incompatible_components:
+                backward_component = self._backward_cipher.get_component_from_id(i_component + "_backward")
+                input_ids = backward_component.input_id_links
+                all_backward_input_ids.update(input_ids)
+
         for component in self._cipher.get_all_components():
             comp_id = component.id
             comp_round = self._cipher.get_round_from_component_id(comp_id)
             if self._forward_cipher == self._cipher:
-                if comp_round < first_incompatible_round:
-                    value = self._get_component_value_from_cipher(component, variable2value, "forward")
-                    components_solutions[comp_id] = set_component_solution(value)
-
-                elif comp_round in incompatible_rounds and comp_id in incompatible_rounds[comp_round]:
+                if comp_round in incompatible_rounds and comp_id in incompatible_rounds[comp_round]:
                     fwd = self._get_component_value_from_cipher(component, variable2value, "forward")
                     bwd = self._get_component_value_from_cipher(component, variable2value, "backward")
                     components_solutions[comp_id] = set_component_solution(fwd)
                     components_solutions[comp_id + "_backward"] = set_component_solution(bwd)
                     start_backward = True
-
                 elif start_backward:
                     bwd = self._get_component_value_from_cipher(component, variable2value, "backward")
                     components_solutions[comp_id + "_backward"] = set_component_solution(bwd)
-
+                else:
+                    value = self._get_component_value_double_ids(component, variable2value)
+                    components_solutions[comp_id] = set_component_solution(value)
+            elif self._incompatible_components != None:
+                if comp_id + "_backward" in all_backward_input_ids:
+                    bwd = self._get_component_value_from_cipher(component, variable2value, "backward")
+                    components_solutions[comp_id + "_backward"] = set_component_solution(bwd)
                 else:
                     value = self._get_component_value_double_ids(component, variable2value)
                     components_solutions[comp_id] = set_component_solution(value)
@@ -402,12 +430,6 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
                     bwd = self._get_component_value_from_cipher(component, variable2value, "backward")
                     components_solutions[comp_id] = set_component_solution(fwd)
                     components_solutions[comp_id + "_backward"] = set_component_solution(bwd)
-                    start_backward = True
-
-                elif start_backward and comp_round in incompatible_rounds:
-                    bwd = self._get_component_value_from_cipher(component, variable2value, "backward")
-                    components_solutions[comp_id + "_backward"] = set_component_solution(bwd)
-
                 else:
                     value = self._get_component_value_double_ids(component, variable2value)
                     components_solutions[comp_id] = set_component_solution(value)
