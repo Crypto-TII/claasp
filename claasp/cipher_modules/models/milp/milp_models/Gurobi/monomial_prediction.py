@@ -28,15 +28,16 @@ import os
 import secrets
 from sage.all import GF
 
-verbosity = True
+verbosity = False
 
-class MilpDivisionTrailModel():
+class MilpMonomialPredictionModel():
     """
 
     Given a number of rounds of a chosen cipher and a chosen output bit, this module produces a model that can either:
-    - obtain the ANF of this chosen output bit,
-    - find the degree of this ANF,
-    - or check the presence or absence of a specified monomial.
+    - find the ANF of this chosen output bit,
+    - find an upper bound of this ANF,
+    - find the exact degree of this ANF (slower),
+    - find the superpoly of this ANF given a chosen cube.
 
     This module can only be used if the user possesses a Gurobi license.
 
@@ -52,7 +53,17 @@ class MilpDivisionTrailModel():
         self._unused_variables = []
         self._used_predecessors_sorted = None
         self._constants = {}
-        self._nb_clocks = None
+
+    def build_gurobi_model(self):
+        if os.getenv('GUROBI_COMPUTE_SERVER') is not None:
+            env = Env(empty=True)
+            env.setParam('ComputeServer', os.getenv('GUROBI_COMPUTE_SERVER'))
+            env.start()
+            model = Model(env=env)
+        else:
+            model = Model()
+        model.Params.LogToConsole = 0
+        self._model = model
 
     def get_all_variables_as_list(self):
         for component_id in list(self._variables.keys())[:-1]:
@@ -85,12 +96,6 @@ class MilpDivisionTrailModel():
                         tmp1 = v.VarName.split("_")[(i + 2):]
                         tmp2 = "_".join(tmp1)
                         self._used_variables.append(tmp2)
-                    if "fsr" in v.VarName.split("_"):
-                        lst = v.VarName.split("_")
-                        last_index = len(lst) - 1 - lst[::-1].index('fsr')
-                        tmp1 = v.VarName.split("_")[last_index + 1:]
-                        tmp2 = "_".join(tmp1)
-                        self._used_variables.append(tmp2)
                 self._unused_variables = [x for x in self._unused_variables if x != v.VarName]
             except:
                 continue
@@ -106,17 +111,6 @@ class MilpDivisionTrailModel():
                         self._model.addConstr(original_var >= copies[i])
                     self._model.addConstr(sum(copies[i] for i in range(len(copies))) >= original_var)
                 self._model.update()
-
-    def build_gurobi_model(self):
-        env = Env(empty=True)
-        env.setParam('ComputeServer', os.getenv('GUROBI_COMPUTE_SERVER'))
-        env.start()
-        # Create a new model
-        model = Model("basic_model", env=env)
-        # model = Model()
-        model.Params.LogToConsole = 0
-        # model.Params.Threads = 16
-        self._model = model
 
     def get_anfs_from_sbox(self, component):
         anfs = []
@@ -328,19 +322,14 @@ class MilpDivisionTrailModel():
         output_vars = self.get_output_vars(component)
         output_size = component.output_bit_size
 
-        # Initialize storage per output bit
         var_inputs_per_bit = [[] for _ in range(output_size)]
         const_bits_per_bit = [[] for _ in range(output_size)]
 
-        # Keep track of output bit position for each chunk
         current_output_index = 0
-
         for input_idx, input_name in enumerate(component.input_id_links):
             bit_positions = component.input_bit_positions[input_idx]
 
             for local_idx, pos in enumerate(bit_positions):
-                # Map this input bit to the correct output bit
-                # Sequential mapping per chunk (works for small or large chunks)
                 output_index = current_output_index % output_size
 
                 if input_name.startswith("constant"):
@@ -349,7 +338,6 @@ class MilpDivisionTrailModel():
                              (const_comp.output_bit_size - 1 - pos)) & 1
                     const_bits_per_bit[output_index].append(value)
                 else:
-                    # Create a copy of the variable for this XOR instance
                     copy_index = len(self._variables[input_name][pos]["copies"])
                     copy_var = self._model.addVar(
                         vtype=GRB.BINARY,
@@ -357,24 +345,18 @@ class MilpDivisionTrailModel():
                     )
                     self._variables[input_name][pos]["copies"].append(copy_var)
                     var_inputs_per_bit[output_index].append(copy_var)
-
-                current_output_index += 1  # move to next output bit for sequential mapping
+                current_output_index += 1
 
         self._model.update()
-
-        # Add XOR constraints per output bit
         for bit_idx in range(output_size):
             vars_sum = sum(var_inputs_per_bit[bit_idx])
             for v in var_inputs_per_bit[bit_idx]:
                 self.set_as_used_variables([v])
-
             const_val = sum(const_bits_per_bit[bit_idx]) % 2
-
             if const_val == 0:
                 self._model.addConstr(output_vars[bit_idx] == vars_sum)
             else:
                 self._model.addConstr(output_vars[bit_idx] >= vars_sum)
-
         self._model.update()
 
     def get_output_vars(self, component):
@@ -398,71 +380,59 @@ class MilpDivisionTrailModel():
         return input_vars_concat
 
     def add_modadd_constraints(self, component):
-        # constraints are taken from https://www.iacr.org/archive/asiacrypt2017/106240224/106240224.pdf
+        """
+        Constraints are taken from https://eprint.iacr.org/2024/1335.pdf
+        """
         output_vars = self.get_output_vars(component)
-
-        input_vars_concat = []
-        for index, input_name in enumerate(component.input_id_links):
-            for pos in component.input_bit_positions[index]:
-                copy_index = len(self._variables[input_name][pos]["copies"])
-                copy = self._model.addVar(vtype=GRB.BINARY, name=f"copy_{copy_index}_{input_name}[{pos}]")
-                self._variables[input_name][pos]["copies"].append(copy)
-                input_vars_concat.append(copy)
-                self._model.update()
-                self.set_as_used_variables([copy])
-
-        len_concat = len(input_vars_concat)
-        n = int(len_concat / 2)
-        copies = {"a": {}, "b": {}}
-        copies["a"][n - 1] = self.create_copies(2, input_vars_concat[n - 1])
-        copies["b"][n - 1] = self.create_copies(2, input_vars_concat[len_concat - 1])
-        self._model.addConstr(output_vars[n - 1] == copies["a"][n - 1][0] + copies["b"][n - 1][0])
-
-        v = [self._model.addVar()]
-        self._model.addConstr(v[0] == copies["a"][n - 1][1])
-        self._model.addConstr(v[0] == copies["b"][n - 1][1])
+        input_vars_concat = self.get_input_vars(component)
         self._model.update()
 
-        g0, r0 = self.create_copies(2, v[0])
-        g = [g0]
-        r = [r0]
-        m = []
-        q = []
-        w = []
+        total = len(input_vars_concat)
+        if total % 2 != 0:
+            raise ValueError("add_modadd_constraints: input length not even")
+        n = total // 2
+        a_bits = input_vars_concat[:n]
+        b_bits = input_vars_concat[n:2*n]
+        z_bits = output_vars
 
-        copies["a"][n - 2] = self.create_copies(3, input_vars_concat[n - 2])
-        copies["b"][n - 2] = self.create_copies(3, input_vars_concat[len_concat - 2])
+        # Rerverse endianess : index 0 corresponds to LSB now
+        a_bits = list(reversed(a_bits))
+        b_bits = list(reversed(b_bits))
+        z_bits = list(reversed(z_bits))
 
-        for i in range(2, n - 1):
-            self._model.addConstr(output_vars[n - i] == copies["a"][n - i][0] + copies["b"][n - i][0] + g[i - 2])
-            v.append(self._model.addVar())
-            self._model.addConstr(v[i - 1] == copies["a"][n - i][1])
-            self._model.addConstr(v[i - 1] == copies["b"][n - i][1])
-            m.append(self._model.addVar())
-            self._model.addConstr(m[i - 2] == copies["a"][n - i][2] + copies["b"][n - i][2])
-            q.append(self._model.addVar())
-            self._model.addConstr(q[i - 2] == m[i - 2])
-            self._model.addConstr(q[i - 2] == r[i - 2])
-            w.append(self._model.addVar())
-            self._model.addConstr(w[i - 2] == v[i - 1] + q[i - 2])
-            g_i_1, r_i_1 = self.create_copies(2, w[i - 2])
-            g.append(g_i_1)
-            r.append(r_i_1)
-            copies["a"][n - i - 1] = self.create_copies(3, input_vars_concat[n - i - 1])
-            copies["b"][n - i - 1] = self.create_copies(3, input_vars_concat[len_concat - i - 1])
+        # Create carry-out variables for bits 0..n-1
+        carry_vars = [None] * n
+        for i in range(n - 1):
+            carry_vars[i] = self._model.addVar(vtype=GRB.BINARY,
+                                               name=f"modadd_carry_{component.id}_{i}")
+        # top carry fixed to 0
+        carry_vars[n - 1] = self._model.addVar(vtype=GRB.BINARY, lb=0, ub=0,
+                                               name=f"modadd_carry_{component.id}_{n-1}_zero")
+        self._model.update()
 
-        self._model.addConstr(output_vars[1] == copies["a"][1][0] + copies["b"][1][0] + g[n - 3])
-        v.append(self._model.addVar())
-        self._model.addConstr(v[n - 2] == copies["a"][1][1])
-        self._model.addConstr(v[n - 2] == copies["b"][1][1])
-        m.append(self._model.addVar())
-        self._model.addConstr(m[n - 3] == copies["a"][1][2] + copies["b"][1][2])
-        q.append(self._model.addVar())
-        self._model.addConstr(q[n - 3] == m[n - 3])
-        self._model.addConstr(q[n - 3] == r[n - 3])
-        w.append(self._model.addVar())
-        self._model.addConstr(w[n - 3] == v[n - 2] + q[n - 3])
-        self._model.addConstr(output_vars[0] == input_vars_concat[0] + input_vars_concat[n] + w[n - 3])
+        for i in range(n):
+            ai = a_bits[i]
+            bi = b_bits[i]
+            zi = z_bits[i]
+
+            # carry-in for bit i
+            if i == 0:
+                c_in = None  # no carry into LSB
+            else:
+                c_in = carry_vars[i - 1]
+
+            s_i = self._model.addVar(vtype=GRB.INTEGER, lb=0, ub=3,
+                                     name=f"modadd_sum_{component.id}_{i}")
+            if c_in is not None:
+                self._model.addConstr(s_i == ai + bi + c_in)
+            else:
+                self._model.addConstr(s_i == ai + bi)
+
+            t_i = carry_vars[i]
+            self._model.addConstr(zi + 2 * t_i == s_i)
+
+            self.set_as_used_variables([ai, bi, zi, t_i, s_i])
+
         self._model.update()
 
     def add_and_constraints(self, component):
@@ -514,7 +484,7 @@ class MilpDivisionTrailModel():
         if len(component.description) == 2:
             number_of_initialization_clocks = 1
         else:
-            number_of_initialization_clocks = component.description[-1]  # component.description[-1] 590 self._nb_clocks
+            number_of_initialization_clocks = component.description[-1]
 
         registers = component.description[0]
         registers_lengths = [registers[i][0] for i in range(len(registers))]
@@ -526,8 +496,6 @@ class MilpDivisionTrailModel():
         s[0] = list(interm_input_vars.values())
 
         for clock in range(number_of_initialization_clocks):
-            # print(f"clock = {clock}")
-
             tmp = s[clock][:]
             self._model.update()
 
@@ -574,12 +542,6 @@ class MilpDivisionTrailModel():
             for index in range(output_bit_size):
                 s[clock + 1].append(tmp[(index + 1) % output_bit_size])
 
-            # print(f"\n||||||||||| clock = {clock} after |||||||||||||||")
-            # for i in range(output_bit_size):
-            #     if i in registers_lengths_accumulated[1:]:
-            #         print("---------------------")
-            #     print(i, s[clock + 1][i])
-
         interm_output_vars = self._model.addVars(list(range(output_bit_size)), vtype=GRB.BINARY,
                                                  name=f"interm_{component.id}_output")
         self._model.update()
@@ -619,7 +581,7 @@ class MilpDivisionTrailModel():
             raise ValueError("Unknown format: must start with 0b or 0x")
 
         for i, bit_pos in enumerate(list(self._occurences[component.id].keys())):
-            if (const >> (component.output_bit_size - 1 - i)) & 1 == 0:  # component.output_bit_size - 1 - i if 0x7
+            if (const >> (component.output_bit_size - 1 - i)) & 1 == 0:
                 self._model.addConstr(output_vars[i] == 0)
                 self._constants[component.id][i] = 0
             else:
@@ -628,34 +590,23 @@ class MilpDivisionTrailModel():
 
     def add_or_constraints(self, component):
         """
-        Add MILP constraints for an OR operation in a 3-subset division property
-        without unknown subsets.
-
-        Assumes:
-        - component.input_id_links contains variable inputs.
-        - component.input_bit_positions aligns bits for OR.
-        - component.output_bit_size is the number of output bits.
-
         The OR operation is modeled as:
-            y = OR(x1, x2, ..., xn)   (per bit)
-        Linearization:
+            y = OR(x1, x2, ..., xn)
+        Then:
             - y >= xi  for each input xi
-            - y <= sum(xi)  (upper bound)
+            - y <= sum(xi)
         """
         output_vars = self.get_output_vars(component)
         output_size = component.output_bit_size
 
-        # Initialize per-output-bit storage
         var_inputs_per_bit = [[] for _ in range(output_size)]
 
-        # Collect variable inputs per output bit
         for input_idx, input_name in enumerate(component.input_id_links):
             bit_positions = component.input_bit_positions[input_idx]
 
             for local_idx, pos in enumerate(bit_positions):
-                output_index = pos % output_size  # map to output bit
+                output_index = pos % output_size
 
-                # Only variable inputs are considered (no unknown subset)
                 copy_index = len(self._variables[input_name][pos]["copies"])
                 copy_var = self._model.addVar(
                     vtype=GRB.BINARY,
@@ -666,24 +617,17 @@ class MilpDivisionTrailModel():
 
         self._model.update()
 
-        # Add OR constraints per output bit
         for bit_idx in range(output_size):
             input_vars = var_inputs_per_bit[bit_idx]
             output_var = output_vars[bit_idx]
 
             if not input_vars:
-                continue  # no input for this bit
+                continue
 
-            # Lower bound: y >= xi for all xi
             for v in input_vars:
                 self._model.addConstr(output_var >= v)
-
-            # Upper bound: y <= sum(xi)
             self._model.addConstr(output_var <= sum(input_vars))
-
-            # Mark variables as used
             self.set_as_used_variables(input_vars)
-
         self._model.update()
 
     def add_intermediate_output_constraints(self, component):
@@ -811,9 +755,6 @@ class MilpDivisionTrailModel():
         all_vars = {}
         used_predecessors_sorted = self.order_predecessors(list(occurences.keys()))
         cipher_id = self.get_cipher_output_component_id()
-        # print("used_predecessors_sorted")
-        # print(used_predecessors_sorted)
-        # print("***************")
         for component_id in used_predecessors_sorted:
             all_vars[component_id] = {}
             if component_id != cipher_id:
@@ -838,6 +779,7 @@ class MilpDivisionTrailModel():
         return len(list(occurences[self._cipher.inputs[0]].keys()))
 
     def build_generic_model_for_specific_output_bit(self, output_bit_index_ciphertext, fixed_degree=None,
+                                                    which_var_degree=None,
                                                     chosen_cipher_output=None):
         start = time.time()
 
@@ -875,13 +817,28 @@ class MilpDivisionTrailModel():
         self._model.addConstr(ks == 1)
         self._model.addConstr(output_vars[output_bit_index_previous_comp] == 1)
 
-        if fixed_degree != None:
-            plaintext_vars = []
-            for i in range(
-                    self._cipher.inputs_bit_size[0]):  # Carreful, here we are assuming that input[0] is the plaintext
-                plaintext_vars.append(self._model.getVarByName(f"plaintext[{i}]"))
-            self._model.addConstr(
-                sum(plaintext_vars[i] for i in range(self._cipher.inputs_bit_size[0])) == fixed_degree)
+        if fixed_degree is not None:
+            if which_var_degree is not None:
+                var_input_name = next(
+                    (inp for inp in self._cipher.inputs if inp.startswith(which_var_degree)),
+                    None
+                )
+                if var_input_name is None:
+                    raise ValueError(f"No input found matching prefix '{which_var_degree}'")
+            else:
+                var_input_name = self._cipher.inputs[0]
+
+            input_index = self._cipher.inputs.index(var_input_name)
+            input_size = self._cipher.inputs_bit_size[input_index]
+
+            vars_to_constrain = []
+            for i in range(input_size):
+                v = self._model.getVarByName(f"{var_input_name}[{i}]")
+                if v is not None:
+                    vars_to_constrain.append(v)
+
+            self._model.addConstr(sum(vars_to_constrain) == fixed_degree,
+                                  name=f"degree_{var_input_name}_{fixed_degree}")
 
         self.set_unused_variables_to_zero()
         self.create_all_copies()
@@ -898,15 +855,13 @@ class MilpDivisionTrailModel():
     def get_solutions(self):
         start = time.time()
         solCount = self._model.SolCount
-        # collect all original input vars with a stable order
-        inputs = []  # list of (input_priority, prefix, bit_index, var)
+        inputs = []
         for prio, inp_name in enumerate(self._cipher.inputs):
             if inp_name not in self._variables:
                 continue
             prefix = self._prefix_for_input(inp_name)
             for idx, d in self._variables[inp_name].items():
                 inputs.append((prio, prefix, idx, d["original"]))
-        # deterministic ordering: by input list order, then prefix, then bit index
         inputs.sort(key=lambda t: (t[0], t[1], t[2]))
 
         mono_set = set()
@@ -921,7 +876,6 @@ class MilpDivisionTrailModel():
                 mono_set.remove(mono)
             else:
                 mono_set.add(mono)
-        # return a list (optionally sorted for stable output)
         end = time.time()
         printing_time = end - start
         if verbosity:
@@ -940,86 +894,54 @@ class MilpDivisionTrailModel():
             print(self._model)
             print(f"########## solving_time : {solving_time}")
 
-    def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None, chosen_cipher_output=None):
-        """
-            from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            cipher = SimonBlockCipher(number_of_rounds=1)
-            from claasp.cipher_modules.division_trail_search_in_PR import *
-            milp = MilpDivisionTrailModel(cipher)
-            milp.find_anf_of_specific_output_bit(0)
-        """
-        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, chosen_cipher_output)
-        self._model.setParam("PoolSolutions",
-                             200000000)  # 10000, 200000000 to be large = max number of monomials that can be found
-        self._model.setParam(GRB.Param.PoolSearchMode, 2)
+    def anf_list_to_boolean_poly(self, anf_list):
+        variables = []
+        for index, input_name in enumerate(self._cipher.inputs):
+            bit_size = self._cipher.inputs_bit_size[index]
+            variables.extend([f"{input_name[0]}{i}" for i in range(bit_size)])
 
-        self._model.write("division_trail_model.lp")
-        self.optimize_model()
-        return self.get_solutions()
+        B = BooleanPolynomialRing(names=variables)
+        var_map = {str(v): B(str(v)) for v in variables}
 
-    def check_anf_correctness(self, output_bit_index, num_tests=10):
-        """
-        Check correctness of the ANF of a specific output bit.
+        poly = B(0)
+        for term in anf_list:
+            if term == "1":
+                term_poly = B(1)
+            else:
+                i = 0
+                factors = []
+                while i < len(term):
+                    var = term[i]
+                    i += 1
+                    digits = ''
+                    while i < len(term) and term[i].isdigit():
+                        digits += term[i]
+                        i += 1
+                    factors.append(var_map[f"{var}{digits}"])
+                term_poly = factors[0]
+                for f in factors[1:]:
+                    term_poly *= f
+            poly += term_poly
+        return poly
 
-        Example:
-            from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            cipher = SimonBlockCipher(number_of_rounds=2)
-            from claasp.cipher_modules.division_trail_search_in_PR import *
-            milp = MilpDivisionTrailModel(cipher)
-            milp.check_anf_correctness(0)
-        """
-
-        # 1) generate random test vectors for *all* inputs
-        test_vectors = []
-        for _ in range(num_tests):
-            assignment = {}
-            for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-                assignment[inp] = secrets.randbits(size)
-            test_vectors.append(assignment)
-
-        # 2) generate ANF for the given output bit
-        anf_poly = self.find_anf_of_specific_output_bit(output_bit_index)
-        print("ANF:", anf_poly) if verbosity else None
-
-        # Boolean ring
-        B = self.get_boolean_polynomial_ring()
-
-        # helper: evaluate polynomial with given input assignment
-        def evaluate_poly(assignments):
-            var_values = {}
-            for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-                val = assignments[inp]
-                for i in range(size):
-                    # MSB-first convention: inp0 = MSB, inp{n-1} = LSB
-                    bit = (val >> (size - 1 - i)) & 1
-                    var_values[f"{inp[0]}{i}"] = bit
-            return int(GF(2)(anf_poly(**var_values)))
-
-        # 3) evaluate & check
-        output_size = self._cipher.output_bit_size
-        for trial, assign in enumerate(test_vectors):
-            print(f"trial = {trial}") if verbosity else None
-            cipher_output = self._cipher.evaluate(
-                [assign[inp] for inp in self._cipher.inputs]
-            )
-
-            # Correct: output_bit_index=0 = MSB
-            real_index = output_size - 1 - output_bit_index
-            expected_bit = (cipher_output >> real_index) & 1
-
-            computed_bit = evaluate_poly(assign)
-
-            if expected_bit != computed_bit:
-                return False
-        return True
+    def get_boolean_polynomial_ring(self):
+        variables = []
+        for index, input_name in enumerate(self._cipher.inputs):
+            bit_size = self._cipher.inputs_bit_size[index]
+            variables.extend([f"{input_name[0]}{i}" for i in range(bit_size)])
+        R = BooleanPolynomialRing(names=variables)
+        return R
 
     def var_list_to_input_positions(self, var_list):
         """
-        Map variables like ['p1', 'p8'] to structured form
-        [('plaintext', 1), ('plaintext', 8)] based on self._cipher.inputs.
-        """
+        Convert flat variable names (e.g., ``['p1', 'k8']``) into structured
+        input references tied to the cipher's input components.
 
-        # Build a map: first_letter -> (input_name, bit_size)
+        Each variable name's first letter (e.g., ``'p'``, ``'k'``, ``'i'``)
+        is mapped to its corresponding input (e.g., ``'plaintext'``, ``'key'``,
+        ``'initialisation_vector'``), and its numeric suffix is treated as the bit index.
+        For example, ``['p1', 'k8']`` → ``[('plaintext', 1), ('key', 8)]``.
+        """
         input_map = {}
         for index, input_name in enumerate(self._cipher.inputs):
             bit_size = self._cipher.inputs_bit_size[index]
@@ -1034,91 +956,8 @@ class MilpDivisionTrailModel():
 
             if index >= bit_size:
                 raise ValueError(f"Index {index} out of range for input '{input_name}' (size {bit_size})")
-
             results.append((input_name, index))
-
         return results
-
-    def find_superpoly_of_specific_output_bit(self, cube, output_bit_index, chosen_cipher_output=None):
-        """
-        from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-        cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=590)
-        from claasp.cipher_modules.division_trail_search_in_PR import *
-        milp = MilpDivisionTrailModel(cipher)
-        milp.find_superpoly_of_specific_output_bit(cube=["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"], output_bit_index=0)
-        """
-        fixed_degree = None
-        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, chosen_cipher_output)
-        self._model.setParam("PoolSolutions", 200000000)  # 200000000 to be large
-        self._model.setParam(GRB.Param.PoolSearchMode, 2)
-
-        cube_verbose = self.var_list_to_input_positions(cube)
-        for term in cube_verbose:
-            var_term = self._model.getVarByName(f"{term[0]}[{term[1]}]")
-            self._model.update()
-            self._model.addConstr(var_term == 1)
-        self._model.update()
-        self._model.write("division_trail_model.lp")
-
-        self.optimize_model()
-        poly = self.get_solutions()
-
-        assignments = {v: 1 for v in cube}
-        poly_sub = poly.subs(assignments)
-        return poly_sub
-
-    def find_superpoly_of_all_output_bits(self, cube, chosen_cipher_output=None):
-        """
-        from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-        cipher = SimonBlockCipher(number_of_rounds=2)
-        from claasp.cipher_modules.division_trail_search_in_PR import *
-        milp = MilpDivisionTrailModel(cipher)
-        milp.find_superpoly_of_all_output_bits(cube=["p1"])
-        """
-        superpolies = []
-        for i in range(self._cipher.output_bit_size):
-            print(f"\nSearch of superpoly based on the cube {cube} in anf {i} :") if verbosity else None
-            superpolies.append(self.find_superpoly_of_specific_output_bit(cube, i, chosen_cipher_output))
-        return superpolies
-
-    def find_degree_of_specific_output_bit(self, output_bit_index, chosen_cipher_output=None):
-        """
-        from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-        cipher = SimonBlockCipher(number_of_rounds=2)
-        from claasp.cipher_modules.division_trail_search_in_PR import *
-        milp = MilpDivisionTrailModel(cipher)
-        milp.find_degree_of_specific_output_bit(0)
-        """
-        fixed_degree = None
-        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, chosen_cipher_output)
-        self._model.setParam(GRB.Param.PoolSearchMode, 1)
-        self._model.setParam('Presolve', 2)
-        self._model.setParam("MIPFocus", 2)
-        self._model.setParam("MIPGap", 0)  # when set to 0, best solution = optimal solution
-        self._model.setParam('Cuts', 2)
-
-        # Collect indices of all inputs that are not "key"
-        non_key_inputs = [
-            (inp, size)
-            for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
-            if inp != "key"
-        ]
-
-        # Build the list of variables
-        vars_non_key = []
-        for inp, size in non_key_inputs:
-            for i in range(size):
-                vars_non_key.append(self._model.getVarByName(f"{inp}[{i}]"))
-
-        # Set objective
-        self._model.setObjective(sum(vars_non_key), GRB.MAXIMIZE)
-
-        self._model.update()
-        self._model.write("division_trail_model.lp")
-        self.optimize_model()
-
-        degree = self._model.getObjective().getValue()
-        return degree
 
     def re_init(self):
         self._variables = None
@@ -1129,63 +968,441 @@ class MilpDivisionTrailModel():
         self._unused_variables = []
         self._used_predecessors_sorted = None
         self._constants = {}
-        self._nb_clocks = None
 
-    def find_degree_of_all_output_bits(self, chosen_cipher_output=None):
+
+    def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=None):
         """
-        from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-        cipher = SimonBlockCipher(number_of_rounds=4)
-        from claasp.cipher_modules.division_trail_search_in_PR import *
-        milp = MilpDivisionTrailModel(cipher)
-        milp.find_degree_of_all_output_bits()
+        Build and solve the MILP model to compute the Algebraic Normal Form (ANF)
+        of a specific output bit of the cipher using the Monomial Prediction (MP).
+
+        Parameters
+        ----------
+        output_bit_index : int
+            Index of the ciphertext bit whose ANF is to be computed.
+
+        fixed_degree : int, optional
+            If not None, this method will return only the monomials whose degree is exactly "fixed_degree".
+
+        which_var_degree : str, optional
+            Prefix or full name of the input variable on which the degree
+            constraint (`fixed_degree`) is applied. Typical values:
+                - "p" or "plaintext" for plaintext variables
+                - "k" or "key" for key variables
+                - "i" for initialisation_vector variables
+            If None, defaults to the first input listed in `self._cipher.inputs`.
+
+        chosen_cipher_output : str, optional
+            If one want to check an intermediate components other than the cipher_output, it can be specified with this parameter.
+
+        Examples
+        --------
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: cipher = SimonBlockCipher(number_of_rounds=1)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher)
+            sage: milp.find_anf_of_specific_output_bit(0)
+
+            sage: milp.find_anf_of_specific_output_bit(0, fixed_degree=2, which_var_degree="p")
+
+            sage: milp.find_anf_of_specific_output_bit(0, fixed_degree=1, which_var_degree="k")
+        """
+        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output)
+        self._model.setParam("PoolSolutions",200000000)
+        self._model.setParam(GRB.Param.PoolSearchMode, 2)
+
+        self._model.write("division_trail_model.lp")
+        self.optimize_model()
+        return self.get_solutions()
+
+
+    def check_anf_correctness(self, output_bit_index, num_tests=10, endian="msb"):
+        """
+        Verify the correctness of the computed ANF for a specific cipher output bit by random testing.
+
+        This method computes the value of an output bit from the cipher evaluation on one side,
+        and from its ANF evaluation on another side, and then compare them for several random input assignments.
+
+        Parameters
+        ----------
+        output_bit_index : int
+            Index (0-based) of the output bit to test. The indexing direction depends
+            on the `endian` parameter.
+        num_tests : int, optional
+            Number of random input assignments to test (default = 10).
+        endian : {"msb", "lsb"}, optional
+            Defines how bit positions are indexed and extracted:
+                - ``"msb"`` : bit index 0 corresponds to the most significant bit (default).
+                - ``"lsb"`` : bit index 0 corresponds to the least significant bit.
+
+        Returns
+        -------
+        bool
+            True if the ANF output matches the true cipher output for all tested
+            input assignments, False otherwise.
+
+        Examples
+        --------
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: cipher = SimonBlockCipher(number_of_rounds=2)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher)
+            sage: milp.check_anf_correctness(0, endian="msb")
+            sage: True
+        """
+        # 1) Generate random test vectors for all cipher inputs
+        test_vectors = []
+        for _ in range(num_tests):
+            assignment = {}
+            for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+                assignment[inp] = secrets.randbits(size)
+            test_vectors.append(assignment)
+
+        # 2) Compute the ANF for the specified output bit
+        anf_poly = self.find_anf_of_specific_output_bit(output_bit_index)
+        print("ANF:", anf_poly) if verbosity else None
+
+        B = self.get_boolean_polynomial_ring()
+        # 3) Helper: evaluate the ANF polynomial for a given input assignment
+        def evaluate_poly(assignments):
+            var_values = {}
+            for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+                val = assignments[inp]
+                for i in range(size):
+                    if endian == "msb":
+                        # MSB-first: inp0 = MSB, inp{n-1} = LSB
+                        bit = (val >> (size - 1 - i)) & 1
+                    elif endian == "lsb":
+                        # LSB-first: inp0 = LSB, inp{n-1} = MSB
+                        bit = (val >> i) & 1
+                    else:
+                        raise ValueError("Invalid endian value. Use 'msb' or 'lsb'.")
+                    var_values[f"{inp[0]}{i}"] = bit
+            return int(GF(2)(anf_poly(**var_values)))
+
+        # 4) Evaluate and compare ANF vs cipher outputs
+        output_size = self._cipher.output_bit_size
+        for trial, assign in enumerate(test_vectors):
+            print(f"trial = {trial}") if verbosity else None
+            cipher_output = self._cipher.evaluate(
+                [assign[inp] for inp in self._cipher.inputs]
+            )
+            if endian == "msb":
+                real_index = output_size - 1 - output_bit_index
+            else:
+                real_index = output_bit_index
+
+            expected_bit = (cipher_output >> real_index) & 1
+            computed_bit = evaluate_poly(assign)
+
+            if expected_bit != computed_bit:
+                return False
+        return True
+
+
+    def find_superpoly_of_specific_output_bit(self, cube, output_bit_index, chosen_cipher_output=None):
+        """
+        Compute the superpoly of a specific cipher output bit under a given cube.
+
+        This function fixes a set of cube variables (e.g., IV or plaintext bits) to 1,
+        builds the MILP model for the specified output bit, computes its ANF,
+        and substitutes these fixed variables to obtain the corresponding superpoly.
+        In the context of cube attacks, this represents the key-dependent polynomial
+        after summing over the cube variables.
+
+        Parameters
+        ----------
+        cube : list[str]
+            List of variable names (as strings) forming the cube.
+            Each element uses the following convention:
+            - ``'i'`` prefix for IV bits (e.g., ``"i9"``)
+            - ``'p'`` prefix for plaintext bits
+            Example: ``["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]``.
+        output_bit_index : int
+            Index (0-based, from MSB) of the cipher output bit for which the superpoly is computed.
+        chosen_cipher_output : str or None, optional
+            Identifier of a specific cipher output component to target.
+            If ``None`` (default), the method uses the final cipher output.
+
+        Returns
+        -------
+        sage.rings.polynomial.pbori.pbori.BooleanPolynomial
+            The resulting superpoly polynomial
+
+        Examples
+        --------
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=590)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher)
+            sage: cube = ["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]
+            sage: superpoly = milp.find_superpoly_of_specific_output_bit(cube, output_bit_index=0)
+            sage: superpoly
+            k20*i60*i61 + k20*i60*i74 + k20*i60 + k20*i73 + i8*i60*i61 + i8*i60*i74 + i8*i60 + i8*i73 + i60*i61*i71 + i60*i61*i72*i73 + i60*i71*i74 + i60*i71 + i60*i72*i73*i74 + i60*i72*i73 + i71*i73 + i72*i73
+        """
+
+        self.build_generic_model_for_specific_output_bit(output_bit_index, chosen_cipher_output)
+        self._model.setParam("PoolSolutions", 200000000)
+        self._model.setParam(GRB.Param.PoolSearchMode, 2)
+
+        # Convert compact cube names like "i9" -> ("initialisation_vector", 9)
+        cube_verbose = self.var_list_to_input_positions(cube)
+
+        for term in cube_verbose:
+            var_term = self._model.getVarByName(f"{term[0]}[{term[1]}]")
+            self._model.update()
+            self._model.addConstr(var_term == 1)
+
+        self._model.update()
+        self._model.write("division_trail_model.lp")
+
+        self.optimize_model()
+        poly = self.get_solutions()
+
+        assignments = {v: 1 for v in cube}
+        poly_sub = poly.subs(assignments)
+        return poly_sub
+
+
+    def find_upper_bound_degree_of_specific_output_bit(self, output_bit_index, which_var_degree=None, chosen_cipher_output=None):
+        """
+        Compute an upper bound on the algebraic degree of a specific cipher output bit,
+        with respect to a chosen input variable (e.g., key, IV, or plaintext).
+
+        Parameters
+        ----------
+        output_bit_index : int
+            Index (0-based, from MSB) of the cipher output bit to analyze.
+        which_var_degree : str or None, optional
+            Prefix identifying which input group the degree should be computed over:
+                - ``"k"`` → degree with respect to key bits
+                - ``"p"`` → degree with respect to plaintext bits
+                - ``"i"`` → degree with respect to IV bits
+            If ``None`` (default), the first input in ``self._cipher.inputs`` is used.
+        chosen_cipher_output : str or None, optional
+            Identifier of a specific cipher output component to target.
+            If ``None`` (default), the final cipher output is used.
+
+        Returns
+        -------
+        int
+            Upper bound on the algebraic degree of the selected output bit with respect
+            to the chosen input variable.
+
+        Example
+        --------
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=508)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher)
+            sage: milp.find_upper_bound_degree_of_specific_output_bit(0, which_var_degree="i")
+            14
+        """
+        self.build_generic_model_for_specific_output_bit(output_bit_index, chosen_cipher_output)
+
+        self._model.setParam(GRB.Param.PoolSearchMode, 0)  # single optimal solution (fastest)
+        self._model.setParam("MIPGap", 0)
+        self._model.Params.OutputFlag = 0
+
+        if which_var_degree is None:
+            target_inputs = [(self._cipher.inputs[0], self._cipher.inputs_bit_size[0])]
+        else:
+            target_inputs = [
+                (inp, size)
+                for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
+                if inp.startswith(which_var_degree)
+            ]
+
+        vars_target = []
+        for inp, size in target_inputs:
+            for i in range(size):
+                var = self._model.getVarByName(f"{inp}[{i}]")
+                if var is not None:
+                    vars_target.append(var)
+
+        self._model.setObjective(sum(vars_target), GRB.MAXIMIZE)
+        self._model.update()
+        self._model.write("degree_upper_bound.lp")
+
+        self.optimize_model()
+        degree_upper_bound = int(round(self._model.getObjective().getValue()))
+        return degree_upper_bound
+
+
+    def find_exact_degree_of_specific_output_bit(self, output_bit_index, which_var_degree=None, chosen_cipher_output=None):
+        """
+        Compute the exact algebraic degree of a specific cipher output bit
+        with respect to a chosen input variable (e.g., key, IV, or plaintext).
+
+        Unlike the upper-bound computation, this method enumerates all optimal MILP
+        solutions corresponding to the maximal-degree monomials and checks their
+        parity (mod 2). The exact algebraic degree is then determined as the
+        highest degree with an odd number of monomials.
+
+        Parameters
+        ----------
+        output_bit_index : int
+            Index (0-based, from MSB) of the cipher output bit to analyze.
+        which_var_degree : str or None, optional
+            Prefix identifying which input group the degree should be computed over:
+                - ``"k"`` → degree with respect to key bits
+                - ``"p"`` → degree with respect to plaintext bits
+                - ``"i"`` → degree with respect to IV bits
+            If ``None`` (default), the first input in ``self._cipher.inputs`` is used.
+        chosen_cipher_output : str or None, optional
+            Identifier of a specific cipher output component to target.
+            If ``None`` (default), the final cipher output is used.
+
+        Returns
+        -------
+        int
+            The exact algebraic degree of the selected output bit with respect
+            to the specified variable group.
+
+        Examples
+        --------
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=508)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher)
+            sage: milp.find_exact_degree_of_specific_output_bit(0, which_var_degree="i")
+            13
+        """
+        self.build_generic_model_for_specific_output_bit(output_bit_index, chosen_cipher_output=chosen_cipher_output)
+
+        m = self._model
+        m.Params.OutputFlag = 0
+        m.setParam(GRB.Param.PoolSearchMode, 2)         # enumerate all optimal solutions
+        m.setParam(GRB.Param.PoolSolutions, 200000000)  # large enough for enumeration
+        m.setParam(GRB.Param.PoolGap, 0.0)              # ensure only optimal solutions are put in the Pool
+
+        if which_var_degree is None:
+            target_inputs = [(self._cipher.inputs[0], self._cipher.inputs_bit_size[0])]
+        else:
+            target_inputs = [
+                (inp, size)
+                for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
+                if inp.startswith(which_var_degree)
+            ]
+
+        vars_target = []
+        for inp, size in target_inputs:
+            for i in range(size):
+                var = m.getVarByName(f"{inp}[{i}]")
+                if var is not None:
+                    vars_target.append(var)
+
+        m.setObjective(sum(vars_target), GRB.MAXIMIZE)
+        m.update()
+        m.optimize()
+
+        if m.Status != GRB.OPTIMAL:
+            print("Model infeasible or not optimal.")
+            return 0
+
+        d = int(round(m.ObjVal))
+        if d <= 0:
+            return 0
+
+        # Gather all distinct monomials of degree d and compute parity
+        monomial_parity = {}
+        for s in range(m.SolCount):
+            m.Params.SolutionNumber = s
+            active_indices = tuple(i for i, v in enumerate(vars_target) if v.Xn > 0.5)
+            if len(active_indices) == d:
+                monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
+
+        if any(val == 1 for val in monomial_parity.values()):
+            exact_degree = d
+        else:
+            exact_degree = d - 1
+        return exact_degree
+
+
+    def find_upper_bound_degree_of_all_output_bits(self, which_var_degree=None, chosen_cipher_output=None):
+        """
+        Compute the upper bound on the algebraic degree for all cipher output bits.
+
+        This method iteratively builds the MILP model for each output bit of the cipher
+        and computes the upper bound on its algebraic degree with respect to the chosen
+        input variable (e.g., key, plaintext, IV).
+
+        Parameters
+        ----------
+        which_var_degree : str or None, optional
+            Prefix indicating which variable group the degree should be computed over:
+                - ``"k"`` → key bits
+                - ``"p"`` → plaintext bits
+                - ``"i"`` → IV bits
+            If ``None`` (default), the degree is computed with respect to the first
+            input in ``self._cipher.inputs``.
+        chosen_cipher_output : str or None, optional
+            Identifier of a specific cipher output component to analyze.
+            If ``None`` (default), the method targets the final cipher output.
+
+        Returns
+        -------
+        list[int]
+            List of upper bounds on the algebraic degrees of all cipher output bits,
+            ordered from MSB to LSB.
+
+        Examples
+        --------
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: cipher = SimonBlockCipher(number_of_rounds=4)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher)
+            sage: milp.find_upper_bound_degree_of_all_output_bits(which_var_degree="p")
         """
         degrees = []
         for i in range(self._cipher.output_bit_size):
             self.re_init()
-            degree = self.find_degree_of_specific_output_bit(i, chosen_cipher_output)
+            degree = self.find_upper_bound_degree_of_specific_output_bit(
+                i, which_var_degree=which_var_degree, chosen_cipher_output=chosen_cipher_output
+            )
             degrees.append(degree)
         return degrees
 
-    def anf_list_to_boolean_poly(self, anf_list):
-        # Collect all variable names from the cipher inputs
-        variables = []
-        for index, input_name in enumerate(self._cipher.inputs):
-            bit_size = self._cipher.inputs_bit_size[index]
-            variables.extend([f"{input_name[0]}{i}" for i in range(bit_size)])
 
-        # Create Boolean polynomial ring
-        B = BooleanPolynomialRing(names=variables)
-        var_map = {str(v): B(str(v)) for v in variables}
+    def find_exact_degree_of_all_output_bits(self, which_var_degree=None, chosen_cipher_output=None):
+        """
+        Compute the exact algebraic degree for all cipher output bits.
 
-        # Build polynomial
-        poly = B(0)
-        for term in anf_list:
-            if term == "1":  # constant term
-                term_poly = B(1)
-            else:
-                i = 0
-                factors = []
-                while i < len(term):
-                    var = term[i]
-                    i += 1
-                    digits = ''
-                    while i < len(term) and term[i].isdigit():
-                        digits += term[i]
-                        i += 1
-                    factors.append(var_map[f"{var}{digits}"])
-                # Multiply factors if more than one
-                term_poly = factors[0]
-                for f in factors[1:]:
-                    term_poly *= f
-            # Add to polynomial
-            poly += term_poly
+        This method iteratively builds the MILP model for each output bit of the cipher
+        and computes its exact algebraic degree with respect to the chosen
+        input variable (e.g., key, plaintext, IV).
 
-        return poly
+        Parameters
+        ----------
+        which_var_degree : str or None, optional
+            Prefix indicating which variable group the degree should be computed over:
+                - ``"k"`` → key bits
+                - ``"p"`` → plaintext bits
+                - ``"i"`` → IV bits
+            If ``None`` (default), the degree is computed with respect to the first
+            input in ``self._cipher.inputs``.
+        chosen_cipher_output : str or None, optional
+            Identifier of a specific cipher output component to analyze.
+            If ``None`` (default), the method targets the final cipher output.
 
-    def get_boolean_polynomial_ring(self):
-        variables = []
-        for index, input_name in enumerate(self._cipher.inputs):
-            bit_size = self._cipher.inputs_bit_size[index]
-            variables.extend([f"{input_name[0]}{i}" for i in range(bit_size)])
-        R = BooleanPolynomialRing(names=variables)
-        return R
+        Returns
+        -------
+        list[int]
+            List of exact algebraic degrees of all cipher output bits,
+            ordered from MSB to LSB.
+
+        Examples
+        --------
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: cipher = SimonBlockCipher(number_of_rounds=4)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher)
+            sage: milp.find_exact_degree_of_all_output_bits(which_var_degree="p")
+        """
+        degrees = []
+        for i in range(self._cipher.output_bit_size):
+            self.re_init()
+            degree = self.find_upper_bound_degree_of_specific_output_bit(
+                i, which_var_degree=which_var_degree, chosen_cipher_output=chosen_cipher_output
+            )
+            degrees.append(degree)
+        return degrees
