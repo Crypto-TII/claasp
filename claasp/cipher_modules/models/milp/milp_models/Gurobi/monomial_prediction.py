@@ -778,7 +778,7 @@ class MilpMonomialPredictionModel():
         occurences = self._occurences
         return len(list(occurences[self._cipher.inputs[0]].keys()))
 
-    def build_generic_model_for_specific_output_bit(self, output_bit_index_ciphertext, fixed_degree=None,
+    def build_generic_model_for_specific_output_bit(self, output_bit_index, fixed_degree=None,
                                                     which_var_degree=None,
                                                     chosen_cipher_output=None):
         start = time.time()
@@ -789,7 +789,7 @@ class MilpMonomialPredictionModel():
             input_id_link_needed = self.get_cipher_output_component_id()
         component = self._cipher.get_component_from_id(input_id_link_needed)
         block_needed = list(range(component.output_bit_size))
-        output_bit_index_previous_comp = output_bit_index_ciphertext
+        output_bit_index_previous_comp = output_bit_index
 
         G = create_networkx_graph_from_input_ids(self._cipher)
         predecessors = list(_get_predecessors_subgraph(G, [input_id_link_needed]))
@@ -1139,8 +1139,9 @@ class MilpMonomialPredictionModel():
             sage: superpoly
             k20*i60*i61 + k20*i60*i74 + k20*i60 + k20*i73 + i8*i60*i61 + i8*i60*i74 + i8*i60 + i8*i73 + i60*i61*i71 + i60*i61*i72*i73 + i60*i71*i74 + i60*i71 + i60*i72*i73*i74 + i60*i72*i73 + i71*i73 + i72*i73
         """
-
-        self.build_generic_model_for_specific_output_bit(output_bit_index, chosen_cipher_output)
+        fixed_degree = None
+        which_var_degree = None
+        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output)
         self._model.setParam("PoolSolutions", 200000000)
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
 
@@ -1197,7 +1198,8 @@ class MilpMonomialPredictionModel():
             sage: milp.find_upper_bound_degree_of_specific_output_bit(0, which_var_degree="i")
             14
         """
-        self.build_generic_model_for_specific_output_bit(output_bit_index, chosen_cipher_output)
+        fixed_degree = None
+        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output)
 
         self._model.setParam(GRB.Param.PoolSearchMode, 0)  # single optimal solution (fastest)
         self._model.setParam("MIPGap", 0)
@@ -1267,7 +1269,8 @@ class MilpMonomialPredictionModel():
             sage: milp.find_exact_degree_of_specific_output_bit(0, which_var_degree="i")
             13
         """
-        self.build_generic_model_for_specific_output_bit(output_bit_index, chosen_cipher_output=chosen_cipher_output)
+        fixed_degree = None
+        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output)
 
         m = self._model
         m.Params.OutputFlag = 0
