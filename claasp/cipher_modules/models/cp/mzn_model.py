@@ -352,9 +352,17 @@ class MznModel:
                 logic_operator = " \\/ "
             else:
                 raise ValueError(CONSTRAINT_TYPE_ERROR)
-            values_constraints = [
-                f"{component_id}[{position}] {sign} {bit_values[i]}" for i, position in enumerate(bit_positions)
-            ]
+            if bit_values[0] not in [0,1]:
+                variables_values = []
+                for v in bit_values:
+                    variables_values.extend([(v[0], i) for i in v[1]])
+                values_constraints = [
+                    f"{component_id}[{position}] {sign} {variables_values[i][0]}[{variables_values[i][1]}]" for i, position in enumerate(bit_positions)
+                ]
+            else:
+                values_constraints = [
+                    f"{component_id}[{position}] {sign} {bit_values[i]}" for i, position in enumerate(bit_positions)
+                ]
             new_constraint = "constraint " + f"{logic_operator}".join(values_constraints) + ";"
             cp_constraints.append(new_constraint)
 

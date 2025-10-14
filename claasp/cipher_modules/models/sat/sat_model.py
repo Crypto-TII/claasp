@@ -413,19 +413,43 @@ class SatModel:
              '-ciphertext_0 -ciphertext_1 -ciphertext_2 ciphertext_3']
         """
         constraints = []
+
         for variable in fixed_variables:
-            component_id = variable["component_id"]
-            is_equal = variable["constraint_type"] == "equal"
-            bit_positions = variable["bit_positions"]
-            bit_values = variable["bit_values"]
-            variables_ids = []
-            for position, value in zip(bit_positions, bit_values):
-                is_negative = "-" * (value ^ is_equal)
-                variables_ids.append(f"{is_negative}{component_id}_{position}")
-            if is_equal:
-                constraints.extend(variables_ids)
+            if variable["bit_values"][0] not in [0,1]:
+                variables_values = []
+                for v in variable["bit_values"]:
+                    variables_values.extend([(v[0], i) for i in v[1]])
+
+                component_id = variable["component_id"]
+                is_equal = variable["constraint_type"] == "equal"
+                bit_positions = variable["bit_positions"]
+                bit_values = variable["bit_values"]
+                variables_ids = []
+                if is_equal:
+                    for position, value in zip(bit_positions, variables_values):
+                        constraints.extend(utils.cnf_equivalent(
+                            [f"{component_id}_{position}", f"{value[0]}_{value[1]}"]
+                        ))
+                else:
+                    for position, value in zip(bit_positions, variables_values):
+                        constraints.extend(utils.cnf_xor(
+                            f"{component_id}_fix_{position}", [f"{component_id}_{position}", f"{value[0]}_{value[1]}"]
+                        ))
+                    constraints.append(" ".join(f"{component_id}_fix_{position}" for position in bit_positions))
+
             else:
-                constraints.append(" ".join(variables_ids))
+                component_id = variable["component_id"]
+                is_equal = variable["constraint_type"] == "equal"
+                bit_positions = variable["bit_positions"]
+                bit_values = variable["bit_values"]
+                variables_ids = []
+                for position, value in zip(bit_positions, bit_values):
+                    is_negative = "-" * (value ^ is_equal)
+                    variables_ids.append(f"{is_negative}{component_id}_{position}")
+                if is_equal:
+                    constraints.extend(variables_ids)
+                else:
+                    constraints.append(" ".join(variables_ids))
 
         return constraints
 

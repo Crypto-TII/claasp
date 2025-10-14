@@ -197,31 +197,47 @@ class MilpModel:
              1 <= x_4 + x_6 + x_8 + x_10]
         """
         x = self._binary_variable
+        n_trails = self._number_of_trails_found
         constraints = []
-        for fixed_variable in fixed_variables:
-            component_id = fixed_variable["component_id"]
-            if fixed_variable["constraint_type"] == "equal":
-                for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                    constraints.append(x[f"{component_id}_{bit_position}"] == fixed_variable["bit_values"][index])
+
+        for fv in fixed_variables:
+            bit_vals = fv["bit_values"]
+            comp_id = fv["component_id"]
+            bit_pos = fv["bit_positions"]
+            ctype = fv["constraint_type"]
+
+            if bit_vals[0] not in [0, 1]:
+                var_vals = []
+                for v in bit_vals:
+                    var_vals.extend([(v_id, i) for v_id, bits in [v] for i in bits])
+
+                if ctype == "equal":
+                    for i, pos in enumerate(bit_pos):
+                        constraints.append(x[f"{comp_id}_{pos}"] == x[f"{var_vals[i][0]}_{var_vals[i][1]}"])
+                else:
+                    for i, pos in enumerate(bit_pos):
+                        neq = f"{comp_id}{pos}_not_equal_{n_trails}"
+                        lhs = x[neq]
+                        a = x[f"{comp_id}_{pos}"]
+                        b = x[f"{var_vals[i][0]}_{var_vals[i][1]}"]
+
+                        constraints.append(lhs <= a + b)
+                        constraints.append(lhs >= a - b)
+                        constraints.append(lhs >= b - a)
+                        constraints.append(lhs + a + b <= 2)
+
+                    constraints.append(sum(x[f"{comp_id}{p}_not_equal_{n_trails}"] for p in bit_pos) >= 1)
             else:
-                for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                    if fixed_variable["bit_values"][index]:
-                        constraints.append(
-                            x[f"{component_id}{bit_position}_not_equal_{self._number_of_trails_found}"]
-                            == 1 - x[f"{component_id}_{bit_position}"]
-                        )
-                    else:
-                        constraints.append(
-                            x[f"{component_id}{bit_position}_not_equal_{self._number_of_trails_found}"]
-                            == x[f"{component_id}_{bit_position}"]
-                        )
-                constraints.append(
-                    sum(
-                        x[f"{component_id}{i}_not_equal_{self._number_of_trails_found}"]
-                        for i in fixed_variable["bit_positions"]
-                    )
-                    >= 1
-                )
+                if ctype == "equal":
+                    for i, pos in enumerate(bit_pos):
+                        constraints.append(x[f"{comp_id}_{pos}"] == bit_vals[i])
+                else:
+                    for i, pos in enumerate(bit_pos):
+                        neq = x[f"{comp_id}{pos}_not_equal_{n_trails}"]
+                        a = x[f"{comp_id}_{pos}"]
+                        bit_val = bit_vals[i]
+                        constraints.append(neq == (1 - a if bit_val else a))
+                    constraints.append(sum(x[f"{comp_id}{p}_not_equal_{n_trails}"] for p in bit_pos) >= 1)
 
         return constraints
 

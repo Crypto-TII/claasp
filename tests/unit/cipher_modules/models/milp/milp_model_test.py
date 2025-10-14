@@ -10,6 +10,7 @@ from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import 
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.name_mappings import INPUT_PLAINTEXT, XOR_DIFFERENTIAL, XOR_LINEAR
+from claasp.cipher_modules.models.utils import set_fixed_variables
 
 
 def test_get_independent_input_output_variables():
@@ -78,6 +79,22 @@ def test_fix_variables_value_constraints():
     assert str(constraints[6]) == "x_8 == 1 - x_9"
     assert str(constraints[7]) == "x_10 == x_11"
     assert str(constraints[8]) == "1 <= x_4 + x_6 + x_8 + x_10"
+
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    milp = MilpXorDifferentialModel(speck)
+    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values)
+    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+
+    fixed_values = [set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values, solver_name='SCIP_EXT')
+    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+
+    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[0]*31+[1])]
+    fixed_values.append(set_fixed_variables(speck.get_all_components_ids()[-1],'equal',range(32),[0]*31+[1]))
+    fixed_values.append(set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))]))
+    trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values)
+    assert trail['status'] == 'UNSATISFIABLE'
 
 
 def test_model_constraints():
