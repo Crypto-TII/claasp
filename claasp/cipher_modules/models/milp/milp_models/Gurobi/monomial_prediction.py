@@ -973,39 +973,49 @@ class MilpMonomialPredictionModel():
     def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=None):
         """
         Build and solve the MILP model to compute the Algebraic Normal Form (ANF)
-        of a specific output bit of the cipher using the Monomial Prediction (MP).
+        of a specific output bit of the cipher using the Monomial Prediction (MP) approach.
 
-        Parameters
-        ----------
-        output_bit_index : int
-            Index of the ciphertext bit whose ANF is to be computed.
+        By default, the model enumerates all possible monomials contributing to the selected output bit.
+        Optionally, a degree constraint can be applied to restrict the search to monomials of a fixed degree.
 
-        fixed_degree : int, optional
-            If not None, this method will return only the monomials whose degree is exactly "fixed_degree".
+        INPUT:
 
-        which_var_degree : str, optional
-            Prefix or full name of the input variable on which the degree
-            constraint (`fixed_degree`) is applied. Typical values:
-                - "p" or "plaintext" for plaintext variables
-                - "k" or "key" for key variables
-                - "i" for initialisation_vector variables
-            If None, defaults to the first input listed in `self._cipher.inputs`.
+        - ``output_bit_index`` -- **integer**; index of the ciphertext bit whose ANF is to be computed.
+        - ``fixed_degree`` -- **integer** (default: ``None``); if not ``None``, only monomials
+          whose degree equals this value are returned.
+        - ``which_var_degree`` -- **string** (default: ``None``); prefix or full name of the input
+          variable on which the degree constraint (``fixed_degree``) is applied.
+          Typical values include:
+            * ``"p"`` or ``"plaintext"`` for plaintext variables
+            * ``"k"`` or ``"key"`` for key variables
+            * ``"i"`` for initialization vector variables
+          If ``None``, defaults to the first input listed in ``self._cipher.inputs``.
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
+          ID if you want to compute the ANF for an intermediate output instead of the final cipher output.
 
-        chosen_cipher_output : str, optional
-            If one want to check an intermediate components other than the cipher_output, it can be specified with this parameter.
+        EXAMPLES::
 
-        Examples
-        --------
+            # Example 1: Compute the ANF of the first ciphertext bit in SIMON (round 1)
             sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
             sage: cipher = SimonBlockCipher(number_of_rounds=1)
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
             sage: milp = MilpMonomialPredictionModel(cipher)
-            sage: milp.find_anf_of_specific_output_bit(0)
+            sage: and = milp.find_anf_of_specific_output_bit(0)
+            sage: R = milp.get_boolean_polynomial_ring()
+            sage: anf == R("p1*p8 + p2 + p16 + k48")
+            True
 
-            sage: milp.find_anf_of_specific_output_bit(0, fixed_degree=2, which_var_degree="p")
+            # Example 2: Restrict the analysis to degree-2 monomials on plaintext variables
+            sage: anf = milp.find_anf_of_specific_output_bit(0, fixed_degree=2, which_var_degree="p")
+            sage: anf == R("p1*p8")
+            True
 
+            # Example 3: Restrict the analysis to degree-1 monomials on key variables
             sage: milp.find_anf_of_specific_output_bit(0, fixed_degree=1, which_var_degree="k")
+            sage: anf == R("k48")
+            True
         """
+
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output)
         self._model.setParam("PoolSolutions",200000000)
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
@@ -1017,38 +1027,39 @@ class MilpMonomialPredictionModel():
 
     def check_anf_correctness(self, output_bit_index, num_tests=10, endian="msb"):
         """
-        Verify the correctness of the computed ANF for a specific cipher output bit by random testing.
+        Verify the correctness of the computed Algebraic Normal Form (ANF)
+        for a specific cipher output bit by random testing.
 
-        This method computes the value of an output bit from the cipher evaluation on one side,
-        and from its ANF evaluation on another side, and then compare them for several random input assignments.
+        This method compares the value of an output bit obtained from the
+        cipher evaluation and from its ANF evaluation, across several
+        random input assignments.
 
-        Parameters
-        ----------
-        output_bit_index : int
-            Index (0-based) of the output bit to test. The indexing direction depends
-            on the `endian` parameter.
-        num_tests : int, optional
-            Number of random input assignments to test (default = 10).
-        endian : {"msb", "lsb"}, optional
-            Defines how bit positions are indexed and extracted:
-                - ``"msb"`` : bit index 0 corresponds to the most significant bit (default).
-                - ``"lsb"`` : bit index 0 corresponds to the least significant bit.
+        INPUT:
 
-        Returns
-        -------
-        bool
-            True if the ANF output matches the true cipher output for all tested
-            input assignments, False otherwise.
+        - ``output_bit_index`` -- **integer**; index (0-based) of the output bit to test.
+          The indexing direction depends on the ``endian`` parameter.
+        - ``num_tests`` -- **integer** (default: ``10``); number of random input assignments
+          to test.
+        - ``endian`` -- **string** (default: ``"msb"``); defines how bit positions are indexed
+          and extracted:
+            * ``"msb"`` : bit index 0 corresponds to the most significant bit (default)
+            * ``"lsb"`` : bit index 0 corresponds to the least significant bit
 
-        Examples
-        --------
+        OUTPUT:
+
+        - **bool**; returns ``True`` if the ANF output matches the cipher output
+          for all tested input assignments, ``False`` otherwise.
+
+        EXAMPLES::
+
             sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
             sage: cipher = SimonBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
             sage: milp = MilpMonomialPredictionModel(cipher)
             sage: milp.check_anf_correctness(0, endian="msb")
-            sage: True
+            True
         """
+
         # 1) Generate random test vectors for all cipher inputs
         test_vectors = []
         for _ in range(num_tests):
@@ -1103,42 +1114,35 @@ class MilpMonomialPredictionModel():
         """
         Compute the superpoly of a specific cipher output bit under a given cube.
 
-        This function fixes a set of cube variables (e.g., IV or plaintext bits) to 1,
-        builds the MILP model for the specified output bit, computes its ANF,
-        and substitutes these fixed variables to obtain the corresponding superpoly.
-        In the context of cube attacks, this represents the key-dependent polynomial
-        after summing over the cube variables.
+        INPUT:
 
-        Parameters
-        ----------
-        cube : list[str]
-            List of variable names (as strings) forming the cube.
-            Each element uses the following convention:
-            - ``'i'`` prefix for IV bits (e.g., ``"i9"``)
-            - ``'p'`` prefix for plaintext bits
-            Example: ``["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]``.
-        output_bit_index : int
-            Index (0-based, from MSB) of the cipher output bit for which the superpoly is computed.
-        chosen_cipher_output : str or None, optional
-            Identifier of a specific cipher output component to target.
-            If ``None`` (default), the method uses the final cipher output.
+        - ``cube`` -- **list of strings**; variable names forming the cube.
+          Each variable follows the convention:
+            * ``"i"`` prefix for IV bits
+            * ``"p"`` prefix for plaintext bits
+          Example: ``["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]``.
+        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most significant bit)
+          of the cipher output bit for which the superpoly is computed.
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
+          ID if the computation targets an intermediate output instead of the final cipher output.
 
-        Returns
-        -------
-        sage.rings.polynomial.pbori.pbori.BooleanPolynomial
-            The resulting superpoly polynomial
+        OUTPUT:
 
-        Examples
-        --------
+        - **BooleanPolynomial**; the resulting superpoly polynomial in the Boolean ring.
+
+        EXAMPLES::
+
             sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
             sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=590)
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
             sage: milp = MilpMonomialPredictionModel(cipher)
             sage: cube = ["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]
             sage: superpoly = milp.find_superpoly_of_specific_output_bit(cube, output_bit_index=0)
-            sage: superpoly
-            k20*i60*i61 + k20*i60*i74 + k20*i60 + k20*i73 + i8*i60*i61 + i8*i60*i74 + i8*i60 + i8*i73 + i60*i61*i71 + i60*i61*i72*i73 + i60*i71*i74 + i60*i71 + i60*i72*i73*i74 + i60*i72*i73 + i71*i73 + i72*i73
+            sage: R = milp.get_boolean_polynomial_ring()
+            sage: superpoly == R("k20*i60*i61 + k20*i60*i74 + k20*i60 + k20*i73 + i8*i60*i61 + i8*i60*i74 + i8*i60 + i8*i73 + i60*i61*i71 + i60*i61*i72*i73 + i60*i71*i74 + i60*i71 + i60*i72*i73*i74 + i60*i72*i73 + i71*i73 + i72*i73")
+            True
         """
+
         fixed_degree = None
         which_var_degree = None
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output)
@@ -1166,31 +1170,29 @@ class MilpMonomialPredictionModel():
 
     def find_upper_bound_degree_of_specific_output_bit(self, output_bit_index, which_var_degree=None, chosen_cipher_output=None):
         """
-        Compute an upper bound on the algebraic degree of a specific cipher output bit,
+        Compute an upper bound on the algebraic degree of a specific cipher output bit
         with respect to a chosen input variable (e.g., key, IV, or plaintext).
 
-        Parameters
-        ----------
-        output_bit_index : int
-            Index (0-based, from MSB) of the cipher output bit to analyze.
-        which_var_degree : str or None, optional
-            Prefix identifying which input group the degree should be computed over:
-                - ``"k"`` → degree with respect to key bits
-                - ``"p"`` → degree with respect to plaintext bits
-                - ``"i"`` → degree with respect to IV bits
-            If ``None`` (default), the first input in ``self._cipher.inputs`` is used.
-        chosen_cipher_output : str or None, optional
-            Identifier of a specific cipher output component to target.
-            If ``None`` (default), the final cipher output is used.
+        INPUT:
 
-        Returns
-        -------
-        int
-            Upper bound on the algebraic degree of the selected output bit with respect
-            to the chosen input variable.
+        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most significant bit)
+          of the cipher output bit to analyze.
+        - ``which_var_degree`` -- **string** (default: ``None``); prefix identifying which
+          input the algebraic degree should be computed over:
+            * ``"k"`` → degree with respect to key bits
+            * ``"p"`` → degree with respect to plaintext bits
+            * ``"i"`` → degree with respect to IV bits
+          If ``None`` (default), the first input listed in ``self._cipher.inputs`` is used.
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
+          ID if the computation targets an intermediate output instead of the final cipher output.
 
-        Example
-        --------
+        OUTPUT:
+
+        - **integer**; upper bound on the algebraic degree of the selected output bit
+          with respect to the chosen input variable group.
+
+        EXAMPLES::
+
             sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
             sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=508)
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
@@ -1198,6 +1200,7 @@ class MilpMonomialPredictionModel():
             sage: milp.find_upper_bound_degree_of_specific_output_bit(0, which_var_degree="i")
             14
         """
+
         fixed_degree = None
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output)
 
@@ -1233,35 +1236,33 @@ class MilpMonomialPredictionModel():
     def find_exact_degree_of_specific_output_bit(self, output_bit_index, which_var_degree=None, chosen_cipher_output=None):
         """
         Compute the exact algebraic degree of a specific cipher output bit
-        with respect to a chosen input variable (e.g., key, IV, or plaintext).
+        with respect to a chosen input variable group (e.g., key, IV, or plaintext).
 
         Unlike the upper-bound computation, this method enumerates all optimal MILP
-        solutions corresponding to the maximal-degree monomials and checks their
-        parity (mod 2). The exact algebraic degree is then determined as the
-        highest degree with an odd number of monomials.
+        solutions corresponding to maximal-degree monomials and checks their parity
+        (mod 2). The exact algebraic degree is the highest degree for which the number
+        of monomials with that degree is odd.
 
-        Parameters
-        ----------
-        output_bit_index : int
-            Index (0-based, from MSB) of the cipher output bit to analyze.
-        which_var_degree : str or None, optional
-            Prefix identifying which input group the degree should be computed over:
-                - ``"k"`` → degree with respect to key bits
-                - ``"p"`` → degree with respect to plaintext bits
-                - ``"i"`` → degree with respect to IV bits
-            If ``None`` (default), the first input in ``self._cipher.inputs`` is used.
-        chosen_cipher_output : str or None, optional
-            Identifier of a specific cipher output component to target.
-            If ``None`` (default), the final cipher output is used.
+        INPUT:
 
-        Returns
-        -------
-        int
-            The exact algebraic degree of the selected output bit with respect
-            to the specified variable group.
+        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most significant bit)
+          of the cipher output bit to analyze.
+        - ``which_var_degree`` -- **string** (default: ``None``); prefix identifying which
+          input group the algebraic degree should be computed over:
+            * ``"k"`` → degree with respect to key bits
+            * ``"p"`` → degree with respect to plaintext bits
+            * ``"i"`` → degree with respect to IV bits
+          If ``None`` (default), the first input listed in ``self._cipher.inputs`` is used.
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
+          ID if the computation targets an intermediate output instead of the final cipher output.
 
-        Examples
-        --------
+        OUTPUT:
+
+        - **integer**; exact algebraic degree of the selected output bit with respect to
+          the chosen input variable group.
+
+        EXAMPLES::
+
             sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
             sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=508)
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
@@ -1269,6 +1270,7 @@ class MilpMonomialPredictionModel():
             sage: milp.find_exact_degree_of_specific_output_bit(0, which_var_degree="i")
             13
         """
+
         fixed_degree = None
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output)
 
@@ -1325,37 +1327,33 @@ class MilpMonomialPredictionModel():
         """
         Compute the upper bound on the algebraic degree for all cipher output bits.
 
-        This method iteratively builds the MILP model for each output bit of the cipher
-        and computes the upper bound on its algebraic degree with respect to the chosen
-        input variable (e.g., key, plaintext, IV).
+        INPUT:
 
-        Parameters
-        ----------
-        which_var_degree : str or None, optional
-            Prefix indicating which variable group the degree should be computed over:
-                - ``"k"`` → key bits
-                - ``"p"`` → plaintext bits
-                - ``"i"`` → IV bits
-            If ``None`` (default), the degree is computed with respect to the first
-            input in ``self._cipher.inputs``.
-        chosen_cipher_output : str or None, optional
-            Identifier of a specific cipher output component to analyze.
-            If ``None`` (default), the method targets the final cipher output.
+        - ``which_var_degree`` -- **string** (default: ``None``); prefix indicating which
+          variable group the degree should be computed over:
+            * ``"k"`` → key bits
+            * ``"p"`` → plaintext bits
+            * ``"i"`` → IV bits
+          If ``None`` (default), the degree is computed with respect to the first input
+          listed in ``self._cipher.inputs``.
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher
+          component ID if the computation targets an intermediate output (e.g., after a
+          given round) instead of the final cipher output.
 
-        Returns
-        -------
-        list[int]
-            List of upper bounds on the algebraic degrees of all cipher output bits,
-            ordered from MSB to LSB.
+        OUTPUT:
 
-        Examples
-        --------
+        - **list of integers**; upper bounds on the algebraic degrees of all cipher output bits.
+
+        EXAMPLES::
+
             sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
             sage: cipher = SimonBlockCipher(number_of_rounds=4)
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
             sage: milp = MilpMonomialPredictionModel(cipher)
-            sage: milp.find_upper_bound_degree_of_all_output_bits(which_var_degree="p")
+            sage: milp.find_upper_bound_degree_of_all_output_bits(which_var_degree="p") # doctest: +SKIP
+            ...
         """
+
         degrees = []
         for i in range(self._cipher.output_bit_size):
             self.re_init()
@@ -1370,37 +1368,32 @@ class MilpMonomialPredictionModel():
         """
         Compute the exact algebraic degree for all cipher output bits.
 
-        This method iteratively builds the MILP model for each output bit of the cipher
-        and computes its exact algebraic degree with respect to the chosen
-        input variable (e.g., key, plaintext, IV).
+        INPUT:
 
-        Parameters
-        ----------
-        which_var_degree : str or None, optional
-            Prefix indicating which variable group the degree should be computed over:
-                - ``"k"`` → key bits
-                - ``"p"`` → plaintext bits
-                - ``"i"`` → IV bits
-            If ``None`` (default), the degree is computed with respect to the first
-            input in ``self._cipher.inputs``.
-        chosen_cipher_output : str or None, optional
-            Identifier of a specific cipher output component to analyze.
-            If ``None`` (default), the method targets the final cipher output.
+        - ``which_var_degree`` -- **string** (default: ``None``); prefix indicating which
+          variable group the algebraic degree should be computed over:
+            * ``"k"`` → key bits
+            * ``"p"`` → plaintext bits
+            * ``"i"`` → IV bits
+          If ``None`` (default), the degree is computed with respect to the first input
+          listed in ``self._cipher.inputs``.
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher
+          component ID if the computation targets an intermediate output instead of the final cipher output.
 
-        Returns
-        -------
-        list[int]
-            List of exact algebraic degrees of all cipher output bits,
-            ordered from MSB to LSB.
+        OUTPUT:
 
-        Examples
-        --------
+        - **list of integers**; exact algebraic degrees of all cipher output bits.
+
+        EXAMPLES::
+
             sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
             sage: cipher = SimonBlockCipher(number_of_rounds=4)
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
             sage: milp = MilpMonomialPredictionModel(cipher)
-            sage: milp.find_exact_degree_of_all_output_bits(which_var_degree="p")
+            sage: milp.find_exact_degree_of_all_output_bits(which_var_degree="p") # doctest: +SKIP
+            ...
         """
+
         degrees = []
         for i in range(self._cipher.output_bit_size):
             self.re_init()
