@@ -1035,3 +1035,170 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
     count = np.count_nonzero(parities == 0)
     corr = 2 * count / number_of_samples * 1.0 - 1
     return corr
+
+
+def _sample_truncated_difference_from_string(pattern, num_samples, state_size, rng):
+    """
+    Build a (num_bytes, num_samples) uint8 matrix with per-sample input differences
+    that satisfy the truncated pattern.
+    Pattern is a string of length = state_size over {'0','1','2','?'},
+    where '2'/'?' means unconstrained. Bit index 0 is LSB of the state.
+    For convenience (to match your existing helpers), we interpret the
+    given string MSB→LSB and reverse it internally.
+    """
+    if len(pattern) != state_size:
+        raise ValueError(f"pattern length ({len(pattern)}) must equal state_size ({state_size}).")
+    if any(c not in ('0','1','2','?') for c in pattern):
+        raise ValueError("pattern may only contain '0', '1', '2', or '?'.")
+
+    num_bytes = state_size // 8
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+
+    # Reverse so position 0 corresponds to LSB (consistent with your extract helpers)
+    patt_rev = pattern[::-1]
+
+    # Fixed positions & values
+    fixed_pos = [i for i, ch in enumerate(patt_rev) if ch in ('0', '1')]
+    fixed_vals = np.array([int(ch) for ch in patt_rev if ch in ('0', '1')], dtype=np.uint8)
+
+    # Generate random bits for all positions, then overwrite fixed ones
+    bits = rng.integers(0, 2, size=(num_samples, state_size), dtype=np.uint8)
+    if fixed_pos:
+        bits[:, fixed_pos] = fixed_vals  # broadcast per column
+
+    # Pack per-sample bit vectors into bytes, big-endian at the byte level
+    input_diff_samples = np.zeros((num_samples, num_bytes), dtype=np.uint8)
+    pos_indices = np.arange(state_size, dtype=np.int64)
+    byte_indices = (state_size - pos_indices - 1) // 8  # select the byte (big-endian)
+    bit_indices  = (pos_indices % 8).astype(np.uint8)   # bit within that byte (LSB=0)
+
+    # Vectorized over samples; loop over positions (≤ state_size, e.g., 512) is cheap
+    for pos in range(state_size):
+        if np.any(bits[:, pos]):  # small shortcut; skip all-zero column
+            input_diff_samples[:, byte_indices[pos]] |= (bits[:, pos] << bit_indices[pos])
+
+    # Return in shape (num_bytes, num_samples) to XOR with plaintexts directly
+    return input_diff_samples.T
+
+
+def differential_truncated_linear_checker_permutation_input_truncated_ouput_mask(
+    cipher,
+    input_diff_pattern,   # str over {'0','1','2','?'} of length state_size
+    output_mask,          # int mask for the linear test 
+    number_of_samples,
+    state_size,
+    seed=None,
+):
+    """
+    Experimental check of a *truncated* input difference → output linear mask.
+    - Measures P[⟨ΔC, output_mask⟩ = 0] and the corresponding correlation.
+
+    Returns:
+        prob_even (float): probability that the masked parity is even (0).
+        corr (float): correlation = 2*prob_even - 1.
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    num_bytes = state_size // 8
+    rng = np.random.default_rng(seed)
+
+    input_difference_data = _sample_truncated_difference_from_string(
+        input_diff_pattern, number_of_samples, state_size, rng
+    )
+
+    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext2 = plaintext1 ^ input_difference_data
+
+    ciphertext1 = cipher.evaluate_vectorized([plaintext1])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext2])
+    ciphertext3 = ciphertext1[0] ^ ciphertext2[0] 
+
+    bit_positions_ciphertext = _extract_bit_positions(output_mask, state_size)
+    ccc = _extract_bits(ciphertext3.T, bit_positions_ciphertext)  
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    count_even = np.count_nonzero(parities == 0)
+
+    prob_even = count_even / number_of_samples
+    corr = 2.0 * prob_even - 1.0
+    return prob_even, corr
+
+def _truncated_string_to_flipmask_matrix(trunc_str, num_samples, state_size, rng):
+    if len(trunc_str) != state_size:
+        raise ValueError("truncated difference length must equal state_size")
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    trunc_str = trunc_str.replace('?', '2')
+
+    num_bytes = state_size // 8
+    mask = np.zeros((num_bytes, num_samples), dtype=np.uint8)
+    bit_size = state_size
+    inv = trunc_str[::-1]
+
+    for pos, ch in enumerate(inv):
+        byte_index = (bit_size - pos - 1) // 8
+        bit_index  = pos % 8
+
+        if ch == '1':
+            mask[byte_index, :] |= (1 << bit_index)
+        elif ch == '0':
+            pass
+        elif ch == '2':
+            flips = rng.integers(0, 2, size=(num_samples,), dtype=np.uint8)
+            mask[byte_index, :] |= (flips << bit_index)
+        else:
+            raise ValueError("Truncated string must contain only '0','1','2' or '?'.")
+    return mask
+
+
+def differential_truncated_checker_permutation_input_and_output_truncated(
+    cipher,
+    input_trunc_diff,      
+    output_trunc_diff, 
+    number_of_samples,
+    state_size,
+    seed=None,
+):
+    """
+    Verifies experimentally differential-truncated distinguishers for permutations
+    cipher -- the permutation to be evaluated
+    input_trunc_diff -- **string**; a string of length = state_size over {'0','1','2','?'},
+                        where '2'/'?' means truncated difference.
+    output_trunc_diff -- **string**; a string of length = state_size over {'0','1','?', '2'},
+                         where '?' means truncated difference.
+    number_of_samples -- **integer**; the number of samples to be used in the experiment
+    state_size -- **integer**; the size of the state in bits
+    seed -- **integer**; the seed for the random number generator
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    if len(input_trunc_diff) != state_size or len(output_trunc_diff) != state_size:
+        raise ValueError("Both truncated differences must have length == state_size.")
+
+    rng = np.random.default_rng(seed)
+    num_bytes = state_size // 8
+
+    plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    input_mask = _truncated_string_to_flipmask_matrix(input_trunc_diff, number_of_samples, state_size, rng)
+
+    plaintext_data2 = plaintext_data1 ^ input_mask
+
+    ciphertext1 = cipher.evaluate_vectorized([plaintext_data1])[0]
+    ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])[0]
+    diff_ciphertext = ciphertext1 ^ ciphertext2
+
+    bit_positions = extract_bit_positions(output_trunc_diff) 
+    if len(bit_positions) == 0:
+        total = number_of_samples
+    else:
+        known_bits = extract_bits(diff_ciphertext.T, bit_positions) 
+        inv_out = output_trunc_diff[::-1]
+        filled_bits = [int(b) for b in inv_out if b in ("0", "1")]
+        matches = np.all(known_bits == np.array(filled_bits, dtype=np.uint8)[:, None], axis=0)
+        total = int(matches.sum())
+
+    if total == 0:
+        return float("-inf")
+    prob_weight = math.log(total / number_of_samples, 2)
+    return prob_weight
+

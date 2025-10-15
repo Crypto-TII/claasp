@@ -13,7 +13,9 @@ from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dicti
                                                 get_single_key_scenario_format_for_fixed_values,
                                                 get_related_key_scenario_format_for_fixed_values,
                                                 differential_truncated_checker_permutation,
-                                                differential_checker_permutation)
+                                                differential_checker_permutation,
+                                                differential_truncated_checker_permutation_input_and_output_truncated,
+                                                differential_truncated_linear_checker_permutation_input_truncated_ouput_mask)
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 
 NOT_EQUAL = 'not equal'
@@ -133,3 +135,60 @@ def test_differential_truncated_checker_permutation():
         cipher, input_difference, output_difference, 1 << 12, 512, seed=42
     )
     assert abs(probability_weight) < 2
+
+def test_differential_truncated_checker_permutation():
+    cipher = ChachaPermutation(number_of_rounds=3)
+    input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
+    output_difference = '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????????????????????????????????????????????????????????????????????1000000000000000????????????????????100000000000????????????????????????10000000????????????????????????????????????10000000????????????????????????????????????????????????1000000000000000????????????????????1000000000000000000010000000000010000000000000000000000000000000000000000000????????????????????????????????00000000000000001000000000000000'
+
+    probability_weight = differential_truncated_checker_permutation(
+        cipher, input_difference, output_difference, 1 << 12, 512, seed=42
+    )
+    assert abs(probability_weight) < 2
+
+
+def test_differential_truncated_checker_permutation_input_and_output_truncated(
+    cipher,
+    input_trunc_diff,
+    output_trunc_diff,
+    number_of_samples,
+    state_size,
+    seed=None,
+):
+    chachaPermutation = ChachaPermutation(number_of_rounds=5, start_round=("even", "top"))
+    chachaPermutation_inv = chachaPermutation.inverse()
+    # TODO: 
+    # - check the following backward truncated differential. 
+    # - this backward distinguisher covers 2.5 rounds of ChaCha (5 half rounds).
+    # - this backward distinguisher starts at the 7.5 round of ChaCha and ends at the 5th round of ChaCha. 
+    # - this distinguihser was found using MiniZinc semi-deterministic model (check correctness). You can add more distinguishers to increase confidence.
+    # ================================================Distinguisher X_backward_0===================================================
+    # Theoretical cost:  1.47
+    # Input_diff for (X_backward_0)
+    # 20220000022001201120202222222200 | 20100202202211222200011200222002 | 00002020202021000000000022200020 | 20020120010110001010100011010000
+    # 22222222222222222222222222222222 | 22222222222222222222222222222222 | 02222222222210222222222220222222 | 22200000000022222221222222222222
+    # 22222222222222200000000022222221 | 22222222222222222222222222222222 | 00002222222210000000000000000000 | 22222122222202222222222210222222
+    # 22201210121022202022222121200020 | 10222011210122000200000001021001 | 10101000110100000020122110011000 | 10000200222000000000000000000000
+    # Output_diff for (X_backwards_0)
+    # 22222222222222222222222222222222 | 22222222222222222222222222222222 | 22222222222222222222222222222220 | 22222222222222222222222222222222
+    # 22222222222222222222222222222222 | 22222222222222222222222222222222 | 22222222222202222222222202222220 | 22222222222222222222222222222222
+    # 22222222222222222222222222222222 | 22222222222222222222222222222222 | 22222222222222220100222222222220 | 22222222222222222222222222222222
+    # 22222222222222222222222222222222 | 22222222222222222222222222222222 | 22222222222222222222222222222221 | 22222222222222222222222222222222
+    import ipdb; ipdb.set_trace()
+    input_trunc_diff = "" #TODO: add input trunc diff 
+    output_trunc_diff = "" #TODO: add output trunc diff
+    number_of_samples = 1 << 9
+    state_size = 512
+    differential_truncated_checker_permutation_input_and_output_truncated(
+        chachaPermutation_inv,
+        input_trunc_diff, 
+        output_trunc_diff,
+        number_of_samples,
+        state_size,
+        seed=None,
+    )
+
+
+# TODO: Add test for differential_truncated_linear_checker_permutation_input_truncated_ouput_mask
+def test_differential_truncated_linear_checker_permutation_input_truncated_ouput_mask():
+    # TODO: Implement test
