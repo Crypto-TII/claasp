@@ -1034,7 +1034,7 @@ class MilpMonomialPredictionModel():
                     f.write(f"which_var_degree: {which_var_degree}\n")
                     f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
                     f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-"*80 + "\n")
+                    f.write("-"*10 + "\n")
                     f.write(str(anf))
                     f.write("\n\n")
                 print(f"[INFO] ANF successfully saved to '{filename}'") if verbosity else None
@@ -1192,7 +1192,7 @@ class MilpMonomialPredictionModel():
                     f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
                     f.write(f"cube: {cube}\n")
                     f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-"*80 + "\n")
+                    f.write("-"*10 + "\n")
                     f.write(str(poly_sub))
                     f.write("\n\n")
                 print(f"[INFO] Superpoly successfully saved to '{filename}'") if verbosity else None
@@ -1284,7 +1284,7 @@ class MilpMonomialPredictionModel():
                     f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
                     f.write(f"cube: {cube}\n")
                     f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-"*80 + "\n")
+                    f.write("-"*10 + "\n")
                     f.write(str(degree_upper_bound))
                     f.write("\n\n")
                 print(f"[INFO] UP degree superpoly successfully saved to '{filename}'") if verbosity else None
@@ -1346,7 +1346,7 @@ class MilpMonomialPredictionModel():
                     f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
                     f.write(f"cube: {cube}\n")
                     f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-"*80 + "\n")
+                    f.write("-"*10 + "\n")
                     f.write(str(degrees))
                     f.write("\n\n")
                 print(f"[INFO] All degrees superpoly successfully saved to '{filename}'") if verbosity else None
@@ -1430,7 +1430,7 @@ class MilpMonomialPredictionModel():
                     f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
                     f.write(f"which_var_degree: {which_var_degree}\n")
                     f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-"*80 + "\n")
+                    f.write("-"*10 + "\n")
                     f.write(str(degree_upper_bound))
                     f.write("\n\n")
                 print(f"[INFO] UP degree successfully saved to '{filename}'") if verbosity else None
@@ -1490,7 +1490,7 @@ class MilpMonomialPredictionModel():
                     f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
                     f.write(f"which_var_degree: {which_var_degree}\n")
                     f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-"*80 + "\n")
+                    f.write("-"*10 + "\n")
                     f.write(str(degrees))
                     f.write("\n\n")
                 print(f"[INFO] All UP degrees successfully saved to '{filename}'") if verbosity else None
@@ -1597,7 +1597,7 @@ class MilpMonomialPredictionModel():
                     f.write(f"which_var_degree: {which_var_degree}\n")
                     f.write(f"degree_drop: {degree_drop}\n")
                     f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-"*80 + "\n")
+                    f.write("-"*10 + "\n")
                     f.write(str(exact_degree))
                     f.write("\n\n")
                 print(f"[INFO] Exact degree successfully saved to '{filename}'") if verbosity else None
@@ -1657,7 +1657,7 @@ class MilpMonomialPredictionModel():
                     f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
                     f.write(f"which_var_degree: {which_var_degree}\n")
                     f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-"*80 + "\n")
+                    f.write("-"*10 + "\n")
                     f.write(str(degrees))
                     f.write("\n\n")
                 print(f"[INFO] All exact degrees successfully saved to '{filename}'") if verbosity else None
