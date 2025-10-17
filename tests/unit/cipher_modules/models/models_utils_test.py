@@ -17,6 +17,7 @@ from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dicti
                                                 differential_truncated_checker_permutation_input_and_output_truncated,
                                                 differential_truncated_linear_checker_permutation_input_truncated_ouput_mask)
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 
 NOT_EQUAL = 'not equal'
 
@@ -147,16 +148,9 @@ def test_differential_truncated_checker_permutation():
     assert abs(probability_weight) < 2
 
 
-def test_differential_truncated_checker_permutation_input_and_output_truncated(
-    cipher,
-    input_trunc_diff,
-    output_trunc_diff,
-    number_of_samples,
-    state_size,
-    seed=None,
-):
+def test_differential_truncated_checker_permutation_input_and_output_truncated():
     chachaPermutation = ChachaPermutation(number_of_rounds=5, start_round=("even", "top"))
-    chachaPermutation_inv = chachaPermutation.inverse()
+    chachaPermutation_inv = chachaPermutation.cipher_inverse()
     # TODO: 
     # - check the following backward truncated differential. 
     # - this backward distinguisher covers 2.5 rounds of ChaCha (5 half rounds).
@@ -174,12 +168,12 @@ def test_differential_truncated_checker_permutation_input_and_output_truncated(
     # 22222222222222222222222222222222 | 22222222222222222222222222222222 | 22222222222202222222222202222220 | 22222222222222222222222222222222
     # 22222222222222222222222222222222 | 22222222222222222222222222222222 | 22222222222222220100222222222220 | 22222222222222222222222222222222
     # 22222222222222222222222222222222 | 22222222222222222222222222222222 | 22222222222222222222222222222221 | 22222222222222222222222222222222
-    import ipdb; ipdb.set_trace()
+    
     input_trunc_diff = "" #TODO: add input trunc diff 
     output_trunc_diff = "" #TODO: add output trunc diff
-    number_of_samples = 1 << 9
+    number_of_samples = 1 << 19
     state_size = 512
-    differential_truncated_checker_permutation_input_and_output_truncated(
+    prob = differential_truncated_checker_permutation_input_and_output_truncated(
         chachaPermutation_inv,
         input_trunc_diff, 
         output_trunc_diff,
@@ -187,8 +181,11 @@ def test_differential_truncated_checker_permutation_input_and_output_truncated(
         state_size,
         seed=None,
     )
+    print(prob)
+    #import ipdb; ipdb.set_trace()
 
 
 # TODO: Add test for differential_truncated_linear_checker_permutation_input_truncated_ouput_mask
 def test_differential_truncated_linear_checker_permutation_input_truncated_ouput_mask():
     # TODO: Implement test
+    return 0
