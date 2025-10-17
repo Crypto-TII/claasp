@@ -28,7 +28,7 @@ import os
 import secrets
 from sage.all import GF
 
-verbosity = True
+verbosity = False
 
 class MilpMonomialPredictionModel():
     """
