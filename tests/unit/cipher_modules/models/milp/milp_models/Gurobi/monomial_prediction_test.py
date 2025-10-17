@@ -55,6 +55,13 @@ def test_find_superpoly_of_specific_output_bit():
     expected = R("p3*p10*p11 + p3*p10 + p4*p10 + p5*p10 + p10*p11*p18 + p10*p11*k50 + p10*p18 + p10*p19 + p10*k33 + p10*k50 + p10*k51 + p10 + p25 + k57")
     assert superpoly == expected
 
+def test_find_exact_degree_of_superpoly_of_all_output_bits():
+    cipher = SimonBlockCipher(number_of_rounds=4)
+    milp = MilpMonomialPredictionModel(cipher)
+    degrees = milp.find_exact_degree_of_superpoly_of_all_output_bits(["p1", "p2"])
+    expected = [-1, -1, -1, -1, 2, 3, 3, 3, 3, -1, -1, -1, -1, 3, 3, 3, 1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 0]
+    assert degrees == expected
+
 def test_check_anf_correctness():
     cipher = SpeckBlockCipher(number_of_rounds=1)
     milp = MilpMonomialPredictionModel(cipher)
