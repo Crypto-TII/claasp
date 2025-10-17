@@ -1269,7 +1269,7 @@ class MilpMonomialPredictionModel():
         self._model.update()
         self.optimize_model()
         if self._model.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
-            print(f"[INFO] Model is infeasible") if verbosity else None if verbosity else None
+            print(f"[INFO] Model is infeasible") if verbosity else None
             degree_upper_bound = -1
         else:
             degree_upper_bound = int(round(self._model.ObjVal))
@@ -1415,7 +1415,7 @@ class MilpMonomialPredictionModel():
         self.optimize_model()
 
         if self._model.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
-            print(f"[INFO] Model is infeasible") if verbosity else None if verbosity else None
+            print(f"[INFO] Model is infeasible") if verbosity else None
             degree_upper_bound = -1
         else:
             degree_upper_bound = int(round(self._model.ObjVal))
