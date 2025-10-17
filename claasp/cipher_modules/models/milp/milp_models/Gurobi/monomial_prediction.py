@@ -1024,7 +1024,9 @@ class MilpMonomialPredictionModel():
         anf = self.get_solutions()
 
         if verbosity:
-            filename = f"{self._cipher._id}.txt"
+            folder = "monomial_prediction_experiments"
+            os.makedirs(folder, exist_ok=True)
+            filename = os.path.join(folder, f"{self._cipher._id}.txt")
             try:
                 with open(filename, "a", encoding="utf-8") as f:
                     f.write("\n" + "="*80 + "\n")
@@ -1183,7 +1185,9 @@ class MilpMonomialPredictionModel():
         poly_sub = poly.subs(assignments)
 
         if verbosity:
-            filename = f"{self._cipher._id}.txt"
+            folder = "monomial_prediction_experiments"
+            os.makedirs(folder, exist_ok=True)
+            filename = os.path.join(folder, f"{self._cipher._id}.txt")
             try:
                 with open(filename, "a", encoding="utf-8") as f:
                     f.write("\n" + "="*80 + "\n")
@@ -1202,55 +1206,42 @@ class MilpMonomialPredictionModel():
         return poly_sub
 
 
-    def find_upper_bound_degree_of_superpoly_of_specific_output_bit(
+    def find_exact_degree_of_superpoly_of_specific_output_bit(
         self, output_bit_index, cube, chosen_cipher_output=None):
         """
-        Compute an upper bound on the algebraic degree of the superpoly
+        Compute the exact algebraic degree of the superpoly
         corresponding to a specific cipher output bit under a given cube.
 
         INPUT:
 
-        - ``cube`` -- **list of strings**; variable names forming the cube.
-          Each variable follows the convention:
-            * ``"i"`` prefix for IV bits
-            * ``"p"`` prefix for plaintext bits
-          Example: ``["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]``.
-        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most significant bit)
-          of the cipher output bit for which the superpoly degree is estimated.
-        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
-          ID if the computation targets an intermediate output instead of the final cipher output.
+        - ``cube`` -- list[str]; variable names forming the cube (e.g. ["i9", "i19", ...])
+        - ``output_bit_index`` -- int; index (0-based, MSB-first) of the cipher output bit.
+        - ``chosen_cipher_output`` -- str | None; specify a cipher component ID if
+          targeting an intermediate output.
 
         OUTPUT:
-
-        - **integer**; upper bound on the algebraic degree of the superpoly
-          (measured with respect to the key variables).
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=590)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
-            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
-            sage: cube = ["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]
-            sage: deg = milp.find_upper_bound_degree_of_superpoly_of_specific_output_bit(output_bit_index=0, cube) # doctest: +SKIP
-            ...
+        - integer; exact algebraic degree of the superpoly (with respect to key variables).
         """
+
+        # === 1. Build generic model for the chosen output bit
         fixed_degree = None
         which_var_degree = None
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output)
 
-        self._model.setParam(GRB.Param.PoolSearchMode, 0)  # one optimal solution, faster
-        self._model.setParam("MIPGap", 0)
-        self._model.Params.OutputFlag = 0
+        m = self._model
+        m.Params.OutputFlag = 0
+        m.setParam(GRB.Param.PoolSearchMode, 2)
+        m.setParam(GRB.Param.PoolSolutions, 200000000)
+        m.setParam(GRB.Param.PoolGap, 0.0)
 
         cube_verbose = self.var_list_to_input_positions(cube)
         for term in cube_verbose:
-            var_term = self._model.getVarByName(f"{term[0]}[{term[1]}]")
+            var_term = m.getVarByName(f"{term[0]}[{term[1]}]")
             if var_term is not None:
-                self._model.addConstr(var_term == 1)
+                m.addConstr(var_term == 1)
+        m.update()
 
-        self._model.update()
         key_input_index = None
         for i, inp in enumerate(self._cipher.inputs):
             if inp.startswith("k"):
@@ -1261,97 +1252,103 @@ class MilpMonomialPredictionModel():
 
         key_size = self._cipher.inputs_bit_size[key_input_index]
         key_vars = [
-            self._model.getVarByName(f"key[{i}]") for i in range(key_size)
-            if self._model.getVarByName(f"key[{i}]") is not None
+            m.getVarByName(f"key[{i}]") for i in range(key_size)
+            if m.getVarByName(f"key[{i}]") is not None
         ]
 
-        self._model.setObjective(sum(key_vars), GRB.MAXIMIZE)
-        self._model.update()
-        self.optimize_model()
-        if self._model.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
+        m.setObjective(sum(key_vars), GRB.MAXIMIZE)
+        m.update()
+        m.optimize()
+
+        if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
             print(f"[INFO] Model is infeasible") if verbosity else None
-            degree_upper_bound = -1
+            exact_degree = -1
         else:
-            degree_upper_bound = int(round(self._model.ObjVal))
+            d = int(round(m.ObjVal))
+            monomial_parity = {}
+            for s in range(m.SolCount):
+                m.Params.SolutionNumber = s
+                active_indices = tuple(i for i, v in enumerate(key_vars) if v.Xn > 0.5)
+                if len(active_indices) == d:
+                    monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
+
+            degree_drop = False
+            if any(val == 1 for val in monomial_parity.values()):
+                exact_degree = d
+            else:
+                degree_drop = True
+                exact_degree = d - 1
 
         if verbosity:
-            filename = f"{self._cipher._id}.txt"
+            folder = "monomial_prediction_experiments"
+            os.makedirs(folder, exist_ok=True)
+            filename = os.path.join(folder, f"{self._cipher._id}.txt")
             try:
                 with open(filename, "a", encoding="utf-8") as f:
                     f.write("\n" + "="*80 + "\n")
-                    f.write(f"Experiment: upper bound degree superpoly\n")
+                    f.write(f"Experiment: exact degree superpoly\n")
                     f.write(f"output_bit_index: {output_bit_index}\n")
                     f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
                     f.write(f"cube: {cube}\n")
+                    f.write(f"degree_drop: {degree_drop}\n")
                     f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
                     f.write("-"*10 + "\n")
-                    f.write(str(degree_upper_bound))
+                    f.write(str(exact_degree))
                     f.write("\n\n")
-                print(f"[INFO] UP degree superpoly successfully saved to '{filename}'") if verbosity else None
+                print(f"[INFO] Exact degree superpoly successfully saved to '{filename}'") if verbosity else None
             except Exception as e:
-                print(f"[WARNING] Failed to save UP degree superpoly to file: {e}") if verbosity else None
+                print(f"[WARNING] Failed to save exact degree superpoly to file: {e}") if verbosity else None
 
-        return degree_upper_bound
+        return exact_degree
 
-
-    def find_upper_bound_degree_of_superpoly_of_all_output_bits(self, cube, chosen_cipher_output=None):
+    def find_exact_degree_of_superpoly_of_all_output_bits(self, cube, chosen_cipher_output=None):
         """
-        Compute the upper bound on the algebraic degree of the superpoly
-        for **all output bits** of the cipher under a given cube.
+        Compute the exact algebraic degree of the superpoly
+        for all output bits of the cipher under a given cube.
 
         INPUT:
 
-        - ``cube`` -- **list of strings**; variable names forming the cube.
-          Each variable follows the convention:
-            * ``"i"`` prefix for IV bits
-            * ``"p"`` prefix for plaintext bits
-          Example: ``["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]``.
-        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
-          ID if the computation targets an intermediate output instead of the final cipher output.
+        - ``cube`` -- list[str]; variable names forming the cube (e.g. ["i9", "i19", ...])
+        - ``chosen_cipher_output`` -- str | None; specify a cipher component ID if
+          the computation targets an intermediate output instead of the final cipher output.
 
         OUTPUT:
-
-        - **list of integers**; each entry corresponds to the upper bound on the algebraic degree
-          of the superpoly for the respective output bit (ordered from MSB to LSB).
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=590)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
-            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
-            sage: cube = ["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]
-            sage: deg_list = milp.find_upper_bound_degree_of_superpoly_of_all_output_bits(cube) # doctest: +SKIP
-            ...
+        - list[int]; exact algebraic degrees of the superpoly for each output bit.
         """
+
         global verbosity
         old_verbosity = verbosity
         verbosity = False
+
         degrees = []
         output_size = self._cipher.output_bit_size
 
         for i in range(output_size):
             self.re_init()
-            deg_ub = self.find_upper_bound_degree_of_superpoly_of_specific_output_bit(
+            deg_exact = self.find_exact_degree_of_superpoly_of_specific_output_bit(
                 i, cube, chosen_cipher_output)
-            degrees.append(deg_ub)
+            degrees.append(deg_exact)
+
         verbosity = old_verbosity
 
         if verbosity:
-            filename = f"{self._cipher._id}.txt"
+            folder = "monomial_prediction_experiments"
+            os.makedirs(folder, exist_ok=True)
+            filename = os.path.join(folder, f"{self._cipher._id}.txt")
             try:
                 with open(filename, "a", encoding="utf-8") as f:
                     f.write("\n" + "="*80 + "\n")
-                    f.write(f"Experiment: all output bits upper bound degree superpoly\n")
+                    f.write(f"Experiment: all output bits exact degree superpoly\n")
                     f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
                     f.write(f"cube: {cube}\n")
                     f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
                     f.write("-"*10 + "\n")
                     f.write(str(degrees))
                     f.write("\n\n")
-                print(f"[INFO] All degrees superpoly successfully saved to '{filename}'") if verbosity else None
+                print(f"[INFO] All exact degrees superpoly successfully saved to '{filename}'") if verbosity else None
             except Exception as e:
-                print(f"[WARNING] Failed to save All degrees superpoly to file: {e}") if verbosity else None
+                print(f"[WARNING] Failed to save All exact degrees superpoly to file: {e}") if verbosity else None
+
         return degrees
 
 
@@ -1421,7 +1418,9 @@ class MilpMonomialPredictionModel():
             degree_upper_bound = int(round(self._model.ObjVal))
 
         if verbosity:
-            filename = f"{self._cipher._id}.txt"
+            folder = "monomial_prediction_experiments"
+            os.makedirs(folder, exist_ok=True)
+            filename = os.path.join(folder, f"{self._cipher._id}.txt")
             try:
                 with open(filename, "a", encoding="utf-8") as f:
                     f.write("\n" + "="*80 + "\n")
@@ -1482,7 +1481,9 @@ class MilpMonomialPredictionModel():
         verbosity = old_verbosity
 
         if verbosity:
-            filename = f"{self._cipher._id}.txt"
+            folder = "monomial_prediction_experiments"
+            os.makedirs(folder, exist_ok=True)
+            filename = os.path.join(folder, f"{self._cipher._id}.txt")
             try:
                 with open(filename, "a", encoding="utf-8") as f:
                     f.write("\n" + "="*80 + "\n")
@@ -1587,7 +1588,9 @@ class MilpMonomialPredictionModel():
                 exact_degree = d - 1
 
         if verbosity:
-            filename = f"{self._cipher._id}.txt"
+            folder = "monomial_prediction_experiments"
+            os.makedirs(folder, exist_ok=True)
+            filename = os.path.join(folder, f"{self._cipher._id}.txt")
             try:
                 with open(filename, "a", encoding="utf-8") as f:
                     f.write("\n" + "="*80 + "\n")
@@ -1649,7 +1652,9 @@ class MilpMonomialPredictionModel():
         verbosity = old_verbosity
 
         if verbosity:
-            filename = f"{self._cipher._id}.txt"
+            folder = "monomial_prediction_experiments"
+            os.makedirs(folder, exist_ok=True)
+            filename = os.path.join(folder, f"{self._cipher._id}.txt")
             try:
                 with open(filename, "a", encoding="utf-8") as f:
                     f.write("\n" + "="*80 + "\n")
