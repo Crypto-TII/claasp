@@ -22,7 +22,7 @@ from collections import Counter
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_predecessors_subgraph
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
-from gurobipy import Model, GRB
+from gurobipy import Model, GRB, Env
 import os
 import secrets
 from sage.all import GF
