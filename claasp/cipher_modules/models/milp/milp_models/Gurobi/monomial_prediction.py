@@ -17,7 +17,6 @@
 # ****************************************************************************
 
 import time
-from gurobipy import *
 from sage.crypto.sbox import SBox
 from collections import Counter
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
@@ -446,23 +445,6 @@ class MilpMonomialPredictionModel():
             self._model.addConstr(output_vars[index] == input_vars_concat[index + block_size])
             self.set_as_used_variables([input_vars_concat[index], input_vars_concat[index + block_size]])
         self._model.update()
-
-    def get_original_var(self, var_to_copy):
-        name = var_to_copy.VarName
-        l = name.split("_")
-        l = l[2:]
-        original_name = "_".join(l)
-        index = original_name.split("[")[1].split("]")[0]
-        original_name = original_name.split("[")[0]
-        return original_name, int(index)
-
-    def create_copies(self, nb_copies, var_to_copy):
-        copies = self._model.addVars(list(range(nb_copies)), vtype=GRB.BINARY)
-        for i in range(nb_copies):
-            self._model.addConstr(var_to_copy >= copies[i])
-        self._model.addConstr(sum(copies[i] for i in range(nb_copies)) >= var_to_copy)
-        self._model.update()
-        return list(copies.values())
 
     def add_fsr_constraints(self, component):
         output_bit_size = component.output_bit_size

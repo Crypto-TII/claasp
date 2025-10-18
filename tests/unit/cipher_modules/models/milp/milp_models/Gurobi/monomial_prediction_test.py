@@ -62,6 +62,13 @@ def test_find_exact_degree_of_superpoly_of_all_output_bits():
     expected = [-1, -1, -1, -1, 2, 3, 3, 3, 3, -1, -1, -1, -1, 3, 3, 3, 1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 0]
     assert degrees == expected
 
+def test_find_exact_degree_of_all_output_bits():
+    cipher = SimonBlockCipher(number_of_rounds=2)
+    milp = MilpMonomialPredictionModel(cipher)
+    degrees = milp.find_exact_degree_of_all_output_bits(which_var_degree="p")
+    expected = [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+    assert degrees == expected
+
 def test_check_anf_correctness():
     cipher = SpeckBlockCipher(number_of_rounds=1)
     milp = MilpMonomialPredictionModel(cipher)
