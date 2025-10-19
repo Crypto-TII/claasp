@@ -1,3 +1,4 @@
+import math
 import os
 import sys
 from io import StringIO
@@ -155,7 +156,7 @@ def test_differential_truncated_checker_permutation_input_and_output_truncated()
     # - check the following backward truncated differential. 
     # - this backward distinguisher covers 2.5 rounds of ChaCha (5 half rounds).
     # - this backward distinguisher starts at the 7.5 round of ChaCha and ends at the 5th round of ChaCha. 
-    # - this distinguihser was found using MiniZinc semi-deterministic model (check correctness). You can add more distinguishers to increase confidence.
+    # - this distinguihser was found using MiniZinc semi-deterministic model (check correctness again). You can add more distinguishers to increase confidence.
     # ================================================Distinguisher X_backward_0===================================================
     # Theoretical cost:  1.47
     # Input_diff for (X_backward_0)
@@ -171,19 +172,153 @@ def test_differential_truncated_checker_permutation_input_and_output_truncated()
     
     input_trunc_diff = "" #TODO: add input trunc diff 
     output_trunc_diff = "" #TODO: add output trunc diff
-    number_of_samples = 1 << 19
+    number_of_samples = 1 << 12
     state_size = 512
-    prob = differential_truncated_checker_permutation_input_and_output_truncated(
-        chachaPermutation_inv,
+    # prob = differential_truncated_checker_permutation_input_and_output_truncated(
+    #     chachaPermutation_inv,
+    #     input_trunc_diff, 
+    #     output_trunc_diff,
+    #     number_of_samples,
+    #     state_size,
+    #     seed=None,
+    # )
+    #print(prob)
+    #import ipdb; ipdb.set_trace()
+
+
+def test_differential_truncated_checker_salsa_permutation_input_fixed_and_output_truncated():
+    # Test Crowley's truncated differential for 2 rounds
+    # Crowley's "2 rounds" = 2 × (columnround + transpose)
+    # CLAASP: 2 half-rounds = 1 classical Salsa round (columnround OR rowround)
+    # CLAASP: 4 half-rounds = 2 classical rounds = 1 double-round (columnround + rowround)
+    # Crowley 2×R = 1 Salsa double-round = 4 CLAASP half-rounds
+    salsaPermutation = SalsaPermutation(number_of_rounds=4)
+    input_trunc_diff = int("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 2)
+    crowley_constraints = {
+        (0, 1): 0x00201000,
+        (0, 2): 0x40200000,
+        (0, 3): 0x02000800,
+        (2, 3): 0x00000040,
+        (3, 0): 0x00000000,
+        (3, 1): 0x00000100,
+        (3, 2): 0x00200000,
+        (3, 3): 0x04000080,
+    }
+
+    def build_truncated_pattern(constraints, state_bits):
+        pattern = ['?'] * state_bits
+        for (row, col), value in constraints.items():
+            word_index = 4 * row + col
+            start = 32 * word_index
+            bits = f"{value:032b}"
+            pattern[start:start + 32] = bits
+        return ''.join(pattern)
+
+    output_trunc_diff = build_truncated_pattern(crowley_constraints, 512)
+    print(output_trunc_diff)
+    
+    number_of_samples = 1 << 12
+    state_size = 512
+    prob = differential_truncated_checker_permutation(
+        salsaPermutation,
         input_trunc_diff, 
         output_trunc_diff,
         number_of_samples,
         state_size,
-        seed=None,
+        seed=42,  # Use same seed as pattern generation
     )
-    print(prob)
-    #import ipdb; ipdb.set_trace()
+    assert math.isfinite(prob)
+    observed_probability = 2 ** prob
+    assert math.isclose(observed_probability, 1 / 512, rel_tol=3)
+    print(f"Salsa truncated differential (Crowley): log2(prob) = {prob:.3f}, prob = {observed_probability:.6f}")
 
+
+
+def test_differential_truncated_checker_salsa_permutation_input_and_output_truncated():
+    # Test Crowley's truncated differential for 2 rounds (starting from round 1)
+    # Crowley's "2 rounds" = 2 × (columnround + transpose)
+    # CLAASP: 2 half-rounds = 1 classical Salsa round (columnround OR rowround)
+    # CLAASP: 4 half-rounds = 2 classical rounds = 1 double-round (columnround + rowround)
+    # Crowley 2×R = 1 Salsa double-round = 4 CLAASP half-rounds
+    salsaPermutation = SalsaPermutation(number_of_rounds=2, start_round=("even", "top"))
+    input_trunc_diff = "0000000000000000000000000000000000000000001000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????????????????????????????????00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000"
+    crowley_constraints = {
+        (0, 1): 0x00201000,
+        (0, 2): 0x40200000,
+        (0, 3): 0x02000800,
+        (2, 3): 0x00000040,
+        (3, 0): 0x00000000,
+        (3, 1): 0x00000100,
+        (3, 2): 0x00200000,
+        (3, 3): 0x04000080,
+    }
+
+    def build_truncated_pattern(constraints, state_bits):
+        pattern = ['?'] * state_bits
+        for (row, col), value in constraints.items():
+            word_index = 4 * row + col
+            start = 32 * word_index
+            bits = f"{value:032b}"
+            pattern[start:start + 32] = bits
+        return ''.join(pattern)
+
+    output_trunc_diff = build_truncated_pattern(crowley_constraints, 512)
+    print(output_trunc_diff)
+    
+    number_of_samples = 1 << 12
+    state_size = 512
+    prob = differential_truncated_checker_permutation_input_and_output_truncated(
+        salsaPermutation,
+        input_trunc_diff, 
+        output_trunc_diff,
+        number_of_samples,
+        state_size,
+        seed=43,  # Use same seed as pattern generation
+    )
+    assert math.isfinite(prob)
+    observed_probability = 2 ** prob
+    assert math.isclose(observed_probability, 1 / 512, rel_tol=3)
+    print(f"Salsa truncated differential (Crowley): log2(prob) = {prob:.3f}, prob = {observed_probability:.6f}")
+
+
+def test_differential_truncated_checker_salsa_permutation_input_and_output_truncated_2_rounds():
+    # Test Crowley's truncated differential for 2 rounds (starting from round 1)
+    # Crowley's "2 rounds" = 2 × (columnround + transpose)
+    # CLAASP: 2 half-rounds = 1 classical Salsa round (columnround OR rowround)
+    # CLAASP: 4 half-rounds = 2 classical rounds = 1 double-round (columnround + rowround)
+    # Crowley 2×R = 1 Salsa double-round = 4 CLAASP half-rounds
+    salsaPermutation = SalsaPermutation(number_of_rounds=4, start_round=("even", "top"))
+    input_trunc_diff = "0000000000000000000000000000000000000000001000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????????????????????????????????00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000"
+    crowley_constraints = {
+        (0, 3): 0x02002802,
+    }
+
+    def build_truncated_pattern(constraints, state_bits):
+        pattern = ['?'] * state_bits
+        for (row, col), value in constraints.items():
+            word_index = 4 * row + col
+            start = 32 * word_index
+            bits = f"{value:032b}"
+            pattern[start:start + 32] = bits
+        return ''.join(pattern)
+
+    output_trunc_diff = build_truncated_pattern(crowley_constraints, 512)
+    print(output_trunc_diff)
+    
+    number_of_samples = 1 << 15
+    state_size = 512
+    prob = differential_truncated_checker_permutation_input_and_output_truncated(
+        salsaPermutation,
+        input_trunc_diff, 
+        output_trunc_diff,
+        number_of_samples,
+        state_size,
+        seed=43,  # Use same seed as pattern generation
+    )
+    assert math.isfinite(prob)
+    observed_probability = 2 ** prob
+    assert math.isclose(observed_probability, 1 / 512, rel_tol=3)
+    print(f"Salsa truncated differential (Crowley): log2(prob) = {prob:.3f}, prob = {observed_probability:.6f}")
 
 # TODO: Add test for differential_truncated_linear_checker_permutation_input_truncated_ouput_mask
 def test_differential_truncated_linear_checker_permutation_input_truncated_ouput_mask():

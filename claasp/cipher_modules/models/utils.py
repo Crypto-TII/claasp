@@ -810,9 +810,30 @@ def extract_bits(columns, positions):
     for i in range(num_positions):
         for j in range(num_columns):
             byte_index = (bit_size - positions[i] - 1) // 8
-            bit_index = positions[i] % 8
+            bit_index = (bit_size - positions[i] - 1) % 8
             result[i, j] = 1 & (columns[:, j][byte_index] >> bit_index)
     return result
+
+
+def _repeat_input_difference_msb(input_difference, num_samples, num_bytes):
+    """Repeat an input difference keeping bit position 0 at the MSB."""
+    return _repeat_input_difference(input_difference, num_samples, num_bytes)
+
+
+def _extract_bit_positions_msb(binary_str):
+    """Return positions (MSB first) of all determined bits in a pattern string."""
+    return [index for index, bit in enumerate(binary_str) if bit in ("0", "1")]
+
+
+def _extract_bits_msb(columns, positions):
+    """Extract bits assuming position 0 corresponds to the MSB of byte 0."""
+    positions = np.array(positions)
+    byte_indices = positions // 8
+    bit_indices = 7 - (positions % 8)
+    if np.any(byte_indices < 0) or np.any(byte_indices >= columns.shape[0]):
+        raise IndexError("Byte index out of range.")
+    bytes_at_positions = columns[byte_indices][:, :]
+    return (bytes_at_positions >> bit_indices[:, np.newaxis]) & 1
 
 
 def _repeat_input_difference(input_difference, num_samples, num_bytes):
@@ -910,7 +931,7 @@ def differential_truncated_checker_permutation(
     num_bytes = int(state_size / 8)
     rng = np.random.default_rng(seed)
 
-    input_diff_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    input_diff_data = _repeat_input_difference_msb(input_difference, number_of_samples, num_bytes)
     plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
     plaintext_data2 = plaintext_data1 ^ input_diff_data
 
@@ -918,17 +939,21 @@ def differential_truncated_checker_permutation(
     ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])
     diff_ciphertext = ciphertext1[0] ^ ciphertext2[0]
 
-    bit_positions = extract_bit_positions(output_difference)
-    known_bits = extract_bits(diff_ciphertext.T, bit_positions)
+    bit_positions = _extract_bit_positions_msb(output_difference)
+    known_bits = _extract_bits_msb(diff_ciphertext.T, bit_positions)
     np.set_printoptions(linewidth=400)
 
-    inv_output_diff = output_difference[::-1]
-    filled_bits = [int(bit) for bit in inv_output_diff if bit in ("0", "1")]
+    filled_bits = [int(output_difference[pos]) for pos in bit_positions]
+    
     total = 0
     for i in range(len(known_bits[0])):
         if np.all(known_bits[:, i] == filled_bits):
             total += 1
 
+    if total == 0:
+        print(f"\nWARNING: No matches found out of {number_of_samples} samples!")
+        return float("-inf")
+        
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
 
@@ -1055,28 +1080,26 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
 
-    # Reverse so position 0 corresponds to LSB (consistent with your extract helpers)
-    patt_rev = pattern[::-1]
-
-    # Fixed positions & values
-    fixed_pos = [i for i, ch in enumerate(patt_rev) if ch in ('0', '1')]
-    fixed_vals = np.array([int(ch) for ch in patt_rev if ch in ('0', '1')], dtype=np.uint8)
+    # Fixed positions & values (MSB-first indexing)
+    indices = np.arange(state_size)
+    fixed_mask = np.array([ch in ('0', '1') for ch in pattern], dtype=bool)
+    fixed_pos = indices[fixed_mask]
+    fixed_vals = np.array([int(ch) for ch in pattern if ch in ('0', '1')], dtype=np.uint8)
 
     # Generate random bits for all positions, then overwrite fixed ones
     bits = rng.integers(0, 2, size=(num_samples, state_size), dtype=np.uint8)
-    if fixed_pos:
+    if fixed_pos.size:
         bits[:, fixed_pos] = fixed_vals  # broadcast per column
 
     # Pack per-sample bit vectors into bytes, big-endian at the byte level
     input_diff_samples = np.zeros((num_samples, num_bytes), dtype=np.uint8)
-    pos_indices = np.arange(state_size, dtype=np.int64)
-    byte_indices = (state_size - pos_indices - 1) // 8  # select the byte (big-endian)
-    bit_indices  = (pos_indices % 8).astype(np.uint8)   # bit within that byte (LSB=0)
+    byte_indices = indices // 8
+    bit_indices = (7 - (indices % 8)).astype(np.uint8)
 
-    # Vectorized over samples; loop over positions (≤ state_size, e.g., 512) is cheap
     for pos in range(state_size):
-        if np.any(bits[:, pos]):  # small shortcut; skip all-zero column
-            input_diff_samples[:, byte_indices[pos]] |= (bits[:, pos] << bit_indices[pos])
+        column = bits[:, pos]
+        if np.any(column):
+            input_diff_samples[:, byte_indices[pos]] |= (column << bit_indices[pos])
 
     # Return in shape (num_bytes, num_samples) to XOR with plaintexts directly
     return input_diff_samples.T
@@ -1132,12 +1155,10 @@ def _truncated_string_to_flipmask_matrix(trunc_str, num_samples, state_size, rng
 
     num_bytes = state_size // 8
     mask = np.zeros((num_bytes, num_samples), dtype=np.uint8)
-    bit_size = state_size
-    inv = trunc_str[::-1]
 
-    for pos, ch in enumerate(inv):
-        byte_index = (bit_size - pos - 1) // 8
-        bit_index  = pos % 8
+    for pos, ch in enumerate(trunc_str):
+        byte_index = pos // 8
+        bit_index = 7 - (pos % 8)
 
         if ch == '1':
             mask[byte_index, :] |= (1 << bit_index)
@@ -1180,21 +1201,20 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
 
     plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
     input_mask = _truncated_string_to_flipmask_matrix(input_trunc_diff, number_of_samples, state_size, rng)
-
     plaintext_data2 = plaintext_data1 ^ input_mask
 
     ciphertext1 = cipher.evaluate_vectorized([plaintext_data1])[0]
     ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])[0]
+
     diff_ciphertext = ciphertext1 ^ ciphertext2
 
-    bit_positions = extract_bit_positions(output_trunc_diff) 
+    bit_positions = _extract_bit_positions_msb(output_trunc_diff)
     if len(bit_positions) == 0:
         total = number_of_samples
     else:
-        known_bits = extract_bits(diff_ciphertext.T, bit_positions) 
-        inv_out = output_trunc_diff[::-1]
-        filled_bits = [int(b) for b in inv_out if b in ("0", "1")]
-        matches = np.all(known_bits == np.array(filled_bits, dtype=np.uint8)[:, None], axis=0)
+        known_bits = _extract_bits_msb(diff_ciphertext.T, bit_positions)
+        filled_bits = np.array([int(output_trunc_diff[pos]) for pos in bit_positions], dtype=np.uint8)[:, None]
+        matches = np.all(known_bits == filled_bits, axis=0)
         total = int(matches.sum())
 
     if total == 0:
