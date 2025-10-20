@@ -576,7 +576,7 @@ class MznModel:
              'cipher_output_3_12': {'value': '0', 'weight': 0}}},
              ['0'])
         """
-
+        
         def set_solution_values_internal(solution):
             components_values = {}
             values = solution.__dict__["_output_item"].splitlines()
@@ -727,6 +727,14 @@ class MznModel:
                ...
               'total_weight': '5.0'}]
         """
+        if solve_external:
+            solver_names = [solver['solver_name'] for solver in CP_SOLVERS_EXTERNAL]
+            solver_brands = [solver['solver_brand_name'] for solver in CP_SOLVERS_EXTERNAL]
+        else:
+            solver_names = [solver['solver_name'] for solver in CP_SOLVERS_INTERNAL]
+            solver_brands = [solver['solver_brand_name'] for solver in CP_SOLVERS_INTERNAL]
+        if solver_name not in solver_names:
+            raise NameError(f"Solver name not recognized, the available options are: {[f'{brand}: {name}' for brand, name in zip(solver_brands, solver_names)]}")
         truncated = False
         if model_type in (
             "deterministic_truncated_xor_differential_one_solution",
@@ -959,7 +967,7 @@ class MznModel:
             (['constraint weight = 1000;'], [])
         """
         cp_constraints = []
-        if weight == 0 or weight == -1:
+        if weight == -1:
             cp_declarations = []
         else:
             cp_declarations = [f"constraint weight = {100 * weight};"]
