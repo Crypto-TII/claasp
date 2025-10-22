@@ -1294,11 +1294,11 @@ def remove_components_from_rounds(cipher, start_round, end_round, keep_key_sched
         for current_round in cipher.rounds_as_list:
         ######## we move the key_schedule elements survived in the input id links in the cipher input
             for components in current_round.components:
-                for inputs in components.input_id_links:
-                    if inputs in key_schedule_component_ids and inputs not in cipher.inputs:
-                        cipher.inputs.append(inputs)
-                        # print(f'size of input {inputs} removed of key scheduel {copy_of_the_cipher.get_component_from_id(inputs).output_bit_size}')
-                        cipher.inputs_bit_size.append(copy_of_the_cipher.get_component_from_id(inputs).output_bit_size)
+                for input_id_link in components.input_id_links:
+                    if input_id_link in key_schedule_component_ids and input_id_link not in cipher.inputs:
+                        cipher.inputs.append(input_id_link)
+                        new_input_bit_size = copy_of_the_cipher.get_component_from_id(input_id_link).output_bit_size
+                        cipher.inputs_bit_size.append(new_input_bit_size)
 
     return removed_component_ids, intermediate_outputs
 

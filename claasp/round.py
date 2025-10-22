@@ -85,7 +85,6 @@ class Round:
             print("  },")
         print("  ],")
 
-    #################### BOOMERANG #################
     def add_prefix(self, prefix='upper_'):
         for component_number in range(self.number_of_components):
             requested_component = self.component_from(component_number)
@@ -95,7 +94,6 @@ class Round:
         for component_number in range(self.number_of_components):
             requested_component = self.component_from(component_number)
             requested_component.remove_prefix(prefix)
-    ################## BOOMERANG #######################
 
     def remove_component(self, component):
         self._components.remove(component)

@@ -694,10 +694,11 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
             for current_round in partial_cipher_inverse.rounds_as_list:
             ######## we move the key_schedule elements survived in the input id links in the cipher input
                 for components in current_round.components:
-                    for inputs in components.input_id_links:
-                        if inputs in key_schedule_component_ids and inputs not in partial_cipher_inverse.inputs:
-                            partial_cipher_inverse.inputs.append(inputs)
-                            partial_cipher_inverse.inputs_bit_size.append(copy_of_inverse_cipher.get_component_from_id(inputs).output_bit_size)
+                    for input_id_link in components.input_id_links:
+                        if input_id_link in key_schedule_component_ids and input_id_link not in partial_cipher_inverse.inputs:
+                            partial_cipher_inverse.inputs.append(input_id_link)
+                            new_input_bit_size = copy_of_inverse_cipher.get_component_from_id(input_id_link).output_bit_size
+                            partial_cipher_inverse.inputs_bit_size.append(new_input_bit_size)
 
         return partial_cipher_inverse
 
@@ -1223,7 +1224,6 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
             print("'cipher_reference_code': None,")
         print("}")
 
-    ################################ BOOMERANG ################################
     def add_prefix(self, prefix='upper_'):
         self._rounds.add_prefix(prefix)
         self._inputs = [prefix + i for i in self._inputs]
@@ -1231,8 +1231,6 @@ ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBloc
     def remove_prefix(self, prefix='upper_'):
         self._rounds.remove_prefix(prefix)
         self._inputs = [i[len(prefix):] if i.startswith(prefix) else i for i in self._inputs]
-
-    ################################ BOOMERANG ################################
 
     def print_as_python_dictionary_to_file(self, file_name=""):
         """

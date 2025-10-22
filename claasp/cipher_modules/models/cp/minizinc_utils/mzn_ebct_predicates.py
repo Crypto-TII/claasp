@@ -1,13 +1,13 @@
 def get_ebct_operations():
     ebct_string = """
     include \"table.mzn\";
-    int:num_workers = 8;
-    int: num_rows = 64;
-    int: num_cols_last_table = 14;
-    int: num_cols = 16;
-    array[0..num_cols-1] of var 0..1: b;
-    array[0..num_workers-1,0..num_rows-1,0..num_cols-1] of 0..1: ebct_table =
-         array3d(0..num_workers-1,0..num_rows-1,0..num_cols-1,
+    int:num_workers_ebct = 8;
+    int: num_rows_ebct = 64;
+    int: num_cols_last_table_ebct = 14;
+    int: num_cols_ebct = 16;
+    array[0..num_cols_ebct-1] of var 0..1: b_ebct;
+    array[0..num_workers_ebct-1,0..num_rows_ebct-1,0..num_cols_ebct-1] of 0..1: ebct_table =
+         array3d(0..num_workers_ebct-1,0..num_rows_ebct-1,0..num_cols_ebct-1,
       [
      0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -523,8 +523,8 @@ def get_ebct_operations():
    1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
       ]);
     
-    array[0..num_rows-1,0..num_cols_last_table-1] of 0..1: last_table =
-         array2d(0..num_rows-1,0..num_cols_last_table-1,
+    array[0..num_rows_ebct-1,0..num_cols_last_table_ebct-1] of 0..1: last_table_ebct =
+         array2d(0..num_rows_ebct-1,0..num_cols_last_table_ebct-1,
       [
          0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0,
   1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0,
@@ -629,7 +629,7 @@ def get_ebct_operations():
                  let {
                     array[0..15] of var 0..1: column = array1d(0..15, [dL[i], dR[i], nL[i], nR[i], dLL[i], nLL[i], matrix[i, 0*8+cn], matrix[i, 1*8+cn], matrix[i, 2*8+cn], matrix[i, 3*8+cn], matrix[i, 4*8+cn], matrix[i, 5*8+cn], matrix[i, 6*8+cn], matrix[i, 7*8+cn], halfSize0[i, cn], halfSize1[i, cn]])
                 } in
-                BVAssign(column, cn)
+                BVAssign_ebct(column, cn)
             ) /\\
             (dp[i + 1, 0] \\/ dp[i + 1, 1] \\/ dp[i + 1, 2] \\/ dp[i + 1, 3] \\/ dp[i + 1, 4] \\/ dp[i + 1, 5] \\/ dp[i + 1, 6] \\/ dp[i + 1, 7]) /\\
             forall(j in 0..7) (
@@ -667,7 +667,7 @@ def get_ebct_operations():
             isValid[4] == dLL[branchSize - 1] /\\
             isValid[5] == nLL[branchSize -1] 
         ) /\\
-            (BVAssign_last_table(isValid))
+            (BVAssign_last_table_ebct(isValid))
         /\\
         forall(i in 0..7) (
             (lastLiterals[i] -> (dp[branchSize-1,i] /\\ isValid[6 + i])) /\\
@@ -676,13 +676,13 @@ def get_ebct_operations():
         (lastLiterals[0] \\/ lastLiterals[1] \\/ lastLiterals[2] \\/ lastLiterals[3] \\/ lastLiterals[4] \\/ lastLiterals[5] \\/ lastLiterals[6] \\/ lastLiterals[7])
         ;         
 
-        predicate BVAssign(array[0..num_cols-1] of var 0..1: column, int: index) =
+        predicate BVAssign_ebct(array[0..num_cols_ebct-1] of var 0..1: column, int: index) =
         let {
-            array[int] of set of int: indices = [index..index, 0..num_rows-1, 0..num_cols-1];
-            array[int,int] of int: extractedFromTable = slice_2d(ebct_table, indices, 0..num_rows-1, 0..num_cols-1);
+            array[int] of set of int: indices = [index..index, 0..num_rows_ebct-1, 0..num_cols_ebct-1];
+            array[int,int] of int: extractedFromTable = slice_2d(ebct_table, indices, 0..num_rows_ebct-1, 0..num_cols_ebct-1);
         } in
         table(column, extractedFromTable);
 
-        predicate BVAssign_last_table(array[0..num_cols_last_table-1] of var bool: isValid) =  table(isValid, last_table);  
+        predicate BVAssign_last_table_ebct(array[0..num_cols_last_table_ebct-1] of var bool: isValid) =  table(isValid, last_table_ebct);  
     """
     return ebct_string

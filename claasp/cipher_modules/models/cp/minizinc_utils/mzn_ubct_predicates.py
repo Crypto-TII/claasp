@@ -1,13 +1,13 @@
 def get_ubct_operations():
     ubct_string = """
     include \"table.mzn\";
-    int: num_workers = 4;
+    int: num_workers_ubct = 4;
     int: num_rows = 32;
-    int: num_cols_last_table = 7;
-    int: num_cols = 10;
-    array[0..num_cols-1] of var 0..1: b;
-    array[0..num_workers-1,0..num_rows-1,0..num_cols-1] of 0..1: ubct_table =
-         array3d(0..num_workers-1,0..num_rows-1,0..num_cols-1,
+    int: num_cols_last_table_ubct = 7;
+    int: num_cols_ubct = 10;
+    array[0..num_cols_ubct-1] of var 0..1: b_ubct;
+    array[0..num_workers_ubct-1,0..num_rows-1,0..num_cols_ubct-1] of 0..1: ubct_table =
+         array3d(0..num_workers_ubct-1,0..num_rows-1,0..num_cols_ubct-1,
       [
         0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
         1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -140,8 +140,8 @@ def get_ubct_operations():
      
     ]);
     
-    array[0..7,0..num_cols_last_table-1] of 0..1: last_table =
-         array2d(0..7,0..num_cols_last_table-1,
+    array[0..7,0..num_cols_last_table_ubct-1] of 0..1: last_table_ubct =
+         array2d(0..7,0..num_cols_last_table_ubct-1,
       [
          0, 0, 0, 1, 0, 1, 0,
          1, 0, 0, 0, 1, 0, 1,
@@ -184,7 +184,7 @@ def get_ubct_operations():
                  let {
                     array[0..9] of var 0..1: column = array1d(0..9, [dL[i], dR[i], nL[i], nR[i], dLL[i], matrix[i, 0*4+cn], matrix[i, 1*4+cn], matrix[i,2*4+cn], matrix[i, 3*4+cn], halfSize[i, cn]])
                 } in
-                BVAssign(column, cn)
+                BVAssign_ubct(column, cn)
             ) /\\
             (
                 dp[i + 1, 0] \\/ dp[i + 1, 1] \\/ dp[i + 1, 2] \\/ dp[i + 1, 3]
@@ -230,7 +230,7 @@ def get_ubct_operations():
             isValid[1] == dR[branchSize - 1] /\\
             isValid[2] == dLL[branchSize -1] 
         ) /\\
-            (BVAssign_last_table(isValid))
+            (BVAssign_last_table_ubct(isValid))
         /\\
         forall(i in 0..3) (
             (
@@ -244,15 +244,15 @@ def get_ubct_operations():
             lastLiterals[0] \\/ lastLiterals[1] \\/ lastLiterals[2] \\/ lastLiterals[3]
         );         
 
-        predicate BVAssign(array[0..num_cols-1] of var 0..1: column, int: index) =
+        predicate BVAssign_ubct(array[0..num_cols_ubct-1] of var 0..1: column, int: index) =
         let {
-            array[int] of set of int: indices = [index..index, 0..num_rows-1, 0..num_cols-1];
-            array[int,int] of int: extractedFromTable = slice_2d(ubct_table, indices, 0..num_rows-1, 0..num_cols-1);
+            array[int] of set of int: indices = [index..index, 0..num_rows-1, 0..num_cols_ubct-1];
+            array[int,int] of int: extractedFromTable = slice_2d(ubct_table, indices, 0..num_rows-1, 0..num_cols_ubct-1);
         } in
         table(column, extractedFromTable);
 
-        predicate BVAssign_last_table(
-            array[0..num_cols_last_table-1] of var bool: isValid
-        ) =  table(isValid, last_table);  
+        predicate BVAssign_last_table_ubct(
+            array[0..num_cols_last_table_ubct-1] of var bool: isValid
+        ) =  table(isValid, last_table_ubct);  
     """
     return ubct_string

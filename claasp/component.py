@@ -427,19 +427,13 @@ class Component:
 
         return input_full_tuple, output_full_tuple
     
-    ####################################### BOOMERANG #############################################
     def add_prefix(self, prefix='upper_'):
         self._id = prefix + self.id
         self._input._id_links = [prefix + i for i in self.input_id_links]
-        # new_input = []
-        # for input in self.input_id_links:
-        #     new_input.append(prefix + input)
-        # self._input_id_links = new_input
 
     def remove_prefix(self, prefix='upper_'):
         self._id = self.id[len(prefix):] if self.id.startswith(prefix) else self.id
         self._input._id_links = [i[len(prefix):] if i.startswith(prefix) else i for i in self.input_id_links]
-    ###################################### BOOMERANG ##############################################
     
     def as_python_dictionary(self):
         return {

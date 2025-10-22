@@ -196,40 +196,69 @@ class MznHadipourBoomerangModel(MznModel):
         
         new_declaration_middle = f'array[0..{len(middle_keys)}] of var {valid_probabilities}: middle_p;'
         self._cp_xor_differential_constraints.append(new_declaration_middle)
-        count_middle_p = 0
-        for middle_non_linear_transition_ids in middle_keys:
-            self.component_and_probability['middle_' + middle_non_linear_transition_ids] = [count_middle_p]
-            middle_non_linear_transition_ids_up = 'upper_' + middle_non_linear_transition_ids
-            middle_non_linear_transition_ids_lo = 'lower_' + middle_non_linear_transition_ids
-            middle_constrain = f'constraint if ((upper_p[{self.component_and_probability[middle_non_linear_transition_ids_up][0]}]>0) /\\ (lower_p[{self.component_and_probability[middle_non_linear_transition_ids_lo][0]}]>0)) then middle_p[{count_middle_p}]>0 endif;'
-            self._cp_xor_differential_constraints.append(middle_constrain)
-            contrains_of_p_middle = f'constraint p[{count_index_for_assign_p_with_upper_lower_middle_p}] = middle_p[{count_middle_p}];'         
-            self._cp_xor_differential_constraints.append(contrains_of_p_middle)
-            count_middle_p += 1
-            count_index_for_assign_p_with_upper_lower_middle_p += 1
 
-            deltaL = 'pre_' + middle_non_linear_transition_ids_up + '_0'
-            deltaR = 'pre_' + middle_non_linear_transition_ids_up + '_1'
-            nablaL = 'pre_' + middle_non_linear_transition_ids_lo + '_0'
-            nablaR = 'pre_' + middle_non_linear_transition_ids_lo + '_1'
-            deltaLL = middle_non_linear_transition_ids_up
-            nablaLL = middle_non_linear_transition_ids_lo
-            branch_size = self.cipher.get_component_from_id(middle_non_linear_transition_ids_up).output_bit_size
-            # self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size))
-            # self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size))
+        self.count_middle_p = 0
+        self.count_index_for_assign_p_with_upper_lower_middle_p = count_index_for_assign_p_with_upper_lower_middle_p
+        #I have to sort the middle_keys in depending on the round where we are
+        middle_keys = sorted(middle_keys, key=lambda x: int(x.split('_')[1]))
+
+        
+
+        if self.middle_part_number_of_rounds == 1:
+            #case just bct
+            middle_non_linear_transition_ids = middle_keys[0]
+            deltaL, deltaR, nablaL, nablaR, _, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
+            self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size))
+        else:
+            # print(middle_keys)
+            # add ubct and lbct at the, respectively, beginning and end of the cipher
+            middle_non_linear_transition_ids = middle_keys.pop(0)
+            # print(middle_non_linear_transition_ids)
+            # print(middle_keys)
+            deltaL, deltaR, nablaL, nablaR, deltaLL, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
+            self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size))
+
+            middle_non_linear_transition_ids = middle_keys.pop()
+            # print(middle_non_linear_transition_ids)
+            # print(middle_keys)
+            deltaL, deltaR, nablaL, nablaR, _, nablaLL, branch_size = self.addSwitch(middle_non_linear_transition_ids)
             self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
-            # self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size))
+
+            if len(middle_keys) > 0:        
+                for middle_non_linear_transition_ids in middle_keys:
+                    # print(middle_non_linear_transition_ids)
+                    deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size = self.addSwitch(middle_non_linear_transition_ids)
+                    self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size))
 
         cp_declarations_weight_middle = 'var int: middle_weight = sum(middle_p);'
         self._cp_xor_differential_constraints.append(cp_declarations_weight_middle)
-
-        
 
         new_declaration = 'var int: weight = (2 * upper_weight) + (2 * lower_weight) + middle_weight;'
         self._cp_xor_differential_constraints.append(new_declaration)
 
         variables = []
         return variables, self._cp_xor_differential_constraints
+    
+    def addSwitch(self, middle_non_linear_transition_ids):
+        self.component_and_probability['middle_' + middle_non_linear_transition_ids] = [self.count_middle_p]
+        middle_non_linear_transition_ids_up = 'upper_' + middle_non_linear_transition_ids
+        middle_non_linear_transition_ids_lo = 'lower_' + middle_non_linear_transition_ids
+        middle_constrain = f'constraint if ((upper_p[{self.component_and_probability[middle_non_linear_transition_ids_up][0]}]>0) /\\ (lower_p[{self.component_and_probability[middle_non_linear_transition_ids_lo][0]}]>0)) then middle_p[{self.count_middle_p}]>0 endif;'
+        self._cp_xor_differential_constraints.append(middle_constrain)
+        contrains_of_p_middle = f'constraint p[{self.count_index_for_assign_p_with_upper_lower_middle_p}] = middle_p[{self.count_middle_p}];'         
+        self._cp_xor_differential_constraints.append(contrains_of_p_middle)
+        self.count_middle_p += 1
+        self.count_index_for_assign_p_with_upper_lower_middle_p += 1
+
+        deltaL = 'pre_' + middle_non_linear_transition_ids_up + '_0'
+        deltaR = 'pre_' + middle_non_linear_transition_ids_up + '_1'
+        nablaL = 'pre_' + middle_non_linear_transition_ids_lo + '_0'
+        nablaR = 'pre_' + middle_non_linear_transition_ids_lo + '_1'
+        deltaLL = middle_non_linear_transition_ids_up
+        nablaLL = middle_non_linear_transition_ids_lo
+        branch_size = self.cipher.get_component_from_id(middle_non_linear_transition_ids_up).output_bit_size
+
+        return deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size
 
     def update_sbox_ddt_valid_probabilities(self, component, valid_probabilities):
         input_size = int(component.input_bit_size)
@@ -507,10 +536,13 @@ class MznHadipourBoomerangModel(MznModel):
         
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
         self._model_constraints = self._model_prefix + self._model_constraints
-        # self._model_constraints.extend([get_bct_operations()])
-        self._model_constraints.extend([get_lbct_operations()])
-        # self._model_constraints.extend([get_ubct_operations()])
-        # self._model_constraints.extend([get_ebct_operations()])
+        if self.middle_part_number_of_rounds == 1:
+            self._model_constraints.extend([get_bct_operations()])
+        else:
+            self._model_constraints.extend([get_lbct_operations()])
+            self._model_constraints.extend([get_ubct_operations()])
+            if self.middle_part_number_of_rounds > 2:
+                self._model_constraints.extend([get_ebct_operations()])
 
         self.write_minizinc_model_to_file(".")
 
@@ -585,9 +617,36 @@ class MznHadipourBoomerangModel(MznModel):
         # delta_up = [0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
         # nabla_lo = [0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]
         # number_rounds = self.top_part_number_of_rounds + self.bottom_part_number_of_rounds + self.middle_part_number_of_rounds
+
+
+        # # round 8 3-2-3 ubct and lbct
+        # delta_up = [1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+        # nabla_lo = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0]
+        # number_rounds = 8
+        # # prob = 5.960464477539063e-08 = 2^-24.0
+        # # n = 25 (to put in verifier)
+        # # output minizinc -26.00
+
+        # # round 9 3-3-3 ubct and lbct and 1 ebct
+        # delta_up = [1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0]
+        # nabla_lo = [1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0]
+        # number_rounds = 9
+        # # prob = 0.0
+        # # n = 25 (to put in verifier)
+        # # output minizinc -47.00
+
+        # round 10 3-4-3 ubct and lbct and 2 ebct -> Unsatisfaiable
+        # number_rounds = 10
+        # prob = 0.0
+        # n = 25 (to put in verifier)
+        # output minizinc -47.00
+
         # print(number_rounds)
-        # exponent = math.log(speck32_64_bct_distinguisher_verifier(split_and_convert(delta_up), split_and_convert(nabla_lo), nr=number_rounds, n=2 ** 25 ), 2)
-        # print(f'2^{exponent}')
+        # prob = speck32_64_bct_distinguisher_verifier(split_and_convert(delta_up), split_and_convert(nabla_lo), nr=number_rounds, n=2 ** 25 )
+        # print(f'prob = {prob}')
+        # if prob > 0:
+        #     exponent = math.log(prob, 2)
+        #     print(f'2^{exponent}')
 
 
 ########## SECOND IDEA OF MODELIZATION

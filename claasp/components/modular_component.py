@@ -164,7 +164,6 @@ class Modular(Component):
         input_bit_positions = self.input_bit_positions
         num_add = self.description[1]
         all_inputs = []
-        print('I am in the determinist propagation!!!!!!!')
         for id_link, bit_positions in zip(input_id_links, input_bit_positions):
             all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         input_len = len(all_inputs) // num_add
@@ -181,7 +180,6 @@ class Modular(Component):
                                   f'pre_{output_id_link}_{i + 1}, pre_{output_id_link}_{num_add + i});')
         cp_constraints.append(f'constraint modular_addition_word(pre_{output_id_link}_{2 * num_add - 3}, '
                               f'pre_{output_id_link}_0, {output_id_link});')
-        print('DETERMINISTIC')
         return cp_declarations, cp_constraints
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):

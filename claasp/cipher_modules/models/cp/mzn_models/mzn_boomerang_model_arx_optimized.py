@@ -166,8 +166,6 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         self.model_constraints.extend(constraints)
 
         solution = self.solve_for_ARX("Xor")
-        import ipdb;
-        ipdb.set_trace()
         solution['building_time_seconds'] = time.time() - start_time
         solution['test_name'] = "find_one_boomerang_model"
 

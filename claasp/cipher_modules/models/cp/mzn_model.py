@@ -671,8 +671,6 @@ class MznModel:
             bit_mzn_model = Model()
             bit_mzn_model.add_string(mzn_model_string)
 
-            import ipdb;
-            ipdb.set_trace()
             instance = Instance(solver_name_mzn, bit_mzn_model)
             if processes_ != None and timeout_in_seconds_ != None:
                 solver_output = instance.solve(processes=processes_, timeout=timedelta(seconds=int(timeout_in_seconds_)),
