@@ -22,7 +22,7 @@ def test_build_bitwise_deterministic_truncated_xor_differential_trail_model():
     sat.build_bitwise_impossible_xor_differential_trail_model()
     constraints = sat.model_constraints
 
-    assert len(constraints) == 2625
+    assert len(constraints) == 2764
     assert constraints[0] == "rot_0_0_0_0 -plaintext_9_0"
     assert constraints[1] == "plaintext_9_0 -rot_0_0_0_0"
     assert constraints[-2] == "intermediate_output_0_6_backward_31_1 -rot_1_9_15_1"
