@@ -1222,3 +1222,45 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
 
+
+def differential_linear_truncated_checker_permutation_input_and_output_truncated(
+    cipher,
+    input_trunc_diff,      
+    output_trunc_diff, 
+    number_of_samples,
+    state_size,
+    seed=None,
+):
+    """
+    Verifies experimentally differential-truncated distinguishers for permutations
+    cipher -- the permutation to be evaluated
+    input_trunc_diff -- **string**; a string of length = state_size over {'0','1','2','?'},
+                        where '2'/'?' means truncated difference.
+    output_trunc_diff -- **string**; a string of length = state_size over {'0','1','?', '2'},
+                         where '?' means truncated difference.
+    number_of_samples -- **integer**; the number of samples to be used in the experiment
+    state_size -- **integer**; the size of the state in bits
+    seed -- **integer**; the seed for the random number generator
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    if len(input_trunc_diff) != state_size or len(output_trunc_diff) != state_size:
+        raise ValueError("Both truncated differences must have length == state_size.")
+
+    rng = np.random.default_rng(seed)
+    num_bytes = state_size // 8
+
+    plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    input_mask = _truncated_string_to_flipmask_matrix(input_trunc_diff, number_of_samples, state_size, rng)
+    plaintext_data2 = plaintext_data1 ^ input_mask
+
+    ciphertext1 = cipher.evaluate_vectorized([plaintext_data1])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])
+
+    ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, state_size)
+    ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    count = np.count_nonzero(parities == 0)
+    corr = 2 * count / number_of_samples * 1.0 - 1
+    return corr
