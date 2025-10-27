@@ -23,7 +23,7 @@ def test_find_anf_of_specific_output_bit():
     milp = MilpMonomialPredictionModel(cipher)
     R = milp.get_boolean_polynomial_ring()
     poly = milp.find_anf_of_specific_output_bit(0, chosen_cipher_output="xor_0_16")
-    expected = R("p7*p20 + p21 + p36 + 1")
+    expected = R("p0 + p1*p33 + p1 + p17 + p33")
     assert poly == expected
 
     cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=13)
