@@ -1218,7 +1218,7 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
         total = int(matches.sum())
 
     if total == 0:
-        return float("-inf")
+        return float("--inf")
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
 
