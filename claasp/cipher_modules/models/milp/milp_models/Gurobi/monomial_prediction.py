@@ -1651,3 +1651,158 @@ class MilpMonomialPredictionModel():
             except Exception as e:
                 print(f"[WARNING] Failed to save All exact degrees degree to file: {e}") if verbosity else None
         return degrees
+
+    def find_degree_of_specific_output_bit_wrt_cube_vars(self, output_bit_index, cube, chosen_cipher_output=None):
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=chosen_cipher_output
+        )
+        m = self._model
+        m.Params.OutputFlag = 0
+        m.setParam(GRB.Param.PoolSearchMode, 0)
+        m.setParam("MIPGap", 0)
+
+        cube_verbose = self.var_list_to_input_positions(cube)
+        for inp_name, idx in cube_verbose:
+            v = m.getVarByName(f"{inp_name}[{idx}]")
+            m.addConstr(v == 1)
+
+        cube_vars = [m.getVarByName(f"{inp_name}[{idx}]") for (inp_name, idx) in cube_verbose]
+        m.setObjective(sum(cube_vars), GRB.MAXIMIZE)
+        m.update()
+        m.optimize()
+        if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
+            return -1
+        return int(round(m.ObjVal))
+
+    def find_cube_keycoef_of_specific_output_bit(self, output_bit_index, cube, chosen_cipher_output=None):
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=chosen_cipher_output
+        )
+        m = self._model
+        m.Params.OutputFlag = 0
+        m.setParam(GRB.Param.PoolSearchMode, 2)
+        m.setParam(GRB.Param.PoolSolutions, 200000000)
+        m.setParam(GRB.Param.PoolGap, 0.0)
+
+        cube_verbose = self.var_list_to_input_positions(cube)
+        cube_set = {(a, b) for (a, b) in cube_verbose}
+        for (inp_name, idx) in cube_verbose:
+            v = m.getVarByName(f"{inp_name}[{idx}]")
+            m.addConstr(v == 1)
+        cube_vars = [m.getVarByName(f"{a}[{b}]") for (a, b) in cube_verbose]
+        m.addConstr(sum(cube_vars) == len(cube))
+
+        for (inp, sz) in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+            pref = inp[0]  # 'p','i' = public; 'k' = key (kept free)
+            if pref in {"p", "i"}:
+                for i in range(sz):
+                    if (inp, i) in cube_set:
+                        continue
+                    v = m.getVarByName(f"{inp}[{i}]")
+                    if v is not None:
+                        m.addConstr(v == 0)
+
+        m.setObjective(0.0, GRB.MAXIMIZE)
+        m.update()
+        m.optimize()
+        if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL] or m.SolCount == 0:
+            return self.get_boolean_polynomial_ring()(0)  # zero polynomial in the ring
+
+        poly_full = self.get_solutions()
+        subs_map = {}
+        for (inp_name, idx) in cube_verbose:
+            tok = f"{inp_name[0]}{idx}"
+            subs_map[tok] = 1
+
+        key_coef_poly = poly_full.subs(subs_map)
+        return key_coef_poly
+
+
+def _valuation_from_assign(cipher, full_assign_bits, allowed_prefixes=None):
+    """
+    Build {'k0': b0, 'k1': b1, ...} for all key inputs (names starting with 'k').
+    CLAASP bit positions are MSB-first: position 0 is leftmost (MSB).
+    """
+    val = {}
+    for name, size in zip(cipher.inputs, cipher.inputs_bit_size):
+        pref = name[0]
+        if allowed_prefixes is not None and pref not in allowed_prefixes:
+            continue
+        w = full_assign_bits[name]
+        for i in range(size):  # i is MSB index
+            bit = (w >> (size - 1 - i)) & 1
+            val[f'{pref}{i}'] = bit
+    return val
+
+def _parse_cube_positions(cipher, cube_tokens):
+    pref_map = {name[0]: (name, size)
+                for name, size in zip(cipher.inputs, cipher.inputs_bit_size)}
+    out = []
+    for tok in cube_tokens:
+        pref, msb_pos = tok[0], int(tok[1:])
+        name, size = pref_map[pref]
+        if msb_pos < 0 or msb_pos >= size:
+            raise ValueError(f"{tok} out of range for input {name} (size {size})")
+        out.append((name, msb_pos))
+    return out
+
+def _eval_boolean_poly(poly, valuation):
+    vars_in_poly = [str(v) for v in poly.variables()]
+    if not vars_in_poly:
+        return int(GF(2)(poly))
+    vals = {name: valuation.get(name, 0) for name in vars_in_poly}
+    print(vals)
+    return int(GF(2)(poly(**vals)))
+
+def check_cube_coef_poly_correctness(cipher, output_bit_index, cube, poly,
+                                         public_assign_bits=None, trials=16):
+    """
+      • full-cube key-coefficient polynomials (poly depends only on k*)
+      • general superpolys (poly may depend on k*, p*, i*).
+
+    Checks that:
+        ⨁_{a \in {0,1}^{|cube|}} f(key, cube=a, other-public=fixed)[output_bit_index]
+        == poly(key, other-public=fixed)
+    """
+    cube_pos = _parse_cube_positions(cipher, cube)
+    m = len(cube_pos)
+    size_map = dict(zip(cipher.inputs, cipher.inputs_bit_size))
+    needed_prefixes = {str(v)[0] for v in poly.variables()}
+
+    for _ in range(trials):
+        # random keys, fixed/zero publics
+        assign = {}
+        for name, size in zip(cipher.inputs, cipher.inputs_bit_size):
+            if name.startswith('k'):
+                assign[name] = secrets.randbits(size)
+            else:
+                if needed_prefixes <= {'k'}:
+                    assign[name] = 0
+                else:
+                    if public_assign_bits and name in public_assign_bits:
+                        assign[name] = int(public_assign_bits[name])
+                    else:
+                        assign[name] = 0
+
+        acc = 0
+        for a in range(1 << m):
+            cur = dict(assign)
+            for j, (inp_name, msb_pos) in enumerate(cube_pos):
+                size = size_map[inp_name]
+                lsb_idx = size - 1 - msb_pos  # MSB is first
+                mask = 1 << lsb_idx
+                if (a >> j) & 1:
+                    cur[inp_name] |= mask
+                else:
+                    cur[inp_name] &= ~mask
+
+            output = cipher.evaluate([cur[name] for name in cipher.inputs])
+            out_lsb_idx = cipher.output_bit_size - 1 - output_bit_index
+            acc ^= (output >> out_lsb_idx) & 1
+
+        vals = _valuation_from_assign(cipher, assign, allowed_prefixes=needed_prefixes)
+        rhs = _eval_boolean_poly(poly, vals)
+
+        if acc != rhs:
+            return False
+    return True
