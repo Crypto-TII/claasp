@@ -181,6 +181,13 @@
         solving the rank decoding and minrank problems* : In Advances in
         Cryptology–ASIACRYPT2020
 
+.. [BJKL+2016]
+        Beierle C., Jean J., Kölbl S., Leander G., Moradi A., Peyrin T., Sasaki Y.,
+        Sasdrich P., Sim S.M. :
+        *The SKINNY Family of Block Ciphers and Its Low-Latency Variant MANTIS* :
+        Cryptology ePrint Archive, Report 2016/660, 2016.
+        https://eprint.iacr.org/2016/660.pdf
+
 .. _claasp-ref-C:
 
 .. only:: html
