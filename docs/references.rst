@@ -416,6 +416,11 @@
 
         **N**
 
+.. [NIST1998]
+        National Institute of Standards and Technology : *SKIPJACK and KEA
+        Algorithms Specifications* : Version 2.0, 29 May 1998 :
+        https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/aes/skipjack.pdf
+
 .. _claasp-ref-O:
 
 .. only:: html
