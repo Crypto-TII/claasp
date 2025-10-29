@@ -1,9 +1,9 @@
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
+from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
 
 """
@@ -19,11 +19,11 @@ This module can only be used if the user possesses a Gurobi license.
 
 def test_find_anf_of_specific_output_bit():
     # Return the anf of the chosen output bit
-    cipher = GimliPermutation(number_of_rounds=1)
+    cipher = GimliPermutation(number_of_rounds=1, word_size=4)
     milp = MilpMonomialPredictionModel(cipher)
     R = milp.get_boolean_polynomial_ring()
     poly = milp.find_anf_of_specific_output_bit(0, chosen_cipher_output="xor_0_16")
-    expected = R("p24 + p25*p257 + p25 + p137 + p257")
+    expected = R("p0 + p1*p33 + p1 + p17 + p33")
     assert poly == expected
 
     cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=13)
@@ -42,10 +42,10 @@ def test_find_anf_of_specific_output_bit():
 
 def test_find_upper_bound_degree_of_specific_output_bit():
     # Return an upper bound on the degree of the anf of the chosen output bit
-    cipher = PresentBlockCipher(number_of_rounds=1)
+    cipher = AESBlockCipher(number_of_rounds=2, word_size=2, state_size=2)
     milp = MilpMonomialPredictionModel(cipher)
-    degree = milp.find_upper_bound_degree_of_specific_output_bit(0, chosen_cipher_output="linear_layer_0_17")
-    assert degree == 3
+    degree = milp.find_upper_bound_degree_of_specific_output_bit(0, chosen_cipher_output="mix_column_0_7")
+    assert degree == 2
 
 def test_find_superpoly_of_specific_output_bit():
     cipher = SimonBlockCipher(number_of_rounds=3)

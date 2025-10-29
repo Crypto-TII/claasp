@@ -39,9 +39,8 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
     def __init__(self, cipher, counter="sequential", compact=False):
         super().__init__(cipher, counter, compact)
 
-    def build_bitwise_deterministic_truncated_xor_differential_trail_model(
-        self, number_of_unknown_variables=None, fixed_variables=[]
-    ):
+    def build_bitwise_deterministic_truncated_xor_differential_trail_model(self, number_of_unknown_variables=None,
+                                                                           fixed_variables=[], component_list=None):
         """
         Build the model for the search of deterministic truncated XOR DIFFERENTIAL trails.
 
@@ -72,9 +71,10 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
         self._variables_list = []
         self._model_constraints = constraints
         component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
-        operation_types = ("AND", "MODADD", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
+        operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
-        for component in self._cipher.get_all_components():
+        component_list = component_list or self._cipher.get_all_components()
+        for component in component_list:
             operation = component.description[0]
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
