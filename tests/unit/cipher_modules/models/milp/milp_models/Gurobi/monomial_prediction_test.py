@@ -4,7 +4,7 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import *
 
 """
 
@@ -74,3 +74,28 @@ def test_check_anf_correctness():
     milp = MilpMonomialPredictionModel(cipher)
     check = milp.check_anf_correctness(14)
     assert check == True
+
+def test_find_upper_bound_degree_of_cube_monomial_of_specific_output_bit():
+    cipher = SimonBlockCipher(number_of_rounds=2)
+    milp = MilpMonomialPredictionModel(cipher)
+    cube = ["p0", "p2"]
+    degree = milp.find_upper_bound_degree_of_cube_monomial_of_specific_output_bit(0, cube)
+    expected = 2
+    assert degree == expected
+
+def test_find_keycoeff_of_cube_monomial_of_specific_output_bit():
+    cipher = SimonBlockCipher(number_of_rounds=2)
+    milp = MilpMonomialPredictionModel(cipher)
+    cube = ["p0", "p9"]
+    keycoeff = milp.find_keycoeff_of_cube_monomial_of_specific_output_bit(0, cube)
+    R = milp.get_boolean_polynomial_ring()
+    expected = R("k49")
+    assert keycoeff == expected
+
+def test_check_correctness_of_keycoeff_of_cube_monomial_or_superpoly():
+    cipher = SimonBlockCipher(number_of_rounds=2)
+    milp = MilpMonomialPredictionModel(cipher)
+    cube = ["p0", "p9"]
+    keycoeff = milp.find_keycoeff_of_cube_monomial_of_specific_output_bit(0, cube)
+    res = check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, keycoeff)
+    assert res == True
