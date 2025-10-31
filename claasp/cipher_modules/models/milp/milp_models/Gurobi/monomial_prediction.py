@@ -1005,26 +1005,17 @@ class MilpMonomialPredictionModel():
 
         self.optimize_model()
         anf = self.get_solutions()
+        self._log_experiment(
+            "anf",
+            {
+                "output_bit_index": output_bit_index,
+                "fixed_degree": fixed_degree,
+                "which_var_degree": which_var_degree,
+                "chosen_cipher_output": chosen_cipher_output,
+            },
+            anf
+        )
 
-        if verbosity:
-            folder = "monomial_prediction_experiments"
-            os.makedirs(folder, exist_ok=True)
-            filename = os.path.join(folder, f"{self._cipher._id}.txt")
-            try:
-                with open(filename, "a", encoding="utf-8") as f:
-                    f.write("\n" + "=" * 80 + "\n")
-                    f.write(f"Experiment: anf\n")
-                    f.write(f"output_bit_index: {output_bit_index}\n")
-                    f.write(f"fixed_degree: {fixed_degree}\n")
-                    f.write(f"which_var_degree: {which_var_degree}\n")
-                    f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
-                    f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 10 + "\n")
-                    f.write(str(anf))
-                    f.write("\n\n")
-                print(f"[INFO] ANF successfully saved to '{filename}'") if verbosity else None
-            except Exception as e:
-                print(f"[WARNING] Failed to save ANF to file: {e}") if verbosity else None
         return anf
 
     def check_anf_correctness(self, output_bit_index, num_tests=10, endian="msb"):
@@ -1167,24 +1158,15 @@ class MilpMonomialPredictionModel():
         assignments = {v: 1 for v in cube}
         poly_sub = poly.subs(assignments)
 
-        if verbosity:
-            folder = "monomial_prediction_experiments"
-            os.makedirs(folder, exist_ok=True)
-            filename = os.path.join(folder, f"{self._cipher._id}.txt")
-            try:
-                with open(filename, "a", encoding="utf-8") as f:
-                    f.write("\n" + "=" * 80 + "\n")
-                    f.write(f"Experiment: superpoly\n")
-                    f.write(f"output_bit_index: {output_bit_index}\n")
-                    f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
-                    f.write(f"cube: {cube}\n")
-                    f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 10 + "\n")
-                    f.write(str(poly_sub))
-                    f.write("\n\n")
-                print(f"[INFO] Superpoly successfully saved to '{filename}'") if verbosity else None
-            except Exception as e:
-                print(f"[WARNING] Failed to save Superpoly to file: {e}") if verbosity else None
+        self._log_experiment(
+            "superpoly",
+            {
+                "output_bit_index": output_bit_index,
+                "chosen_cipher_output": chosen_cipher_output,
+                "cube": cube,
+            },
+            poly_sub
+        )
 
         return poly_sub
 
@@ -1242,6 +1224,7 @@ class MilpMonomialPredictionModel():
         m.update()
         m.optimize()
 
+        degree_drop = False
         if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
             print(f"[INFO] Model is infeasible") if verbosity else None
             exact_degree = -1
@@ -1254,32 +1237,22 @@ class MilpMonomialPredictionModel():
                 if len(active_indices) == d:
                     monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
 
-            degree_drop = False
             if any(val == 1 for val in monomial_parity.values()):
                 exact_degree = d
             else:
                 degree_drop = True
                 exact_degree = d - 1
 
-        if verbosity:
-            folder = "monomial_prediction_experiments"
-            os.makedirs(folder, exist_ok=True)
-            filename = os.path.join(folder, f"{self._cipher._id}.txt")
-            try:
-                with open(filename, "a", encoding="utf-8") as f:
-                    f.write("\n" + "=" * 80 + "\n")
-                    f.write(f"Experiment: exact degree superpoly\n")
-                    f.write(f"output_bit_index: {output_bit_index}\n")
-                    f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
-                    f.write(f"cube: {cube}\n")
-                    f.write(f"degree_drop: {degree_drop}\n")
-                    f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 10 + "\n")
-                    f.write(str(exact_degree))
-                    f.write("\n\n")
-                print(f"[INFO] Exact degree superpoly successfully saved to '{filename}'") if verbosity else None
-            except Exception as e:
-                print(f"[WARNING] Failed to save exact degree superpoly to file: {e}") if verbosity else None
+        self._log_experiment(
+            "exact degree superpoly",
+            {
+                "output_bit_index": output_bit_index,
+                "chosen_cipher_output": chosen_cipher_output,
+                "cube": cube,
+                "degree_drop": degree_drop
+            },
+            exact_degree
+        )
 
         return exact_degree
 
@@ -1312,24 +1285,14 @@ class MilpMonomialPredictionModel():
             degrees.append(deg_exact)
 
         verbosity = old_verbosity
-
-        if verbosity:
-            folder = "monomial_prediction_experiments"
-            os.makedirs(folder, exist_ok=True)
-            filename = os.path.join(folder, f"{self._cipher._id}.txt")
-            try:
-                with open(filename, "a", encoding="utf-8") as f:
-                    f.write("\n" + "=" * 80 + "\n")
-                    f.write(f"Experiment: all output bits exact degree superpoly\n")
-                    f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
-                    f.write(f"cube: {cube}\n")
-                    f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 10 + "\n")
-                    f.write(str(degrees))
-                    f.write("\n\n")
-                print(f"[INFO] All exact degrees superpoly successfully saved to '{filename}'") if verbosity else None
-            except Exception as e:
-                print(f"[WARNING] Failed to save All exact degrees superpoly to file: {e}") if verbosity else None
+        self._log_experiment(
+            "all output bits exact degree superpoly",
+            {
+                "chosen_cipher_output": chosen_cipher_output,
+                "cube": cube
+            },
+            degrees
+        )
 
         return degrees
 
@@ -1400,24 +1363,15 @@ class MilpMonomialPredictionModel():
         else:
             degree_upper_bound = int(round(self._model.ObjVal))
 
-        if verbosity:
-            folder = "monomial_prediction_experiments"
-            os.makedirs(folder, exist_ok=True)
-            filename = os.path.join(folder, f"{self._cipher._id}.txt")
-            try:
-                with open(filename, "a", encoding="utf-8") as f:
-                    f.write("\n" + "=" * 80 + "\n")
-                    f.write(f"Experiment: upper bound degree\n")
-                    f.write(f"output_bit_index: {output_bit_index}\n")
-                    f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
-                    f.write(f"which_var_degree: {which_var_degree}\n")
-                    f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 10 + "\n")
-                    f.write(str(degree_upper_bound))
-                    f.write("\n\n")
-                print(f"[INFO] UP degree successfully saved to '{filename}'") if verbosity else None
-            except Exception as e:
-                print(f"[WARNING] Failed to save UP degree to file: {e}") if verbosity else None
+        self._log_experiment(
+            "upper bound degree",
+            {
+                "output_bit_index": output_bit_index,
+                "chosen_cipher_output": chosen_cipher_output,
+                "which_var_degree": which_var_degree,
+            },
+            degree_upper_bound
+        )
 
         return degree_upper_bound
 
@@ -1463,23 +1417,15 @@ class MilpMonomialPredictionModel():
             degrees.append(degree)
         verbosity = old_verbosity
 
-        if verbosity:
-            folder = "monomial_prediction_experiments"
-            os.makedirs(folder, exist_ok=True)
-            filename = os.path.join(folder, f"{self._cipher._id}.txt")
-            try:
-                with open(filename, "a", encoding="utf-8") as f:
-                    f.write("\n" + "=" * 80 + "\n")
-                    f.write(f"Experiment: all output bits upper bound degree\n")
-                    f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
-                    f.write(f"which_var_degree: {which_var_degree}\n")
-                    f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 10 + "\n")
-                    f.write(str(degrees))
-                    f.write("\n\n")
-                print(f"[INFO] All UP degrees successfully saved to '{filename}'") if verbosity else None
-            except Exception as e:
-                print(f"[WARNING] Failed to save All UP degrees degree to file: {e}") if verbosity else None
+        self._log_experiment(
+            "all output bits upper bound degree",
+            {
+                "chosen_cipher_output": chosen_cipher_output,
+                "which_var_degree": which_var_degree,
+            },
+            degrees
+        )
+
         return degrees
 
     def find_exact_degree_of_specific_output_bit(self, output_bit_index, which_var_degree=None,
@@ -1551,6 +1497,7 @@ class MilpMonomialPredictionModel():
         m.update()
         m.optimize()
 
+        degree_drop = False
         if self._model.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
             print(f"[INFO] Model is infeasible") if verbosity else None
             exact_degree = -1
@@ -1564,32 +1511,22 @@ class MilpMonomialPredictionModel():
                 if len(active_indices) == d:
                     monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
 
-            degree_drop = False
             if any(val == 1 for val in monomial_parity.values()):
                 exact_degree = d
             else:
                 degree_drop = True
                 exact_degree = d - 1
 
-        if verbosity:
-            folder = "monomial_prediction_experiments"
-            os.makedirs(folder, exist_ok=True)
-            filename = os.path.join(folder, f"{self._cipher._id}.txt")
-            try:
-                with open(filename, "a", encoding="utf-8") as f:
-                    f.write("\n" + "=" * 80 + "\n")
-                    f.write(f"Experiment: exact degree\n")
-                    f.write(f"output_bit_index: {output_bit_index}\n")
-                    f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
-                    f.write(f"which_var_degree: {which_var_degree}\n")
-                    f.write(f"degree_drop: {degree_drop}\n")
-                    f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 10 + "\n")
-                    f.write(str(exact_degree))
-                    f.write("\n\n")
-                print(f"[INFO] Exact degree successfully saved to '{filename}'") if verbosity else None
-            except Exception as e:
-                print(f"[WARNING] Failed to save Exact degree to file: {e}") if verbosity else None
+        self._log_experiment(
+            "exact degree",
+            {
+                "output_bit_index": output_bit_index,
+                "chosen_cipher_output": chosen_cipher_output,
+                "which_var_degree": which_var_degree,
+                "degree_drop": degree_drop
+            },
+            exact_degree
+        )
 
         return exact_degree
 
@@ -1634,23 +1571,15 @@ class MilpMonomialPredictionModel():
             degrees.append(degree)
         verbosity = old_verbosity
 
-        if verbosity:
-            folder = "monomial_prediction_experiments"
-            os.makedirs(folder, exist_ok=True)
-            filename = os.path.join(folder, f"{self._cipher._id}.txt")
-            try:
-                with open(filename, "a", encoding="utf-8") as f:
-                    f.write("\n" + "=" * 80 + "\n")
-                    f.write(f"Experiment: all output bits exact degree\n")
-                    f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
-                    f.write(f"which_var_degree: {which_var_degree}\n")
-                    f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 10 + "\n")
-                    f.write(str(degrees))
-                    f.write("\n\n")
-                print(f"[INFO] All exact degrees successfully saved to '{filename}'") if verbosity else None
-            except Exception as e:
-                print(f"[WARNING] Failed to save All exact degrees degree to file: {e}") if verbosity else None
+        self._log_experiment(
+            "all output bits exact degree",
+            {
+                "chosen_cipher_output": chosen_cipher_output,
+                "which_var_degree": which_var_degree,
+            },
+            degrees
+        )
+
         return degrees
 
     def find_upper_bound_degree_of_cube_monomial_of_specific_output_bit(
@@ -1717,24 +1646,15 @@ class MilpMonomialPredictionModel():
 
         degree_upper_bound = int(round(m.ObjVal))
 
-        if verbosity:
-            folder = "monomial_prediction_experiments"
-            os.makedirs(folder, exist_ok=True)
-            filename = os.path.join(folder, f"{self._cipher._id}.txt")
-            try:
-                with open(filename, "a", encoding="utf-8") as f:
-                    f.write("\n" + "=" * 80 + "\n")
-                    f.write(f"Experiment: upper bound degree of cube monomial\n")
-                    f.write(f"output_bit_index: {output_bit_index}\n")
-                    f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
-                    f.write(f"cube: {cube}\n")
-                    f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 10 + "\n")
-                    f.write(str(degree_upper_bound))
-                    f.write("\n\n")
-                print(f"[INFO] UP degree successfully saved to '{filename}'")
-            except Exception as e:
-                print(f"[WARNING] Failed to save UP degree to file: {e}")
+        self._log_experiment(
+            "upper bound degree of cube monomial",
+            {
+                "output_bit_index": output_bit_index,
+                "chosen_cipher_output": chosen_cipher_output,
+                "cube": cube
+            },
+            degree_upper_bound
+        )
 
         return degree_upper_bound
 
@@ -1831,26 +1751,55 @@ class MilpMonomialPredictionModel():
         subs_map = {f"{inp_name[0]}{idx}": 1 for (inp_name, idx) in cube_verbose}
         key_coef_poly = poly_full.subs(subs_map)
 
-        if verbosity:
-            folder = "monomial_prediction_experiments"
-            os.makedirs(folder, exist_ok=True)
-            filename = os.path.join(folder, f"{self._cipher._id}.txt")
-            try:
-                with open(filename, "a", encoding="utf-8") as f:
-                    f.write("\n" + "=" * 80 + "\n")
-                    f.write(f"Experiment: key coefficient of cube monomial\n")
-                    f.write(f"output_bit_index: {output_bit_index}\n")
-                    f.write(f"chosen_cipher_output: {chosen_cipher_output}\n")
-                    f.write(f"cube: {cube}\n")
-                    f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 10 + "\n")
-                    f.write(str(key_coef_poly))
-                    f.write("\n\n")
-                print(f"[INFO] Key coefficient polynomial successfully saved to '{filename}'")
-            except Exception as e:
-                print(f"[WARNING] Failed to save key coefficient polynomial to file: {e}")
+        self._log_experiment(
+            "key coefficient of cube monomial",
+            {
+                "output_bit_index": output_bit_index,
+                "chosen_cipher_output": chosen_cipher_output,
+                "cube": cube
+            },
+            key_coef_poly
+        )
+
 
         return key_coef_poly
+
+    def _log_experiment(
+        self,
+        experiment_name: str,
+        details: dict,
+        content: str,
+    ):
+        """
+        Internal helper to log experiment results to a timestamped text file.
+        Used whenever verbosity is enabled to avoid code duplication.
+
+        Args:
+            experiment_name (str): Short label for the experiment (e.g., "ANF", "superpoly").
+            details (dict): Key-value pairs to include in the header (e.g., output_bit_index, cube, etc.).
+            content (str): The main content to log (e.g., a polynomial, integer, or list).
+            folder (str): Target folder name for logs (default: "monomial_prediction_experiments").
+        """
+        if not verbosity:
+            return
+
+        folder = "monomial_prediction_experiments"
+        os.makedirs(folder, exist_ok=True)
+        filename = os.path.join(folder, f"{self._cipher._id}.txt")
+        try:
+            with open(filename, "a", encoding="utf-8") as f:
+                f.write("\n" + "=" * 80 + "\n")
+                f.write(f"Experiment: {experiment_name}\n")
+                for k, v in details.items():
+                    f.write(f"{k}: {v}\n")
+                f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write("-" * 10 + "\n")
+                f.write(str(content))
+                f.write("\n\n")
+            print(f"[INFO] {experiment_name} successfully saved to '{filename}'")
+        except Exception as e:
+            print(f"[WARNING] Failed to save {experiment_name} to file: {e}")
+
 
 
 ################################
