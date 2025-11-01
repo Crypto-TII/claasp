@@ -173,7 +173,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=False,
     ):
         """
@@ -184,6 +184,10 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -227,7 +231,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds, minimize=True)
 
-        if solve_with_API:
+        if solve_ARX_optimized:
             return self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )
@@ -246,7 +250,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=False,
     ):
         """
@@ -257,6 +261,10 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         - ``number_of_rounds`` -- **integer**; number of rounds
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `None`); the name of the solver.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -292,7 +300,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds)
 
-        if solve_with_API:
+        if solve_ARX_optimized:
             return self.solve_for_ARX(
                 solver_name=solver_name,
                 timeout_in_seconds_=timelimit,
@@ -315,7 +323,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=False,
     ):
         """
@@ -326,6 +334,10 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -369,7 +381,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         self.build_deterministic_truncated_xor_differential_trail_model(fixed_values, number_of_rounds)
 
-        if solve_with_API:
+        if solve_ARX_optimized:
             return self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )

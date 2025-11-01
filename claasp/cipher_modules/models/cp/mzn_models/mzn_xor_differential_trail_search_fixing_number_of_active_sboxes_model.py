@@ -90,17 +90,24 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         repetition=1,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
     ):
         """
         Return a list of solutions containing all the differential trails having the ``fixed_weight`` weight of correlation.
 
         INPUT:
 
-        - ``fixed_weight`` -- **integer**; the weight to be fixed
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``first_step_solver_name`` -- **string** (default: `chuffed`); the name of the solver for the number of active sboxes search
-        - ``second_step_solver_name`` -- **string** (default: `chuffed`); the name of the solver for the differential trails search.
+        - ``fixed_weight`` -- **integer** (default: `-1`); a specific weight. If set to non-negative integer, fixes the XOR
+          trail weight.
+        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+          format
+        - ``first_step_solver_name`` -- **string** (default: `None`); the solver to call for the first step
+        - ``second_step_solver_name`` -- **string** (default: `None`); the solver to call for the second step
+        - ``nmax`` -- **integer** (default: `2`); the minimum number of addends for which new xor components are NOT
+          added when considering additional xor constraints
+        - ``repetition`` -- **integer** (default: `1`); the number of times the procedure for creating new xor
+          components will be repeated.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -141,7 +148,6 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         repetition=1,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
     ):
         """
         Return the solution representing a differential trail with the lowest weight.
@@ -153,8 +159,18 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         INPUT:
 
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
+        - ``fixed_weight`` -- **integer** (default: `-1`); a specific weight. If set to non-negative integer, fixes the XOR
+          trail weight.
+        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+          format
+        - ``first_step_solver_name`` -- **string** (default: `None`); the solver to call for the first step
+        - ``second_step_solver_name`` -- **string** (default: `None`); the solver to call for the second step
+        - ``nmax`` -- **integer** (default: `2`); the minimum number of addends for which new xor components are NOT
+          added when considering additional xor constraints
+        - ``repetition`` -- **integer** (default: `1`); the number of times the procedure for creating new xor
+          components will be repeated.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -199,15 +215,22 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         repetition=1,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
     ):
         """
         Return the solution representing a differential trail with any weight.
 
         INPUT:
 
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
+        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+          format
+        - ``first_step_solver_name`` -- **string** (default: `None`); the solver to call for the first step
+        - ``second_step_solver_name`` -- **string** (default: `None`); the solver to call for the second step
+        - ``nmax`` -- **integer** (default: `2`); the minimum number of addends for which new xor components are NOT
+          added when considering additional xor constraints
+        - ``repetition`` -- **integer** (default: `1`); the number of times the procedure for creating new xor
+          components will be repeated.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -251,16 +274,24 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         repetition=1,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
     ):
         """
         Return the solution representing a differential trail with any weight.
 
         INPUT:
 
-        - ``fixed_weight`` -- **integer**; the value to which the weight is fixed, if non-negative
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
+        - ``fixed_weight`` -- **integer** (default: `-1`); a specific weight. If set to non-negative integer, fixes the XOR
+          trail weight.
+        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+          format
+        - ``first_step_solver_name`` -- **string** (default: `None`); the solver to call for the first step
+        - ``second_step_solver_name`` -- **string** (default: `None`); the solver to call for the second step
+        - ``nmax`` -- **integer** (default: `2`); the minimum number of addends for which new xor components are NOT
+          added when considering additional xor constraints
+        - ``repetition`` -- **integer** (default: `1`); the number of times the procedure for creating new xor
+          components will be repeated.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -412,11 +443,14 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
           trail weight.
         - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
           format
-        - ``solver_name`` -- **string** (default: `None`); the solver to call
+        - ``first_step_solver_name`` -- **string** (default: `None`); the solver to call for the first step
+        - ``second_step_solver_name`` -- **string** (default: `None`); the solver to call for the second step
         - ``nmax`` -- **integer** (default: `2`); the minimum number of addends for which new xor components are NOT
           added when considering additional xor constraints
         - ``repetition`` -- **integer** (default: `1`); the number of times the procedure for creating new xor
           components will be repeated.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
 
         EXAMPLES::
 

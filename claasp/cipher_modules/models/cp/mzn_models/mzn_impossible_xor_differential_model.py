@@ -222,6 +222,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         - ``middle_round`` -- **integer** (default: `1`); incosistency round of the impossible differential
         - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
         - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
+        - ``fully_automatic`` -- **Boolean** (default: `False`); don't fix the middle round and let the solver find one
 
         EXAMPLES::
 
@@ -540,6 +541,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         - ``middle_round`` -- **integer** ; incosistency round of the impossible differential trail
         - ``final_round`` -- **integer** ; final round of the impossible differential trail
         - ``intermediate_components`` -- **Boolean** ; check inconsistency on intermediate components of the inconsistency round or only on outputs
+        - ``fully_automatic`` -- **Boolean** (default: `False`); don't fix the middle round and let the solver find one
 
         EXAMPLES::
 
@@ -702,7 +704,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         intermediate_components=True,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=True,
     ):
         """
@@ -717,8 +719,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         - ``middle_round`` -- **integer** (default: `1`); incosistency round of the impossible differential
         - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
         - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
-        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
-        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
 
         EXAMPLES::
 
@@ -740,7 +744,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components
         )
 
-        if solve_with_API:
+        if solve_ARX_optimized:
             return self.solve_for_ARX(
                 solver_name=solver_name,
                 timeout_in_seconds_=timelimit,
@@ -771,7 +775,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         intermediate_components=True,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=True,
     ):
         """
@@ -786,8 +790,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         - ``middle_round`` -- **integer** (default: `1`); inconsistency round of the impossible differential
         - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
         - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
-        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
-        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
 
         EXAMPLES::
 
@@ -812,7 +818,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             f"solve minimize count(plaintext, 2) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 2);"
         )
 
-        if solve_with_API:
+        if solve_ARX_optimized:
             return self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )
@@ -839,7 +845,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         intermediate_components=True,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=True,
     ):
         """
@@ -854,8 +860,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         - ``middle_round`` -- **integer** (default: `1`); inconsistency round of the impossible differential
         - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
         - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
-        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
-        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
 
         EXAMPLES::
 
@@ -880,7 +888,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             f"solve maximize count(plaintext, 2) + count(inverse_{self._cipher.get_all_components_ids()[-1]}, 2);"
         )
 
-        if solve_with_API:
+        if solve_ARX_optimized:
             return self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )
@@ -907,7 +915,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         intermediate_components=True,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=True,
     ):
         """
@@ -922,8 +930,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         - ``middle_round`` -- **integer** (default: `1`); incosistency round of the impossible differential
         - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
         - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
-        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
-        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
 
         EXAMPLES::
 
@@ -941,7 +951,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components
         )
 
-        if solve_with_API:
+        if solve_ARX_optimized:
             return self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )
@@ -968,7 +978,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         intermediate_components=True,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=True,
     ):
         """
@@ -983,9 +993,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         - ``middle_round`` -- **integer** (default: `1`); incosistency round of the impossible differential
         - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
         - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
-        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
-        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
-
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import MznImpossibleXorDifferentialModel
@@ -1005,7 +1016,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             fixed_values, number_of_rounds, initial_round, middle_round, final_round, intermediate_components
         )
 
-        if solve_with_API:
+        if solve_ARX_optimized:
             return self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )
@@ -1028,7 +1039,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         intermediate_components=True,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=True,
     ):
         """
@@ -1043,8 +1054,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         - ``middle_round`` -- **integer** (default: `1`); incosistency round of the impossible differential
         - ``final_round`` -- **integer** (default: `None`); final round of the impossible differential
         - ``intermediate_components`` -- **Boolean** (default: `True`); check inconsistency on intermediate components of the inconsistency round or only on outputs
-        - ``num_of_processors`` -- **Integer** (default: `None`); number of processors used for MiniZinc search
-        - ``timelimit`` -- **Integer** (default: `None`); time limit of MiniZinc search
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
 
         EXAMPLES::
 
@@ -1062,7 +1075,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             fixed_variables=fixed_values, intermediate_components=intermediate_components, fully_automatic=True
         )
 
-        if solve_with_API:
+        if solve_ARX_optimized:
             return self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )

@@ -708,10 +708,23 @@ class MznModel:
           * 'deterministic_truncated_xor_differential'
           * 'deterministic_truncated_xor_differential_one_solution'
           * 'impossible_xor_differential'
-        - ``solver_name`` -- **string** (default: `None`); the name of the solver.
-          See also :meth:`MznModel.solver_names`.
-        - ``num_of_processors`` -- **integer**; the number of processors to be used
-        - ``timelimit`` -- **integer**; time limit to output a result
+        - ``solver_name`` -- **string** (default: `None`); name of the solver to be used together with MiniZinc
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
+        - ``timeout_in_seconds_`` -- **integer** (default: `30`); time in seconds to interrupt the solving process
+        - ``processes_`` -- **integer** (default: `4`); set the number of processes the solver can use. (Only
+          available when the ``-p`` flag is supported by the solver)
+        - ``nr_solutions_`` -- **integer** (default: `None`); the requested number of solution. (Only available on
+          satisfaction problems and when the ``-n`` flag is supported by the solver)
+        - ``random_seed_`` -- **integer** (default: `None`); set the random seed for solver. (Only available when
+          the ``-r`` flag is supported by the solver)
+        - ``all_solutions_`` -- **boolean** (default: `False`); request to solver to find all solutions. (Only
+          available on satisfaction problems and when the ``-a`` flag is supported by the solver)
+        - ``intermediate_solutions_`` -- **boolean** (default: `False`); request the solver to output any
+          intermediate solutions that are found during the solving process. (Only available on optimisation
+          problems and when the ``-a`` flag is supported by the solver)
+        - ``free_search`` -- **boolean** (default: `False`); allow the solver to ignore the search definition within
+          the instance (Only available when the ``-f`` flag is supported by the solver)
+        - ``optimisation_level_`` -- **integer** (default: `None`); set the MiniZinc compiler optimisation level
 
         EXAMPLES::
 
@@ -845,7 +858,6 @@ class MznModel:
 
         INPUT:
 
-            - ``model_type`` -- **string**; the type of the model that has been solved
             - ``solver_name`` -- **string** (default: `None`); name of the solver to be used together with MiniZinc
             - ``timeout_in_seconds_`` -- **integer** (default: `30`); time in seconds to interrupt the solving process
             - ``processes_`` -- **integer** (default: `4`); set the number of processes the solver can use. (Only
@@ -854,11 +866,11 @@ class MznModel:
               satisfaction problems and when the ``-n`` flag is supported by the solver)
             - ``random_seed_`` -- **integer** (default: `None`); set the random seed for solver. (Only available when
               the ``-r`` flag is supported by the solver)
+            - ``all_solutions_`` -- **boolean** (default: `False`); request to solver to find all solutions. (Only
+              available on satisfaction problems and when the ``-a`` flag is supported by the solver)
             - ``intermediate_solutions_`` -- **boolean** (default: `False`); request the solver to output any
               intermediate solutions that are found during the solving process. (Only available on optimisation
               problems and when the ``-a`` flag is supported by the solver)
-            - ``all_solutions_`` -- **boolean** (default: `False`); request to solver to find all solutions. (Only
-              available on satisfaction problems and when the ``-a`` flag is supported by the solver)
             - ``free_search`` -- **boolean** (default: `False`); allow the solver to ignore the search definition within
               the instance (Only available when the ``-f`` flag is supported by the solver)
             - ``optimisation_level_`` -- **integer** (default: `None`); set the MiniZinc compiler optimisation level

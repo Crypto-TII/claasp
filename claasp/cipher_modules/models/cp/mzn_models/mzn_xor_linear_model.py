@@ -242,7 +242,7 @@ class MznXorLinearModel(MznModel):
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=False,
     ):
         """
@@ -254,6 +254,10 @@ class MznXorLinearModel(MznModel):
         - ``fixed_weight`` -- **integer**; the weight to be fixed
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -281,7 +285,7 @@ class MznXorLinearModel(MznModel):
         self.build_xor_linear_trail_model(fixed_weight, fixed_values)
         end = tm.time()
         build_time = end - start
-        if solve_with_API:
+        if solve_ARX_optimized:
             solutions = self.solve_for_ARX(
                 solver_name=solver_name,
                 timeout_in_seconds_=timelimit,
@@ -310,7 +314,7 @@ class MznXorLinearModel(MznModel):
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=False,
     ):
         """
@@ -323,6 +327,10 @@ class MznXorLinearModel(MznModel):
         - ``max_weight`` -- **integer** (default: `64`); the weight at which the search stops
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -351,7 +359,7 @@ class MznXorLinearModel(MznModel):
         self._model_constraints.append(f"constraint weight >= {100 * min_weight} /\\ weight <= {100 * max_weight} ")
         end = tm.time()
         build_time = end - start
-        if solve_with_API:
+        if solve_ARX_optimized:
             solutions = self.solve_for_ARX(
                 solver_name=solver_name,
                 timeout_in_seconds_=timelimit,
@@ -379,7 +387,7 @@ class MznXorLinearModel(MznModel):
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=False,
     ):
         """
@@ -395,6 +403,10 @@ class MznXorLinearModel(MznModel):
 
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -422,7 +434,7 @@ class MznXorLinearModel(MznModel):
         self.build_xor_linear_trail_model(-1, fixed_values)
         end = tm.time()
         build_time = end - start
-        if solve_with_API:
+        if solve_ARX_optimized:
             solution = self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )
@@ -445,7 +457,7 @@ class MznXorLinearModel(MznModel):
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=False,
     ):
         """
@@ -456,6 +468,10 @@ class MznXorLinearModel(MznModel):
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
           See also :meth:`MznModel.solver_names`.
 
         EXAMPLES::
@@ -479,7 +495,7 @@ class MznXorLinearModel(MznModel):
         self.build_xor_linear_trail_model(0, fixed_values)
         end = tm.time()
         build_time = end - start
-        if solve_with_API:
+        if solve_ARX_optimized:
             solution = self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )
@@ -503,7 +519,7 @@ class MznXorLinearModel(MznModel):
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
-        solve_with_API=False,
+        solve_ARX_optimized=False,
         solve_external=False,
     ):
         """
@@ -515,6 +531,10 @@ class MznXorLinearModel(MznModel):
         - ``fixed_weight`` -- **integer**; the value to which the weight is fixed, if non-negative
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
+        - ``num_of_processors`` -- **integer** (default: None); the number of cores to use
+        - ``timelimit`` -- **integer** (default: None); the time limit for the solver in seconds
+        - ``solve_ARX_optimized`` -- **boolean** (default: False); use the ARX optimized model
+        - ``solve_external`` -- **boolean** (default: False); solve the model with an external call to the solver
           See also :meth:`MznModel.solver_names`.
         EXAMPLES::
 
@@ -541,7 +561,7 @@ class MznXorLinearModel(MznModel):
         self.build_xor_linear_trail_model(fixed_weight, fixed_values)
         end = tm.time()
         build_time = end - start
-        if solve_with_API:
+        if solve_ARX_optimized:
             solution = self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )
