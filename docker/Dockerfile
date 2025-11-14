@@ -198,17 +198,12 @@ RUN echo '\
 # Installing CryptoMiniSat
 WORKDIR /opt
 
-RUN wget https://github.com/msoos/cryptominisat/archive/refs/tags/5.11.4.tar.gz \
-    && tar -xf 5.11.4.tar.gz \
-    && rm 5.11.4.tar.gz
+RUN wget https://github.com/msoos/cryptominisat/releases/download/release%2F5.13.0/cryptominisat5-linux-amd64.zip \
+    && unzip cryptominisat5-linux-amd64.zip \
+    && rm cryptominisat5-linux-amd64.zip
 
-RUN cd cryptominisat-5.11.4 \
-    && mkdir build \
-    && cd build \
-    && cmake .. \
-    && make \
-    && make install \
-    && ldconfig
+RUN mv cryptominisat5 /usr/local/bin \
+    && mv lib/* /usr/local/lib
 
 WORKDIR /opt
 
