@@ -24,7 +24,7 @@ FINDMUS = "findmus"
 GLOBALIZER = "globalizer"
 GUROBI = "gurobi"
 SCIP = "scip"
-XOR = "Xor"
+XOR = "cp-sat"
 XPRESS = "xpress"
 
 

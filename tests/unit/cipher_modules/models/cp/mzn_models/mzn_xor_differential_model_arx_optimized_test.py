@@ -5,6 +5,8 @@ from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 
+from claasp.cipher_modules.models.cp.solvers import XOR
+
 SPECK4 = SpeckBlockCipher(number_of_rounds=4, block_bit_size=32, key_bit_size=64)
 MZN4 = MznXorDifferentialModelARXOptimized(SPECK4)
 
@@ -40,20 +42,20 @@ fixed_variables_64_128 = generate_fixed_variables(64, 128)
 
 def test_build_lowest_weight_xor_differential_trail_model():
     MZN5.build_lowest_weight_xor_differential_trail_model(fixed_variables_32_64)
-    result = MZN5.solve_for_ARX("Xor")
+    result = MZN5.solve_for_ARX(Xor)
     assert result.statistics["nSolutions"] > 1
 
 
 def test_build_lowest_xor_differential_trails_with_at_most_weight():
     MZN5.build_lowest_xor_differential_trails_with_at_most_weight(100, fixed_variables_32_64)
-    result = MZN5.solve_for_ARX("Xor")
+    result = MZN5.solve_for_ARX(Xor)
 
     assert result.statistics["nSolutions"] > 1
 
 
 def test_find_all_xor_differential_trails_with_fixed_weight():
     result = MZN5.find_all_xor_differential_trails_with_fixed_weight(
-        5, solver_name="Xor", fixed_values=fixed_variables_32_64
+        5, solver_name=Xor, fixed_values=fixed_variables_32_64
     )
 
     assert result["total_weight"] is None
@@ -61,17 +63,17 @@ def test_find_all_xor_differential_trails_with_fixed_weight():
 
 def test_find_all_xor_differential_trails_with_weight_at_most():
     result = MZN4.find_all_xor_differential_trails_with_weight_at_most(
-        1, solver_name="Xor", fixed_values=fixed_variables_32_64
+        1, solver_name=Xor, fixed_values=fixed_variables_32_64
     )
     assert result[0]["total_weight"] > 1
 
 
 def test_find_lowest_weight_xor_differential_trail():
-    result = MZN5.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_32_64)
+    result = MZN5.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_32_64)
     assert result["total_weight"] == 9
 
     mzn = MznXorDifferentialModelARXOptimized(SPECK5, [0, 0, 0, 0, 0])
-    result = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_32_64)
+    result = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_32_64)
     assert result["total_weight"] == 9
 
     speck = SpeckBlockCipher(number_of_rounds=4)
@@ -86,17 +88,17 @@ def test_find_lowest_weight_xor_differential_trail():
             "value": "0",
         }
     ]
-    result = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables)
+    result = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables)
     assert result["total_weight"] == 0
 
     tea = TeaBlockCipher(number_of_rounds=2)
     mzn = MznXorDifferentialModelARXOptimized(tea)
-    result = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_64_128)
+    result = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_64_128)
     assert result["total_weight"] > 1
 
     raiden = RaidenBlockCipher(number_of_rounds=2)
     mzn = MznXorDifferentialModelARXOptimized(raiden, sat_or_milp="milp")
-    result = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_64_128)
+    result = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_64_128)
     assert result["total_weight"] == 6
 
     pr_weights_per_round = [
@@ -107,7 +109,7 @@ def test_find_lowest_weight_xor_differential_trail():
         {"min_bound": 2, "max_bound": 4},
     ]
     mzn = MznXorDifferentialModelARXOptimized(SPECK5, probability_weight_per_round=pr_weights_per_round)
-    solution = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_32_64)
+    solution = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_32_64)
     round1_weight = solution["component_values"]["modadd_0_1"]["weight"]
     assert 2 <= round1_weight <= 4
     component_values = solution["component_values"]
@@ -121,11 +123,11 @@ def test_find_lowest_weight_xor_differential_trail():
     assert 2 <= round5_weight <= 4
 
     mzn = MznXorDifferentialModelARXOptimized(SPECK5, sat_or_milp="milp")
-    result = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_32_64)
+    result = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_32_64)
     assert result["total_weight"] == 9
 
     mzn = MznXorDifferentialModelARXOptimized(SPECK5, [0, 0, 0, 0, 0])
-    result = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_32_64)
+    result = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_32_64)
     assert result["total_weight"] == 9
 
     speck = SpeckBlockCipher(number_of_rounds=4)
@@ -140,17 +142,17 @@ def test_find_lowest_weight_xor_differential_trail():
             "value": "0",
         }
     ]
-    result = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables)
+    result = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables)
     assert result["total_weight"] == 0
 
     tea = TeaBlockCipher(number_of_rounds=2)
     mzn = MznXorDifferentialModelARXOptimized(tea, sat_or_milp="milp")
-    result = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_64_128)
+    result = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_64_128)
     assert result["total_weight"] > 1
 
     raiden = RaidenBlockCipher(number_of_rounds=2)
     mzn = MznXorDifferentialModelARXOptimized(raiden, sat_or_milp="milp")
-    result = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_64_128)
+    result = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_64_128)
     assert result["total_weight"] == 6
 
     pr_weights_per_round = [
@@ -163,7 +165,7 @@ def test_find_lowest_weight_xor_differential_trail():
     mzn = MznXorDifferentialModelARXOptimized(
         SPECK5, probability_weight_per_round=pr_weights_per_round, sat_or_milp="milp"
     )
-    solution = mzn.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_32_64)
+    solution = mzn.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_32_64)
     round1_weight = solution["component_values"]["modadd_0_1"]["weight"]
     assert 2 <= round1_weight <= 4
     component_values = solution["component_values"]
@@ -180,7 +182,7 @@ def test_find_lowest_weight_xor_differential_trail():
 def test_find_lowest_weight_for_short_xor_differential_trail():
     MZN4.set_max_number_of_carries_on_arx_cipher(0)
     MZN4.set_max_number_of_nonlinear_carries(0)
-    result = MZN4.find_lowest_weight_xor_differential_trail(solver_name="Xor", fixed_values=fixed_variables_32_64)
+    result = MZN4.find_lowest_weight_xor_differential_trail(solver_name=Xor, fixed_values=fixed_variables_32_64)
     assert result["total_weight"] == 5
 
 
@@ -201,6 +203,6 @@ def test_get_probability_vars_from_permutation():
 def test_find_min_of_max_xor_differential_between_permutation_and_key_schedule():
     mzn = MznXorDifferentialModelARXOptimized(SPECK4)
     result = mzn.find_min_of_max_xor_differential_between_permutation_and_key_schedule(
-        fixed_values=fixed_variables_32_64, solver_name="Xor"
+        fixed_values=fixed_variables_32_64, solver_name=Xor
     )
     assert result["total_weight"] == 5
