@@ -9,7 +9,8 @@ RUN apt-get -q update
 RUN apt-get install --no-install-recommends -y \
   libboost-program-options-dev \
   libsqlite3-dev \
-  libstdc++-9-dev
+  libstdc++-9-dev \
+  ca-certificates
 
 RUN apt-get install --no-install-recommends -y \
   gfortran \
@@ -108,7 +109,8 @@ RUN sage -pip install bitstring==4.0.1 \
   numpy==1.24.3 \
   joblib==1.4.2 \
   gurobipy==11.0 \
-  pytest-isolate==0.0.11
+  pytest-isolate==0.0.11 \
+  psutil==7.1.3
 
 # Installing nist sts
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \
@@ -131,10 +133,19 @@ RUN mv MiniZincIDE-2.9.4-bundle-linux-x86_64 /MiniZinc \
 
 # Copy all MiniZinc components to system locations
 RUN cp /MiniZinc/bin/* /usr/local/bin/
-RUN cp -r /MiniZinc/lib/* /usr/local/lib/ 2>/dev/null || true
 RUN mkdir -p /usr/local/share/minizinc && cp -r /MiniZinc/share/minizinc/* /usr/local/share/minizinc/
-RUN echo "/usr/local/lib" | tee /etc/ld.so.conf.d/minizinc.conf
-RUN ldconfig
+
+RUN printf '%s\n' \
+  '#!/bin/sh' \
+  'export LD_LIBRARY_PATH=/MiniZinc/lib:"$LD_LIBRARY_PATH"' \
+  'export SCIPOPTDIR=/opt/scip-803/build' \
+  'export PATH="$SCIPOPTDIR/bin:$PATH"' \
+  'export LD_LIBRARY_PATH="$SCIPOPTDIR/lib:$LD_LIBRARY_PATH"' \
+  'exec /MiniZinc/bin/minizinc "$@"' \
+  > /usr/local/bin/minizinc-wrapper \
+  && chmod +x /usr/local/bin/minizinc-wrapper \
+  && ln -sf /usr/local/bin/minizinc-wrapper /usr/local/bin/minizinc
+
 
 # Installing Chuffed
 RUN wget https://github.com/chuffed/chuffed/archive/refs/tags/0.13.2.tar.gz \
@@ -220,8 +231,10 @@ WORKDIR /opt
 ENV PATH="/opt/ParKissat-RS-master/:${PATH}"
 
 # Installing Glucose
-RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1.tgz  \
-    && tar -xf glucose-syrup-4.1.tgz \
+RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1.tgz || \
+    wget https://fosszone.csd.auth.gr/sagemath/spkg/upstream/glucose/glucose-syrup-4.1.tgz
+
+RUN tar -xf glucose-syrup-4.1.tgz \
     && rm glucose-syrup-4.1.tgz
 
 RUN cd glucose-syrup-4.1/simp \
@@ -298,8 +311,7 @@ RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
 # clean image
 RUN rm -r /opt/choco-solver-4.10.18
 RUN rm -r /opt/chuffed-0.13.2
-RUN rm -r /opt/libminizinc-2.9.3
-RUN rm -r /opt/or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972
+
 
 FROM claasp-base AS claasp-lib
 

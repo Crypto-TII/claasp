@@ -24,7 +24,7 @@ FINDMUS = "findmus"
 GLOBALIZER = "globalizer"
 GUROBI = "gurobi"
 SCIP = "scip"
-XOR = "cp-sat"
+CPSAT = "cp-sat"
 XPRESS = "xpress"
 
 
@@ -40,7 +40,7 @@ CP_SOLVERS_INTERNAL = [
     {"solver_brand_name": "MiniZinc Globalizer", "solver_name": GLOBALIZER},
     {"solver_brand_name": "Gurobi Optimizer", "solver_name": GUROBI},
     {"solver_brand_name": "SCIP", "solver_name": SCIP},
-    {"solver_brand_name": "OR Tools", "solver_name": XOR},
+    {"solver_brand_name": "OR Tools", "solver_name": CPSAT},
     {"solver_brand_name": "FICO Xpress", "solver_name": XPRESS},
 ]
 
@@ -62,14 +62,14 @@ CP_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "OR Tools",
-        "solver_name": XOR,  # keyword to call the solver
+        "solver_name": CPSAT,  # keyword to call the solver
         "keywords": {
             "command": {
                 "executable": ["minizinc"],
                 "options": ["--input-from-stdin", "--solver-statistics"],
                 "input_file": [],
                 "output_file": [],
-                "solver": ["--solver", XOR],
+                "solver": ["--solver", CPSAT],
                 "format": ["executable", "options", "solver"],
             },
         },
