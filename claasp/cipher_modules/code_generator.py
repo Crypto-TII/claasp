@@ -370,7 +370,7 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
-                                          'MODADD', 'MODSUB', 'OR', 'AND']
+                                          'MODADD', 'MODSUB', 'IDEA_MODMUL', 'OR', 'AND']
         if component.type in component_types_allowed or (component.type == 'word_operation' and
                                                          component.description[0] in component_descriptions_allowed):
             code.extend(component.get_byte_based_vectorized_python_code(formatted_component_inputs))
@@ -678,6 +678,8 @@ def build_function_call(component):
             return f"{component.description[0]}(component_input)"
         elif component.description[0] in ['MODADD', 'MODSUB']:
             return f"{component.description[0]}(component_input, {component.description[1]}, {component.description[2]})"
+        elif component.description[0] == 'IDEA_MODMUL':
+            return f"IDEA_MODMUL(component_input, {component.description[1]}, {component.description[2]})"
         else:
             return f"{component.description[0]}(component_input, {component.description[1]})"
     elif component.type == CONSTANT:

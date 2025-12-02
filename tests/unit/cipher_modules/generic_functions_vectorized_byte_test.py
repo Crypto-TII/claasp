@@ -204,6 +204,35 @@ def test_byte_vector_SBOX():
     sub = byte_vector_SBOX([formated_values], sbox, input_bit_size=9)
     assert np.all(evaluate_vectorized_outputs_to_integers([sub.transpose()], 9) == sbox)
 
+def test_byte_vector_IDEA_MODMUL():
+    """Test byte-vectorized IDEA_MODMUL for IDEA cipher (16-bit words only)."""
+    
+    # Define test cases for IDEA (16-bit word size only)
+    # Format: (bits, modulus, A_in, B_in, expected, test_id)
+    test_cases = [
+        # test 1: 0->2^16, 0*0 mod 2^16+1 = 2^16 * 2^16 mod 2^16+1 = 1
+        (16, 65537, 0, 0, 1, "zero_mapping_both_zero"),
+        # test 2: 1000*2000 mod 65537 = 33890
+        (16, 65537, 1000, 2000, 33890, "standard_multiplication"),
+        # test 5: Edge case with max 16-bit value
+        (16, 65537, 65535, 65535, 4, "max_value_multiplication"),
+        # test 6: Test with value 1 (identity)
+        (16, 65537, 12345, 1, 12345, "identity_multiplication")
+    ]
+    
+    # Execute all test cases
+    for bits, modulus, A_in, B_in, expected, test_id in test_cases:
+        input_A = integer_array_to_evaluate_vectorized_input([A_in], bits)
+        input_B = integer_array_to_evaluate_vectorized_input([B_in], bits)
+        input_values = [input_A, input_B]
+        
+        expected_result = integer_array_to_evaluate_vectorized_input([expected], bits)
+        modmul_result = byte_vector_IDEA_MODMUL(input_values, 
+            modulus=modulus, 
+            word_size=bits
+        )
+        assert np.all(modmul_result == expected_result), \
+            f"Test '{test_id}' failed: expected {expected}, got {evaluate_vectorized_outputs_to_integers([modmul_result.transpose()], bits)}"
 
 def test_byte_vector_XOR():
     input_values = [np.arange(8, dtype = np.uint8).reshape((2,4)), np.arange(240, 248, dtype = np.uint8).reshape((2,4))]

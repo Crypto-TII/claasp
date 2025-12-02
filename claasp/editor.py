@@ -29,6 +29,7 @@ from claasp.components.linear_layer_component import LinearLayer
 from claasp.components.mix_column_component import MixColumn
 from claasp.components.modadd_component import MODADD
 from claasp.components.modsub_component import MODSUB
+from claasp.components.idea_modmul_component import IDEA_MODMUL
 from claasp.components.not_component import NOT
 from claasp.components.or_component import OR
 from claasp.components.permutation_component import Permutation
@@ -597,6 +598,59 @@ def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit
         return None
 
     new_component = MODSUB(
+        cipher.current_round_number,
+        cipher.current_round_number_of_components,
+        input_id_links,
+        input_bit_positions,
+        output_bit_size,
+        modulus,
+    )
+    add_component(cipher, new_component)
+    return new_component
+
+
+def add_IDEA_MODMUL_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
+    """
+    Use this function to create a idea_modmul component in the editor.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; an instance of the object cipher
+    - ``input_id_links`` -- **list**; the list of input_id links
+    - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
+    - ``output_bit_size`` -- **integer**; the output bits of the component
+    - ``modulus`` -- **integer**; the modulus for the multiplication operation
+
+    EXAMPLES::
+
+        sage: from claasp.cipher import Cipher
+        sage: from claasp.name_mappings import PERMUTATION
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
+        sage: cipher.add_round()
+        sage: idea_modmul_0_0 = cipher.add_IDEA_MODMUL_component(["input","input"], [[0,1],[2,3]], 2, 5)
+        sage: cipher.print()
+        cipher_id = cipher_name_i4_o4_r1
+        cipher_type = permutation
+        cipher_inputs = ['input']
+        cipher_inputs_bit_size = [4]
+        cipher_output_bit_size = 4
+        cipher_number_of_rounds = 1
+        <BLANKLINE>
+            # round = 0 - round component = 0
+            id = idea_modmul_0_0
+            type = word_operation
+            input_bit_size = 4
+            input_id_link = ['input', 'input']
+            input_bit_positions = [[0, 1], [2, 3]]
+            output_bit_size = 2
+            description = ['IDEA_MODMUL', 2, 5]
+        cipher_reference_code = None
+    """
+    if cipher.current_round_number is None:
+        print(CIPHER_ROUND_NOT_FOUND_ERROR)
+        return None
+
+    new_component = IDEA_MODMUL(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,

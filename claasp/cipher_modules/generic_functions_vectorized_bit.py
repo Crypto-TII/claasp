@@ -384,6 +384,105 @@ def bit_vector_MODSUB(input, number_of_inputs, output_bit_size, verbosity=False)
     return output
 
 
+def bit_vector_IDEA_MODMUL(input, number_of_inputs, output_bit_size, modulus, verbosity=False):
+    """
+    Computes the modular multiplication of 2 binary inputs.
+    
+    For IDEA-compatible moduli (2^n + 1), automatically applies special mapping:
+    - Input value 0 is treated as 2^n before multiplication
+    - Output value 2^n is mapped back to 0 after reduction
+    
+    This implements the multiplicative group structure required by ciphers like IDEA.
+
+    INPUT:
+
+    - ``input`` -- **list**; A list of binary numpy matrices to be multiplied, each with one row per bit, and one column per sample.
+    - ``number_of_inputs`` -- **integer**; number of values to be multiplied (should be 2)
+    - ``output_bit_size`` -- **integer**; the bit size of the output
+    - ``modulus`` -- **integer**; the modulus for the multiplication operation
+    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
+    
+    EXAMPLES::
+    
+        sage: from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_IDEA_MODMUL
+        sage: import numpy as np
+        sage: # Standard modular multiplication
+        sage: a = np.array([[0], [0], [1], [1]], dtype=np.uint8)  # 3 in 4-bit
+        sage: b = np.array([[0], [1], [0], [1]], dtype=np.uint8)  # 5 in 4-bit
+        sage: result = bit_vector_IDEA_MODMUL([a, b], 2, 4, 16)
+        sage: # (3 * 5) % 16 = 15
+        
+        sage: # IDEA mapping (automatic) with modulus 2^16 + 1 = 65537
+        sage: a = np.zeros((16, 1), dtype=np.uint8)  # 0 treated as 2^16
+        sage: b = np.zeros((16, 1), dtype=np.uint8)
+        sage: b[15, 0] = 1  # 1
+        sage: result = bit_vector_IDEA_MODMUL([a, b], 2, 16, 65537)
+        sage: # With mapping: (2^16 * 1) % 65537 = 65536 -> maps back to 0
+    """
+    assert number_of_inputs == 2, "IDEA_MODMUL requires exactly 2 inputs"
+    
+    # Concatenate inputs and split into two operands
+    inputConcatenated = bit_vector_CONCAT(input)
+    inputsList = [inputConcatenated[0:output_bit_size], 
+                  inputConcatenated[output_bit_size:2*output_bit_size]]
+    
+    # Convert bit vectors to integers for each sample (column)
+    val1 = bit_vector_to_integer(inputsList[0])
+    val2 = bit_vector_to_integer(inputsList[1])
+    
+    # Define word_size
+    word_size = output_bit_size
+    max_value = 2**word_size
+    
+    # Always apply input mapping: 0 -> 2^n
+    a = np.where(val1 == 0, max_value, val1)
+    b = np.where(val2 == 0, max_value, val2)
+    
+    # Perform modular multiplication (IDEA uses 16-bit, fits in uint64)
+    a_calc = a.astype(np.uint64)
+    b_calc = b.astype(np.uint64)
+    mod_calc = np.uint64(modulus)
+    result_int = (a_calc * b_calc) % mod_calc
+    
+    # Always apply reverse mapping: 2^n -> 0
+    final_result = np.where(result_int == max_value, 0, result_int).astype(np.uint64)
+    
+    # Convert integer result back to bit vector
+    output = np.zeros(shape=(output_bit_size, inputsList[0].shape[1]), dtype=np.uint8)
+    for i in range(output_bit_size):
+        bit_position = output_bit_size - 1 - i
+        output[bit_position] = (final_result >> i) & 1
+    
+    if DEBUG_MODE:
+        # Verify the computation with overflow protection
+        intInputs = [bit_vector_to_integer(inputConcatenated[i * output_bit_size:(i + 1) * output_bit_size])
+                     for i in range(2)]
+        
+        # Apply same mapping logic
+        max_value = 2**word_size
+        a_check = np.where(intInputs[0] == 0, max_value, intInputs[0])
+        b_check = np.where(intInputs[1] == 0, max_value, intInputs[1])
+        
+        # Use object dtype for large word sizes to prevent overflow
+        if word_size > 32:
+            a_check = a_check.astype(object) if hasattr(a_check, 'astype') else int(a_check)
+            b_check = b_check.astype(object) if hasattr(b_check, 'astype') else int(b_check)
+            X = (a_check * b_check) % modulus
+        else:
+            X = (a_check * b_check) % modulus
+        
+        # Always apply reverse mapping
+        X = np.where(X == max_value, 0, X)
+        
+        assert np.all(X == bit_vector_to_integer(output)), \
+            f"MODMUL verification failed: expected {X}, got {bit_vector_to_integer(output)}"
+    
+    if verbosity:
+        print_component_info(input, output, "IDEA_MODMUL:")
+    
+    return output
+
+
 def bit_vector_ROTATE(input, rotation_amount, verbosity=False):
     """
     Computes the rotation of binary values.
