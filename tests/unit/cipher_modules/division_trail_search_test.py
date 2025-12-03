@@ -1,3 +1,4 @@
+import pytest
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.permutations.gaston_sbox_permutation import GastonSboxPermutation
 from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
@@ -16,6 +17,7 @@ This module can only be used if the user possesses a Gurobi license.
 
 """
 
+@pytest.mark.skip(reason="Requires Gurobi license")
 def test_find_anf_of_specific_output_bit():
     # Return the monomials of the anf of the chosen output bit
     cipher = SimonBlockCipher(number_of_rounds=2)
@@ -29,6 +31,7 @@ def test_find_anf_of_specific_output_bit():
     monomials = milp.find_anf_of_specific_output_bit(0, fixed_degree=2)
     assert monomials ==['p17p24', 'p0p9k49', 'p3p24', 'p2p9k56', 'p10p17']
 
+@pytest.mark.skip(reason="Requires Gurobi license")
 def test_find_degree_of_specific_output_bit():
     # Return the degree of the anf of the chosen output bit of the ciphertext
     cipher = AradiBlockCipher(number_of_rounds=1)
@@ -57,6 +60,7 @@ def test_find_degree_of_specific_output_bit():
     degree = milp.find_degree_of_specific_output_bit(0)
     assert degree == 8
 
+@pytest.mark.skip(reason="Requires Gurobi license")
 def test_check_presence_of_particular_monomial_in_specific_anf():
     # Return the all monomials that contains p230 of the anf of the chosen output bit
     cipher = GastonSboxPermutation(number_of_rounds=1)
