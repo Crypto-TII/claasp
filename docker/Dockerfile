@@ -29,6 +29,10 @@ RUN apt-get install -y \
   wget
 
 RUN apt-get install -y \
+  chromium-browser \
+  chromium-chromedriver
+
+RUN apt-get install -y \
   dieharder=3.31.1.2-1build1 \
   latexmk=1:4.76-1 \
   python3-cryptominisat=5.8.0+dfsg1-2 \
