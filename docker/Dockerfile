@@ -9,7 +9,8 @@ RUN apt-get -q update
 RUN apt-get install --no-install-recommends -y \
   libboost-program-options-dev \
   libsqlite3-dev \
-  libstdc++-9-dev
+  libstdc++-9-dev \
+  ca-certificates
 
 RUN apt-get install --no-install-recommends -y \
   gfortran \
@@ -26,6 +27,10 @@ RUN apt-get install -y \
   cmake \
   git \
   wget
+
+RUN apt-get update && apt-get install -y \
+  chromium-browser \
+  chromium-chromedriver
 
 RUN apt-get install -y \
   dieharder=3.31.1.2-1build1 \
@@ -108,7 +113,8 @@ RUN sage -pip install bitstring==4.0.1 \
   numpy==1.24.3 \
   joblib==1.4.2 \
   gurobipy==11.0 \
-  pytest-isolate==0.0.11
+  pytest-isolate==0.0.11 \
+  psutil==7.1.3
 
 # Installing nist sts
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \
@@ -123,14 +129,27 @@ RUN cd /opt/sts-2.1.2/sts-2.1.2 \
     && rm /opt/sts-2_1_2.zip
 
 # Installing Minizinc
-RUN wget https://github.com/MiniZinc/libminizinc/archive/refs/tags/2.9.3.tar.gz \
-    && tar -xf 2.9.3.tar.gz \
-    && rm 2.9.3.tar.gz
+RUN wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.9.4/MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz \
+    && pwd && tar -xf MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz 
+RUN mv MiniZincIDE-2.9.4-bundle-linux-x86_64 /MiniZinc \
+    && rm MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz
 
-RUN cd libminizinc-2.9.3 \
-    && cmake -B build -S . \
-    && cmake --build build \
-    && cmake --build build --target install
+
+# Copy all MiniZinc components to system locations
+RUN cp /MiniZinc/bin/* /usr/local/bin/
+RUN mkdir -p /usr/local/share/minizinc && cp -r /MiniZinc/share/minizinc/* /usr/local/share/minizinc/
+
+RUN printf '%s\n' \
+  '#!/bin/sh' \
+  'export LD_LIBRARY_PATH=/MiniZinc/lib:"$LD_LIBRARY_PATH"' \
+  'export SCIPOPTDIR=/opt/scip-803/build' \
+  'export PATH="$SCIPOPTDIR/bin:$PATH"' \
+  'export LD_LIBRARY_PATH="$SCIPOPTDIR/lib:$LD_LIBRARY_PATH"' \
+  'exec /MiniZinc/bin/minizinc "$@"' \
+  > /usr/local/bin/minizinc-wrapper \
+  && chmod +x /usr/local/bin/minizinc-wrapper \
+  && ln -sf /usr/local/bin/minizinc-wrapper /usr/local/bin/minizinc
+
 
 # Installing Chuffed
 RUN wget https://github.com/chuffed/chuffed/archive/refs/tags/0.13.2.tar.gz \
@@ -142,30 +161,6 @@ RUN cd chuffed-0.13.2 \
     && cmake --build build \
     && cmake --build build --target install
 
-# Installing OR-Tools
-RUN wget https://github.com/google/or-tools/releases/download/v9.2/or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz \
-    && tar -xf or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz \
-    && rm or-tools_amd64_flatzinc_ubuntu-21.10_v9.2.9972.tar.gz
-
-RUN mv or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972/bin/* /usr/local/bin \
-    && mkdir /usr/local/lib/or-tools \
-    && mv or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972/lib/* /usr/local/lib/or-tools \
-    && mkdir /usr/local/share/minizinc/or-tools \
-    && mv or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972/share/minizinc/* /usr/local/share/minizinc/or-tools \
-    && echo "/usr/local/lib/or-tools" | sudo tee /etc/ld.so.conf.d/or-tools.conf \
-    && ldconfig
-
-RUN echo '\
-{\n\
-  "name": "Xor",\n\
-  "version": "9.2",\n\
-  "id": "Xor",\n\
-  "executable": "/usr/local/bin/fzn-or-tools",\n\
-  "mznlib": "/usr/local/share/minizinc/or-tools",\n\
-  "stdFlags": ["-a", "-p", "-r", "-f"],\n\
-  "needsPathsFile": false\n\
-}\
-' > /usr/local/share/minizinc/solvers/Xor.msc
 
 # Installing Choco
 WORKDIR /opt
@@ -240,8 +235,10 @@ WORKDIR /opt
 ENV PATH="/opt/ParKissat-RS-master/:${PATH}"
 
 # Installing Glucose
-RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1.tgz  \
-    && tar -xf glucose-syrup-4.1.tgz \
+RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1.tgz || \
+    wget https://fosszone.csd.auth.gr/sagemath/spkg/upstream/glucose/glucose-syrup-4.1.tgz
+
+RUN tar -xf glucose-syrup-4.1.tgz \
     && rm glucose-syrup-4.1.tgz
 
 RUN cd glucose-syrup-4.1/simp \
@@ -318,8 +315,7 @@ RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
 # clean image
 RUN rm -r /opt/choco-solver-4.10.18
 RUN rm -r /opt/chuffed-0.13.2
-RUN rm -r /opt/libminizinc-2.9.3
-RUN rm -r /opt/or-tools_flatzinc_Ubuntu-21.10-64bit_v9.2.9972
+
 
 FROM claasp-base AS claasp-lib
 
