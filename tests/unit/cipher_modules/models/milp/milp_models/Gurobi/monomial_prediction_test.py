@@ -1,3 +1,5 @@
+import pytest
+
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
