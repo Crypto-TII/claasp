@@ -1,3 +1,9 @@
+import copy
+import pickle
+from pathlib import Path
+
+from plotly.basedatatypes import BaseFigure
+
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
@@ -13,53 +19,124 @@ from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
 
-def test_save_as_image():
-    speck = SpeckBlockCipher(number_of_rounds=2)
 
-    sat = SatXorDifferentialModel(speck)
-    plaintext = set_fixed_variables(
-        component_id='plaintext',
-        constraint_type='not_equal',
-        bit_positions=range(32),
-        bit_values=(0,) * 32)
-    key = set_fixed_variables(
-        component_id='key',
-        constraint_type='equal',
-        bit_positions=range(64),
-        bit_values=(0,) * 64)
+CACHE_DIR = Path(__file__).resolve().parent / 'data'
+CACHE_FILE = CACHE_DIR / 'report_test_cache.pkl'
+# Heavy report fixtures are persisted to disk so subsequent test runs can
+# reuse them instantly. Delete the pickle to force regeneration.
+_CACHE = None
 
-    trail = sat.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
+
+def _load_cache():
+    global _CACHE
+    if _CACHE is None:
+        if CACHE_FILE.exists():
+            with CACHE_FILE.open('rb') as cache_file:
+                _CACHE = pickle.load(cache_file)
+        else:
+            _CACHE = {}
+    return _CACHE
+
+
+def _persist_cache():
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    with CACHE_FILE.open('wb') as cache_file:
+        pickle.dump(_CACHE, cache_file)
+
+
+def _get_cached_result(key, factory):
+    cache = _load_cache()
+    if key in cache:
+        return copy.deepcopy(cache[key])
+    result = factory()
+    cache[key] = result
+    _persist_cache()
+    return copy.deepcopy(result)
+
+
+def test_save_as_image(monkeypatch, tmp_path):
+    captured_writes = []
+
+    def fake_write_image(self, file, *args, **kwargs):
+        captured_writes.append((file, args, kwargs))
+        return None
+
+    monkeypatch.setattr(BaseFigure, 'write_image', fake_write_image)
+
+    output_dir = str(tmp_path / 'report-cache')
+    _run_save_as_image(output_dir)
+
+    assert captured_writes, 'Expected Plotly write_image to be invoked at least once'
+
+
+def _run_save_as_image(output_dir):
+
+    def _generate_trail_result():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        sat_model = SatXorDifferentialModel(cipher)
+        plaintext = set_fixed_variables(
+            component_id='plaintext',
+            constraint_type='not_equal',
+            bit_positions=range(32),
+            bit_values=(0,) * 32)
+        key = set_fixed_variables(
+            component_id='key',
+            constraint_type='equal',
+            bit_positions=range(64),
+            bit_values=(0,) * 64)
+        return sat_model.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
+
+    trail = _get_cached_result('speck_r2_sat_trail', _generate_trail_result)
     trail_report = Report(trail)
-    trail_report.save_as_image()
-    trail_report.clean_reports()
+    trail_report.save_as_image(output_directory=output_dir)
+    trail_report.clean_reports(output_dir=output_dir)
 
-    avalanche_results = AvalancheTests(speck).avalanche_tests()
+    def _generate_avalanche_results():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        return AvalancheTests(cipher).avalanche_tests()
+
+    avalanche_results = _get_cached_result('speck_r2_avalanche_tests', _generate_avalanche_results)
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output',
+    avalanche_report.save_as_image(output_directory=output_dir, test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output',
              fixed_input_difference='average')
-    avalanche_report.clean_reports()
+    avalanche_report.clean_reports(output_dir=output_dir)
 
-    blackbox_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests(nb_samples=10)
+    def _generate_neural_network_results():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        return NeuralNetworkTests(cipher).neural_network_blackbox_distinguisher_tests(nb_samples=10)
+
+    blackbox_results = _get_cached_result('speck_r2_neural_network_blackbox', _generate_neural_network_results)
     blackbox_report = Report(blackbox_results)
-    blackbox_report.save_as_image()
-    blackbox_report.clean_reports()
+    blackbox_report.save_as_image(output_directory=output_dir)
+    blackbox_report.clean_reports(output_dir=output_dir)
 
-    algebraic_results = AlgebraicTests(speck).algebraic_tests(timeout_in_seconds=1)
+    def _generate_algebraic_results():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        return AlgebraicTests(cipher).algebraic_tests(timeout_in_seconds=1)
+
+    algebraic_results = _get_cached_result('speck_r2_algebraic_tests', _generate_algebraic_results)
     algebraic_report = Report(algebraic_results)
-    algebraic_report.save_as_image()
-    algebraic_report.clean_reports()
+    algebraic_report.save_as_image(output_directory=output_dir)
+    algebraic_report.clean_reports(output_dir=output_dir)
 
-    component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
+    def _generate_component_analysis():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        return CipherComponentsAnalysis(cipher).component_analysis_tests()
+
+    component_analysis = _get_cached_result('speck_r2_component_analysis', _generate_component_analysis)
     report_cca = Report(component_analysis)
-    report_cca.save_as_image()
-    report_cca.clean_reports()
+    report_cca.save_as_image(output_directory=output_dir)
+    report_cca.clean_reports(output_dir=output_dir)
 
-    speck = SpeckBlockCipher(number_of_rounds=2)
-    cda = ContinuousDiffusionAnalysis(speck)
-    cda_for_repo = cda.continuous_diffusion_tests()
+    def _generate_cda_results():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        cda_module = ContinuousDiffusionAnalysis(cipher)
+        return cda_module.continuous_diffusion_tests()
+
+    cda_for_repo = _get_cached_result('speck_r2_continuous_diffusion', _generate_cda_results)
     cda_repo = Report(cda_for_repo)
-    cda_repo.save_as_image()
-    cda_repo.clean_reports()
+    cda_repo.save_as_image(output_directory=output_dir)
+    cda_repo.clean_reports(output_dir=output_dir)
 
 def test_save_as_latex_table():
     simon = SimonBlockCipher(number_of_rounds=2)
