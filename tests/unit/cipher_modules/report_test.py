@@ -54,6 +54,93 @@ def _get_cached_result(key, factory):
     return copy.deepcopy(result)
 
 
+def _cached_speck_trail():
+    def _generate():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        sat_model = SatXorDifferentialModel(cipher)
+        plaintext = set_fixed_variables(
+            component_id='plaintext',
+            constraint_type='not_equal',
+            bit_positions=range(32),
+            bit_values=(0,) * 32)
+        key = set_fixed_variables(
+            component_id='key',
+            constraint_type='equal',
+            bit_positions=range(64),
+            bit_values=(0,) * 64)
+        return sat_model.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
+
+    return _get_cached_result('speck_r2_sat_trail', _generate)
+
+
+def _cached_speck_avalanche_results():
+    def _generate():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        return AvalancheTests(cipher).avalanche_tests()
+
+    return _get_cached_result('speck_r2_avalanche_tests', _generate)
+
+
+def _cached_speck_neural_network_results():
+    def _generate():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        return NeuralNetworkTests(cipher).neural_network_blackbox_distinguisher_tests(nb_samples=10)
+
+    return _get_cached_result('speck_r2_neural_network_blackbox', _generate)
+
+
+def _cached_speck_algebraic_results():
+    def _generate():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        return AlgebraicTests(cipher).algebraic_tests(timeout_in_seconds=1)
+
+    return _get_cached_result('speck_r2_algebraic_tests', _generate)
+
+
+def _cached_speck_component_analysis():
+    def _generate():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        return CipherComponentsAnalysis(cipher).component_analysis_tests()
+
+    return _get_cached_result('speck_r2_component_analysis', _generate)
+
+
+def _cached_speck_cda_results():
+    def _generate():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        cda_module = ContinuousDiffusionAnalysis(cipher)
+        return cda_module.continuous_diffusion_tests()
+
+    return _get_cached_result('speck_r2_continuous_diffusion', _generate)
+
+
+def _cached_present_trail():
+    def _generate():
+        cipher = PresentBlockCipher(number_of_rounds=2)
+        sat_model = SatXorDifferentialModel(cipher)
+        related_key_setting = [
+            set_fixed_variables(component_id='key', constraint_type='not_equal', bit_positions=list(range(80)),
+                                bit_values=[0] * 80),
+            set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=list(range(64)),
+                                bit_values=[0] * 64)
+        ]
+        return sat_model.find_one_xor_differential_trail_with_fixed_weight(
+            fixed_weight=16,
+            fixed_values=related_key_setting,
+            solver_name='KISSAT_EXT')
+
+    return _get_cached_result('present_r2_sat_fixed_weight_16', _generate)
+
+
+def _cached_speck_dieharder_results():
+    def _generate():
+        cipher = SpeckBlockCipher(number_of_rounds=2)
+        dieharder = DieharderTests(cipher)
+        return dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100)
+
+    return _get_cached_result('speck_r2_dieharder_avalanche', _generate)
+
+
 def test_save_as_image(monkeypatch, tmp_path):
     captured_writes = []
 
@@ -70,73 +157,61 @@ def test_save_as_image(monkeypatch, tmp_path):
 
 
 def _run_save_as_image(output_dir):
-
-    def _generate_trail_result():
-        cipher = SpeckBlockCipher(number_of_rounds=2)
-        sat_model = SatXorDifferentialModel(cipher)
-        plaintext = set_fixed_variables(
-            component_id='plaintext',
-            constraint_type='not_equal',
-            bit_positions=range(32),
-            bit_values=(0,) * 32)
-        key = set_fixed_variables(
-            component_id='key',
-            constraint_type='equal',
-            bit_positions=range(64),
-            bit_values=(0,) * 64)
-        return sat_model.find_lowest_weight_xor_differential_trail(fixed_values=[plaintext, key])
-
-    trail = _get_cached_result('speck_r2_sat_trail', _generate_trail_result)
+    trail = _cached_speck_trail()
     trail_report = Report(trail)
     trail_report.save_as_image(output_directory=output_dir)
     trail_report.clean_reports(output_dir=output_dir)
 
-    def _generate_avalanche_results():
-        cipher = SpeckBlockCipher(number_of_rounds=2)
-        return AvalancheTests(cipher).avalanche_tests()
-
-    avalanche_results = _get_cached_result('speck_r2_avalanche_tests', _generate_avalanche_results)
+    avalanche_results = _cached_speck_avalanche_results()
     avalanche_report = Report(avalanche_results)
     avalanche_report.save_as_image(output_directory=output_dir, test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output',
              fixed_input_difference='average')
     avalanche_report.clean_reports(output_dir=output_dir)
 
-    def _generate_neural_network_results():
-        cipher = SpeckBlockCipher(number_of_rounds=2)
-        return NeuralNetworkTests(cipher).neural_network_blackbox_distinguisher_tests(nb_samples=10)
-
-    blackbox_results = _get_cached_result('speck_r2_neural_network_blackbox', _generate_neural_network_results)
+    blackbox_results = _cached_speck_neural_network_results()
     blackbox_report = Report(blackbox_results)
     blackbox_report.save_as_image(output_directory=output_dir)
     blackbox_report.clean_reports(output_dir=output_dir)
 
-    def _generate_algebraic_results():
-        cipher = SpeckBlockCipher(number_of_rounds=2)
-        return AlgebraicTests(cipher).algebraic_tests(timeout_in_seconds=1)
-
-    algebraic_results = _get_cached_result('speck_r2_algebraic_tests', _generate_algebraic_results)
+    algebraic_results = _cached_speck_algebraic_results()
     algebraic_report = Report(algebraic_results)
     algebraic_report.save_as_image(output_directory=output_dir)
     algebraic_report.clean_reports(output_dir=output_dir)
 
-    def _generate_component_analysis():
-        cipher = SpeckBlockCipher(number_of_rounds=2)
-        return CipherComponentsAnalysis(cipher).component_analysis_tests()
-
-    component_analysis = _get_cached_result('speck_r2_component_analysis', _generate_component_analysis)
+    component_analysis = _cached_speck_component_analysis()
     report_cca = Report(component_analysis)
     report_cca.save_as_image(output_directory=output_dir)
     report_cca.clean_reports(output_dir=output_dir)
 
-    def _generate_cda_results():
-        cipher = SpeckBlockCipher(number_of_rounds=2)
-        cda_module = ContinuousDiffusionAnalysis(cipher)
-        return cda_module.continuous_diffusion_tests()
-
-    cda_for_repo = _get_cached_result('speck_r2_continuous_diffusion', _generate_cda_results)
+    cda_for_repo = _cached_speck_cda_results()
     cda_repo = Report(cda_for_repo)
     cda_repo.save_as_image(output_directory=output_dir)
     cda_repo.clean_reports(output_dir=output_dir)
+
+
+def _run_show():
+    component_analysis = _cached_speck_component_analysis()
+    report_cca = Report(component_analysis)
+    report_cca.show()
+
+    avalanche_results = _cached_speck_avalanche_results()
+    avalanche_report = Report(avalanche_results)
+    avalanche_report.show(test_name=None)
+    avalanche_report.show(test_name='avalanche_weight_vectors', fixed_input_difference=None)
+    avalanche_report.show(test_name='avalanche_weight_vectors', fixed_input_difference='average')
+
+    present_trail = _cached_present_trail()
+    present_trail_report = Report(present_trail)
+    present_trail_report.show()
+
+    dieharder_results = _cached_speck_dieharder_results()
+    dieharder_report = Report(dieharder_results)
+    dieharder_report.show()
+
+    neural_network_results = _cached_speck_neural_network_results()
+    neural_network_tests_report = Report(neural_network_results)
+    neural_network_tests_report.show(fixed_input_difference=None)
+    neural_network_tests_report.show(fixed_input_difference='0xa')
 
 def test_save_as_latex_table():
     simon = SimonBlockCipher(number_of_rounds=2)
@@ -227,34 +302,23 @@ def test_save_as_json():
     avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
     avalanche_report.clean_reports()
 
-def test_show():
+def test_show(monkeypatch, tmp_path):
+    captured_fig_shows = []
+    component_charts = []
 
-    speck = SpeckBlockCipher(number_of_rounds=2)
-    component_analysis = CipherComponentsAnalysis(speck).component_analysis_tests()
-    report_cca = Report(component_analysis)
-    report_cca.show()
-    avalanche_results = AvalancheTests(speck).avalanche_tests()
-    avalanche_report = Report(avalanche_results)
-    avalanche_report.show(test_name=None)
-    avalanche_report.show(test_name='avalanche_weight_vectors', fixed_input_difference=None)
-    avalanche_report.show(test_name='avalanche_weight_vectors', fixed_input_difference='average')
+    def fake_show(self, *args, **kwargs):
+        captured_fig_shows.append((args, kwargs))
+        return None
 
-    present = PresentBlockCipher(number_of_rounds=2)
-    sat = SatXorDifferentialModel(present)
-    related_key_setting = [
-        set_fixed_variables(component_id='key', constraint_type='not_equal', bit_positions=list(range(80)),
-                            bit_values=[0] * 80),
-        set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=list(range(64)),
-                            bit_values=[0] * 64)
-    ]
-    trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
-                                                                  solver_name='KISSAT_EXT')
-    trail_report = Report(trail)
-    trail_report.show()
-    dieharder_test_results = DieharderTests(speck).dieharder_statistical_tests('avalanche', dieharder_test_option=100)
-    report_sts = Report(dieharder_test_results)
-    report_sts.show()
-    neural_network_test_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests(nb_samples=10)
-    neural_network_tests_report = Report(neural_network_test_results)
-    neural_network_tests_report.show(fixed_input_difference=None)
-    neural_network_tests_report.show(fixed_input_difference='0xa')
+    def fake_component_radar(self, results):
+        component_charts.append(results)
+        return None
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(BaseFigure, 'show', fake_show)
+    monkeypatch.setattr(CipherComponentsAnalysis, 'print_component_analysis_as_radar_charts', fake_component_radar)
+
+    _run_show()
+
+    assert captured_fig_shows, 'Expected Plotly show to be invoked at least once'
+    assert component_charts, 'Expected component analysis radar chart to be produced'
