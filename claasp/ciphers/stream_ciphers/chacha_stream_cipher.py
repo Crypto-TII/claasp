@@ -60,6 +60,7 @@ class ChachaStreamCipher(ChachaPermutation):
         - ``number_of_rounds`` -- **integer** (default: `20`); number of rounds of the cipher
         - ``block_count`` -- **integer** (default: `1`)
         - ``chacha_constants`` -- **integer** (default: `0x617078653320646e79622d326b206574`)
+        - ``round_mode`` -- **string** (default: `"half"`); matches ``round_mode`` in :class:`ChachaPermutation`
 
     EXAMPLES::
 
@@ -70,7 +71,7 @@ class ChachaStreamCipher(ChachaPermutation):
     """
 
     def __init__(self, block_bit_size=512, key_bit_size=256, number_of_rounds=20,
-                 block_count=1, chacha_constants=0x617078653320646e79622d326b206574):
+                 block_count=1, chacha_constants=0x617078653320646e79622d326b206574, round_mode="half"):
         self.WORD_SIZE = 32
 
         input_state_of_components = [
@@ -92,7 +93,8 @@ class ChachaStreamCipher(ChachaPermutation):
                          cipher_type=STREAM_CIPHER,
                          cipher_family="chacha_stream_cipher",
                          inputs=[INPUT_PLAINTEXT, INPUT_KEY, INPUT_NONCE],
-                         cipher_inputs_bit_size=[block_bit_size, key_bit_size, self.WORD_SIZE * 3])
+                 cipher_inputs_bit_size=[block_bit_size, key_bit_size, self.WORD_SIZE * 3],
+                 round_mode=round_mode)
         state_of_components_permutation = self.state_of_components
 
         self.add_constant_component(self.WORD_SIZE * 4, chacha_constants)

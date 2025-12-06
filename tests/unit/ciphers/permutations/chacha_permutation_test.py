@@ -1,15 +1,19 @@
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_SINGLE
 
 
 def test_chacha_permutation():
     chacha = ChachaPermutation()
     assert chacha.family_name == 'chacha_permutation'
     assert chacha.type == 'permutation'
-    assert chacha.number_of_rounds == 0
-    assert chacha.id == 'chacha_permutation_p512_o512_r0'
+    assert chacha.number_of_rounds == 40
+    assert chacha.id == 'chacha_permutation_p512_o512_r40'
 
     chacha = ChachaPermutation(number_of_rounds=2)
     assert chacha.number_of_rounds == 2
+
+    chacha = ChachaPermutation(number_of_rounds=20, round_mode='single')
+    assert chacha.number_of_rounds == 40
+    assert chacha.id == 'chacha_permutation_p512_o512_r40'
 
     chacha = ChachaPermutation(number_of_rounds=40)
     state = ["61707865", "3320646e", "79622d32", "6b206574",
@@ -20,6 +24,12 @@ def test_chacha_permutation():
     output = int('0x837778abe238d763a67ae21e5950bb2fc4f2d0c7fc62bb2f8fa018fc3f5ec7b7335271c2f29489f3eabda8fc82e46ebdd'
                  '19c12b4b04e16de9e83d0cb4e3c50a2', 16)
     assert chacha.evaluate([plaintext], verbosity=False) == output
+
+    chacha_full = ChachaPermutation(number_of_rounds=20, round_mode='single')
+    assert chacha_full.evaluate([plaintext], verbosity=False) == output
+
+    chacha_single_mode = ChachaPermutation(number_of_rounds=20, round_mode=ROUND_MODE_SINGLE)
+    assert chacha_single_mode.evaluate([plaintext], verbosity=False) == output
 
     chacha = ChachaPermutation(number_of_rounds=1)
     assert chacha.get_component_from_id("rot_0_2").description[1] == -16
