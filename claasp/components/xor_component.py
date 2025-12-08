@@ -292,7 +292,6 @@ class XOR(Component):
         input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        print('I am in the determinist propagation!!!!!!!')
         for id_link, bit_positions in zip(input_id_links, input_bit_positions):
             all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
         cp_constraints = []

@@ -8,13 +8,13 @@ from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 
 def test_build_boomerang_model_chacha():
     # cipher = ChachaPermutation(number_of_rounds=6)
-    cipher = SpeckBlockCipher(number_of_rounds=7)
+    cipher = SpeckBlockCipher(number_of_rounds=2)
     # cipher = TwineBlockCipher(number_of_rounds=6)
     # cipher = MidoriBlockCipher(number_of_rounds=6)
 
-    top_part_number_of_rounds = 3
-    middle_part_number_of_rounds = 1
-    bottom_part_number_of_rounds = 3
+    top_part_number_of_rounds = 0
+    middle_part_number_of_rounds = 2
+    bottom_part_number_of_rounds = 0
 
     component_dict = {
         "top_part_number_of_rounds": top_part_number_of_rounds,

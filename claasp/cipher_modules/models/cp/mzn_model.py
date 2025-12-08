@@ -767,10 +767,7 @@ class MznModel:
         constraints = self._model_constraints
         variables = self._variables_list
         mzn_model_string = "\n".join(constraints) + "\n".join(variables)
-        f = open("test.mzn", "w")
-        f.write(mzn_model_string)
 
-        f.close()
         solver_name_mzn = Solver.lookup(solver_name)
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)

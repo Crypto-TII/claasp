@@ -1,11 +1,9 @@
-def get_lbct_operations():
-    lbct_string = """
-    include \"table.mzn\";
+include "table.mzn";
     int: num_workers_lbct = 8;
     int: num_rows_lbct = 32;
     int: num_cols_last_table_lbct = 11;
     int: num_cols_lbct = 15;
-    array[0..num_cols_lbct-1] of var 0..1: b_lbct;
+%     array[0..num_cols_lbct-1] of var 0..1: b_lbct;
     array[0..num_workers_lbct-1,0..num_rows_lbct-1,0..num_cols_lbct-1] of 0..1: lbct_table =
          array3d(0..num_workers_lbct-1,0..num_rows_lbct-1,0..num_cols_lbct-1,
       [
@@ -304,78 +302,78 @@ def get_lbct_operations():
             array[0..7] of var bool: lastLiterals;
             array[0..10] of var bool: isValid;
         } in
-        (sum(isHalf) <= halfNum) /\\
-        (dp[0, 0] == true) /\\
-        (dp[0, 1] == false) /\\
-        (dp[0, 2] == false) /\\
-        (dp[0, 3] == false) /\\
-        (dp[0, 4] == false) /\\
-        (dp[0, 5] == false) /\\
-        (dp[0, 6] == false) /\\
-        (dp[0, 7] == false) /\\
+        (sum(isHalf) <= halfNum) /\
+        (dp[0, 0] == true) /\
+        (dp[0, 1] == false) /\
+        (dp[0, 2] == false) /\
+        (dp[0, 3] == false) /\
+        (dp[0, 4] == false) /\
+        (dp[0, 5] == false) /\
+        (dp[0, 6] == false) /\
+        (dp[0, 7] == false) /\
         forall(i in 0..branchSize-2) (
             forall(cn in 0..7) (
                  let {
                     array[0..14] of var 0..1: column = array1d(0..14, [dL[i], dR[i], nL[i], nR[i], nLL[i], matrix[i, 0*8+cn], matrix[i, 1*8+cn], matrix[i, 2*8+cn], matrix[i, 3*8+cn], matrix[i, 4*8+cn], matrix[i, 5*8+cn], matrix[i, 6*8+cn], matrix[i, 7*8+cn], halfSize0[i, cn], halfSize1[i, cn]])
                 } in
                 BVAssign_lbct(column, cn)
-            ) /\\
+            ) /\
             (
-                dp[i + 1, 0] \\/ dp[i + 1, 1] \\/ dp[i + 1, 2] \\/ dp[i + 1, 3] \\/ dp[i + 1, 4] \\/ dp[i + 1, 5] \\/ dp[i + 1, 6] \\/ dp[i + 1, 7]
-            ) /\\
-            (ifEnforced[i] == not(isHalf[i])) /\\
+                dp[i + 1, 0] \/ dp[i + 1, 1] \/ dp[i + 1, 2] \/ dp[i + 1, 3] \/ dp[i + 1, 4] \/ dp[i + 1, 5] \/ dp[i + 1, 6] \/ dp[i + 1, 7]
+            ) /\
+            (ifEnforced[i] == not(isHalf[i])) /\
             forall(j in 0..7) (
-                (not(ifEnforced[i]) \\/ not(dp[i,j]) \\/ matrix[i, j*8+j]) /\\
-                (not(ifEnforced[i]) \\/ not(dp[i,j]) \\/ dp[i+1,j]) /\\
-                sum([not(ifEnforced[i]), not(dp[i,j]), matrix[i, j * 8 + j]]) >= 1 /\\
+                (not(ifEnforced[i]) \/ not(dp[i,j]) \/ matrix[i, j*8+j]) /\
+                (not(ifEnforced[i]) \/ not(dp[i,j]) \/ dp[i+1,j]) /\
+                sum([not(ifEnforced[i]), not(dp[i,j]), matrix[i, j * 8 + j]]) >= 1 /\
                 sum([not(ifEnforced[i]), not(dp[i,j]), dp[i + 1,j]]) >= 1
-            ) /\\
+            ) /\
             forall(j in 0..7) (
-                (enforcedLiterals[i,j] -> (not(matrix[i,j * 8 + j]) /\\ dp[i,j])) /\\
-                (not(enforcedLiterals[i,j]) -> (matrix[i,j * 8 + j] \\/ not(dp[i,j])))
-            ) /\\ 
+                (enforcedLiterals[i,j] -> (not(matrix[i,j * 8 + j]) /\ dp[i,j])) /\
+                (not(enforcedLiterals[i,j]) -> (matrix[i,j * 8 + j] \/ not(dp[i,j])))
+            ) /\ 
             (
-                ifEnforced[i] \\/ enforcedLiterals[i,0] \\/ enforcedLiterals[i,1] \\/ enforcedLiterals[i,2] \\/ enforcedLiterals[i,3] \\/ enforcedLiterals[i,4] \\/ enforcedLiterals[i,5] \\/ enforcedLiterals[i,6] \\/ enforcedLiterals[i,7]
-            ) /\\
+                ifEnforced[i] \/ enforcedLiterals[i,0] \/ enforcedLiterals[i,1] \/ enforcedLiterals[i,2] \/ enforcedLiterals[i,3] \/ enforcedLiterals[i,4] \/ enforcedLiterals[i,5] \/ enforcedLiterals[i,6] \/ enforcedLiterals[i,7]
+            ) /\
             forall(r in 0..7) (
                 forall(cc in 0..7) (
-                    (literals[i, r * 8 + cc] -> (matrix[i, r * 8 + cc] /\\ dp[i, cc])) /\\
-                    (not(literals[i, r * 8 + cc]) -> (not(matrix[i,r * 8 + cc]) \\/ not(dp[i,cc]))) /\\
-                    (matrix[i,r * 8 + cc] >=  literals[i,r * 8 + cc]) /\\
-                    (dp[i,cc] >=           literals[i,r * 8 + cc])  /\\
+                    (literals[i, r * 8 + cc] -> (matrix[i, r * 8 + cc] /\ dp[i, cc])) /\
+                    (not(literals[i, r * 8 + cc]) -> (not(matrix[i,r * 8 + cc]) \/ not(dp[i,cc]))) /\
+                    (matrix[i,r * 8 + cc] >=  literals[i,r * 8 + cc]) /\
+                    (dp[i,cc] >=           literals[i,r * 8 + cc])  /\
                     sum([ literals[i, r * 8 + cc], true ]) >= sum([ matrix[i, r * 8 + cc], dp[i,cc] ])
-                ) /\\
+                ) /\
                 (
-                    dp[i + 1,r] -> (literals[i,r * 8 + 0] \\/ literals[i,r * 8 + 1] \\/ literals[i,r * 8 + 2] \\/ literals[i,r * 8 + 3] \\/ literals[i,r * 8 + 4] \\/ literals[i,r * 8 + 5] \\/ literals[i,r * 8 + 6] \\/ literals[i,r * 8 + 7])
-                ) /\\
+                    dp[i + 1,r] -> (literals[i,r * 8 + 0] \/ literals[i,r * 8 + 1] \/ literals[i,r * 8 + 2] \/ literals[i,r * 8 + 3] \/ literals[i,r * 8 + 4] \/ literals[i,r * 8 + 5] \/ literals[i,r * 8 + 6] \/ literals[i,r * 8 + 7])
+                ) /\
                 (
-                    not(dp[i + 1,r]) -> (not(literals[i,r * 8 + 0]) /\\ not(literals[i,r * 8 + 1]) /\\ not(literals[i,r * 8 + 2]) /\\ not(literals[i,r * 8 + 3]) /\\ not(literals[i,r * 8 + 4]) /\\ not(literals[i,r * 8 + 5]) /\\ not(literals[i,r * 8 + 6]) /\\ not(literals[i,r * 8 + 7]))
-                ) /\\
+                    not(dp[i + 1,r]) -> (not(literals[i,r * 8 + 0]) /\ not(literals[i,r * 8 + 1]) /\ not(literals[i,r * 8 + 2]) /\ not(literals[i,r * 8 + 3]) /\ not(literals[i,r * 8 + 4]) /\ not(literals[i,r * 8 + 5]) /\ not(literals[i,r * 8 + 6]) /\ not(literals[i,r * 8 + 7]))
+                ) /\
                 forall(li in 0..7) (
                     dp[i + 1,r] >= literals[i, r * 8 + li] 
-                ) /\\
+                ) /\
                 (
                     sum([ literals[i,r * 8 + 0], literals[i,r * 8 + 1], literals[i,r * 8 + 2], literals[i,r * 8 + 3], literals[i,r * 8 + 4], literals[i,r * 8 + 5], literals[i,r * 8 + 6], literals[i,r * 8 + 7] ]) >= dp[i + 1,r]
                 )
             )
-        ) /\\
+        ) /\
         (
-            isValid[0] == nL[branchSize - 1] /\\
-            isValid[1] == nR[branchSize - 1] /\\
+            isValid[0] == nL[branchSize - 1] /\
+            isValid[1] == nR[branchSize - 1] /\
             isValid[2] == nLL[branchSize -1] 
-        ) /\\
+        ) /\
             (BVAssign_last_table_lbct(isValid))
-        /\\
+        /\
         forall(i in 0..7) (
             (
-                lastLiterals[i] -> (dp[branchSize-1,i] /\\ isValid[3 + i])
-            ) /\\
+                lastLiterals[i] -> (dp[branchSize-1,i] /\ isValid[3 + i])
+            ) /\
             (
-                not(lastLiterals[i]) -> (not(dp[branchSize-1,i]) \\/ not(isValid[3 + i]))
+                not(lastLiterals[i]) -> (not(dp[branchSize-1,i]) \/ not(isValid[3 + i]))
             )
-        ) /\\
+        ) /\
         (
-            lastLiterals[0] \\/ lastLiterals[1] \\/ lastLiterals[2] \\/ lastLiterals[3] \\/ lastLiterals[4] \\/ lastLiterals[5] \\/ lastLiterals[6] \\/ lastLiterals[7]
+            lastLiterals[0] \/ lastLiterals[1] \/ lastLiterals[2] \/ lastLiterals[3] \/ lastLiterals[4] \/ lastLiterals[5] \/ lastLiterals[6] \/ lastLiterals[7]
         );         
 
         predicate BVAssign_lbct(array[0..num_cols_lbct-1] of var 0..1: column, int: index) =
@@ -387,6 +385,16 @@ def get_lbct_operations():
 
         predicate BVAssign_last_table_lbct(
             array[0..num_cols_last_table_lbct-1] of var bool: isValid
-        ) =  table(isValid, last_table_lbct);  
-    """
-    return lbct_string
+        ) =  table(isValid, last_table_lbct);
+
+array[0..15] of var 0..1: pre_upper_modadd_1_7_0 = array1d(0..16-1, [0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0]);
+array[0..15] of var 0..1: pre_upper_modadd_1_7_1 = array1d(0..16-1, [1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0]);
+array[0..15] of var 0..1: pre_lower_modadd_1_7_0 = array1d(0..16-1, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+array[0..15] of var 0..1: pre_lower_modadd_1_7_1 = array1d(0..16-1, [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+% array[0..15] of var 0..1: lower_modadd_1_7 = array1d(0..16-1, [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+% array[0..15] of var 0..1: lower_modadd_1_7 = array1d(0..16-1, [0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+array[0..15] of var 0..1: lower_modadd_1_7 = array1d(0..16-1, [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+
+
+constraint onlyLargeSwitch_LBCT_enum(array1d(0..16-1, [pre_upper_modadd_1_7_0[15],pre_upper_modadd_1_7_0[14],pre_upper_modadd_1_7_0[13],pre_upper_modadd_1_7_0[12],pre_upper_modadd_1_7_0[11],pre_upper_modadd_1_7_0[10],pre_upper_modadd_1_7_0[9],pre_upper_modadd_1_7_0[8],pre_upper_modadd_1_7_0[7],pre_upper_modadd_1_7_0[6],pre_upper_modadd_1_7_0[5],pre_upper_modadd_1_7_0[4],pre_upper_modadd_1_7_0[3],pre_upper_modadd_1_7_0[2],pre_upper_modadd_1_7_0[1],pre_upper_modadd_1_7_0[0]]), array1d(0..16-1, [pre_upper_modadd_1_7_1[15],pre_upper_modadd_1_7_1[14],pre_upper_modadd_1_7_1[13],pre_upper_modadd_1_7_1[12],pre_upper_modadd_1_7_1[11],pre_upper_modadd_1_7_1[10],pre_upper_modadd_1_7_1[9],pre_upper_modadd_1_7_1[8],pre_upper_modadd_1_7_1[7],pre_upper_modadd_1_7_1[6],pre_upper_modadd_1_7_1[5],pre_upper_modadd_1_7_1[4],pre_upper_modadd_1_7_1[3],pre_upper_modadd_1_7_1[2],pre_upper_modadd_1_7_1[1],pre_upper_modadd_1_7_1[0]]), array1d(0..16-1, [pre_lower_modadd_1_7_0[15],pre_lower_modadd_1_7_0[14],pre_lower_modadd_1_7_0[13],pre_lower_modadd_1_7_0[12],pre_lower_modadd_1_7_0[11],pre_lower_modadd_1_7_0[10],pre_lower_modadd_1_7_0[9],pre_lower_modadd_1_7_0[8],pre_lower_modadd_1_7_0[7],pre_lower_modadd_1_7_0[6],pre_lower_modadd_1_7_0[5],pre_lower_modadd_1_7_0[4],pre_lower_modadd_1_7_0[3],pre_lower_modadd_1_7_0[2],pre_lower_modadd_1_7_0[1],pre_lower_modadd_1_7_0[0]]), array1d(0..16-1, [pre_lower_modadd_1_7_1[15],pre_lower_modadd_1_7_1[14],pre_lower_modadd_1_7_1[13],pre_lower_modadd_1_7_1[12],pre_lower_modadd_1_7_1[11],pre_lower_modadd_1_7_1[10],pre_lower_modadd_1_7_1[9],pre_lower_modadd_1_7_1[8],pre_lower_modadd_1_7_1[7],pre_lower_modadd_1_7_1[6],pre_lower_modadd_1_7_1[5],pre_lower_modadd_1_7_1[4],pre_lower_modadd_1_7_1[3],pre_lower_modadd_1_7_1[2],pre_lower_modadd_1_7_1[1],pre_lower_modadd_1_7_1[0]]), array1d(0..16-1, [lower_modadd_1_7[15],lower_modadd_1_7[14],lower_modadd_1_7[13],lower_modadd_1_7[12],lower_modadd_1_7[11],lower_modadd_1_7[10],lower_modadd_1_7[9],lower_modadd_1_7[8],lower_modadd_1_7[7],lower_modadd_1_7[6],lower_modadd_1_7[5],lower_modadd_1_7[4],lower_modadd_1_7[3],lower_modadd_1_7[2],lower_modadd_1_7[1],lower_modadd_1_7[0]]), 1, 16);
+        
