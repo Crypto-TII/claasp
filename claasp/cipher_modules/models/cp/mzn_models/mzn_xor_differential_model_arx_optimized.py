@@ -203,6 +203,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
+            sage: from claasp.cipher_modules.models.cp.solvers import CPSAT
             sage: speck = SpeckBlockCipher(number_of_rounds=5, block_bit_size=32, key_bit_size=64)
             sage: minizinc = MznXorDifferentialModelARXOptimized(speck)
             sage: bit_positions = [i for i in range(speck.output_bit_size)]
@@ -218,7 +219,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             ....:     'operator': '=',
             ....:     'value': '0' })
             sage: minizinc.build_lowest_weight_xor_differential_trail_model(fixed_variables)
-            sage: result = minizinc.solve_for_ARX('Xor')
+            sage: result = minizinc.solve_for_ARX(CPSAT)
             sage: result.statistics['nSolutions'] > 1
             True
         """
@@ -241,6 +242,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.cp.solvers import CPSAT
             sage: speck = SpeckBlockCipher(number_of_rounds=5, block_bit_size=32, key_bit_size=64)
             sage: minizinc = MznXorDifferentialModelARXOptimized(speck)
             sage: bit_positions = [i for i in range(speck.output_bit_size)]
@@ -256,7 +258,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             ....:     'operator': '=',
             ....:     'value': '0' })
             sage: minizinc.build_lowest_weight_xor_differential_trail_model(fixed_variables)
-            sage: result = minizinc.solve_for_ARX('Xor')
+            sage: result = minizinc.solve_for_ARX(CPSAT)
             sage: result.statistics['nSolutions'] > 1
             True
         """
@@ -277,6 +279,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
+            sage: from claasp.cipher_modules.models.cp.solvers import CPSAT
             sage: speck = SpeckBlockCipher(number_of_rounds=5, block_bit_size=32, key_bit_size=64)
             sage: minizinc = MznXorDifferentialModelARXOptimized(speck)
             sage: bit_positions = [i for i in range(speck.output_bit_size)]
@@ -294,7 +297,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             sage: minizinc.build_lowest_xor_differential_trails_with_at_most_weight(
             ....:     100, fixed_variables
             ....: )
-            sage: result = minizinc.solve_for_ARX('Xor')
+            sage: result = minizinc.solve_for_ARX(CPSAT)
             sage: result.statistics['nSolutions'] > 1
             True
         """
@@ -359,6 +362,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: speck = SpeckBlockCipher(number_of_rounds=5, block_bit_size=32, key_bit_size=64)
             sage: minizinc = MznXorDifferentialModelARXOptimized(speck)
+            sage: from claasp.cipher_modules.models.cp.solvers import CPSAT
             sage: bit_positions = [i for i in range(speck.output_bit_size)]
             sage: bit_positions_key = list(range(64))
             sage: fixed_variables = [{ 'component_id': 'plaintext',
@@ -372,7 +376,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             ....:     'operator': '=',
             ....:     'value': '0' })
             sage: result = minizinc.find_all_xor_differential_trails_with_fixed_weight(
-            ....: 5, solver_name='Xor', fixed_values=fixed_variables
+            ....: 5, solver_name=CPSAT, fixed_values=fixed_variables
             ....: )
             sage: print(result['total_weight'])
             None
@@ -415,6 +419,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: speck = SpeckBlockCipher(number_of_rounds=4, block_bit_size=32, key_bit_size=64)
             sage: minizinc = MznXorDifferentialModelARXOptimized(speck)
+            sage: from claasp.cipher_modules.models.cp.solvers import CPSAT
             sage: bit_positions = list(range(32))
             sage: bit_positions_key = list(range(64))
             sage: fixed_variables = [{ 'component_id': 'plaintext',
@@ -428,7 +433,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             ....:     'operator': '=',
             ....:     'value': '0' })
             sage: result = minizinc.find_all_xor_differential_trails_with_weight_at_most(
-            ....:     1, solver_name='Xor', fixed_values=fixed_variables
+            ....:     1, solver_name=CPSAT, fixed_values=fixed_variables
             ....: )
             sage: result[0]['total_weight'] > 1
             True
@@ -486,6 +491,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: speck = SpeckBlockCipher(number_of_rounds=5, block_bit_size=32, key_bit_size=64)
             sage: minizinc = MznXorDifferentialModelARXOptimized(speck)
+            sage: from claasp.cipher_modules.models.cp.solvers import CPSAT
             sage: bit_positions = list(range(32))
             sage: bit_positions_key = list(range(64))
             sage: fixed_variables = [{ 'component_id': 'plaintext',
@@ -499,13 +505,13 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             ....:     'operator': '=',
             ....:     'value': '0' })
             sage: result = minizinc.find_lowest_weight_xor_differential_trail(
-            ....:     solver_name='Xor', fixed_values=fixed_variables
+            ....:     solver_name=CPSAT, fixed_values=fixed_variables
             ....: )
             sage: result["total_weight"]
             9
 
             sage: minizinc = MznXorDifferentialModelARXOptimized(speck, [0, 0, 0, 0, 0])
-            sage: result = minizinc.find_lowest_weight_xor_differential_trail(solver_name='Xor', fixed_values=fixed_variables)
+            sage: result = minizinc.find_lowest_weight_xor_differential_trail(solver_name=CPSAT, fixed_values=fixed_variables)
             sage: result["total_weight"]
             9
         """

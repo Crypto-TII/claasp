@@ -866,6 +866,7 @@ class MznModel:
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
+            sage: from claasp.cipher_modules.models.cp.solvers import CPSAT
             sage: speck = SpeckBlockCipher(number_of_rounds=5, block_bit_size=32, key_bit_size=64)
             sage: minizinc = MznXorDifferentialModelARXOptimized(speck)
             sage: bit_positions = [i for i in range(speck.output_bit_size)]
@@ -881,7 +882,7 @@ class MznModel:
             ....:     'operator': '=',
             ....:     'value': '0' })
             sage: minizinc.build_xor_differential_trail_model(-1, fixed_variables)
-            sage: result = minizinc.solve_for_ARX('Xor')
+            sage: result = minizinc.solve_for_ARX(CPSAT)
             sage: result.statistics['nSolutions']
             1
         """
