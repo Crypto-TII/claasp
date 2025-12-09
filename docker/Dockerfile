@@ -71,7 +71,7 @@ RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-arc
     && rm source-archive.tar.gz \
     && cd HiGHS \
     && cmake -S. -B build \
-    && cmake --build build --parallel
+    && cmake --build build
 
 ENV PATH="${PATH}:/opt/HiGHS/build/bin"
 
@@ -191,19 +191,30 @@ RUN echo '\
 ' > /usr/local/share/minizinc/solvers/choco.msc
 
 # Installing CryptoMiniSat
+# explicit commits are used instead of releases because
+# no semantic versioning is used for cadical and cadiback
 WORKDIR /opt
 
-RUN wget https://github.com/msoos/cryptominisat/archive/refs/tags/5.11.4.tar.gz \
-    && tar -xf 5.11.4.tar.gz \
-    && rm 5.11.4.tar.gz
+RUN git clone https://github.com/meelgroup/cadical.git \
+    && cd cadical \
+    && git checkout f5ac6ffa6eaaf72b407f6fb591091c5ff02271d8 \
+    && CXXFLAGS=-fPIC ./configure --competition \
+    && make -j4 \
+    && cp build/libcadical.so /usr/lib/
 
-RUN cd cryptominisat-5.11.4 \
-    && mkdir build \
-    && cd build \
-    && cmake .. \
-    && make \
-    && make install \
-    && ldconfig
+RUN git clone https://github.com/meelgroup/cadiback.git \
+    && cd cadiback \
+    && git checkout 6050733173995f3cff6ecb04ac99d3691bd0b5e4 \
+    && CXX=c++ ./configure \
+    && make -j4 \
+    && cp libcadiback.so /usr/lib/
+
+RUN git clone https://github.com/msoos/cryptominisat.git \
+    && cd cryptominisat \
+    && git checkout 34ec41b3bb0332bd313e51d131298d30c52aa71f \
+    && cmake -DENABLE_TESTING=OFF -DIPASIR=ON -B build -S . \
+    && cmake --build build \
+    && cmake --build build --target install
 
 WORKDIR /opt
 
