@@ -438,9 +438,12 @@ class MznHadipourBoomerangModel(MznModel):
         delta_left_left = f'array1d(0..{branch_size}-1, [{delta_left_left_str}])'
         nabla_left_left = f'array1d(0..{branch_size}-1, [{nabla_left_left_str}])'
 
+        ## to better understand the meaning of halfNum
+        halfNum = branch_size * 2
+
         constraint = [
             f"constraint onlyLargeSwitch_EBCT_enum({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {delta_left_left}, {nabla_left_left}, 1, {branch_size}) = true;\n"
+            f"{nabla_left}, {nabla_right}, {delta_left_left}, {nabla_left_left}, {halfNum}, {branch_size}) = true;\n"
         ]
         return constraint
     
@@ -466,9 +469,12 @@ class MznHadipourBoomerangModel(MznModel):
         nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
         nabla_left_left = f'array1d(0..{branch_size}-1, [{nabla_left_left_str}])'
 
+        ## to better understand the meaning of halfNum
+        halfNum = branch_size * 2
+
         constraint = [
             f"constraint onlyLargeSwitch_LBCT_enum({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {nabla_left_left}, 1, {branch_size}) = true;\n"
+            f"{nabla_left}, {nabla_right}, {nabla_left_left}, {halfNum}, {branch_size}) = true;\n"
         ]
         return constraint
     
@@ -494,9 +500,12 @@ class MznHadipourBoomerangModel(MznModel):
         nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
         delta_left_left = f'array1d(0..{branch_size}-1, [{delta_left_left_str}])'
 
+        ## to better understand the meaning of halfNum
+        halfNum = branch_size * 2
+
         constraint = [
             f"constraint onlyLargeSwitch_UBCT_enum({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {delta_left_left}, 1, {branch_size}) = true;\n"
+            f"{nabla_left}, {nabla_right}, {delta_left_left}, {halfNum}, {branch_size}) = true;\n"
         ]
         return constraint
     
@@ -584,13 +593,27 @@ class MznHadipourBoomerangModel(MznModel):
         # outpu_cihertext_left = "1000000100000010" 
         # outpu_cihertext_right = "1000000100001000"
 
-        ## unstatisfaiable
         ## L1_up,R1_up = [8000, 8000]
         input_plaintext_left = "1000000000000000"
         input_plaintext_right = "1000000000000000"
         ## L3_lo,R3_lo = [0000, 8000]
         outpu_cihertext_left = "0000000000000000" 
         outpu_cihertext_right = "1000000000000000"
+        ## L2_up,R2_up = [8300, 8302]
+        ## L2_lo,R2_lo = [0070, 2000]
+        #Sat-aided-resut
+        # ubct switcht
+        # 0b0000000100000000 | 0b1000000000000000 | 0b0000000001110000 | 0b0000100000011100 | 0b1000001100000000 |
+        # ubct prob 0.1875 
+        #  lbct switcht
+        # 0b0000000100000110 | 0b1000001100000010 | 0b0000000000000000 | 0b0010000000000000 | 0b1110000000000000 |
+        # lbct prob 0.25
+        # total prob 0.046875
+        #  all state
+        # delta_1 -> (L1_up,R1_up) 0b1000000000000000 | 0b1000000000000000 |
+        # delta_2 -> (L2_up,R2_up) 0b1000001100000000 | 0b1000001100000010 |
+        # nabla_1 -> (L2_lo,R2_lo) 0b0000000001110000 | 0b0010000000000000 |
+        # nabla_2 -> (L3_lo,R3_lo) 0b0000000000000000 | 0b1000000000000000 |
 
         input_bits_left = list(input_plaintext_left)
         input_bits_right = list(input_plaintext_right)
