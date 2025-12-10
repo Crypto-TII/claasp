@@ -51,7 +51,7 @@ def test_idea_cipher_components():
     
     # Check that we have various component types in the cipher
     all_components = idea.get_all_components()
-    component_types = set(c.description[0] if c.type == "word_operation" else c.type for c in all_components)
+    component_types = {c.description[0] if c.type == "word_operation" else c.type for c in all_components}
     
     # IDEA should use idea_modmul, MODADD, XOR, and ROTATE (for key schedule)
     assert "IDEA_MODMUL" in component_types

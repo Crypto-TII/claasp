@@ -422,9 +422,9 @@ def bit_vector_idea_modmul(input, number_of_inputs, output_bit_size, modulus, ve
     assert number_of_inputs == 2, "idea_modmul requires exactly 2 inputs"
     
     # Concatenate inputs and split into two operands
-    inputConcatenated = bit_vector_CONCAT(input)
-    inputs_list = [inputConcatenated[0:output_bit_size], 
-                  inputConcatenated[output_bit_size:2*output_bit_size]]
+    input_concatenated = bit_vector_CONCAT(input)
+    inputs_list = [input_concatenated[0:output_bit_size], 
+                  input_concatenated[output_bit_size:2*output_bit_size]]
     
     # Convert bit vectors to integers for each sample (column)
     val1 = bit_vector_to_integer(inputs_list[0])
@@ -455,7 +455,7 @@ def bit_vector_idea_modmul(input, number_of_inputs, output_bit_size, modulus, ve
     
     if DEBUG_MODE:
         # Verify the computation with overflow protection
-        int_inputs = [bit_vector_to_integer(inputConcatenated[i * output_bit_size:(i + 1) * output_bit_size])
+        int_inputs = [bit_vector_to_integer(input_concatenated[i * output_bit_size:(i + 1) * output_bit_size])
                      for i in range(2)]
         
         # Apply same mapping logic
