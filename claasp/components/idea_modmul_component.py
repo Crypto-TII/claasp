@@ -21,7 +21,7 @@ from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 
 
-class IDEA_MODMUL(Modular):
+class IdeaModmul(Modular):
     """
     Component for modular multiplication (a * b) mod M.
     
@@ -60,7 +60,7 @@ class IDEA_MODMUL(Modular):
             Not implemented.
         """
         raise NotImplementedError(
-            "Algebraic polynomials for IDEA_MODMUL are not yet implemented."
+            "Algebraic polynomials for idea_modmul are not yet implemented."
         )
 
     def cms_constraints(self):
@@ -72,7 +72,7 @@ class IDEA_MODMUL(Modular):
             Not implemented.
         """
         raise NotImplementedError(
-            "CMS constraints for IDEA_MODMUL are not yet implemented."
+            "CMS constraints for idea_modmul are not yet implemented."
         )
 
     def cp_constraints(self):
@@ -84,31 +84,30 @@ class IDEA_MODMUL(Modular):
             Not implemented.
         """
         raise NotImplementedError(
-            "CP constraints for IDEA_MODMUL are not yet implemented."
+            "CP constraints for idea_modmul are not yet implemented."
         )
 
-    def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
+    def get_bit_based_vectorized_python_code(self, params):
         """
         Generate Python code for bit-based vectorized modular multiplication.
         
         INPUT:
 
         - ``params`` -- **list**; the parameters for the function
-        - ``convert_output_to_bytes`` -- **boolean**; whether to convert output to bytes
 
         EXAMPLES::
 
-            sage: from claasp.components.idea_modmul_component import IDEA_MODMUL
-            sage: modmul = IDEA_MODMUL(0, 0, ['input1', 'input2'], [[0,1,2,3], [0,1,2,3]], 4, 17)
-            sage: modmul.get_bit_based_vectorized_python_code(['a', 'b'], False)
-            ['  idea_modmul_0_0 = bit_vector_IDEA_MODMUL([a,b], 2, 4, 17)']
+            sage: from claasp.components.idea_modmul_component import IdeaModmul
+            sage: modmul = IdeaModmul(0, 0, ['input1', 'input2'], [[0,1,2,3], [0,1,2,3]], 4, 17)
+            sage: modmul.get_bit_based_vectorized_python_code(['a', 'b'])
+            ['  idea_modmul_0_0 = bit_vector_idea_modmul([a,b], 2, 4, 17)']
         """
         # Retrieve stored parameters
         num_inputs = self.description[1]
         modulus = self.description[2]
         
         return [
-            f"  {self.id} = bit_vector_IDEA_MODMUL([{','.join(params)}], "
+            f"  {self.id} = bit_vector_idea_modmul([{','.join(params)}], "
             f"{num_inputs}, {self.output_bit_size}, {modulus})"
         ]
 
@@ -124,7 +123,7 @@ class IDEA_MODMUL(Modular):
         modulus = self.description[2]
         word_size = self.output_bit_size
         
-        return [f"  {self.id} = byte_vector_IDEA_MODMUL({params}, {modulus}, {word_size})"]
+        return [f"  {self.id} = byte_vector_idea_modmul({params}, {modulus}, {word_size})"]
 
     def sat_constraints(self):
         """
@@ -135,7 +134,7 @@ class IDEA_MODMUL(Modular):
             Not implemented.
         """
         raise NotImplementedError(
-            "SAT constraints for IDEA_MODMUL are not yet implemented."
+            "SAT constraints for idea_modmul are not yet implemented."
         )
 
     def smt_constraints(self):
@@ -147,5 +146,5 @@ class IDEA_MODMUL(Modular):
             Not implemented.
         """
         raise NotImplementedError(
-            "SMT constraints for IDEA_MODMUL are not yet implemented."
+            "SMT constraints for idea_modmul are not yet implemented."
         )

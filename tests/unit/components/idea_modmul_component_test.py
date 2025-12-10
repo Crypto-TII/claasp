@@ -21,12 +21,12 @@ from claasp.name_mappings import BLOCK_CIPHER
 
 
 def test_modmul_component_creation():
-    """Test that IDEA_MODMUL component can be created and has correct properties."""
+    """Test that idea_modmul component can be created and has correct properties."""
     cipher = Cipher("test_modmul", BLOCK_CIPHER, ["input"], [32], 16)
     cipher.add_round()
     
-    # Add IDEA_MODMUL component with example modulus (2^16 + 1)
-    modmul_component = cipher.add_IDEA_MODMUL_component(
+    # Add idea_modmul component with example modulus (2^16 + 1)
+    modmul_component = cipher.add_idea_modmul_component(
         ["input", "input"],
         [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
          [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]],
@@ -43,11 +43,11 @@ def test_modmul_component_creation():
 
 
 def test_modmul_component_vectorized_code():
-    """Test that IDEA_MODMUL component generates correct vectorized code."""
+    """Test that idea_modmul component generates correct vectorized code."""
     cipher = Cipher("test_modmul", BLOCK_CIPHER, ["input"], [32], 16)
     cipher.add_round()
     
-    modmul_component = cipher.add_IDEA_MODMUL_component(
+    modmul_component = cipher.add_idea_modmul_component(
         ["input", "input"],
         [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
          [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]],
@@ -56,9 +56,9 @@ def test_modmul_component_vectorized_code():
     )
     
     # Test bit-based vectorized code generation
-    code = modmul_component.get_bit_based_vectorized_python_code(["a", "b"], False)
+    code = modmul_component.get_bit_based_vectorized_python_code(["a", "b"])
     assert len(code) == 1
-    assert "bit_vector_IDEA_MODMUL" in code[0]
+    assert "bit_vector_idea_modmul" in code[0]
     assert "idea_modmul_0_0" in code[0]
     assert "65537" in code[0]
 

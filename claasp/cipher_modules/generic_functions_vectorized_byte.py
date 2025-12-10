@@ -353,7 +353,7 @@ def byte_vector_MODADD(input):
             b = carry.copy()
     return c
 
-def byte_vector_IDEA_MODMUL(input, modulus, word_size):
+def byte_vector_idea_modmul(input, modulus, word_size):
     """
     Computes IDEA modular multiplication (a * b) mod (2^16 + 1) for vectorized byte arrays.
     
@@ -375,24 +375,24 @@ def byte_vector_IDEA_MODMUL(input, modulus, word_size):
     
     EXAMPLES::
     
-        sage: from claasp.cipher_modules.generic_functions_vectorized_byte import byte_vector_IDEA_MODMUL
+        sage: from claasp.cipher_modules.generic_functions_vectorized_byte import byte_vector_idea_modmul
         sage: from claasp.cipher_modules.generic_functions_vectorized_byte import integer_array_to_evaluate_vectorized_input
         sage: # Example with modulus 2^16 + 1 = 65537
         sage: a = integer_array_to_evaluate_vectorized_input([3], 16)
         sage: b = integer_array_to_evaluate_vectorized_input([5], 16)
-        sage: result = byte_vector_IDEA_MODMUL([a, b], 65537, 16)
+        sage: result = byte_vector_idea_modmul([a, b], 65537, 16)
         sage: int.from_bytes(result[:, 0].tobytes(), 'big')
         15
         
         sage: # IDEA with 0 mapping (0 treated as 2^16)
         sage: a = integer_array_to_evaluate_vectorized_input([0], 16)
         sage: b = integer_array_to_evaluate_vectorized_input([1], 16)
-        sage: result = byte_vector_IDEA_MODMUL([a, b], 65537, 16)
+        sage: result = byte_vector_idea_modmul([a, b], 65537, 16)
         sage: int.from_bytes(result[:, 0].tobytes(), 'big')
         0
     """
-    assert len(input) == 2, "IDEA_MODMUL expects exactly 2 inputs"
-    assert word_size == 16, "IDEA_MODMUL only supports 16-bit words"
+    assert len(input) == 2, "idea_modmul expects exactly 2 inputs"
+    assert word_size == 16, "idea_modmul only supports 16-bit words"
     
     # Convert 16-bit byte arrays to integers
     a = (np.uint32(input[0][0, :]) << 8) | np.uint32(input[0][1, :])

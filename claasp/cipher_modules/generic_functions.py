@@ -575,7 +575,7 @@ def MODSUB(input, number_of_inputs, modulus, verbosity=False):
     return output
 
 
-def IDEA_MODMUL(input, number_of_inputs, modulus, verbosity=False):
+def idea_modmul(input, number_of_inputs, modulus, verbosity=False):
     """
     Computes modular multiplication (a * b) mod modulus with 0 ↔ 2^n mapping.
     
@@ -592,16 +592,16 @@ def IDEA_MODMUL(input, number_of_inputs, modulus, verbosity=False):
     
     EXAMPLES::
 
-        sage: from claasp.cipher_modules.generic_functions import IDEA_MODMUL
+        sage: from claasp.cipher_modules.generic_functions import idea_modmul
         sage: from bitstring import BitArray
         sage: # Standard modular multiplication
         sage: input_bits = BitArray(uint=int(3), length=int(16)) + BitArray(uint=int(5), length=int(16))
-        sage: result = IDEA_MODMUL(input_bits, 2, 65537)
+        sage: result = idea_modmul(input_bits, 2, 65537)
         sage: result.uint
         15
         sage: # 0 * 0 with modulus 2^16+1: (2^16 * 2^16) mod (2^16 + 1) = 1
         sage: input_zero = BitArray(uint=int(0), length=int(16)) + BitArray(uint=int(0), length=int(16))
-        sage: result_zero = IDEA_MODMUL(input_zero, 2, 65537)
+        sage: result_zero = idea_modmul(input_zero, 2, 65537)
         sage: result_zero.uint
         1
     """
@@ -627,7 +627,7 @@ def IDEA_MODMUL(input, number_of_inputs, modulus, verbosity=False):
     
     output = BitArray(uint=int(output), length=block_len)
     if verbosity:
-        print("IDEA_MODMUL:")
+        print("idea_modmul:")
         print(number_of_inputs_expression.format(number_of_inputs))
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))

@@ -679,7 +679,7 @@ def build_function_call(component):
         elif component.description[0] in ['MODADD', 'MODSUB']:
             return f"{component.description[0]}(component_input, {component.description[1]}, {component.description[2]})"
         elif component.description[0] == 'IDEA_MODMUL':
-            return f"IDEA_MODMUL(component_input, {component.description[1]}, {component.description[2]})"
+            return f"idea_modmul(component_input, {component.description[1]}, {component.description[2]})"
         else:
             return f"{component.description[0]}(component_input, {component.description[1]})"
     elif component.type == CONSTANT:

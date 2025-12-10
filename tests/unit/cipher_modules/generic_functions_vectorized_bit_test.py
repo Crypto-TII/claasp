@@ -1,5 +1,5 @@
 import numpy as np
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_IDEA_MODMUL
+from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_idea_modmul
 
 
 def test_bit_vector_modmul():
@@ -10,7 +10,7 @@ def test_bit_vector_modmul():
     b = np.zeros((16, 1), dtype=np.uint8)
     b[13, 0] = 1  # bit 2
     b[15, 0] = 1  # bit 0 -> value 5
-    result = bit_vector_IDEA_MODMUL([a, b], 2, 16, 65537)
+    result = bit_vector_idea_modmul([a, b], 2, 16, 65537)
     expected = np.zeros((16, 1), dtype=np.uint8)
     expected[12, 0] = 1  # bit 3
     expected[13, 0] = 1  # bit 2
@@ -22,14 +22,14 @@ def test_bit_vector_modmul():
     a = np.zeros((16, 1), dtype=np.uint8)  # 0 treated as 2^16
     b = np.zeros((16, 1), dtype=np.uint8)
     b[15, 0] = 1  # 1
-    result = bit_vector_IDEA_MODMUL([a, b], 2, 16, 65537)
+    result = bit_vector_idea_modmul([a, b], 2, 16, 65537)
     expected = np.zeros((16, 1), dtype=np.uint8)  # Maps back to 0
     assert np.array_equal(result, expected)
 
     # Test 3: Both operands zero (0 * 0) -> (2^16 * 2^16) mod 65537 = 1
     a = np.zeros((16, 1), dtype=np.uint8)
     b = np.zeros((16, 1), dtype=np.uint8)
-    result = bit_vector_IDEA_MODMUL([a, b], 2, 16, 65537)
+    result = bit_vector_idea_modmul([a, b], 2, 16, 65537)
     expected = np.zeros((16, 1), dtype=np.uint8)
     expected[15, 0] = 1  # Result is 1
     assert np.array_equal(result, expected)

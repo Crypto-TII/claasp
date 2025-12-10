@@ -172,7 +172,7 @@ class IdeaBlockCipher(Cipher):
 
     # --- Helper methods to add components and return a ComponentState ---
     def _add_modmul_component(self, s1, s2):
-        self.add_IDEA_MODMUL_component(
+        self.add_idea_modmul_component(
             [s1.id[0], s2.id[0]],
             [s1.input_bit_positions[0], s2.input_bit_positions[0]],
             self.WORD_SIZE,

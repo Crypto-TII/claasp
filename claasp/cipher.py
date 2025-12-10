@@ -204,8 +204,8 @@ class Cipher:
     def add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
         return editor.add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
-    def add_IDEA_MODMUL_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
-        return editor.add_IDEA_MODMUL_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
+    def add_idea_modmul_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
+        return editor.add_idea_modmul_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
     def add_NOT_component(self, input_id_links, input_bit_positions, output_bit_size):
 

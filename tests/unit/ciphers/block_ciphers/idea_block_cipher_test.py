@@ -43,7 +43,7 @@ def test_idea_cipher_components():
     assert first_component.type == "word_operation"
     assert first_component.description[0] == "ROTATE"
     
-    # Round 1 should start with IDEA_MODMUL (first cipher round)
+    # Round 1 should start with idea_modmul (first cipher round)
     first_cipher_component = idea.component_from(1, 0)
     assert first_cipher_component.type == "word_operation"
     assert first_cipher_component.description[0] == "IDEA_MODMUL"
@@ -53,7 +53,7 @@ def test_idea_cipher_components():
     all_components = idea.get_all_components()
     component_types = set(c.description[0] if c.type == "word_operation" else c.type for c in all_components)
     
-    # IDEA should use IDEA_MODMUL, MODADD, XOR, and ROTATE (for key schedule)
+    # IDEA should use idea_modmul, MODADD, XOR, and ROTATE (for key schedule)
     assert "IDEA_MODMUL" in component_types
     assert "MODADD" in component_types
     assert "XOR" in component_types
@@ -80,14 +80,14 @@ def test_idea_cipher_full_rounds():
     # 1 key schedule round + 8 cipher rounds + 1 output transformation round = 10 total
     assert idea.number_of_rounds == 10
     
-    # Count IDEA_MODMUL operations: each cipher round has 4 MUL operations
+    # Count idea_modmul operations: each cipher round has 4 MUL operations
     # 8 rounds × 4 = 32, plus 2 more in output transformation = 34 total
     all_components = idea.get_all_components()
     modmul_components = [c for c in all_components if c.type == "word_operation" and c.description[0] == "IDEA_MODMUL"]
     
-    # Each round: 2 IDEA_MODMUL (X1*Z1, X4*Z4) + 2 IDEA_MODMUL in MA box (T1*Z5, U2*Z6) = 4 per round
+    # Each round: 2 idea_modmul (X1*Z1, X4*Z4) + 2 idea_modmul in MA box (T1*Z5, U2*Z6) = 4 per round
     # 8 rounds × 4 = 32, plus 2 in output transformation (X1*Z1, X4*Z4) = 34 total
-    assert len(modmul_components) == 34, f"Expected 34 IDEA_MODMUL components, got {len(modmul_components)}"
+    assert len(modmul_components) == 34, f"Expected 34 idea_modmul components, got {len(modmul_components)}"
 
 
 def test_idea_cipher_component_ids():
@@ -101,7 +101,7 @@ def test_idea_cipher_component_ids():
     first_component = idea.component_from(0, 0)
     assert first_component.id.startswith("rot_0_")
     
-    # Round 1 is first cipher round with IDEA_MODMUL
+    # Round 1 is first cipher round with idea_modmul
     first_cipher_component = idea.component_from(1, 0)
     assert first_cipher_component.id.startswith("idea_modmul_1_")
     

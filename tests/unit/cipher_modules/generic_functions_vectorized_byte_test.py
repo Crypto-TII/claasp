@@ -204,8 +204,8 @@ def test_byte_vector_SBOX():
     sub = byte_vector_SBOX([formated_values], sbox, input_bit_size=9)
     assert np.all(evaluate_vectorized_outputs_to_integers([sub.transpose()], 9) == sbox)
 
-def test_byte_vector_IDEA_MODMUL():
-    """Test byte-vectorized IDEA_MODMUL for IDEA cipher (16-bit words only)."""
+def test_byte_vector_idea_modmul():
+    """Test byte-vectorized idea_modmul for IDEA cipher (16-bit words only)."""
     
     # Define test cases for IDEA (16-bit word size only)
     # Format: (bits, modulus, A_in, B_in, expected, test_id)
@@ -221,13 +221,13 @@ def test_byte_vector_IDEA_MODMUL():
     ]
     
     # Execute all test cases
-    for bits, modulus, A_in, B_in, expected, test_id in test_cases:
-        input_A = integer_array_to_evaluate_vectorized_input([A_in], bits)
-        input_B = integer_array_to_evaluate_vectorized_input([B_in], bits)
-        input_values = [input_A, input_B]
+    for bits, modulus, a_in, b_in, expected, test_id in test_cases:
+        input_a = integer_array_to_evaluate_vectorized_input([a_in], bits)
+        input_b = integer_array_to_evaluate_vectorized_input([b_in], bits)
+        input_values = [input_a, input_b]
         
         expected_result = integer_array_to_evaluate_vectorized_input([expected], bits)
-        modmul_result = byte_vector_IDEA_MODMUL(input_values, 
+        modmul_result = byte_vector_idea_modmul(input_values, 
             modulus=modulus, 
             word_size=bits
         )

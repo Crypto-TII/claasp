@@ -29,7 +29,7 @@ from claasp.components.linear_layer_component import LinearLayer
 from claasp.components.mix_column_component import MixColumn
 from claasp.components.modadd_component import MODADD
 from claasp.components.modsub_component import MODSUB
-from claasp.components.idea_modmul_component import IDEA_MODMUL
+from claasp.components.idea_modmul_component import IdeaModmul
 from claasp.components.not_component import NOT
 from claasp.components.or_component import OR
 from claasp.components.permutation_component import Permutation
@@ -609,7 +609,7 @@ def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit
     return new_component
 
 
-def add_IDEA_MODMUL_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
+def add_idea_modmul_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
     """
     Use this function to create a idea_modmul component in the editor.
 
@@ -627,7 +627,7 @@ def add_IDEA_MODMUL_component(cipher, input_id_links, input_bit_positions, outpu
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: idea_modmul_0_0 = cipher.add_IDEA_MODMUL_component(["input","input"], [[0,1],[2,3]], 2, 5)
+        sage: idea_modmul_0_0 = cipher.add_idea_modmul_component(["input","input"], [[0,1],[2,3]], 2, 5)
         sage: cipher.print()
         cipher_id = cipher_name_i4_o4_r1
         cipher_type = permutation
@@ -650,7 +650,7 @@ def add_IDEA_MODMUL_component(cipher, input_id_links, input_bit_positions, outpu
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = IDEA_MODMUL(
+    new_component = IdeaModmul(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
