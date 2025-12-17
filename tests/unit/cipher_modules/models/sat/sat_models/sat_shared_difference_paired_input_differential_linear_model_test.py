@@ -11,7 +11,7 @@ from claasp.cipher_modules.models.utils import (
     integer_to_bit_list,
     shared_difference_paired_input_differential_linear_checker_permutation,
 )
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
 from claasp.components.intermediate_output_component import IntermediateOutput
 from claasp.components.modsub_component import MODSUB
 
@@ -83,7 +83,7 @@ def construct_backward_chacha(cipher):
 
 
 def test_backward_direction_distinguisher():
-    chacha1 = ChachaPermutation(number_of_rounds=4)
+    chacha1 = ChachaPermutation(number_of_rounds=4, round_mode=ROUND_MODE_HALF)
     chacha_stream_cipher = construct_backward_chacha(chacha1)
 
     top_part_components = []
