@@ -65,7 +65,7 @@ class ChachaStreamCipher(ChachaPermutation):
     EXAMPLES::
 
         sage: from claasp.ciphers.stream_ciphers.chacha_stream_cipher import ChachaStreamCipher
-        sage: sp = ChachaStreamCipher(number_of_rounds=1)
+        sage: sp = ChachaStreamCipher(number_of_rounds=1, round_mode="half")
         sage: sp.number_of_rounds
         1
     """

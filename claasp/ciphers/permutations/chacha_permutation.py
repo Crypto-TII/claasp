@@ -56,7 +56,7 @@ class ChachaPermutation(Cipher):
     EXAMPLES::
 
         sage: from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-        sage: chacha = ChachaPermutation(number_of_rounds=2)
+        sage: chacha = ChachaPermutation(number_of_rounds=2, round_mode="half")
         sage: chacha.number_of_rounds
         2
     """
