@@ -1,4 +1,4 @@
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_SINGLE
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF, ROUND_MODE_SINGLE
 
 
 def test_chacha_permutation():
@@ -8,14 +8,14 @@ def test_chacha_permutation():
     assert chacha.number_of_rounds == 40
     assert chacha.id == 'chacha_permutation_p512_o512_r40'
 
-    chacha = ChachaPermutation(number_of_rounds=2)
+    chacha = ChachaPermutation(number_of_rounds=2, round_mode=ROUND_MODE_HALF)
     assert chacha.number_of_rounds == 2
 
     chacha = ChachaPermutation(number_of_rounds=20, round_mode='single')
     assert chacha.number_of_rounds == 40
     assert chacha.id == 'chacha_permutation_p512_o512_r40'
 
-    chacha = ChachaPermutation(number_of_rounds=40)
+    chacha = ChachaPermutation(number_of_rounds=20, round_mode=ROUND_MODE_SINGLE)
     state = ["61707865", "3320646e", "79622d32", "6b206574",
              "03020100", "07060504", "0b0a0908", "0f0e0d0c",
              "13121110", "17161514", "1b1a1918", "1f1e1d1c",
@@ -31,10 +31,10 @@ def test_chacha_permutation():
     chacha_single_mode = ChachaPermutation(number_of_rounds=20, round_mode=ROUND_MODE_SINGLE)
     assert chacha_single_mode.evaluate([plaintext], verbosity=False) == output
 
-    chacha = ChachaPermutation(number_of_rounds=1)
+    chacha = ChachaPermutation(number_of_rounds=1, round_mode=ROUND_MODE_HALF)
     assert chacha.get_component_from_id("rot_0_2").description[1] == -16
 
-    chacha = ChachaPermutation(number_of_rounds=1, start_round=('odd', 'bottom'))
+    chacha = ChachaPermutation(number_of_rounds=1, start_round=('odd', 'bottom'), round_mode=ROUND_MODE_HALF)
     assert chacha.get_component_from_id("rot_0_2").description[1] == -8
 
 
@@ -43,7 +43,7 @@ def test_toy_chacha_permutation():
     The test vectors below were taken from the source code available in the URL specified in [DEY2023]_.
     """
 
-    chacha = ChachaPermutation(number_of_rounds=2, rotations=[2, 1, 4, 3], word_size=8)
+    chacha = ChachaPermutation(number_of_rounds=2, rotations=[2, 1, 4, 3], word_size=8, round_mode=ROUND_MODE_HALF)
     state = ["01", "00", "00", "00",
              "00", "00", "00", "00",
              "00", "00", "00", "00",
@@ -52,7 +52,7 @@ def test_toy_chacha_permutation():
     output = int('0x81000000ad0000005600000046000000', 16)
     assert chacha.evaluate([plaintext], verbosity=False) == output
 
-    chacha = ChachaPermutation(number_of_rounds=8, rotations=[2, 1, 4, 3], word_size=8)
+    chacha = ChachaPermutation(number_of_rounds=8, rotations=[2, 1, 4, 3], word_size=8, round_mode=ROUND_MODE_HALF)
     state = ["01", "00", "00", "00",
              "00", "00", "00", "00",
              "00", "00", "00", "00",

@@ -22,11 +22,11 @@ from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 
 COLUMNS = [[0, 4, 8, 12], [1, 5, 9, 13], [2, 6, 10, 14], [3, 7, 11, 15]]
 DIAGONALS = [[0, 5, 10, 15], [1, 6, 11, 12], [2, 7, 8, 13], [3, 4, 9, 14]]
-PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 40}]
 ROUND_MODE_HALF = "half"
 ROUND_MODE_SINGLE = "single"
-DEFAULT_HALF_ROUNDS = PARAMETERS_CONFIGURATION_LIST[0]["number_of_rounds"]
-DEFAULT_SINGLE_ROUNDS = DEFAULT_HALF_ROUNDS // 2
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 20, "round_mode": ROUND_MODE_SINGLE}]
+DEFAULT_SINGLE_ROUNDS = PARAMETERS_CONFIGURATION_LIST[0]["number_of_rounds"]
+DEFAULT_HALF_ROUNDS = DEFAULT_SINGLE_ROUNDS * 2
 
 
 class ChachaPermutation(Cipher):
@@ -39,7 +39,7 @@ class ChachaPermutation(Cipher):
         INPUT:
 
         - ``number_of_rounds`` -- **integer** (default: `0`); Number of rounds of the permutation. When the value is
-            ``0`` the permutation falls back to the default configuration (40 half-rounds).
+            ``0`` the permutation falls back to the default configuration (20 single rounds / 40 half-rounds).
         - ``state_of_components`` -- **list of lists of integer** (default: `None`)
         - ``cipher_family`` -- **string** (default: `chacha_permutation`)
         - ``cipher_type`` -- **string** (default: `permutation`)
@@ -48,7 +48,7 @@ class ChachaPermutation(Cipher):
         - ``rotations`` -- *list of integer* (default: `[8, 7, 16, 12]`)
         - ``word_size`` -- **integer** (default: `32`)
         - ``start_round`` -- **tuple of strings** (default: (`odd`, `top`))
-        - ``round_mode`` -- **string** (default: `"half"`); selects how ``number_of_rounds`` is interpreted. The
+        - ``round_mode`` -- **string** (default: `"single"`); selects how ``number_of_rounds`` is interpreted. The
             ``"half"`` mode treats the value as a count of half-rounds (legacy behaviour). The ``"single"`` mode
             treats the value as a count of full rounds, which are converted internally into their equivalent
             half-rounds (two half-rounds per full round).
@@ -72,7 +72,7 @@ class ChachaPermutation(Cipher):
         rotations=[8, 7, 16, 12],
         word_size=32,
         start_round=("odd", "top"),
-        round_mode=ROUND_MODE_HALF,
+        round_mode=ROUND_MODE_SINGLE,
     ):
         if round_mode not in {ROUND_MODE_HALF, ROUND_MODE_SINGLE}:
             raise ValueError("round_mode must be either 'half' or 'single'")
