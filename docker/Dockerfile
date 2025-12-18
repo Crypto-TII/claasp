@@ -84,7 +84,7 @@ RUN wget https://github.com/scipopt/scip/archive/refs/tags/v803.tar.gz \
     && cd scip-803 \
     && mkdir build \
     && cd build \
-    && cmake .. -DAUTOBUILD=on -DSOPLEX_DIR=${SOPLEX_HOME} \
+    && cmake .. -DAUTOBUILD=on -DSOPLEX_DIR=${SOPLEX_HOME} -DTPI=tny \
     && make
 
 ENV PATH="${PATH}:/opt/scip-803/build/bin"
