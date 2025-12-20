@@ -77,17 +77,33 @@ ENV PATH="${PATH}:/opt/HiGHS/build/bin"
 
 WORKDIR /opt
 
-# Installing SCIP
+# Installing TinyCThread for TPI support
+RUN git clone --depth 1 https://github.com/tinycthread/tinycthread.git \
+    && cd tinycthread \
+    && mkdir build \
+    && cd build \
+    && cmake .. -DCMAKE_PREFIX_PATH=/usr/local \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig
+
+ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
+
+# Installing SCIP with TPI support for parallel solving using TinyCThread
 RUN wget https://github.com/scipopt/scip/archive/refs/tags/v803.tar.gz \
     && tar -xf v803.tar.gz \
     && rm v803.tar.gz \
     && cd scip-803 \
     && mkdir build \
     && cd build \
-    && cmake .. -DAUTOBUILD=on -DSOPLEX_DIR=${SOPLEX_HOME} -DTPI=tny \
-    && make
+    && cmake .. -DAUTOBUILD=on -DSOPLEX_DIR=${SOPLEX_HOME} -DTPI=tny -DCMAKE_PREFIX_PATH=/usr/local \
+    && make -j$(nproc)
 
 ENV PATH="${PATH}:/opt/scip-803/build/bin"
+ENV LD_LIBRARY_PATH="/opt/scip-803/build/lib:/usr/local/lib:${LD_LIBRARY_PATH}"
+
+# Quick check to verify SCIP builds and TPI support
+RUN scip -c "quit" | head -50
 
 # Installing SageMath tools
 RUN sage -pip install bitstring==4.0.1 \
