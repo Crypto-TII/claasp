@@ -31,6 +31,9 @@ from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, MODEL_DEFAULT_PATH, \
     SOLVER_DEFAULT
+from claasp.name_mappings import SBOX, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, \
+    WORD_OPERATION
+
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 from claasp.name_mappings import SBOX
 
@@ -146,6 +149,26 @@ class MznModel:
                                           solution_number, component):
         component_solution['weight'] = component_weight
         components_values[f'solution{solution_number}'][f'{component}'] = component_solution
+
+    def build_generic_cp_model_from_dictionary(self, component_and_model_types):
+        self._variables_list = []
+        self._model_constraints = []
+
+        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
+        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+
+        for component_and_model_type in component_and_model_types:
+            component = component_and_model_type["component_object"]
+            model_type = component_and_model_type["model_type"]
+            operation = component.description[0]
+            if component.type not in component_types or (
+                    WORD_OPERATION == component.type and operation not in operation_types):
+                print(f'{component.id} not yet implemented')
+            else:
+                cp_continuous_differential_propagation_constraints = getattr(component, model_type)
+                variables, constraints = cp_continuous_differential_propagation_constraints(self)
+                self._model_constraints.extend(constraints)
+                self._variables_list.extend(variables)
 
     def build_mix_column_truncated_table(self, component):
         """
