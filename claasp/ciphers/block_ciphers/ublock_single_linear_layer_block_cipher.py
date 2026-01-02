@@ -58,12 +58,12 @@ RC = [
 # fmt: on
 
 
-def generate_ublock_matrix(n, shift0, shift1, shift2):
+def generate_ublock_matrix(n, shift0, shift1, shift2, permutation_left, permutation_right):
     matrix = [[i] for i in range(n)]
     BITWISE_PERMUTATION = []
-    for i in PL[0]:
+    for i in permutation_left:
         BITWISE_PERMUTATION.extend(list(range(i * (n // 16), i * (n // 16) + (n // 16))))
-    for i in PR[0]:
+    for i in permutation_right:
         BITWISE_PERMUTATION.extend(list(range(i * (n // 16) + n // 2, i * (n // 16) + n // 2 + (n // 16))))
 
     for i in range(0, n // 2):
@@ -80,7 +80,7 @@ def generate_ublock_matrix(n, shift0, shift1, shift2):
         matrix[i].extend(vector1[i - n // 2])
 
     vector2 = matrix[n // 2 : n - n // 4][shift1:] + matrix[n // 2 : n - n // 4][:shift1]
-    vector2 += matrix[n - n // 4:n][shift1:] + matrix[n - n // 4:n][:shift1]
+    vector2 += matrix[n - n // 4 : n][shift1:] + matrix[n - n // 4 : n][:shift1]
     for i in range(0, n // 2):
         matrix[i].extend(vector2[i])
 
@@ -117,23 +117,8 @@ def generate_ublock_matrix(n, shift0, shift1, shift2):
 class UblockSingleLinearLayerBlockCipher(Cipher):
     """
     Construct an instance of the UblockBlockCipher class.
+
     Reference: http://www.jcr.cacrnet.org.cn/EN/10.13868/j.cnki.jcr.000334
-
-    Following are some testing vectors:
-    1. Ublock 128/128
-    plaintext = 0x0123456789abcdeffedcba9876543210
-    key = 0x0123456789abcdeffedcba9876543210
-    ciphertext = 0x32122bedd023c429023470e1158c147d
-
-    2. Ublock 128/256
-    plaintext = 0x0123456789abcdeffedcba9876543210
-    key = 0x0123456789abcdeffedcba9876543210000102030405060708090a0b0c0d0e0f
-    ciphertext = 0x64accd6e34cac84d384cd4ba7aeadd19
-
-    3. Ublock 256/256
-    plaintext = 0x0123456789abcdeffedcba9876543210000102030405060708090a0b0c0d0e0f
-    key = 0x0123456789abcdeffedcba9876543210000102030405060708090a0b0c0d0e0f
-    ciphertext = 0xd8e9351c5f4d27ea842135ca1640ad4b0ce119bc25c03e7c329ea8fe93e7bdfe
 
     INPUT:
 
@@ -165,7 +150,27 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
 
-        self.check_parameters()
+        if self.block_bit_size == 128:
+            self.pl = PL[0]
+            self.pr = PR[0]
+            if self.key_bit_size == 128:
+                self.pk = PK[0]
+            elif self.key_bit_size == 256:
+                self.pk = PK[1]
+            else:
+                print("The round_key size of block size 128 should be 128 or 256.", file=sys.stderr)
+                sys.exit(1)
+        elif self.block_bit_size == 256:
+            self.pl = PL[1]
+            self.pr = PR[1]
+            if self.key_bit_size == 256:
+                self.pk = PK[2]
+            else:
+                print("The round_key size of block size 256 should be 256.", file=sys.stderr)
+                sys.exit(1)
+        else:
+            print("The block size should be 128 or 256.", file=sys.stderr)
+            sys.exit(1)
 
         super().__init__(
             family_name="ublock",
@@ -179,7 +184,6 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
 
         for round_number in range(number_of_rounds):
             self.add_round()
-
             # encryption
             state_left, state_right = self.round_function(state_left, state_right, round_key)
             # round output
@@ -202,29 +206,6 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         cipher_output = ComponentState([self.get_current_component_id()], [list(range(self.block_bit_size))])
         self.add_round_key_output_component(round_key.id, round_key.input_bit_positions, self.block_bit_size)
         self.add_cipher_output_component(cipher_output.id, cipher_output.input_bit_positions, self.block_bit_size)
-
-    def check_parameters(self):
-        if self.block_bit_size == 128:
-            self.pl = PL[0]
-            self.pr = PR[0]
-            if self.key_bit_size == 128:
-                self.pk = PK[0]
-            elif self.key_bit_size == 256:
-                self.pk = PK[1]
-            else:
-                print("The round_key size of block size 128 should be 128 or 256.", file=sys.stderr)
-                sys.exit(1)
-        elif self.block_bit_size == 256:
-            self.pl = PL[1]
-            self.pr = PR[1]
-            if self.key_bit_size == 256:
-                self.pk = PK[2]
-            else:
-                print("The round_key size of block size 256 should be 256.", file=sys.stderr)
-                sys.exit(1)
-        else:
-            print("The block size should be 128 or 256.", file=sys.stderr)
-            sys.exit(1)
 
     def round_initialization(self):
         left_state = ComponentState([INPUT_PLAINTEXT], [list(range(self.half_block_bit_size))])
@@ -285,7 +266,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             state_left.id + state_right.id,
             state_left.input_bit_positions + state_right.input_bit_positions,
             self.block_bit_size,
-            generate_ublock_matrix(self.block_bit_size, 4, 8, 20),
+            generate_ublock_matrix(self.block_bit_size, 4, 8, 20, self.pl, self.pr),
         )
 
         linear_layer_id = self.get_current_component_id()
