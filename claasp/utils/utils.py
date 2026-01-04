@@ -1,21 +1,19 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 
 import json
 import pprint
@@ -84,7 +82,7 @@ def aggregate_list_of_dictionary(dataset, group_by_key, sum_value_keys):
 
 
 def bytes_positions_to_little_endian_for_32_bits(lst):
-    r"""
+    """
     Read the bytes positions in little-endian order.
 
     INPUT:
@@ -102,7 +100,7 @@ def bytes_positions_to_little_endian_for_32_bits(lst):
 
     temp_lst = []
     for j in range(4):
-        temp_lst += lst[(3 - j) * 8:(3 - j) * 8 + 8]
+        temp_lst += lst[(3 - j) * 8 : (3 - j) * 8 + 8]
 
     return temp_lst
 
@@ -110,7 +108,7 @@ def bytes_positions_to_little_endian_for_32_bits(lst):
 def bytes_positions_to_little_endian_for_multiple_of_32(lst, number_of_blocks):
     output_lst = []
     for block_number in range(number_of_blocks):
-        temp_lst = lst[block_number * 32:block_number * 32 + 32]
+        temp_lst = lst[block_number * 32 : block_number * 32 + 32]
         temp2_lst = bytes_positions_to_little_endian_for_32_bits(temp_lst)
         output_lst.append(temp2_lst)
 
@@ -189,7 +187,7 @@ def get_2d_array_element_from_1d_array_index(i, lst, array_dim):
 def get_ci(i, qi, si, t):
     q = qi[(i % 7)]
     s = si[(i % 6)]
-    ci = t ** s * (q + t ** 3)
+    ci = t**s * (q + t**3)
     _ci = ci.change_ring(IntegerRing())
 
     return _ci(2)
@@ -221,8 +219,8 @@ def get_number_of_rounds_from(block_bit_size, key_bit_size, number_of_rounds, pa
     if number_of_rounds == 0:
         n = None
         for parameters in parameters_configurations:
-            if parameters['block_bit_size'] == block_bit_size and parameters['key_bit_size'] == key_bit_size:
-                n = parameters['number_of_rounds']
+            if parameters["block_bit_size"] == block_bit_size and parameters["key_bit_size"] == key_bit_size:
+                n = parameters["number_of_rounds"]
                 break
         if n is None:
             raise ValueError("No available number of rounds for the given parameters.")
@@ -230,24 +228,6 @@ def get_number_of_rounds_from(block_bit_size, key_bit_size, number_of_rounds, pa
         n = number_of_rounds
 
     return n
-
-
-def get_k_th_bit(n, k):
-    """
-    Return the k-th bit of the number n.
-
-    INPUT:
-
-    - ``n`` -- **integer**; integer number
-    - ``k`` -- **integer**; integer number representing the index of the bit we need
-
-    EXAMPLES::
-
-        sage: from claasp.utils.utils import get_k_th_bit
-        sage: get_k_th_bit(3, 0)
-        1
-    """
-    return 1 & (n >> k)
 
 
 def group_list_by_key(lst):
@@ -266,6 +246,7 @@ def group_list_by_key(lst):
         defaultdict(<class 'list'>, {'cipher_output': [[{'1': 0}], [{'2': 0}], [{'4': 0}]], 'round_key_output': [[{'1': 0}], [{'3': 0}], [{'2': 0}]]})
     """
     from collections import defaultdict
+
     joint_results_objects_group_by_tag_output = defaultdict(list)
     for value in lst:
         for key, item in value.items():
@@ -287,9 +268,10 @@ def layer_and_lane_initialization(plane_num=3, lane_num=4, lane_size=32):
     planes = []
     plane_size = lane_num * lane_size
     for i in range(plane_num):
-        p = ComponentState([INPUT_PLAINTEXT for _ in range(lane_num)],
-                           [[k + j * lane_size + i * plane_size for k in range(lane_size)]
-                            for j in range(lane_num)])
+        p = ComponentState(
+            [INPUT_PLAINTEXT for _ in range(lane_num)],
+            [[k + j * lane_size + i * plane_size for k in range(lane_size)] for j in range(lane_num)],
+        )
         planes.append(p)
 
     return planes
@@ -315,7 +297,7 @@ def merging_list_of_lists(lst):
 
 
 def pprint_dictionary(dictionary):
-    r"""
+    """
     Pretty-print of a dictionary.
 
     INPUT:
@@ -338,7 +320,7 @@ def pprint_dictionary(dictionary):
 
 
 def pprint_dictionary_to_file(dictionary, name_file):
-    r"""
+    """
     Pretty-print of a dictionary.
 
     INPUT:
@@ -367,10 +349,10 @@ def pprint_dictionary_to_file(dictionary, name_file):
         sage: os.remove(f"{tii_dir_path}/test_json")
     """
 
-    if 'cipher' in dictionary.keys():
-        dictionary['cipher'] = dictionary['cipher'].id
+    if "cipher" in dictionary.keys():
+        dictionary["cipher"] = dictionary["cipher"].id
     dictionary_json = json.loads(str(dictionary).replace("'", '"'))
-    source_file = open(name_file, 'w')
+    source_file = open(name_file, "w")
     print(json.dumps(dictionary_json, indent=4), file=source_file)
     source_file.close()
 
@@ -416,9 +398,7 @@ def signed_distance(lst_x, lst_y):
         sage: signed_distance(lst_x, lst_y)
         0
     """
-    n = len(lst_x)
-
-    return sum([abs(sgn_function(lst_x[i]) - sgn_function(lst_y[i])) for i in range(n)])
+    return sum(abs(sgn_function(i) - sgn_function(j)) for i, j in zip(lst_x, lst_y))
 
 
 def simplify_inputs(inputs_id, inputs_pos):
@@ -471,7 +451,7 @@ def poly_to_int(polynom, word_size, a):
     str_poly = str_poly.split(" + ")
     binary_lst = []
     for i in range(word_size):
-        tmp = a ** i
+        tmp = a**i
         if str(tmp) in str_poly:
             binary_lst.append("1")
         else:

@@ -1,34 +1,45 @@
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 import time
-from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED, \
-    MILP_BACKWARD_SUFFIX, MILP_BUILDING_MESSAGE, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE
-from claasp.cipher_modules.models.milp.utils.milp_truncated_utils import \
-    fix_variables_value_deterministic_truncated_xor_differential_constraints
+
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
+    MILP_BITWISE_DETERMINISTIC_TRUNCATED,
+    MILP_BUILDING_MESSAGE,
+    MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE,
+)
+from claasp.cipher_modules.models.milp.utils.milp_truncated_utils import (
+    fix_variables_value_deterministic_truncated_xor_differential_constraints,
+)
 from claasp.cipher_modules.models.utils import set_component_solution
-from claasp.name_mappings import (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
-                                  WORD_OPERATION, LINEAR_LAYER, SBOX, MIX_COLUMN)
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SBOX,
+    WORD_OPERATION,
+)
 
 
 class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
-
     def __init__(self, cipher, n_window_heuristic=None, verbose=False):
         super().__init__(cipher, n_window_heuristic, verbose)
         self._trunc_binvar = None
@@ -86,7 +97,6 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         x = self._binary_variable
         p = self._integer_variable
 
-
         components = self._cipher.get_all_components()
         last_component = components[-1]
 
@@ -98,14 +108,19 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         input_id_tuples, output_id_tuples = last_component._get_input_output_variables_tuples()
         input_ids, output_ids = last_component._get_input_output_variables()
-        linking_constraints = self.link_binary_tuples_to_integer_variables(input_id_tuples + output_id_tuples,
-                                                                           input_ids + output_ids)
+        linking_constraints = self.link_binary_tuples_to_integer_variables(
+            input_id_tuples + output_id_tuples, input_ids + output_ids
+        )
         for constraint in linking_constraints:
             mip.add_constraint(constraint)
-        mip.add_constraint(p[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE] == sum(x[output_msb] for output_msb in [id[0] for id in output_id_tuples]))
+        mip.add_constraint(
+            p[MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE]
+            == sum(x[output_msb] for output_msb in [id[0] for id in output_id_tuples])
+        )
 
-
-    def build_bitwise_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[], component_list=None):
+    def build_bitwise_deterministic_truncated_xor_differential_trail_model(
+        self, fixed_variables=[], component_list=None
+    ):
         """
         Build the model for the search of bitwise deterministic truncated XOR differential trails.
 
@@ -132,26 +147,42 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         self._variables_list = []
         variables = []
         constraints = self.fix_variables_value_bitwise_deterministic_truncated_xor_differential_constraints(
-            fixed_variables)
+            fixed_variables
+        )
         self._model_constraints = constraints
 
         component_list = component_list or self._cipher.get_all_components()
         for component in component_list:
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
-                               WORD_OPERATION]
+            component_types = (
+                CIPHER_OUTPUT,
+                CONSTANT,
+                INTERMEDIATE_OUTPUT,
+                LINEAR_LAYER,
+                MIX_COLUMN,
+                SBOX,
+                WORD_OPERATION,
+            )
             operation = component.description[0]
-            operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'XOR']
+            operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
-                if operation in ['XOR','MODADD'] or component.type == LINEAR_LAYER:
-                    variables, constraints = component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(self)
+                if operation in ("XOR", "MODADD") or component.type == LINEAR_LAYER:
+                    variables, constraints = (
+                        component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(self)
+                    )
                 elif component.type == SBOX:
-                    variables, constraints = component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(self)
+                    variables, constraints = (
+                        component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(
+                            self
+                        )
+                    )
                 else:
-                    variables, constraints = component.milp_bitwise_deterministic_truncated_xor_differential_constraints(self)
+                    variables, constraints = (
+                        component.milp_bitwise_deterministic_truncated_xor_differential_constraints(self)
+                    )
 
             else:
-                print(f'{component.id} not yet implemented')
+                print(f"{component.id} not yet implemented")
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
@@ -203,7 +234,9 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         """
 
-        return fix_variables_value_deterministic_truncated_xor_differential_constraints(self, self.trunc_binvar, fixed_variables)
+        return fix_variables_value_deterministic_truncated_xor_differential_constraints(
+            self, self.trunc_binvar, fixed_variables
+        )
 
     def link_binary_tuples_to_integer_variables(self, id_tuples, ids):
         """
@@ -243,7 +276,6 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         """
 
-
         x = self.binary_variable
         x_class = self.trunc_binvar
 
@@ -252,12 +284,13 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
         variables = [x_class[i] for i in ids]
         for index, var in enumerate(variables):
-            constraints.append(
-                var == sum([2 ** i * var_bit for i, var_bit in enumerate(variables_tuples[index][::-1])]))
+            constraints.append(var == sum([2**i * var_bit for i, var_bit in enumerate(variables_tuples[index][::-1])]))
 
         return constraints
 
-    def find_one_bitwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_one_bitwise_deterministic_truncated_xor_differential_trail(
+        self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None
+    ):
         """
         Returns one deterministic truncated XOR differential trail.
 
@@ -312,11 +345,13 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_BITWISE_DETERMINISTIC_TRUNCATED, solver_name, external_solver_name)
-        solution['building_time'] = building_time
+        solution["building_time"] = building_time
 
         return solution
 
-    def find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail(
+        self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None
+    ):
         """
         Return the solution representing a differential trail with the lowest number of unknown variables.
 
@@ -353,7 +388,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_BITWISE_DETERMINISTIC_TRUNCATED, solver_name, external_solver_name)
-        solution['building_time'] = building_time
+        solution["building_time"] = building_time
 
         return solution
 
@@ -368,6 +403,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             dict_tmp = self._get_component_value_weight(component_id, components_variables)
             components_values[component_id] = dict_tmp
         return components_values
+
     def _parse_solver_output(self):
         mip = self._model
         components_variables = mip.get_values(self._trunc_binvar)
@@ -378,7 +414,6 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         return objective_value, components_values
 
     def _get_component_value_weight(self, component_id, components_variables):
-
         if component_id in self._cipher.inputs:
             output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
         else:
@@ -407,5 +442,3 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
             final_output.append(set_component_solution(diff_str))
 
         return final_output
-
-

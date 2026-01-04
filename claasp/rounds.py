@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -37,8 +36,9 @@ class Rounds:
 
     def are_there_not_forbidden_components(self, forbidden_types, forbidden_descriptions):
         for cipher_round in self._rounds:
-            are_there_forbidden_components = cipher_round.are_there_forbidden_components(forbidden_types,
-                                                                                         forbidden_descriptions)
+            are_there_forbidden_components = cipher_round.are_there_forbidden_components(
+                forbidden_types, forbidden_descriptions
+            )
             if are_there_forbidden_components:
                 return not are_there_forbidden_components
 
@@ -115,7 +115,7 @@ class Rounds:
             component = cipher_round.get_component_from_id(component_id)
             if component is not None:
                 return component
-        raise ValueError(f'Component with id {component_id} not found.')
+        raise ValueError(f"Component with id {component_id} not found.")
 
     def get_round_from_component_id(self, component_id):
         for cipher_round in self._rounds:

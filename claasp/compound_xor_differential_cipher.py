@@ -1,12 +1,13 @@
 from copy import deepcopy
 
 from claasp.components.xor_component import XOR
+from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
 
 
 def get_component_pair(round_component_):
     original_component = deepcopy(round_component_)
-    new_id_pair1 = f'{original_component.id}_pair1'
-    new_id_pair2 = f'{original_component.id}_pair2'
+    new_id_pair1 = f"{original_component.id}_pair1"
+    new_id_pair2 = f"{original_component.id}_pair2"
     original_component.set_id(new_id_pair1)
     component_copy = deepcopy(original_component)
     component_copy.set_id(new_id_pair2)
@@ -18,10 +19,10 @@ def update_input_id_links(component1_, component2_):
     input_id_links2 = component2_.input_id_links
     new_input_id_link1 = []
     for input_id_link1 in input_id_links1:
-        new_input_id_link1.append(f'{input_id_link1}_pair1')
+        new_input_id_link1.append(f"{input_id_link1}_pair1")
     new_input_id_link2 = []
     for input_id_link2 in input_id_links2:
-        new_input_id_link2.append(f'{input_id_link2}_pair2')
+        new_input_id_link2.append(f"{input_id_link2}_pair2")
     component1_.set_input_id_links(new_input_id_link1)
     component2_.set_input_id_links(new_input_id_link2)
 
@@ -31,8 +32,8 @@ def update_cipher_inputs(cipher):
     new_inputs_pair2 = []
     old_cipher_inputs_ = deepcopy(cipher.inputs)
     for cipher_input in cipher.inputs:
-        new_inputs_pair1.append(f'{cipher_input}_pair1')
-        new_inputs_pair2.append(f'{cipher_input}_pair2')
+        new_inputs_pair1.append(f"{cipher_input}_pair1")
+        new_inputs_pair2.append(f"{cipher_input}_pair2")
     cipher._inputs = new_inputs_pair1 + new_inputs_pair2
     return old_cipher_inputs_
 
@@ -42,14 +43,20 @@ def create_xor_component_inputs(old_cipher_inputs_, cipher, round_object):
     half_number_of_cipher_inputs = int(len(cipher.inputs_bit_size) / 2)
     i = 0
     for cipher_input in old_cipher_inputs_:
-        input_link_positions = [list(range(cipher.inputs_bit_size[i]))] + \
-                               [list(range(cipher.inputs_bit_size[i + half_number_of_cipher_inputs]))]
-        input_links = [f'{cipher_input}_pair1', f'{cipher_input}_pair2']
+        input_link_positions = [list(range(cipher.inputs_bit_size[i]))] + [
+            list(range(cipher.inputs_bit_size[i + half_number_of_cipher_inputs]))
+        ]
+        input_links = [f"{cipher_input}_pair1", f"{cipher_input}_pair2"]
         current_components_number = round_object.get_number_of_components()
         output_bit_size = cipher.inputs_bit_size[i]
-        new_xor_component = XOR(0, current_components_number, input_links, input_link_positions,
-                                output_bit_size)
-        new_xor_component.set_id(f'{cipher_input}_pair1_pair2')
+        new_xor_component = XOR(
+            0,
+            current_components_number,
+            input_links,
+            input_link_positions,
+            output_bit_size,
+        )
+        new_xor_component.set_id(f"{cipher_input}_pair1_pair2")
         round_object.add_component(new_xor_component)
         i += 1
 
@@ -59,10 +66,16 @@ def create_xor_component(component1_, component2_, round_object, round_number):
     input_links = [component1_.id, component2_.id]
     current_components_number = round_object.get_number_of_components()
     output_bit_size = component1_.output_bit_size
-    new_xor_component = XOR(round_number, current_components_number, input_links, input_link_positions, output_bit_size)
+    new_xor_component = XOR(
+        round_number,
+        current_components_number,
+        input_links,
+        input_link_positions,
+        output_bit_size,
+    )
 
-    if component1_.type == 'intermediate_output' or component1_.type == 'cipher_output':
-        component_id = "_".join(component1_.id.split('_')[:-1])
+    if component1_.type == INTERMEDIATE_OUTPUT or component1_.type == CIPHER_OUTPUT:
+        component_id = "_".join(component1_.id.split("_")[:-1])
         new_xor_component.set_id(component_id)
     round_object.add_component(new_xor_component)
 

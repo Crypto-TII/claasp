@@ -15,14 +15,8 @@ def test_chacha_stream_cipher():
     assert chacha.component_from(3, 0).id == 'modadd_3_0'
 
     cipher = ChachaStreamCipher(number_of_rounds=40)
-    cipher.sort_cipher()
-    state = ["61707865", "3320646e", "79622d32", "6b206574",
-             "03020100", "07060504", "0b0a0908", "0f0e0d0c",
-             "13121110", "17161514", "1b1a1918", "1f1e1d1c",
-             "00000001", "09000000", "4a000000", "00000000"]
-    plaintext = int("0x" + "".join(state), 16)
-    key = int("0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f", 16)
-    nonce = int("0x000000090000004a00000000", 16)
-    ciphertext = int("0xe4e7f11015593bd11fdd0f50c47120a3c7f4d1c70368c0339aaa22044e6cd4c3466482d209aa9f"
-                     "0705d7c214a2028bd9d19c12b5b94e16dee883d0cb4e3c50a2", 16)
+    plaintext = 0x61707865_3320646e_79622d32_6b206574_03020100_07060504_0b0a0908_0f0e0d0c_13121110_17161514_1b1a1918_1f1e1d1c_00000001_09000000_4a000000_00000000
+    key = 0x00010203_04050607_08090a0b_0c0d0e0f_10111213_14151617_18191a1b_1c1d1e1f
+    nonce = 0x00000000_00000009_0000004a_00000000
+    ciphertext = 0xe4e7f110_15593bd1_1fdd0f50_c47120a3_c7f4d1c7_0368c033_9aaa2204_4e6cd4c3_466482d2_09aa9f07_05d7c214_a2028bd9_d19c12b5_b94e16de_e883d0cb_4e3c50a2
     assert cipher.evaluate([plaintext, key, nonce], verbosity=False) == ciphertext

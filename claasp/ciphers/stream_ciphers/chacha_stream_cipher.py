@@ -20,7 +20,7 @@
 from claasp.DTOs.component_state import ComponentState
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.utils.utils import bytes_positions_to_little_endian_for_multiple_of_32
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_NONCE, INPUT_BLOCK_COUNT, INPUT_KEY
+from claasp.name_mappings import STREAM_CIPHER, INPUT_PLAINTEXT, INPUT_NONCE, INPUT_BLOCK_COUNT, INPUT_KEY
 
 INPUT_CONSTANTS = "chacha_constants"
 PARAMETERS_CONFIGURATION_LIST = [{'block_bit_size': 512, 'key_bit_size': 256, 'number_of_rounds': 20}]
@@ -59,7 +59,7 @@ class ChachaStreamCipher(ChachaPermutation):
         - ``key_bit_size`` -- **integer** (default: `256`); cipher key bit size of the cipher
         - ``number_of_rounds`` -- **integer** (default: `20`); number of rounds of the cipher
         - ``block_count`` -- **integer** (default: `1`)
-        - ``chacha_constants`` -- **integer** (default: `int("0x617078653320646e79622d326b206574", 16)`)
+        - ``chacha_constants`` -- **integer** (default: `0x617078653320646e79622d326b206574`)
 
     EXAMPLES::
 
@@ -70,7 +70,7 @@ class ChachaStreamCipher(ChachaPermutation):
     """
 
     def __init__(self, block_bit_size=512, key_bit_size=256, number_of_rounds=20,
-                 block_count=1, chacha_constants=int("0x617078653320646e79622d326b206574", 16)):
+                 block_count=1, chacha_constants=0x617078653320646e79622d326b206574):
         self.WORD_SIZE = 32
 
         input_state_of_components = [
@@ -89,7 +89,7 @@ class ChachaStreamCipher(ChachaPermutation):
         init_state_plaintext(input_state_of_components)
 
         super().__init__(number_of_rounds=number_of_rounds,
-                         cipher_type="stream_cipher",
+                         cipher_type=STREAM_CIPHER,
                          cipher_family="chacha_stream_cipher",
                          inputs=[INPUT_PLAINTEXT, INPUT_KEY, INPUT_NONCE],
                          cipher_inputs_bit_size=[block_bit_size, key_bit_size, self.WORD_SIZE * 3])
@@ -124,3 +124,5 @@ class ChachaStreamCipher(ChachaPermutation):
             component = self.component_from(last_round, component_number)
             if component.type == "cipher_output":
                 component.set_input_id_links(lst_ids)
+
+        self.sort_cipher()

@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -20,23 +19,25 @@
 from copy import deepcopy
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
 
 IRREDUCIBLE_POLYNOMIAL = 0x13
-M = [[2, 4, 2, 11, 2, 8, 5, 6],
-     [12, 9, 8, 13, 7, 7, 5, 2],
-     [4, 4, 13, 13, 9, 4, 13, 9],
-     [1, 6, 5, 1, 12, 13, 15, 14],
-     [15, 12, 9, 13, 14, 5, 14, 13],
-     [9, 14, 5, 15, 4, 12, 9, 6],
-     [12, 2, 2, 10, 3, 1, 1, 14],
-     [15, 1, 13, 10, 5, 10, 2, 3]]
+M = [
+    [2, 4, 2, 11, 2, 8, 5, 6],
+    [12, 9, 8, 13, 7, 7, 5, 2],
+    [4, 4, 13, 13, 9, 4, 13, 9],
+    [1, 6, 5, 1, 12, 13, 15, 14],
+    [15, 12, 9, 13, 14, 5, 14, 13],
+    [9, 14, 5, 15, 4, 12, 9, 6],
+    [12, 2, 2, 10, 3, 1, 1, 14],
+    [15, 1, 13, 10, 5, 10, 2, 3],
+]
 IC = [0, 1, 3, 7, 15, 14, 12, 8]
-PARAMETERS_CONFIGURATION_LIST = [{'t': 256}]
+PARAMETERS_CONFIGURATION_LIST = [{"t": 256}]
 RC = [1, 3, 7, 14, 13, 11, 6, 12, 9, 2, 5, 10]
-S_BOX = [0xc, 0x5, 0x6, 0xb, 0x9, 0x0, 0xa, 0xd, 0x3, 0xe, 0xf, 0x8, 0x4, 0x7, 0x1, 0x2]
+S_BOX = [0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2]
 
 
 class PhotonPermutation(Cipher):
@@ -66,11 +67,13 @@ class PhotonPermutation(Cipher):
         self.t = t
         self.state_bit_size = self.cell_bits * self.d * self.d
 
-        super().__init__(family_name="photon",
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.state_bit_size],
-                         cipher_output_bit_size=self.state_bit_size)
+        super().__init__(
+            family_name="photon",
+            cipher_type=PERMUTATION,
+            cipher_inputs=[INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.state_bit_size],
+            cipher_output_bit_size=self.state_bit_size,
+        )
 
         # graph presentation initialization
         self.add_round()
@@ -82,12 +85,12 @@ class PhotonPermutation(Cipher):
 
         # round constant setup
         components_rc = []
-        for i in range(len(RC)):
-            self.add_constant_component(self.cell_bits, RC[i])
+        for rc in RC:
+            self.add_constant_component(self.cell_bits, rc)
             components_rc.append(ComponentState([self.get_current_component_id()], [list(range(self.cell_bits))]))
         components_ic = []
-        for i in range(len(IC)):
-            self.add_constant_component(self.cell_bits, IC[i])
+        for ic in IC:
+            self.add_constant_component(self.cell_bits, ic)
             components_ic.append(ComponentState([self.get_current_component_id()], [list(range(self.cell_bits))]))
 
         for round_number in range(number_of_rounds):
@@ -132,10 +135,12 @@ class PhotonPermutation(Cipher):
         # state = M x state
         for i in range(self.d):
             inputs_id, inputs_pos = get_inputs_parameter([state[i + j * self.d] for j in range(self.d)])
-            self.add_mix_column_component(inputs_id, inputs_pos, self.cell_bits * self.d,
-                                          [M, IRREDUCIBLE_POLYNOMIAL, self.cell_bits])
+            self.add_mix_column_component(
+                inputs_id, inputs_pos, self.cell_bits * self.d, [M, IRREDUCIBLE_POLYNOMIAL, self.cell_bits]
+            )
             for j in range(self.d):
-                state[i + j * self.d] = ComponentState([self.get_current_component_id()],
-                                                       [[k + j * self.cell_bits for k in range(self.cell_bits)]])
+                state[i + j * self.d] = ComponentState(
+                    [self.get_current_component_id()], [[k + j * self.cell_bits for k in range(self.cell_bits)]]
+                )
 
         return state

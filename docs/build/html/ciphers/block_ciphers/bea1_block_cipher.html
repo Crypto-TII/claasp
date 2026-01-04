@@ -1,23 +1,24 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Bea1 block cipher &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Bea1 block cipher &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sage.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Lblock block cipher" href="lblock_block_cipher.html" />
-    <link rel="prev" title="Des block cipher" href="des_block_cipher.html" />
+    <link rel="next" title="Scarf block cipher" href="scarf_block_cipher.html" />
+    <link rel="prev" title="Lblock block cipher" href="lblock_block_cipher.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +34,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="lblock_block_cipher.html" title="Lblock block cipher"
+          <a href="scarf_block_cipher.html" title="Scarf block cipher"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="des_block_cipher.html" title="Des block cipher"
+          <a href="lblock_block_cipher.html" title="Lblock block cipher"
              accesskey="P">previous</a> |</li>
   
     
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Bea1 block cipher</a></li> 
       </ul>
@@ -56,11 +57,11 @@
           <div class="body" role="main">
             
   <section id="module-ciphers.block_ciphers.bea1_block_cipher">
-<span id="bea1-block-cipher"></span><h1>Bea1 block cipher<a class="headerlink" href="#module-ciphers.block_ciphers.bea1_block_cipher" title="Permalink to this headline">¶</a></h1>
+<span id="bea1-block-cipher"></span><h1>Bea1 block cipher<a class="headerlink" href="#module-ciphers.block_ciphers.bea1_block_cipher" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BEA1BlockCipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher.Cipher</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Cipher</span></code></p>
 <p>Return a cipher object of BEA-1 Block Cipher.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -197,6 +198,11 @@
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.add_theta_gaston_component">
+<span class="sig-name descname"><span class="pre">add_theta_gaston_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts_parameter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.add_theta_gaston_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.add_theta_keccak_component">
 <span class="sig-name descname"><span class="pre">add_theta_keccak_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.add_theta_keccak_component" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -222,92 +228,9 @@
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.algebraic_tests">
-<span class="sig-name descname"><span class="pre">algebraic_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.algebraic_tests" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a dictionary explaining the result of the algebraic test.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> – <strong>integer</strong>; the timeout for the Grobner basis computation in seconds</p></li>
-</ul>
-<p>OUTPUTS: a dictionary with the following keys:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">npolynomials</span></code> – number of polynomials</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">nvariables</span></code> – number of variables</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> – timeout in seconds</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">pass</span></code> – whether the algebraic test pass w.r.t the given timeout</p></li>
-</ul>
-</div></blockquote>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">algebraic_tests</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># long time</span>
-<span class="gp">sage: </span><span class="n">d</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;input_parameters&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span> <span class="s1">&#39;test_results&#39;</span><span class="p">:</span>
-<span class="gp">....: </span><span class="p">{</span><span class="s1">&#39;number_of_variables&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">304</span><span class="p">,</span> <span class="mi">800</span><span class="p">],</span>
-<span class="gp">....: </span><span class="s1">&#39;number_of_equations&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">240</span><span class="p">,</span> <span class="mi">688</span><span class="p">],</span> <span class="s1">&#39;number_of_monomials&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">304</span><span class="p">,</span> <span class="mi">800</span><span class="p">],</span>
-<span class="gp">....: </span><span class="s1">&#39;max_degree_of_equations&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;test_passed&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]}}</span>  <span class="c1"># long time</span>
-<span class="go">True</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.analyze_cipher">
-<span class="sig-name descname"><span class="pre">analyze_cipher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tests_configuration</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.analyze_cipher" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a dictionary with the analysis of the cipher.</p>
-<p>The analysis is related to the following tests:</p>
-<ul class="simple">
-<li><p>Diffusion Tests</p></li>
-</ul>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">tests_configuration</span></code> – <strong>python dictionary</strong></p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="n">sp</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">tests_configuration</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;diffusion_tests&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;run_tests&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;number_of_samples&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-<span class="gp">....: </span><span class="s2">&quot;run_avalanche_dependence&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;run_avalanche_dependence_uniform&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<span class="gp">....: </span><span class="s2">&quot;run_avalanche_weight&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;run_avalanche_entropy&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<span class="gp">....: </span><span class="s2">&quot;avalanche_dependence_uniform_bias&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;avalanche_dependence_criterion_threshold&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-<span class="gp">....: </span><span class="s2">&quot;avalanche_dependence_uniform_criterion_threshold&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;avalanche_weight_criterion_threshold&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-<span class="gp">....: </span><span class="s2">&quot;avalanche_entropy_criterion_threshold&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">},</span> <span class="s2">&quot;component_analysis_tests&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;run_tests&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
-<span class="gp">sage: </span><span class="n">analysis</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">analyze_cipher</span><span class="p">(</span><span class="n">tests_configuration</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">analysis</span><span class="p">[</span><span class="s2">&quot;diffusion_tests&quot;</span><span class="p">][</span><span class="s2">&quot;test_results&quot;</span><span class="p">][</span><span class="s2">&quot;key&quot;</span><span class="p">][</span><span class="s2">&quot;round_output&quot;</span><span class="p">][</span> <span class="c1"># random</span>
-<span class="gp">....: </span><span class="s2">&quot;avalanche_dependence_vectors&quot;</span><span class="p">][</span><span class="s2">&quot;differences&quot;</span><span class="p">][</span><span class="mi">31</span><span class="p">][</span><span class="s2">&quot;output_vectors&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;vector&quot;</span><span class="p">]</span> <span class="c1"># random</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.as_python_dictionary">
 <span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.avalanche_probability_vectors">
-<span class="sig-name descname"><span class="pre">avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the avalanche probability vectors of each input bit difference for each round.</p>
-<p>The inputs considered are plaintext, key, etc.</p>
-<p>The i-th component of the vector is the probability that i-th bit of the output
-flips due to the input bit difference.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>apvs[“key”][“round_output”][position][index_occurrence] = vector of round_output size with input diff
-injected in key</p>
-</div>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">nb_samples</span></code> – <strong>integer</strong>; used to compute the estimated probability of flipping</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
-<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">apvs</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">avalanche_probability_vectors</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">apvs</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">][</span><span class="s2">&quot;round_output&quot;</span><span class="p">][</span><span class="mi">31</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># random</span>
-</pre></div>
-</div>
-</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.cipher_inverse">
@@ -341,26 +264,9 @@ injected in key</p>
 <span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="mh">0x01234567</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">plaintext</span><span class="p">,</span> <span class="n">key</span><span class="p">],</span> <span class="n">intermediate_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">partial_speck</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">cipher_partial_inverse</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">partial_speck</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">cipher_partial_inverse</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">keep_key_schedule</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">partial_speck</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">key</span><span class="p">])</span> <span class="o">==</span> <span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s1">&#39;intermediate_output_0_6&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.component_analysis_tests">
-<span class="sig-name descname"><span class="pre">component_analysis_tests</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.component_analysis_tests" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of dictionaries, each one giving some properties of the cipher’s operations.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p>None</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
-<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">word_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">state_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_analysis_tests</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-<span class="go">9</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -371,161 +277,18 @@ injected in key</p>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.compute_criterion_from_avalanche_probability_vectors">
-<span class="sig-name descname"><span class="pre">compute_criterion_from_avalanche_probability_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_apvs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.compute_criterion_from_avalanche_probability_vectors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a python dictionary that contains the dictionaries corresponding to each criterion.</p>
-<p>ALGORITHM:</p>
-<p>The avalanche dependence is the number of output bit that flip with respect to an input bit difference,
-for a given round.
-If the worst avalanche dependence for a certain round is close to the output bit size with respect to a certain
-threshold, we say that the cipher satisfies the avalanche dependence criterion for this round.</p>
-<p>The avalanche dependence uniform is the number of output bit that flip with a probability
-<span class="math">\in \left[\frac{1}{2} - \text{bias}; \frac{1}{2} + \text{bias}\right]</span>,
-with respect to an input bit difference, for a given round. If the worst avalanche dependence uniform for a
-certain round is close to the output bit size with respect to a certain threshold,
-we say that the cipher satisfies the avalanche dependence uniform criterion for this round.</p>
-<p>The avalanche weight is the expected Hamming weight of the output difference with respect to an input bit
-difference, for a given round.
-If the avalanche weights of all the input bit differences for a certain round is close to half of
-the output bit size with respect to a certain threshold, we say that the cipher satisfies the
-avalanche criterion for this round.</p>
-<p>The avalanche entropy is defined as uncertainty about whether output bits flip with respect to an input
-bit difference, for a given round.
-If the strict avalanche entropy of all the input bit differences for a certain round is close to
-the output bit size with respect to a certain threshold, we say that the cipher satisfies the
-strict avalanche criterion for this round.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>d[“key”][“round_output”][position][index_occurrence][“avalanche_dependence”] = vector of round_output size
-with input diff injected in key</p>
-</div>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">all_apvs</span></code> – <strong>dictionary</strong>; all avalanche probability vectors returned by avalanche_probability_vectors()</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_dependence_uniform_bias</span></code> – <strong>float</strong>; define the range where the probability of flipping should be</p></li>
-</ul>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.avalanche_probability_vectors" title="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.avalanche_probability_vectors"><code class="xref py py-meth docutils literal notranslate"><span class="pre">avalanche_probability_vectors()</span></code></a> for the returning vectors.</p>
-</div>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
-<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">apvs</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">avalanche_probability_vectors</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">compute_criterion_from_avalanche_probability_vectors</span><span class="p">(</span><span class="n">apvs</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">][</span><span class="s2">&quot;round_output&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;avalanche_dependence_vectors&quot;</span><span class="p">]</span> <span class="c1"># random</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.continuous_avalanche_factor">
-<span class="sig-name descname"><span class="pre">continuous_avalanche_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.continuous_avalanche_factor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Continuous generalization of the metric Avalanche Factor. This method implements Definition 14 of <a class="reference internal" href="../../references.html#mur2020" id="id1"><span>[MUR2020]</span></a>.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">lambda_value</span></code> –  <strong>float</strong>; threshold value used to express the input difference</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_samples</span></code> –  <strong>integer</strong>; number of samples used to compute the continuous avalanche factor</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
-<span class="gp">sage: </span><span class="n">speck_cipher</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">speck_cipher</span><span class="o">.</span><span class="n">continuous_avalanche_factor</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;plaintext&#39;</span><span class="p">][</span><span class="s1">&#39;round_key_output&#39;</span><span class="p">][</span><span class="s1">&#39;continuous_avalanche_factor&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
-<span class="go">0.0</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.continuous_diffusion_factor">
-<span class="sig-name descname"><span class="pre">continuous_diffusion_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.continuous_diffusion_factor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Continuous Diffusion Factor. This method implements Definition 16 of <a class="reference internal" href="../../references.html#mur2020" id="id2"><span>[MUR2020]</span></a>.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">beta_number_of_samples</span></code> – <strong>integer</strong>; number of samples used to compute the continuous measure metric</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">gf_number_samples</span></code> – <strong>integer</strong>;  number of vectors used to approximate gf_2</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
-<span class="gp">sage: </span><span class="n">speck_cipher</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># long time</span>
-<span class="gp">sage: </span><span class="n">output</span> <span class="o">=</span> <span class="n">speck_cipher</span><span class="o">.</span><span class="n">continuous_diffusion_factor</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="c1"># long time</span>
-<span class="gp">sage: </span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;plaintext&#39;</span><span class="p">][</span><span class="s1">&#39;cipher_output&#39;</span><span class="p">][</span><span class="s1">&#39;diffusion_factor&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;2&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="c1"># long time</span>
-<span class="go">True</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.continuous_diffusion_tests">
-<span class="sig-name descname"><span class="pre">continuous_diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">continuous_avalanche_factor_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_for_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_neutral_measure_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_beta_number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_diffusion_factor_gf_number_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_avalanche_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_continuous_neutrality_measure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_diffusion_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.continuous_diffusion_tests" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a python dictionary that contains the dictionaries corresponding to each metric in <a class="reference internal" href="../../references.html#mur2020" id="id3"><span>[MUR2020]</span></a>.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">continuous_avalanche_factor_number_of_samples</span></code> – <strong>integer</strong> (default: <span class="math">100</span>); number of samples
-used to obtain the metric continuous_avalanche_factor</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">threshold_for_avalanche_factor</span></code> – <strong>float</strong> (default: <span class="math">0.001</span>); threshold value used to compute the
-input difference for the metric continuous_avalanche_factor</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">continuous_neutral_measure_beta_number_of_samples</span></code> – <strong>integer</strong> (default: <span class="math">10</span>); number of samples
-used to compute the continuous measure metric</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">continuous_neutral_measure_gf_number_samples</span></code> – <strong>integer</strong> (default: <span class="math">10</span>);  number of vectors used
-to approximate gf_2</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">continuous_diffusion_factor_beta_number_of_samples</span></code> – <strong>integer</strong> (default: <span class="math">10</span>); number of samples
-used to compute the continuous measure metric</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">continuous_diffusion_factor_gf_number_samples</span></code> – <strong>integer</strong> (default: <span class="math">10</span>);  number of vectors
-used to approximate gf_2</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">is_continuous_avalanche_factor</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); flag indicating if we want the
-continuous_avalanche_factor or not</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">is_continuous_neutrality_measure</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); flag indicating if we want the
-continuous_neutrality_measure or not</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">is_diffusion_factor</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); flag indicating if we want the
-continuous_neutrality_measure, or not</p></li>
-</ul>
-<p>OUTPUT:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>A python dictionary that contains the test result to each metric. E.g.: continuous_neutrality_measure,
-continuous_avalanche_factor, diffusion_factor</p></li>
-</ul>
-</div></blockquote>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
-<span class="gp">sage: </span><span class="n">speck_cipher</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># long time</span>
-<span class="gp">sage: </span><span class="n">output</span> <span class="o">=</span> <span class="n">speck_cipher</span><span class="o">.</span><span class="n">continuous_diffusion_tests</span><span class="p">()</span> <span class="c1"># long time</span>
-<span class="gp">sage: </span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;plaintext&#39;</span><span class="p">][</span><span class="s1">&#39;round_key_output&#39;</span><span class="p">][</span><span class="s1">&#39;continuous_neutrality_measure&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;1&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="c1"># long time</span>
-<span class="go">True</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.continuous_neutrality_measure_for_bit_j">
-<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gf_number_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.continuous_neutrality_measure_for_bit_j" title="Permalink to this definition">¶</a></dt>
-<dd><p>Continuous Neutrality Measure. This method implements Definition 15 of <a class="reference internal" href="../../references.html#mur2020" id="id4"><span>[MUR2020]</span></a>.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">beta_number_of_samples</span></code> – <strong>integer</strong>; number of samples used to compute the continuous measure metric</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">gf_number_samples</span></code> – <strong>integer</strong>;  number of vectors used to approximate gf_2</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">input_bit</span></code> – <strong>integer</strong> (default: <span class="math">None</span>); input bit position to be analyzed</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">output_bits</span></code> – <strong>list</strong> (default: <span class="math">None</span>); output bit positions to be analyzed</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
-<span class="gp">sage: </span><span class="n">output</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">continuous_neutrality_measure_for_bit_j</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span> <span class="c1"># long time</span>
-<span class="gp">sage: </span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;plaintext&#39;</span><span class="p">][</span><span class="s1">&#39;cipher_output&#39;</span><span class="p">][</span><span class="s1">&#39;continuous_neutrality_measure&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;2&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="c1"># long time</span>
-<span class="go">True</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.continuous_neutrality_measure_for_bit_j_and_beta">
-<span class="sig-name descname"><span class="pre">continuous_neutrality_measure_for_bit_j_and_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.continuous_neutrality_measure_for_bit_j_and_beta" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.convert_to_compound_xor_cipher">
+<span class="sig-name descname"><span class="pre">convert_to_compound_xor_cipher</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.convert_to_compound_xor_cipher" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.convert_to_compound_xor_cipher">
-<span class="sig-name descname"><span class="pre">convert_to_compound_xor_cipher</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.convert_to_compound_xor_cipher" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.create_networx_graph_from_input_ids">
+<span class="sig-name descname"><span class="pre">create_networx_graph_from_input_ids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.create_networx_graph_from_input_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.create_top_and_bottom_subgraphs_from_components_graph">
+<span class="sig-name descname"><span class="pre">create_top_and_bottom_subgraphs_from_components_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e0_bottom_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e1_top_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.create_top_and_bottom_subgraphs_from_components_graph" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -546,63 +309,18 @@ continuous_avalanche_factor, diffusion_factor</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.delete_generated_evaluate_c_shared_library">
 <span class="sig-name descname"><span class="pre">delete_generated_evaluate_c_shared_library</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.delete_generated_evaluate_c_shared_library" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete the file named &lt;id_cipher&gt;_evaluate.c and the corresponding executable.</p>
+<dd><blockquote>
+<div><p>Delete the file named &lt;id_cipher&gt;_evaluate.c and the corresponding executable.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p>None</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
-<span class="gp">sage: </span><span class="n">fancy</span><span class="p">()</span><span class="o">.</span><span class="n">delete_generated_evaluate_c_shared_library</span><span class="p">()</span> <span class="c1"># doctest: +SKIP</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.diffusion_tests">
-<span class="sig-name descname"><span class="pre">diffusion_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_dependence_uniform_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_weight_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avalanche_entropy_criterion_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_dependence_uniform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_avalanche_entropy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.diffusion_tests" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a python dictionary that contains the dictionaries corresponding to each criterion and their analysis.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_samples</span></code> – <strong>integer</strong> (default: <span class="math">5</span>); used to compute the estimated probability of flipping</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_dependence_uniform_bias</span></code> – <strong>float</strong> (default: <span class="math">0.05</span>); define the range where the probability
-of flipping should be</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_dependence_criterion_threshold</span></code> –  <strong>float</strong> (default: <span class="math">0</span>); It is a bias. The criterion is satisfied
-for a given input bit difference if for all output bits of the round under analysis, the corresponding
-avalanche dependence criterion d is such that block_bit_size - bias &lt;= d &lt;= block_bit_size + bias</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_dependence_uniform_criterion_threshold</span></code> –  <strong>float</strong> (default: <span class="math">0</span>); It is a bias. The criterion is
-satisfied for a given input bit difference if for all output bits of the round under analysis, the
-corresponding avalanche dependence uniform criterion d is such that
-block_bit_size - bias &lt;= d &lt;= block_bit_size + bias</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_weight_criterion_threshold</span></code> –  <strong>float</strong> (default: <span class="math">0.01</span>); It is a bias. The criterion is
-satisfied for a given input bit difference if for all output bits of the round under analysis, the
-corresponding avalanche weight criterion is such that block_bit_size/2 - bias &lt;= d &lt;= block_bit_size/2 + bias</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_entropy_criterion_threshold</span></code> –  <strong>float</strong> (default: <span class="math">0.01</span>); It is a bias. The criterion is
-satisfied for a given input bit difference if for all output bits of the round under analysis, the
-corresponding avalanche entropy criterion d is such that block_bit_size - bias &lt;= d &lt;= block_bit_size + bias</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">run_avalanche_dependence</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); if True, add the avalanche dependence results
-to the output dictionary</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">run_avalanche_dependence_uniform</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); if True, add the avalanche dependence
-uniform results to the output dictionary</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">run_avalanche_weight</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); if True, add the avalanche weight results to the
-output dictionary</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">run_avalanche_entropy</span></code> – <strong>boolean</strong> (default: <span class="math">True</span>); if True, add the avalanche entropy results to the
-output dictionary</p></li>
-</ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>diff inserted in:
-d[“test_results”][“plaintext”][“round_output”][“avalanche_entropy”][“differences”][position][
-“output_vectors”][round]</p>
-</div>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">diffusion_tests</span><span class="p">(</span><span class="n">number_of_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;test_results&quot;</span><span class="p">][</span><span class="s2">&quot;key&quot;</span><span class="p">][</span><span class="s2">&quot;round_output&quot;</span><span class="p">][</span> <span class="c1"># random</span>
-<span class="gp">....: </span><span class="s2">&quot;avalanche_dependence_vectors&quot;</span><span class="p">][</span><span class="s2">&quot;differences&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;output_vectors&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;vector&quot;</span><span class="p">]</span> <span class="c1"># random</span>
-</pre></div>
-</div>
+</div></blockquote>
+<dl class="simple">
+<dt>ds            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher as fancy</dt><dd><p>sage: fancy().delete_generated_evaluate_c_shared_library() # doctest: +SKIP</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -618,7 +336,7 @@ each intermediate output</p></li>
 component</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span> <span class="k">as</span> <span class="n">identity</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span> <span class="k">as</span> <span class="n">identity</span>
 <span class="gp">sage: </span><span class="n">identity</span><span class="p">()</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="mh">0x01234567</span><span class="p">,</span><span class="mh">0x89ABCDEF</span><span class="p">])</span>
 <span class="go">19088743</span>
 </pre></div>
@@ -638,7 +356,7 @@ dictionary with each intermediate output</p></li>
 each component</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
 <span class="gp">sage: </span><span class="n">fancy</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">evaluate_using_c</span><span class="p">([</span><span class="mh">0x012345</span><span class="p">,</span><span class="mh">0x89ABCD</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span> <span class="c1"># random</span>
 <span class="go">{&#39;round_key_output&#39;: [3502917, 73728],</span>
 <span class="go"> &#39;round_output&#39;: [9834215],</span>
@@ -649,7 +367,7 @@ each component</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.evaluate_vectorized">
-<span class="sig-name descname"><span class="pre">evaluate_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.evaluate_vectorized" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">evaluate_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluate_api</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_based</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.evaluate_vectorized" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the output of the cipher for multiple inputs.</p>
 <p>The inputs are given as a list cipher_input,such that cipher_inputs[0] contains the first input,
 and cipher_inputs[1] the second.
@@ -663,11 +381,14 @@ and does the transformation transparently. The inputs and outputs are similar to
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">cipher_input</span></code> – <strong>list</strong>; block cipher inputs (ndarray of uint8 representing one byte each, n rows, m columns,
 with m the number of inputs to evaluate)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">intermediate_outputs</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">intermediate_output</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True in order to print the input/output of
 each component</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">evaluate_api</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); if set to True, takes integer inputs (as the evaluate function)</p></li>
 </ul>
-<p>EXAMPLES:</p>
+<p>and returns integer inputs; it is expected that cipher.evaluate(x) == cipher.evaluate_vectorized(x, evaluate_api = True)
+is True.
+EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">speck</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
@@ -729,28 +450,6 @@ each component</p></li>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.find_good_input_difference_for_neural_distinguisher">
-<span class="sig-name descname"><span class="pre">find_good_input_difference_for_neural_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_generations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_generation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.find_good_input_difference_for_neural_distinguisher" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return good neural distinguisher input differences for a cipher.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">difference_positions</span></code> – <strong>table of booleans</strong>; one for each input to the cipher. True in positions where
-differences are allowed</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">initial_population</span></code> – <strong>integer</strong> (default: <span class="math">32</span>); parameter of the evolutionary algorithm</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_generations</span></code> – <strong>integer</strong> (default: <span class="math">50</span>); number of iterations of the evolutionary algorithm</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">nb_samples</span></code> – <strong>integer</strong> (default: <span class="math">10</span>); number of samples for testing each input difference</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">previous_generation</span></code> – (default: <span class="math">None</span>); optional: initial table of differences to try</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">verbose</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); verbosity</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">diff</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">highest_round</span> <span class="o">=</span> <span class="n">find_good_input_difference_for_neural_distinguisher</span><span class="p">(</span><span class="n">cipher</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">number_of_generations</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.find_impossible_property">
 <span class="sig-name descname"><span class="pre">find_impossible_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kissat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scenario</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single-key'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.find_impossible_property" title="Permalink to this definition">¶</a></dt>
 <dd><p>From [SGLYTQH2017] : Finds impossible differentials or zero-correlation linear approximations (based on type)
@@ -777,39 +476,10 @@ dictionary with each intermediate output</p></li>
 input/output of each component</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
 <span class="gp">sage: </span><span class="n">s</span> <span class="o">=</span> <span class="n">fancy</span><span class="p">()</span><span class="o">.</span><span class="n">generate_bit_based_c_code</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="n">s</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;#include&#39;</span>
 <span class="go">True</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.generate_csv_report">
-<span class="sig-name descname"><span class="pre">generate_csv_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_absolute_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.generate_csv_report" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a CSV report containing criteria to estimate the vulnerability of the cipher.</p>
-<p>This method generate a CSV report containing the criteria presented in the paper
-“The design of Xoodoo and Xoofff” [1].
-[1] <a class="reference external" href="https://tosc.iacr.org/index.php/ToSC/article/view/7359">https://tosc.iacr.org/index.php/ToSC/article/view/7359</a></p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">nb_samples</span></code> – <strong>integer</strong>; number of samples</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">output_absolute_path</span></code> – <strong>string</strong>; output of the absolute path</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">import</span> <span class="nn">inspect</span>
-<span class="gp">sage: </span><span class="kn">import</span> <span class="nn">claasp</span>
-<span class="gp">sage: </span><span class="kn">import</span> <span class="nn">os.path</span>
-<span class="gp">sage: </span><span class="n">tii_path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">claasp</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">tii_dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">tii_path</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span>
-<span class="gp">sage: </span><span class="n">identity</span> <span class="o">=</span> <span class="n">IdentityBlockCipher</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">generate_csv_report</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
-<span class="go">True</span>
-<span class="gp">sage: </span><span class="kn">import</span> <span class="nn">os</span>
-<span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tii_dir_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">identity</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_report.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -826,52 +496,8 @@ print a dictionary with each intermediate output</p></li>
 input/output of each component</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span> <span class="k">as</span> <span class="n">fancy</span>
 <span class="gp">sage: </span><span class="n">fancy</span><span class="p">()</span><span class="o">.</span><span class="n">generate_evaluate_c_code_shared_library</span><span class="p">()</span> <span class="c1"># doctest: +SKIP</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.generate_heatmap_graphs_for_avalanche_tests">
-<span class="sig-name descname"><span class="pre">generate_heatmap_graphs_for_avalanche_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">avalanche_results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.generate_heatmap_graphs_for_avalanche_tests" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a string containing latex instructions to generate heatmap graphs of the avalanche tests.
-The string can then be printed on a terminal or on a file.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">avalanche_results</span></code> – <strong>dictionary</strong>; results of the avalanche tests</p></li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">difference_positions</span></code> – <strong>list</strong> (default: <span class="math">None</span>); positions of the differences to inject.</dt><dd><p>The default value is equivalent to pick one of the worst position for a difference and the average value.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">criterion_names</span></code> – <strong>list</strong> (default: <span class="math">None</span>); names of the criteria to observe</dt><dd><p>The default value is equivalent to to pick all of the 4 criteria:
-- “avalanche_dependence_vectors”
-- “avalanche_dependence_uniform_vectors”
-- “avalanche_entropy_vectors”
-- “avalanche_weight_vectors”</p>
-</dd>
-</dl>
-</li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="n">sp</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diffusion_tests</span><span class="p">(</span><span class="n">number_of_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">h</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">generate_heatmap_graphs_for_avalanche_tests</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">h</span><span class="p">[:</span><span class="mi">20</span><span class="p">]</span>
-<span class="go">&#39;\documentclass[12pt]&#39;</span>
-
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.ascon_permutation</span> <span class="kn">import</span> <span class="n">AsconPermutation</span>
-<span class="gp">sage: </span><span class="n">ascon</span> <span class="o">=</span> <span class="n">AsconPermutation</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">ascon</span><span class="o">.</span><span class="n">diffusion_tests</span><span class="p">(</span><span class="n">number_of_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="c1"># long</span>
-<span class="gp">sage: </span><span class="n">h</span> <span class="o">=</span> <span class="n">ascon</span><span class="o">.</span><span class="n">generate_heatmap_graphs_for_avalanche_tests</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;avalanche_weight_vectors&quot;</span><span class="p">])</span> <span class="c1"># long</span>
-
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.xoodoo_permutation</span> <span class="kn">import</span> <span class="n">XoodooPermutation</span>
-<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">XoodooPermutation</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">d</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">diffusion_tests</span><span class="p">(</span><span class="n">number_of_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="c1"># long</span>
-<span class="gp">sage: </span><span class="n">h</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">generate_heatmap_graphs_for_avalanche_tests</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">193</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;avalanche_dependence_vectors&quot;</span><span class="p">,</span> <span class="s2">&quot;avalanche_entropy_vectors&quot;</span><span class="p">])</span> <span class="c1"># long</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -921,7 +547,7 @@ input/output of each component</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">id_component</span></code> – <strong>string</strong>; id of a component</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
 <span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s1">&#39;sbox_0_0&#39;</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">component</span><span class="o">.</span><span class="n">description</span>
@@ -945,7 +571,8 @@ input/output of each component</p></li>
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher</span> <span class="kn">import</span> <span class="n">Cipher</span>
-<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="s2">&quot;permutation&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.name_mappings</span> <span class="kn">import</span> <span class="n">PERMUTATION</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="n">PERMUTATION</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="mi">4</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">add_round</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="n">constant_0_0</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mh">0xF</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">constant_0_1</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mh">0xF</span><span class="p">)</span>
@@ -989,7 +616,7 @@ input/output of each component</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">id_component</span></code> – <strong>string</strong>; id of a component</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
 <span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">fancy</span><span class="o">.</span><span class="n">get_round_from_component_id</span><span class="p">(</span><span class="s1">&#39;xor_1_14&#39;</span><span class="p">)</span>
 <span class="go">1</span>
@@ -1141,43 +768,6 @@ INPUT:</p>
 <span class="sig-name descname"><span class="pre">make_file_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.make_file_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.neural_network_blackbox_distinguisher_tests">
-<span class="sig-name descname"><span class="pre">neural_network_blackbox_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.neural_network_blackbox_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a python dictionary that contains the accuracies corresponding to each round.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">nb_samples</span></code> – <strong>integer</strong> (default: <span class="math">10000</span>); how many sample the neural network is trained with</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">hidden_layers</span></code> – <strong>list</strong> (default: <span class="math">[32, 32, 32]</span>); a list containing the number of neurons in each
-hidden layer of the neural network</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_epochs</span></code> – <strong>integer</strong> (default: <span class="math">10</span>); how long is the training of the neural network</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
-<span class="gp">sage: </span><span class="c1">#speck(number_of_rounds=22).neural_network_blackbox_distinguisher_tests(nb_samples = 10) # random</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.neural_network_differential_distinguisher_tests">
-<span class="sig-name descname"><span class="pre">neural_network_differential_distinguisher_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">32]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.neural_network_differential_distinguisher_tests" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a python dictionary that contains the accuracies corresponding to each round.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">nb_samples</span></code> – <strong>integer</strong> (default: <span class="math">10000</span>); how many sample the neural network is trained with</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">hidden_layers</span></code> – <strong>list</strong> (default: <span class="math">[32, 32, 32]</span>); a list containing the number of neurons in each
-hidden layer of the neural network</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_epochs</span></code> – <strong>integer</strong> (default: <span class="math">10</span>); how long is the training of the neural network</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">diff</span></code> – <strong>list</strong> (default: <span class="math">[0x01]</span>); list of input differences</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span> <span class="k">as</span> <span class="n">speck</span>
-<span class="gp">sage: </span><span class="c1">#speck(number_of_rounds=22).neural_network_differential_distinguisher_tests(nb_samples = 10) # random</span>
-</pre></div>
-</div>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.number_of_rounds">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_rounds</span></span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.number_of_rounds" title="Permalink to this definition">¶</a></dt>
@@ -1197,9 +787,10 @@ hidden layer of the neural network</p></li>
 <li><p>None</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span>
-<span class="gp">sage: </span><span class="n">IdentityBlockCipher</span><span class="p">()</span><span class="o">.</span><span class="n">polynomial_system</span><span class="p">()</span>
-<span class="go">Polynomial Sequence with 128 Polynomials in 256 Variables</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">speck</span><span class="o">.</span><span class="n">polynomial_system</span><span class="p">()</span>
+<span class="go">Polynomial Sequence with 64 Polynomials in 112 Variables</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1213,9 +804,9 @@ hidden layer of the neural network</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">r</span></code> – <strong>integer</strong>; round index</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
-<span class="gp">sage: </span><span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">polynomial_system_at_round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="go">Polynomial Sequence with 252 Polynomials in 288 Variables</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">polynomial_system_at_round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">Polynomial Sequence with 64 Polynomials in 112 Variables</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1230,7 +821,8 @@ hidden layer of the neural network</p></li>
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher</span> <span class="kn">import</span> <span class="n">Cipher</span>
-<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="s2">&quot;permutation&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">],</span> <span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.name_mappings</span> <span class="kn">import</span> <span class="n">PERMUTATION</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="n">PERMUTATION</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">],</span> <span class="mi">32</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">add_round</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="n">constant_0_0</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mh">0xAB01</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">constant_0_1</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mh">0xAB01</span><span class="p">)</span>
@@ -1274,7 +866,8 @@ hidden layer of the neural network</p></li>
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher</span> <span class="kn">import</span> <span class="n">Cipher</span>
-<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="s2">&quot;block_cipher&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;plaintext&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> <span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.name_mappings</span> <span class="kn">import</span> <span class="n">BLOCK_CIPHER</span><span class="p">,</span> <span class="n">INPUT_KEY</span><span class="p">,</span> <span class="n">INPUT_PLAINTEXT</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="n">BLOCK_CIPHER</span><span class="p">,</span> <span class="p">[</span><span class="n">INPUT_KEY</span><span class="p">,</span> <span class="n">INPUT_PLAINTEXT</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> <span class="mi">32</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">add_round</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="n">constant_0_0</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mh">0xAB01</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">constant_0_1</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">add_constant_component</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mh">0xAB01</span><span class="p">)</span>
@@ -1327,27 +920,10 @@ hidden layer of the neural network</p></li>
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher</span> <span class="kn">import</span> <span class="n">Cipher</span>
-<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="s2">&quot;block_cipher&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;plaintext&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> <span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.name_mappings</span> <span class="kn">import</span> <span class="n">BLOCK_CIPHER</span><span class="p">,</span> <span class="n">INPUT_KEY</span><span class="p">,</span> <span class="n">INPUT_PLAINTEXT</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="p">(</span><span class="s2">&quot;cipher_name&quot;</span><span class="p">,</span> <span class="n">BLOCK_CIPHER</span><span class="p">,</span> <span class="p">[</span><span class="n">INPUT_KEY</span><span class="p">,</span> <span class="n">INPUT_PLAINTEXT</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> <span class="mi">32</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">cipher</span><span class="o">.</span><span class="n">print_as_python_dictionary_to_file</span><span class="p">(</span><span class="s2">&quot;claasp/ciphers/dictionary_example.py&quot;</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;claasp/ciphers/dictionary_example.py&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.print_component_analysis_as_radar_charts">
-<span class="sig-name descname"><span class="pre">print_component_analysis_as_radar_charts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_analysis_results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.print_component_analysis_as_radar_charts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a matplotlib object containing the radar charts of the components analysis test</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">component_analysis_results</span></code> – <strong>list</strong>; results of the component analysis method</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
-<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">word_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">state_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_analysis_tests</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">fig</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">print_component_analysis_as_radar_charts</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span> <span class="c1"># doctest: +SKIP</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1361,7 +937,7 @@ hidden layer of the neural network</p></li>
 <li><p>None</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span> <span class="k">as</span> <span class="n">identity</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span> <span class="k">as</span> <span class="n">identity</span>
 <span class="gp">sage: </span><span class="n">identity</span><span class="p">()</span><span class="o">.</span><span class="n">print_evaluation_python_code</span><span class="p">()</span> <span class="c1"># random</span>
 <span class="go">from copy import copy</span>
 <span class="go">from bitstring import BitArray</span>
@@ -1417,7 +993,7 @@ hidden layer of the neural network</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">file_name</span></code> – <strong>string</strong>; name of the output file</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span> <span class="k">as</span> <span class="n">identity</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.identity_block_cipher</span> <span class="kn">import</span> <span class="n">IdentityBlockCipher</span> <span class="k">as</span> <span class="n">identity</span>
 <span class="gp">sage: </span><span class="n">identity</span> <span class="o">=</span> <span class="n">identity</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="n">identity</span><span class="o">.</span><span class="n">file_name</span>
 <span class="go">&#39;identity_block_cipher_p32_k32_o32_r1.py&#39;</span>
@@ -1447,7 +1023,7 @@ hidden layer of the neural network</p></li>
 <li><p>None</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
 <span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="n">fancy</span><span class="o">.</span><span class="n">print_input_information</span><span class="p">()</span>
 <span class="go">plaintext of bit size 24</span>
@@ -1463,7 +1039,7 @@ hidden layer of the neural network</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.remove_key_schedule">
-<span class="sig-name descname"><span class="pre">remove_key_schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.remove_key_schedule" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">remove_key_schedule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keep_round_key_injection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.remove_key_schedule" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1485,38 +1061,6 @@ hidden layer of the neural network</p></li>
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.rounds_as_list">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rounds_as_list</span></span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.rounds_as_list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.run_autond_pipeline">
-<span class="sig-name descname"><span class="pre">run_autond_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">difference_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_generations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testing_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.run_autond_pipeline" title="Permalink to this definition">¶</a></dt>
-<dd><dl>
-<dt>Runs the AutoND pipeline ([BGHR2023]):</dt><dd><ul class="simple">
-<li><p>Find an input difference for the inputs set to True in difference_positions using an optimizer</p></li>
-<li><p>Train a neural distinguisher based on DBitNET for that input difference, increasing the number of rounds</p></li>
-</ul>
-<p>until the accuracy is no better than random guessing.</p>
-</dd>
-</dl>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">difference_positions</span></code> – <strong>list of booleans</strong>; default: <a href="#id5"><span class="problematic" id="id6">`</span></a>True in the plaintext position, False in the</p></li>
-</ul>
-<p>other positions`. If specified, must have the same length as self.inputs_bit_size, and contain one boolean per
-input position. The optimizer will look for input differences in the positions set to True; by default,
-the single-key case will be run.
-- <code class="docutils literal notranslate"><span class="pre">optimizer_samples</span></code> – <strong>integer</strong>; number of samples used by the optimizer; higher values increase the
-quality of the optimizer, at the cost of a longer runtime.
-- <code class="docutils literal notranslate"><span class="pre">optimizer_generations</span></code> – <strong>integer</strong>; (default: <span class="math">50</span>) number of generations used by the optimizer;
-higher values increase the runtime.
-- <code class="docutils literal notranslate"><span class="pre">training_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**7</span>) number samples used for training
-- <code class="docutils literal notranslate"><span class="pre">testing_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**6</span>) number samples used for testing
-- <code class="docutils literal notranslate"><span class="pre">number_of_epochs</span></code> – <strong>integer</strong>; (default: <span class="math">40</span>) number of training epochs
-- <code class="docutils literal notranslate"><span class="pre">verbose</span></code> – <strong>boolean</strong>; (default: <span class="math">False</span>) verbosity of the optimizer</p>
-<p>EXAMPLES::
-sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-sage: cipher = SpeckBlockCipher()
-sage: cipher.run_autond_pipeline()</p>
-</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.set_file_name">
@@ -1594,68 +1138,14 @@ vectors. That is, list_of_test_vectors_output[i] = cipher.evaluate(list_of_test_
 </div>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.train_gohr_neural_distinguisher">
-<span class="sig-name descname"><span class="pre">train_gohr_neural_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testing_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.train_gohr_neural_distinguisher" title="Permalink to this definition">¶</a></dt>
-<dd><p>Trains a differential neural distinguisher on nr rounds, for the input difference input_difference, using a slightly
-modified (AMSGrad instead of cyclic learning rate schedule) depth depth Gohr’s RESNet ([Go2019]).</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">input_difference</span></code> – <strong>list of integers</strong>; The input difference, expressed as a list with one value per
-input to the cipher.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_rounds</span></code> – <strong>integer</strong>; number of rounds to analyze</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">depth</span></code> – <strong>integer</strong>; (default: <span class="math">1</span>) the depth of the neural network, as defined in Gohr’s paper</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">word_size</span></code> – <strong>integer</strong>; the word size of the cipher, determines the shape of the neural network.</p></li>
-</ul>
-<p>Defaults to output_bit_size when unspecified (may reduce the accuracy of the obtained distinguisher).
-- <code class="docutils literal notranslate"><span class="pre">training_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**7</span>) number samples used for training
-- <code class="docutils literal notranslate"><span class="pre">testing_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**6</span>) number samples used for testing
-- <code class="docutils literal notranslate"><span class="pre">number_of_epochs</span></code> – <strong>integer</strong>; (default: <span class="math">40</span>) number of training epochs</p>
-<p>EXAMPLES::
-sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-sage: cipher = SpeckBlockCipher()
-sage: input_differences = [0x400000, 0]
-sage: number_of_rounds = 5
-sage: cipher.train_gohr_neural_distinguisher(input_differences, number_of_rounds, word_size = 16, number_of_epochs = 1)
-2000/2000 [==============================] - 294s 146ms/step - loss: 0.0890 - acc: 0.8876 - val_loss: 0.0734 - val_acc: 0.9101
-Validation accuracy at 5 rounds :0.9101160168647766
-0.9101160168647766</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.train_neural_distinguisher">
-<span class="sig-name descname"><span class="pre">train_neural_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starting_round</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neural_network</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testing_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.train_neural_distinguisher" title="Permalink to this definition">¶</a></dt>
-<dd><p>Trains a neural distinguisher for the data generated by the data_generator function, using the provided neural network, at round starting_rounds. 
-If pipeline is set to True, retrains the distinguisher for one more round, as long as the validation accuracy remains significant.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">data_generator</span></code> – <strong>function</strong>; A dataset generation function, taking as input a cipher (usually self), a number of rounds,</p></li>
-</ul>
-<p>and a number of samples, an returns a dataset X, Y, where X is a numpy matrix with one row per sample, and Y is a label veector. 
-To reproduce classical neural distinguisher results, on would use the example below. 
-- <code class="docutils literal notranslate"><span class="pre">starting_round</span></code> – <strong>integer</strong>; number of rounds to analyze
-- <code class="docutils literal notranslate"><span class="pre">neural_network</span></code> – <strong>(compiled) keras model</strong> (default: <span class="math">None</span>); the neural network to use for distinguishing, either a custom one or one
-returned by the get_neural_network function of neural_network_tests. 
-- <code class="docutils literal notranslate"><span class="pre">training_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**7</span>) number samples used for training
-- <code class="docutils literal notranslate"><span class="pre">testing_samples</span></code> – <strong>integer</strong>; (default: <span class="math">10**6</span>) number samples used for testing
-- <code class="docutils literal notranslate"><span class="pre">pipeline</span></code> – <strong>boolean</strong>; (default: <span class="math">True</span>) If False, only trains for starting_round. If True, increments starting_round and retrain
-the model as long as the accuracy is statistically significant.
-- <code class="docutils literal notranslate"><span class="pre">verbose</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); verbosity</p>
-<p>EXAMPLES::
-sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher</p>
-<blockquote>
-<div><p>sage: from claasp.cipher_modules.neural_network_tests import get_differential_dataset, get_neural_network
-sage: cipher = SpeckBlockCipher()
-sage: input_differences = [0x400000, 0]
-sage: data_generator = lambda nr, samples: get_differential_dataset(cipher, input_differences, number_of_rounds = nr, samples = samples)
-sage: neural_network = get_neural_network(‘gohr_resnet’, input_size = 64)
-sage: cipher.train_neural_distinguisher(data_generator, starting_round = 5, neural_network = neural_network)</p>
-</div></blockquote>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.type">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.update_input_id_links_from_component_id">
+<span class="sig-name descname"><span class="pre">update_input_id_links_from_component_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_input_id_links</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.block_ciphers.bea1_block_cipher.BEA1BlockCipher.update_input_id_links_from_component_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1687,13 +1177,13 @@ INPUT:</p>
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="des_block_cipher.html"
-                          title="previous chapter">Des block cipher</a></p>
+    <p class="topless"><a href="lblock_block_cipher.html"
+                          title="previous chapter">Lblock block cipher</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="lblock_block_cipher.html"
-                          title="next chapter">Lblock block cipher</a></p>
+    <p class="topless"><a href="scarf_block_cipher.html"
+                          title="next chapter">Scarf block cipher</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -1711,7 +1201,7 @@ INPUT:</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1726,10 +1216,10 @@ INPUT:</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="lblock_block_cipher.html" title="Lblock block cipher"
+          <a href="scarf_block_cipher.html" title="Scarf block cipher"
              >next</a> |</li>
         <li class="right" >
-          <a href="des_block_cipher.html" title="Des block cipher"
+          <a href="lblock_block_cipher.html" title="Lblock block cipher"
              >previous</a> |</li>
   
     
@@ -1737,7 +1227,7 @@ INPUT:</p>
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Bea1 block cipher</a></li> 
       </ul>

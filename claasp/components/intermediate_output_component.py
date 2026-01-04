@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -20,9 +19,10 @@
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import \
-    update_dictionary_that_contains_xor_inequalities_between_n_input_bits, \
-    output_dictionary_that_contains_xor_inequalities
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
+    update_dictionary_that_contains_xor_inequalities_between_n_input_bits,
+    output_dictionary_that_contains_xor_inequalities,
+)
 
 
 def update_xor_linear_constraints_for_more_than_one_bit(constraints, intermediate_var, linked_components, x):
@@ -50,11 +50,25 @@ def update_xor_linear_constraints_for_more_than_one_bit(constraints, intermediat
 
 
 class IntermediateOutput(CipherOutput):
-    def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, output_tag):
-        super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, True, output_tag)
-        self._suffixes = ['_i', '_o']
+    def __init__(
+        self,
+        current_round_number,
+        current_round_number_of_components,
+        input_id_links,
+        input_bit_positions,
+        output_bit_size,
+        output_tag,
+    ):
+        super().__init__(
+            current_round_number,
+            current_round_number_of_components,
+            input_id_links,
+            input_bit_positions,
+            output_bit_size,
+            True,
+            output_tag,
+        )
+        self._suffixes = ["_i", "_o"]
 
     def cp_xor_linear_mask_propagation_constraints(self, model):
         """
@@ -89,41 +103,42 @@ class IntermediateOutput(CipherOutput):
         for intermediate_var, linked_components in bit_bindings.items():
             # no fork
             if len(linked_components) == 1:
-                constraints.append(f'constraint {intermediate_var} = {linked_components[0]};')
+                constraints.append(f"constraint {intermediate_var} = {linked_components[0]};")
             # fork
             else:
                 operation = " + ".join(linked_components)
-                constraints.append(f'constraint {intermediate_var} = ({operation}) mod 2;')
+                constraints.append(f"constraint {intermediate_var} = ({operation}) mod 2;")
 
         return variables, constraints
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         code = []
-        intermediate_output_params = [f'bit_vector_select_word({self.input_id_links[i]},  {self.input_bit_positions[i]})'
-                  for i in range(len(self.input_id_links))]
-        code.append(f'  {self.id} = bit_vector_CONCAT([{",".join(intermediate_output_params)} ])')
+        intermediate_output_params = [
+            f"bit_vector_select_word({self.input_id_links[i]},  {self.input_bit_positions[i]})"
+            for i in range(len(self.input_id_links))
+        ]
+        code.append(f"  {self.id} = bit_vector_CONCAT([{','.join(intermediate_output_params)} ])")
         code.append(f'  if "{self.description[0]}" not in intermediateOutputs.keys():')
         code.append(f'      intermediateOutputs["{self.description[0]}"] = []')
         if convert_output_to_bytes:
             code.append(
-                f'  intermediateOutputs["{self.description[0]}"]'
-                f'.append(np.packbits({self.id}, axis=0).transpose())')
+                f'  intermediateOutputs["{self.description[0]}"].append(np.packbits({self.id}, axis=0).transpose())'
+            )
         else:
-            code.append(
-                f'  intermediateOutputs["{self.description[0]}"]'
-                f'.append({self.id}.transpose())')
+            code.append(f'  intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())')
         return code
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} = {params}[0]',
-                f'  if "{self.description[0]}" not in intermediateOutputs.keys():',
-                f'      intermediateOutputs["{self.description[0]}"] = []',
-                f'  if integers_inputs_and_outputs:',
-                #f'    intermediateOutputs["{self.description[0]}"].append(evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size}))',
-                f'    intermediateOutputs["{self.description[0]}"] = evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size})',
-                f'  else:',
-                f'    intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())']
-
+        return [
+            f"  {self.id} = {params}[0]",
+            f'  if "{self.description[0]}" not in intermediateOutputs.keys():',
+            f'      intermediateOutputs["{self.description[0]}"] = []',
+            "  if integers_inputs_and_outputs:",
+            # f'    intermediateOutputs["{self.description[0]}"].append(evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size}))',
+            f'    intermediateOutputs["{self.description[0]}"] = evaluate_vectorized_outputs_to_integers([{self.id}.transpose()], {self.input_bit_size})',
+            "  else:",
+            f'    intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())',
+        ]
 
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """
@@ -164,8 +179,9 @@ class IntermediateOutput(CipherOutput):
                 constraints.append(binary_variable[intermediate_var] == binary_variable[linked_components[0]])
             # fork
             else:
-                update_xor_linear_constraints_for_more_than_one_bit(constraints, intermediate_var,
-                                                                    linked_components, binary_variable)
+                update_xor_linear_constraints_for_more_than_one_bit(
+                    constraints, intermediate_var, linked_components, binary_variable
+                )
 
         return variables, constraints
 
@@ -205,8 +221,9 @@ class IntermediateOutput(CipherOutput):
                 constraints.extend(sat_utils.cnf_equivalent([intermediate_var] + linked_components))
             # fork
             else:
-                result_bit_ids = [f'inter_{i}_{intermediate_var}'
-                                  for i in range(len(linked_components) - 2)] + [intermediate_var]
+                result_bit_ids = [f"inter_{i}_{intermediate_var}" for i in range(len(linked_components) - 2)] + [
+                    intermediate_var
+                ]
                 constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, linked_components))
 
         return variables, constraints

@@ -1,16 +1,16 @@
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -23,30 +23,54 @@ import sys
 import numpy as np
 from bitstring import BitArray
 
-from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import \
-    update_dictionary_that_contains_xor_inequalities_between_n_input_bits, \
-    output_dictionary_that_contains_xor_inequalities
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_XOR_LINEAR, MILP_PROBABILITY_SUFFIX, \
-    MILP_BUILDING_MESSAGE, MILP_XOR_LINEAR_OBJECTIVE, MILP_DEFAULT_WEIGHT_PRECISION
-from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, _string_to_hex, \
-    _filter_fixed_variables, _set_weight_precision
-from claasp.cipher_modules.models.utils import get_bit_bindings, set_fixed_variables, integer_to_bit_list, \
-    set_component_solution, get_single_key_scenario_format_for_fixed_values
-from claasp.name_mappings import (INTERMEDIATE_OUTPUT, CONSTANT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN,
-                                  WORD_OPERATION, INPUT_KEY)
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
+    output_dictionary_that_contains_xor_inequalities,
+    update_dictionary_that_contains_xor_inequalities_between_n_input_bits,
+)
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
+    MILP_BUILDING_MESSAGE,
+    MILP_DEFAULT_WEIGHT_PRECISION,
+    MILP_PROBABILITY_SUFFIX,
+    MILP_XOR_LINEAR_OBJECTIVE,
+    MILP_XOR_LINEAR,
+)
+from claasp.cipher_modules.models.milp.utils.utils import (
+    _filter_fixed_variables,
+    _get_variables_values_as_string,
+    _set_weight_precision,
+    _string_to_hex,
+)
+from claasp.cipher_modules.models.utils import (
+    get_bit_bindings,
+    get_single_key_scenario_format_for_fixed_values,
+    integer_to_bit_list,
+    set_component_solution,
+)
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INPUT_KEY,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SATISFIABLE,
+    SBOX,
+    WORD_OPERATION,
+)
 
 
 class MilpXorLinearModel(MilpModel):
     def __init__(self, cipher, n_window_heuristic=None, verbose=False):
         super().__init__(cipher, n_window_heuristic, verbose)
-        self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
+        self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, "_".join)
         self._weight_precision = MILP_DEFAULT_WEIGHT_PRECISION
         self._has_non_integer_weight = False
 
-    def add_constraints_to_build_in_sage_milp_class(self, weight=-1, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
-                                                    fixed_variables=[]):
+    def add_constraints_to_build_in_sage_milp_class(
+        self, weight=-1, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION, fixed_variables=[]
+    ):
         """
         Take the constraints contained in self._model_constraints and add them to the build-in sage class.
 
@@ -83,8 +107,10 @@ class MilpXorLinearModel(MilpModel):
         p = self._integer_variable
         for constraint in self._model_constraints:
             mip.add_constraint(constraint)
-        mip.add_constraint(p[MILP_XOR_LINEAR_OBJECTIVE] == sum(
-            p[self._non_linear_component_id[i] + "_probability"] for i in range(len(self._non_linear_component_id))))
+        mip.add_constraint(
+            p[MILP_XOR_LINEAR_OBJECTIVE]
+            == sum(p[f"{component_id}_probability"] for component_id in self._non_linear_component_id)
+        )
 
     def branch_xor_linear_constraints(self):
         """
@@ -137,8 +163,9 @@ class MilpXorLinearModel(MilpModel):
                 constraints.append(constraint >= 2 * x[f"{output_var}_dummy"])
             # more than a 3-way fork as in SIMON
             else:
-                self.update_xor_linear_constraints_for_more_than_two_bits(constraints, input_vars, number_of_inputs,
-                                                                          output_var, x)
+                self.update_xor_linear_constraints_for_more_than_two_bits(
+                    constraints, input_vars, number_of_inputs, output_var, x
+                )
 
         return constraints
 
@@ -166,21 +193,28 @@ class MilpXorLinearModel(MilpModel):
         variables = []
         if INPUT_KEY not in [variable["component_id"] for variable in fixed_variables]:
             self._cipher = self._cipher.remove_key_schedule()
-            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self.cipher, '_'.join)
+            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self.cipher, "_".join)
         if fixed_variables == []:
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
 
         for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER,
-                               SBOX, MIX_COLUMN, WORD_OPERATION]
+            component_types = [
+                CONSTANT,
+                INTERMEDIATE_OUTPUT,
+                CIPHER_OUTPUT,
+                LINEAR_LAYER,
+                SBOX,
+                MIX_COLUMN,
+                WORD_OPERATION,
+            ]
             operation = component.description[0]
-            operation_types = ["AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB"]
+            operation_types = ("AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB")
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.milp_xor_linear_mask_propagation_constraints(self)
             else:
-                print(f'{component.id} not yet implemented')
+                print(f"{component.id} not yet implemented")
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
@@ -242,25 +276,32 @@ class MilpXorLinearModel(MilpModel):
             if fixed_variable["constraint_type"] == "not_equal":
                 for index, bit_position in enumerate(fixed_variable["bit_positions"]):
                     if fixed_variable["bit_values"][index]:
-                        constraints.append(x[component_id + str(bit_position) + '_o' + "_not_equal_" + str(
-                            self._number_of_trails_found)] == 1 - x[component_id + '_' + str(bit_position) + '_o'])
+                        constraints.append(
+                            x[f"{component_id}{bit_position}_o_not_equal_{self._number_of_trails_found}"]
+                            == 1 - x[f"{component_id}_{bit_position}_o"]
+                        )
                     else:
-                        constraints.append(x[component_id + str(bit_position) + '_o' + "_not_equal_" +
-                                             str(self._number_of_trails_found)] ==
-                                           x[component_id + '_' + str(bit_position) + '_o'])
+                        constraints.append(
+                            x[f"{component_id}{bit_position}_o_not_equal_{self._number_of_trails_found}"]
+                            == x[f"{component_id}_{bit_position}_o"]
+                        )
 
         var_sum = 0
         for fixed_variable in fixed_variables:
             for i in fixed_variable["bit_positions"]:
-                var_sum += x[
-                    fixed_variable["component_id"] + str(i) + '_o' + "_not_equal_" + str(self._number_of_trails_found)]
+                var_sum += x[f"{fixed_variable['component_id']}{i}_o_not_equal_{self._number_of_trails_found}"]
         constraints.append(var_sum >= 1)
 
         return constraints
 
-    def find_all_xor_linear_trails_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                     weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
-                                                     solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_all_xor_linear_trails_with_fixed_weight(
+        self,
+        fixed_weight,
+        fixed_values=[],
+        weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
+        solver_name=SOLVER_DEFAULT,
+        external_solver_name=None,
+    ):
         """
         Return all the XOR linear trails with weight equal to ``fixed_weight`` as a solutions list in standard format.
         By default, the search removes the key schedule, if any.
@@ -325,12 +366,12 @@ class MilpXorLinearModel(MilpModel):
         looking_for_other_solutions = 1
         while looking_for_other_solutions:
             try:
-                f = open(os.devnull, 'w')
+                f = open(os.devnull, "w")
                 sys.stdout = f
                 solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
                 sys.stdout = sys.__stdout__
-                solution['building_time'] = building_time
-                solution['test_name'] = "find_all_xor_linear_trails_with_fixed_weight"
+                solution["building_time"] = building_time
+                solution["test_name"] = "find_all_xor_linear_trails_with_fixed_weight"
                 self._number_of_trails_found += 1
                 self._verbose_print(f"trails found : {self._number_of_trails_found}")
                 list_trails.append(solution)
@@ -351,11 +392,17 @@ class MilpXorLinearModel(MilpModel):
 
         self._number_of_trails_found = 0
 
-        return [trail for trail in list_trails if trail['status'] == 'SATISFIABLE']
+        return [trail for trail in list_trails if trail["status"] == SATISFIABLE]
 
-    def find_all_xor_linear_trails_with_weight_at_most(self, min_weight, max_weight, fixed_values=[],
-                                                       weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
-                                                       solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_all_xor_linear_trails_with_weight_at_most(
+        self,
+        min_weight,
+        max_weight,
+        fixed_values=[],
+        weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
+        solver_name=SOLVER_DEFAULT,
+        external_solver_name=None,
+    ):
         """
         Return all XOR linear trails with weight greater than ``min_weight`` and lower than or equal to ``max_weight``.
         By default, the search removes the key schedule, if any.
@@ -424,12 +471,12 @@ class MilpXorLinearModel(MilpModel):
             number_new_constraints = len(weight_constraints)
             while looking_for_other_solutions:
                 try:
-                    f = open(os.devnull, 'w')
+                    f = open(os.devnull, "w")
                     sys.stdout = f
                     solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
                     sys.stdout = sys.__stdout__
-                    solution['building_time'] = building_time
-                    solution['test_name'] = "find_all_xor_linear_trails_with_weight_at_most"
+                    solution["building_time"] = building_time
+                    solution["test_name"] = "find_all_xor_linear_trails_with_weight_at_most"
                     self._number_of_trails_found += 1
                     self._verbose_print(f"trails found : {self._number_of_trails_found}")
                     list_trails.append(solution)
@@ -447,10 +494,15 @@ class MilpXorLinearModel(MilpModel):
             mip.remove_constraints(range(number_constraints - number_new_constraints, number_constraints))
         self._number_of_trails_found = 0
 
-        return [trail for trail in list_trails if trail['status'] == 'SATISFIABLE']
+        return [trail for trail in list_trails if trail["status"] == SATISFIABLE]
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
-                                            solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_lowest_weight_xor_linear_trail(
+        self,
+        fixed_values=[],
+        weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
+        solver_name=SOLVER_DEFAULT,
+        external_solver_name=None,
+    ):
         """
         Return a XOR linear trail with the lowest weight in standard format, i.e. the solver solution.
         By default, the search removes the key schedule, if any.
@@ -518,13 +570,18 @@ class MilpXorLinearModel(MilpModel):
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
-        solution['building_time'] = building_time
-        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
+        solution["building_time"] = building_time
+        solution["test_name"] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
-    def find_one_xor_linear_trail(self, fixed_values=[], weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
-                                  solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_one_xor_linear_trail(
+        self,
+        fixed_values=[],
+        weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
+        solver_name=SOLVER_DEFAULT,
+        external_solver_name=None,
+    ):
         """
         Return a XOR linear trail, not necessarily the one with the lowest weight.
         By default, the search removes the key schedule, if any.
@@ -568,14 +625,19 @@ class MilpXorLinearModel(MilpModel):
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
-        solution['building_time'] = building_time
-        solution['test_name'] = "find_lowest_weight_xor_linear_trail"
+        solution["building_time"] = building_time
+        solution["test_name"] = "find_lowest_weight_xor_linear_trail"
 
         return solution
 
-    def find_one_xor_linear_trail_with_fixed_weight(self, fixed_weight, fixed_values=[],
-                                                    weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
-                                                    solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def find_one_xor_linear_trail_with_fixed_weight(
+        self,
+        fixed_weight,
+        fixed_values=[],
+        weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
+        solver_name=SOLVER_DEFAULT,
+        external_solver_name=None,
+    ):
         """
         Return one XOR linear trail with weight equal to ``fixed_weight`` as a list in standard format.
         By default, the search removes the key schedule, if any.
@@ -627,8 +689,8 @@ class MilpXorLinearModel(MilpModel):
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
-        solution['building_time'] = building_time
-        solution['test_name'] = "find_one_xor_linear_trail_with_fixed_weight"
+        solution["building_time"] = building_time
+        solution["test_name"] = "find_one_xor_linear_trail_with_fixed_weight"
 
         return solution
 
@@ -677,22 +739,26 @@ class MilpXorLinearModel(MilpModel):
             component_id = fixed_variable["component_id"]
             if fixed_variable["constraint_type"] == "equal":
                 for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                    constraints.append(x[component_id + '_' + str(bit_position) + '_o']
-                                       == fixed_variable["bit_values"][index])
+                    constraints.append(x[f"{component_id}_{bit_position}_o"] == fixed_variable["bit_values"][index])
             else:
                 for index, bit_position in enumerate(fixed_variable["bit_positions"]):
                     if fixed_variable["bit_values"][index]:
                         constraints.append(
-                            x[component_id + str(bit_position) + '_o' + "_not_equal_" +
-                              str(self._number_of_trails_found)] ==
-                            1 - x[component_id + '_' + str(bit_position) + '_o'])
+                            x[f"{component_id}{bit_position}_o_not_equal_{self._number_of_trails_found}"]
+                            == 1 - x[f"{component_id}_{bit_position}_o"]
+                        )
                     else:
                         constraints.append(
-                            x[component_id + str(bit_position) + '_o' + "_not_equal_" +
-                              str(self._number_of_trails_found)] == x[component_id + '_' + str(bit_position) + '_o'])
-                constraints.append(sum(
-                    x[component_id + str(i) + '_o' + "_not_equal_" + str(self._number_of_trails_found)] for i in
-                    fixed_variable["bit_positions"]) >= 1)
+                            x[f"{component_id}{bit_position}_o_not_equal_{self._number_of_trails_found}"]
+                            == x[f"{component_id}_{bit_position}_o"]
+                        )
+                constraints.append(
+                    sum(
+                        x[f"{component_id}{i}_o_not_equal_{self._number_of_trails_found}"]
+                        for i in fixed_variable["bit_positions"]
+                    )
+                    >= 1
+                )
 
         return constraints
 
@@ -700,29 +766,34 @@ class MilpXorLinearModel(MilpModel):
         fixed_variables = []
         for input in inputs_ids:
             input_bit_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(input)]
-            fixed_variable = {"component_id": input,
-                              "bit_positions": list(range(input_bit_size)),
-                              "constraint_type": "not_equal",
-                              "bit_values": integer_to_bit_list(
-                                  BitArray(solution["components_values"][input]["value"]).int,
-                                  input_bit_size, 'big')}
+            fixed_variable = {
+                "component_id": input,
+                "bit_positions": list(range(input_bit_size)),
+                "constraint_type": "not_equal",
+                "bit_values": integer_to_bit_list(
+                    BitArray(solution["components_values"][input]["value"]).int, input_bit_size, "big"
+                ),
+            }
             _filter_fixed_variables(fixed_values, fixed_variable, input)
             fixed_variables.append(fixed_variable)
         for component in self._cipher.get_all_components():
             output_bit_size = component.output_bit_size
-            fixed_variable = {"component_id": component.id,
-                              "bit_positions": list(range(output_bit_size)),
-                              "constraint_type": "not_equal",
-                              "bit_values": integer_to_bit_list(
-                                  BitArray(solution["components_values"][component.id + "_o"]["value"]).int,
-                                  output_bit_size, 'big')}
+            fixed_variable = {
+                "component_id": component.id,
+                "bit_positions": list(range(output_bit_size)),
+                "constraint_type": "not_equal",
+                "bit_values": integer_to_bit_list(
+                    BitArray(solution["components_values"][f"{component.id}_o"]["value"]).int, output_bit_size, "big"
+                ),
+            }
             _filter_fixed_variables(fixed_values, fixed_variable, component.id)
             fixed_variables.append(fixed_variable)
 
         return fixed_variables
 
-    def update_xor_linear_constraints_for_more_than_two_bits(self, constraints, input_vars,
-                                                             number_of_inputs, output_var, x):
+    def update_xor_linear_constraints_for_more_than_two_bits(
+        self, constraints, input_vars, number_of_inputs, output_var, x
+    ):
         update_dictionary_that_contains_xor_inequalities_between_n_input_bits(number_of_inputs)
         dict_inequalities = output_dictionary_that_contains_xor_inequalities()
         inequalities = dict_inequalities[number_of_inputs]
@@ -774,28 +845,26 @@ class MilpXorLinearModel(MilpModel):
         components_values = {}
         list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
         for component_id in list_component_ids:
-            dict_tmp = self._get_component_value_weight(component_id,
-                                                        objective_variables, components_variables)
+            dict_tmp = self._get_component_value_weight(component_id, objective_variables, components_variables)
             if component_id in self._cipher.inputs:
                 components_values[component_id] = dict_tmp[1]
-            elif 'cipher_output' not in component_id:
-                components_values[component_id + '_i'] = dict_tmp[0]
-                components_values[component_id + '_o'] = dict_tmp[1]
+            elif "cipher_output" not in component_id:
+                components_values[f"{component_id}_i"] = dict_tmp[0]
+                components_values[f"{component_id}_o"] = dict_tmp[1]
             else:
-                components_values[component_id + '_o'] = dict_tmp[1]
+                components_values[f"{component_id}_o"] = dict_tmp[1]
         return components_values
 
     def _parse_solver_output(self):
         mip = self._model
         objective_variables = mip.get_values(self._integer_variable)
-        objective_value = objective_variables[MILP_XOR_LINEAR_OBJECTIVE] / float(10 ** self._weight_precision)
+        objective_value = objective_variables[MILP_XOR_LINEAR_OBJECTIVE] / float(10**self._weight_precision)
         components_variables = mip.get_values(self._binary_variable)
         components_values = self._get_component_values(objective_variables, components_variables)
 
         return objective_value, components_values
 
     def _get_component_value_weight(self, component_id, probability_variables, components_variables):
-
         if component_id in self._cipher.inputs:
             output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
             input_size = output_size
@@ -810,15 +879,14 @@ class MilpXorLinearModel(MilpModel):
 
         return final_output
 
-    def _get_final_output(self, component_id, components_variables, probability_variables,
-                         suffix_dict):
+    def _get_final_output(self, component_id, components_variables, probability_variables, suffix_dict):
         final_output = []
         for suffix in suffix_dict.keys():
             mask_str = _get_variables_values_as_string(component_id, components_variables, suffix, suffix_dict[suffix])
             mask = _string_to_hex(mask_str)
             bias = 0
             if component_id + MILP_PROBABILITY_SUFFIX in probability_variables:
-                bias = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / float(10 ** self._weight_precision)
+                bias = probability_variables[component_id + MILP_PROBABILITY_SUFFIX] / float(10**self._weight_precision)
             final_output.append(set_component_solution(mask, bias, sign=1))
         return final_output
 

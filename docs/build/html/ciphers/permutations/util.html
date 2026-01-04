@@ -1,23 +1,24 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Util &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Util &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sage.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Tinyjambu permutation" href="tinyjambu_permutation.html" />
-    <link rel="prev" title="Keccak permutation" href="keccak_permutation.html" />
+    <link rel="next" title="Ascon sbox sigma no matrix permutation" href="ascon_sbox_sigma_no_matrix_permutation.html" />
+    <link rel="prev" title="Sparkle permutation" href="sparkle_permutation.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +34,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="tinyjambu_permutation.html" title="Tinyjambu permutation"
+          <a href="ascon_sbox_sigma_no_matrix_permutation.html" title="Ascon sbox sigma no matrix permutation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="keccak_permutation.html" title="Keccak permutation"
+          <a href="sparkle_permutation.html" title="Sparkle permutation"
              accesskey="P">previous</a> |</li>
   
     
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Util</a></li> 
       </ul>
@@ -56,7 +57,7 @@
           <div class="body" role="main">
             
   <section id="module-ciphers.permutations.util">
-<span id="util"></span><h1>Util<a class="headerlink" href="#module-ciphers.permutations.util" title="Permalink to this headline">¶</a></h1>
+<span id="util"></span><h1>Util<a class="headerlink" href="#module-ciphers.permutations.util" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="ciphers.permutations.util.add_intermediate_output_component_latin_dances_permutations">
 <span class="sig-name descname"><span class="pre">add_intermediate_output_component_latin_dances_permutations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">permutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rounds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.util.add_intermediate_output_component_latin_dances_permutations" title="Permalink to this definition">¶</a></dt>
@@ -83,6 +84,11 @@
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ciphers.permutations.util.print_state_ids">
+<span class="sig-name descname"><span class="pre">print_state_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.util.print_state_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ciphers.permutations.util.sub_quarter_round_latin_dances">
 <span class="sig-name descname"><span class="pre">sub_quarter_round_latin_dances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">permutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rot_amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cipher_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ciphers.permutations.util.sub_quarter_round_latin_dances" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -98,13 +104,13 @@
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="keccak_permutation.html"
-                          title="previous chapter">Keccak permutation</a></p>
+    <p class="topless"><a href="sparkle_permutation.html"
+                          title="previous chapter">Sparkle permutation</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="tinyjambu_permutation.html"
-                          title="next chapter">Tinyjambu permutation</a></p>
+    <p class="topless"><a href="ascon_sbox_sigma_no_matrix_permutation.html"
+                          title="next chapter">Ascon sbox sigma no matrix permutation</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -122,7 +128,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -137,10 +143,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="tinyjambu_permutation.html" title="Tinyjambu permutation"
+          <a href="ascon_sbox_sigma_no_matrix_permutation.html" title="Ascon sbox sigma no matrix permutation"
              >next</a> |</li>
         <li class="right" >
-          <a href="keccak_permutation.html" title="Keccak permutation"
+          <a href="sparkle_permutation.html" title="Sparkle permutation"
              >previous</a> |</li>
   
     
@@ -148,7 +154,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Util</a></li> 
       </ul>

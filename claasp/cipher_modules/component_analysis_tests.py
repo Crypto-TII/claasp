@@ -453,11 +453,11 @@ class CipherComponentsAnalysis:
             sage: CipherComponentsAnalysis(twofish)._is_mds(mix_column_component)
             True
 
-            sage: from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
+            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
-            sage: skinny = SkinnyBlockCipher(block_bit_size=128, key_bit_size=384, number_of_rounds=40)
-            sage: mix_column_component = skinny.get_component_from_id('mix_column_0_31')
-            sage: CipherComponentsAnalysis(skinny)._is_mds(mix_column_component)
+            sage: midori = MidoriBlockCipher()
+            sage: mix_column_component = midori.get_component_from_id('mix_column_0_20')
+            sage: CipherComponentsAnalysis(midori)._is_mds(mix_column_component)
             False
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
@@ -1063,10 +1063,10 @@ def has_maximal_branch_number(component):
         sage: has_maximal_branch_number(mix_column_component)
         True
 
-        sage: from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
+        sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
-        sage: skinny = SkinnyBlockCipher(block_bit_size=128, key_bit_size=384, number_of_rounds=40)
-        sage: mix_column_component = skinny.get_component_from_id('mix_column_0_31')
+        sage: midori = MidoriBlockCipher()
+        sage: mix_column_component = midori.get_component_from_id('mix_column_0_20')
         sage: has_maximal_branch_number(mix_column_component)
         False
 

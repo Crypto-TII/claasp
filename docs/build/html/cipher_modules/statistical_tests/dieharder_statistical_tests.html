@@ -1,22 +1,23 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Dieharder statistical tests &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Dieharder statistical tests &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sage.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Input data example" href="input_data_example.html" />
+    <link rel="next" title="Nist statistical tests" href="nist_statistical_tests.html" />
     <link rel="prev" title="Dataset generator" href="dataset_generator.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
@@ -33,7 +34,7 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="input_data_example.html" title="Input data example"
+          <a href="nist_statistical_tests.html" title="Nist statistical tests"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="dataset_generator.html" title="Dataset generator"
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Dieharder statistical tests</a></li> 
       </ul>
@@ -56,381 +57,41 @@
           <div class="body" role="main">
             
   <section id="module-cipher_modules.statistical_tests.dieharder_statistical_tests">
-<span id="dieharder-statistical-tests"></span><h1>Dieharder statistical tests<a class="headerlink" href="#module-cipher_modules.statistical_tests.dieharder_statistical_tests" title="Permalink to this headline">¶</a></h1>
+<span id="dieharder-statistical-tests"></span><h1>Dieharder statistical tests<a class="headerlink" href="#module-cipher_modules.statistical_tests.dieharder_statistical_tests" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DieharderTests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.generate_chart_all">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_generate_chart_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.generate_chart_all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the corresponding chart based on the parsed report dictionary.</p>
+<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.dieharder_statistical_tests">
+<span class="sig-name descname"><span class="pre">dieharder_statistical_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bits_in_one_sequence_dieharder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_sequences_dieharder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dieharder_report_folder_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dieharder_statistics_report'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dieharder_test_option</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.dieharder_statistical_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the Dieharder statistical tests.</p>
 <p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">report_dict</span></code> – the parsed result in a dictionary format</p></li>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">test_type</span></code> – string describing which test to run</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bits_in_one_sequence_dieharder</span></code> – integer parameter used to run the dieharder tests</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_sequences_dieharder</span></code> – integer parameter used to run the dieharder tests</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_index</span></code> – cipher input index</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">round_start</span></code> – first round to be considered in the cipher</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">round_end</span></code> – last round to be considered in the cipher</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_folder_prefix</span></code> - prefix for the unparsed dieharder tests output folder</p></li>
 </ul>
+</div></blockquote>
 <p>OUTPUT:</p>
-<ul class="simple">
-<li><p>save the chart with filename
-f’dieharder_{report_dict[“data_type”]}_{report_dict[“cipher_name”]}_round_{report_dict[“round”]}.png’</p></li>
+<blockquote>
+<div><ul class="simple">
+<li><p>The results are going to be saved in a dictionary format compatible with the Report class</p></li>
 </ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="o">.</span><span class="n">run_dieharder_statistical_tests_tool_interactively</span><span class="p">(</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">....: </span>    <span class="sa">f</span><span class="s1">&#39;claasp/cipher_modules/statistical_tests/input_data_example&#39;</span><span class="p">,</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">....: </span><span class="p">)</span> <span class="c1"># long time # doctest: +SKIP</span>
-<span class="go">...</span>
-<span class="go">Dieharder Tests Finished!!!</span>
-
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="nb">dict</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="o">.</span><span class="n">parse_report</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;dieharder_test_output.txt&#39;</span><span class="p">)</span> <span class="c1"># doctest: +SKIP</span>
-<span class="go">Parsing dieharder_test_output.txt is in progress.</span>
-<span class="go">Parsing dieharder_test_output.txt is finished.</span>
-
-<span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;data_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;random&#39;</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;cipher_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;toy_cipher&#39;</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;round&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;rounds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">dict_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">DieharderTests</span><span class="o">.</span><span class="n">_generate_chart_all</span><span class="p">(</span><span class="n">dict_list</span><span class="p">)</span> <span class="c1"># doctest: +SKIP</span>
-<span class="go">Drawing chart for all rounds is in progress.</span>
-<span class="go">Drawing chart for all rounds is in finished. Please find the chart in file dieharder_random_toy_cipher.png.</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.generate_chart_round">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_generate_chart_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.generate_chart_round" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the corresponding chart based on the parsed report dictionary.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">report_dict</span></code> – the parsed result in a dictionary format</p></li>
-</ul>
-<p>OUTPUT:</p>
-<ul class="simple">
-<li><p>save the chart with filename
-f’dieharder_{report_dict[“data_type”]}_{report_dict[“cipher_name”]}_round_{report_dict[“round”]}.png’</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="o">.</span><span class="n">run_dieharder_statistical_tests_tool_interactively</span><span class="p">(</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">....: </span>    <span class="sa">f</span><span class="s1">&#39;claasp/cipher_modules/statistical_tests/input_data_example&#39;</span><span class="p">,</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">....: </span><span class="p">)</span> <span class="c1"># long time # doctest: +SKIP</span>
-<span class="go">...</span>
-<span class="go">Dieharder Tests Finished!!!</span>
-
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="nb">dict</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="o">.</span><span class="n">parse_report</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;dieharder_test_output.txt&#39;</span><span class="p">)</span> <span class="c1"># doctest: +SKIP</span>
-<span class="go">Parsing dieharder_test_output.txt is in progress.</span>
-<span class="go">Parsing dieharder_test_output.txt is finished.</span>
-
-<span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;data_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;random&#39;</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;data_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;random&#39;</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;cipher_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;toy_cipher&#39;</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;round&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="nb">dict</span><span class="p">[</span><span class="s1">&#39;rounds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">DieharderTests</span><span class="o">.</span><span class="n">_generate_chart_round</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span> <span class="c1"># doctest: +SKIP</span>
-<span class="go">Drawing round 1 is in progress.</span>
-<span class="go">Drawing round 1 is finished. Please find the chart in file dieharder_random_toy_cipher_round_1.png.</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.parse_report">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.parse_report" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse the dieharder statistical tests report. It will return the parsed result in a dictionary format.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">report_filename</span></code> – the filename of the report you need to parse</p></li>
-</ul>
-<p>OUTPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">report_dict</span></code> – return the parsed result in a dictionary format</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="o">.</span><span class="n">run_dieharder_statistical_tests_tool_interactively</span><span class="p">(</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">....: </span>    <span class="sa">f</span><span class="s1">&#39;claasp/cipher_modules/statistical_tests/input_data_example&#39;</span><span class="p">,</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">....: </span><span class="p">)</span> <span class="c1"># long time # doctest: +SKIP</span>
-<span class="go">...</span>
-<span class="go">Dieharder Tests Finished!!!</span>
-
-<span class="gp">sage: </span><span class="nb">dict</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="o">.</span><span class="n">parse_report</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;dieharder_test_output.txt&#39;</span><span class="p">)</span> <span class="c1"># doctest: +SKIP</span>
-<span class="go">Parsing dieharder_test_output.txt is in progress.</span>
-<span class="go">Parsing dieharder_test_output.txt is finished.</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_CBC_dieharder_statistics_test">
-<span class="sig-name descname"><span class="pre">run_CBC_dieharder_statistics_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples_in_one_line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_blocks_in_one_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8192</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dieharder_report_folder_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dieharder_statistics_report'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FLAG_CHART</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_CBC_dieharder_statistics_test" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the CBC test.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">input_index</span></code> – <strong>integer</strong>; the index of inputs to generate testing data. For example, inputs=[key, plaintext],
-input_index=0 means it will generate the key avalanche dataset. if input_index=1 means it will generate the
-plaintext avalanche dataset</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_samples_in_one_line</span></code> – <strong>integer</strong>; how many testing data should be generated in one line should be
-passed to the statistical test tool.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_lines</span></code> – <strong>integer</strong>; how many lines should be passed to the statistical test tool</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_blocks_in_one_sample</span></code> – <strong>integer</strong> (default: <span class="math">8192</span>); how many blocks should be generated in
-one test sequence</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_start</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test starts (includes, index
-starts from 0)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_end</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test ends (excludes, index starts
-from 0), if set to 0, means run to the last round</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_folder_prefix</span></code> – <strong>string</strong> (default: <span class="math">dieharder_statistics_report</span>); the folder to save
-the generated statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from dieharder statistical test if set to
-True</p></li>
-</ul>
-<p>OUTPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_dicts</span></code> – Dictionary-structure result parsed from dieharder statistical report. One could
-also see the corresponding report generated under the folder dieharder_statistics_report folder</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="n">F</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="p">(</span><span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_CBC_dieharder_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># long time # doctest: +SKIP</span>
-<span class="go">...</span>
-<span class="go">Dieharder Tests Finished!!!</span>
-<span class="go">...</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_avalanche_dieharder_statistics_test">
-<span class="sig-name descname"><span class="pre">run_avalanche_dieharder_statistics_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples_in_one_line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dieharder_report_folder_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dieharder_statistics_report'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FLAG_CHART</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_avalanche_dieharder_statistics_test" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the avalanche test.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">input_index</span></code> – <strong>integer</strong>; the index of inputs to generate testing data. For example,
-inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
-means it will generate the plaintext avalanche dataset</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_samples_in_one_line</span></code> – <strong>integer</strong>; how many testing data should be generated in one line should
-be passed to the statistical test tool</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_lines</span></code> – <strong>integer</strong>; how many lines should be passed to the statistical test tool</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_start</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test starts (includes, index
-starts from 0)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_end</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test ends (excludes, index starts
-from 0). If set to 0, means run to the last round</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_folder_prefix</span></code> – <strong>string</strong> (default: <span class="math">dieharder_statistics_report</span>); the folder to save
-the generated statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from dieharder statistical test if set to
-True</p></li>
-</ul>
-<p>OUTPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_dicts</span></code> – Dictionary-structure result parsed from dieharder statistical report. One could
-also see the corresponding report under the dieharder_statistics_report folder</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="n">F</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="p">(</span><span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_avalanche_dieharder_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># long time # doctest: +SKIP</span>
-<span class="go">...</span>
-<span class="go">Dieharder Tests Finished!!!</span>
-<span class="go">...</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_correlation_dieharder_statistics_test">
-<span class="sig-name descname"><span class="pre">run_correlation_dieharder_statistics_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples_in_one_line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_blocks_in_one_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dieharder_report_folder_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dieharder_statistics_report'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FLAG_CHART</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_correlation_dieharder_statistics_test" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the correlation test.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">input_index</span></code> – <strong>integer</strong>; the index of inputs to generate testing data. For example, inputs=[key, plaintext],
-input_index=0 means it will generate the key avalanche dataset. if input_index=1 means it will generate the
-plaintext avalanche dataset</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_samples_in_one_line</span></code> – <strong>integer</strong>; how many testing data should be generated in one line should be
-passed to the statistical test tool</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_lines</span></code> – <strong>integer</strong>; how many lines should be passed to the statistical test tool</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_blocks_in_one_sample</span></code> – <strong>integer</strong> (default: <a href="#id1"><span class="problematic" id="id2">``</span></a>8128); how many blocks should be generated in
-one test sequence</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_start</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test starts (includes, index
-starts from 0)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_end</span></code> –  <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test ends (excludes, index starts
-from 0), if set to 0, means run to the last round</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_folder_prefix</span></code> – <strong>string</strong> (default: <span class="math">dieharder_statistics_report</span>); the folder to save
-the generated statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from dieharder statistical test if set to
-True</p></li>
-</ul>
-<p>OUTPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_dicts</span></code> – Dictionary-structure result parsed from dieharder statistical report. One could
-also see the corresponding report generated under the folder dieharder_statistics_report folder</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="n">F</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="p">(</span><span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_correlation_dieharder_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># long time # doctest: +SKIP</span>
-<span class="go">...</span>
-<span class="go">Dieharder Tests Finished!!!</span>
-<span class="go">...</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_dieharder_statistical_tests_tool_interactively">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run_dieharder_statistical_tests_tool_interactively</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_dieharder_statistical_tests_tool_interactively" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run dieharder tests using the Dieharder library [1]. The result will be in dieharder_test_output.txt.</p>
-<p>[1] <a class="reference external" href="https://webhome.phy.duke.edu/~rgb/General/dieharder.php">https://webhome.phy.duke.edu/~rgb/General/dieharder.php</a></p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">input_file</span></code> – file containing the bit streams</p></li>
-</ul>
-<p>OUTPUT:</p>
-<ul class="simple">
-<li><p>the result would be saved as <code class="docutils literal notranslate"><span class="pre">dieharder_test_output.txt</span></code></p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="o">.</span><span class="n">run_dieharder_statistical_tests_tool_interactively</span><span class="p">(</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">....: </span>    <span class="sa">f</span><span class="s1">&#39;claasp/cipher_modules/statistical_tests/input_data_example&#39;</span><span class="p">,</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">....: </span><span class="p">)</span> <span class="c1"># long time # doctest: +SKIP</span>
-<span class="go">...</span>
-<span class="go">Dieharder Tests Finished!!!</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_high_density_dieharder_statistics_test">
-<span class="sig-name descname"><span class="pre">run_high_density_dieharder_statistics_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples_in_one_line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dieharder_report_folder_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dieharder_statistics_report'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FLAG_CHART</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_high_density_dieharder_statistics_test" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the high density test.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">input_index</span></code> – <strong>integer</strong>; the index of inputs to generate testing data. For example,
-inputs=[key, plaintext], input_index=0 means it will generate the key avalanche dataset. if input_index=1
-means it will generate the plaintext avalanche dataset</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_samples_in_one_line</span></code> – <strong>integer</strong>; how many testing data should be generated in one line should
-be passed to the statistical test tool.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_lines</span></code> – <strong>integer</strong>; how many lines should be passed to the statistical test tool</p></li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">ratio</span></code> – the ratio of weight 2 (that is, two 1 in the input) as high density inputs, range in [0, 1].</dt><dd><p>For example, if ratio = 0.5, means half of the weight 2 high density inputs will be taken as inputs.</p>
-</dd>
-</dl>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_start</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test starts
-(includes, index starts from 0)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_end</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test ends
-(excludes, index starts from 0), if set to 0,
-means run to the last round.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_folder_prefix</span></code> – <strong>string</strong> (default: <span class="math">dieharder_statistics_report</span>); The folder to save
-the generated statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from dieharder statistical test if set to
-True</p></li>
-</ul>
-<p>OUTPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_dicts</span></code> – Dictionary-structure result parsed from dieharder statistical report. One could
-also see the corresponding report generated under the folder dieharder_statistics_report folder</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="n">F</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="p">(</span><span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_high_density_dieharder_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># long time # doctest: +SKIP</span>
-<span class="go">...</span>
-<span class="go">Dieharder Tests Finished!!!</span>
-<span class="go">...</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_low_density_dieharder_statistics_test">
-<span class="sig-name descname"><span class="pre">run_low_density_dieharder_statistics_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples_in_one_line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dieharder_report_folder_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dieharder_statistics_report'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FLAG_CHART</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_low_density_dieharder_statistics_test" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the low density test.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">input_index</span></code> – <strong>integer</strong>; the index of inputs to generate testing data. For example, inputs=[key, plaintext],
-input_index=0 means it will generate the key avalanche dataset. if input_index=1 means it will generate the
-plaintext avalanche dataset</p></li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">number_of_samples_in_one_line</span></code> – <strong>integer</strong>; how many testing data should be generated in one line should be</dt><dd><p>passed to the statistical test tool</p>
-</dd>
-</dl>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_lines</span></code> – <strong>integer</strong>; how many lines should be passed to the statistical test tool</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ratio</span></code> – <strong>number</strong> (default: <span class="math">1</span>); the ratio of weight 2 (that is, two 1 in the input) as low density
-inputs, range in [0, 1]. For example, if ratio = 0.5, means half of the weight 2 low density inputs will be
-taken as inputs</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_start</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test starts (includes, index
-starts from 0)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_end</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test ends (excludes, index starts
-from 0), if set to 0, means run to the last round</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_folder_prefix</span></code> – <strong>string</strong> (default: <span class="math">dieharder_statistics_report</span>); the folder to save
-the generated statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from dieharder statistical test if set to
-True</p></li>
-</ul>
-<p>OUTPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_dicts</span></code> – Dictionary-structure result parsed from dieharder statistical report. One could
-also see the corresponding report generated under the folder dieharder_statistics_report folder</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="n">F</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="p">(</span><span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_low_density_dieharder_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># long time # doctest: +SKIP</span>
-<span class="go">...</span>
-<span class="go">Dieharder Tests Finished!!!</span>
-<span class="go">...</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_random_dieharder_statistics_test">
-<span class="sig-name descname"><span class="pre">run_random_dieharder_statistics_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples_in_one_line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_blocks_in_one_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dieharder_report_folder_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dieharder_statistics_report'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FLAG_CHART</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.statistical_tests.dieharder_statistical_tests.DieharderTests.run_random_dieharder_statistics_test" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the random test.</p>
-<p>INPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">input_index</span></code> – <strong>integer</strong>; the index of inputs to generate testing data. For example, inputs=[key, plaintext],
-input_index=0 means it will generate the key avalanche dataset. if input_index=1 means it will generate the
-plaintext avalanche dataset</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_samples_in_one_line</span></code> – <strong>integer</strong>; how many testing data should be generated in one line should be
-passed to the statistical test tool</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_lines</span></code> – <strong>integer</strong>; how many lines should be passed to the statistical test tool</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_blocks_in_one_sample</span></code> – how many blocks should be generated in one test sequence</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_start</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test starts (includes, index
-starts from 0)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">round_end</span></code> – <strong>integer</strong> (default: <span class="math">0</span>); the round that the statistical test ends (excludes, index starts
-from 0), if set to 0, means run to the last round</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_folder_prefix</span></code> – <strong>string</strong> (default: <span class="math">dieharder_statistics_report</span>); the folder to save
-the generated statistics report from NIST STS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FLAG_CHART</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); draw the chart from dieharder statistical test if set to
-True</p></li>
-</ul>
-<p>OUTPUT:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">dieharder_report_dicts</span></code> – Dictionary-structure result parsed from dieharder statistical report. One could
-also see the corresponding report generated under the folder dieharder_statistics_report folder</p></li>
-</ul>
-<p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.statistical_tests.dieharder_statistical_tests</span> <span class="kn">import</span> <span class="n">DieharderTests</span>
-<span class="gp">sage: </span><span class="n">F</span> <span class="o">=</span> <span class="n">DieharderTests</span><span class="p">(</span><span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
-<span class="gp">sage: </span><span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">run_random_dieharder_statistics_test</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">round_end</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># long time # doctest: +SKIP</span>
-<span class="go">...</span>
-<span class="go">Dieharder Tests Finished!!!</span>
-<span class="go">...</span>
-</pre></div>
-</div>
+</div></blockquote>
+<p>EXAMPLE:</p>
+<blockquote>
+<div><p>from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+speck = SpeckBlockCipher(number_of_rounds=5)
+dieharder_tests = DieharderTests(speck)
+dieharder_avalanche_test_results = dieharder_tests.dieharder_statistical_tests(‘avalanche’)</p>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -451,8 +112,8 @@ also see the corresponding report generated under the folder dieharder_statistic
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="input_data_example.html"
-                          title="next chapter">Input data example</a></p>
+    <p class="topless"><a href="nist_statistical_tests.html"
+                          title="next chapter">Nist statistical tests</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -470,7 +131,7 @@ also see the corresponding report generated under the folder dieharder_statistic
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -485,7 +146,7 @@ also see the corresponding report generated under the folder dieharder_statistic
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="input_data_example.html" title="Input data example"
+          <a href="nist_statistical_tests.html" title="Nist statistical tests"
              >next</a> |</li>
         <li class="right" >
           <a href="dataset_generator.html" title="Dataset generator"
@@ -496,7 +157,7 @@ also see the corresponding report generated under the folder dieharder_statistic
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Dieharder statistical tests</a></li> 
       </ul>

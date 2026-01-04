@@ -1,23 +1,24 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Utils &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Utils &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sage.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Minizinc model" href="minizinc/minizinc_model.html" />
-    <link rel="prev" title="Continuous tests" href="../continuous_tests.html" />
+    <link rel="next" title="Mzn model" href="cp/mzn_model.html" />
+    <link rel="prev" title="Generic functions vectorized bit" href="../generic_functions_vectorized_bit.html" />
     <link rel="icon" href="../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +34,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="minizinc/minizinc_model.html" title="Minizinc model"
+          <a href="cp/mzn_model.html" title="Mzn model"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../continuous_tests.html" title="Continuous tests"
+          <a href="../generic_functions_vectorized_bit.html" title="Generic functions vectorized bit"
              accesskey="P">previous</a> |</li>
   
     
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Utils</a></li> 
       </ul>
@@ -56,15 +57,20 @@
           <div class="body" role="main">
             
   <section id="module-cipher_modules.models.utils">
-<span id="utils"></span><h1>Utils<a class="headerlink" href="#module-cipher_modules.models.utils" title="Permalink to this headline">¶</a></h1>
+<span id="utils"></span><h1>Utils<a class="headerlink" href="#module-cipher_modules.models.utils" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.utils.add_arcs">
 <span class="sig-name descname"><span class="pre">add_arcs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arcs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curr_input_bit_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output_arcs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_output_bit_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.add_arcs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.utils.check_if_implemented_component">
+<span class="sig-name descname"><span class="pre">check_if_implemented_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.check_if_implemented_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.utils.convert_solver_solution_to_dictionary">
-<span class="sig-name descname"><span class="pre">convert_solver_solution_to_dictionary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.convert_solver_solution_to_dictionary" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">convert_solver_solution_to_dictionary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.convert_solver_solution_to_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a dictionary that represents the solution obtained from the solver.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -86,7 +92,7 @@ dictionary whose keys are <code class="docutils literal notranslate"><span class
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">convert_solver_solution_to_dictionary</span><span class="p">(</span><span class="n">speck</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;xor_differential&#39;</span><span class="p">,</span> <span class="s1">&#39;z3&#39;</span><span class="p">,</span> <span class="mf">0.239</span><span class="p">,</span> <span class="mf">175.5</span><span class="p">,</span> <span class="p">[],</span> <span class="mi">0</span><span class="p">)</span>
-<span class="go">{&#39;cipher_id&#39;: &#39;speck_p32_k64_o32_r4&#39;,</span>
+<span class="go">{&#39;cipher&#39;: &#39;speck_p32_k64_o32_r4&#39;,</span>
 <span class="go"> &#39;components_values&#39;: [],</span>
 <span class="go"> &#39;memory_megabytes&#39;: 175.500000000000,</span>
 <span class="go"> &#39;model_type&#39;: &#39;xor_differential&#39;,</span>
@@ -98,9 +104,46 @@ dictionary whose keys are <code class="docutils literal notranslate"><span class
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="cipher_modules.models.utils.create_directory">
-<span class="sig-name descname"><span class="pre">create_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">library_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.create_directory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="cipher_modules.models.utils.differential_checker_permutation">
+<span class="sig-name descname"><span class="pre">differential_checker_permutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.differential_checker_permutation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies experimentally differential distinguishers for permutations using the vectorized evaluator</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.utils.differential_linear_checker_for_block_cipher_single_key">
+<span class="sig-name descname"><span class="pre">differential_linear_checker_for_block_cipher_single_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.differential_linear_checker_for_block_cipher_single_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.utils.differential_linear_checker_for_permutation">
+<span class="sig-name descname"><span class="pre">differential_linear_checker_for_permutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.differential_linear_checker_for_permutation" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method helps to verify experimentally differential-linear distinguishers for permutations using the vectorized evaluator</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.utils.differential_truncated_checker_permutation">
+<span class="sig-name descname"><span class="pre">differential_truncated_checker_permutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.differential_truncated_checker_permutation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies experimentally differential-truncated distinguishers for permutations in the single-key scenario</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.utils.differential_truncated_checker_single_key">
+<span class="sig-name descname"><span class="pre">differential_truncated_checker_single_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.differential_truncated_checker_single_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies experimentally differential-truncated distinguishers for block_ciphers in the single-key scenario</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.utils.extract_bit_positions">
+<span class="sig-name descname"><span class="pre">extract_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.extract_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts bit positions from a binary+unknows string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.utils.extract_bits">
+<span class="sig-name descname"><span class="pre">extract_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.extract_bits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts the bits from columns at the specified positions.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.utils.find_sign_for_one_xor_linear_trail">
@@ -183,11 +226,6 @@ which are the end point of an arc in cipher for the relative key.</p>
 </pre></div>
 </div>
 </dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="cipher_modules.models.utils.get_library_path">
-<span class="sig-name descname"><span class="pre">get_library_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.get_library_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.utils.get_previous_output_bit_ids">
@@ -366,6 +404,18 @@ bit_values list will be padded with ‘0’ values, otherwise bit_values will be
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.utils.shared_difference_paired_input_differential_checker_permutation">
+<span class="sig-name descname"><span class="pre">shared_difference_paired_input_differential_checker_permutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.shared_difference_paired_input_differential_checker_permutation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies experimentally SharedDifferencePairedInputDifferential distinguishers for permutations using the vectorized evaluator</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.utils.shared_difference_paired_input_differential_linear_checker_permutation">
+<span class="sig-name descname"><span class="pre">shared_difference_paired_input_differential_linear_checker_permutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.shared_difference_paired_input_differential_linear_checker_permutation" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method helps to verify experimentally SharedDifferencePairedInputDifferentialLinear distinguishers for permutations using the vectorized evaluator</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.utils.to_bias_for_correlation_measure">
 <span class="sig-name descname"><span class="pre">to_bias_for_correlation_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.to_bias_for_correlation_measure" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -514,17 +564,12 @@ of the file is: [graph_representation_of_the_cipher]_[solver_type].txt (e.g. spe
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="cipher_modules.models.utils.write_solution_into_a_file">
-<span class="sig-name descname"><span class="pre">write_solution_into_a_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution_to_write</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.write_solution_into_a_file" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.models.utils.write_solution_to_file">
-<span class="sig-name descname"><span class="pre">write_solution_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solution_to_write</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.write_solution_to_file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">write_solution_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.utils.write_solution_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the solver solution into a file.</p>
 <p>INPUT:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">solution_to_write</span></code> – <strong>dictionary</strong>; the solution in standard format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solution</span></code> – <strong>dictionary</strong>; the solution in standard format</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">file_path</span></code> – <strong>string</strong>; the entire path of the file that will contain the solution</p></li>
 </ul>
 <div class="admonition seealso">
@@ -565,13 +610,13 @@ E.g. claasp/previous_results/speck/sat/speck32_64_r22_cryptominisat.py</p>
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="../continuous_tests.html"
-                          title="previous chapter">Continuous tests</a></p>
+    <p class="topless"><a href="../generic_functions_vectorized_bit.html"
+                          title="previous chapter">Generic functions vectorized bit</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="minizinc/minizinc_model.html"
-                          title="next chapter">Minizinc model</a></p>
+    <p class="topless"><a href="cp/mzn_model.html"
+                          title="next chapter">Mzn model</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -589,7 +634,7 @@ E.g. claasp/previous_results/speck/sat/speck32_64_r22_cryptominisat.py</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -604,10 +649,10 @@ E.g. claasp/previous_results/speck/sat/speck32_64_r22_cryptominisat.py</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="minizinc/minizinc_model.html" title="Minizinc model"
+          <a href="cp/mzn_model.html" title="Mzn model"
              >next</a> |</li>
         <li class="right" >
-          <a href="../continuous_tests.html" title="Continuous tests"
+          <a href="../generic_functions_vectorized_bit.html" title="Generic functions vectorized bit"
              >previous</a> |</li>
   
     
@@ -615,7 +660,7 @@ E.g. claasp/previous_results/speck/sat/speck32_64_r22_cryptominisat.py</p>
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Utils</a></li> 
       </ul>
