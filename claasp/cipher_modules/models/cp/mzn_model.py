@@ -161,12 +161,23 @@ class MznModel:
         component_solution["weight"] = component_weight
         components_values[f"solution{solution_number}"][f"{component}"] = component_solution
 
-    def build_generic_cp_model_from_dictionary(self, component_and_model_types):
+    def build_generic_cp_model_from_dictionary(self, component_and_model_types, fixed_variables=None):
+        variables = []
         self._variables_list = []
-        self._model_constraints = []
 
+        fixed_constraints = []
+        if fixed_variables:
+            if hasattr(self, "fix_variables_value_constraints_for_ARX"):
+                fixed_constraints = self.fix_variables_value_constraints_for_ARX(
+                    fixed_variables
+                )
+            else:
+                fixed_constraints = self.fix_variables_value_constraints(
+                    fixed_variables
+                )
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
         operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+        self._model_constraints = fixed_constraints
 
         for component_and_model_type in component_and_model_types:
             component = component_and_model_type["component_object"]

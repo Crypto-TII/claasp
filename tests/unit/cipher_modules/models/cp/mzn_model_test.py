@@ -13,6 +13,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_cipher_model_arx_optimized i
 from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized import (
     MznDeterministicTruncatedXorDifferentialModelARXOptimized,
 )
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
 from minizinc import Model, Solver, Instance, Status
 
@@ -134,11 +135,6 @@ def test_build_generic_cp_model_from_dictionary():
             "model_type": "minizinc_xor_differential_propagation_constraints"
         })
 
-    model.build_generic_cp_model_from_dictionary(component_and_model_types)
-
-    #Caso especial para ARX
-    model.init_constraints()
-
     fixed_variables = []
 
     fixed_variables.append(
@@ -168,8 +164,64 @@ def test_build_generic_cp_model_from_dictionary():
         )
     )
 
-    constraints = model.fix_variables_value_constraints_for_ARX(fixed_variables)
+    model.build_generic_cp_model_from_dictionary(component_and_model_types, fixed_variables)
 
+    #Caso especial para ARX
+    model.init_constraints()
+
+    result = model.solve_for_ARX(solver_name="cp-sat")
+
+    assert result.status in {
+        Status.SATISFIED,
+        Status.OPTIMAL_SOLUTION,
+        Status.ALL_SOLUTIONS,
+    }
+
+def test_build_generic_cp_model_from_dictionary_xor_linear():
+    
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    model = MznXorLinearModel(speck)
+    component_and_model_types = []
+
+    for component in speck.get_all_components():
+        component_and_model_types.append({
+            "component_object": component,
+            "model_type": "cp_xor_linear_mask_propagation_constraints"
+        })
+    
+    fixed_variables = []
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="plaintext",
+            constraint_type="equal",
+            bit_positions=list(range(32)),
+            bit_values=integer_to_bit_list(0x00400000, 32, 'big')
+        )
+    )
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="key",
+            constraint_type="equal",
+            bit_positions=list(range(64)),
+            bit_values=[0] * 64
+        )
+    )
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="cipher_output_2_12",
+            constraint_type="equal",
+            bit_positions=list(range(32)),
+            bit_values=integer_to_bit_list(0x8000840a, 32, 'big')
+        )
+    )
+
+    model.build_generic_cp_model_from_dictionary(component_and_model_types, fixed_variables)
+
+    model.initialise_model()
+    
     result = model.solve_for_ARX(solver_name="cp-sat")
 
     assert result.status in {
