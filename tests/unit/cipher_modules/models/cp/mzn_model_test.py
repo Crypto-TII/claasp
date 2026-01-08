@@ -125,6 +125,15 @@ def test_model_constraints():
 
 def test_build_generic_cp_model_from_dictionary():
 
+    """
+    Differential ARX validation for Speck.
+
+    The input and output differences used in the tests are taken from
+    Table 4 (Differential Characteristics for Speck32/48/64) of:
+
+    Kai Fu et al., "MILP-Based Automatic Search Algorithms for
+    Differential and Linear Trails for Speck", https://eprint.iacr.org/2016/407.pdf
+    """
     speck = SpeckBlockCipher(number_of_rounds=3)
     model = MznXorDifferentialModelARXOptimized(speck)
     component_and_model_types = []
@@ -142,7 +151,7 @@ def test_build_generic_cp_model_from_dictionary():
             component_id="plaintext",
             constraint_type="equal",
             bit_positions=list(range(32)),
-            bit_values=integer_to_bit_list(0x00400000, 32, 'big')
+            bit_values=integer_to_bit_list(0x02110A04, 32, 'big')
         )
     )
 
@@ -160,7 +169,7 @@ def test_build_generic_cp_model_from_dictionary():
             component_id="cipher_output_2_12",
             constraint_type="equal",
             bit_positions=list(range(32)),
-            bit_values=integer_to_bit_list(0x8000840a, 32, 'big')
+            bit_values=integer_to_bit_list(0x80008000, 32, 'big')
         )
     )
 
@@ -178,7 +187,15 @@ def test_build_generic_cp_model_from_dictionary():
     }
 
 def test_build_generic_cp_model_from_dictionary_xor_linear():
-    
+    """
+    Linear validation for Speck.
+
+    The linear input/output masks used in the tests are taken from
+    Table 6 of:
+
+    Kai Fu et al., "MILP-Based Automatic Search Algorithms for
+    Differential and Linear Trails for Speck", https://eprint.iacr.org/2016/407.pdf
+    """
     speck = SpeckBlockCipher(number_of_rounds=3)
     model = MznXorLinearModel(speck)
     component_and_model_types = []
@@ -196,7 +213,7 @@ def test_build_generic_cp_model_from_dictionary_xor_linear():
             component_id="plaintext",
             constraint_type="equal",
             bit_positions=list(range(32)),
-            bit_values=integer_to_bit_list(0x00400000, 32, 'big')
+            bit_values=integer_to_bit_list(0x03805224, 32, 'big')
         )
     )
 
@@ -214,7 +231,7 @@ def test_build_generic_cp_model_from_dictionary_xor_linear():
             component_id="cipher_output_2_12",
             constraint_type="equal",
             bit_positions=list(range(32)),
-            bit_values=integer_to_bit_list(0x8000840a, 32, 'big')
+            bit_values=integer_to_bit_list(0x40A000C1, 32, 'big')
         )
     )
 

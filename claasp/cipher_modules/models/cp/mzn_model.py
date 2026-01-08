@@ -187,8 +187,8 @@ class MznModel:
                     WORD_OPERATION == component.type and operation not in operation_types):
                 print(f'{component.id} not yet implemented')
             else:
-                cp_continuous_differential_propagation_constraints = getattr(component, model_type)
-                variables, constraints = cp_continuous_differential_propagation_constraints(self)
+                cp_generic_propagation_constraints = getattr(component, model_type)
+                variables, constraints = cp_generic_propagation_constraints(self)
                 self._model_constraints.extend(constraints)
                 self._variables_list.extend(variables)
 
