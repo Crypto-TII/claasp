@@ -17,7 +17,7 @@ from claasp.cipher_modules.models.utils import (
 )
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, SATISFIABLE
 
 
@@ -392,7 +392,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
 
 def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     """Test for finding a XOR regular truncated differential trail with fixed weight for 4 rounds of ChaCha cipher."""
-    chacha = ChachaPermutation(number_of_rounds=3)
+    chacha = ChachaPermutation(number_of_rounds=3, round_mode=ROUND_MODE_HALF)
     bottom_part_components = []
     for round_number in range(2, 3):
         bottom_part_components.append(chacha.get_components_in_round(round_number))
