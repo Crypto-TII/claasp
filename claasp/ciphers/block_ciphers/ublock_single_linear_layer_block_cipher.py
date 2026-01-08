@@ -58,34 +58,45 @@ RC = [
 # fmt: on
 
 
-def generate_ublock_matrix(n, shift0, shift1, shift2, permutation_left, permutation_right):
+def generate_ublock_matrix(n, shift0, shift1, shift2, permutation_left, permutation_right, nibblewise=False):
+    if nibblewise:
+        size = 2
+        wordsize = 8
+    else:
+        size = 8
+        wordsize = 32
+
     matrix = [[i] for i in range(n)]
     BITWISE_PERMUTATION = []
     for i in permutation_left:
-        BITWISE_PERMUTATION.extend(list(range(i * (n // 16), i * (n // 16) + (n // 16))))
+        BITWISE_PERMUTATION.extend(list(range(i * size, (i + 1) * size)))
     for i in permutation_right:
-        BITWISE_PERMUTATION.extend(list(range(i * (n // 16) + n // 2, i * (n // 16) + n // 2 + (n // 16))))
+        BITWISE_PERMUTATION.extend(list(range(i * size + n // 2, (i + 1) * size + n // 2)))
 
     for i in range(0, n // 2):
         matrix[i + n // 2].extend(matrix[i].copy())
 
-    vector = matrix[n // 2 : (n - n // 4)][shift0:] + matrix[n // 2 : n - n // 4][:shift0]
-    vector += matrix[n - n // 4 : n][shift0:] + matrix[n - n // 4 : n][:shift0]
+    vector = []
+    for i in range(n // 2, n, wordsize):
+        vector += matrix[i : i + wordsize][shift0:] + matrix[i : i + wordsize][:shift0]
     for i in range(0, n // 2):
         matrix[i].extend(vector[i])
 
-    vector1 = matrix[0 : n // 4][shift1:] + matrix[0 : n // 4][:shift1]
-    vector1 += matrix[n // 4 : n // 2][shift1:] + matrix[n // 4 : n // 2][:shift1]
+    vector1 = []
+    for i in range(0, n // 2, wordsize):
+        vector1 += matrix[i : i + wordsize][shift1:] + matrix[i : i + wordsize][:shift1]
     for i in range(n // 2, n):
         matrix[i].extend(vector1[i - n // 2])
 
-    vector2 = matrix[n // 2 : n - n // 4][shift1:] + matrix[n // 2 : n - n // 4][:shift1]
-    vector2 += matrix[n - n // 4 : n][shift1:] + matrix[n - n // 4 : n][:shift1]
+    vector2 = []
+    for i in range(n // 2, n, wordsize):
+        vector2 += matrix[i : i + wordsize][shift1:] + matrix[i : i + wordsize][:shift1]
     for i in range(0, n // 2):
         matrix[i].extend(vector2[i])
 
-    vector3 = matrix[0 : n // 4][shift2:] + matrix[0 : n // 4][:shift2]
-    vector3 += matrix[n // 4 : n // 2][shift2:] + matrix[n // 4 : n // 2][:shift2]
+    vector3 = []
+    for i in range(0, n // 2, wordsize):
+        vector3 += matrix[i : i + wordsize][shift2:] + matrix[i : i + wordsize][:shift2]
     for i in range(n // 2, n):
         matrix[i].extend(vector3[i - n // 2])
 
@@ -158,7 +169,10 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             elif self.key_bit_size == 256:
                 self.pk = PK[1]
             else:
-                print("The round_key size of block size 128 should be 128 or 256.", file=sys.stderr)
+                print(
+                    "The round_key size of block size 128 should be 128 or 256.",
+                    file=sys.stderr,
+                )
                 sys.exit(1)
         elif self.block_bit_size == 256:
             self.pl = PL[1]
@@ -166,7 +180,10 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             if self.key_bit_size == 256:
                 self.pk = PK[2]
             else:
-                print("The round_key size of block size 256 should be 256.", file=sys.stderr)
+                print(
+                    "The round_key size of block size 256 should be 256.",
+                    file=sys.stderr,
+                )
                 sys.exit(1)
         else:
             print("The block size should be 128 or 256.", file=sys.stderr)

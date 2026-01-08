@@ -28,3 +28,10 @@ def test_ublock_single_linear_layer_block_cipher():
     ciphertext = 0x64ACCD6E34CAC84D384CD4BA7AEADD19
     assert ublock.evaluate([plaintext, key]) == ciphertext
     assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+
+    ublock = UblockSingleLinearLayerBlockCipher(block_bit_size=256, key_bit_size=256, number_of_rounds=24)
+    plaintext = 0x0123456789ABCDEFFEDCBA9876543210000102030405060708090A0B0C0D0E0F
+    key = 0x0123456789ABCDEFFEDCBA9876543210000102030405060708090A0B0C0D0E0F
+    ciphertext = 0xD8E9351C5F4D27EA842135CA1640AD4B0CE119BC25C03E7C329EA8FE93E7BDFE
+    assert ublock.evaluate([plaintext, key]) == ciphertext
+    assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
