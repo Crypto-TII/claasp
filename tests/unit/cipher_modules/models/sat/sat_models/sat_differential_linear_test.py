@@ -11,7 +11,7 @@ from claasp.cipher_modules.models.utils import (
 )
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, SATISFIABLE
 
 
@@ -105,7 +105,7 @@ def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
 
 def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     """Test for finding a differential-linear trail with fixed weight for 3 rounds of ChaCha permutation."""
-    chacha = ChachaPermutation(number_of_rounds=6)
+    chacha = ChachaPermutation(number_of_rounds=6, round_mode=ROUND_MODE_HALF)
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -224,7 +224,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
 
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation."""
-    chacha = ChachaPermutation(number_of_rounds=8)
+    chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -272,7 +272,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
 
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation."""
-    chacha = ChachaPermutation(number_of_rounds=8)
+    chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -322,7 +322,7 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation.
     This test is using in the middle part the semi-deterministic model.
     """
-    chacha = ChachaPermutation(number_of_rounds=8)
+    chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -408,7 +408,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation.
     This test is using in the middle part the semi-deterministic model.
     """
-    chacha = ChachaPermutation(number_of_rounds=8)
+    chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
     # import ipdb; ipdb.set_trace()
     top_part_components = []
     middle_part_components = []
@@ -467,7 +467,7 @@ def test_diff_lin_chacha():
     number_of_samples = 2**12
     number_of_rounds = 6
     state_size = 512
-    chacha = ChachaPermutation(number_of_rounds=number_of_rounds)
+    chacha = ChachaPermutation(number_of_rounds=number_of_rounds, round_mode=ROUND_MODE_HALF)
     corr = differential_linear_checker_for_permutation(
         chacha, input_difference, output_mask, number_of_samples, state_size
     )
@@ -484,7 +484,7 @@ def test_diff_lin_chacha_8():
     number_of_samples = 2**10
     number_of_rounds = 8
     state_size = 512
-    chacha = ChachaPermutation(number_of_rounds=number_of_rounds)
+    chacha = ChachaPermutation(number_of_rounds=number_of_rounds, round_mode=ROUND_MODE_HALF)
     corr = differential_linear_checker_for_permutation(
         chacha, input_difference, output_mask, number_of_samples, state_size
     )

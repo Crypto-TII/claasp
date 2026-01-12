@@ -15,34 +15,31 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import math
 import itertools
+import math
+import os
 import subprocess
 import time
-
 from copy import deepcopy
 from datetime import timedelta
 
-from sage.crypto.sbox import SBox
-
 from minizinc import Instance, Model, Solver, Status
+from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
-from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
-from claasp.name_mappings import CIPHER, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, SATISFIABLE, SBOX, UNSATISFIABLE
-from claasp.cipher_modules.models.cp.solvers import (
-    CP_SOLVERS_INTERNAL,
-    CP_SOLVERS_EXTERNAL,
-    SOLVER_DEFAULT,
-)
+from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, SOLVER_DEFAULT
+from claasp.name_mappings import SBOX, CIPHER, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, SATISFIABLE, UNSATISFIABLE
+
+from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 
 SOLVE_SATISFY = "solve satisfy;"
 CONSTRAINT_TYPE_ERROR = "Constraint type not defined"
 
 
 class MznModel:
-    def __init__(self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp="sat"):
+
+    def __init__(self, cipher, sat_or_milp='sat'):
         self._cipher = cipher
         self.initialise_model()
         if sat_or_milp not in ("sat", "milp"):
@@ -66,17 +63,9 @@ class MznModel:
         self.mzn_carries_output_directives = []
         self.input_postfix = "x"
         self.output_postfix = "y"
-        self.window_size_list = window_size_list
-        self.probability_weight_per_round = probability_weight_per_round
         self.carries_vars = []
-        if probability_weight_per_round and len(probability_weight_per_round) != self._cipher.number_of_rounds:
-            raise ValueError("probability_weight_per_round size must be equal to cipher_number_of_rounds")
-
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
-
-        if window_size_list and len(window_size_list) != self._cipher.number_of_rounds:
-            raise ValueError("window_size_list size must be equal to cipher_number_of_rounds")
-
+        
     def initialise_model(self):
         self._variables_list = []
         self._model_constraints = []
@@ -171,6 +160,37 @@ class MznModel:
     ):
         component_solution["weight"] = component_weight
         components_values[f"solution{solution_number}"][f"{component}"] = component_solution
+
+    def build_generic_cp_model_from_dictionary(self, component_and_model_types, fixed_variables=None):
+        variables = []
+        self._variables_list = []
+
+        fixed_constraints = []
+        if fixed_variables:
+            if hasattr(self, "fix_variables_value_constraints_for_ARX"):
+                fixed_constraints = self.fix_variables_value_constraints_for_ARX(
+                    fixed_variables
+                )
+            else:
+                fixed_constraints = self.fix_variables_value_constraints(
+                    fixed_variables
+                )
+        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
+        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+        self._model_constraints = fixed_constraints
+
+        for component_and_model_type in component_and_model_types:
+            component = component_and_model_type["component_object"]
+            model_type = component_and_model_type["model_type"]
+            operation = component.description[0]
+            if component.type not in component_types or (
+                    WORD_OPERATION == component.type and operation not in operation_types):
+                print(f'{component.id} not yet implemented')
+            else:
+                cp_generic_propagation_constraints = getattr(component, model_type)
+                variables, constraints = cp_generic_propagation_constraints(self)
+                self._model_constraints.extend(constraints)
+                self._variables_list.extend(variables)
 
     def build_mix_column_truncated_table(self, component):
         """
