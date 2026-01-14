@@ -936,31 +936,46 @@ class MznModel:
 
         return result
 
-    def solver_names(self, verbose: bool = False) -> None:
+    def solver_names(self, verbose: bool = False) -> list:
         """
-        Print the available MiniZinc solvers.
+        Return a list of available CP solvers.
 
         INPUT:
 
-        - ``verbose`` -- **bool**; beside the solver name, it will be printed the brand name.
+        - ``verbose`` -- **bool** (default: `False`); if True, include additional solver information
 
+        OUTPUT:
+
+        A list of dictionaries containing solver information. Each dictionary contains:
+        - ``solver_brand_name``: The full name of the solver
+        - ``solver_name``: The identifier used to call the solver
+        - ``keywords``: (only if verbose=True) Additional configuration details
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher()
+            sage: mzn = MznModel(speck)
+            sage: solvers = mzn.solver_names()
+            sage: len(solvers) > 0
+            True
+            sage: 'solver_name' in solvers[0]
+            True
+            sage: 'solver_brand_name' in solvers[0]
+            True
         """
-        if not verbose:
-            print("Internal CP solvers:")
-            print("solver brand name | solver name")
-            for i in range(len(CP_SOLVERS_INTERNAL)):
-                print(f"{CP_SOLVERS_INTERNAL[i]['solver_brand_name']} | {CP_SOLVERS_INTERNAL[i]['solver_name']}")
-            print("\n")
-            print("External CP solvers:")
-            print("solver brand name | solver name")
-            for i in range(len(CP_SOLVERS_EXTERNAL)):
-                print(f"{CP_SOLVERS_EXTERNAL[i]['solver_brand_name']} | {CP_SOLVERS_EXTERNAL[i]['solver_name']}")
-        else:
-            print("Internal CP solvers:")
-            print(CP_SOLVERS_INTERNAL)
-            print("\n")
-            print("External CP solvers:")
-            print(CP_SOLVERS_EXTERNAL)
+        solver_names = []
+
+        keys = ['solver_brand_name', 'solver_name']
+        for solver in CP_SOLVERS_INTERNAL:
+            solver_names.append({key: solver[key] for key in keys})
+        if verbose:
+            keys = ['solver_brand_name', 'solver_name', 'keywords']
+
+        for solver in CP_SOLVERS_EXTERNAL:
+            solver_names.append({key: solver[key] for key in keys})
+        return solver_names
 
     def weight_constraints(self, weight):
         """
