@@ -366,6 +366,47 @@ class SmtModel:
                 literals.append(f'{component_id}_{position}{out_suffix}')
         constraints.append(utils.smt_assert(utils.smt_or(literals)))
 
+    def solver_names(self, verbose=False):
+        """
+        Return a list of available SMT solvers.
+
+        INPUT:
+
+        - ``verbose`` -- **boolean** (default: `False`); if True, include additional solver information
+
+        OUTPUT:
+
+        A list of dictionaries containing solver information. Each dictionary contains:
+        - ``solver_brand_name``: The full name of the solver
+        - ``solver_name``: The identifier used to call the solver
+        - ``keywords``: (only if verbose=True) Additional configuration details
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.smt.smt_model import SmtModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher()
+            sage: smt = SmtModel(speck)
+            sage: solvers = smt.solver_names()
+            sage: len(solvers) > 0
+            True
+            sage: 'solver_name' in solvers[0]
+            True
+            sage: 'solver_brand_name' in solvers[0]
+            True
+        """
+        solver_names = []
+
+        keys = ['solver_brand_name', 'solver_name']
+        for solver in solvers.SMT_SOLVERS_INTERNAL:
+            solver_names.append({key: solver[key] for key in keys})
+        if verbose:
+            keys = ['solver_brand_name', 'solver_name', 'keywords']
+
+        for solver in solvers.SMT_SOLVERS_EXTERNAL:
+            solver_names.append({key: solver[key] for key in keys})
+        return solver_names
+
     def solve(self, model_type, solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution of the model using the ``solver_name`` SMT solver.

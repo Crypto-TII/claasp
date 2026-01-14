@@ -30,6 +30,26 @@ def test_solve():
     assert eval(solution["components_values"]["cipher_output_31_13"]["value"]) >= 0
 
 
+def test_solver_names():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    sat = SatModel(speck)
+    solver_names = sat.solver_names()
+    assert isinstance(solver_names, list)
+    assert len(solver_names) > 0
+    # Check that each entry has the required keys
+    for solver in solver_names:
+        assert 'solver_brand_name' in solver
+        assert 'solver_name' in solver
+        assert 'keywords' not in solver  # verbose=False by default
+    
+    # Test verbose mode
+    verbose_solver_names = sat.solver_names(verbose=True)
+    assert isinstance(verbose_solver_names, list)
+    # External solvers should have keywords when verbose=True
+    external_solvers = [s for s in verbose_solver_names if 'keywords' in s]
+    assert len(external_solvers) > 0
+
+
 def test_fix_variables_value_constraints():
     fixed_variables = [
         {
