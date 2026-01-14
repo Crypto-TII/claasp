@@ -1,3 +1,20 @@
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
+
 import time
 from copy import deepcopy
 
@@ -5,8 +22,10 @@ from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils, constants
-from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, \
-    _update_component_model_types_for_linear_components
+from claasp.cipher_modules.models.sat.utils.utils import (
+    _generate_component_model_types,
+    _update_component_model_types_for_linear_components,
+)
 from claasp.cipher_modules.models.utils import set_component_solution, get_bit_bindings
 
 
@@ -49,7 +68,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         _update_component_model_types_for_linear_components(component_model_types, bottom_part_components)
 
         self.dict_of_components = component_model_types
-        self.regular_components = self._get_components_by_type('sat_xor_differential_propagation_constraints')
+        self.regular_components = self._get_components_by_type("sat_xor_differential_propagation_constraints")
         new_regular_components = []
         regular_components = deepcopy(self.regular_components)
         for regular_component_dict in regular_components:
@@ -58,26 +77,28 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             regular_component = regular_component_dict["component_object"]
             round_number = cipher.get_round_from_component_id(regular_component_id)
             regular_component_copy = deepcopy(regular_component)
-            regular_component_copy._id = 'cipher1_' + regular_component._id
+            regular_component_copy._id = "cipher1_" + regular_component._id
 
             new_input_id_links = [
-                f'cipher1_{input_id_link}' if input_id_link not in cipher.inputs else input_id_link
+                f"cipher1_{input_id_link}" if input_id_link not in cipher.inputs else input_id_link
                 for input_id_link in regular_component_copy.input_id_links
             ]
 
             regular_component_copy.set_input_id_links(new_input_id_links)
 
             cipher._rounds.rounds[round_number]._components.extend([regular_component_copy])
-            new_regular_components.append({
-                'component_id': regular_component_copy.id,
-                'component_object': regular_component_copy,
-                "model_type": "sat_xor_differential_propagation_constraints"
-            })
+            new_regular_components.append(
+                {
+                    "component_id": regular_component_copy.id,
+                    "component_object": regular_component_copy,
+                    "model_type": "sat_xor_differential_propagation_constraints",
+                }
+            )
         self.regular_components.extend(new_regular_components)
         self.new_regular_components = new_regular_components
-        self.linear_components = self._get_components_by_type('sat_xor_linear_mask_propagation_constraints')
-        self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
-        super().__init__(cipher, "sequential", False)
+        self.linear_components = self._get_components_by_type("sat_xor_linear_mask_propagation_constraints")
+        self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, "_".join)
+        super().__init__(cipher=cipher, counter="sequential", compact=False)
 
     def _get_components_by_type(self, model_type):
         """
@@ -89,7 +110,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         RETURN:
         - **list**; A list of components of the specified type.
         """
-        return [component for component in self.dict_of_components if component['model_type'] == model_type]
+        return [component for component in self.dict_of_components if component["model_type"] == model_type]
 
     def _get_regular_xor_differential_components_in_border(self):
         """
@@ -98,11 +119,11 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         RETURN:
         - **list**; A list of regular components at the border.
         """
-        regular_component_ids = {item['component_id'] for item in self.regular_components}
+        regular_component_ids = {item["component_id"] for item in self.regular_components}
         border_components = []
 
         for linear_component in self.linear_components:
-            component_obj = self.cipher.get_component_from_id(linear_component['component_id'])
+            component_obj = self.cipher.get_component_from_id(linear_component["component_id"])
             for input_id in component_obj.input_id_links:
                 if input_id in regular_component_ids:
                     border_components.append(input_id)
@@ -118,29 +139,29 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             return any(s in string for s in string_list)
 
         border_components = self._get_regular_xor_differential_components_in_border()
-        linear_component_ids = [item['component_id'] for item in self.linear_components]
+        linear_component_ids = [item["component_id"] for item in self.linear_components]
 
         for component_id in border_components:
             component = self.cipher.get_component_from_id(component_id)
             for idx in range(component.output_bit_size):
-                linear_component = f'{component_id}_{idx}_o'
+                linear_component = f"{component_id}_{idx}_o"
                 component_successors = self.bit_bindings[linear_component]
 
                 for component_successor in component_successors:
                     length_component_successor = len(component_successor)
-                    component_successor_id = component_successor[:length_component_successor - 2]
+                    component_successor_id = component_successor[: length_component_successor - 2]
 
                     if is_any_string_in_list_substring_of_string(component_successor_id, linear_component_ids):
                         # TODO: update method name get_cnf_truncated_linear_constraints for something more general
                         constraints = sat_utils.get_cnf_truncated_linear_constraints(
-                            component_successor, f'{component_id}_{idx}'
+                            component_successor, f"{component_id}_{idx}"
                         )
                         self._model_constraints.extend(constraints)
                         constraints = sat_utils.get_cnf_truncated_linear_constraints(
-                            component_successor, f'cipher1_{component_id}_{idx}'
+                            component_successor, f"cipher1_{component_id}_{idx}"
                         )
                         self._model_constraints.extend(constraints)
-                        self._variables_list.extend([component_successor, f'{component_id}_{idx}'])
+                        self._variables_list.extend([component_successor, f"{component_id}_{idx}"])
 
     def _build_weight_constraints(self, weight):
         """
@@ -153,7 +174,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         - **tuple**; A tuple containing a list of variables and a list of constraints.
         """
 
-        hw_variables = [var_id for var_id in self._variables_list if var_id.startswith('hw_')]
+        hw_variables = [var_id for var_id in self._variables_list if var_id.startswith("hw_")]
 
         linear_component_ids = [linear_component["component_id"] for linear_component in self.linear_components]
         hw_linear_variables = []
@@ -163,7 +184,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
                     hw_linear_variables.append(hw_variable)
         hw_variables.extend(hw_linear_variables)
         if weight == 0:
-            return [], [f'-{var}' for var in hw_variables]
+            return [], [f"-{var}" for var in hw_variables]
 
         return self._counter(hw_variables, weight)
 
@@ -196,10 +217,10 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         self._model_constraints.extend(constraints)
         high_order_differential_constraints = []
         for component in self._cipher.get_all_components():
-            if (component.id.startswith('cipher1_') and "modadd" in component.id):
+            if component.id.startswith("cipher1_") and "modadd" in component.id:
                 component_copy_id = component.id.split("cipher1_")[1]
                 for i in range(component.output_bit_size):
-                    new_constraint_cnf = [f'-cipher1_{component_copy_id}_{i} -{component_copy_id}_{i}']
+                    new_constraint_cnf = [f"-cipher1_{component_copy_id}_{i} -{component_copy_id}_{i}"]
                     high_order_differential_constraints.extend(new_constraint_cnf)
         self._model_constraints.extend(high_order_differential_constraints)
 
@@ -211,8 +232,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         self._get_connecting_constraints()
 
     @staticmethod
-    def fix_variables_value_constraints(
-            fixed_variables, regular_components=None, linear_components=None):
+    def fix_variables_value_constraints(fixed_variables, regular_components=None, linear_components=None):
         """
         Imposes fixed value constraints on variables within differential and linear components.
 
@@ -228,7 +248,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
 
         for var in fixed_variables:
             component_id = var["component_id"]
-            if component_id in [comp["component_id"] for comp in regular_components] and 2 in var['bit_values']:
+            if component_id in [comp["component_id"] for comp in regular_components] and 2 in var["bit_values"]:
                 raise ValueError("The fixed value in a regular XOR differential component cannot be 2")
             elif component_id in [comp["component_id"] for comp in linear_components]:
                 linear_vars.append(var)
@@ -255,19 +275,19 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         - **tuple**; a tuple containing the dictionary of component solutions and the total weight.
         """
 
-        components_solutions = self._get_cipher_inputs_components_solutions('', variable2value)
+        components_solutions = self._get_cipher_inputs_components_solutions("", variable2value)
         total_weight_diff = 0
         total_weight_lin = 0
 
         for component in self._cipher.get_all_components():
-            if component.id in [d['component_id'] for d in self.regular_components]:
-                hex_value = self._get_component_hex_value(component, '', variable2value)
+            if component.id in [d["component_id"] for d in self.regular_components]:
+                hex_value = self._get_component_hex_value(component, "", variable2value)
 
-                weight = self.calculate_component_weight(component, '', variable2value)
+                weight = self.calculate_component_weight(component, "", variable2value)
                 components_solutions[component.id] = set_component_solution(hex_value, weight)
                 total_weight_diff += weight
 
-            elif component.id in [d['component_id'] for d in self.linear_components]:
+            elif component.id in [d["component_id"] for d in self.linear_components]:
                 hex_value = self._get_component_hex_value(component, constants.OUTPUT_BIT_ID_SUFFIX, variable2value)
                 weight = self.calculate_component_weight(component, constants.OUTPUT_BIT_ID_SUFFIX, variable2value)
                 total_weight_lin += weight
@@ -276,7 +296,8 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         return components_solutions, total_weight_diff + 2 * total_weight_lin
 
     def find_one_shared_difference_paired_input_differential_linear_trail_with_fixed_weight(
-            self, weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
+        self, weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Finds a high-order differential-linear trail with fixed weight using paired inputs and a shared difference.
 
@@ -359,15 +380,15 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
 
         self.build_shared_difference_paired_input_differential_model(weight)
         constraints = self.fix_variables_value_constraints(
-            fixed_values,
-            self.regular_components,
-            self.linear_components
+            fixed_values, self.regular_components, self.linear_components
         )
         self.model_constraints.extend(constraints)
 
-        solution = self.solve("SHARED_DIFFERENCE_PAIRED_INPUT_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name)
-        solution['building_time_seconds'] = time.time() - start_time
-        solution['test_name'] = "find_one_shared_difference_paired_input_differential_linear_model_trail"
+        solution = self.solve(
+            "SHARED_DIFFERENCE_PAIRED_INPUT_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name, options=options
+        )
+        solution["building_time_seconds"] = time.time() - start_time
+        solution["test_name"] = "find_one_shared_difference_paired_input_differential_linear_model_trail"
 
         return solution
 

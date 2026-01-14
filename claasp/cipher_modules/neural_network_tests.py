@@ -391,10 +391,14 @@ class NeuralNetworkTests:
 
     def get_neural_network(self, network_name, input_size, word_size=None, depth=1):
         from tensorflow.keras.optimizers import Adam
+        if input_size is None or input_size==0:
+            input_size = self.cipher.output_bit_size
+        if word_size is None or word_size == 0:
+            word_size = self.cipher.output_bit_size
+        input_size = int(input_size)
+        word_size = int(word_size)
+        depth = int(depth)
         if network_name == 'gohr_resnet':
-            if word_size is None or word_size == 0:
-                print("Word size not specified for ", network_name, ", defaulting to ciphertext size...")
-                word_size = self.cipher.output_bit_size
             neural_network = self._make_resnet(word_size=word_size, input_size=input_size, depth=depth)
         elif network_name == 'dbitnet':
             neural_network = self._make_dbitnet(input_size=input_size)
@@ -498,11 +502,11 @@ class NeuralNetworkTests:
             x_eval, y_eval = data_generator(samples=testing_samples, nr=nr)
             if save_prefix is None:
                 h = neural_network.fit(x, y, epochs=int(epochs), batch_size=bs,
-                                       validation_data=(x_eval, y_eval))
+                                       validation_data=(x_eval, y_eval), verbose=2)
             else:
                 h = neural_network.fit(x, y, epochs=int(epochs), batch_size=bs,
                                                validation_data=(x_eval, y_eval),
-                                               callbacks=[self.make_checkpoint(save_prefix + str(nr)+'.h5')])
+                                               callbacks=[self._make_checkpoint(save_prefix + str(nr)+'.h5')], verbose=2)
             acc[nr] = np.max(h.history["val_acc"])
             print(f'Validation accuracy at {nr} rounds :{acc[nr]}')
             nr +=1
@@ -700,7 +704,7 @@ class NeuralNetworkTests:
 
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.cipher.inputs}), from round {nr}...')
         neural_results = self.train_neural_distinguisher(data_generator, nr, neural_network, training_samples,
-                                   testing_samples, number_of_epochs)
+                                   testing_samples, number_of_epochs, save_prefix=save_prefix)
 
         neural_distinguisher_test_results['test_results']['plaintext']['cipher_output'][
             'neural_distinguisher_test'].append({'accuracies': list(neural_results.values())})

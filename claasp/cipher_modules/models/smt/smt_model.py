@@ -1,21 +1,19 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 
 """
 SMT model of Cipher.
@@ -37,23 +35,25 @@ For any further information, refer to the file
 :py:mod:`claasp.cipher_modules.models.smt.solvers.py` and to the section
 :ref:`Available SMT solvers`.
 """
+
 import math
 import re
 import subprocess
 
-from claasp.name_mappings import (SBOX, CIPHER, XOR_LINEAR)
-from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.smt import solvers
+from claasp.cipher_modules.models.smt.solvers import MATHSAT_EXT, YICES_EXT, Z3_EXT
+from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_component_solution
+from claasp.name_mappings import SATISFIABLE, SBOX, UNSATISFIABLE
 
 
 def mathsat_parser(output_to_parse):
     tmp_dict = {}
     for line in output_to_parse[1:]:
-        if line.strip().startswith('(define-fun'):
-            solution = line.strip()[1:-1].split(' ')
+        if line.strip().startswith("(define-fun"):
+            solution = line.strip()[1:-1].split(" ")
             var_name = solution[1]
-            var_value = 1 if solution[-1] == 'true' else 0
+            var_value = 1 if solution[-1] == "true" else 0
             tmp_dict[var_name] = var_value
 
     return tmp_dict
@@ -62,10 +62,10 @@ def mathsat_parser(output_to_parse):
 def yices_parser(output_to_parse):
     tmp_dict = {}
     for line in output_to_parse[1:]:
-        if line.startswith('(='):
-            solution = line[1:-1].split(' ')
+        if line.startswith("(="):
+            solution = line[1:-1].split(" ")
             var_name = solution[1]
-            var_value = 1 if solution[-1] == 'true' else 0
+            var_value = 1 if solution[-1] == "true" else 0
             tmp_dict[var_name] = var_value
 
     return tmp_dict
@@ -74,17 +74,17 @@ def yices_parser(output_to_parse):
 def z3_parser(output_to_parse):
     tmp_dict = {}
     for index in range(2, len(output_to_parse), 2):
-        if output_to_parse[index] == ')':
+        if output_to_parse[index] == ")":
             break
         var_name = output_to_parse[index].split()[1]
-        var_value = 1 if output_to_parse[index + 1].strip()[:-1] == 'true' else 0
+        var_value = 1 if output_to_parse[index + 1].strip()[:-1] == "true" else 0
         tmp_dict[var_name] = var_value
 
     return tmp_dict
 
 
 class SmtModel:
-    def __init__(self, cipher, counter='sequential'):
+    def __init__(self, cipher, counter="sequential"):
         self._cipher = cipher
         self._variables_list = []
         self._model_constraints = []
@@ -94,38 +94,13 @@ class SmtModel:
         self._sboxes_lat_templates = {}
 
         # set the counter to fix the weight
-        if counter == 'sequential':
+        if counter == "sequential":
             self._counter = self._sequential_counter
         else:
             self._counter = self._parallel_counter
 
     def _declarations_builder(self):
-        self._declarations = [f'(declare-const {variable} Bool)'
-                              for variable in self._variables_list]
-
-    def _generate_component_input_ids(self, component):
-        input_id_link = component.id
-        in_suffix = constants.INPUT_BIT_ID_SUFFIX
-        input_bit_size = component.input_bit_size
-        input_bit_ids = [f'{input_id_link}_{i}{in_suffix}' for i in range(input_bit_size)]
-
-        return input_bit_size, input_bit_ids
-
-    def _generate_input_ids(self, component, suffix=''):
-        input_id_link = component.input_id_links
-        input_bit_positions = component.input_bit_positions
-        input_bit_ids = []
-        for link, positions in zip(input_id_link, input_bit_positions):
-            input_bit_ids.extend([f'{link}_{j}{suffix}' for j in positions])
-
-        return component.input_bit_size, input_bit_ids
-
-    def _generate_output_ids(self, component, suffix=''):
-        output_id_link = component.id
-        output_bit_size = component.output_bit_size
-        output_bit_ids = [f'{output_id_link}_{j}{suffix}' for j in range(output_bit_size)]
-
-        return output_bit_size, output_bit_ids
+        self._declarations = [f"(declare-const {variable} Bool)" for variable in self._variables_list]
 
     def _get_cipher_inputs_components_solutions(self, out_suffix, variable2value):
         components_solutions = {}
@@ -133,10 +108,10 @@ class SmtModel:
             value = 0
             for i in range(bit_size):
                 value <<= 1
-                if f'{cipher_input}_{i}{out_suffix}' in variable2value:
-                    value ^= variable2value[f'{cipher_input}_{i}{out_suffix}']
+                if f"{cipher_input}_{i}{out_suffix}" in variable2value:
+                    value ^= variable2value[f"{cipher_input}_{i}{out_suffix}"]
             hex_digits = bit_size // 4 + (bit_size % 4 != 0)
-            hex_value = f'{value:0{hex_digits}x}'
+            hex_value = f"{value:#0{hex_digits + 2}x}"
             component_solution = set_component_solution(hex_value)
             components_solutions[cipher_input] = component_solution
 
@@ -157,64 +132,80 @@ class SmtModel:
         variables = []
         constraints = []
         num_of_orders = math.ceil(math.log2(len(hw_list)))
-        dummy_list = [f'dummy_hw_{i}' for i in range(len(hw_list), 2 ** num_of_orders)]
+        dummy_list = [f"dummy_hw_{i}" for i in range(len(hw_list), 2**num_of_orders)]
         variables.extend(dummy_list)
         hw_list.extend(dummy_list)
         constraints.extend(utils.smt_assert(utils.smt_not(dummy)) for dummy in dummy_list)
-        for i in range(0, 2 ** num_of_orders, 2):
-            variables.append(f'r_{num_of_orders - 1}_{i // 2}_0')
-            variables.append(f'r_{num_of_orders - 1}_{i // 2}_1')
-            carry = utils.smt_and((f'{hw_list[i]}', f'{hw_list[i + 1]}'))
-            equation = utils.smt_equivalent((f'r_{num_of_orders - 1}_{i // 2}_0', carry))
+        for i in range(0, 2**num_of_orders, 2):
+            variables.append(f"r_{num_of_orders - 1}_{i // 2}_0")
+            variables.append(f"r_{num_of_orders - 1}_{i // 2}_1")
+            carry = utils.smt_and((f"{hw_list[i]}", f"{hw_list[i + 1]}"))
+            equation = utils.smt_equivalent((f"r_{num_of_orders - 1}_{i // 2}_0", carry))
             constraints.append(utils.smt_assert(equation))
-            result = utils.smt_xor((f'{hw_list[i]}', f'{hw_list[i + 1]}'))
-            equation = utils.smt_equivalent((f'r_{num_of_orders - 1}_{i // 2}_1', result))
+            result = utils.smt_xor((f"{hw_list[i]}", f"{hw_list[i + 1]}"))
+            equation = utils.smt_equivalent((f"r_{num_of_orders - 1}_{i // 2}_1", result))
             constraints.append(utils.smt_assert(equation))
 
         # recursively adding couple words
         series = num_of_orders - 2
         for i in range(2, num_of_orders + 1):
-            for j in range(0, 2 ** num_of_orders, 2 ** i):
+            for j in range(0, 2**num_of_orders, 2**i):
                 # carries computed as usual (remember the library convention: MSB indexed by 0)
                 for k in range(0, i - 1):
-                    variables.append(f'c_{series}_{j // (2 ** i)}_{k}')
-                    carry = utils.smt_carry(f'r_{series + 1}_{j // (2 ** (i - 1))}_{k}',
-                                            f'r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{k}',
-                                            f'c_{series}_{j // (2 ** i)}_{k + 1}')
-                    equation = utils.smt_equivalent((f'c_{series}_{j // (2 ** i)}_{k}', carry))
+                    variables.append(f"c_{series}_{j // (2**i)}_{k}")
+                    carry = utils.smt_carry(
+                        f"r_{series + 1}_{j // (2 ** (i - 1))}_{k}",
+                        f"r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{k}",
+                        f"c_{series}_{j // (2**i)}_{k + 1}",
+                    )
+                    equation = utils.smt_equivalent((f"c_{series}_{j // (2**i)}_{k}", carry))
                     constraints.append(utils.smt_assert(equation))
                 # the carry for the tens is the first not null
-                variables.append(f'c_{series}_{j // (2 ** i)}_{i - 1}')
-                carry = utils.smt_and((f'r_{series + 1}_{j // (2 ** (i - 1))}_{i - 1}',
-                                       f'r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{i - 1}'))
-                equation = utils.smt_equivalent((f'c_{series}_{j // (2 ** i)}_{i - 1}', carry))
+                variables.append(f"c_{series}_{j // (2**i)}_{i - 1}")
+                carry = utils.smt_and(
+                    (
+                        f"r_{series + 1}_{j // (2 ** (i - 1))}_{i - 1}",
+                        f"r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{i - 1}",
+                    )
+                )
+                equation = utils.smt_equivalent((f"c_{series}_{j // (2**i)}_{i - 1}", carry))
                 constraints.append(utils.smt_assert(equation))
                 # first bit of the result (MSB) is simply the carry of the previous MSBs
-                variables.append(f'r_{series}_{j // (2 ** i)}_0')
-                equation = utils.smt_equivalent((f'r_{series}_{j // (2 ** i)}_0',
-                                                 f'c_{series}_{j // (2 ** i)}_0'))
+                variables.append(f"r_{series}_{j // (2**i)}_0")
+                equation = utils.smt_equivalent((f"r_{series}_{j // (2**i)}_0", f"c_{series}_{j // (2**i)}_0"))
                 constraints.append(utils.smt_assert(equation))
                 # remaining bits of the result except the last one are as usual
                 for k in range(1, i):
-                    variables.append(f'r_{series}_{j // (2 ** i)}_{k}')
-                    result = utils.smt_xor((f'r_{series + 1}_{j // (2 ** (i - 1))}_{k - 1}',
-                                            f'r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{k - 1}',
-                                            f'c_{series}_{j // (2 ** i)}_{k}'))
-                    equation = utils.smt_equivalent((f'r_{series}_{j // (2 ** i)}_{k}', result))
+                    variables.append(f"r_{series}_{j // (2**i)}_{k}")
+                    result = utils.smt_xor(
+                        (
+                            f"r_{series + 1}_{j // (2 ** (i - 1))}_{k - 1}",
+                            f"r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{k - 1}",
+                            f"c_{series}_{j // (2**i)}_{k}",
+                        )
+                    )
+                    equation = utils.smt_equivalent((f"r_{series}_{j // (2**i)}_{k}", result))
                     constraints.append(utils.smt_assert(equation))
                 # last bit of the result (LSB)
-                variables.append(f'r_{series}_{j // (2 ** i)}_{i}')
-                result = utils.smt_xor((f'r_{series + 1}_{j // (2 ** (i - 1))}_{i - 1}',
-                                        f'r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{i - 1}'))
-                equation = utils.smt_equivalent((f'r_{series}_{j // (2 ** i)}_{i}', result))
+                variables.append(f"r_{series}_{j // (2**i)}_{i}")
+                result = utils.smt_xor(
+                    (
+                        f"r_{series + 1}_{j // (2 ** (i - 1))}_{i - 1}",
+                        f"r_{series + 1}_{j // (2 ** (i - 1)) + 1}_{i - 1}",
+                    )
+                )
+                equation = utils.smt_equivalent((f"r_{series}_{j // (2**i)}_{i}", result))
                 constraints.append(utils.smt_assert(equation))
             series -= 1
 
         # the bit length of hamming weight, needed to fix weight when building the model
         bit_length_of_hw = num_of_orders + 1
-        constraints.extend(utils.smt_assert(f'r_0_0_{i}') if weight >> (bit_length_of_hw - 1 - i) & 1
-                           else utils.smt_assert(utils.smt_not(f'r_0_0_{i}'))
-                           for i in range(bit_length_of_hw))
+        constraints.extend(
+            utils.smt_assert(f"r_0_0_{i}")
+            if weight >> (bit_length_of_hw - 1 - i) & 1
+            else utils.smt_assert(utils.smt_not(f"r_0_0_{i}"))
+            for i in range(bit_length_of_hw)
+        )
 
         return variables, constraints, bit_length_of_hw
 
@@ -223,21 +214,19 @@ class SmtModel:
         if greater_or_equal:
             weight = n - weight
             hw_list = [utils.smt_not(id_) for id_ in hw_list]
-        dummy_variables = [[f'{dummy_id}_{i}_{j}' for j in range(weight)] for i in range(n - 1)]
+        dummy_variables = [[f"{dummy_id}_{i}_{j}" for j in range(weight)] for i in range(n - 1)]
         constraints = [utils.smt_assert(utils.smt_implies(hw_list[0], dummy_variables[0][0]))]
         for j in range(1, weight):
             constraints.append(utils.smt_assert(utils.smt_not(dummy_variables[0][j])))
         for i in range(1, n - 1):
-            constraints.append(utils.smt_assert(utils.smt_implies(hw_list[i],
-                                                                  dummy_variables[i][0])))
-            constraints.append(utils.smt_assert(utils.smt_implies(dummy_variables[i - 1][0],
-                                                                  dummy_variables[i][0])))
+            constraints.append(utils.smt_assert(utils.smt_implies(hw_list[i], dummy_variables[i][0])))
+            constraints.append(utils.smt_assert(utils.smt_implies(dummy_variables[i - 1][0], dummy_variables[i][0])))
             for j in range(1, weight):
                 antecedent = utils.smt_and((hw_list[i], dummy_variables[i - 1][j - 1]))
-                constraints.append(utils.smt_assert(utils.smt_implies(antecedent,
-                                                                      dummy_variables[i][j])))
-                constraints.append(utils.smt_assert(utils.smt_implies(dummy_variables[i - 1][j],
-                                                                      dummy_variables[i][j])))
+                constraints.append(utils.smt_assert(utils.smt_implies(antecedent, dummy_variables[i][j])))
+                constraints.append(
+                    utils.smt_assert(utils.smt_implies(dummy_variables[i - 1][j], dummy_variables[i][j]))
+                )
             opposite_dummy = utils.smt_not(dummy_variables[i - 1][weight - 1])
             constraints.append(utils.smt_assert(utils.smt_implies(hw_list[i], opposite_dummy)))
         opposite_dummy = utils.smt_not(dummy_variables[n - 2][weight - 1])
@@ -247,15 +236,15 @@ class SmtModel:
         return dummy_variables, constraints
 
     def _sequential_counter(self, hw_list, weight):
-        return self._sequential_counter_algorithm(hw_list, weight, 'dummy_hw_0')
+        return self._sequential_counter_algorithm(hw_list, weight, "dummy_hw_0")
 
     def _sequential_counter_greater_or_equal(self, weight, dummy_id):
-        hw_list = [variable_id for variable_id in self._variables_list if variable_id.startswith('hw_')]
-        variables, constraints = self._sequential_counter_algorithm(hw_list, weight, dummy_id,
-                                                                    greater_or_equal=True)
+        hw_list = [variable_id for variable_id in self._variables_list if variable_id.startswith("hw_")]
+        variables, constraints = self._sequential_counter_algorithm(hw_list, weight, dummy_id, greater_or_equal=True)
         number_of_declarations = len(self._variables_list)
         formulae = self._model_constraints[
-                   len(constants.MODEL_PREFIX)+number_of_declarations:-len(constants.MODEL_SUFFIX)]
+            len(constants.MODEL_PREFIX) + number_of_declarations : -len(constants.MODEL_SUFFIX)
+        ]
         self._variables_list.extend(variables)
         self._declarations_builder()
         formulae.extend(constraints)
@@ -263,10 +252,15 @@ class SmtModel:
 
     def calculate_component_weight(self, component, out_suffix, output_values_dict):
         weight = 0
-        if ('MODADD' in component.description or 'AND' in component.description
-                or 'OR' in component.description or SBOX in component.type):
-            weight = sum([output_values_dict[f'hw_{component.id}_{i}{out_suffix}']
-                          for i in range(component.output_bit_size)])
+        if (
+            "MODADD" in component.description
+            or "AND" in component.description
+            or "OR" in component.description
+            or SBOX in component.type
+        ):
+            weight = sum(
+                [output_values_dict[f"hw_{component.id}_{i}{out_suffix}"] for i in range(component.output_bit_size)]
+            )
         return weight
 
     def cipher_input_variables(self):
@@ -290,9 +284,11 @@ class SmtModel:
              'key_62',
              'key_63']
         """
-        cipher_input_bit_ids = [f'{input_id}_{j}'
-                                for input_id, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
-                                for j in range(size)]
+        cipher_input_bit_ids = [
+            f"{input_id}_{j}"
+            for input_id, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
+            for j in range(size)
+        ]
 
         return cipher_input_bit_ids
 
@@ -321,16 +317,16 @@ class SmtModel:
         """
         constraints = []
         for component in fixed_variables:
-            component_id = component['component_id']
-            bit_positions = component['bit_positions']
-            bit_values = component['bit_values']
+            component_id = component["component_id"]
+            bit_positions = component["bit_positions"]
+            bit_values = component["bit_values"]
 
-            if component['constraint_type'] not in ['equal', 'not_equal']:
-                raise ValueError('constraint type not defined or misspelled.')
+            if component["constraint_type"] not in ["equal", "not_equal"]:
+                raise ValueError("constraint type not defined or misspelled.")
 
-            if component['constraint_type'] == 'equal':
+            if component["constraint_type"] == "equal":
                 self.update_constraints_for_equal_type(bit_positions, bit_values, component_id, constraints)
-            elif component['constraint_type'] == 'not_equal':
+            elif component["constraint_type"] == "not_equal":
                 self.update_constraints_for_not_equal_type(bit_positions, bit_values, component_id, constraints)
 
         return constraints
@@ -351,19 +347,20 @@ class SmtModel:
     def update_constraints_for_equal_type(self, bit_positions, bit_values, component_id, constraints, out_suffix=""):
         for i, position in enumerate(bit_positions):
             if bit_values[i]:
-                constraint = f'{component_id}_{position}{out_suffix}'
+                constraint = f"{component_id}_{position}{out_suffix}"
             else:
-                constraint = utils.smt_not(f'{component_id}_{position}{out_suffix}')
+                constraint = utils.smt_not(f"{component_id}_{position}{out_suffix}")
             constraints.append(utils.smt_assert(constraint))
 
-    def update_constraints_for_not_equal_type(self, bit_positions, bit_values,
-                                              component_id, constraints, out_suffix=""):
+    def update_constraints_for_not_equal_type(
+        self, bit_positions, bit_values, component_id, constraints, out_suffix=""
+    ):
         literals = []
         for i, position in enumerate(bit_positions):
             if bit_values[i]:
-                literals.append(utils.smt_not(f'{component_id}_{position}{out_suffix}'))
+                literals.append(utils.smt_not(f"{component_id}_{position}{out_suffix}"))
             else:
-                literals.append(f'{component_id}_{position}{out_suffix}')
+                literals.append(f"{component_id}_{position}{out_suffix}")
         constraints.append(utils.smt_assert(utils.smt_or(literals)))
 
     def solver_names(self, verbose=False):
@@ -439,38 +436,41 @@ class SmtModel:
              'components_values': {},
              'total_weight': None}
         """
+
         def _get_data(data_string, lines):
             data_line = [line for line in lines if data_string in line][0]
-            data = float(re.findall(r'\d+\.?\d*', data_line)[0])
+            data = float(re.findall(r"\d+\.?\d*", data_line)[0])
             return data
 
-        solver_specs = [specs for specs in solvers.SMT_SOLVERS_EXTERNAL
-                        if specs['solver_name'] == solver_name.upper()][0]
-        solver_name = solver_specs['solver_name']
-        command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options']
-        smt_input = '\n'.join(self._model_constraints) + '\n'
+        solver_specs = [specs for specs in solvers.SMT_SOLVERS_EXTERNAL if specs["solver_name"] == solver_name.upper()][
+            0
+        ]
+        solver_name = solver_specs["solver_name"]
+        command = [solver_specs["keywords"]["command"]["executable"]] + solver_specs["keywords"]["command"]["options"]
+        smt_input = "\n".join(self._model_constraints) + "\n"
         solver_process = subprocess.run(command, input=smt_input, capture_output=True, text=True)
         solver_output = solver_process.stdout.splitlines()
-        solve_time = _get_data(solver_specs['keywords']['time'], solver_output)
-        memory = _get_data(solver_specs['keywords']['memory'], solver_output)
-        if solver_output[0] == 'sat':
-            if solver_name == 'Z3_EXT':
+        solve_time = _get_data(solver_specs["keywords"]["time"], solver_output)
+        memory = _get_data(solver_specs["keywords"]["memory"], solver_output)
+        if solver_output[0] == "sat":
+            if solver_name == Z3_EXT:
                 variable2value = z3_parser(solver_output)
-            elif solver_name == 'YICES_EXT':
+            elif solver_name == YICES_EXT:
                 variable2value = yices_parser(solver_output)
-            elif solver_name == 'MATHSAT_EXT':
+            elif solver_name == MATHSAT_EXT:
                 variable2value = mathsat_parser(solver_output)
             component2attributes, total_weight = self._parse_solver_output(variable2value)
-            status = 'SATISFIABLE'
+            status = SATISFIABLE
         else:
             component2attributes, total_weight = {}, None
-            status = 'UNSATISFIABLE'
+            status = UNSATISFIABLE
         if total_weight is not None:
             total_weight = float(total_weight)
 
-        solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name, solve_time,
-                                                         memory, component2attributes, total_weight)
-        solution['status'] = status
+        solution = convert_solver_solution_to_dictionary(
+            self._cipher, model_type, solver_name, solve_time, memory, component2attributes, total_weight
+        )
+        solution["status"] = status
 
         return solution
 
@@ -482,7 +482,7 @@ class SmtModel:
 
         - ``weight`` -- **integer**; represents the total weight of the trail
         """
-        hw_list = [variable_id for variable_id in self._variables_list if variable_id.startswith('hw_')]
+        hw_list = [variable_id for variable_id in self._variables_list if variable_id.startswith("hw_")]
         if weight == 0:
             return [], [utils.smt_assert(utils.smt_not(variable)) for variable in hw_list]
 
@@ -515,7 +515,7 @@ class SmtModel:
             ValueError: No model generated
         """
         if not self._model_constraints:
-            raise ValueError('No model generated')
+            raise ValueError("No model generated")
         return self._model_constraints
 
     @property

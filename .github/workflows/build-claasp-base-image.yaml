@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -41,7 +41,19 @@ jobs:
         context: .
         file: ./docker/Dockerfile
         push: true
-        tags: ${{ matrix.os == 'ubuntu-latest' && 'tiicrc/claasp-base:latest' || 'tiicrc/claasp-m1-base:latest' }}
+        tags: tiicrc/claasp-base:latest
+        target: claasp-base
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+    
+    - name: Build & Push (m1)
+      uses: docker/build-push-action@v4
+      id: built-image-m1
+      with:
+        context: .
+        file: ./docker/Dockerfile
+        push: true
+        tags: tiicrc/claasp-m1-base:latest
         target: claasp-base
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max

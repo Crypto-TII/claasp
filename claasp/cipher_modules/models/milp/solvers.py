@@ -1,33 +1,37 @@
-import os
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+import os
 
 SOLVER_DEFAULT = "GLPK"
 MODEL_DEFAULT_PATH = os.getcwd()
 
 
-
 MILP_SOLVERS_INTERNAL = [
     {"solver_brand_name": "GLPK (GNU Linear Programming Kit) (using Sage backend)", "solver_name": "GLPK"},
-    {"solver_brand_name": "GLPK (GNU Linear Programming Kit) with simplex method based on exact arithmetic (using Sage backend)", "solver_name": "GLPK/exact"},
+    {
+        "solver_brand_name": "GLPK (GNU Linear Programming Kit) with simplex method based on exact arithmetic (using Sage backend)",
+        "solver_name": "GLPK/exact",
+    },
     {"solver_brand_name": "COIN-BC (COIN Branch and Cut) (using Sage backend)", "solver_name": "Coin"},
-    {"solver_brand_name": "CVXOPT (Python Software for Convex Optimization) (using Sage backend)", "solver_name": "CVXOPT"},
+    {
+        "solver_brand_name": "CVXOPT (Python Software for Convex Optimization) (using Sage backend)",
+        "solver_name": "CVXOPT",
+    },
     {"solver_brand_name": "Gurobi Optimizer (using Sage backend)", "solver_name": "Gurobi"},
     {"solver_brand_name": "PPL (Parma Polyhedra Library) (using Sage backend)", "solver_name": "PPL"},
     {"solver_brand_name": "InteractiveLP (using Sage backend)", "solver_name": "InteractiveLP"},

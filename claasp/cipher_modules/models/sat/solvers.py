@@ -34,26 +34,42 @@ Docker container running the default image for the library no further action is
 needed.
 """
 
+# internal solvers definition
+CRYPTOMINISAT = "cryptominisat"
+PICOSAT = "picosat"
+GLUCOSE = "glucose"
+GLUCOSE_SYRUP = "glucose-syrup"
+# external solvers definition
+CADICAL_EXT = "CADICAL_EXT"
+CRYPTOMINISAT_EXT = "CRYPTOMINISAT_EXT"
+GLUCOSE_EXT = "GLUCOSE_EXT"
+GLUCOSE_SYRUP_EXT = "GLUCOSE_SYRUP_EXT"
+MATHSAT_EXT = "MATHSAT_EXT"
+MINISAT_EXT = "MINISAT_EXT"
+KISSAT_EXT = "KISSAT_EXT"
+PARKISSAT_EXT = "PARKISSAT_EXT"
+YICES_SAT_EXT = "YICES_SAT_EXT"
 
-SOLVER_DEFAULT = "CRYPTOMINISAT_EXT"
+
+SOLVER_DEFAULT = CRYPTOMINISAT_EXT
 
 
 SAT_SOLVERS_INTERNAL = [
     {
         "solver_brand_name": "CryptoMiniSat SAT solver (using Sage backend)",
-        "solver_name": "cryptominisat",
+        "solver_name": CRYPTOMINISAT,
     },
     {
         "solver_brand_name": "PicoSAT (using Sage backend)",
-        "solver_name": "picosat",
+        "solver_name": PICOSAT,
     },
     {
         "solver_brand_name": "Glucose SAT solver (using Sage backend)",
-        "solver_name": "glucose",
+        "solver_name": GLUCOSE,
     },
     {
         "solver_brand_name": "Glucose (Syrup) SAT solver (using Sage backend)",
-        "solver_name": "glucose-syrup",
+        "solver_name": GLUCOSE_SYRUP,
     },
 ]
 
@@ -61,7 +77,7 @@ SAT_SOLVERS_INTERNAL = [
 SAT_SOLVERS_EXTERNAL = [
     {
         "solver_brand_name": "CaDiCal Simplified Satisfiability Solver",
-        "solver_name": "CADICAL_EXT",
+        "solver_name": CADICAL_EXT,
         "keywords": {
             "command": {
                 "executable": "cadical",
@@ -80,7 +96,7 @@ SAT_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "CryptoMiniSat SAT solver",
-        "solver_name": "CRYPTOMINISAT_EXT",
+        "solver_name": CRYPTOMINISAT_EXT,
         "keywords": {
             "command": {
                 "executable": "cryptominisat5",
@@ -99,7 +115,7 @@ SAT_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "Glucose SAT solver",
-        "solver_name": "GLUCOSE_EXT",
+        "solver_name": GLUCOSE_EXT,
         "keywords": {
             "command": {
                 "executable": "glucose",
@@ -118,7 +134,7 @@ SAT_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "Glucose (Syrup) SAT solver",
-        "solver_name": "GLUCOSE_SYRUP_EXT",
+        "solver_name": GLUCOSE_SYRUP_EXT,
         "keywords": {
             "command": {
                 "executable": "glucose-syrup",
@@ -137,7 +153,7 @@ SAT_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "The Kissat SAT solver",
-        "solver_name": "KISSAT_EXT",
+        "solver_name": KISSAT_EXT,
         "keywords": {
             "command": {
                 "executable": "kissat",
@@ -156,7 +172,7 @@ SAT_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "ParKissat-RS",
-        "solver_name": "PARKISSAT_EXT",
+        "solver_name": PARKISSAT_EXT,
         "keywords": {
             "command": {
                 "executable": "parkissat",
@@ -175,7 +191,7 @@ SAT_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "MathSAT",
-        "solver_name": "MATHSAT_EXT",
+        "solver_name": MATHSAT_EXT,
         "keywords": {
             "command": {
                 "executable": "mathsat",
@@ -194,7 +210,7 @@ SAT_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "MiniSat",
-        "solver_name": "MINISAT_EXT",
+        "solver_name": MINISAT_EXT,
         "keywords": {
             "command": {
                 "executable": "minisat",
@@ -213,7 +229,7 @@ SAT_SOLVERS_EXTERNAL = [
     },
     {
         "solver_brand_name": "Yices2",
-        "solver_name": "YICES_SAT_EXT",
+        "solver_name": YICES_SAT_EXT,
         "keywords": {
             "command": {
                 "executable": "yices-sat",

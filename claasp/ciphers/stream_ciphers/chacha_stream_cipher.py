@@ -18,7 +18,7 @@
 
 
 from claasp.DTOs.component_state import ComponentState
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF, ROUND_MODE_SINGLE
 from claasp.utils.utils import bytes_positions_to_little_endian_for_multiple_of_32
 from claasp.name_mappings import STREAM_CIPHER, INPUT_PLAINTEXT, INPUT_NONCE, INPUT_BLOCK_COUNT, INPUT_KEY
 
@@ -60,17 +60,18 @@ class ChachaStreamCipher(ChachaPermutation):
         - ``number_of_rounds`` -- **integer** (default: `20`); number of rounds of the cipher
         - ``block_count`` -- **integer** (default: `1`)
         - ``chacha_constants`` -- **integer** (default: `0x617078653320646e79622d326b206574`)
+        - ``round_mode`` -- **string** (default: `"single"`); matches ``round_mode`` in :class:`ChachaPermutation`
 
     EXAMPLES::
 
         sage: from claasp.ciphers.stream_ciphers.chacha_stream_cipher import ChachaStreamCipher
-        sage: sp = ChachaStreamCipher(number_of_rounds=1)
+        sage: sp = ChachaStreamCipher(number_of_rounds=1, round_mode="half")
         sage: sp.number_of_rounds
         1
     """
 
     def __init__(self, block_bit_size=512, key_bit_size=256, number_of_rounds=20,
-                 block_count=1, chacha_constants=0x617078653320646e79622d326b206574):
+                 block_count=1, chacha_constants=0x617078653320646e79622d326b206574, round_mode=ROUND_MODE_SINGLE):
         self.WORD_SIZE = 32
 
         input_state_of_components = [
@@ -92,7 +93,8 @@ class ChachaStreamCipher(ChachaPermutation):
                          cipher_type=STREAM_CIPHER,
                          cipher_family="chacha_stream_cipher",
                          inputs=[INPUT_PLAINTEXT, INPUT_KEY, INPUT_NONCE],
-                         cipher_inputs_bit_size=[block_bit_size, key_bit_size, self.WORD_SIZE * 3])
+                 cipher_inputs_bit_size=[block_bit_size, key_bit_size, self.WORD_SIZE * 3],
+                 round_mode=round_mode)
         state_of_components_permutation = self.state_of_components
 
         self.add_constant_component(self.WORD_SIZE * 4, chacha_constants)
@@ -118,9 +120,11 @@ class ChachaStreamCipher(ChachaPermutation):
                 )
                 lst_ids.append(state_of_final_components[i][j].id)
 
-        last_round = number_of_rounds - 1
+        last_round = self.number_of_rounds - 1
 
         for component_number in range(self.get_number_of_components_in_round(last_round)):
             component = self.component_from(last_round, component_number)
             if component.type == "cipher_output":
                 component.set_input_id_links(lst_ids)
+
+        self.sort_cipher()

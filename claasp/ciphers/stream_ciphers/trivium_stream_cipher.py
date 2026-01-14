@@ -118,7 +118,7 @@ class TriviumStreamCipher(Cipher):
 
     def trivium_state_initialization(self, key, iv):
         cst0 = self.add_constant_component(13, 0x0).id
-        cst1 = self.add_constant_component(111, 0xE000000000000000000000000000).id
+        cst1 = self.add_constant_component(111, 0x7000000000000000000000000000).id
 
         state0_id = [cst0] + key[0] + [cst0] + iv[0] + [cst1]
         state0_pos = [
@@ -128,13 +128,8 @@ class TriviumStreamCipher(Cipher):
             list(range(self.iv_bit_size)),
             list(range(111)),
         ]
-        triv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size, NLFSR_DESCR).id
-        triv_state = self.add_FSR_component(
-            [triv_state],
-            [list(range(self.state_bit_size))],
-            self.state_bit_size,
-            NLFSR_DESCR + [self.number_of_initialization_clocks - 1],
-        ).id
+        triv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size,
+                                            NLFSR_DESCR + [self.number_of_initialization_clocks]).id
         return triv_state
 
     def trivium_key_stream(self, state, clock_number, key_stream):

@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -21,8 +20,8 @@ from claasp.input import Input
 from claasp.component import Component
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.code_generator import constant_to_bitstring
-from claasp.cipher_modules.generic_functions_vectorized_byte import integer_array_to_evaluate_vectorized_input
+from claasp.name_mappings import CONSTANT
+
 
 def constant_to_repr(val, output_size):
     _val = int(val, 0)
@@ -30,24 +29,20 @@ def constant_to_repr(val, output_size):
         s = output_size + (8 - (output_size % 8))
     else:
         s = output_size
-    ret = [(_val >> s - (8 * (i + 1))) & 0xff for i in range(s // 8)]
+    ret = [(_val >> s - (8 * (i + 1))) & 0xFF for i in range(s // 8)]
 
     return ret
 
 
-
-
 class Constant(Component):
-
-    def __init__(self, current_round_number, current_round_number_of_components,
-                 output_bit_size, value):
-        component_id = f'constant_{current_round_number}_{current_round_number_of_components}'
-        component_type = 'constant'
+    def __init__(self, current_round_number, current_round_number_of_components, output_bit_size, value):
+        component_id = f"{CONSTANT}_{current_round_number}_{current_round_number_of_components}"
+        component_type = CONSTANT
         if output_bit_size % 4 == 0:
             description = [f"{value:#0{(output_bit_size // 4) + 2}x}"]
         else:
             description = [f"{value:#0{output_bit_size + 2}b}"]
-        component_input = Input(0, [''], [[]])
+        component_input = Input(0, [""], [[]])
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
     def algebraic_polynomials(self, model):
@@ -95,7 +90,7 @@ class Constant(Component):
         constant = int(self.description[0], 16)
 
         ring_R = model.ring()
-        y = list(map(ring_R, [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)]))
+        y = list(map(ring_R, [f"{self.id}_{model.output_postfix}{i}" for i in range(noutputs)]))
 
         b = list(map(int, reversed(bin(constant)[2:])))
         b += [0] * (noutputs - len(b))
@@ -168,17 +163,12 @@ class Constant(Component):
              'constraint constant_2_0[12] = 0;',
              'constraint constant_2_0[13] = 0;',
              'constraint constant_2_0[14] = 0;',
-             'constraint constant_2_0[15] = 0;'])
+             'constraint constant_2_0[15] = 1;'])
         """
-        output_size = self.output_bit_size
-        output_id_link = self.id
-        description = self.description
-        value = f'{int(description[0], 16):0{output_size}b}'
-        new_declaration = f'array[0..{int(output_size) - 1}] of var 0..1: {output_id_link};'
-        cp_declarations = [new_declaration]
-        cp_constraints = []
-        for i in range(output_size):
-            cp_constraints.append(f'constraint {output_id_link}[{i}] = 0;')
+        cp_declarations = [f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id};"]
+        value = int(self.description[0], 16)
+        bits = map(int, f"{value:0{self.output_bit_size}b}")
+        cp_constraints = [f"constraint {self.id}[{i}] = {bit};" for i, bit in enumerate(bits)]
 
         return cp_declarations, cp_constraints
 
@@ -206,16 +196,21 @@ class Constant(Component):
               'array[0..1] of var 0..1: constant_0_18_value = array1d(0..1, [0,0]);'],
              [])
         """
-        output_size = int(self.output_bit_size)
-        output_id_link = self.id
+        output_bit_size = self.output_bit_size
         word_size = model.word_size
-        new_declaration = f'array[0..{(output_size - 1) // word_size}] of var 0..1: ' \
-                          f'{output_id_link}_active = array1d(0..{(output_size - 1) // word_size}, [' \
-                          + ','.join('0' * (output_size // word_size)) + ']);'
+        new_declaration = (
+            f"array[0..{(output_bit_size - 1) // word_size}] of var 0..1: "
+            f"{self.id}_active = array1d(0..{(output_bit_size - 1) // word_size}, ["
+            + ",".join("0" * (output_bit_size // word_size))
+            + "]);"
+        )
         cp_declarations = [new_declaration]
-        cp_declarations.append(f'array[0..{(output_size - 1) // word_size}] of var 0..1: '
-                               f'{output_id_link}_value = array1d(0..{(output_size - 1) // word_size}, ['
-                               + ','.join('0' * (output_size // word_size)) + ']);')
+        cp_declarations.append(
+            f"array[0..{(output_bit_size - 1) // word_size}] of var 0..1: "
+            f"{self.id}_value = array1d(0..{(output_bit_size - 1) // word_size}, ["
+            + ",".join("0" * (output_bit_size // word_size))
+            + "]);"
+        )
         cp_constraints = []
 
         return cp_declarations, cp_constraints
@@ -238,15 +233,15 @@ class Constant(Component):
             sage: constant_component.cp_xor_differential_propagation_first_step_constraints(cp)
             (['array[0..3] of var 0..1: constant_0_30 = array1d(0..3, [0,0,0,0]);'], [])
         """
-        output_size = int(self.output_bit_size)
-        output_id_link = self.id
-        new_declaration = f'array[0..{(output_size - 1) // model.word_size}] of var 0..1: ' \
-                          f'{output_id_link} = array1d(0..{(output_size - 1) // model.word_size}, [' \
-                          + ','.join('0' * (output_size // model.word_size)) + ']);'
-        cp_declarations = [new_declaration]
+        cp_declarations = [
+            f"array[0..{(self.output_bit_size - 1) // model.word_size}] of var 0..1: "
+            f"{self.id} = array1d(0..{(self.output_bit_size - 1) // model.word_size}, ["
+            + ",".join("0" * (self.output_bit_size // model.word_size))
+            + "]);"
+        ]
         cp_constraints = []
-        result = cp_declarations, cp_constraints
-        return result
+
+        return cp_declarations, cp_constraints
 
     def cp_xor_differential_propagation_constraints(self, model=None):
         """
@@ -280,13 +275,8 @@ class Constant(Component):
              'constraint constant_2_0[14] = 0;',
              'constraint constant_2_0[15] = 0;'])
         """
-        output_size = int(self.output_bit_size)
-        output_id_link = self.id
-        new_declaration = f'array[0..{int(output_size) - 1}] of var 0..2: {output_id_link};'
-        cp_declarations = [new_declaration]
-        cp_constraints = []
-        for i in range(output_size):
-            cp_constraints.append(f'constraint {output_id_link}[{i}] = 0;')
+        cp_declarations = [f"array[0..{self.output_bit_size - 1}] of var 0..2: {self.id};"]
+        cp_constraints = [f"constraint {self.id}[{i}] = 0;" for i in range(self.output_bit_size)]
 
         return cp_declarations, cp_constraints
 
@@ -307,44 +297,45 @@ class Constant(Component):
             (['array[0..15] of var 0..1: constant_2_0_o;'],
              [])
         """
-        output_size = int(self.output_bit_size)
-        output_id_link = self.id
-        cp_declarations = []
+        cp_declarations = [f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id}_o;"]
         cp_constraints = []
-        new_declaration = f'array[0..{output_size - 1}] of var 0..1: {output_id_link}_o;'
-        cp_declarations.append(new_declaration)
-        result = cp_declarations, cp_constraints
-        return result
+
+        return cp_declarations, cp_constraints
 
     def get_bit_based_c_code(self, verbosity):
-        constant_code = [f'\tBitString *{self.id} = bitstring_from_hex_string("'
-                         f'{int(self.description[0], 16):#0{(self.output_bit_size // 4) + 2}x}", '
-                         f'{self.output_bit_size});']
+        constant_code = [
+            f'\tBitString *{self.id} = bitstring_from_hex_string("'
+            f'{int(self.description[0], 16):#0{(self.output_bit_size // 4) + 2}x}", '
+            f"{self.output_bit_size});"
+        ]
 
         if verbosity:
             constant_code.append(f'\tprintf("{self.id} input: 0x0");')
             constant_code.append(f'\tprintf("{self.id} output: ");')
-            constant_code.append(f'\tprint_bitstring({self.id}, 16);\n')
+            constant_code.append(f"\tprint_bitstring({self.id}, 16);\n")
 
         return constant_code
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
-        return [f'  {self.id} = np.array({constant_to_bitstring(self.description[0], self.output_bit_size)}, '
-                f'dtype=np.uint8).reshape({self.output_bit_size, 1})']
+        value = int(self.description[0], 0)
+        bits = list(map(int, f"{value:0{self.output_bit_size}b}"))
+        return [f"  {self.id} = np.array({bits}, dtype=np.uint8).reshape({self.output_bit_size}, 1)"]
 
     def get_byte_based_vectorized_python_code(self, params):
         val = constant_to_repr(self.description[0], self.output_bit_size)
-        return [f'  {self.id} = np.array({val}, dtype=np.uint8).reshape({len(val)}, 1)']
+        return [f"  {self.id} = np.array({val}, dtype=np.uint8).reshape({len(val)}, 1)"]
 
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):
-        constant_code = [f'\tWordString *{self.id} = wordstring_from_hex_string("'
-                         f'{int(self.description[0], 16):#0{(self.output_bit_size // 4) + 2}x}", '
-                         f'{self.output_bit_size // word_size});']
+        constant_code = [
+            f'\tWordString *{self.id} = wordstring_from_hex_string("'
+            f'{int(self.description[0], 16):#0{(self.output_bit_size // 4) + 2}x}", '
+            f"{self.output_bit_size // word_size});"
+        ]
         wordstring_variables.append(self.id)
         if verbosity:
             constant_code.append(f'\tprintf("{self.id} input: 0x0\\n");')
             constant_code.append(f'\tprintf("{self.id} output: ");')
-            constant_code.append(f'\tprint_wordstring({self.id}, 16);\n')
+            constant_code.append(f"\tprint_wordstring({self.id}, 16);\n")
 
         return constant_code
 
@@ -375,9 +366,8 @@ class Constant(Component):
 
         input_vars, output_vars = self._get_wordwise_input_output_linked_class(model)
         variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
-        constraints = []
-        for i in range(len(output_vars)):
-            constraints.append(x_class[output_vars[i]] == 0)
+        constraints = [x_class[output_var] == 0 for output_var in output_vars]
+
         return variables, constraints
 
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
@@ -411,9 +401,8 @@ class Constant(Component):
 
         input_vars, output_vars = self._get_input_output_variables()
         variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
-        constraints = []
-        for i in range(self.output_bit_size):
-            constraints.append(x_class[output_vars[i]] == 0)
+        constraints = [x_class[output_var] == 0 for output_var in output_vars]
+
         return variables, constraints
 
     def milp_xor_differential_propagation_constraints(self, model):
@@ -449,9 +438,9 @@ class Constant(Component):
         x = model.binary_variable
         input_vars, output_vars = self._get_input_output_variables()
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
-        constraints = [x[output_vars[i]] == 0 for i in range(self.output_bit_size)]
-        result = variables, constraints
-        return result
+        constraints = [x[output_var] == 0 for output_var in output_vars]
+
+        return variables, constraints
 
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """
@@ -483,8 +472,8 @@ class Constant(Component):
         input_vars, output_vars = self._get_independent_input_output_variables()
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
         constraints = []
-        result = variables, constraints
-        return result
+
+        return variables, constraints
 
     def minizinc_deterministic_truncated_xor_differential_trail_constraints(self, model):
         return self.minizinc_xor_differential_propagation_constraints(model)
@@ -506,16 +495,15 @@ class Constant(Component):
             sage: constant_component = fancy.get_component_from_id("constant_0_10")
             sage: _, constant_xor_differential_constraints = constant_component.minizinc_xor_differential_propagation_constraints(minizinc)
             sage: constant_xor_differential_constraints[6]
-            'constraint constant_0_10_y6=0;'
+            'constraint constant_0_10_y6 = 0;'
         """
         var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
         constant_component_string = []
-        noutputs = self.output_bit_size
-        constant_str_values = [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)]
+        constant_str_values = [f"{self.id}_{model.output_postfix}{i}" for i in range(self.output_bit_size)]
         for constant_str in constant_str_values:
-            constant_component_string.append(f'constraint {constant_str}=0;')
-        result = var_names, constant_component_string
-        return result
+            constant_component_string.append(f"constraint {constant_str} = 0;")
+
+        return var_names, constant_component_string
 
     def sat_constraints(self):
         """
@@ -548,11 +536,11 @@ class Constant(Component):
               '-constant_2_0_14',
               'constant_2_0_15'])
         """
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        _, output_bit_ids = self._generate_output_ids()
         value = int(self.description[0], 16)
-        value_bits = [value >> i & 1 for i in reversed(range(output_bit_len))]
-        minus = ['-' * (not i) for i in value_bits]
-        constraints = [f'{minus[i]}{output_bit_ids[i]}' for i in range(output_bit_len)]
+        bits = map(int, f"{value:0{self.output_bit_size}b}")
+        signs = ["-" * (bit ^ 1) for bit in bits]
+        constraints = [f"{sign}{output_bit_id}" for sign, output_bit_id in zip(signs, output_bit_ids)]
 
         return output_bit_ids, constraints
 
@@ -590,7 +578,8 @@ class Constant(Component):
               '-constant_2_0_15_1'])
         """
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
-        constraints = [f'-{out_id}' for out_id in out_ids_0] + [f'-{out_id}' for out_id in out_ids_1]
+        constraints = [f"-{out_id}" for out_id in out_ids_0] + [f"-{out_id}" for out_id in out_ids_1]
+
         return out_ids_0 + out_ids_1, constraints
 
     def sat_semi_deterministic_truncated_xor_differential_constraints(self):
@@ -628,9 +617,9 @@ class Constant(Component):
               '-constant_2_0_15'])
         """
         _, output_bit_ids = self._generate_output_ids()
-        constraints = [f'-{output_bit_id}' for output_bit_id in output_bit_ids]
-        result = output_bit_ids, constraints
-        return result
+        constraints = [f"-{output_bit_id}" for output_bit_id in output_bit_ids]
+
+        return output_bit_ids, constraints
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
@@ -662,8 +651,8 @@ class Constant(Component):
         """
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        result = output_bit_ids, []
-        return result
+
+        return output_bit_ids, []
 
     def smt_constraints(self):
         """
@@ -692,11 +681,13 @@ class Constant(Component):
               '(assert (not constant_0_2_30))',
               '(assert constant_0_2_31)'])
         """
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        _, output_bit_ids = self._generate_output_ids()
         value = int(self.description[0], 16)
-        constraints = [smt_utils.smt_assert(output_bit_ids[i]) if value >> (output_bit_len - 1 - i) & 1
-                       else smt_utils.smt_assert(smt_utils.smt_not(output_bit_ids[i]))
-                       for i in range(output_bit_len)]
+        bits = map(int, f"{value:0{self.output_bit_size}b}")
+        constraints = [
+            smt_utils.smt_assert(output_bit_id) if bit else smt_utils.smt_assert(smt_utils.smt_not(output_bit_id))
+            for bit, output_bit_id in zip(bits, output_bit_ids)
+        ]
 
         return output_bit_ids, constraints
 
@@ -727,11 +718,10 @@ class Constant(Component):
               '(assert (not constant_0_2_30))',
               '(assert (not constant_0_2_31))'])
         """
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        constraints = [smt_utils.smt_assert(smt_utils.smt_not(output_bit_ids[i]))
-                       for i in range(output_bit_len)]
-        result = output_bit_ids, constraints
-        return result
+        _, output_bit_ids = self._generate_output_ids()
+        constraints = [smt_utils.smt_assert(smt_utils.smt_not(output_bit_id)) for output_bit_id in output_bit_ids]
+
+        return output_bit_ids, constraints
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
@@ -759,5 +749,5 @@ class Constant(Component):
         """
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         _, output_bit_ids = self._generate_output_ids(out_suffix)
-        result = output_bit_ids, []
-        return result
+
+        return output_bit_ids, []

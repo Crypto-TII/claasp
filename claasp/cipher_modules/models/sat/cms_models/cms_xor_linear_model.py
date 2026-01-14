@@ -1,21 +1,19 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 
 """CryptoMiniSat model of Cipher.
 
@@ -42,17 +40,17 @@ XOR operations were overridden.
 For any further information, visit `CryptoMiniSat - XOR clauses
 <https://www.msoos.org/xor-clauses/>`_.
 """
+
+from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.utils import get_bit_bindings
-from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
 from claasp.name_mappings import CONSTANT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION
 
 
 class CmsSatXorLinearModel(SatXorLinearModel):
-
-    def __init__(self, cipher, counter='sequential', compact=False):
+    def __init__(self, cipher, counter="sequential", compact=False):
         super().__init__(cipher, counter, compact)
-        self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, '_'.join)
+        self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, "_".join)
 
     def _add_clauses_to_solver(self, numerical_cnf, solver):
         """
@@ -91,8 +89,8 @@ class CmsSatXorLinearModel(SatXorLinearModel):
         """
         constraints = []
         for output_bit, input_bits in self.bit_bindings.items():
-            operands = [f'x -{output_bit}'] + input_bits
-            constraints.append(' '.join(operands))
+            operands = [f"x -{output_bit}"] + input_bits
+            constraints.append(" ".join(operands))
 
         return constraints
 
@@ -120,13 +118,13 @@ class CmsSatXorLinearModel(SatXorLinearModel):
         self._model_constraints = constraints
 
         for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION]
+            component_types = (CONSTANT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
             operation = component.description[0]
-            operation_types = ["AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB"]
+            operation_types = ("AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB")
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.cms_xor_linear_mask_propagation_constraints(self)
             else:
-                print(f'{component.id} not yet implemented')
+                print(f"{component.id} not yet implemented")
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
