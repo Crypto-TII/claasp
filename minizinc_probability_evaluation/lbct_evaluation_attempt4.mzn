@@ -25,7 +25,7 @@ array[0..15] of int: state2index_lbct = array1d(0..15, [0, -1, -1, 1, -1, 2, 3, 
 array[0..15] of var 0..1: isValid_lbct = array1d(0..15, [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1]);
 
 %=================== VARIABILI DECISIONALI ===================
-array[0..14,0..7,0..3] of var int: index_dp_t_element_to_sum;
+array[0..14,0..7,0..3] of var 0..31: index_dp_t_element_to_sum;
 array[0..14,0..7] of var int: dp_t;
 array[0..15,0..7] of var int: dp_lbct;
 
@@ -75,7 +75,7 @@ forall(l in 1..nbit-1) (
                      var 0..1: app5_0 = (x+bnLL) mod 2;
                      var 0..1: app5_1 = (y+bnR) mod 2;
                      var 0..1: tmp5 = (app5_0*app5_1)+(app5_0*c3)+(app5_1*c3) mod 2;
-                     var int: next_state = if tmp5=0 then tmp4*8 + tmp3*4 + tmp2*2 + tmp1
+                     var 0..31: next_state = if tmp5=0 then tmp4*8 + tmp3*4 + tmp2*2 + tmp1
                                      else ((tmp4+1 mod 2)*8 + (tmp3+1 mod 2)*4 + (tmp2+1 mod 2)*2 + (tmp1+1 mod 2))
                                      endif;
                 } in
@@ -87,7 +87,7 @@ forall(l in 1..nbit-1) (
     dp_t[l-1,j] =
         sum(state in 0..7, xy in 0..3)(
             let {
-                var int: ns = index_dp_t_element_to_sum[l-1,state,xy];
+                var 0..31: ns = index_dp_t_element_to_sum[l-1,state,xy];
             } in
             if isValid_lbct[ns] = 1 /\ state2index_lbct[ns] = j
             then dp_lbct[l-1,state]

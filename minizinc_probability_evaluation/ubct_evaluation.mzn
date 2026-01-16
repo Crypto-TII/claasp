@@ -18,13 +18,21 @@ array[0..3,0..3] of var 0..1: valid_state_ubct = array2d(0..3,0..3,
 0,1,1,0,
 ]);
 
+array[0..3,0..1] of 0..1: xy_array = array2d(0..3,0..1,
+[
+0,0,
+0,1,
+1,0,
+1,1
+]);
+
 array[0..7] of int: state2index_ubct = array1d(0..7, [0, -1, -1, 1, -1, 2, 3, -1]);
 array[0..7] of var 0..1: isValid_ubct = array1d(0..7, [1, 0, 0, 1, 0, 1, 1, 0]);
 
 %=================== VARIABILI DECISIONALI ===================
 array[0..14,0..3,0..3] of var int: index_dp_t_element_to_sum;
 array[0..14,0..3] of var int: dp_t;
-array[0..15,0..3] of var int: dp_ubct;
+array[0..15,0..3] of var int: dp_ubct; 
 
 %=================== INIZIALIZZAZIONE BASE ===================
 constraint dp_ubct[0,0] = 1;
@@ -34,7 +42,7 @@ constraint forall(k in 1..3)(dp_ubct[0,k] = 0);
 %% until nbit-4 it works
 %% for nbit-1 i have overflow
 constraint
-forall(l in 1..nbit-1) (
+forall(l in 1..nbit-4) (
     let {
          var 0..1: bdL = pre_upper_modadd_0_1_0[nbit-l];
          var 0..1: bdR = pre_upper_modadd_0_1_1[nbit-l];
@@ -56,8 +64,8 @@ forall(l in 1..nbit-1) (
         (condition = 0) -> (
         forall(xy in 0..3)(
                 let {
-                     var 0..1: x = xy div 2;
-                     var 0..1: y = xy mod 2;
+                     var 0..1: x = xy_array[xy,0]; %msb bit
+                     var 0..1: y = xy_array[xy,1]; %lsb bit
                      var 0..1: tmp1 = (x*y + x*c1 + y*c1) mod 2;
                      var 0..1: app2_0 = (x+y+c1+bnL+1) mod 2;
                      var 0..1: app2_1 = (y+bnR) mod 2;
@@ -68,10 +76,11 @@ forall(l in 1..nbit-1) (
                      var 0..1: app4_0 = (x+bdL+y+bdR+c2+bdL) mod 2;
                      var 0..1: app4_1 = (y+bdR+bnR) mod 2;
                      var 0..1: tmp4 = min(1,(app4_0*app4_1)+(app4_0*b2)+(app4_1*b2));
-                     var int: next_state = if tmp4=0 then tmp3*4 + tmp2*2 + tmp1
-                                     else (tmp3+1 mod 2)*4 + (tmp2+1 mod 2)*2 + (tmp1+1 mod 2)
-                                     endif;
+                     var int: next_state;
                 } in
+                (next_state = if tmp4=0 then tmp3*4 + tmp2*2 + tmp1
+                                     else (tmp3+1 mod 2)*4 + (tmp2+1 mod 2)*2 + (tmp1+1 mod 2)
+                                     endif) /\
                 (index_dp_t_element_to_sum[l-1,state,xy] = next_state)
             )
         )   
@@ -94,16 +103,16 @@ forall(l in 1..nbit-1) (
 var int: ubct_prob;
 constraint ubct_prob = 4 * sum(state in 0..3)(
     let {
-        var 0..1: bdL = pre_upper_modadd_0_1_0[nbit-1];
-        var 0..1: bdR = pre_upper_modadd_0_1_1[nbit-1];
-        var 0..1: bnL = pre_lower_modadd_0_1_0[nbit-1];
-        var 0..1: bnR = pre_lower_modadd_0_1_1[nbit-1];
-        var 0..1: bdLL = upper_modadd_0_1[nbit-1];
+        var 0..1: bdL = pre_upper_modadd_0_1_0[0];
+        var 0..1: bdR = pre_upper_modadd_0_1_1[0];
+        var 0..1: bnL = pre_lower_modadd_0_1_0[0];
+        var 0..1: bnR = pre_lower_modadd_0_1_1[0];
+        var 0..1: bdLL = upper_modadd_0_1[0];
         var 0..1: valid_state_0bit = valid_state_ubct[state,3];
         var 0..1: valid_state_2bit = valid_state_ubct[state,1];
     } in
     if (valid_state_0bit + valid_state_2bit + bdLL + bdR + bdL) mod 2 = 0 then
-        dp_ubct[nbit-1,state]
+        dp_ubct[nbit-4,state]
     else 0
     endif
 );
@@ -112,3 +121,21 @@ var float: ubct_value = ubct_prob / 2^32;
 
 %=================== OUTPUT ===================
 output ["ubct_entry/2^32 = \(ubct_value)"];
+
+output [
+  "ubct_entry/2^32 = \(ubct_value)\n\n",
+  "index_dp_t_element_to_sum:\n",
+  concat([
+    "l = \(l)\n" ++
+    concat([
+      "  state = \(s): " ++
+      concat([
+        "\(index_dp_t_element_to_sum[l,s,xy]) " 
+        | xy in 0..3
+      ]) ++ "\n"
+      | s in 0..3
+    ]) ++ "\n"
+    | l in 0..nbit-5
+  ])
+];
+
