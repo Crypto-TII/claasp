@@ -353,6 +353,75 @@ def byte_vector_MODADD(input):
             b = carry.copy()
     return c
 
+def byte_vector_idea_modmul(input, modulus, word_size):
+    """
+    Computes IDEA modular multiplication (a * b) mod (2^16 + 1) for vectorized byte arrays.
+    
+    This function implements IDEA-specific modular multiplication with automatic
+    0 <-> 2^16 mapping required by the IDEA cipher.
+    
+    For moduli 2^n + 1:
+    - Input value 0 is treated as 2^n before multiplication
+    - Output value 2^n is mapped back to 0 after reduction
+    
+    This implements the multiplicative group structure where 0 represents 2^n.
+
+    INPUT:
+
+    - ``input`` -- **list**; A list of 2 numpy byte matrices (n-bit words) to be multiplied, 
+      each with one row per byte, and one column per sample.
+    - ``modulus`` -- **integer**; The modulus for multiplication
+    - ``word_size`` -- **integer**; The bit size of the operands (e.g., 16 for 16-bit words)
+    
+    EXAMPLES::
+    
+        sage: from claasp.cipher_modules.generic_functions_vectorized_byte import byte_vector_idea_modmul
+        sage: from claasp.cipher_modules.generic_functions_vectorized_byte import integer_array_to_evaluate_vectorized_input
+        sage: # Example with modulus 2^16 + 1 = 65537
+        sage: a = integer_array_to_evaluate_vectorized_input([3], 16)
+        sage: b = integer_array_to_evaluate_vectorized_input([5], 16)
+        sage: result = byte_vector_idea_modmul([a, b], 65537, 16)
+        sage: int.from_bytes(result[:, 0].tobytes(), 'big')
+        15
+        
+        sage: # IDEA with 0 mapping (0 treated as 2^16)
+        sage: a = integer_array_to_evaluate_vectorized_input([0], 16)
+        sage: b = integer_array_to_evaluate_vectorized_input([1], 16)
+        sage: result = byte_vector_idea_modmul([a, b], 65537, 16)
+        sage: int.from_bytes(result[:, 0].tobytes(), 'big')
+        0
+    """
+    assert len(input) == 2, "idea_modmul expects exactly 2 inputs"
+    assert word_size == 16, "idea_modmul only supports 16-bit words"
+    
+    # Convert 16-bit byte arrays to integers
+    a = (np.uint32(input[0][0, :]) << 8) | np.uint32(input[0][1, :])
+    b = (np.uint32(input[1][0, :]) << 8) | np.uint32(input[1][1, :])
+    
+    # Always apply input mapping: 0 -> 2^16
+    max_value = 65536  # 2^16
+    a = np.where(a == 0, max_value, a)
+    b = np.where(b == 0, max_value, b)
+    
+    # Perform modular multiplication (16-bit values fit in uint64)
+    a_calc = a.astype(np.uint64)
+    b_calc = b.astype(np.uint64)
+    mod_calc = np.uint64(modulus)
+    result = (a_calc * b_calc) % mod_calc
+    
+    # Always apply reverse mapping: 2^n -> 0
+    result = np.where(result == max_value, 0, result)
+    
+    # Convert back to byte representation (big-endian)
+    num_bytes = (word_size + 7) // 8  # Round up: ceil(word_size / 8)
+    output = np.zeros((num_bytes, input[0].shape[1]), dtype=np.uint8)
+    
+    for i in range(num_bytes):
+        shift = (num_bytes - 1 - i) * 8
+        output[i, :] = (result >> shift) & 0xff
+    
+    return output
+
 
 def byte_vector_MODSUB(input):
     """

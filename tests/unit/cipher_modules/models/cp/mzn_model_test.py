@@ -13,7 +13,29 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_cipher_model_arx_optimized i
 from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized import (
     MznDeterministicTruncatedXorDifferentialModelARXOptimized,
 )
-from claasp.cipher_modules.models.utils import set_fixed_variables
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
+from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+from minizinc import Model, Solver, Instance, Status
+
+
+def test_solver_names():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    mzn = MznModel(speck)
+    solver_names = mzn.solver_names()
+    assert isinstance(solver_names, list)
+    assert len(solver_names) > 0
+    # Check that each entry has the required keys
+    for solver in solver_names:
+        assert 'solver_brand_name' in solver
+        assert 'solver_name' in solver
+        assert 'keywords' not in solver  # verbose=False by default
+    
+    # Test verbose mode
+    verbose_solver_names = mzn.solver_names(verbose=True)
+    assert isinstance(verbose_solver_names, list)
+    # External solvers should have keywords when verbose=True
+    external_solvers = [s for s in verbose_solver_names if 'keywords' in s]
+    assert len(external_solvers) > 0
 
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
@@ -120,3 +142,127 @@ def test_model_constraints():
         speck = SpeckBlockCipher(number_of_rounds=4)
         mzn = MznModel(speck)
         mzn.model_constraints()
+
+def test_build_generic_cp_model_from_dictionary():
+
+    """
+    Differential ARX validation for Speck.
+
+    The input and output differences used in the tests are taken from
+    Table 4 (Differential Characteristics for Speck32/48/64) of:
+
+    Kai Fu et al., "MILP-Based Automatic Search Algorithms for
+    Differential and Linear Trails for Speck", https://eprint.iacr.org/2016/407.pdf
+    """
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    model = MznXorDifferentialModelARXOptimized(speck)
+    component_and_model_types = []
+
+    for component in speck.get_all_components():
+        component_and_model_types.append({
+            "component_object": component,
+            "model_type": "minizinc_xor_differential_propagation_constraints"
+        })
+
+    fixed_variables = []
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="plaintext",
+            constraint_type="equal",
+            bit_positions=list(range(32)),
+            bit_values=integer_to_bit_list(0x02110A04, 32, 'big')
+        )
+    )
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="key",
+            constraint_type="equal",
+            bit_positions=list(range(64)),
+            bit_values=[0] * 64
+        )
+    )
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="cipher_output_2_12",
+            constraint_type="equal",
+            bit_positions=list(range(32)),
+            bit_values=integer_to_bit_list(0x80008000, 32, 'big')
+        )
+    )
+
+    model.build_generic_cp_model_from_dictionary(component_and_model_types, fixed_variables)
+
+    #Caso especial para ARX
+    model.init_constraints()
+
+    result = model.solve_for_ARX(solver_name="cp-sat")
+
+    assert result.status in {
+        Status.SATISFIED,
+        Status.OPTIMAL_SOLUTION,
+        Status.ALL_SOLUTIONS,
+    }
+
+def test_build_generic_cp_model_from_dictionary_xor_linear():
+    """
+    Linear validation for Speck.
+
+    The linear input/output masks used in the tests are taken from
+    Table 6 of:
+
+    Kai Fu et al., "MILP-Based Automatic Search Algorithms for
+    Differential and Linear Trails for Speck", https://eprint.iacr.org/2016/407.pdf
+    """
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    model = MznXorLinearModel(speck)
+    component_and_model_types = []
+
+    for component in speck.get_all_components():
+        component_and_model_types.append({
+            "component_object": component,
+            "model_type": "cp_xor_linear_mask_propagation_constraints"
+        })
+    
+    fixed_variables = []
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="plaintext",
+            constraint_type="equal",
+            bit_positions=list(range(32)),
+            bit_values=integer_to_bit_list(0x03805224, 32, 'big')
+        )
+    )
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="key",
+            constraint_type="equal",
+            bit_positions=list(range(64)),
+            bit_values=[0] * 64
+        )
+    )
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="cipher_output_2_12",
+            constraint_type="equal",
+            bit_positions=list(range(32)),
+            bit_values=integer_to_bit_list(0x40A000C1, 32, 'big')
+        )
+    )
+
+    model.build_generic_cp_model_from_dictionary(component_and_model_types, fixed_variables)
+
+    model.initialise_model()
+    
+    result = model.solve_for_ARX(solver_name="cp-sat")
+
+    assert result.status in {
+        Status.SATISFIED,
+        Status.OPTIMAL_SOLUTION,
+        Status.ALL_SOLUTIONS,
+    }

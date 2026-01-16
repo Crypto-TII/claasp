@@ -8,7 +8,7 @@ from claasp.cipher_modules.models.utils import (
     integer_to_bit_list,
 )
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
 
 
@@ -147,7 +147,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
 
 
 def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_configuration_chacha():
-    chacha = ChachaPermutation(number_of_rounds=6)
+    chacha = ChachaPermutation(number_of_rounds=6, round_mode=ROUND_MODE_HALF)
     sat = SatSemiDeterministicTruncatedXorDifferentialModel(chacha)
     state_size = 512
     initial_state = [0] * state_size
@@ -169,7 +169,7 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_windo
 
 
 def test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_for_chacha_1_round_satisfiable():
-    chacha = ChachaPermutation(number_of_rounds=2)
+    chacha = ChachaPermutation(number_of_rounds=2, round_mode=ROUND_MODE_HALF)
     sat = SatSemiDeterministicTruncatedXorDifferentialModel(chacha)
     state_size = 512
     initial_state_positions = [0] * state_size

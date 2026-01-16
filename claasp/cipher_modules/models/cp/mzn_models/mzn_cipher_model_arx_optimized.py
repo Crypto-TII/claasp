@@ -21,8 +21,9 @@ from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERAT
 
 
 class MznCipherModelARXOptimized(MznModel):
-    def __init__(self, cipher, window_size_list=None, probability_weight_per_round=None, sat_or_milp="sat"):
-        super().__init__(cipher, window_size_list, probability_weight_per_round, sat_or_milp)
+
+    def __init__(self, cipher, sat_or_milp='sat'):
+        super().__init__(cipher, sat_or_milp)
 
     def build_cipher_model(self, fixed_variables=[]):
         """
