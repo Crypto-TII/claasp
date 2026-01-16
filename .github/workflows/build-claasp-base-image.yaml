@@ -33,6 +33,7 @@ jobs:
         context: .
         file: ./docker/Dockerfile
         push: true
+        platforms: linux/amd64
         tags: tiicrc/claasp-base:latest1
         target: claasp-base
         cache-from: type=gha,scope=claasp-base
@@ -45,6 +46,7 @@ jobs:
         context: .
         file: ./docker/Dockerfile
         push: true
+        platforms: linux/arm64
         tags: tiicrc/claasp-m1-base:latest1
         target: claasp-base
         cache-from: type=gha,scope=claasp-base-m1
