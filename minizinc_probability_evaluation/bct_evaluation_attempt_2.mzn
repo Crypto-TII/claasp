@@ -68,4 +68,4 @@ var float: bct_value = bct_result / 2^32;
 %=================== ESEMPIO ====================
 
 
-output ["bct_entry/2^16 = \(bct_value)"];
+output ["bct_entry/2^32 = \(bct_value)"];

@@ -50,7 +50,7 @@ constraint dp_lbct[0,5] = 0;
 constraint dp_lbct[0,6] = 0;
 constraint dp_lbct[0,7] = 0;
 
-constraint  forall(i in 1..nbit-4)(
+constraint  forall(i in 1..nbit-1)(
     forall(state in 0..7)( 
 %     (c1[i-1,state] = valid_state_lbct[state,0])/\
 %     (b1[i-1,state] = valid_state_lbct[state,1])/\ 
@@ -89,9 +89,9 @@ constraint  forall(i in 1..nbit-4)(
             )/\
             (tmp5[i-1,state,xy] = 
                   (
-                    (((xy_array[xy,0]+nLL[nbit-1]) mod 2)*((xy_array[xy,1]+nR[nbit-1]) mod 2))+
-                    (((xy_array[xy,0]+nLL[nbit-1]) mod 2)*valid_state_lbct[state,4])+
-                    (((xy_array[xy,1]+nR[nbit-1]) mod 2)*valid_state_lbct[state,4])
+                    (((xy_array[xy,0]+nLL[nbit-i]) mod 2)*((xy_array[xy,1]+nR[nbit-i]) mod 2))+
+                    (((xy_array[xy,0]+nLL[nbit-i]) mod 2)*valid_state_lbct[state,4])+
+                    (((xy_array[xy,1]+nR[nbit-i]) mod 2)*valid_state_lbct[state,4])
                   ) mod 2
             )/\
             index_dp_t_element_to_sum[i-1,state,xy] = 
@@ -136,7 +136,7 @@ var float: lbct_value = lbct_prob / 2^32;
     "bit = \(l)\n" ++ concat([
           "  state = \(s): " ++ concat([
                              "\(index_dp_t_element_to_sum[l,s,xy]) " | xy in 0..3]) ++ "\n"
-         | s in 0..3]) ++ "\n"
+         | s in 0..7]) ++ "\n"
     | l in 0..nbit-2]),  
     concat([
     "bit = \(l)\n" ++ concat([
