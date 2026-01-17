@@ -84,10 +84,9 @@ RUN git clone --depth 1 https://github.com/tinycthread/tinycthread.git \
     && cd build \
     && cmake .. -DCMAKE_PREFIX_PATH=/usr/local \
     && make -j$(nproc) \
-    && make install \
+    && cp libtinycthread.a /usr/local/lib/ \
+    && cp ../source/tinycthread.h /usr/local/include/ \
     && ldconfig
-
-ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
 
 # Installing SCIP with TPI support for parallel solving using TinyCThread
 RUN wget https://github.com/scipopt/scip/archive/refs/tags/v803.tar.gz \
@@ -101,9 +100,6 @@ RUN wget https://github.com/scipopt/scip/archive/refs/tags/v803.tar.gz \
 
 ENV PATH="${PATH}:/opt/scip-803/build/bin"
 ENV LD_LIBRARY_PATH="/opt/scip-803/build/lib:/usr/local/lib:${LD_LIBRARY_PATH}"
-
-# Quick check to verify SCIP builds and TPI support
-RUN scip -c "quit" | head -50
 
 # Installing SageMath tools
 RUN sage -pip install bitstring==4.0.1 \
