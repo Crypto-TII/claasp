@@ -34,7 +34,7 @@ jobs:
         file: ./docker/Dockerfile
         push: true
         platforms: linux/amd64
-        tags: tiicrc/claasp-base:latest1
+        tags: tiicrc/claasp-base:latest
         target: claasp-base
         cache-from: type=gha,scope=claasp-base
         cache-to: type=gha,scope=claasp-base,mode=max
@@ -47,7 +47,7 @@ jobs:
         file: ./docker/Dockerfile
         push: true
         platforms: linux/arm64
-        tags: tiicrc/claasp-m1-base:latest1
+        tags: tiicrc/claasp-m1-base:latest
         target: claasp-base
         cache-from: type=gha,scope=claasp-base-m1
         cache-to: type=gha,scope=claasp-base-m1,mode=max
