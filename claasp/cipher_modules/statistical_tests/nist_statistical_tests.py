@@ -23,8 +23,10 @@ import shutil
 import pathlib
 from datetime import timedelta, datetime
 import matplotlib.pyplot as plt
+import numpy as np
 
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType
+from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
 
 
 TEST_ID_TABLE = {
@@ -247,7 +249,11 @@ class NISTStatisticalTests:
         dataset_generate_time = time.time() - dataset_generate_time
         if not dataset:
             return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
+        # Only access dataset_type if it was set (when a valid test_type was provided)
+        if hasattr(self, 'dataset_type'):
+            self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
+        else:
+            self._write_execution_time(f'Compute dataset', dataset_generate_time)
         nist_test['test_results'] = self._generate_nist_dicts(time_date=time_date, dataset=dataset, round_start=round_start,
                                                               round_end=round_end,
                                                               statistical_test_option_list=statistical_test_option_list)
@@ -257,91 +263,179 @@ class NISTStatisticalTests:
         return nist_test
 
     @staticmethod
-    def _run_nist_statistical_tests_tool(input_file, bit_stream_length=10000, number_of_bit_streams=10,
-                                         input_file_format=1,
-                                         statistical_test_option_list=15 * '1'):
+    def _convert_to_binary_array(data):
         """
-        Run statistical tests using the NIST test suite [1]. The result will be in experiments folder.
-        Be aware that the NIST STS suits needed to be installed in /usr/local/bin in the docker image.
-
-        [1] https://csrc.nist.gov/Projects/Random-Bit-Generation/Documentation-and-Software
+        Convert byte array data to numpy binary array using numpy.unpackbits (very fast).
 
         INPUT:
 
-        - ``input_file`` -- **str**; file containing the bit streams
-        - ``bit_stream_length`` -- **integer**; bit stream length (See [1])
-        - ``number_of_bit_streams`` -- **integer**; number of bit streams in `input_file`
-        - ``input_file_format`` -- **integer**; `input_file` format. Set to 0 to indicate a file containing a binary
-          string in ASCII, or 1 to indicate a binary file
-        - ``test_type`` -- **str**; the type of the test to run
-        - ``statistical_test_option_list`` -- **str** (default: `15 * '1'`); a binary string of size 15. This string is
-          used to specify a set of statistical tests we want to run (See [1])
+        - ``data`` -- **bytes** or **bytearray**; binary data
 
         OUTPUT:
 
-        - The result of the NIST statistical tests is in file test_reports/statistical_tests/experiments/AlgorithmTesting/finalAnalysisReport.txt
-
-        EXAMPLES::
-
-            sage: import os
-            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
-            sage: if not os.path.exists(f'test_reports/statistical_tests/experiments'):
-            ....:     os.makedirs(f'test_reports/statistical_tests/experiments')
-            sage: result = NISTStatisticalTests._run_nist_statistical_tests_tool(
-            ....:     f'claasp/cipher_modules/statistical_tests/input_data_example',
-            ....:     10000, 10, 1, statistical_test_option_list='1' + 14 * '0')
-                 Statistical Testing In Progress.........
-                 Statistical Testing Complete!!!!!!!!!!!!
-
-            sage: result
-            True
+        - **numpy array**; array of 0s and 1s
         """
-
-        def _mkdir_folder_experiment(path_prefix, folder_experiment):
-            path_folder_experiment = os.path.join(path_prefix, folder_experiment)
-            if not os.path.exists(path_folder_experiment):
-                pathlib.Path(path_folder_experiment).mkdir(parents=True, exist_ok=False, mode=0o777)
-
-        folder_experiments = [
-            "Frequency",
-            "BlockFrequency",
-            "Runs",
-            "LongestRun",
-            "Rank",
-            "FFT",
-            "NonOverlappingTemplate",
-            "OverlappingTemplate",
-            "Universal",
-            "LinearComplexity",
-            "Serial",
-            "ApproximateEntropy",
-            "CumulativeSums",
-            "RandomExcursions",
-            "RandomExcursionsVariant"
-        ]
-
-        input_file = os.path.abspath(input_file)
-        os.system(f'cp -r {nist_executable_root_directory} {nist_temp_directory}')
-        for directory in ["AlgorithmTesting", "BBS", "CCG", "G-SHA1", "LCG", "MODEXP", "MS", "QCG1", "QCG2", "XOR"]:
-            path_prefix = os.path.join(nist_local_experiment_folder, directory)
-            for experiment_name in folder_experiments:
-                _mkdir_folder_experiment(path_prefix, experiment_name)
-
-        output_code = os.system(f'{nist_temp_directory}/assess {input_file} {bit_stream_length} {number_of_bit_streams} {input_file_format} '
-                                f'{statistical_test_option_list}')
-        if output_code != 256:
-            return output_code
-
-        return True
+        if isinstance(data, (bytes, bytearray)):
+            return np.unpackbits(np.frombuffer(data, dtype=np.uint8))
+        else:
+            return np.unpackbits(np.array(data, dtype=np.uint8))
 
     @staticmethod
-    def _parse_report(report_filename):
+    def _run_nist_statistical_tests_tool(binary_data, bit_stream_length=10000, number_of_bit_streams=10,
+                                         input_file_format=1,
+                                         statistical_test_option_list=15 * '1'):
         """
-        Parse the nist statistical tests report. It will return the parsed result in a dictionary format.
+        Run statistical tests using pure Python implementation.
 
         INPUT:
 
-        - ``report_filename`` -- **str**; the filename of the report you need to parse
+        - ``binary_data`` -- **numpy array**; binary data (array of 0s and 1s)
+        - ``bit_stream_length`` -- **integer**; bit stream length (for compatibility, not used)
+        - ``number_of_bit_streams`` -- **integer**; number of bit streams (for compatibility, not used)
+        - ``input_file_format`` -- **integer**; unused (for compatibility with old API)
+        - ``statistical_test_option_list`` -- **str** (default: `15 * '1'`); a binary string of size 15
+          specifying which statistical tests to run
+
+        OUTPUT:
+
+        - **dict**; dictionary containing test results in the same format as _parse_report
+
+        EXAMPLES::
+
+            sage: import numpy as np
+            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
+            sage: binary_data = np.random.randint(0, 2, 10000, dtype=np.uint8)
+            sage: result = NISTStatisticalTests._run_nist_statistical_tests_tool(
+            ....:     binary_data, 10000, 1, 1, statistical_test_option_list='1' + 14 * '0')
+            sage: 'randomness_test' in result
+            True
+        """
+        n = len(binary_data)
+        result_dict = {
+            "passed_tests": 0,
+            "randomness_test": []
+        }
+        
+        # Define test mapping
+        test_mapping = [
+            ('Frequency', lambda: NISTTests.frequency_test(binary_data)),
+            ('BlockFrequency', lambda: NISTTests.block_frequency_test(binary_data, block_size=min(128, n // 100))),
+            ('CumulativeSums', lambda: NISTStatisticalTests._run_cumsum_both_modes(binary_data)),
+            ('Runs', lambda: NISTTests.runs_test(binary_data)),
+            ('LongestRun', lambda: NISTTests.longest_run_test(binary_data)),
+            ('Rank', lambda: NISTTests.rank_test(binary_data)),
+            ('FFT', lambda: NISTTests.dft_test(binary_data)),
+            ('NonOverlappingTemplate', lambda: NISTTests.non_overlapping_template_test(binary_data)),
+            ('OverlappingTemplate', lambda: NISTTests.overlapping_template_test(binary_data)),
+            ('Universal', lambda: NISTTests.universal_test(binary_data)),
+            ('ApproximateEntropy', lambda: NISTTests.approximate_entropy_test(binary_data, m=min(10, int(np.log2(n)) - 5))),
+            ('RandomExcursions', lambda: NISTTests.random_excursions_test(binary_data)),
+            ('RandomExcursionsVariant', lambda: NISTTests.random_excursions_variant_test(binary_data)),
+            ('Serial', lambda: NISTTests.serial_test(binary_data, m=min(16, int(np.log2(n)) - 2))),
+            ('LinearComplexity', lambda: NISTTests.linear_complexity_test(binary_data, block_size=min(500, n // 100)))
+        ]
+        
+        # Run selected tests
+        for i, (test_name, test_func) in enumerate(test_mapping):
+            if statistical_test_option_list[i] == '1':
+                try:
+                    test_result = test_func()
+                    if isinstance(test_result, list):
+                        # Multiple results (e.g., from cumsum)
+                        for idx, res in enumerate(test_result):
+                            formatted = NISTStatisticalTests._format_test_result(
+                                test_name, res, TEST_ID_TABLE[test_name] + idx, number_of_bit_streams)
+                            result_dict["randomness_test"].append(formatted)
+                            if res['passed']:
+                                result_dict["passed_tests"] += 1
+                    else:
+                        formatted = NISTStatisticalTests._format_test_result(
+                            test_name, test_result, TEST_ID_TABLE[test_name], number_of_bit_streams)
+                        result_dict["randomness_test"].append(formatted)
+                        if test_result['passed']:
+                            result_dict["passed_tests"] += 1
+                except Exception as e:
+                    # If test fails, add a failed test entry
+                    result_dict["randomness_test"].append({
+                        'test_id': TEST_ID_TABLE[test_name],
+                        'test_name': test_name,
+                        'passed': False,
+                        'p-value': 0.0,
+                        'passed_seqs': 0,
+                        'total_seqs': number_of_bit_streams,
+                        'passed_proportion': 0.0,
+                        'error': str(e)
+                    })
+        
+        # Calculate thresholds
+        result_dict["number_of_sequences_threshold"] = [
+            {"total": number_of_bit_streams, "passed": int(number_of_bit_streams * 0.96)}
+        ]
+        
+        return result_dict
+    
+    @staticmethod
+    def _run_cumsum_both_modes(binary_data):
+        """Run cumulative sums test in both forward and backward modes."""
+        forward = NISTTests.cumulative_sums_test(binary_data, mode=0)
+        backward = NISTTests.cumulative_sums_test(binary_data, mode=1)
+        return [forward, backward]
+    
+    @staticmethod
+    def _format_test_result(test_name, result, test_id, total_seqs):
+        """
+        Format test result from NISTTests into expected dictionary structure.
+        
+        INPUT:
+        
+        - ``test_name`` -- **string**; name of the test
+        - ``result`` -- **dict**; test result from NISTTests
+        - ``test_id`` -- **integer**; test ID
+        - ``total_seqs`` -- **integer**; total number of sequences
+        
+        OUTPUT:
+        
+        - **dict**; formatted test result
+        """
+        formatted = {
+            'test_id': test_id,
+            'test_name': test_name,
+            'passed': result.get('passed', False)
+        }
+        
+        # Extract p-value
+        if 'p_value' in result:
+            formatted['p-value'] = result['p_value']
+        elif 'p_value1' in result:
+            formatted['p-value'] = result['p_value1']
+        elif 'p_values' in result:
+            formatted['p-value'] = float(np.mean(result['p_values']))
+        else:
+            formatted['p-value'] = 0.0
+        
+        # Add sequence statistics (simplified for single sequence)
+        formatted['passed_seqs'] = 1 if result.get('passed', False) else 0
+        formatted['total_seqs'] = 1
+        formatted['passed_proportion'] = 1.0 if result.get('passed', False) else 0.0
+        
+        # Add placeholder C1-C10 values for compatibility
+        for i in range(10):
+            formatted[f'C{i+1}'] = '0'
+        
+        return formatted
+
+    @staticmethod
+    def _parse_report(report_dict_or_filename):
+        """
+        Parse or pass through the NIST statistical tests report.
+        
+        This method now accepts either a dictionary (from Python implementation)
+        or a filename (legacy support for file-based reports).
+
+        INPUT:
+
+        - ``report_dict_or_filename`` -- **dict** or **str**; either a pre-formatted 
+          dictionary from _run_nist_statistical_tests_tool, or the filename of a report to parse
 
         OUTPUT:
 
@@ -350,13 +444,33 @@ class NISTStatisticalTests:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
-            sage: dict = NISTStatisticalTests._parse_report(f'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt')
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is in progress.
-            Parsing claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt is finished.
+            sage: import numpy as np
+            sage: binary_data = np.random.randint(0, 2, 10000, dtype=np.uint8)
+            sage: result_dict = NISTStatisticalTests._run_nist_statistical_tests_tool(
+            ....:     binary_data, 10000, 1, 1, statistical_test_option_list='1' + 14 * '0')
+            sage: parsed = NISTStatisticalTests._parse_report(result_dict)
+            sage: parsed == result_dict
+            True
         """
+        # If it's already a dictionary, just return it
+        if isinstance(report_dict_or_filename, dict):
+            return report_dict_or_filename
+        
+        # Legacy file parsing (kept for backward compatibility)
+        report_filename = report_dict_or_filename
         print(f'Parsing {report_filename} is in progress.')
-        with open(report_filename, 'r') as f:
-            lines = f.readlines()
+        
+        try:
+            with open(report_filename, 'r') as f:
+                lines = f.readlines()
+        except FileNotFoundError:
+            print(f'Warning: {report_filename} not found. Returning empty result.')
+            return {
+                "passed_tests": 0,
+                "number_of_sequences_threshold": [],
+                "randomness_test": []
+            }
+        
         report_dict = {"passed_tests": 0}
 
         # if the sts_test failed, this file will be empty
@@ -570,57 +684,39 @@ class NISTStatisticalTests:
             print(f'Error: {e.strerror}')
 
     def _generate_nist_dicts(self,time_date, dataset, round_start, round_end, statistical_test_option_list=15 * '1'):
-        # seems that the statistical tools cannot change the default folder 'experiments'
-        dataset_folder = 'dataset'
-        dataset_filename = f'nist_input_{self._cipher_primitive}'
-        dataset_filename = os.path.join(dataset_folder, dataset_filename)
+        """
+        Generate NIST test reports for each round using pure Python implementation.
+        
+        This method now uses in-memory processing instead of file I/O.
+        """
         sts_report_dicts = []
 
-        if not os.path.exists(dataset_folder):
-            try:
-                os.makedirs(dataset_folder)
-            except OSError as e:
-                print(f'Error: {e.strerror}')
-                return
-
         for round_number in range(round_start, round_end):
-            # initialize the directory environment
-            if os.path.exists(nist_local_experiment_folder):
-                try:
-                    shutil.rmtree(nist_local_experiment_folder)
-                except OSError as e:
-                    print(f'Error: {e.strerror}')
-                    return
-
-            report_folder_round = os.path.abspath(os.path.join(self.report_folder, f'round_{round_number}_{time_date}time'))
-            dataset[round_number].tofile(dataset_filename)
+            # Convert dataset to binary array
+            binary_data = self._convert_to_binary_array(dataset[round_number])
 
             sts_execution_time = time.time()
-            self._run_nist_statistical_tests_tool(dataset_filename, self.bits_in_one_sequence,
-                                                  self.number_of_sequences, 1,
-                                                  statistical_test_option_list=statistical_test_option_list)
+            # Run Python-based NIST tests
+            sts_report_dict = self._run_nist_statistical_tests_tool(
+                binary_data, 
+                self.bits_in_one_sequence,
+                self.number_of_sequences, 
+                1,
+                statistical_test_option_list=statistical_test_option_list
+            )
             sts_execution_time = time.time() - sts_execution_time
-            try:
-                shutil.move(nist_local_experiment_folder, report_folder_round)
-            except OSError:
-                shutil.rmtree(report_folder_round)
-                shutil.move(nist_local_experiment_folder, report_folder_round)
-            shutil.rmtree(nist_temp_directory)
-
-
+            
             self._write_execution_time(f'Compute round {round_number}', sts_execution_time)
 
-            try:
-                # generate report
-                sts_report_dict = self._parse_report(
-                    os.path.join(report_folder_round, "AlgorithmTesting/finalAnalysisReport.txt"))
+            # The report is already in dictionary format, just add metadata
+            if hasattr(self, 'dataset_type'):
                 sts_report_dict['data_type'] = f'{self.cipher.inputs[self.input_index]}_{self.dataset_type.value}'
-                sts_report_dict["cipher_name"] = f'{self.cipher.id}'
-                sts_report_dict["round"] = round_number
-                sts_report_dict["rounds"] = self.cipher.number_of_rounds
-                sts_report_dicts.append(sts_report_dict)
-            except OSError:
-                print(f"Error in parsing report for round {round_number}.")
+            else:
+                sts_report_dict['data_type'] = f'{self.cipher.inputs[self.input_index]}_unknown'
+            sts_report_dict["cipher_name"] = f'{self.cipher.id}'
+            sts_report_dict["round"] = round_number
+            sts_report_dict["rounds"] = self.cipher.number_of_rounds
+            sts_report_dicts.append(sts_report_dict)
 
         print("Finished.")
         return sts_report_dicts
