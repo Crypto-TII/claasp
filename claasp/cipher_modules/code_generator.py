@@ -329,15 +329,6 @@ def prepare_input_bit_based_vectorized_python_code_string(component):
     return params
 
 
-def constant_to_bitstring(val, output_size):
-    ret = []
-    _val = int(val, 0)
-    for i in range(output_size):
-        ret.append((_val >> (output_size - 1 - i)) & 1)
-
-    return ret
-
-
 def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False, verbosity=False, integers_inputs_and_outputs = False):
     r"""
     Return string python code needed to evaluate a cipher using a vectorized implementation byte based oriented.
@@ -379,7 +370,7 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
-                                          'MODADD', 'MODSUB', 'OR', 'AND']
+                                          'MODADD', 'MODSUB', 'IDEA_MODMUL', 'OR', 'AND']
         if component.type in component_types_allowed or (component.type == 'word_operation' and
                                                          component.description[0] in component_descriptions_allowed):
             code.extend(component.get_byte_based_vectorized_python_code(formatted_component_inputs))
@@ -687,6 +678,8 @@ def build_function_call(component):
             return f"{component.description[0]}(component_input)"
         elif component.description[0] in ['MODADD', 'MODSUB']:
             return f"{component.description[0]}(component_input, {component.description[1]}, {component.description[2]})"
+        elif component.description[0] == 'IDEA_MODMUL':
+            return f"idea_modmul(component_input, {component.description[1]}, {component.description[2]})"
         else:
             return f"{component.description[0]}(component_input, {component.description[1]})"
     elif component.type == CONSTANT:

@@ -1,3 +1,7 @@
+import pickle
+
+from plotly.basedatatypes import BaseFigure
+
 from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
 from claasp.cipher_modules.report import Report
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
@@ -12,12 +16,21 @@ def test_continuous_tests():
     assert test_results['plaintext']['cipher_output']['continuous_neutrality_measure'][0]['values'][0] > 0.009
 
 
-def test_continuous_tests_report():
-    import pickle
+def test_continuous_tests_report(monkeypatch, tmp_path):
+    captured_writes = []
+
+    def fake_write_image(self, file, *args, **kwargs):
+        captured_writes.append(file)
+        return None
+
+    monkeypatch.setattr(BaseFigure, 'write_image', fake_write_image)
     with open('tests/unit/cipher_modules/pre_computed_cda_obj.pkl', 'rb') as f:
         cda_for_repo = pickle.load(f)
     cda_repo = Report(cda_for_repo)
-    cda_repo.save_as_image()
+    output_dir = str(tmp_path / 'cda-report')
+    cda_repo.save_as_image(output_directory=output_dir)
+    cda_repo.clean_reports(output_dir=output_dir)
+    assert captured_writes, 'Expected Plotly write_image to be invoked'
 
 
 def test_continuous_avalanche_factor():

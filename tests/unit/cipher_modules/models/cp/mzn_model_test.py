@@ -5,11 +5,37 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import \
-        MznXorDifferentialModelARXOptimized
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
+    MznXorDifferentialModelARXOptimized,
+)
 from claasp.cipher_modules.models.cp.mzn_models.mzn_cipher_model_arx_optimized import MznCipherModelARXOptimized
-from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized \
-    import MznDeterministicTruncatedXorDifferentialModelARXOptimized
+from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized import (
+    MznDeterministicTruncatedXorDifferentialModelARXOptimized,
+)
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
+from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+from minizinc import Model, Solver, Instance, Status
+
+
+def test_solver_names():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    mzn = MznModel(speck)
+    solver_names = mzn.solver_names()
+    assert isinstance(solver_names, list)
+    assert len(solver_names) > 0
+    # Check that each entry has the required keys
+    for solver in solver_names:
+        assert 'solver_brand_name' in solver
+        assert 'solver_name' in solver
+        assert 'keywords' not in solver  # verbose=False by default
+    
+    # Test verbose mode
+    verbose_solver_names = mzn.solver_names(verbose=True)
+    assert isinstance(verbose_solver_names, list)
+    # External solvers should have keywords when verbose=True
+    external_solvers = [s for s in verbose_solver_names if 'keywords' in s]
+    assert len(external_solvers) > 0
 
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
@@ -17,40 +43,26 @@ def test_build_mix_column_truncated_table():
     aes = AESBlockCipher(number_of_rounds=3)
     mzn = MznModel(aes)
     mix_column = aes.component_from(0, 21)
-    assert mzn.build_mix_column_truncated_table(mix_column) == 'array[0..93, 1..8] of int: ' \
-                                                              'mix_column_truncated_table_mix_column_0_21 = ' \
-                                                              'array2d(0..93, 1..8, [0,0,0,0,0,0,0,0,0,0,0,1,1,' \
-                                                              '1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,' \
-                                                              '0,1,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,0,0,0,1,1,1,' \
-                                                              '1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,' \
-                                                              '0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,0,0,1,0,1,1,' \
-                                                              '1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,' \
-                                                              '1,0,1,0,1,1,0,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,' \
-                                                              '0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,0,1,1,1,0,' \
-                                                              '1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,1,0,1,0,0,1,1,1,1,' \
-                                                              '0,1,1,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,1,1,1,' \
-                                                              '1,1,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,' \
-                                                              '1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,' \
-                                                              '1,1,0,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,' \
-                                                              '0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,' \
-                                                              '1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,' \
-                                                              '1,1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,' \
-                                                              '0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,' \
-                                                              '1,0,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,0,' \
-                                                              '1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,' \
-                                                              '1,1,0,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,' \
-                                                              '1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,1,' \
-                                                              '0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,' \
-                                                              '1,0,0,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,' \
-                                                              '1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,' \
-                                                              '1,1,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,' \
-                                                              '0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,' \
-                                                              '1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,0,' \
-                                                              '0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,1,1,1,1,0,' \
-                                                              '1,0,0,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,0,' \
-                                                              '1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,1,' \
-                                                              '0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,' \
-                                                              '1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1]);'
+    assert (
+        mzn.build_mix_column_truncated_table(mix_column) == "array[0..93, 1..8] of int: "
+        "mix_column_truncated_table_mix_column_0_21 = array2d(0..93, 1..8, ["
+        "0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,"
+        "1,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,"
+        "0,1,0,1,0,1,1,1,1,0,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,"
+        "1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,0,1,1,1,0,1,1,1,0,1,1,1,"
+        "1,0,0,1,0,1,1,1,1,0,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,0,1,1,"
+        "1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,"
+        "0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,1,"
+        "0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,0,"
+        "1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,"
+        "1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,"
+        "0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,"
+        "1,0,0,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,"
+        "0,1,1,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,"
+        "0,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,1,1,"
+        "1,1,0,1,0,0,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,1,"
+        "1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1]);"
+    )
 
 
 def test_find_possible_number_of_active_sboxes():
@@ -61,36 +73,38 @@ def test_find_possible_number_of_active_sboxes():
 
 
 def test_fix_variables_value_constraints():
-
     raiden = RaidenBlockCipher(number_of_rounds=1)
     mzn = MznXorDifferentialModelARXOptimized(raiden)
     mzn.build_xor_differential_trail_model()
-    fixed_variables = [{
-        'component_id': 'key',
-        'constraint_type': 'equal',
-        'bit_positions': [0, 1, 2, 3],
-        'bit_values': [0, 1, 0, 1]}]
+    fixed_variables = [
+        {"component_id": "key", "constraint_type": "equal", "bit_positions": [0, 1, 2, 3], "bit_values": [0, 1, 0, 1]}
+    ]
 
-    constraint_key_y_0 = 'constraint key_y0 = 0;'
+    constraint_key_y_0 = "constraint key_y0 = 0;"
     assert mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0] == constraint_key_y_0
 
-    fixed_variables = [{'component_id': 'plaintext',
-                        'constraint_type': 'sum',
-                        'bit_positions': [0, 1, 2, 3],
-                        'operator': '>',
-                        'value': '0'}]
+    fixed_variables = [
+        {
+            "component_id": "plaintext",
+            "constraint_type": "sum",
+            "bit_positions": [0, 1, 2, 3],
+            "operator": ">",
+            "value": "0",
+        }
+    ]
 
-    assert mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0] == f'constraint plaintext_y0+plaintext_y1+' \
-                                                                           f'plaintext_y2+plaintext_y3>0;'
+    assert (
+        mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0]
+        == "constraint plaintext_y0+plaintext_y1+plaintext_y2+plaintext_y3>0;"
+    )
 
     raiden = RaidenBlockCipher(number_of_rounds=1)
     mzn = MznDeterministicTruncatedXorDifferentialModelARXOptimized(raiden)
     mzn.build_deterministic_truncated_xor_differential_trail_model()
 
-    fixed_variables = [{'component_id': 'key',
-                       'constraint_type': 'equal',
-                        'bit_positions': [0, 1, 2, 3],
-                        'bit_values': [0, 1, 0, 1]}]
+    fixed_variables = [
+        {"component_id": "key", "constraint_type": "equal", "bit_positions": [0, 1, 2, 3], "bit_values": [0, 1, 0, 1]}
+    ]
 
     assert mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0] == constraint_key_y_0
 
@@ -98,12 +112,29 @@ def test_fix_variables_value_constraints():
     mzn = MznCipherModelARXOptimized(raiden)
     mzn.build_cipher_model()
 
-    fixed_variables = [{'component_id': 'key',
-                        'constraint_type': 'equal',
-                        'bit_positions': [0, 1, 2, 3],
-                        'bit_values': [0, 1, 0, 1]}]
+    fixed_variables = [
+        {"component_id": "key", "constraint_type": "equal", "bit_positions": [0, 1, 2, 3], "bit_values": [0, 1, 0, 1]}
+    ]
 
     assert mzn.fix_variables_value_constraints_for_ARX(fixed_variables)[0] == constraint_key_y_0
+
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    mzn = MznXorDifferentialModel(speck)
+    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    trail = mzn.find_one_xor_differential_trail(fixed_values=fixed_values)
+    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+
+    mzn.initialise_model()
+    fixed_values = [set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    trail = mzn.find_one_xor_differential_trail(fixed_values=fixed_values)
+    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+
+    mzn.initialise_model()
+    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[0]*31+[1])]
+    fixed_values.append(set_fixed_variables(speck.get_all_components_ids()[-1],'equal',range(32),[0]*31+[1]))
+    fixed_values.append(set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))]))
+    trail = mzn.find_one_xor_differential_trail(fixed_values=fixed_values)
+    assert trail['status'] == 'UNSATISFIABLE'
 
 
 def test_model_constraints():
@@ -111,3 +142,127 @@ def test_model_constraints():
         speck = SpeckBlockCipher(number_of_rounds=4)
         mzn = MznModel(speck)
         mzn.model_constraints()
+
+def test_build_generic_cp_model_from_dictionary():
+
+    """
+    Differential ARX validation for Speck.
+
+    The input and output differences used in the tests are taken from
+    Table 4 (Differential Characteristics for Speck32/48/64) of:
+
+    Kai Fu et al., "MILP-Based Automatic Search Algorithms for
+    Differential and Linear Trails for Speck", https://eprint.iacr.org/2016/407.pdf
+    """
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    model = MznXorDifferentialModelARXOptimized(speck)
+    component_and_model_types = []
+
+    for component in speck.get_all_components():
+        component_and_model_types.append({
+            "component_object": component,
+            "model_type": "minizinc_xor_differential_propagation_constraints"
+        })
+
+    fixed_variables = []
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="plaintext",
+            constraint_type="equal",
+            bit_positions=list(range(32)),
+            bit_values=integer_to_bit_list(0x02110A04, 32, 'big')
+        )
+    )
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="key",
+            constraint_type="equal",
+            bit_positions=list(range(64)),
+            bit_values=[0] * 64
+        )
+    )
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="cipher_output_2_12",
+            constraint_type="equal",
+            bit_positions=list(range(32)),
+            bit_values=integer_to_bit_list(0x80008000, 32, 'big')
+        )
+    )
+
+    model.build_generic_cp_model_from_dictionary(component_and_model_types, fixed_variables)
+
+    #Caso especial para ARX
+    model.init_constraints()
+
+    result = model.solve_for_ARX(solver_name="cp-sat")
+
+    assert result.status in {
+        Status.SATISFIED,
+        Status.OPTIMAL_SOLUTION,
+        Status.ALL_SOLUTIONS,
+    }
+
+def test_build_generic_cp_model_from_dictionary_xor_linear():
+    """
+    Linear validation for Speck.
+
+    The linear input/output masks used in the tests are taken from
+    Table 6 of:
+
+    Kai Fu et al., "MILP-Based Automatic Search Algorithms for
+    Differential and Linear Trails for Speck", https://eprint.iacr.org/2016/407.pdf
+    """
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    model = MznXorLinearModel(speck)
+    component_and_model_types = []
+
+    for component in speck.get_all_components():
+        component_and_model_types.append({
+            "component_object": component,
+            "model_type": "cp_xor_linear_mask_propagation_constraints"
+        })
+    
+    fixed_variables = []
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="plaintext",
+            constraint_type="equal",
+            bit_positions=list(range(32)),
+            bit_values=integer_to_bit_list(0x03805224, 32, 'big')
+        )
+    )
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="key",
+            constraint_type="equal",
+            bit_positions=list(range(64)),
+            bit_values=[0] * 64
+        )
+    )
+
+    fixed_variables.append(
+        set_fixed_variables(
+            component_id="cipher_output_2_12",
+            constraint_type="equal",
+            bit_positions=list(range(32)),
+            bit_values=integer_to_bit_list(0x40A000C1, 32, 'big')
+        )
+    )
+
+    model.build_generic_cp_model_from_dictionary(component_and_model_types, fixed_variables)
+
+    model.initialise_model()
+    
+    result = model.solve_for_ARX(solver_name="cp-sat")
+
+    assert result.status in {
+        Status.SATISFIED,
+        Status.OPTIMAL_SOLUTION,
+        Status.ALL_SOLUTIONS,
+    }

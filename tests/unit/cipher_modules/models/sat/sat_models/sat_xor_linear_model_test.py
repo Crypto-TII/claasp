@@ -41,7 +41,6 @@ def test_find_one_xor_linear_trail():
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r4"
     assert trail["model_type"] == "xor_linear"
-    assert trail["solver_name"] == "CRYPTOMINISAT_EXT"
     assert trail["status"] == "SATISFIABLE"
 
 

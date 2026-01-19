@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -24,8 +23,9 @@ from claasp.components.multi_input_non_linear_logical_operator_component import 
 
 
 def cp_twoterms(model, inp1, inp2, out, cp_constraints):
-    cp_constraints.append(f'constraint Ham_weight(Andz({inp1}, {inp2}, {out})) == 0 /\\ p[{model.c}] = '
-                          f'Ham_weight(OR({inp1}, {inp2}));')
+    cp_constraints.append(
+        f"constraint Ham_weight(Andz({inp1}, {inp2}, {out})) == 0 /\\ p[{model.c}] = Ham_weight(OR({inp1}, {inp2}));"
+    )
     return cp_constraints
 
 
@@ -50,9 +50,9 @@ def cp_xor_differential_probability_ddt(numadd):
             count = 0
             for j in range(n):
                 k = i ^ j
-                binary_j = format(j, f'0{numadd}b')
+                binary_j = f"{j:0{numadd}b}"
                 result_j = 1
-                binary_k = format(k, f'0{numadd}b')
+                binary_k = f"{k:0{numadd}b}"
                 result_k = 1
                 for addenda in range(numadd):
                     result_j *= int(binary_j[addenda])
@@ -82,23 +82,35 @@ def cp_xor_linear_probability_lat(numadd):
     lat = []
     for full_mask in range(2 ** (numadd + 1)):
         num_of_matches = 0
-        for values in range(2 ** numadd):
+        for values in range(2**numadd):
             full_values = values << 1
             bit_of_values = (values >> i & 1 for i in range(numadd))
             full_values ^= 0 not in bit_of_values
             equation = full_values & full_mask
             addenda = (equation >> i & 1 for i in range(numadd + 1))
-            num_of_matches += (sum(addenda) % 2 == 0)
+            num_of_matches += sum(addenda) % 2 == 0
         lat.append(num_of_matches - (2 ** (numadd - 1)))
 
     return lat
 
 
 class AND(MultiInputNonlinearLogicalOperator):
-    def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size):
-        super().__init__(current_round_number, current_round_number_of_components,
-                         input_id_links, input_bit_positions, output_bit_size, 'and')
+    def __init__(
+        self,
+        current_round_number,
+        current_round_number_of_components,
+        input_id_links,
+        input_bit_positions,
+        output_bit_size,
+    ):
+        super().__init__(
+            current_round_number,
+            current_round_number_of_components,
+            input_id_links,
+            input_bit_positions,
+            output_bit_size,
+            "and",
+        )
 
     def algebraic_polynomials(self, model):
         """
@@ -133,9 +145,9 @@ class AND(MultiInputNonlinearLogicalOperator):
         noutputs = self.output_bit_size
         word_size = noutputs
         ring_R = model.ring()
-        input_vars = [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)]
-        output_vars = [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)]
-        words_vars = [list(map(ring_R, input_vars))[i:i + word_size] for i in range(0, ninputs, word_size)]
+        input_vars = [f"{self.id}_{model.input_postfix}{i}" for i in range(ninputs)]
+        output_vars = [f"{self.id}_{model.output_postfix}{i}" for i in range(noutputs)]
+        words_vars = [list(map(ring_R, input_vars))[i : i + word_size] for i in range(0, ninputs, word_size)]
 
         x = [ring_R.one() for _ in range(noutputs)]
         for word_vars in words_vars:
@@ -164,19 +176,15 @@ class AND(MultiInputNonlinearLogicalOperator):
               ...
               'constraint and_0_8[11] = xor_0_7[11] * key[23];'])
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = []
-        for i in range(output_size):
-            operation = ' * '.join(all_inputs[i::output_size])
-            new_constraint = f'constraint {output_id_link}[{i}] = {operation};'
-            cp_constraints.append(new_constraint)
+        for i in range(self.output_bit_size):
+            operation = " * ".join(all_inputs[i :: self.output_bit_size])
+            cp_constraint = f"constraint {self.id}[{i}] = {operation};"
+            cp_constraints.append(cp_constraint)
 
         return cp_declarations, cp_constraints
 
@@ -202,39 +210,39 @@ class AND(MultiInputNonlinearLogicalOperator):
                ...
               'constraint table([and_0_8_i[11]]++[and_0_8_i[23]]++[and_0_8_o[11]]++[p[11]],and2inputs_LAT);'])
         """
-        input_size = int(self.input_bit_size)
-        output_size = int(self.output_bit_size)
         output_id_link = self.id
         cp_declarations = []
         cp_constraints = []
         num_add = self.description[1]
-        input_len = input_size // num_add
-        cp_declarations.append(f'array[0..{input_size - 1}] of var 0..1:{output_id_link}_i;')
-        cp_declarations.append(f'array[0..{output_size - 1}] of var 0..1:{output_id_link}_o;')
+        input_len = self.input_bit_size // num_add
+        cp_declarations.append(f"array[0..{self.input_bit_size - 1}] of var 0..1:{output_id_link}_i;")
+        cp_declarations.append(f"array[0..{self.output_bit_size - 1}] of var 0..1:{output_id_link}_o;")
         model.component_and_probability[output_id_link] = 0
         probability = []
-        for i in range(output_size):
-            new_constraint = f'constraint table('
+        for i in range(self.output_bit_size):
+            new_constraint = "constraint table("
             for j in range(num_add):
-                new_constraint = new_constraint + f'[{output_id_link}_i[{i + input_len * j}]]++'
+                new_constraint = new_constraint + f"[{output_id_link}_i[{i + input_len * j}]]++"
             if model.float_and_lat_values:
-                cp_declarations.append(f'var :p_{output_id_link}_{i};')
-                new_constraint = \
-                    new_constraint + f'[{output_id_link}_o[{i}]]++[p_{output_id_link}_{i}],and{num_add}inputs_LAT);'
+                cp_declarations.append(f"var :p_{output_id_link}_{i};")
+                new_constraint = (
+                    new_constraint + f"[{output_id_link}_o[{i}]]++[p_{output_id_link}_{i}],and{num_add}inputs_LAT);"
+                )
                 cp_constraints.append(new_constraint)
                 for k in range(len(model.float_and_lat_values)):
                     rounded_float = round(float(model.float_and_lat_values[k]), 2)
                     cp_constraints.append(
-                        f'constraint if p_{output_id_link}_{i} == {1000 + k} then p[{model.c}]={rounded_float} else '
-                        f'p[{model.c}]=p_{output_id_link}_{i} endif;')
+                        f"constraint if p_{output_id_link}_{i} == {1000 + k} then p[{model.c}]={rounded_float} else "
+                        f"p[{model.c}]=p_{output_id_link}_{i} endif;"
+                    )
             else:
-                new_constraint = new_constraint + f'[{output_id_link}_o[{i}]]++[p[{model.c}]],and{num_add}inputs_LAT);'
+                new_constraint = new_constraint + f"[{output_id_link}_o[{i}]]++[p[{model.c}]],and{num_add}inputs_LAT);"
                 cp_constraints.append(new_constraint)
             probability.append(model.c)
             model.c += 1
         model.component_and_probability[output_id_link] = probability
-        result = cp_declarations, cp_constraints
-        return result
+
+        return cp_declarations, cp_constraints
 
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
@@ -281,14 +289,16 @@ class AND(MultiInputNonlinearLogicalOperator):
         variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
         constraints = []
 
-        a = [[x_class[input_vars[i + chunk * input_bit_size]] for chunk in range(number_of_inputs)] for i in
-             range(input_bit_size)]
+        a = [
+            [x_class[input_vars[i + chunk * input_bit_size]] for chunk in range(number_of_inputs)]
+            for i in range(input_bit_size)
+        ]
         b = [x_class[output_vars[i]] for i in range(output_bit_size)]
 
         upper_bound = model._model.get_max(x_class)
 
         for i in range(output_bit_size):
-            input_sum = sum([a[i][chunk] for chunk in range(number_of_inputs)])
+            input_sum = sum(a[i][chunk] for chunk in range(number_of_inputs))
             # if d_leq == 1 if sum(a_i) <= 0
             d_leq, c_leq = milp_utils.milp_leq(model, input_sum, 0, number_of_inputs * upper_bound)
             constraints += c_leq
@@ -327,10 +337,10 @@ class AND(MultiInputNonlinearLogicalOperator):
         return sign
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
-        return [f'  {self.id} = bit_vector_AND([{",".join(params)} ], {self.description[1]}, {self.output_bit_size})']
+        return [f"  {self.id} = bit_vector_AND([{','.join(params)} ], {self.description[1]}, {self.output_bit_size})"]
 
     def get_byte_based_vectorized_python_code(self, params):
-        return [f'  {self.id} =byte_vector_AND({params})']
+        return [f"  {self.id} = byte_vector_AND({params})"]
 
     def sat_constraints(self):
         """
@@ -365,7 +375,7 @@ class AND(MultiInputNonlinearLogicalOperator):
               '-and_0_8_11 key_23',
               'and_0_8_11 -xor_0_7_11 -key_23'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):
@@ -402,7 +412,7 @@ class AND(MultiInputNonlinearLogicalOperator):
               '(assert (= and_0_8_10 (and xor_0_7_10 key_22)))',
               '(assert (= and_0_8_11 (and xor_0_7_11 key_23)))'])
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
         for i in range(output_bit_len):

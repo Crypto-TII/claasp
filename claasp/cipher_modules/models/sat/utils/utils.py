@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -46,10 +45,14 @@ stdin and need an input file. Functions of this section supply the best running
 method for SAT solvers in :py:class:`Sat Model <cipher_modules.models.sat.sat_model>`.
 
 """
+
 import itertools
 import os
 import re
 import subprocess
+import time
+
+from claasp.cipher_modules.models.sat import solvers
 
 
 # ----------------- #
@@ -64,50 +67,48 @@ def cms_add_clauses_to_solver(numerical_cnf, solver):
     It needs to be overwritten in this class because it must handle the XOR clauses.
     """
     for clause in numerical_cnf:
-        if clause.startswith('x '):
-            rhs = bool(True ^ (clause.count('-') % 2))
-            literals = clause.replace('-', '').split()[1:]
+        if clause.startswith("x "):
+            rhs = bool(1 ^ (clause.count("-") % 2))
+            literals = clause.replace("-", "").split()[1:]
             solver.add_xor_clause([int(literal) for literal in literals], rhs)
         else:
             solver.add_clause([int(literal) for literal in clause.split()])
 
 
-def create_numerical_cnf(cnf):
+def create_numerical_cnf(cnf: list[str]) -> tuple[list[str], list[str]]:
     # creating dictionary (variable -> string, numeric_id -> int)
-    family_of_variables = ' '.join(cnf).replace('-', '')
-    if family_of_variables.startswith('x '):
-        family_of_variables = family_of_variables[2:]
-    family_of_variables = family_of_variables.replace(' x ', ' ')
-    variables = sorted(set(family_of_variables.split()))
-    variable2number = {variable: i + 1 for (i, variable) in enumerate(variables)}
+    variables = " ".join(cnf).replace("-", "").replace("x ", " ")
+    variables = sorted(set(variables.split()))
+    variable_to_number = {variable: i + 1 for i, variable in enumerate(variables)}
     # creating numerical CNF
     numerical_cnf = []
     for clause in cnf:
         literals = clause.split()
         numerical_literals = []
-        if literals[0] == 'x':
+        if literals[0] == "x":
             literals = literals[1:]
-            numerical_literals = ['x']
-        lits_are_neg = (literal[0] == '-' for literal in literals)
-        numerical_literals.extend(tuple(f'{"-" * lit_is_neg}{variable2number[literal[lit_is_neg:]]}'
-                                  for lit_is_neg, literal in zip(lits_are_neg, literals)))
-        numerical_clause = ' '.join(numerical_literals)
-        numerical_cnf.append(numerical_clause)
+            numerical_literals = ["x"]
+        signs = (literal[0] == "-" for literal in literals)
+        numerical_literals.extend(
+            [f"{'-' * sign}{variable_to_number[literal[sign:]]}" for sign, literal in zip(signs, literals)]
+        )
+        numerical_cnf.append(" ".join(numerical_literals))
 
-    return variable2number, numerical_cnf
+    return variables, numerical_cnf
 
 
-def numerical_cnf_to_dimacs(number_of_variables, numerical_cnf):
-    dimacs = f'p cnf {number_of_variables} {len(numerical_cnf)}\n'
-    dimacs_clauses = tuple(f'{numerical_clause} 0\n' for numerical_clause in numerical_cnf)
+def numerical_cnf_to_dimacs(variables: list[str], numerical_cnf: list[str]) -> str:
+    dimacs = [f"p cnf {len(variables)} {len(numerical_cnf)}"]
+    dimacs.extend(f"{numerical_clause} 0" for numerical_clause in numerical_cnf)
+    dimacs = "\n".join(dimacs)
 
-    return dimacs + ''.join(dimacs_clauses)
+    return dimacs
 
 
 def cnf_n_window_heuristic_on_w_vars(hw_bit_ids):
-    cnf_constraint_lst = [f'-{hw_bit}' for hw_bit in hw_bit_ids]
+    cnf_constraint_lst = [f"-{hw_bit}" for hw_bit in hw_bit_ids]
 
-    return [' '.join(cnf_constraint_lst)]
+    return [" ".join(cnf_constraint_lst)]
 
 
 # ----------------------------------------------------------------- #
@@ -133,7 +134,7 @@ def cnf_equivalent(variables):
     """
     variables_shifted = [variables[-1]] + variables[:-1]
 
-    return [f'{variables[i]} -{variables_shifted[i]}' for i in range(len(variables))]
+    return [f"{variables[i]} -{variables_shifted[i]}" for i in range(len(variables))]
 
 
 def cnf_inequality(left_var, right_var):
@@ -151,7 +152,7 @@ def cnf_inequality(left_var, right_var):
         sage: cnf_inequality('a', 'b')
         ('a b', '-a -b')
     """
-    return (f'{left_var} {right_var}', f'-{left_var} -{right_var}')
+    return (f"{left_var} {right_var}", f"-{left_var} -{right_var}")
 
 
 def cnf_and(result, variables):
@@ -171,8 +172,8 @@ def cnf_and(result, variables):
         sage: cnf_and('r', ['a', 'b', 'c'])
         ['-r a', '-r b', '-r c', 'r -a -b -c']
     """
-    cnf = [f'-{result} {variable}' for variable in variables]
-    cnf.append(f'{result} -{" -".join(variables)}')
+    cnf = [f"-{result} {variable}" for variable in variables]
+    cnf.append(f"{result} -{' -'.join(variables)}")
 
     return cnf
 
@@ -202,8 +203,8 @@ def cnf_or(result, variables):
         sage: cnf_or('r', ['a', 'b', 'c'])
         ['r -a', 'r -b', 'r -c', '-r a b c']
     """
-    model = [f'{result} -{variable}' for variable in variables]
-    model.append(f'-{result} {" ".join(variables)}')
+    model = [f"{result} -{variable}" for variable in variables]
+    model.append(f"-{result} {' '.join(variables)}")
 
     return model
 
@@ -246,8 +247,8 @@ def cnf_xor(result, variables):
     for i in range(1, num_of_operands + 1, 2):
         subsets = tuple(itertools.combinations(range(num_of_operands), i))
         for s in subsets:
-            literals = ['-' * (j in s) + f'{operands[j]}' for j in range(num_of_operands)]
-            model.append(' '.join(literals))
+            literals = ["-" * (j in s) + f"{operands[j]}" for j in range(num_of_operands)]
+            model.append(" ".join(literals))
 
     return model
 
@@ -310,12 +311,14 @@ def cnf_carry(carry, x, y, previous_carry):
          'y_3 c_2 -c_3',
          '-y_3 -c_2 c_3')
     """
-    return (f'{x} {y} -{carry}',
-            f'-{x} -{y} {carry}',
-            f'{x} {previous_carry} -{carry}',
-            f'-{x} -{previous_carry} {carry}',
-            f'{y} {previous_carry} -{carry}',
-            f'-{y} -{previous_carry} {carry}')
+    return (
+        f"{x} {y} -{carry}",
+        f"-{x} -{y} {carry}",
+        f"{x} {previous_carry} -{carry}",
+        f"-{x} -{previous_carry} {carry}",
+        f"{y} {previous_carry} -{carry}",
+        f"-{y} -{previous_carry} {carry}",
+    )
 
 
 def cnf_carry_comp2(carry, x, previous_carry):
@@ -337,9 +340,7 @@ def cnf_carry_comp2(carry, x, previous_carry):
         sage: cnf_carry_comp2('c_3', 'x_2', 'c_2')
         ('-c_3 c_2', '-c_3 -x_2', 'c_3 -c_2 x_2')
     """
-    return (f'-{carry} {previous_carry}',
-            f'-{carry} -{x}',
-            f'{carry} -{previous_carry} {x}')
+    return (f"-{carry} {previous_carry}", f"-{carry} -{x}", f"{carry} -{previous_carry} {x}")
 
 
 def cnf_result_comp2(result, x, carry):
@@ -360,10 +361,7 @@ def cnf_result_comp2(result, x, carry):
         sage: cnf_result_comp2('r_3', 'x_3', 'c_3')
         ('c_3 -r_3 -x_3', '-c_3 r_3 -x_3', '-c_3 -r_3 x_3', 'c_3 r_3 x_3')
     """
-    return (f'{carry} -{result} -{x}',
-            f'-{carry} {result} -{x}',
-            f'-{carry} -{result} {x}',
-            f'{carry} {result} {x}')
+    return (f"{carry} -{result} -{x}", f"-{carry} {result} -{x}", f"-{carry} -{result} {x}", f"{carry} {result} {x}")
 
 
 def cnf_vshift_id(out_id, in_id, in_shifted, shift_id):
@@ -385,10 +383,12 @@ def cnf_vshift_id(out_id, in_id, in_shifted, shift_id):
         sage: cnf_vshift_id('s_3', 'i_3', 'i_4', 'k_7')
         ('-s_3 i_3 k_7', 's_3 -i_3 k_7', '-s_3 i_4 -k_7', 's_3 -i_4 -k_7')
     """
-    return (f'-{out_id} {in_id} {shift_id}',
-            f'{out_id} -{in_id} {shift_id}',
-            f'-{out_id} {in_shifted} -{shift_id}',
-            f'{out_id} -{in_shifted} -{shift_id}')
+    return (
+        f"-{out_id} {in_id} {shift_id}",
+        f"{out_id} -{in_id} {shift_id}",
+        f"-{out_id} {in_shifted} -{shift_id}",
+        f"{out_id} -{in_shifted} -{shift_id}",
+    )
 
 
 def cnf_vshift_false(out_id, in_id, shift_id):
@@ -410,9 +410,7 @@ def cnf_vshift_false(out_id, in_id, shift_id):
         sage: cnf_vshift_false('s_1', 'i_1', 'k_7')
         ('-s_1 i_1', '-s_1 -k_7', 's_1 -i_1 k_7')
     """
-    return (f'-{out_id} {in_id}',
-            f'-{out_id} -{shift_id}',
-            f'{out_id} -{in_id} {shift_id}')
+    return (f"-{out_id} {in_id}", f"-{out_id} -{shift_id}", f"{out_id} -{in_id} {shift_id}")
 
 
 def cnf_hw_lipmaa(hw, alpha, beta, gamma):
@@ -439,11 +437,13 @@ def cnf_hw_lipmaa(hw, alpha, beta, gamma):
          'alpha_7 beta_7 gamma_7 -hw_6',
          '-alpha_7 -beta_7 -gamma_7 -hw_6')
     """
-    return (f'{alpha} -{gamma} {hw}',
-            f'{beta} -{alpha} {hw}',
-            f'{gamma} -{beta} {hw}',
-            f'{alpha} {beta} {gamma} -{hw}',
-            f'-{alpha} -{beta} -{gamma} -{hw}')
+    return (
+        f"{alpha} -{gamma} {hw}",
+        f"{beta} -{alpha} {hw}",
+        f"{gamma} -{beta} {hw}",
+        f"{alpha} {beta} {gamma} -{hw}",
+        f"-{alpha} -{beta} -{gamma} -{hw}",
+    )
 
 
 def cnf_lipmaa(hw, dummy, beta_1, alpha, beta, gamma):
@@ -477,16 +477,18 @@ def cnf_lipmaa(hw, dummy, beta_1, alpha, beta, gamma):
          '-alpha_10 -beta_10 dummy_10 -gamma_10',
          '-alpha_10 -beta_10 -dummy_10 gamma_10')
     """
-    return (f'{beta_1} -{dummy} {hw}',
-            f'-{beta_1} {dummy} {hw}',
-            f'{alpha} {beta} {dummy} -{gamma}',
-            f'{alpha} {beta} -{dummy} {gamma}',
-            f'{alpha} -{beta} {dummy} {gamma}',
-            f'-{alpha} {beta} {dummy} {gamma}',
-            f'{alpha} -{beta} -{dummy} -{gamma}',
-            f'-{alpha} {beta} -{dummy} -{gamma}',
-            f'-{alpha} -{beta} {dummy} -{gamma}',
-            f'-{alpha} -{beta} -{dummy} {gamma}')
+    return (
+        f"{beta_1} -{dummy} {hw}",
+        f"-{beta_1} {dummy} {hw}",
+        f"{alpha} {beta} {dummy} -{gamma}",
+        f"{alpha} {beta} -{dummy} {gamma}",
+        f"{alpha} -{beta} {dummy} {gamma}",
+        f"-{alpha} {beta} {dummy} {gamma}",
+        f"{alpha} -{beta} -{dummy} -{gamma}",
+        f"-{alpha} {beta} -{dummy} -{gamma}",
+        f"-{alpha} -{beta} {dummy} -{gamma}",
+        f"-{alpha} -{beta} -{dummy} {gamma}",
+    )
 
 
 def cnf_modadd_inequality(z, u, v):
@@ -509,8 +511,7 @@ def cnf_modadd_inequality(z, u, v):
         sage: cnf_modadd_inequality('z', 'u', 'v')
         ('z u -v', 'z -u v')
     """
-    return (f'{z} {u} -{v}',
-            f'{z} -{u} {v}')
+    return (f"{z} {u} -{v}", f"{z} -{u} {v}")
 
 
 def cnf_and_differential(diff_in_0, diff_in_1, diff_out, hw):
@@ -530,10 +531,7 @@ def cnf_and_differential(diff_in_0, diff_in_1, diff_out, hw):
         sage: cnf_and_differential('and_0', 'and_1', 'and_out', 'hw')
         ('-and_out hw', 'and_0 and_1 -hw', '-and_0 hw', '-and_1 hw')
     """
-    return (f'-{diff_out} {hw}',
-            f'{diff_in_0} {diff_in_1} -{hw}',
-            f'-{diff_in_0} {hw}',
-            f'-{diff_in_1} {hw}')
+    return (f"-{diff_out} {hw}", f"{diff_in_0} {diff_in_1} -{hw}", f"-{diff_in_0} {hw}", f"-{diff_in_1} {hw}")
 
 
 def cnf_and_linear(mask_in_0, mask_in_1, mask_out, hw):
@@ -555,10 +553,7 @@ def cnf_and_linear(mask_in_0, mask_in_1, mask_out, hw):
         sage: cnf_and_linear('and_0', 'and_1', 'and_out', 'hw')
         ('-and_0 hw', '-and_1 hw', '-and_out hw', 'and_out -hw')
     """
-    return (f'-{mask_in_0} {hw}',
-            f'-{mask_in_1} {hw}',
-            f'-{mask_out} {hw}',
-            f'{mask_out} -{hw}')
+    return (f"-{mask_in_0} {hw}", f"-{mask_in_1} {hw}", f"-{mask_out} {hw}", f"{mask_out} -{hw}")
 
 
 def cnf_xor_truncated(result, variable_0, variable_1):
@@ -607,13 +602,15 @@ def cnf_xor_truncated(result, variable_0, variable_1):
          'b1 r0 r1 -a1',
          'r0 -a1 -b1 -r1']
     """
-    return [f'{result[0]} -{variable_0[0]}',
-            f'{result[0]} -{variable_1[0]}',
-            f'{variable_0[0]} {variable_1[0]} -{result[0]}',
-            f'{variable_0[1]} {variable_1[1]} {result[0]} -{result[1]}',
-            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
-            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
-            f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
+    return [
+        f"{result[0]} -{variable_0[0]}",
+        f"{result[0]} -{variable_1[0]}",
+        f"{variable_0[0]} {variable_1[0]} -{result[0]}",
+        f"{variable_0[1]} {variable_1[1]} {result[0]} -{result[1]}",
+        f"{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}",
+        f"{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}",
+        f"{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}",
+    ]
 
 
 def cnf_xor_truncated_seq(results, variables):
@@ -651,87 +648,130 @@ def cnf_xor_truncated_seq(results, variables):
 
 
 def get_cnf_bitwise_truncate_constraints(a, a_0, a_1):
-    return [
-        f'-{a_0}', f'{a_1}   -{a}', f'{a}   -{a_1}'
-    ]
+    return [f"-{a_0}", f"{a_1}   -{a}", f"{a}   -{a_1}"]
 
 
 def get_cnf_truncated_linear_constraints(a, a_0):
-    return [
-        f'-{a}   -{a_0}'
-    ]
+    return [f"-{a}   -{a_0}"]
 
 
 def modadd_truncated_lsb(result, variable_0, variable_1, next_carry):
-    return [f'{next_carry[0]} -{next_carry[1]}',
-            f'{next_carry[0]} -{variable_1[1]}',
-            f'{next_carry[0]} -{result[0]}',
-            f'{next_carry[0]} -{result[1]}',
-            f'{result[0]} -{variable_0[0]}',
-            f'{result[0]} -{variable_1[0]}',
-            f'{variable_0[0]} {variable_1[0]} -{result[0]}',
-            f'{variable_0[1]} {variable_1[1]} {result[0]} -{next_carry[0]}',
-            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
-            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
-            f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
+    return [
+        f"{next_carry[0]} -{next_carry[1]}",
+        f"{next_carry[0]} -{variable_1[1]}",
+        f"{next_carry[0]} -{result[0]}",
+        f"{next_carry[0]} -{result[1]}",
+        f"{result[0]} -{variable_0[0]}",
+        f"{result[0]} -{variable_1[0]}",
+        f"{variable_0[0]} {variable_1[0]} -{result[0]}",
+        f"{variable_0[1]} {variable_1[1]} {result[0]} -{next_carry[0]}",
+        f"{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}",
+        f"{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}",
+        f"{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}",
+    ]
 
 
 def modadd_truncated(result, variable_0, variable_1, carry, next_carry):
-    return [f'{next_carry[0]} -{next_carry[1]}',
-            f'{next_carry[0]} -{variable_1[1]}',
-            f'{next_carry[0]} -{result[0]}',
-            f'{next_carry[0]} -{result[1]}',
-            f'{result[0]} -{carry[0]}',
-            f'{result[0]} -{carry[1]}',
-            f'{result[0]} -{variable_0[0]}',
-            f'{result[0]} -{variable_1[0]}',
-            f'{variable_0[1]} {variable_1[1]} {result[0]} -{next_carry[0]}',
-            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
-            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
-            f'{carry[0]} {carry[1]} {variable_0[0]} {variable_1[0]} -{result[0]}',
-            f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
+    return [
+        f"{next_carry[0]} -{next_carry[1]}",
+        f"{next_carry[0]} -{variable_1[1]}",
+        f"{next_carry[0]} -{result[0]}",
+        f"{next_carry[0]} -{result[1]}",
+        f"{result[0]} -{carry[0]}",
+        f"{result[0]} -{carry[1]}",
+        f"{result[0]} -{variable_0[0]}",
+        f"{result[0]} -{variable_1[0]}",
+        f"{variable_0[1]} {variable_1[1]} {result[0]} -{next_carry[0]}",
+        f"{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}",
+        f"{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}",
+        f"{carry[0]} {carry[1]} {variable_0[0]} {variable_1[0]} -{result[0]}",
+        f"{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}",
+    ]
 
 
 def modadd_truncated_msb(result, variable_0, variable_1, carry):
-    return [f'{result[0]} -{carry[0]}',
-            f'{result[0]} -{carry[1]}',
-            f'{result[0]} -{variable_0[0]}',
-            f'{result[0]} -{variable_1[0]}',
-            f'{variable_0[1]} {variable_1[1]} {result[0]} -{result[1]}',
-            f'{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}',
-            f'{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}',
-            f'{carry[0]} {carry[1]} {variable_0[0]} {variable_1[0]} -{result[0]}',
-            f'{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}']
+    return [
+        f"{result[0]} -{carry[0]}",
+        f"{result[0]} -{carry[1]}",
+        f"{result[0]} -{variable_0[0]}",
+        f"{result[0]} -{variable_1[0]}",
+        f"{variable_0[1]} {variable_1[1]} {result[0]} -{result[1]}",
+        f"{variable_0[1]} {result[0]} {result[1]} -{variable_1[1]}",
+        f"{variable_1[1]} {result[0]} {result[1]} -{variable_0[1]}",
+        f"{carry[0]} {carry[1]} {variable_0[0]} {variable_1[0]} -{result[0]}",
+        f"{result[0]} -{variable_0[1]} -{variable_1[1]} -{result[1]}",
+    ]
+
+
+def incompatibility(incompatibility_var, forward_var, backward_var):
+    """
+    Return a list of strings representing CNF clauses encoding incompatibility 
+    constraints between forward and backward variables with respect to an 
+    incompatibility variable.
+
+    INPUT:
+
+    - ``incompatibility_var`` -- **string**; variable representing the incompatibility condition
+    - ``forward_var`` -- **tuple of strings**; pair of variables related to the forward direction
+    - ``backward_var`` -- **tuple of strings**; pair of variables related to the backward direction
+
+    OUTPUT:
+
+    - **list of strings**; each string is a CNF clause encoding part of the incompatibility constraint
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.sat.utils.utils import incompatibility
+        sage: incompatibility_var = 'i'
+        sage: forward_var = ('f0', 'f1')
+        sage: backward_var = ('b0', 'b1')
+        sage: incompatibility(incompatibility_var, forward_var, backward_var)
+        ['-f0 -i',
+        '-b0 -i',
+        'f1 b1 -i',
+        '-f1 -b1 -i',
+        'f0 f1 b0 i -b1',
+        'f0 b0 b1 i -f1']
+    """
+    return [f'-{forward_var[0]} -{incompatibility_var}',
+            f'-{backward_var[0]} -{incompatibility_var}',
+            f'{forward_var[1]} {backward_var[1]} -{incompatibility_var}',
+            f'-{forward_var[1]} -{backward_var[1]} -{incompatibility_var}',
+            f'{forward_var[0]} {forward_var[1]} {backward_var[0]} {incompatibility_var} -{backward_var[1]}',
+            f'{forward_var[0]} {backward_var[0]} {backward_var[1]} {incompatibility_var} -{forward_var[1]}']
 
 
 # ---------------------------- #
 #    - Running SAT solver -    #
 # ---------------------------- #
 
+
 def _get_data(data_keywords, lines):
     data_line = [line for line in lines if data_keywords in line][0]
-    data = float(re.findall(r'[0-9]+\.?[0-9]*', data_line)[0])
+    data = float(re.findall(r"[0-9]+\.?[0-9]*", data_line)[0])
 
     return data
 
 
 def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_string=""):
     """Call the SAT solver specified in `solver_specs`, using input and output pipes."""
-    solver_name = solver_specs['solver_name']
-    command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options'] + options
+    solver_name = solver_specs["solver_name"]
+    command = (
+        [solver_specs["keywords"]["command"]["executable"]] + solver_specs["keywords"]["command"]["options"] + options
+    )
     if host:
-        command = ['ssh', f'{host}'] + [env_vars_string] + command
+        command = ["ssh", f"{host}"] + [env_vars_string] + command
     solver_process = subprocess.run(command, input=dimacs_input, capture_output=True, text=True)
     solver_output = solver_process.stdout.splitlines()
-    status = [line for line in solver_output if line.startswith('s')][0].split()[1]
+    status = [line for line in solver_output if line.startswith("s")][0].split()[1]
     values = []
-    if status == 'SATISFIABLE':
+    if status == "SATISFIABLE":
         for line in solver_output:
-            if line.startswith('v'):
+            if line.startswith("v"):
                 values.extend(line.split()[1:])
         values = values[:-1]
-    if solver_name == 'kissat':
-        data_keywords = solver_specs['keywords']['time']
+    if solver_name == solvers.KISSAT_EXT:
+        data_keywords = solver_specs["keywords"]["time"]
         lines = solver_output
         data_line = [line for line in lines if data_keywords in line][0]
         seconds_str_index = data_line.find("seconds") - 2
@@ -739,107 +779,114 @@ def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_stri
         while data_line[seconds_str_index] != " ":
             output_str += data_line[seconds_str_index]
             seconds_str_index -= 1
-        time = float(output_str[::-1])
+        solver_time = float(output_str[::-1])
     else:
-        time = _get_data(solver_specs['keywords']['time'], solver_output)
-    memory = float('inf')
-    memory_keywords = solver_specs['keywords']['memory']
+        solver_time = _get_data(solver_specs["keywords"]["time"], solver_output)
+    solver_memory = float("inf")
+    memory_keywords = solver_specs["keywords"]["memory"]
     if memory_keywords:
-        if not (solver_name == 'glucose-syrup' and status != 'SATISFIABLE'):
-            memory = _get_data(memory_keywords, solver_output)
-    if solver_name == 'kissat':
-        memory = memory / 10**6
-    if solver_name == 'cryptominisat':
-        memory = memory / 10**3
+        if not (solver_name == solvers.GLUCOSE_SYRUP_EXT and status != "SATISFIABLE"):
+            solver_memory = _get_data(memory_keywords, solver_output)
+    if solver_name == solvers.KISSAT_EXT:
+        solver_memory = solver_memory / 10**6
+    if solver_name == solvers.CRYPTOMINISAT_EXT:
+        solver_memory = solver_memory / 10**3
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_file_name):
     """Call the MiniSat solver specified in `solver_specs`, using input and output files."""
-    with open(input_file_name, 'wt') as input_file:
+    with open(input_file_name, "wt") as input_file:
         input_file.write(dimacs_input)
-    command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options'] + options
+    command = (
+        [solver_specs["keywords"]["command"]["executable"]] + solver_specs["keywords"]["command"]["options"] + options
+    )
     command.append(input_file_name)
     command.append(output_file_name)
     solver_process = subprocess.run(command, capture_output=True, text=True)
     solver_output = solver_process.stdout.splitlines()
-    time = _get_data(solver_specs['keywords']['time'], solver_output)
-    memory = _get_data(solver_specs['keywords']['memory'], solver_output)
+    solver_time = _get_data(solver_specs["keywords"]["time"], solver_output)
+    solver_memory = _get_data(solver_specs["keywords"]["memory"], solver_output)
     status = solver_output[-1]
     values = []
-    if status == 'SATISFIABLE':
-        with open(output_file_name, 'rt') as output_file:
+    if status == "SATISFIABLE":
+        with open(output_file_name, "rt") as output_file:
             values = output_file.read().splitlines()[1].split()[:-1]
     os.remove(input_file_name)
     os.remove(output_file_name)
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
     """Call the Parkissat solver specified in `solver_specs`, using input and output files."""
-    with open(input_file_name, 'wt') as input_file:
+    with open(input_file_name, "wt") as input_file:
         input_file.write(dimacs_input)
-    import time
-    command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options'] + options
+    command = (
+        [solver_specs["keywords"]["command"]["executable"]] + solver_specs["keywords"]["command"]["options"] + options
+    )
     command.append(input_file_name)
     start = time.time()
     solver_process = subprocess.run(command, capture_output=True, text=True)
     end = time.time()
     solver_output = solver_process.stdout.splitlines()
-    time = end - start
-    memory = 0
+    solver_time = end - start
+    solver_memory = 0
     status = solver_output[0].split()[1]
     values = ""
-    if status == 'SATISFIABLE':
+    if status == "SATISFIABLE":
         solver_output = solver_output[1:]
-        solver_output = list(map(lambda s: s.replace('v ', ''), solver_output))
+        solver_output = [s.replace("v ", "") for s in solver_output]
         values = []
         for element in solver_output:
             substrings = element.split()
             values.extend(substrings)
     os.remove(input_file_name)
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def run_yices(solver_specs, options, dimacs_input, input_file_name):
     """Call the Yices SAT solver specified in `solver_specs`, using input file."""
-    with open(input_file_name, 'wt') as input_file:
+    with open(input_file_name, "wt") as input_file:
         input_file.write(dimacs_input)
-    command = [solver_specs['keywords']['command']['executable']] + solver_specs['keywords']['command']['options'] + options
+    command = (
+        [solver_specs["keywords"]["command"]["executable"]] + solver_specs["keywords"]["command"]["options"] + options
+    )
     command.append(input_file_name)
     solver_process = subprocess.run(command, capture_output=True, text=True)
     solver_stats = solver_process.stderr.splitlines()
     solver_output = solver_process.stdout.splitlines()
-    time = _get_data(solver_specs['keywords']['time'], solver_stats)
-    memory = _get_data(solver_specs['keywords']['memory'], solver_stats)
-    status = 'SATISFIABLE' if solver_output[0] == 'sat' else 'UNSATISFIABLE'
+    solver_time = _get_data(solver_specs["keywords"]["time"], solver_stats)
+    solver_memory = _get_data(solver_specs["keywords"]["memory"], solver_stats)
+    status = "SATISFIABLE" if solver_output[0] == "sat" else "UNSATISFIABLE"
     values = []
-    if status == 'SATISFIABLE':
+    if status == "SATISFIABLE":
         values = solver_output[1].split()[:-1]
     os.remove(input_file_name)
 
-    return status, time, memory, values
+    return status, solver_time, solver_memory, values
 
 
 def _generate_component_model_types(speck_cipher):
     """Generates the component model types for a given Speck cipher."""
     component_model_types = []
     for component in speck_cipher.get_all_components():
-        component_model_types.append({
-            "component_id": component.id,
-            "component_object": component,
-            "model_type": "sat_xor_differential_propagation_constraints"
-        })
+        component_model_types.append(
+            {
+                "component_id": component.id,
+                "component_object": component,
+                "model_type": "sat_xor_differential_propagation_constraints",
+            }
+        )
     return component_model_types
 
 
 def _update_component_model_types_for_truncated_components(
-        component_model_types,
-        truncated_components,
-        truncated_model_type="sat_bitwise_deterministic_truncated_xor_differential_constraints"
+    component_model_types,
+    truncated_components,
+    truncated_model_type="sat_bitwise_deterministic_truncated_xor_differential_constraints",
 ):
     """Updates the component model types for truncated components."""
     for component_model_type in component_model_types:
@@ -855,381 +902,418 @@ def _update_component_model_types_for_linear_components(component_model_types, l
 
 
 def get_semi_deterministic_cnf_window_0(
-        A_t0, A_t1, A_v0, A_v1,
-        B_t0, B_t1, B_v0, B_v1,
-        C_t0, C_t1, C_v0, C_v1,
-        p0, q0, r0
+    A_t0, A_t1, A_v0, A_v1, B_t0, B_t1, B_v0, B_v1, C_t0, C_t1, C_v0, C_v1, p0, q0, r0
 ):
     return [
-        f'{C_v1} {B_t1} {C_t0} {B_v0} {A_v0} {A_t0} {A_t1} {B_v1} -{C_v0} {A_v1} {B_t0}',
-        f'{C_v1} {B_t1} {C_t0} {B_v0} -{A_v0} {A_t0} {A_t1} {B_v1} {C_v0} {A_v1} {B_t0}',
-        f'{C_v1} {B_t1} {C_t0} -{B_v0} {A_v0} {A_t0} {A_t1} {B_v1} {C_v0} {A_v1} {B_t0}',
-        f'{C_v1} {B_t1} {C_t0} -{B_v0} -{A_v0} {A_t0} {A_t1} {B_v1} -{C_v0} {A_v1} {B_t0}',
-        f'{C_v1} {B_t1} -{C_t0} {A_t1} {B_v1} {A_v1} {C_t1}',
-        f'{C_v1} {B_t1} -{p0} {A_t1} {B_v1} {A_v1}',
-        f'{C_v1} {B_t1} {B_v0} {A_v0} {A_t1} {B_v1} -{C_v0} {A_v1} {C_t1}',
-        f'{C_v1} {B_t1} {B_v0} -{A_v0} {A_t1} {B_v1} {C_v0} {A_v1} {C_t1}',
-        f'{C_v1} {B_t1} -{B_v0} {A_v0} {A_t1} {B_v1} {C_v0} {A_v1} {C_t1}',
-        f'{C_v1} {B_t1} -{B_v0} -{A_v0} {A_t1} {B_v1} -{C_v0} {A_v1} {C_t1}',
-        f'{C_v1} {B_t1} -{r0} {A_t1} {B_v1} {A_v1}',
-        f'{C_v1} {B_t1} -{A_t0} {A_t1} {B_v1} {A_v1} {C_t1}',
-        f'{C_v1} {B_t1} {A_t1} {B_v1} {A_v1} -{B_t0} {C_t1}',
-        f'{C_v1} {C_t0} {p0} {B_v0} {A_v0} {A_t0} -{C_v0} {B_t0}',
-        f'{C_v1} {C_t0} {p0} {B_v0} -{A_v0} {A_t0} {C_v0} {B_t0}',
-        f'{C_v1} {C_t0} {p0} -{B_v0} {A_v0} {A_t0} {C_v0} {B_t0}',
-        f'{C_v1} {C_t0} {p0} -{B_v0} -{A_v0} {A_t0} -{C_v0} {B_t0}',
-        f'{C_v1} {C_t0} {p0} {A_t0} -{B_v1} {B_t0}',
-        f'{C_v1} {C_t0} {p0} {A_t0} -{A_v1} {B_t0}',
-        f'{C_v1} {C_t0} {B_v0} {r0} {A_v0} {A_t0} -{C_v0} {B_t0}',
-        f'{C_v1} {C_t0} {B_v0} {r0} -{A_v0} {A_t0} {C_v0} {B_t0}',
-        f'{C_v1} {C_t0} -{B_v0} {r0} {A_v0} {A_t0} {C_v0} {B_t0}',
-        f'{C_v1} {C_t0} -{B_v0} {r0} -{A_v0} {A_t0} -{C_v0} {B_t0}',
-        f'{C_v1} {C_t0} {r0} {A_t0} -{B_v1} {B_t0}',
-        f'{C_v1} {C_t0} {r0} {A_t0} -{A_v1} {B_t0}',
-        f'-{C_v1} {B_t1} -{C_t0} {A_t1} -{B_v1} -{A_v1} {C_t1}',
-        f'-{C_v1} {B_t1} -{p0} {A_t1} -{B_v1} -{A_v1} {C_t1}',
-        f'-{C_v1} {B_t1} {B_v0} {A_v0} {A_t1} -{B_v1} {C_v0} -{A_v1} {C_t1}',
-        f'-{C_v1} {B_t1} {B_v0} -{A_v0} {A_t1} -{B_v1} -{C_v0} -{A_v1} {C_t1}',
-        f'-{C_v1} {B_t1} -{B_v0} {A_v0} {A_t1} -{B_v1} -{C_v0} -{A_v1} {C_t1}',
-        f'-{C_v1} {B_t1} -{B_v0} -{A_v0} {A_t1} -{B_v1} {C_v0} -{A_v1} {C_t1}',
-        f'-{C_v1} {B_t1} -{r0} {A_t1} -{B_v1} -{A_v1} {C_t1}',
-        f'-{C_v1} {B_t1} -{A_t0} {A_t1} -{B_v1} -{A_v1} {C_t1}',
-        f'-{C_v1} {B_t1} {A_t1} -{B_v1} -{A_v1} -{B_t0} {C_t1}',
-        f'-{C_v1} {C_t0} {p0} {B_v0} {A_v0} {A_t0} {C_v0} {B_t0}',
-        f'-{C_v1} {C_t0} {p0} {B_v0} -{A_v0} {A_t0} -{C_v0} {B_t0}',
-        f'-{C_v1} {C_t0} {p0} -{B_v0} {A_v0} {A_t0} -{C_v0} {B_t0}',
-        f'-{C_v1} {C_t0} {p0} -{B_v0} -{A_v0} {A_t0} {C_v0} {B_t0}',
-        f'-{C_v1} {C_t0} {p0} {A_t0} {B_v1} {B_t0}',
-        f'-{C_v1} {C_t0} {p0} {A_t0} {A_v1} {B_t0}',
-        f'-{C_v1} {C_t0} {B_v0} {r0} {A_v0} {A_t0} {C_v0} {B_t0}',
-        f'-{C_v1} {C_t0} {B_v0} {r0} -{A_v0} {A_t0} -{C_v0} {B_t0}',
-        f'-{C_v1} {C_t0} -{B_v0} {r0} {A_v0} {A_t0} -{C_v0} {B_t0}',
-        f'-{C_v1} {C_t0} -{B_v0} {r0} -{A_v0} {A_t0} {C_v0} {B_t0}',
-        f'-{C_v1} {C_t0} {r0} {A_t0} {B_v1} {B_t0}',
-        f'-{C_v1} {C_t0} {r0} {A_t0} {A_v1} {B_t0}',
-        f'{B_t1} {C_t0} {A_t0} {A_t1} {B_v1} {A_v1} {B_t0} -{C_t1}',
-        f'{B_t1} -{p0} {A_t1} {B_v1} {A_v1} -{C_t1}',
-        f'{B_t1} -{r0} {A_t1} {B_v1} {A_v1} -{C_t1}',
-        f'-{B_t1} {C_t0} {p0} {A_t0} {B_t0}',
-        f'-{B_t1} {C_t0} {r0} {A_t0} {B_t0}',
-        f'{C_t0} {p0} {B_v0} {A_v0} {A_t0} {B_v1} -{C_v0} {B_t0}',
-        f'{C_t0} {p0} {B_v0} {A_v0} {A_t0} -{B_v1} {C_v0} {B_t0}',
-        f'{C_t0} {p0} {B_v0} {A_v0} {A_t0} {C_v0} -{A_v1} {B_t0}',
-        f'{C_t0} {p0} {B_v0} {A_v0} {A_t0} -{C_v0} {A_v1} {B_t0}',
-        f'{C_t0} {p0} {B_v0} -{A_v0} {A_t0} {B_v1} {C_v0} {B_t0}',
-        f'{C_t0} {p0} {B_v0} -{A_v0} {A_t0} -{B_v1} -{C_v0} {B_t0}',
-        f'{C_t0} {p0} {B_v0} -{A_v0} {A_t0} {C_v0} {A_v1} {B_t0}',
-        f'{C_t0} {p0} {B_v0} -{A_v0} {A_t0} -{C_v0} -{A_v1} {B_t0}',
-        f'{C_t0} {p0} -{B_v0} {A_v0} {A_t0} {B_v1} {C_v0} {B_t0}',
-        f'{C_t0} {p0} -{B_v0} {A_v0} {A_t0} -{B_v1} -{C_v0} {B_t0}',
-        f'{C_t0} {p0} -{B_v0} {A_v0} {A_t0} {C_v0} {A_v1} {B_t0}',
-        f'{C_t0} {p0} -{B_v0} {A_v0} {A_t0} -{C_v0} -{A_v1} {B_t0}',
-        f'{C_t0} {p0} -{B_v0} -{A_v0} {A_t0} {B_v1} -{C_v0} {B_t0}',
-        f'{C_t0} {p0} -{B_v0} -{A_v0} {A_t0} -{B_v1} {C_v0} {B_t0}',
-        f'{C_t0} {p0} -{B_v0} -{A_v0} {A_t0} {C_v0} -{A_v1} {B_t0}',
-        f'{C_t0} {p0} -{B_v0} -{A_v0} {A_t0} -{C_v0} {A_v1} {B_t0}',
-        f'{C_t0} {p0} {A_t0} -{A_t1} {B_t0}',
-        f'{C_t0} {p0} {A_t0} {B_v1} -{A_v1} {B_t0}',
-        f'{C_t0} {p0} {A_t0} -{B_v1} {A_v1} {B_t0}',
-        f'{C_t0} {p0} {A_t0} {B_t0} -{C_t1}',
-        f'{C_t0} {B_v0} {r0} {A_v0} {A_t0} {B_v1} -{C_v0} {B_t0}',
-        f'{C_t0} {B_v0} {r0} {A_v0} {A_t0} -{B_v1} {C_v0} {B_t0}',
-        f'{C_t0} {B_v0} {r0} {A_v0} {A_t0} {C_v0} -{A_v1} {B_t0}',
-        f'{C_t0} {B_v0} {r0} {A_v0} {A_t0} -{C_v0} {A_v1} {B_t0}',
-        f'{C_t0} {B_v0} {r0} -{A_v0} {A_t0} {B_v1} {C_v0} {B_t0}',
-        f'{C_t0} {B_v0} {r0} -{A_v0} {A_t0} -{B_v1} -{C_v0} {B_t0}',
-        f'{C_t0} {B_v0} {r0} -{A_v0} {A_t0} {C_v0} {A_v1} {B_t0}',
-        f'{C_t0} {B_v0} {r0} -{A_v0} {A_t0} -{C_v0} -{A_v1} {B_t0}',
-        f'{C_t0} -{B_v0} {r0} {A_v0} {A_t0} {B_v1} {C_v0} {B_t0}',
-        f'{C_t0} -{B_v0} {r0} {A_v0} {A_t0} -{B_v1} -{C_v0} {B_t0}',
-        f'{C_t0} -{B_v0} {r0} {A_v0} {A_t0} {C_v0} {A_v1} {B_t0}',
-        f'{C_t0} -{B_v0} {r0} {A_v0} {A_t0} -{C_v0} -{A_v1} {B_t0}',
-        f'{C_t0} -{B_v0} {r0} -{A_v0} {A_t0} {B_v1} -{C_v0} {B_t0}',
-        f'{C_t0} -{B_v0} {r0} -{A_v0} {A_t0} -{B_v1} {C_v0} {B_t0}',
-        f'{C_t0} -{B_v0} {r0} -{A_v0} {A_t0} {C_v0} -{A_v1} {B_t0}',
-        f'{C_t0} -{B_v0} {r0} -{A_v0} {A_t0} -{C_v0} {A_v1} {B_t0}',
-        f'{C_t0} {r0} {A_t0} -{A_t1} {B_t0}',
-        f'{C_t0} {r0} {A_t0} {B_v1} -{A_v1} {B_t0}',
-        f'{C_t0} {r0} {A_t0} -{B_v1} {A_v1} {B_t0}',
-        f'{C_t0} {r0} {A_t0} {B_t0} -{C_t1}',
-        f'-{C_t0} -{p0}',
-        f'-{C_t0} -{r0}',
-        f'-{q0}',
-        f'{p0} -{r0}',
-        f'-{p0} {r0}',
-        f'-{p0} -{A_t0}',
-        f'-{p0} -{B_t0}',
-        f'-{r0} -{A_t0}',
-        f'-{r0} -{B_t0}'
+        f"{C_v1} {B_t1} {C_t0} {B_v0} {A_v0} {A_t0} {A_t1} {B_v1} -{C_v0} {A_v1} {B_t0}",
+        f"{C_v1} {B_t1} {C_t0} {B_v0} -{A_v0} {A_t0} {A_t1} {B_v1} {C_v0} {A_v1} {B_t0}",
+        f"{C_v1} {B_t1} {C_t0} -{B_v0} {A_v0} {A_t0} {A_t1} {B_v1} {C_v0} {A_v1} {B_t0}",
+        f"{C_v1} {B_t1} {C_t0} -{B_v0} -{A_v0} {A_t0} {A_t1} {B_v1} -{C_v0} {A_v1} {B_t0}",
+        f"{C_v1} {B_t1} -{C_t0} {A_t1} {B_v1} {A_v1} {C_t1}",
+        f"{C_v1} {B_t1} -{p0} {A_t1} {B_v1} {A_v1}",
+        f"{C_v1} {B_t1} {B_v0} {A_v0} {A_t1} {B_v1} -{C_v0} {A_v1} {C_t1}",
+        f"{C_v1} {B_t1} {B_v0} -{A_v0} {A_t1} {B_v1} {C_v0} {A_v1} {C_t1}",
+        f"{C_v1} {B_t1} -{B_v0} {A_v0} {A_t1} {B_v1} {C_v0} {A_v1} {C_t1}",
+        f"{C_v1} {B_t1} -{B_v0} -{A_v0} {A_t1} {B_v1} -{C_v0} {A_v1} {C_t1}",
+        f"{C_v1} {B_t1} -{r0} {A_t1} {B_v1} {A_v1}",
+        f"{C_v1} {B_t1} -{A_t0} {A_t1} {B_v1} {A_v1} {C_t1}",
+        f"{C_v1} {B_t1} {A_t1} {B_v1} {A_v1} -{B_t0} {C_t1}",
+        f"{C_v1} {C_t0} {p0} {B_v0} {A_v0} {A_t0} -{C_v0} {B_t0}",
+        f"{C_v1} {C_t0} {p0} {B_v0} -{A_v0} {A_t0} {C_v0} {B_t0}",
+        f"{C_v1} {C_t0} {p0} -{B_v0} {A_v0} {A_t0} {C_v0} {B_t0}",
+        f"{C_v1} {C_t0} {p0} -{B_v0} -{A_v0} {A_t0} -{C_v0} {B_t0}",
+        f"{C_v1} {C_t0} {p0} {A_t0} -{B_v1} {B_t0}",
+        f"{C_v1} {C_t0} {p0} {A_t0} -{A_v1} {B_t0}",
+        f"{C_v1} {C_t0} {B_v0} {r0} {A_v0} {A_t0} -{C_v0} {B_t0}",
+        f"{C_v1} {C_t0} {B_v0} {r0} -{A_v0} {A_t0} {C_v0} {B_t0}",
+        f"{C_v1} {C_t0} -{B_v0} {r0} {A_v0} {A_t0} {C_v0} {B_t0}",
+        f"{C_v1} {C_t0} -{B_v0} {r0} -{A_v0} {A_t0} -{C_v0} {B_t0}",
+        f"{C_v1} {C_t0} {r0} {A_t0} -{B_v1} {B_t0}",
+        f"{C_v1} {C_t0} {r0} {A_t0} -{A_v1} {B_t0}",
+        f"-{C_v1} {B_t1} -{C_t0} {A_t1} -{B_v1} -{A_v1} {C_t1}",
+        f"-{C_v1} {B_t1} -{p0} {A_t1} -{B_v1} -{A_v1} {C_t1}",
+        f"-{C_v1} {B_t1} {B_v0} {A_v0} {A_t1} -{B_v1} {C_v0} -{A_v1} {C_t1}",
+        f"-{C_v1} {B_t1} {B_v0} -{A_v0} {A_t1} -{B_v1} -{C_v0} -{A_v1} {C_t1}",
+        f"-{C_v1} {B_t1} -{B_v0} {A_v0} {A_t1} -{B_v1} -{C_v0} -{A_v1} {C_t1}",
+        f"-{C_v1} {B_t1} -{B_v0} -{A_v0} {A_t1} -{B_v1} {C_v0} -{A_v1} {C_t1}",
+        f"-{C_v1} {B_t1} -{r0} {A_t1} -{B_v1} -{A_v1} {C_t1}",
+        f"-{C_v1} {B_t1} -{A_t0} {A_t1} -{B_v1} -{A_v1} {C_t1}",
+        f"-{C_v1} {B_t1} {A_t1} -{B_v1} -{A_v1} -{B_t0} {C_t1}",
+        f"-{C_v1} {C_t0} {p0} {B_v0} {A_v0} {A_t0} {C_v0} {B_t0}",
+        f"-{C_v1} {C_t0} {p0} {B_v0} -{A_v0} {A_t0} -{C_v0} {B_t0}",
+        f"-{C_v1} {C_t0} {p0} -{B_v0} {A_v0} {A_t0} -{C_v0} {B_t0}",
+        f"-{C_v1} {C_t0} {p0} -{B_v0} -{A_v0} {A_t0} {C_v0} {B_t0}",
+        f"-{C_v1} {C_t0} {p0} {A_t0} {B_v1} {B_t0}",
+        f"-{C_v1} {C_t0} {p0} {A_t0} {A_v1} {B_t0}",
+        f"-{C_v1} {C_t0} {B_v0} {r0} {A_v0} {A_t0} {C_v0} {B_t0}",
+        f"-{C_v1} {C_t0} {B_v0} {r0} -{A_v0} {A_t0} -{C_v0} {B_t0}",
+        f"-{C_v1} {C_t0} -{B_v0} {r0} {A_v0} {A_t0} -{C_v0} {B_t0}",
+        f"-{C_v1} {C_t0} -{B_v0} {r0} -{A_v0} {A_t0} {C_v0} {B_t0}",
+        f"-{C_v1} {C_t0} {r0} {A_t0} {B_v1} {B_t0}",
+        f"-{C_v1} {C_t0} {r0} {A_t0} {A_v1} {B_t0}",
+        f"{B_t1} {C_t0} {A_t0} {A_t1} {B_v1} {A_v1} {B_t0} -{C_t1}",
+        f"{B_t1} -{p0} {A_t1} {B_v1} {A_v1} -{C_t1}",
+        f"{B_t1} -{r0} {A_t1} {B_v1} {A_v1} -{C_t1}",
+        f"-{B_t1} {C_t0} {p0} {A_t0} {B_t0}",
+        f"-{B_t1} {C_t0} {r0} {A_t0} {B_t0}",
+        f"{C_t0} {p0} {B_v0} {A_v0} {A_t0} {B_v1} -{C_v0} {B_t0}",
+        f"{C_t0} {p0} {B_v0} {A_v0} {A_t0} -{B_v1} {C_v0} {B_t0}",
+        f"{C_t0} {p0} {B_v0} {A_v0} {A_t0} {C_v0} -{A_v1} {B_t0}",
+        f"{C_t0} {p0} {B_v0} {A_v0} {A_t0} -{C_v0} {A_v1} {B_t0}",
+        f"{C_t0} {p0} {B_v0} -{A_v0} {A_t0} {B_v1} {C_v0} {B_t0}",
+        f"{C_t0} {p0} {B_v0} -{A_v0} {A_t0} -{B_v1} -{C_v0} {B_t0}",
+        f"{C_t0} {p0} {B_v0} -{A_v0} {A_t0} {C_v0} {A_v1} {B_t0}",
+        f"{C_t0} {p0} {B_v0} -{A_v0} {A_t0} -{C_v0} -{A_v1} {B_t0}",
+        f"{C_t0} {p0} -{B_v0} {A_v0} {A_t0} {B_v1} {C_v0} {B_t0}",
+        f"{C_t0} {p0} -{B_v0} {A_v0} {A_t0} -{B_v1} -{C_v0} {B_t0}",
+        f"{C_t0} {p0} -{B_v0} {A_v0} {A_t0} {C_v0} {A_v1} {B_t0}",
+        f"{C_t0} {p0} -{B_v0} {A_v0} {A_t0} -{C_v0} -{A_v1} {B_t0}",
+        f"{C_t0} {p0} -{B_v0} -{A_v0} {A_t0} {B_v1} -{C_v0} {B_t0}",
+        f"{C_t0} {p0} -{B_v0} -{A_v0} {A_t0} -{B_v1} {C_v0} {B_t0}",
+        f"{C_t0} {p0} -{B_v0} -{A_v0} {A_t0} {C_v0} -{A_v1} {B_t0}",
+        f"{C_t0} {p0} -{B_v0} -{A_v0} {A_t0} -{C_v0} {A_v1} {B_t0}",
+        f"{C_t0} {p0} {A_t0} -{A_t1} {B_t0}",
+        f"{C_t0} {p0} {A_t0} {B_v1} -{A_v1} {B_t0}",
+        f"{C_t0} {p0} {A_t0} -{B_v1} {A_v1} {B_t0}",
+        f"{C_t0} {p0} {A_t0} {B_t0} -{C_t1}",
+        f"{C_t0} {B_v0} {r0} {A_v0} {A_t0} {B_v1} -{C_v0} {B_t0}",
+        f"{C_t0} {B_v0} {r0} {A_v0} {A_t0} -{B_v1} {C_v0} {B_t0}",
+        f"{C_t0} {B_v0} {r0} {A_v0} {A_t0} {C_v0} -{A_v1} {B_t0}",
+        f"{C_t0} {B_v0} {r0} {A_v0} {A_t0} -{C_v0} {A_v1} {B_t0}",
+        f"{C_t0} {B_v0} {r0} -{A_v0} {A_t0} {B_v1} {C_v0} {B_t0}",
+        f"{C_t0} {B_v0} {r0} -{A_v0} {A_t0} -{B_v1} -{C_v0} {B_t0}",
+        f"{C_t0} {B_v0} {r0} -{A_v0} {A_t0} {C_v0} {A_v1} {B_t0}",
+        f"{C_t0} {B_v0} {r0} -{A_v0} {A_t0} -{C_v0} -{A_v1} {B_t0}",
+        f"{C_t0} -{B_v0} {r0} {A_v0} {A_t0} {B_v1} {C_v0} {B_t0}",
+        f"{C_t0} -{B_v0} {r0} {A_v0} {A_t0} -{B_v1} -{C_v0} {B_t0}",
+        f"{C_t0} -{B_v0} {r0} {A_v0} {A_t0} {C_v0} {A_v1} {B_t0}",
+        f"{C_t0} -{B_v0} {r0} {A_v0} {A_t0} -{C_v0} -{A_v1} {B_t0}",
+        f"{C_t0} -{B_v0} {r0} -{A_v0} {A_t0} {B_v1} -{C_v0} {B_t0}",
+        f"{C_t0} -{B_v0} {r0} -{A_v0} {A_t0} -{B_v1} {C_v0} {B_t0}",
+        f"{C_t0} -{B_v0} {r0} -{A_v0} {A_t0} {C_v0} -{A_v1} {B_t0}",
+        f"{C_t0} -{B_v0} {r0} -{A_v0} {A_t0} -{C_v0} {A_v1} {B_t0}",
+        f"{C_t0} {r0} {A_t0} -{A_t1} {B_t0}",
+        f"{C_t0} {r0} {A_t0} {B_v1} -{A_v1} {B_t0}",
+        f"{C_t0} {r0} {A_t0} -{B_v1} {A_v1} {B_t0}",
+        f"{C_t0} {r0} {A_t0} {B_t0} -{C_t1}",
+        f"-{C_t0} -{p0}",
+        f"-{C_t0} -{r0}",
+        f"-{q0}",
+        f"{p0} -{r0}",
+        f"-{p0} {r0}",
+        f"-{p0} -{A_t0}",
+        f"-{p0} -{B_t0}",
+        f"-{r0} -{A_t0}",
+        f"-{r0} -{B_t0}",
     ]
 
 
 def get_cnf_semi_deterministic_window_1(
-        A_t0, A_t1, A_t2, A_v0, A_v1, A_v2,
-        B_t0, B_t1, B_t2, B_v0, B_v1, B_v2,
-        C_t0, C_t1, C_t2, C_v0, C_v1,
-        p0, q0, r0
+    A_t0, A_t1, A_t2, A_v0, A_v1, A_v2, B_t0, B_t1, B_t2, B_v0, B_v1, B_v2, C_t0, C_t1, C_t2, C_v0, C_v1, p0, q0, r0
 ):
     return [
-        f'{C_v1} {A_t1} {A_v1} {A_t0} {B_t1} {C_t0} {B_t0} {A_v0} {B_v1} {B_v0} -{C_v0}',
-        f'{C_v1} {A_t1} {A_v1} {A_t0} {B_t1} {C_t0} {B_t0} {A_v0} {B_v1} -{B_v0} {C_v0}',
-        f'{C_v1} {A_t1} {A_v1} {A_t0} {B_t1} {C_t0} {B_t0} -{A_v0} {B_v1} {B_v0} {C_v0}',
-        f'{C_v1} {A_t1} {A_v1} {A_t0} {B_t1} {C_t0} {B_t0} -{A_v0} {B_v1} -{B_v0} -{C_v0}',
-        f'{C_v1} {A_t1} {A_v1} -{A_t0} {C_t1} {B_t1} {B_v1}',
-        f'{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} -{C_t0} {B_v1}',
-        f'{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} -{B_t0} {B_v1}',
-        f'{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} {A_v0} {B_v1} {B_v0} -{C_v0}',
-        f'{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} {A_v0} {B_v1} -{B_v0} {C_v0}',
-        f'{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} -{A_v0} {B_v1} {B_v0} {C_v0}',
-        f'{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} -{A_v0} {B_v1} -{B_v0} -{C_v0}',
-        f'{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} -{p0} {B_v1}',
-        f'{C_v1} {A_t1} {A_v1} -{r0} {B_t1} {B_v1}',
-        f'{C_v1} {A_t1} {A_v1} {A_v2} {B_t1} -{C_t2} {A_t2} {B_t2} {B_v2} -{p0} {B_v1}',
-        f'{C_v1} {A_t1} {A_v1} {B_t1} {A_v0} -{p0} {B_v1} {B_v0} -{C_v0}',
-        f'{C_v1} {A_t1} {A_v1} {B_t1} {A_v0} -{p0} {B_v1} -{B_v0} {C_v0}',
-        f'{C_v1} {A_t1} {A_v1} {B_t1} -{A_v0} -{p0} {B_v1} {B_v0} {C_v0}',
-        f'{C_v1} {A_t1} {A_v1} {B_t1} -{A_v0} -{p0} {B_v1} -{B_v0} -{C_v0}',
-        f'{C_v1} -{A_v1} {A_t0} {r0} {C_t0} {B_t0}',
-        f'{C_v1} -{A_v1} {A_t0} {C_t0} {B_t0} {p0}',
-        f'{C_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} {B_v0} -{C_v0}',
-        f'{C_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} -{B_v0} {C_v0}',
-        f'{C_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} {B_v0} {C_v0}',
-        f'{C_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} -{B_v0} -{C_v0}',
-        f'{C_v1} {A_t0} {r0} {C_t0} {B_t0} -{B_v1}',
-        f'{C_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v0} -{C_v0}',
-        f'{C_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v0} {C_v0}',
-        f'{C_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v0} {C_v0}',
-        f'{C_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v0} -{C_v0}',
-        f'{C_v1} {A_t0} {C_t0} {B_t0} {p0} -{B_v1}',
-        f'-{C_v1} {A_t1} -{A_v1} -{A_t0} {C_t1} {B_t1} -{B_v1}',
-        f'-{C_v1} {A_t1} -{A_v1} {C_t1} -{r0} {B_t1} -{B_v1}',
-        f'-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} -{C_t0} -{B_v1}',
-        f'-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} -{B_t0} -{B_v1}',
-        f'-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} {A_v0} -{B_v1} {B_v0} {C_v0}',
-        f'-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} {A_v0} -{B_v1} -{B_v0} -{C_v0}',
-        f'-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} -{A_v0} -{B_v1} {B_v0} -{C_v0}',
-        f'-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} -{A_v0} -{B_v1} -{B_v0} {C_v0}',
-        f'-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} -{p0} -{B_v1}',
-        f'-{C_v1} {A_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0}',
-        f'-{C_v1} {A_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} -{C_t2} {A_t2} {B_t2} {B_v2}',
-        f'-{C_v1} {A_v1} {A_t0} {C_t0} {B_t0} {p0}',
-        f'-{C_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0} {A_v0} {B_v0} {C_v0}',
-        f'-{C_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0} {A_v0} -{B_v0} -{C_v0}',
-        f'-{C_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0} -{A_v0} {B_v0} -{C_v0}',
-        f'-{C_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0} -{A_v0} -{B_v0} {C_v0}',
-        f'-{C_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0} {B_v1}',
-        f'-{C_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} {A_v0} -{C_t2} {A_t2} {B_t2} {B_v2} {B_v0} {C_v0}',
-        f'-{C_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} {A_v0} -{C_t2} {A_t2} {B_t2} {B_v2} -{B_v0} -{C_v0}',
-        f'-{C_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} -{A_v0} -{C_t2} {A_t2} {B_t2} {B_v2} {B_v0} -{C_v0}',
-        f'-{C_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} -{A_v0} -{C_t2} {A_t2} {B_t2} {B_v2} -{B_v0} {C_v0}',
-        f'-{C_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} -{C_t2} {A_t2} {B_t2} {B_v2} {B_v1}',
-        f'-{C_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v0} {C_v0}',
-        f'-{C_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v0} -{C_v0}',
-        f'-{C_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v0} -{C_v0}',
-        f'-{C_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v0} {C_v0}',
-        f'-{C_v1} {A_t0} {C_t0} {B_t0} {p0} {B_v1}',
-        f'{A_t1} {A_v1} {A_t0} -{C_t1} {A_v2} {B_t1} {C_t0} {B_t0} -{C_t2} {A_t2} {B_t2} {B_v2} {B_v1}',
-        f'{A_t1} {A_v1} {A_t0} -{C_t1} {B_t1} {C_t0} {B_t0} {A_v0} {B_v1} {B_v0} -{C_v0}',
-        f'{A_t1} {A_v1} {A_t0} -{C_t1} {B_t1} {C_t0} {B_t0} {A_v0} {B_v1} -{B_v0} {C_v0}',
-        f'{A_t1} {A_v1} {A_t0} -{C_t1} {B_t1} {C_t0} {B_t0} -{A_v0} {B_v1} {B_v0} {C_v0}',
-        f'{A_t1} {A_v1} {A_t0} -{C_t1} {B_t1} {C_t0} {B_t0} -{A_v0} {B_v1} -{B_v0} -{C_v0}',
-        f'{A_t1} {A_v1} -{C_t1} -{r0} {B_t1} {B_v1}',
-        f'{A_t1} {A_v1} -{C_t1} {A_v2} {B_t1} -{C_t2} {A_t2} {B_t2} {B_v2} -{p0} {B_v1}',
-        f'{A_t1} {A_v1} -{C_t1} {B_t1} {A_v0} -{p0} {B_v1} {B_v0} -{C_v0}',
-        f'{A_t1} {A_v1} -{C_t1} {B_t1} {A_v0} -{p0} {B_v1} -{B_v0} {C_v0}',
-        f'{A_t1} {A_v1} -{C_t1} {B_t1} -{A_v0} -{p0} {B_v1} {B_v0} {C_v0}',
-        f'{A_t1} {A_v1} -{C_t1} {B_t1} -{A_v0} -{p0} {B_v1} -{B_v0} -{C_v0}',
-        f'-{A_t1} {A_t0} {r0} {C_t0} {B_t0}',
-        f'-{A_t1} {A_t0} {C_t0} {B_t0} {p0}',
-        f'-{A_t1} {r0} -{p0}',
-        f'{A_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} {B_v0} -{C_v0}',
-        f'{A_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} -{B_v0} {C_v0}',
-        f'{A_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} {B_v0} {C_v0}',
-        f'{A_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} -{B_v0} -{C_v0}',
-        f'{A_v1} {A_t0} {r0} {C_t0} {B_t0} -{B_v1}',
-        f'{A_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v0} -{C_v0}',
-        f'{A_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v0} {C_v0}',
-        f'{A_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v0} {C_v0}',
-        f'{A_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v0} -{C_v0}',
-        f'{A_v1} {A_t0} {C_t0} {B_t0} {p0} -{B_v1}',
-        f'-{A_v1} {A_t0} -{C_t1} {r0} {C_t0} {B_t0}',
-        f'-{A_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} {B_v0} {C_v0}',
-        f'-{A_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} -{B_v0} -{C_v0}',
-        f'-{A_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} {B_v0} -{C_v0}',
-        f'-{A_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} -{B_v0} {C_v0}',
-        f'-{A_v1} {A_t0} {r0} {C_t0} {B_t0} {B_v1}',
-        f'-{A_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v0} {C_v0}',
-        f'-{A_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v0} -{C_v0}',
-        f'-{A_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v0} -{C_v0}',
-        f'-{A_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v0} {C_v0}',
-        f'-{A_v1} {A_t0} {C_t0} {B_t0} {p0} {B_v1}',
-        f'-{A_v1} {r0} -{p0}',
-        f'{A_t0} -{C_t1} {r0} {A_v2} {C_t0} {B_t0} -{C_t2} {A_t2} {B_t2} {B_v2}',
-        f'{A_t0} -{C_t1} {r0} {C_t0} {B_t0} {A_v0} {B_v0} -{C_v0}',
-        f'{A_t0} -{C_t1} {r0} {C_t0} {B_t0} {A_v0} -{B_v0} {C_v0}',
-        f'{A_t0} -{C_t1} {r0} {C_t0} {B_t0} -{A_v0} {B_v0} {C_v0}',
-        f'{A_t0} -{C_t1} {r0} {C_t0} {B_t0} -{A_v0} -{B_v0} -{C_v0}',
-        f'{A_t0} -{C_t1} {r0} {C_t0} {B_t0} -{B_v1}',
-        f'{A_t0} -{C_t1} {C_t0} {B_t0} {p0}',
-        f'{A_t0} {r0} -{B_t1} {C_t0} {B_t0}',
-        f'{A_t0} {r0} {C_t0} {B_t0} {A_v0} {B_v1} {B_v0} -{C_v0}',
-        f'{A_t0} {r0} {C_t0} {B_t0} {A_v0} {B_v1} -{B_v0} {C_v0}',
-        f'{A_t0} {r0} {C_t0} {B_t0} {A_v0} -{B_v1} {B_v0} {C_v0}',
-        f'{A_t0} {r0} {C_t0} {B_t0} {A_v0} -{B_v1} -{B_v0} -{C_v0}',
-        f'{A_t0} {r0} {C_t0} {B_t0} -{A_v0} {B_v1} {B_v0} {C_v0}',
-        f'{A_t0} {r0} {C_t0} {B_t0} -{A_v0} {B_v1} -{B_v0} -{C_v0}',
-        f'{A_t0} {r0} {C_t0} {B_t0} -{A_v0} -{B_v1} {B_v0} -{C_v0}',
-        f'{A_t0} {r0} {C_t0} {B_t0} -{A_v0} -{B_v1} -{B_v0} {C_v0}',
-        f'{A_t0} -{B_t1} {C_t0} {B_t0} {p0}',
-        f'{A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v1} {B_v0} -{C_v0}',
-        f'{A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v1} -{B_v0} {C_v0}',
-        f'{A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v1} {B_v0} {C_v0}',
-        f'{A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v1} -{B_v0} -{C_v0}',
-        f'{A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v1} {B_v0} {C_v0}',
-        f'{A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v1} -{B_v0} -{C_v0}',
-        f'{A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v1} {B_v0} -{C_v0}',
-        f'{A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v1} -{B_v0} {C_v0}',
-        f'-{A_t0} -{r0}',
-        f'-{A_t0} -{p0}',
-        f'{C_t1} {r0} -{p0}',
-        f'{r0} {A_v2} -{C_t2} {A_t2} {B_t2} {B_v2} -{p0}',
-        f'{r0} -{B_t1} -{p0}',
-        f'{r0} {A_v0} -{p0} {B_v0} -{C_v0}',
-        f'{r0} {A_v0} -{p0} -{B_v0} {C_v0}',
-        f'{r0} -{A_v0} -{p0} {B_v0} {C_v0}',
-        f'{r0} -{A_v0} -{p0} -{B_v0} -{C_v0}',
-        f'{r0} -{p0} -{B_v1}',
-        f'-{r0} -{C_t0}',
-        f'-{r0} -{B_t0}',
-        f'-{r0} {p0}',
-        f'-{C_t0} -{p0}',
-        f'-{B_t0} -{p0}',
-        f'-{q0}'
+        f"{C_v1} {A_t1} {A_v1} {A_t0} {B_t1} {C_t0} {B_t0} {A_v0} {B_v1} {B_v0} -{C_v0}",
+        f"{C_v1} {A_t1} {A_v1} {A_t0} {B_t1} {C_t0} {B_t0} {A_v0} {B_v1} -{B_v0} {C_v0}",
+        f"{C_v1} {A_t1} {A_v1} {A_t0} {B_t1} {C_t0} {B_t0} -{A_v0} {B_v1} {B_v0} {C_v0}",
+        f"{C_v1} {A_t1} {A_v1} {A_t0} {B_t1} {C_t0} {B_t0} -{A_v0} {B_v1} -{B_v0} -{C_v0}",
+        f"{C_v1} {A_t1} {A_v1} -{A_t0} {C_t1} {B_t1} {B_v1}",
+        f"{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} -{C_t0} {B_v1}",
+        f"{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} -{B_t0} {B_v1}",
+        f"{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} {A_v0} {B_v1} {B_v0} -{C_v0}",
+        f"{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} {A_v0} {B_v1} -{B_v0} {C_v0}",
+        f"{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} -{A_v0} {B_v1} {B_v0} {C_v0}",
+        f"{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} -{A_v0} {B_v1} -{B_v0} -{C_v0}",
+        f"{C_v1} {A_t1} {A_v1} {C_t1} {B_t1} -{p0} {B_v1}",
+        f"{C_v1} {A_t1} {A_v1} -{r0} {B_t1} {B_v1}",
+        f"{C_v1} {A_t1} {A_v1} {A_v2} {B_t1} -{C_t2} {A_t2} {B_t2} {B_v2} -{p0} {B_v1}",
+        f"{C_v1} {A_t1} {A_v1} {B_t1} {A_v0} -{p0} {B_v1} {B_v0} -{C_v0}",
+        f"{C_v1} {A_t1} {A_v1} {B_t1} {A_v0} -{p0} {B_v1} -{B_v0} {C_v0}",
+        f"{C_v1} {A_t1} {A_v1} {B_t1} -{A_v0} -{p0} {B_v1} {B_v0} {C_v0}",
+        f"{C_v1} {A_t1} {A_v1} {B_t1} -{A_v0} -{p0} {B_v1} -{B_v0} -{C_v0}",
+        f"{C_v1} -{A_v1} {A_t0} {r0} {C_t0} {B_t0}",
+        f"{C_v1} -{A_v1} {A_t0} {C_t0} {B_t0} {p0}",
+        f"{C_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} {B_v0} -{C_v0}",
+        f"{C_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} -{B_v0} {C_v0}",
+        f"{C_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} {B_v0} {C_v0}",
+        f"{C_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} -{B_v0} -{C_v0}",
+        f"{C_v1} {A_t0} {r0} {C_t0} {B_t0} -{B_v1}",
+        f"{C_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v0} -{C_v0}",
+        f"{C_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v0} {C_v0}",
+        f"{C_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v0} {C_v0}",
+        f"{C_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v0} -{C_v0}",
+        f"{C_v1} {A_t0} {C_t0} {B_t0} {p0} -{B_v1}",
+        f"-{C_v1} {A_t1} -{A_v1} -{A_t0} {C_t1} {B_t1} -{B_v1}",
+        f"-{C_v1} {A_t1} -{A_v1} {C_t1} -{r0} {B_t1} -{B_v1}",
+        f"-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} -{C_t0} -{B_v1}",
+        f"-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} -{B_t0} -{B_v1}",
+        f"-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} {A_v0} -{B_v1} {B_v0} {C_v0}",
+        f"-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} {A_v0} -{B_v1} -{B_v0} -{C_v0}",
+        f"-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} -{A_v0} -{B_v1} {B_v0} -{C_v0}",
+        f"-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} -{A_v0} -{B_v1} -{B_v0} {C_v0}",
+        f"-{C_v1} {A_t1} -{A_v1} {C_t1} {B_t1} -{p0} -{B_v1}",
+        f"-{C_v1} {A_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0}",
+        f"-{C_v1} {A_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} -{C_t2} {A_t2} {B_t2} {B_v2}",
+        f"-{C_v1} {A_v1} {A_t0} {C_t0} {B_t0} {p0}",
+        f"-{C_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0} {A_v0} {B_v0} {C_v0}",
+        f"-{C_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0} {A_v0} -{B_v0} -{C_v0}",
+        f"-{C_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0} -{A_v0} {B_v0} -{C_v0}",
+        f"-{C_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0} -{A_v0} -{B_v0} {C_v0}",
+        f"-{C_v1} {A_t0} {C_t1} {r0} {C_t0} {B_t0} {B_v1}",
+        f"-{C_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} {A_v0} -{C_t2} {A_t2} {B_t2} {B_v2} {B_v0} {C_v0}",
+        f"-{C_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} {A_v0} -{C_t2} {A_t2} {B_t2} {B_v2} -{B_v0} -{C_v0}",
+        f"-{C_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} -{A_v0} -{C_t2} {A_t2} {B_t2} {B_v2} {B_v0} -{C_v0}",
+        f"-{C_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} -{A_v0} -{C_t2} {A_t2} {B_t2} {B_v2} -{B_v0} {C_v0}",
+        f"-{C_v1} {A_t0} {r0} {A_v2} {C_t0} {B_t0} -{C_t2} {A_t2} {B_t2} {B_v2} {B_v1}",
+        f"-{C_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v0} {C_v0}",
+        f"-{C_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v0} -{C_v0}",
+        f"-{C_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v0} -{C_v0}",
+        f"-{C_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v0} {C_v0}",
+        f"-{C_v1} {A_t0} {C_t0} {B_t0} {p0} {B_v1}",
+        f"{A_t1} {A_v1} {A_t0} -{C_t1} {A_v2} {B_t1} {C_t0} {B_t0} -{C_t2} {A_t2} {B_t2} {B_v2} {B_v1}",
+        f"{A_t1} {A_v1} {A_t0} -{C_t1} {B_t1} {C_t0} {B_t0} {A_v0} {B_v1} {B_v0} -{C_v0}",
+        f"{A_t1} {A_v1} {A_t0} -{C_t1} {B_t1} {C_t0} {B_t0} {A_v0} {B_v1} -{B_v0} {C_v0}",
+        f"{A_t1} {A_v1} {A_t0} -{C_t1} {B_t1} {C_t0} {B_t0} -{A_v0} {B_v1} {B_v0} {C_v0}",
+        f"{A_t1} {A_v1} {A_t0} -{C_t1} {B_t1} {C_t0} {B_t0} -{A_v0} {B_v1} -{B_v0} -{C_v0}",
+        f"{A_t1} {A_v1} -{C_t1} -{r0} {B_t1} {B_v1}",
+        f"{A_t1} {A_v1} -{C_t1} {A_v2} {B_t1} -{C_t2} {A_t2} {B_t2} {B_v2} -{p0} {B_v1}",
+        f"{A_t1} {A_v1} -{C_t1} {B_t1} {A_v0} -{p0} {B_v1} {B_v0} -{C_v0}",
+        f"{A_t1} {A_v1} -{C_t1} {B_t1} {A_v0} -{p0} {B_v1} -{B_v0} {C_v0}",
+        f"{A_t1} {A_v1} -{C_t1} {B_t1} -{A_v0} -{p0} {B_v1} {B_v0} {C_v0}",
+        f"{A_t1} {A_v1} -{C_t1} {B_t1} -{A_v0} -{p0} {B_v1} -{B_v0} -{C_v0}",
+        f"-{A_t1} {A_t0} {r0} {C_t0} {B_t0}",
+        f"-{A_t1} {A_t0} {C_t0} {B_t0} {p0}",
+        f"-{A_t1} {r0} -{p0}",
+        f"{A_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} {B_v0} -{C_v0}",
+        f"{A_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} -{B_v0} {C_v0}",
+        f"{A_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} {B_v0} {C_v0}",
+        f"{A_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} -{B_v0} -{C_v0}",
+        f"{A_v1} {A_t0} {r0} {C_t0} {B_t0} -{B_v1}",
+        f"{A_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v0} -{C_v0}",
+        f"{A_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v0} {C_v0}",
+        f"{A_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v0} {C_v0}",
+        f"{A_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v0} -{C_v0}",
+        f"{A_v1} {A_t0} {C_t0} {B_t0} {p0} -{B_v1}",
+        f"-{A_v1} {A_t0} -{C_t1} {r0} {C_t0} {B_t0}",
+        f"-{A_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} {B_v0} {C_v0}",
+        f"-{A_v1} {A_t0} {r0} {C_t0} {B_t0} {A_v0} -{B_v0} -{C_v0}",
+        f"-{A_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} {B_v0} -{C_v0}",
+        f"-{A_v1} {A_t0} {r0} {C_t0} {B_t0} -{A_v0} -{B_v0} {C_v0}",
+        f"-{A_v1} {A_t0} {r0} {C_t0} {B_t0} {B_v1}",
+        f"-{A_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v0} {C_v0}",
+        f"-{A_v1} {A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v0} -{C_v0}",
+        f"-{A_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v0} -{C_v0}",
+        f"-{A_v1} {A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v0} {C_v0}",
+        f"-{A_v1} {A_t0} {C_t0} {B_t0} {p0} {B_v1}",
+        f"-{A_v1} {r0} -{p0}",
+        f"{A_t0} -{C_t1} {r0} {A_v2} {C_t0} {B_t0} -{C_t2} {A_t2} {B_t2} {B_v2}",
+        f"{A_t0} -{C_t1} {r0} {C_t0} {B_t0} {A_v0} {B_v0} -{C_v0}",
+        f"{A_t0} -{C_t1} {r0} {C_t0} {B_t0} {A_v0} -{B_v0} {C_v0}",
+        f"{A_t0} -{C_t1} {r0} {C_t0} {B_t0} -{A_v0} {B_v0} {C_v0}",
+        f"{A_t0} -{C_t1} {r0} {C_t0} {B_t0} -{A_v0} -{B_v0} -{C_v0}",
+        f"{A_t0} -{C_t1} {r0} {C_t0} {B_t0} -{B_v1}",
+        f"{A_t0} -{C_t1} {C_t0} {B_t0} {p0}",
+        f"{A_t0} {r0} -{B_t1} {C_t0} {B_t0}",
+        f"{A_t0} {r0} {C_t0} {B_t0} {A_v0} {B_v1} {B_v0} -{C_v0}",
+        f"{A_t0} {r0} {C_t0} {B_t0} {A_v0} {B_v1} -{B_v0} {C_v0}",
+        f"{A_t0} {r0} {C_t0} {B_t0} {A_v0} -{B_v1} {B_v0} {C_v0}",
+        f"{A_t0} {r0} {C_t0} {B_t0} {A_v0} -{B_v1} -{B_v0} -{C_v0}",
+        f"{A_t0} {r0} {C_t0} {B_t0} -{A_v0} {B_v1} {B_v0} {C_v0}",
+        f"{A_t0} {r0} {C_t0} {B_t0} -{A_v0} {B_v1} -{B_v0} -{C_v0}",
+        f"{A_t0} {r0} {C_t0} {B_t0} -{A_v0} -{B_v1} {B_v0} -{C_v0}",
+        f"{A_t0} {r0} {C_t0} {B_t0} -{A_v0} -{B_v1} -{B_v0} {C_v0}",
+        f"{A_t0} -{B_t1} {C_t0} {B_t0} {p0}",
+        f"{A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v1} {B_v0} -{C_v0}",
+        f"{A_t0} {C_t0} {B_t0} {A_v0} {p0} {B_v1} -{B_v0} {C_v0}",
+        f"{A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v1} {B_v0} {C_v0}",
+        f"{A_t0} {C_t0} {B_t0} {A_v0} {p0} -{B_v1} -{B_v0} -{C_v0}",
+        f"{A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v1} {B_v0} {C_v0}",
+        f"{A_t0} {C_t0} {B_t0} -{A_v0} {p0} {B_v1} -{B_v0} -{C_v0}",
+        f"{A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v1} {B_v0} -{C_v0}",
+        f"{A_t0} {C_t0} {B_t0} -{A_v0} {p0} -{B_v1} -{B_v0} {C_v0}",
+        f"-{A_t0} -{r0}",
+        f"-{A_t0} -{p0}",
+        f"{C_t1} {r0} -{p0}",
+        f"{r0} {A_v2} -{C_t2} {A_t2} {B_t2} {B_v2} -{p0}",
+        f"{r0} -{B_t1} -{p0}",
+        f"{r0} {A_v0} -{p0} {B_v0} -{C_v0}",
+        f"{r0} {A_v0} -{p0} -{B_v0} {C_v0}",
+        f"{r0} -{A_v0} -{p0} {B_v0} {C_v0}",
+        f"{r0} -{A_v0} -{p0} -{B_v0} -{C_v0}",
+        f"{r0} -{p0} -{B_v1}",
+        f"-{r0} -{C_t0}",
+        f"-{r0} -{B_t0}",
+        f"-{r0} {p0}",
+        f"-{C_t0} -{p0}",
+        f"-{B_t0} -{p0}",
+        f"-{q0}",
     ]
 
 
 def get_cnf_semi_deterministic_window_2(
-        A_t0, A_t1, A_t2, A_t3,
-        A_v0, A_v1, A_v2, A_v3,
-        B_t0, B_t1, B_t2, B_t3,
-        B_v0, B_v1, B_v2, B_v3,
-        C_t0, C_t1, C_t2, C_t3,
-        C_v0, C_v1,
-        p0, q0, r0
+    A_t0,
+    A_t1,
+    A_t2,
+    A_t3,
+    A_v0,
+    A_v1,
+    A_v2,
+    A_v3,
+    B_t0,
+    B_t1,
+    B_t2,
+    B_t3,
+    B_v0,
+    B_v1,
+    B_v2,
+    B_v3,
+    C_t0,
+    C_t1,
+    C_t2,
+    C_t3,
+    C_v0,
+    C_v1,
+    p0,
+    q0,
+    r0,
 ):
     return [
-        f'{A_t3} {A_v3} {B_t3} {B_v3} -{C_t3} -{q0}',
-        f'-{A_t1} -{q0}',
-        f'{A_t2} {A_v2} {B_t2} {B_v2} -{C_t2} -{p0} {r0}',
-        f'{A_t1} {A_v0} -{A_v1} {B_t1} {B_v0} -{B_v1} {C_t1} {C_v0} -{C_v1}',
-        f'{A_t1} -{A_v0} -{A_v1} {B_t1} -{B_v0} -{B_v1} {C_t1} {C_v0} -{C_v1}',
-        f'{A_t1} -{A_v0} -{A_v1} {B_t1} {B_v0} -{B_v1} {C_t1} -{C_v0} -{C_v1}',
-        f'{A_t1} {A_v0} -{A_v1} {B_t1} -{B_v0} -{B_v1} {C_t1} -{C_v0} -{C_v1}',
-        f'-{A_t2} -{q0}',
-        f'-{A_v1} -{q0}',
-        f'-{A_v2} -{q0}',
-        f'-{B_t1} -{q0}',
-        f'{A_t1} -{A_v1} {B_t1} -{B_v1} {C_t1} -{C_v1} -{r0}',
-        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_t1} {C_v0}',
-        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_t1} {C_v0}',
-        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_t1} -{C_v0}',
-        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_t1} -{C_v0}',
-        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} {C_v0} {C_v1}',
-        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} {C_v0} {C_v1}',
-        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_v0} {C_v1}',
-        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_v0} {C_v1}',
-        f'-{B_t2} -{q0}',
-        f'{A_t1} {A_v1} {B_t1} {B_v1} -{C_t1} {q0} -{r0}',
-        f'-{A_v1} -{p0} {r0}',
-        f'{A_t1} {A_v1} {B_t1} {B_v1} {C_v1} {q0} -{r0}',
-        f'{A_t0} {B_t0} {B_v1} {C_t0} -{C_v1} {p0} {r0}',
-        f'-{B_v1} -{q0}',
-        f'-{B_v2} -{q0}',
-        f'{A_t0} -{A_v1} {B_t0} {C_t0} {C_v1} {r0}',
-        f'{C_t1} -{p0} {r0}',
-        f'{A_t0} {A_v1} {B_t0} -{B_v1} {C_t0} {r0}',
-        f'{C_t2} -{q0}',
-        f'{A_t0} -{A_t1} {B_t0} {C_t0} {r0}',
-        f'-{A_t0} -{r0}',
-        f'-{B_t0} -{r0}',
-        f'{A_t0} {B_t0} -{B_t1} {C_t0} {r0}',
-        f'-{C_t0} -{r0}',
-        f'-{p0} -{q0}',
-        f'{A_t0} {B_t0} {C_t0} -{C_t1} {p0} {q0}',
-        f'{C_t1} {p0} -{r0}',
-        f'-{q0} {r0}',
-        f'{A_t1} -{A_v1} {B_t1} -{B_v1} -{C_t0} {C_t1} -{C_v1}',
-        f'{A_t1} -{A_v1} -{B_t0} {B_t1} -{B_v1} {C_t1} -{C_v1}',
-        f'-{A_t0} {A_t1} -{A_v1} {B_t1} -{B_v1} {C_t1} -{C_v1}',
-        f'{A_t1} {A_v1} {B_t1} {B_v1} -{C_t0} {C_t1} {C_v1}',
-        f'{A_t1} {A_v1} -{B_t0} {B_t1} {B_v1} {C_t1} {C_v1}',
-        f'-{A_t0} {A_t1} {A_v1} {B_t1} {B_v1} {C_t1} {C_v1}',
-        f'-{C_t0} -{p0}',
-        f'-{B_t0} -{p0}',
-        f'-{A_t0} -{p0}',
+        f"{A_t3} {A_v3} {B_t3} {B_v3} -{C_t3} -{q0}",
+        f"-{A_t1} -{q0}",
+        f"{A_t2} {A_v2} {B_t2} {B_v2} -{C_t2} -{p0} {r0}",
+        f"{A_t1} {A_v0} -{A_v1} {B_t1} {B_v0} -{B_v1} {C_t1} {C_v0} -{C_v1}",
+        f"{A_t1} -{A_v0} -{A_v1} {B_t1} -{B_v0} -{B_v1} {C_t1} {C_v0} -{C_v1}",
+        f"{A_t1} -{A_v0} -{A_v1} {B_t1} {B_v0} -{B_v1} {C_t1} -{C_v0} -{C_v1}",
+        f"{A_t1} {A_v0} -{A_v1} {B_t1} -{B_v0} -{B_v1} {C_t1} -{C_v0} -{C_v1}",
+        f"-{A_t2} -{q0}",
+        f"-{A_v1} -{q0}",
+        f"-{A_v2} -{q0}",
+        f"-{B_t1} -{q0}",
+        f"{A_t1} -{A_v1} {B_t1} -{B_v1} {C_t1} -{C_v1} -{r0}",
+        f"{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_t1} {C_v0}",
+        f"{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_t1} {C_v0}",
+        f"{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_t1} -{C_v0}",
+        f"{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_t1} -{C_v0}",
+        f"{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} {C_v0} {C_v1}",
+        f"{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} {C_v0} {C_v1}",
+        f"{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_v0} {C_v1}",
+        f"{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_v0} {C_v1}",
+        f"-{B_t2} -{q0}",
+        f"{A_t1} {A_v1} {B_t1} {B_v1} -{C_t1} {q0} -{r0}",
+        f"-{A_v1} -{p0} {r0}",
+        f"{A_t1} {A_v1} {B_t1} {B_v1} {C_v1} {q0} -{r0}",
+        f"{A_t0} {B_t0} {B_v1} {C_t0} -{C_v1} {p0} {r0}",
+        f"-{B_v1} -{q0}",
+        f"-{B_v2} -{q0}",
+        f"{A_t0} -{A_v1} {B_t0} {C_t0} {C_v1} {r0}",
+        f"{C_t1} -{p0} {r0}",
+        f"{A_t0} {A_v1} {B_t0} -{B_v1} {C_t0} {r0}",
+        f"{C_t2} -{q0}",
+        f"{A_t0} -{A_t1} {B_t0} {C_t0} {r0}",
+        f"-{A_t0} -{r0}",
+        f"-{B_t0} -{r0}",
+        f"{A_t0} {B_t0} -{B_t1} {C_t0} {r0}",
+        f"-{C_t0} -{r0}",
+        f"-{p0} -{q0}",
+        f"{A_t0} {B_t0} {C_t0} -{C_t1} {p0} {q0}",
+        f"{C_t1} {p0} -{r0}",
+        f"-{q0} {r0}",
+        f"{A_t1} -{A_v1} {B_t1} -{B_v1} -{C_t0} {C_t1} -{C_v1}",
+        f"{A_t1} -{A_v1} -{B_t0} {B_t1} -{B_v1} {C_t1} -{C_v1}",
+        f"-{A_t0} {A_t1} -{A_v1} {B_t1} -{B_v1} {C_t1} -{C_v1}",
+        f"{A_t1} {A_v1} {B_t1} {B_v1} -{C_t0} {C_t1} {C_v1}",
+        f"{A_t1} {A_v1} -{B_t0} {B_t1} {B_v1} {C_t1} {C_v1}",
+        f"-{A_t0} {A_t1} {A_v1} {B_t1} {B_v1} {C_t1} {C_v1}",
+        f"-{C_t0} -{p0}",
+        f"-{B_t0} -{p0}",
+        f"-{A_t0} -{p0}",
     ]
 
 
 def get_cnf_semi_deterministic_window_3(
-        A_t0, A_t1, A_t2, A_t3, A_t4,
-        A_v0, A_v1, A_v2, A_v3, A_v4,
-        B_t0, B_t1, B_t2, B_t3, B_t4,
-        B_v0, B_v1, B_v2, B_v3, B_v4,
-        C_t0, C_t1, C_t2, C_t3, C_t4,
-        C_v0, C_v1, p0, q0, r0):
+    A_t0,
+    A_t1,
+    A_t2,
+    A_t3,
+    A_t4,
+    A_v0,
+    A_v1,
+    A_v2,
+    A_v3,
+    A_v4,
+    B_t0,
+    B_t1,
+    B_t2,
+    B_t3,
+    B_t4,
+    B_v0,
+    B_v1,
+    B_v2,
+    B_v3,
+    B_v4,
+    C_t0,
+    C_t1,
+    C_t2,
+    C_t3,
+    C_t4,
+    C_v0,
+    C_v1,
+    p0,
+    q0,
+    r0,
+):
     return [
-        f'{A_t4} {A_v4} {B_t4} {B_v4} -{C_t4} -{q0} {r0}',
-        f'{A_t3} {A_v3} {B_t3} {B_v3} -{C_t3} -{q0} -{r0}',
-        f'-{A_t3} -{q0} {r0}',
-        f'-{A_v3} -{q0} {r0}',
-        f'-{B_t3} -{q0} {r0}',
-        f'-{B_v3} -{q0} {r0}',
-        f'{C_t3} -{q0} {r0}',
-        f'{A_t1} {A_v0} -{A_v1} {B_t1} {B_v0} -{B_v1} {C_t1} {C_v0} -{C_v1}',
-        f'{A_t1} -{A_v0} -{A_v1} {B_t1} -{B_v0} -{B_v1} {C_t1} {C_v0} -{C_v1}',
-        f'{A_t1} -{A_v0} -{A_v1} {B_t1} {B_v0} -{B_v1} {C_t1} -{C_v0} -{C_v1}',
-        f'{A_t1} {A_v0} -{A_v1} {B_t1} -{B_v0} -{B_v1} {C_t1} -{C_v0} -{C_v1}',
-        f'-{A_v1} -{q0}',
-        f'-{B_v1} -{q0}',
-        f'{A_t0} {A_t2} {A_v2} {B_t0} {B_t2} {B_v2} {C_t0} -{C_t1} -{C_t2} {q0} {r0}',
-        f'{A_t1} -{A_v1} {B_t1} -{B_v1} {C_t1} -{C_v1} -{r0}',
-        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_t1} {C_v0}',
-        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_t1} {C_v0}',
-        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_t1} -{C_v0}',
-        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_t1} -{C_v0}',
-        f'{A_t0} -{A_t2} {B_t0} {C_t0} -{C_t1} {p0}',
-        f'{A_t1} {A_v1} {B_t1} {B_v1} -{C_t1} {q0} -{r0}',
-        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} {C_v0} {C_v1}',
-        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} {C_v0} {C_v1}',
-        f'{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_v0} {C_v1}',
-        f'{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_v0} {C_v1}',
-        f'{A_t1} {A_v1} {B_t1} {B_v1} {C_v1} {q0} -{r0}',
-        f'{A_t0} -{A_v2} {B_t0} {C_t0} -{C_t1} {p0}',
-        f'{A_t0} {B_t0} {B_v1} {C_t0} -{C_v1} {p0} {q0}',
-        f'{A_t0} {B_t0} -{B_t2} {C_t0} -{C_t1} {p0}',
-        f'{C_t1} -{p0} {r0}',
-        f'{A_t0} {B_t0} -{B_v2} {C_t0} -{C_t1} {p0}',
-        f'{A_t0} -{A_v1} {B_t0} {C_t0} -{C_t1} {r0}',
-        f'{A_t0} -{A_v1} {B_t0} {C_t0} {C_v1} {r0}',
-        f'{A_t0} {A_v1} {B_t0} -{B_v1} {C_t0} {r0}',
-        f'-{p0} -{q0}',
-        f'{A_t0} {B_t0} {C_t0} -{C_t1} {C_t2} {p0}',
-        f'-{A_t1} {p0} -{r0}',
-        f'-{B_t1} {p0} -{r0}',
-        f'{p0} {q0} -{r0}',
-        f'{A_t0} -{A_t1} {B_t0} {C_t0} {r0}',
-        f'{A_t0} {B_t0} -{B_t1} {C_t0} {r0}',
-        f'{A_t1} -{A_v1} {B_t1} -{B_v1} -{C_t0} {C_t1} -{C_v1}',
-        f'{A_t1} -{A_v1} -{B_t0} {B_t1} -{B_v1} {C_t1} -{C_v1}',
-        f'-{A_t0} {A_t1} -{A_v1} {B_t1} -{B_v1} {C_t1} -{C_v1}',
-        f'{A_t1} {A_v1} {B_t1} {B_v1} -{C_t0} {C_t1} {C_v1}',
-        f'{A_t1} {A_v1} -{B_t0} {B_t1} {B_v1} {C_t1} {C_v1}',
-        f'-{A_t0} {A_t1} {A_v1} {B_t1} {B_v1} {C_t1} {C_v1}',
-        f'-{C_t0} -{p0}',
-        f'-{B_t0} -{p0}',
-        f'-{A_t0} -{p0}',
-        f'-{C_t0} -{q0}',
-        f'-{B_t0} -{q0}',
-        f'-{A_t0} -{q0}',
-        f'{C_t1} -{q0}',
+        f"{A_t4} {A_v4} {B_t4} {B_v4} -{C_t4} -{q0} {r0}",
+        f"{A_t3} {A_v3} {B_t3} {B_v3} -{C_t3} -{q0} -{r0}",
+        f"-{A_t3} -{q0} {r0}",
+        f"-{A_v3} -{q0} {r0}",
+        f"-{B_t3} -{q0} {r0}",
+        f"-{B_v3} -{q0} {r0}",
+        f"{C_t3} -{q0} {r0}",
+        f"{A_t1} {A_v0} -{A_v1} {B_t1} {B_v0} -{B_v1} {C_t1} {C_v0} -{C_v1}",
+        f"{A_t1} -{A_v0} -{A_v1} {B_t1} -{B_v0} -{B_v1} {C_t1} {C_v0} -{C_v1}",
+        f"{A_t1} -{A_v0} -{A_v1} {B_t1} {B_v0} -{B_v1} {C_t1} -{C_v0} -{C_v1}",
+        f"{A_t1} {A_v0} -{A_v1} {B_t1} -{B_v0} -{B_v1} {C_t1} -{C_v0} -{C_v1}",
+        f"-{A_v1} -{q0}",
+        f"-{B_v1} -{q0}",
+        f"{A_t0} {A_t2} {A_v2} {B_t0} {B_t2} {B_v2} {C_t0} -{C_t1} -{C_t2} {q0} {r0}",
+        f"{A_t1} -{A_v1} {B_t1} -{B_v1} {C_t1} -{C_v1} -{r0}",
+        f"{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_t1} {C_v0}",
+        f"{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_t1} {C_v0}",
+        f"{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_t1} -{C_v0}",
+        f"{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_t1} -{C_v0}",
+        f"{A_t0} -{A_t2} {B_t0} {C_t0} -{C_t1} {p0}",
+        f"{A_t1} {A_v1} {B_t1} {B_v1} -{C_t1} {q0} -{r0}",
+        f"{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} {C_v0} {C_v1}",
+        f"{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} {C_v0} {C_v1}",
+        f"{A_t0} {A_t1} {A_v0} {A_v1} {B_t0} {B_t1} {B_v0} {B_v1} {C_t0} -{C_v0} {C_v1}",
+        f"{A_t0} {A_t1} -{A_v0} {A_v1} {B_t0} {B_t1} -{B_v0} {B_v1} {C_t0} -{C_v0} {C_v1}",
+        f"{A_t1} {A_v1} {B_t1} {B_v1} {C_v1} {q0} -{r0}",
+        f"{A_t0} -{A_v2} {B_t0} {C_t0} -{C_t1} {p0}",
+        f"{A_t0} {B_t0} {B_v1} {C_t0} -{C_v1} {p0} {q0}",
+        f"{A_t0} {B_t0} -{B_t2} {C_t0} -{C_t1} {p0}",
+        f"{C_t1} -{p0} {r0}",
+        f"{A_t0} {B_t0} -{B_v2} {C_t0} -{C_t1} {p0}",
+        f"{A_t0} -{A_v1} {B_t0} {C_t0} -{C_t1} {r0}",
+        f"{A_t0} -{A_v1} {B_t0} {C_t0} {C_v1} {r0}",
+        f"{A_t0} {A_v1} {B_t0} -{B_v1} {C_t0} {r0}",
+        f"-{p0} -{q0}",
+        f"{A_t0} {B_t0} {C_t0} -{C_t1} {C_t2} {p0}",
+        f"-{A_t1} {p0} -{r0}",
+        f"-{B_t1} {p0} -{r0}",
+        f"{p0} {q0} -{r0}",
+        f"{A_t0} -{A_t1} {B_t0} {C_t0} {r0}",
+        f"{A_t0} {B_t0} -{B_t1} {C_t0} {r0}",
+        f"{A_t1} -{A_v1} {B_t1} -{B_v1} -{C_t0} {C_t1} -{C_v1}",
+        f"{A_t1} -{A_v1} -{B_t0} {B_t1} -{B_v1} {C_t1} -{C_v1}",
+        f"-{A_t0} {A_t1} -{A_v1} {B_t1} -{B_v1} {C_t1} -{C_v1}",
+        f"{A_t1} {A_v1} {B_t1} {B_v1} -{C_t0} {C_t1} {C_v1}",
+        f"{A_t1} {A_v1} -{B_t0} {B_t1} {B_v1} {C_t1} {C_v1}",
+        f"-{A_t0} {A_t1} {A_v1} {B_t1} {B_v1} {C_t1} {C_v1}",
+        f"-{C_t0} -{p0}",
+        f"-{B_t0} -{p0}",
+        f"-{A_t0} -{p0}",
+        f"-{C_t0} -{q0}",
+        f"-{B_t0} -{q0}",
+        f"-{A_t0} -{q0}",
+        f"{C_t1} -{q0}",
     ]
