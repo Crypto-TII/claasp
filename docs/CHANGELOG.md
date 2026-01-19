@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2026-01-19
+
+### Added
+
+- Solver_names() method tests for sat, smt, milp and cp models.
+- Create new version of ublock cipher.
+- Add all parameters conf of led cipher.
+- Led block cipher.
+- Support options for sat solvers.
+- Fully-automatic function.
+- Create bitwise impossible xor differential trail search for sat.
+- Add sat bitwise xor impossible differential trail search.
+
+### Changed
+
+- Port minizinc models to stdin input.
+- Reformat and lint python files.
+- Lint the code.
+- Change the generation of sat bit ids.
+- Reorganise dockerfile.
+- Redefine solvers strings.
+- Sat utils implementation.
+- Window size on cp models.
+
+### Fixed
+
+- Enable tpi in scip for parallel solving.
+- Adjust chacha round-mode defaults and tests.
+- Parser and incompatible_components function refactored _parse_solver_output to handle all calling scenarios. updated constraint construction in find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components..
+- Add docstring to incompatibility helper.
+- Fix output in _parse_solver_output.
+- Confilcting files in cp testing.
+
 ## [3.1.0] - 2025-07-30
 
 ### Added
@@ -308,6 +341,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything! First public release.
 
+[3.2.0]: https://github.com/Crypto-TII/claasp/compare/v3.2.0..v3.1.0
 [3.1.0]: https://github.com/Crypto-TII/claasp/compare/v3.1.0..v3.0.0
 [3.0.0]: https://github.com/Crypto-TII/claasp/compare/v3.0.0..v2.6.0
 [2.6.0]: https://github.com/Crypto-TII/claasp/compare/v2.6.0..v2.5.0
