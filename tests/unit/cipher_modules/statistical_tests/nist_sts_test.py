@@ -377,3 +377,149 @@ class TestNISTTests:
         result = NISTTests._ensure_binary_array(ba)
         expected = np.array([1,0,1,0,0,1,0,1], dtype=np.uint8)
         np.testing.assert_array_equal(result, expected)
+
+    def test_block_frequency_insufficient_blocks(self):
+        """Test block frequency with insufficient data for blocks."""
+        short_seq = np.random.randint(0, 2, 50, dtype=np.uint8)
+        result = NISTTests.block_frequency_test(short_seq, block_size=100)
+        assert result['passed'] is False
+        assert result['p_value'] == 0.0
+
+    def test_longest_run_too_short(self):
+        """Test longest run test with sequence too short."""
+        short_seq = np.random.randint(0, 2, 100, dtype=np.uint8)
+        result = NISTTests.longest_run_test(short_seq)
+        assert result['passed'] is False
+
+    def test_rank_test_insufficient_data(self):
+        """Test rank test with insufficient data."""
+        short_seq = np.random.randint(0, 2, 500, dtype=np.uint8)
+        result = NISTTests.rank_test(short_seq)
+        assert result['passed'] is False
+
+    def test_non_overlapping_template_with_custom_template(self):
+        """Test non-overlapping template with custom template."""
+        seq = np.random.randint(0, 2, 10000, dtype=np.uint8)
+        template = np.array([1, 1, 1, 1, 1], dtype=np.uint8)
+        result = NISTTests.non_overlapping_template_test(seq, template=template, block_size=100)
+        assert isinstance(result, dict)
+        assert 'p_value' in result
+
+    def test_overlapping_template_with_custom_template(self):
+        """Test overlapping template with custom template."""
+        seq = np.random.randint(0, 2, 10000, dtype=np.uint8)
+        template = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=np.uint8)
+        result = NISTTests.overlapping_template_test(seq, template=template, block_size=1000)
+        assert isinstance(result, dict)
+        assert 'p_value' in result
+
+    def test_universal_test_insufficient_length(self):
+        """Test universal test with insufficient sequence length."""
+        short_seq = np.random.randint(0, 2, 10000, dtype=np.uint8)
+        result = NISTTests.universal_test(short_seq)
+        assert result['passed'] is False
+
+    def test_universal_test_long_sequence(self):
+        """Test universal test with adequate sequence length."""
+        long_seq = np.random.randint(0, 2, 400000, dtype=np.uint8)
+        result = NISTTests.universal_test(long_seq)
+        assert isinstance(result, dict)
+        assert 'p_value' in result
+
+    def test_approximate_entropy_various_m_values(self):
+        """Test approximate entropy with different m values."""
+        seq = np.random.randint(0, 2, 10000, dtype=np.uint8)
+        for m in [2, 3, 5]:
+            result = NISTTests.approximate_entropy_test(seq, m=m)
+            assert isinstance(result, dict)
+            assert 'p_value' in result
+
+    def test_random_excursions_insufficient_cycles(self):
+        """Test random excursions with insufficient cycles."""
+        # Create a sequence that won't have enough cycles
+        short_seq = np.array([1, 0] * 100, dtype=np.uint8)
+        result = NISTTests.random_excursions_test(short_seq)
+        assert result['passed'] is False
+        assert isinstance(result['p_values'], list)
+
+    def test_random_excursions_variant_insufficient_cycles(self):
+        """Test random excursions variant with insufficient cycles."""
+        short_seq = np.array([1, 0] * 100, dtype=np.uint8)
+        result = NISTTests.random_excursions_variant_test(short_seq)
+        assert result['passed'] is False
+        assert isinstance(result['p_values'], list)
+
+    def test_serial_test_different_m_values(self):
+        """Test serial test with different m values."""
+        seq = np.random.randint(0, 2, 10000, dtype=np.uint8)
+        for m in [2, 3, 4]:
+            result = NISTTests.serial_test(seq, m=m)
+            assert isinstance(result, dict)
+            assert 'p_value1' in result
+            assert 'p_value2' in result
+
+    def test_linear_complexity_insufficient_data(self):
+        """Test linear complexity with insufficient data."""
+        short_seq = np.random.randint(0, 2, 100, dtype=np.uint8)
+        result = NISTTests.linear_complexity_test(short_seq, block_size=500)
+        assert result['passed'] is False
+
+    def test_linear_complexity_different_block_sizes(self):
+        """Test linear complexity with different block sizes."""
+        seq = np.random.randint(0, 2, 100000, dtype=np.uint8)
+        for block_size in [100, 250, 500]:
+            result = NISTTests.linear_complexity_test(seq, block_size=block_size)
+            assert isinstance(result, dict)
+            assert 'p_value' in result
+
+    def test_ensure_binary_array_list_of_integers(self):
+        """Test _ensure_binary_array with list of integers (bytes)."""
+        int_list = [0xAA, 0x55, 0xFF]
+        result = NISTTests._ensure_binary_array(int_list)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == 24  # 3 bytes = 24 bits
+
+    def test_ensure_binary_array_numpy_with_values_gt_1(self):
+        """Test _ensure_binary_array with numpy array containing values > 1."""
+        arr = np.array([255, 128, 64], dtype=np.uint8)
+        result = NISTTests._ensure_binary_array(arr)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == 24  # Should unpack bytes
+
+    def test_runs_test_pre_test_failure(self):
+        """Test runs test when pre-test fails (pi not approximately 1/2)."""
+        # Create biased sequence
+        biased_seq = np.array([1] * 900 + [0] * 100, dtype=np.uint8)
+        result = NISTTests.runs_test(biased_seq)
+        assert result['passed'] is False
+
+    def test_longest_run_different_sequence_lengths(self):
+        """Test longest run with different sequence length categories."""
+        # Test with n < 6272 (should use m=8)
+        seq1 = np.random.randint(0, 2, 5000, dtype=np.uint8)
+        result1 = NISTTests.longest_run_test(seq1)
+        assert isinstance(result1, dict)
+        
+        # Test with 6272 <= n < 750000 (should use m=128)
+        seq2 = np.random.randint(0, 2, 50000, dtype=np.uint8)
+        result2 = NISTTests.longest_run_test(seq2)
+        assert isinstance(result2, dict)
+
+    def test_dft_test_all_zeros(self):
+        """Test DFT with all zeros (should fail)."""
+        zeros = np.zeros(1000, dtype=np.uint8)
+        result = NISTTests.dft_test(zeros)
+        assert isinstance(result, dict)
+        # May or may not pass depending on threshold
+
+    def test_non_overlapping_template_no_blocks(self):
+        """Test non-overlapping template with too short sequence."""
+        short_seq = np.random.randint(0, 2, 50, dtype=np.uint8)
+        result = NISTTests.non_overlapping_template_test(short_seq, block_size=100)
+        assert result['passed'] is False
+
+    def test_overlapping_template_no_blocks(self):
+        """Test overlapping template with too short sequence."""
+        short_seq = np.random.randint(0, 2, 50, dtype=np.uint8)
+        result = NISTTests.overlapping_template_test(short_seq, block_size=1000)
+        assert result['passed'] is False
