@@ -292,3 +292,51 @@ def test_build_generic_cp_model_from_dictionary_xor_linear():
     assert "total_weight" in trail
     assert float(trail["total_weight"]) == 5.0
 
+def test_build_generic_cp_model_with_unknown_component_type():
+
+    cipher = SpeckBlockCipher(number_of_rounds=1)
+    model = MznXorDifferentialModel(cipher)
+
+    component = cipher.get_all_components()[0]
+    component._type = "UNKNOWN_COMPONENT_TYPE"
+
+    component_and_model_types = [{
+        "component_object": component,
+        "model_type": "cp_xor_differential_propagation_constraints"
+    }]
+
+    model.build_generic_cp_model_from_dictionary(component_and_model_types)
+
+    assert model._model_constraints is not None
+
+def test_get_command_for_solver_process_invalid_solver_name():
+    cipher = SpeckBlockCipher(number_of_rounds=1)
+    model = MznXorDifferentialModel(cipher)
+
+    error_raised = False
+
+    try:
+        model.get_command_for_solver_process(
+            model_type="xor_differential_one_solution",
+            solver_name="invalid_solver",
+            num_of_processors=None,
+            timelimit=None
+        )
+    except NameError:
+        error_raised = True
+
+    assert error_raised is True
+
+
+def test_mzn_model_rejects_invalid_solver_type():
+    cipher = SpeckBlockCipher(number_of_rounds=1)
+
+    error_raised = False
+
+    try:
+        MznXorDifferentialModel(cipher, sat_or_milp="invalid")
+    except TypeError:
+        error_raised = True
+
+    assert error_raised is True
+
