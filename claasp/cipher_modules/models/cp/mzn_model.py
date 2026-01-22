@@ -169,7 +169,10 @@ class MznModel:
         if fixed_variables:
             if hasattr(self, "fix_variables_value_xor_linear_constraints"):
                 fixed_constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
-            elif hasattr(self, "fix_variables_value_constraints_for_ARX"):
+            elif any(
+                entry["model_type"] == "minizinc_xor_differential_propagation_constraints"
+                for entry in component_and_model_types
+            ) and hasattr(self, "solve_for_ARX"):
                 fixed_constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
             else:
                 fixed_constraints = self.fix_variables_value_constraints(fixed_variables)

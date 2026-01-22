@@ -340,3 +340,30 @@ def test_mzn_model_rejects_invalid_solver_type():
 
     assert error_raised is True
 
+def test_build_generic_cp_model_with_fixed_variables_non_arx():
+    cipher = SpeckBlockCipher(number_of_rounds=1)
+    model = MznXorDifferentialModel(cipher)
+
+    fixed_variables = [
+        set_fixed_variables(
+            component_id="plaintext",
+            constraint_type="equal",
+            bit_positions=[0, 1],
+            bit_values=[1, 0],
+        )
+    ]
+
+    component_and_model_types = [
+        {
+            "component_object": component,
+            "model_type": "cp_xor_differential_propagation_constraints",
+        }
+        for component in cipher.get_all_components()
+    ]
+
+    model.build_generic_cp_model_from_dictionary(
+        component_and_model_types,
+        fixed_variables
+    )
+
+    assert len(model._model_constraints) > 0
