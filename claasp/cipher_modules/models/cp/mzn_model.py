@@ -167,14 +167,16 @@ class MznModel:
 
         fixed_constraints = []
         if fixed_variables:
-            if hasattr(self, "fix_variables_value_constraints_for_ARX"):
-                fixed_constraints = self.fix_variables_value_constraints_for_ARX(
-                    fixed_variables
-                )
+            if hasattr(self, "fix_variables_value_xor_linear_constraints"):
+                fixed_constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
+            elif any(
+                entry["model_type"] == "minizinc_xor_differential_propagation_constraints"
+                for entry in component_and_model_types
+            ) and hasattr(self, "solve_for_ARX"):
+                fixed_constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
             else:
-                fixed_constraints = self.fix_variables_value_constraints(
-                    fixed_variables
-                )
+                fixed_constraints = self.fix_variables_value_constraints(fixed_variables)
+
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
         operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
         self._model_constraints = fixed_constraints
