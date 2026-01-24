@@ -1,0 +1,74 @@
+{
+    "assess_runs": [
+        {
+            "name": "random_ascii_small",
+            "dataset_file": "random_ascii_small.txt",
+            "bit_length": 1000,
+            "num_sequences": 10,
+            "input_format": 0,
+            "tests": "111111111111111",
+            "nonoverlap": 9,
+            "overlap": 9
+        },
+        {
+            "name": "random_ascii_medium",
+            "dataset_file": "random_ascii_medium.txt",
+            "bit_length": 10000,
+            "num_sequences": 100,
+            "input_format": 0,
+            "tests": "111111111111111",
+            "nonoverlap": 9,
+            "overlap": 9
+        },
+        {
+            "name": "random_binary_small",
+            "dataset_file": "random_binary_small.bin",
+            "bit_length": 1000,
+            "num_sequences": 10,
+            "input_format": 1,
+            "tests": "111111111111111",
+            "nonoverlap": 9,
+            "overlap": 9
+        },
+        {
+            "name": "random_binary_medium",
+            "dataset_file": "random_binary_medium.bin",
+            "bit_length": 10000,
+            "num_sequences": 100,
+            "input_format": 1,
+            "tests": "111111111111111",
+            "nonoverlap": 9,
+            "overlap": 9
+        },
+        {
+            "name": "structured_alternating_ascii",
+            "dataset_file": "structured_alternating_ascii.txt",
+            "bit_length": 10000,
+            "num_sequences": 10,
+            "input_format": 0,
+            "tests": "111111111111111",
+            "nonoverlap": 9,
+            "overlap": 9
+        },
+        {
+            "name": "structured_blocks_binary",
+            "dataset_file": "structured_blocks_binary.bin",
+            "bit_length": 10000,
+            "num_sequences": 10,
+            "input_format": 1,
+            "tests": "111111111111111",
+            "nonoverlap": 9,
+            "overlap": 9
+        },
+        {
+            "name": "subset_tests_random",
+            "dataset_file": "subset_tests_random.bin",
+            "bit_length": 10000,
+            "num_sequences": 10,
+            "input_format": 1,
+            "tests": "110001000000000",
+            "nonoverlap": 9,
+            "overlap": 9
+        }
+    ]
+}

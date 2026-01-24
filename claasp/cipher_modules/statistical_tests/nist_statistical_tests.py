@@ -49,10 +49,6 @@ TEST_ID_TABLE = {
 
 }
 
-nist_executable_root_directory = f"/usr/local/bin/sts-2.1.2/"
-nist_temp_directory = f"nist_sts_temp_dir"
-nist_local_experiment_folder = f"{nist_temp_directory}/experiments/"
-
 
 class NISTStatisticalTests:
 
@@ -265,7 +261,7 @@ class NISTStatisticalTests:
     @staticmethod
     def _convert_to_binary_array(data):
         """
-        Convert byte array data to numpy binary array using numpy.unpackbits (very fast).
+        Convert byte array data to numpy binary array using numpy.unpackbits.
 
         INPUT:
 
@@ -286,86 +282,121 @@ class NISTStatisticalTests:
                                          statistical_test_option_list=15 * '1'):
         """
         Run statistical tests using pure Python implementation.
+        
+        The data is split into number_of_bit_streams sequences of bit_stream_length bits each.
+        Tests are run on each sequence and results are aggregated (proportion of sequences passing).
 
         INPUT:
 
-        - ``binary_data`` -- **numpy array**; binary data (array of 0s and 1s)
-        - ``bit_stream_length`` -- **integer**; bit stream length (for compatibility, not used)
-        - ``number_of_bit_streams`` -- **integer**; number of bit streams (for compatibility, not used)
-        - ``input_file_format`` -- **integer**; unused (for compatibility with old API)
+        - ``binary_data`` -- **numpy array** or **bytes**; input data (array of 0s and 1s if 
+          input_file_format=0, or byte array if input_file_format=1)
+        - ``bit_stream_length`` -- **integer** (default: 10000); length of each bit stream to test
+        - ``number_of_bit_streams`` -- **integer** (default: 10); number of bit streams to generate 
+          from the data
+        - ``input_file_format`` -- **integer** (default: 1); 0 for binary array (0s and 1s), 
+          1 for byte array that needs conversion
         - ``statistical_test_option_list`` -- **str** (default: `15 * '1'`); a binary string of size 15
           specifying which statistical tests to run
 
         OUTPUT:
 
-        - **dict**; dictionary containing test results in the same format as _parse_report
+        - **dict**; dictionary containing aggregated test results across all bit streams
 
         EXAMPLES::
 
             sage: import numpy as np
             sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
-            sage: binary_data = np.random.randint(0, 2, 10000, dtype=np.uint8)
+            sage: binary_data = np.random.randint(0, 2, 100000, dtype=np.uint8)
             sage: result = NISTStatisticalTests._run_nist_statistical_tests_tool(
-            ....:     binary_data, 10000, 1, 1, statistical_test_option_list='1' + 14 * '0')
+            ....:     binary_data, 10000, 10, 0, statistical_test_option_list='1' + 14 * '0')
             sage: 'randomness_test' in result
             True
+            sage: result['randomness_test'][0]['total_seqs']
+            10
         """
-        n = len(binary_data)
+        # Convert data based on input format
+        if input_file_format == 1:
+            # Byte format - convert to binary
+            binary_data = NISTStatisticalTests._convert_to_binary_array(binary_data)
+        
+        # Check if we have enough data
+        total_bits_needed = bit_stream_length * number_of_bit_streams
+        if len(binary_data) < total_bits_needed:
+            raise ValueError(
+                f"Insufficient data: need {total_bits_needed} bits "
+                f"({number_of_bit_streams} streams of {bit_stream_length} bits each), "
+                f"but only have {len(binary_data)} bits"
+            )
+        
+        # Split data into sequences
+        sequences = []
+        for i in range(number_of_bit_streams):
+            start_idx = i * bit_stream_length
+            end_idx = start_idx + bit_stream_length
+            sequences.append(binary_data[start_idx:end_idx])
+        
+        # Initialize result structure
         result_dict = {
             "passed_tests": 0,
             "randomness_test": []
         }
         
         # Define test mapping
+        n = bit_stream_length  # Use sequence length for parameter calculations
         test_mapping = [
-            ('Frequency', lambda: NISTTests.frequency_test(binary_data)),
-            ('BlockFrequency', lambda: NISTTests.block_frequency_test(binary_data, block_size=min(128, n // 100))),
-            ('CumulativeSums', lambda: NISTStatisticalTests._run_cumsum_both_modes(binary_data)),
-            ('Runs', lambda: NISTTests.runs_test(binary_data)),
-            ('LongestRun', lambda: NISTTests.longest_run_test(binary_data)),
-            ('Rank', lambda: NISTTests.rank_test(binary_data)),
-            ('FFT', lambda: NISTTests.dft_test(binary_data)),
-            ('NonOverlappingTemplate', lambda: NISTTests.non_overlapping_template_test(binary_data)),
-            ('OverlappingTemplate', lambda: NISTTests.overlapping_template_test(binary_data)),
-            ('Universal', lambda: NISTTests.universal_test(binary_data)),
-            ('ApproximateEntropy', lambda: NISTTests.approximate_entropy_test(binary_data, m=min(10, int(np.log2(n)) - 5))),
-            ('RandomExcursions', lambda: NISTTests.random_excursions_test(binary_data)),
-            ('RandomExcursionsVariant', lambda: NISTTests.random_excursions_variant_test(binary_data)),
-            ('Serial', lambda: NISTTests.serial_test(binary_data, m=min(16, int(np.log2(n)) - 2))),
-            ('LinearComplexity', lambda: NISTTests.linear_complexity_test(binary_data, block_size=min(500, n // 100)))
+            ('Frequency', lambda seq: NISTTests.frequency_test(seq)),
+            ('BlockFrequency', lambda seq: NISTTests.block_frequency_test(seq, block_size=min(128, n // 100))),
+            ('CumulativeSums', lambda seq: NISTStatisticalTests._run_cumsum_both_modes(seq)),
+            ('Runs', lambda seq: NISTTests.runs_test(seq)),
+            ('LongestRun', lambda seq: NISTTests.longest_run_test(seq)),
+            ('Rank', lambda seq: NISTTests.rank_test(seq)),
+            ('FFT', lambda seq: NISTTests.dft_test(seq)),
+            ('NonOverlappingTemplate', lambda seq: NISTTests.non_overlapping_template_test(seq)),
+            ('OverlappingTemplate', lambda seq: NISTTests.overlapping_template_test(seq)),
+            ('Universal', lambda seq: NISTTests.universal_test(seq)),
+            ('ApproximateEntropy', lambda seq: NISTTests.approximate_entropy_test(seq, m=min(10, int(np.log2(n)) - 5))),
+            ('RandomExcursions', lambda seq: NISTTests.random_excursions_test(seq)),
+            ('RandomExcursionsVariant', lambda seq: NISTTests.random_excursions_variant_test(seq)),
+            ('Serial', lambda seq: NISTTests.serial_test(seq, m=min(16, int(np.log2(n)) - 2))),
+            ('LinearComplexity', lambda seq: NISTTests.linear_complexity_test(seq, block_size=min(500, n // 100)))
         ]
         
-        # Run selected tests
+        # Run tests on each sequence and aggregate results
         for i, (test_name, test_func) in enumerate(test_mapping):
             if statistical_test_option_list[i] == '1':
-                try:
-                    test_result = test_func()
-                    if isinstance(test_result, list):
-                        # Multiple results (e.g., from cumsum)
-                        for idx, res in enumerate(test_result):
-                            formatted = NISTStatisticalTests._format_test_result(
-                                test_name, res, TEST_ID_TABLE[test_name] + idx, number_of_bit_streams)
-                            result_dict["randomness_test"].append(formatted)
-                            if res['passed']:
-                                result_dict["passed_tests"] += 1
-                    else:
-                        formatted = NISTStatisticalTests._format_test_result(
-                            test_name, test_result, TEST_ID_TABLE[test_name], number_of_bit_streams)
-                        result_dict["randomness_test"].append(formatted)
-                        if test_result['passed']:
+                # Run test on all sequences
+                sequence_results = []
+                for seq in sequences:
+                    try:
+                        test_result = test_func(seq)
+                        if isinstance(test_result, list):
+                            sequence_results.append(test_result)
+                        else:
+                            sequence_results.append([test_result])
+                    except Exception as e:
+                        # Failed test
+                        sequence_results.append([{'passed': False, 'p_value': 0.0, 'error': str(e)}])
+                
+                # Aggregate results across sequences
+                if isinstance(sequence_results[0], list) and len(sequence_results[0]) > 1:
+                    # Multiple sub-tests (e.g., CumulativeSums has forward and backward)
+                    for sub_idx in range(len(sequence_results[0])):
+                        sub_results = [seq_res[sub_idx] for seq_res in sequence_results]
+                        aggregated = NISTStatisticalTests._aggregate_test_results(
+                            test_name, sub_results, TEST_ID_TABLE[test_name] + sub_idx, number_of_bit_streams
+                        )
+                        result_dict["randomness_test"].append(aggregated)
+                        if aggregated['passed']:
                             result_dict["passed_tests"] += 1
-                except Exception as e:
-                    # If test fails, add a failed test entry
-                    result_dict["randomness_test"].append({
-                        'test_id': TEST_ID_TABLE[test_name],
-                        'test_name': test_name,
-                        'passed': False,
-                        'p-value': 0.0,
-                        'passed_seqs': 0,
-                        'total_seqs': number_of_bit_streams,
-                        'passed_proportion': 0.0,
-                        'error': str(e)
-                    })
+                else:
+                    # Single test result per sequence
+                    flat_results = [seq_res[0] if isinstance(seq_res, list) else seq_res for seq_res in sequence_results]
+                    aggregated = NISTStatisticalTests._aggregate_test_results(
+                        test_name, flat_results, TEST_ID_TABLE[test_name], number_of_bit_streams
+                    )
+                    result_dict["randomness_test"].append(aggregated)
+                    if aggregated['passed']:
+                        result_dict["passed_tests"] += 1
         
         # Calculate thresholds
         result_dict["number_of_sequences_threshold"] = [
@@ -380,6 +411,57 @@ class NISTStatisticalTests:
         forward = NISTTests.cumulative_sums_test(binary_data, mode=0)
         backward = NISTTests.cumulative_sums_test(binary_data, mode=1)
         return [forward, backward]
+    
+    @staticmethod
+    def _aggregate_test_results(test_name, sequence_results, test_id, total_seqs):
+        """
+        Aggregate test results from multiple sequences.
+        
+        INPUT:
+        
+        - ``test_name`` -- **string**; name of the test
+        - ``sequence_results`` -- **list**; list of test results from each sequence
+        - ``test_id`` -- **integer**; test ID
+        - ``total_seqs`` -- **integer**; total number of sequences
+        
+        OUTPUT:
+        
+        - **dict**; aggregated test result
+        """
+        # Count how many sequences passed
+        passed_count = sum(1 for res in sequence_results if res.get('passed', False))
+        
+        # Calculate average p-value
+        p_values = []
+        for res in sequence_results:
+            if 'p_value' in res:
+                p_values.append(res['p_value'])
+            elif 'p_value1' in res:
+                p_values.append(res['p_value1'])
+            elif 'p_values' in res:
+                p_values.append(float(np.mean(res['p_values'])))
+        
+        avg_p_value = float(np.mean(p_values)) if p_values else 0.0
+        
+        # Determine if test passed overall (96% of sequences should pass)
+        threshold = int(total_seqs * 0.96)
+        overall_passed = passed_count >= threshold
+        
+        aggregated = {
+            'test_id': test_id,
+            'test_name': test_name,
+            'passed': overall_passed,
+            'p-value': avg_p_value,
+            'passed_seqs': passed_count,
+            'total_seqs': total_seqs,
+            'passed_proportion': passed_count / total_seqs if total_seqs > 0 else 0.0
+        }
+        
+        # Add placeholder C1-C10 values for compatibility
+        for i in range(10):
+            aggregated[f'C{i+1}'] = '0'
+        
+        return aggregated
     
     @staticmethod
     def _format_test_result(test_name, result, test_id, total_seqs):
@@ -692,16 +774,17 @@ class NISTStatisticalTests:
         sts_report_dicts = []
 
         for round_number in range(round_start, round_end):
-            # Convert dataset to binary array
-            binary_data = self._convert_to_binary_array(dataset[round_number])
+            # Pass raw byte data - conversion handled by _run_nist_statistical_tests_tool based on input_file_format
+            raw_data = dataset[round_number]
 
             sts_execution_time = time.time()
-            # Run Python-based NIST tests
+            # Run Python-based NIST tests with proper sequence splitting
+            # input_file_format=1 means byte data (will be converted internally)
             sts_report_dict = self._run_nist_statistical_tests_tool(
-                binary_data, 
+                raw_data, 
                 self.bits_in_one_sequence,
                 self.number_of_sequences, 
-                1,
+                1,  # input_file_format=1 for byte data
                 statistical_test_option_list=statistical_test_option_list
             )
             sts_execution_time = time.time() - sts_execution_time

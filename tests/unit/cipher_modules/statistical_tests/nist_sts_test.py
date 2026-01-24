@@ -15,6 +15,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+import importlib.util
+import json
+import os
+import tempfile
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -523,3 +529,266 @@ class TestNISTTests:
         short_seq = np.random.randint(0, 2, 50, dtype=np.uint8)
         result = NISTTests.overlapping_template_test(short_seq, block_size=1000)
         assert result['passed'] is False
+
+
+    # ========================================================================
+    # Functional Equivalence Tests with C assess binary
+    # ========================================================================
+    # These tests verify that the Python implementation produces the same
+    # results as the original NIST STS C assess binary (sts-2.1.2).
+    # Test vectors were generated from the C binary and stored as reference.
+    # ========================================================================
+
+    def _load_generator_module(self, generator_path):
+        spec = importlib.util.spec_from_file_location("generator", generator_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def _normalize_c_test_name(self, name):
+        name = name.replace("*", "").strip()
+        if name.startswith("NonOverlappingTemplate_") or name.startswith("Non Overlapping Template_"):
+            base, idx = name.rsplit("_", 1)
+            return f"non_overlapping_template_{idx}"
+        if "CumulativeSums" in name:
+            lower = name.lower()
+            if "backward" in lower:
+                return "cumulative_sums_backward"
+            return "cumulative_sums_forward"
+        if "RandomExcursionsVariant" in name:
+            state = name.split("(")[-1].rstrip(")")
+            return f"random_excursions_variant_{state}"
+        if "RandomExcursions" in name:
+            state = name.split("(")[-1].rstrip(")")
+            return f"random_excursions_{state}"
+        if "Serial" in name:
+            if "2" in name:
+                return "serial_2"
+            return "serial_1"
+        mapping = {
+            "Frequency": "frequency",
+            "BlockFrequency": "block_frequency",
+            "Runs": "runs",
+            "LongestRun": "longest_run",
+            "Rank": "rank",
+            "FFT": "dft",
+            "NonOverlappingTemplate": "non_overlapping_template",
+            "Non Overlapping Template": "non_overlapping_template",
+            "OverlappingTemplate": "overlapping_template",
+            "Overlapping Template": "overlapping_template",
+            "Universal": "universal",
+            "ApproximateEntropy": "approximate_entropy",
+            "LinearComplexity": "linear_complexity",
+        }
+        return mapping.get(name, name.replace(" ", "_").lower())
+
+    def _load_case_inputs(self, case_dir):
+        inputs_path = case_dir / "inputs.json"
+        if not inputs_path.exists():
+            pytest.skip(f"Missing inputs.json in {case_dir}")
+        with open(inputs_path, "r") as f:
+            return json.load(f)
+
+    def _load_case_results(self, case_dir):
+        results_path = case_dir / "results.json"
+        if not results_path.exists():
+            pytest.skip(f"Missing results.json in {case_dir}")
+        with open(results_path, "r") as f:
+            return json.load(f)
+
+    def _get_dataset_path(self, inputs):
+        dataset_path = Path(inputs["dataset_file"])
+        if not dataset_path.exists():
+            pytest.skip(f"Missing dataset file: {dataset_path}")
+        return str(dataset_path)
+
+    def _compare_results(self, python_results, c_results, tolerance=1e-6):
+        c_tests = c_results["final_report_parsed"]["tests"]
+
+        python_map = {t["test_name"]: t for t in python_results["tests"]}
+        mismatches = []
+        nonoverlap_idx = 0
+
+        for c_test in c_tests:
+            c_name = c_test["test_name"]
+            if c_name in {"NonOverlappingTemplate", "Non Overlapping Template"}:
+                py_name = f"non_overlapping_template_{nonoverlap_idx}"
+                nonoverlap_idx += 1
+            else:
+                py_name = self._normalize_c_test_name(c_name)
+
+            if py_name not in python_map:
+                mismatches.append(f"Test '{c_name}' not found in Python results")
+                continue
+
+            py_test = python_map[py_name]
+
+            p_diff = abs(c_test["uniformity_p_value"] - py_test["uniformity_p_value"])
+            if p_diff > tolerance:
+                mismatches.append(
+                    f"{c_name}: uniformity p-value mismatch (C: {c_test['uniformity_p_value']:.6f}, "
+                    f"Python: {py_test['uniformity_p_value']:.6f}, diff: {p_diff:.2e})"
+                )
+
+            if c_test["bin_counts"] != py_test["bin_counts"]:
+                mismatches.append(
+                    f"{c_name}: bin counts mismatch (C: {c_test['bin_counts']}, "
+                    f"Python: {py_test['bin_counts']})"
+                )
+
+            c_passed = c_test["passed_sequences"]
+            c_total = c_test["total_sequences"]
+            if (c_passed != py_test["passed_sequences"] or
+                    c_total != py_test["total_sequences"]):
+                mismatches.append(
+                    f"{c_name}: pass count mismatch (C: {c_passed}/{c_total}, "
+                    f"Python: {py_test['passed_sequences']}/{py_test['total_sequences']})"
+                )
+
+            if py_name.startswith("non_overlapping_template"):
+                continue
+
+            detail = c_results.get("test_details", {}).get(c_test["test_name"], {})
+            if "p_values" in detail and "p_values" in py_test:
+                c_pvals = detail["p_values"]
+                py_pvals = py_test["p_values"]
+                if len(c_pvals) == len(py_pvals):
+                    for idx, (c_p, py_p) in enumerate(zip(c_pvals, py_pvals), 1):
+                        if abs(c_p - py_p) > tolerance:
+                            mismatches.append(
+                                f"{c_name}: sequence {idx} p-value mismatch (C: {c_p:.6f}, "
+                                f"Python: {py_p:.6f})"
+                            )
+                            if len(mismatches) > 10:
+                                break
+                else:
+                    mismatches.append(
+                        f"{c_name}: per-sequence count mismatch (C: {len(c_pvals)}, "
+                        f"Python: {len(py_pvals)})"
+                    )
+
+        if mismatches:
+            error_msg = f"Found {len(mismatches)} mismatch(es) with C binary:\n"
+            error_msg += "\n".join(f"  - {m}" for m in mismatches[:10])
+            if len(mismatches) > 10:
+                error_msg += f"\n  ... and {len(mismatches) - 10} more"
+            pytest.fail(error_msg)
+
+    def test_assess_equivalence_cases(self):
+        """Validate Python assess() against C binary results for all stored cases."""
+        test_data_dir = Path(__file__).parent / "test_data" / "statistical_tests_results"
+        index_path = test_data_dir / "index.json"
+
+        if not index_path.exists():
+            pytest.skip("Missing test_data/statistical_tests_results/index.json - generate test cases first")
+
+        with open(index_path, "r") as f:
+            index = json.load(f)
+
+        for case in index.get("test_cases", []):
+            case_dir = test_data_dir / case["name"]
+            if not case_dir.exists():
+                continue
+
+            inputs = self._load_case_inputs(case_dir)
+            c_results = self._load_case_results(case_dir)
+
+            dataset_file = self._get_dataset_path(inputs)
+            results = NISTTests.assess(
+                file_path=dataset_file,
+                bit_length=inputs["bit_length"],
+                num_sequences=inputs["num_sequences"],
+                input_format=inputs["assess_params"]["input_format"],
+                tests=inputs["assess_params"]["tests"],
+                non_overlapping_template_block_size=inputs["assess_params"].get("nonoverlap", 968),
+                overlapping_template_block_size=inputs["assess_params"].get("overlap", 1032)
+            )
+            self._compare_results(results, c_results)
+
+    def test_assess_ascii_format(self):
+        """
+        Test assess() with ASCII input format.
+        
+        Verifies that ASCII format (text file with '0' and '1' characters)
+        is correctly read and processed.
+        """
+        import tempfile
+        import os
+        
+        # Create test data in ASCII format
+        # 100 bits = "01010101..." as text
+        np.random.seed(99999)
+        bits = np.random.randint(0, 2, 100, dtype=np.uint8)
+        ascii_data = ''.join(str(b) for b in bits)
+        
+        # Write to temporary ASCII file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+            temp_file = f.name
+            f.write(ascii_data)
+        
+        try:
+            # Run assess with ASCII format
+            results = NISTTests.assess(
+                file_path=temp_file,
+                bit_length=100,
+                num_sequences=1,
+                input_format='ascii',
+                tests='110000000000000'  # Just frequency and block frequency
+            )
+            
+            # Verify we got results
+            assert 'tests' in results
+            assert len(results['tests']) == 2
+            
+            # Verify test names
+            test_names = [t['test_name'] for t in results['tests']]
+            assert 'frequency' in test_names
+            assert 'block_frequency' in test_names
+            
+        finally:
+            if os.path.exists(temp_file):
+                os.unlink(temp_file)
+
+    def test_assess_multiple_sequences(self):
+        """
+        Test assess() with multiple sequences.
+        
+        Verifies that a single bitstream can be split into multiple
+        sequences for testing, matching the C binary behavior.
+        """
+        import tempfile
+        import os
+        
+        # Create test data: 500 bits to be split into 5 sequences of 100 bits each
+        np.random.seed(55555)
+        bits = np.random.randint(0, 2, 500, dtype=np.uint8)
+        packed = np.packbits(bits)
+        
+        with tempfile.NamedTemporaryFile(mode='wb', suffix='.bin', delete=False) as f:
+            temp_file = f.name
+            packed.tofile(f)
+        
+        try:
+            # Run with 5 sequences
+            results = NISTTests.assess(
+                file_path=temp_file,
+                bit_length=100,
+                num_sequences=5,
+                input_format='binary',
+                tests='100000000000000'  # Just frequency
+            )
+            
+            # Verify correct number of sequences processed
+            assert 'tests' in results
+            assert len(results['tests']) == 1
+            
+            test_result = results['tests'][0]
+            assert test_result['total_sequences'] == 5
+            assert test_result['test_name'] == 'frequency'
+            
+            # Verify bin counts sum to number of sequences
+            assert sum(test_result['bin_counts']) == 5
+            
+        finally:
+            if os.path.exists(temp_file):
+                os.unlink(temp_file)

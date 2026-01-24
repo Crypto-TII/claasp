@@ -50,16 +50,36 @@ def cleanup_test_reports():
 
 
 def test_run_nist_statistical_tests_tool():
-    # Test with Python implementation (using numpy array)
-    binary_data = np.random.randint(0, 2, 10000, dtype=np.uint8)
+    # Test with Python implementation
+    # Test with binary data (input_file_format=0)
+    binary_data = np.random.randint(0, 2, 100000, dtype=np.uint8)
     result = NISTStatisticalTests._run_nist_statistical_tests_tool(
-        binary_data, 10000, 10, 1, statistical_test_option_list='1' + 14 * '0')
+        binary_data, 10000, 10, 0, statistical_test_option_list='1' + 14 * '0')
 
     assert isinstance(result, dict)
     assert 'randomness_test' in result
     assert 'passed_tests' in result
     assert 'number_of_sequences_threshold' in result
     assert len(result['randomness_test']) > 0
+    assert result['randomness_test'][0]['total_seqs'] == 10  # Should have 10 sequences
+    assert result['randomness_test'][0]['passed_seqs'] <= 10
+    
+    # Test with byte data (input_file_format=1)
+    byte_data = np.random.randint(0, 256, 12500, dtype=np.uint8)  # 12500 bytes = 100000 bits
+    result_bytes = NISTStatisticalTests._run_nist_statistical_tests_tool(
+        byte_data, 10000, 10, 1, statistical_test_option_list='1' + 14 * '0')
+    
+    assert isinstance(result_bytes, dict)
+    assert result_bytes['randomness_test'][0]['total_seqs'] == 10
+    
+    # Test error case - insufficient data
+    try:
+        small_data = np.random.randint(0, 2, 5000, dtype=np.uint8)
+        NISTStatisticalTests._run_nist_statistical_tests_tool(
+            small_data, 10000, 10, 0, statistical_test_option_list='1' + 14 * '0')
+        assert False, "Should have raised ValueError"
+    except ValueError as e:
+        assert "Insufficient data" in str(e)
 
 
 def test_parse_report():
