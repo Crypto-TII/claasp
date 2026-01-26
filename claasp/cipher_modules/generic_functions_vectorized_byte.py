@@ -151,7 +151,7 @@ def byte_vector_select_all_words(unformated_inputs, real_bits, real_inputs, numb
             if number_of_output_bits % 8 > 0:
                 left_byte_mask = 2 ** (number_of_output_bits % 8) - 1
             else:
-                left_byte_mask = 0xffff
+                left_byte_mask = 0xff
             output[i][0, :] &= left_byte_mask
         else:
             output[i] = np.zeros(shape=(words_per_input, max_number_of_columns), dtype=np.uint8)
