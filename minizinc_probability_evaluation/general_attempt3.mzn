@@ -1870,7 +1870,7 @@ predicate ubct_compute(
 let {
     array[1..nbit-1,0..3] of var int: dp_ubct;
     array[1..nbit-1] of var 0..15: tmp0;
-    array[1..nbit-1, 0..3] of var 0..7: how_many_cross_elements_differ_from_0_in_the_dp_ubct;
+    array[1..nbit-1, 0..3] of var 0..3: how_many_cross_elements_differ_from_0_in_the_dp_ubct;
     var 0..4: how_many_cross_elements_differ_from_0_in_the_dp_ubct_last_condition;
     var int: ubct_value;
 } in
