@@ -1,6 +1,7 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_differential_linear_continuous_model import MznDifferentialLinearContinuousModel
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_continuous_predicates import get_continuous_operations
 from minizinc import Model, Solver, Instance
 import re
 
@@ -12,7 +13,7 @@ def test_cp_modadd_test_vectors():
     declarations, constraints = modadd_component.cp_continuous_differential_propagation_constraints(model)
 
     mzn_model = Model()
-    mzn_model.add_file("/home/sage/tii-claasp/continuous_operations.mzn")
+    mzn_model.add_string(get_continuous_operations())
 
     mzn_model.add_string("\n".join(declarations) + "\n" + "\n".join(constraints))
 
@@ -60,7 +61,7 @@ def test_cp_xor_test_vectors():
     declarations, constraints = xor_component.cp_continuous_differential_propagation_constraints(model)
 
     mzn_model = Model()
-    mzn_model.add_file("/home/sage/tii-claasp/continuous_operations.mzn")
+    mzn_model.add_string(get_continuous_operations())
     mzn_model.add_string("\n".join(declarations) + "\n" + "\n".join(constraints))
 
     solver = Solver.lookup("scip")
@@ -147,7 +148,7 @@ def test_cp_rotate_test_vectors():
         )
 
         mzn_model = Model()
-        mzn_model.add_file("/home/sage/tii-claasp/continuous_operations.mzn")
+        mzn_model.add_string(get_continuous_operations())
         mzn_model.add_string("\n".join(declarations) + "\n" + "\n".join(constraints))
 
         solver = Solver.lookup("scip")
@@ -185,7 +186,7 @@ def test_generic_cp_modadd_test_vectors():
     )
 
     mzn_model = Model()
-    mzn_model.add_file("/home/sage/tii-claasp/continuous_operations.mzn")
+    mzn_model.add_string(get_continuous_operations())
     mzn_model.add_string(
         "\n".join(model._variables_list)
         + "\n"
@@ -246,7 +247,7 @@ def test_generic_cp_full_round_pipeline():
     )
 
     mzn_model = Model()
-    mzn_model.add_file("/home/sage/tii-claasp/continuous_operations.mzn")
+    mzn_model.add_string(get_continuous_operations())
 
     mzn_model.add_string(
         "\n".join(model._variables_list)
@@ -330,8 +331,6 @@ def test_full_search_continuous_propagation_only():
         custom_connections=speck_patch, 
         solver_name="scip"
     )
-
-    import ipdb; ipdb.set_trace()
 
     print("\n--- TRAIL RESULT ---")
     assert result["status"] == "SATISFIED"
