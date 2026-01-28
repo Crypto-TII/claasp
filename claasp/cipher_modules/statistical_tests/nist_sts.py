@@ -176,6 +176,7 @@ higher-quality random sources to avoid false failures.
 """
 
 import numpy as np
+import math
 from scipy import special as spc
 from scipy.stats import chi2, norm
 from scipy.fft import fft
@@ -204,6 +205,7 @@ class NISTTests:
         current = Path(__file__).resolve()
         for parent in current.parents:
             candidates.append(parent / "sts-2.1.2-modified" / "templates" / f"template{m}")
+        candidates.append(Path("/opt") / "sts-2.1.2-modified" / "templates" / f"template{m}")
         candidates.append(Path.cwd() / "sts-2.1.2-modified" / "templates" / f"template{m}")
 
         for path in candidates:
@@ -301,7 +303,7 @@ class NISTTests:
 
         OUTPUT:
 
-        - **dict**; contains 'p_value' and 'passed' (True if p_value >= 0.01)
+        - **dict**; contains 'p_value', 'passed', and 'computational_information'
 
         EXAMPLES::
 
@@ -315,11 +317,18 @@ class NISTTests:
         binary_data = NISTTests._ensure_binary_array(binary_data)
         n = len(binary_data)
         # Convert to +1 and -1 (use float to avoid uint8 overflow)
-        s_obs = np.sum(2.0 * binary_data - 1.0)
-        s_obs = np.abs(s_obs) / np.sqrt(n)
+        sn = np.sum(2.0 * binary_data - 1.0)
+        s_obs = np.abs(sn) / np.sqrt(n)
         p_value = spc.erfc(s_obs / np.sqrt(2))
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'sn': float(sn),
+                'sn_over_n': float(sn) / n
+            }
+        }
 
     @staticmethod
     def block_frequency_test(binary_data, block_size=128):
@@ -337,7 +346,7 @@ class NISTTests:
 
         OUTPUT:
 
-        - **dict**; contains 'p_value' and 'passed'
+        - **dict**; contains 'p_value', 'passed', and 'computational_information'
 
         EXAMPLES::
 
@@ -353,14 +362,34 @@ class NISTTests:
         num_blocks = n // block_size
 
         if num_blocks < 1:
-            return {'p_value': 0.0, 'passed': False}
+            return {
+                'p_value': np.nan,
+                'passed': None,
+                'computational_information': {
+                    'block_size': np.nan,
+                    'num_blocks': np.nan,
+                    'chi_squared': np.nan,
+                    'discarded_bits': np.nan,
+                }
+            }
 
-        block_data = binary_data[:num_blocks * block_size].reshape((num_blocks, block_size))
+        used_bits = num_blocks * block_size
+        discarded_bits = n - used_bits
+        block_data = binary_data[:used_bits].reshape((num_blocks, block_size))
         proportions = np.mean(block_data, axis=1)
         chi_squared = 4 * block_size * np.sum((proportions - 0.5) ** 2)
         p_value = spc.gammaincc(num_blocks / 2, chi_squared / 2)
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'block_size': int(block_size),
+                'num_blocks': int(num_blocks),
+                'chi_squared': float(chi_squared),
+                'discarded_bits': int(discarded_bits)
+            }
+        }
 
     @staticmethod
     def cumulative_sums_test(binary_data, mode=0):
@@ -416,7 +445,18 @@ class NISTTests:
 
         p_value = 1.0 - sum_a + sum_b
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'mode': int(mode),
+                'n': int(n),
+                'z': float(z),
+                'max_partial_sum': float(z),
+                'sum_a': float(sum_a),
+                'sum_b': float(sum_b)
+            }
+        }
 
     @staticmethod
     def runs_test(binary_data):
@@ -451,14 +491,32 @@ class NISTTests:
         # Pre-test: if pi not approximately 1/2, then the runs test is not applicable
         tau = 2 / np.sqrt(n)
         if np.abs(pi - 0.5) >= tau:
-            return {'p_value': 0.0, 'passed': False}
+            return {
+                'p_value': np.nan,
+                'passed': None,
+                'computational_information': {
+                    'n': np.nan,
+                    'pi': np.nan,
+                    'tau': np.nan,
+                    'runs': np.nan,
+                }
+            }
 
         # Count runs
         runs = np.sum(binary_data[1:] != binary_data[:-1]) + 1
 
         p_value = spc.erfc(np.abs(runs - 2 * n * pi * (1 - pi)) / (2 * np.sqrt(2 * n) * pi * (1 - pi)))
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'n': int(n),
+                'pi': float(pi),
+                'tau': float(tau),
+                'runs': int(runs)
+            }
+        }
 
     @staticmethod
     def longest_run_test(binary_data):
@@ -492,39 +550,41 @@ class NISTTests:
 
         # Determine block size and parameters based on sequence length
         if n < 128:
-            return {'p_value': 0.0, 'passed': False}
+            return {
+                'p_value': np.nan,
+                'passed': None,
+                'computational_information': {
+                    'n': np.nan,
+                    'block_size': np.nan,
+                    'num_blocks': np.nan,
+                    'chi_squared': np.nan,
+                    'frequencies': [],
+                }
+            }
         elif n < 6272:
             m = 8
             v_values = [1, 2, 3, 4]
-            pi_values = [0.2148, 0.3672, 0.2305, 0.1875]
+            pi_values = [0.21484375, 0.3671875, 0.23046875, 0.1875]
         elif n < 750000:
             m = 128
             v_values = [4, 5, 6, 7, 8, 9]
-            pi_values = [0.1174, 0.2430, 0.2493, 0.1752, 0.1027, 0.1124]
+            pi_values = [0.1174035788, 0.242955959, 0.249363483, 0.17517706, 0.102701071, 0.112398847]
         else:
             m = 10000
             v_values = [10, 11, 12, 13, 14, 15, 16]
             pi_values = [0.0882, 0.2092, 0.2483, 0.1933, 0.1208, 0.0675, 0.0727]
 
         num_blocks = n // m
-        frequencies = np.zeros(len(v_values) + 1)
+        frequencies = np.zeros(len(pi_values))
 
         for i in range(num_blocks):
             block = binary_data[i * m:(i + 1) * m]
-            # Find longest run of ones
-            run_lengths = []
-            current_run = 0
-            for bit in block:
-                if bit == 1:
-                    current_run += 1
-                else:
-                    if current_run > 0:
-                        run_lengths.append(current_run)
-                    current_run = 0
-            if current_run > 0:
-                run_lengths.append(current_run)
-
-            longest_run = max(run_lengths) if run_lengths else 0
+            zero_idx = np.flatnonzero(block == 0)
+            if zero_idx.size == 0:
+                longest_run = m
+            else:
+                indices = np.concatenate(([-1], zero_idx, [m]))
+                longest_run = int(np.max(np.diff(indices) - 1))
 
             # Categorize the longest run
             if longest_run <= v_values[0]:
@@ -532,29 +592,32 @@ class NISTTests:
             elif longest_run >= v_values[-1]:
                 frequencies[-1] += 1
             else:
-                for j in range(len(v_values) - 1):
-                    if v_values[j] < longest_run <= v_values[j + 1]:
-                        frequencies[j + 1] += 1
+                for j in range(1, len(v_values) - 1):
+                    if v_values[j - 1] < longest_run <= v_values[j]:
+                        frequencies[j] += 1
                         break
 
         # Calculate chi-squared statistic
         chi_squared = 0
         for i in range(len(frequencies)):
-            if i == 0 or i == len(frequencies) - 1:
-                # For first and last categories, use cumulative probabilities
-                if i == 0:
-                    pi = sum(pi_values[:1]) if len(pi_values) > 0 else 0
-                else:
-                    pi = sum(pi_values[-1:]) if len(pi_values) > 0 else 0
-            else:
-                pi = pi_values[i - 1] if i - 1 < len(pi_values) else 0
+            pi = pi_values[i] if i < len(pi_values) else 0
 
             if pi > 0:
                 chi_squared += (frequencies[i] - num_blocks * pi) ** 2 / (num_blocks * pi)
 
         p_value = spc.gammaincc((len(frequencies) - 1) / 2, chi_squared / 2)
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'n': int(n),
+                'block_size': int(m),
+                'num_blocks': int(num_blocks),
+                'chi_squared': float(chi_squared),
+                'frequencies': frequencies.tolist()
+            }
+        }
 
     @staticmethod
     def rank_test(binary_data):
@@ -588,7 +651,52 @@ class NISTTests:
         num_matrices = n // (m * q)
 
         if num_matrices == 0:
-            return {'p_value': 0.0, 'passed': False}
+            return {
+                'p_value': 0.0,
+                'passed': None,
+                'computational_information': {
+                    'm': int(m),
+                    'q': int(q),
+                    'num_matrices': 0,
+                    'P_32': 0.288788,
+                    'P_31': 0.577576,
+                    'P_30': 0.133636,
+                    'F_32': 0,
+                    'F_31': 0,
+                    'F_30': 0,
+                    'chi_squared': 0.0,
+                    'discarded_bits': int(n),
+                }
+            }
+
+        def gf2_rank(mat):
+            mat = mat.copy()
+            rows, cols = mat.shape
+            rank = 0
+            col = 0
+            for r in range(rows):
+                while col < cols and not mat[r:, col].any():
+                    col += 1
+                if col >= cols:
+                    break
+
+                pivot = r + np.argmax(mat[r:, col])
+                if mat[pivot, col] == 0:
+                    col += 1
+                    if col >= cols:
+                        break
+                    continue
+
+                if pivot != r:
+                    mat[[r, pivot]] = mat[[pivot, r]]
+
+                for rr in range(rows):
+                    if rr != r and mat[rr, col]:
+                        mat[rr, :] ^= mat[r, :]
+
+                rank += 1
+                col += 1
+            return rank
 
         # Count matrices by rank
         fm = 0  # full rank
@@ -598,10 +706,10 @@ class NISTTests:
         for i in range(num_matrices):
             # Extract matrix
             block = binary_data[i * m * q:(i + 1) * m * q]
-            matrix = block.reshape((m, q))
+            matrix = block.reshape((m, q)).astype(np.uint8)
 
-            # Compute rank using row reduction
-            rank = np.linalg.matrix_rank(matrix)
+            # Compute rank over GF(2)
+            rank = gf2_rank(matrix)
 
             if rank == m:
                 fm += 1
@@ -611,9 +719,9 @@ class NISTTests:
                 remainder += 1
 
         # Calculate chi-squared
-        pi_m = 0.2888
-        pi_m1 = 0.5776
-        pi_remainder = 0.1336
+        pi_m = 0.288788
+        pi_m1 = 0.577576
+        pi_remainder = 0.133636
 
         chi_squared = ((fm - num_matrices * pi_m) ** 2 / (num_matrices * pi_m) +
                        (fm1 - num_matrices * pi_m1) ** 2 / (num_matrices * pi_m1) +
@@ -621,7 +729,26 @@ class NISTTests:
 
         p_value = np.exp(-chi_squared / 2)
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        discarded_bits = n - num_matrices * m * q
+
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'm': int(m),
+                'q': int(q),
+                'num_matrices': int(num_matrices),
+                'P_32': float(pi_m),
+                'P_31': float(pi_m1),
+                'P_30': float(pi_remainder),
+                'F_32': int(fm),
+                'F_31': int(fm1),
+                'F_30': int(remainder),
+                'chi_squared': float(chi_squared)
+                ,
+                'discarded_bits': int(discarded_bits)
+            }
+        }
 
     @staticmethod
     def dft_test(binary_data):
@@ -672,7 +799,17 @@ class NISTTests:
         d = (n1 - n0) / np.sqrt(n * 0.95 * 0.05 / 4)
         p_value = spc.erfc(np.abs(d) / np.sqrt(2))
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'n': int(n),
+                'tau': float(tau),
+                'n0': float(n0),
+                'n1': float(n1),
+                'd': float(d)
+            }
+        }
 
     @staticmethod
     def non_overlapping_template_test(binary_data, template=None, block_size=968):
@@ -711,32 +848,37 @@ class NISTTests:
             templates = NISTTests._load_nonoverlap_templates(m)
 
             if n < 8 * m:
-                return [{'p_value': 0.0, 'passed': False} for _ in templates]
-
-            n_blocks = 8
-            block_len = n // n_blocks
-
-            lambda_val = (block_len - m + 1) / (2 ** m)
-            var_wj = block_len * ((1 / (2 ** m)) - ((2 * m - 1) / (2 ** (2 * m))))
+                return [
+                    {
+                        'p_value': np.nan,
+                        'passed': None,
+                        'template_index': template_idx,
+                        'computational_information': {
+                            'LAMBDA': np.nan,
+                            'M': np.nan,
+                            'N': np.nan,
+                            'm': np.nan,
+                            'n': np.nan,
+                            'Index': np.nan,
+                            'Template': "not_applicable",
+                            'W': [],
+                            'Chi^2': np.nan,
+                            'P_value': np.nan,
+                        }
+                    }
+                    for template_idx, tmpl in enumerate(templates)
+                ]
 
             results = []
             for template_idx, tmpl in enumerate(templates):
-                wj = []
-                for i in range(n_blocks):
-                    block = binary_data[i * block_len:(i + 1) * block_len]
-                    count = 0
-                    j = 0
-                    while j <= block_len - m:
-                        if np.array_equal(block[j:j + m], tmpl):
-                            count += 1
-                            j += m
-                        else:
-                            j += 1
-                    wj.append(count)
-
-                chi_squared = np.sum(((np.array(wj) - lambda_val) / np.sqrt(var_wj)) ** 2)
-                p_value = spc.gammaincc(n_blocks / 2, chi_squared / 2)
-                results.append({'p_value': p_value, 'passed': p_value >= 0.01, 'template_index': template_idx})
+                result = NISTTests.non_overlapping_template_test_given_template(
+                    binary_data=binary_data,
+                    template=tmpl,
+                    num_blocks=8,
+                    template_index=template_idx,
+                )
+                result['template_index'] = template_idx
+                results.append(result)
 
             return results
 
@@ -747,32 +889,131 @@ class NISTTests:
         if isinstance(template, list):
             template = np.array(template, dtype=np.uint8)
 
+        return NISTTests.non_overlapping_template_test_given_template(
+            binary_data=binary_data,
+            template=template,
+            block_size=block_size,
+        )
+
+    @staticmethod
+    def non_overlapping_template_test_given_template(binary_data, template, block_size=None, num_blocks=8, template_index=None):
+        """
+        Non-overlapping Template Matching Test for a single fixed template.
+
+        INPUT:
+
+        - ``binary_data`` -- **numpy array**; binary sequence as numpy array of 0s and 1s
+        - ``template`` -- **numpy array**; template to search for
+        - ``block_size`` -- **integer** (optional); size of each block (M). If None, uses n//num_blocks.
+        - ``num_blocks`` -- **integer** (default: `8`); number of blocks (N) when block_size is None.
+        - ``template_index`` -- **integer** (optional); index of the template in the NIST template list
+
+        OUTPUT:
+
+        - **dict**; contains 'p_value', 'passed', and 'computational_information'
+        """
+        binary_data = NISTTests._ensure_binary_array(binary_data)
+        n = len(binary_data)
+
+        if isinstance(template, list):
+            template = np.array(template, dtype=np.uint8)
+
         m = len(template)
-        num_blocks = n // block_size
+        template = template.astype(np.uint8, copy=False)
+        template_code = int((template * (1 << np.arange(m - 1, -1, -1, dtype=np.uint64))).sum(dtype=np.uint64))
+        powers = (1 << np.arange(m - 1, -1, -1, dtype=np.uint64))
+        if block_size is None:
+            block_len = n // num_blocks if num_blocks > 0 else 0
+        else:
+            block_len = int(block_size)
+            num_blocks = n // block_len if block_len > 0 else 0
 
-        if num_blocks == 0:
-            return {'p_value': 0.0, 'passed': False}
+        if num_blocks == 0 or block_len == 0 or block_len < m:
+            return {
+                'p_value': np.nan,
+                'passed': None,
+                'computational_information': {
+                    'LAMBDA': np.nan,
+                    'M': np.nan,
+                    'N': np.nan,
+                    'm': np.nan,
+                    'n': np.nan,
+                    'Index': np.nan,
+                    'Template': "not_applicable",
+                    'W': [],
+                    'Chi^2': np.nan,
+                    'P_value': np.nan,
+                }
+            }
 
-        mu = (block_size - m + 1) / (2 ** m)
-        sigma_squared = block_size * ((1 / (2 ** m)) - ((2 * m - 1) / (2 ** (2 * m))))
+        lambda_val = (block_len - m + 1) / (2 ** m)
+        var_wj = block_len * ((1 / (2 ** m)) - ((2 * m - 1) / (2 ** (2 * m))))
 
-        w_counts = []
+        if lambda_val <= 0 or var_wj <= 0:
+            return {
+                'p_value': np.nan,
+                'passed': None,
+                'computational_information': {
+                    'LAMBDA': np.nan,
+                    'M': np.nan,
+                    'N': np.nan,
+                    'm': np.nan,
+                    'n': np.nan,
+                    'Index': np.nan,
+                    'Template': "not_applicable",
+                    'W': [],
+                    'Chi^2': np.nan,
+                    'P_value': np.nan,
+                }
+            }
+
+        wj = []
         for i in range(num_blocks):
-            block = binary_data[i * block_size:(i + 1) * block_size]
-            count = 0
-            j = 0
-            while j <= block_size - m:
-                if np.array_equal(block[j:j + m], template):
-                    count += 1
-                    j += m
-                else:
-                    j += 1
-            w_counts.append(count)
+            block = binary_data[i * block_len:(i + 1) * block_len]
+            num_windows = block_len - m + 1
+            if num_windows <= 0:
+                wj.append(0)
+                continue
 
-        chi_squared = np.sum((np.array(w_counts) - mu) ** 2) / sigma_squared
+            stride = block.strides[0]
+            windows = np.lib.stride_tricks.as_strided(
+                block,
+                shape=(num_windows, m),
+                strides=(stride, stride),
+                writeable=False,
+            )
+            codes = (windows * powers).sum(axis=1, dtype=np.uint64)
+            matches = np.flatnonzero(codes == template_code)
+
+            count = 0
+            current_pos = 0
+            while True:
+                idx = np.searchsorted(matches, current_pos)
+                if idx >= len(matches):
+                    break
+                count += 1
+                current_pos = matches[idx] + m
+            wj.append(count)
+
+        chi_squared = np.sum(((np.array(wj) - lambda_val) / np.sqrt(var_wj)) ** 2)
         p_value = spc.gammaincc(num_blocks / 2, chi_squared / 2)
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'LAMBDA': float(lambda_val),
+                'M': int(block_len),
+                'N': int(num_blocks),
+                'm': int(m),
+                'n': int(n),
+                'Index': int(template_index) if template_index is not None else -1,
+                'Template': ''.join(str(x) for x in template.tolist()),
+                'W': wj,
+                'Chi^2': float(chi_squared),
+                'P_value': float(p_value)
+            }
+        }
 
     @staticmethod
     def overlapping_template_test(binary_data, template=None, block_size=1032):
@@ -803,33 +1044,80 @@ class NISTTests:
             True
         """
         binary_data = NISTTests._ensure_binary_array(binary_data)
-        if template is None:
+        if template is None and block_size <= 21:
+            template = np.ones(block_size, dtype=np.uint8)
+            block_size = 1032
+        elif template is None:
             template = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=np.uint8)
 
         n = len(binary_data)
         m = len(template)
+        template = template.astype(np.uint8, copy=False)
+        template_code = int((template * (1 << np.arange(m - 1, -1, -1, dtype=np.uint64))).sum(dtype=np.uint64))
+        powers = (1 << np.arange(m - 1, -1, -1, dtype=np.uint64))
         num_blocks = n // block_size
-
-        if num_blocks == 0:
-            return {'p_value': 0.0, 'passed': False}
 
         # Theoretical values for m=9
         lambda_val = (block_size - m + 1) / (2 ** m)
         eta = lambda_val / 2
 
+        if num_blocks == 0:
+            return {
+                'p_value': np.nan,
+                'passed': None,
+                'computational_information': {
+                    'n': int(n),
+                    'm': int(m),
+                    'M': int(block_size),
+                    'N': int(num_blocks),
+                    'LAMBDA': float(lambda_val),
+                    'eta': float(eta),
+                    'FREQUENCY_0_1_2_3_4_>=5': [0, 0, 0, 0, 0, 0],
+                    'Chi^2': np.nan,
+                    'P_value': np.nan,
+                }
+            }
+
+        import math
+
+        def _overlap_pr(u, eta_val):
+            if u == 0:
+                return math.exp(-eta_val)
+            sum_val = 0.0
+            for l in range(1, u + 1):
+                sum_val += math.exp(
+                    -eta_val
+                    - u * math.log(2)
+                    + l * math.log(eta_val)
+                    - math.lgamma(l + 1)
+                    + math.lgamma(u)
+                    - math.lgamma(l)
+                    - math.lgamma(u - l + 1)
+                )
+            return sum_val
+
         # Probabilities for different occurrence counts (for m=9)
-        pi = [0.364091, 0.185659, 0.139381, 0.100571, 0.0704323, 0.139865]
+        pi = [_overlap_pr(i, eta) for i in range(5)]
+        pi.append(1.0 - sum(pi))
 
         v_counts = [0] * 6
 
         for i in range(num_blocks):
             block = binary_data[i * block_size:(i + 1) * block_size]
-            count = 0
-            for j in range(block_size - m + 1):
-                if np.array_equal(block[j:j + m], template):
-                    count += 1
+            num_windows = block_size - m + 1
+            if num_windows <= 0:
+                count = 0
+            else:
+                stride = block.strides[0]
+                windows = np.lib.stride_tricks.as_strided(
+                    block,
+                    shape=(num_windows, m),
+                    strides=(stride, stride),
+                    writeable=False,
+                )
+                codes = (windows * powers).sum(axis=1, dtype=np.uint64)
+                count = int(np.count_nonzero(codes == template_code))
 
-            # Categorize count
             if count <= 4:
                 v_counts[count] += 1
             else:
@@ -842,7 +1130,21 @@ class NISTTests:
 
         p_value = spc.gammaincc(5 / 2, chi_squared / 2)
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'n': int(n),
+                'm': int(m),
+                'M': int(block_size),
+                'N': int(num_blocks),
+                'LAMBDA': float(lambda_val),
+                'eta': float(eta),
+                'FREQUENCY_0_1_2_3_4_>=5': v_counts,
+                'Chi^2': float(chi_squared),
+                'P_value': float(p_value),
+            }
+        }
 
     @staticmethod
     def universal_test(binary_data):
@@ -875,7 +1177,20 @@ class NISTTests:
 
         # Set L and Q based on n
         if n < 387840:
-            return {'p_value': 0.0, 'passed': False}
+            not_applicable = float("nan")
+            return {
+                'p_value': not_applicable,
+                'passed': None,
+                'computational_information': {
+                    'n': not_applicable,
+                    'L': not_applicable,
+                    'Q': not_applicable,
+                    'K': not_applicable,
+                    'fn': not_applicable,
+                    'expected_value': not_applicable,
+                    'sigma': not_applicable,
+                }
+            }
         elif n < 904960:
             L, Q = 6, 640
         elif n < 2068480:
@@ -899,26 +1214,22 @@ class NISTTests:
 
         K = n // L - Q
 
-        # Initialize table
-        T = {}
+        total_blocks = Q + K
+        bits = binary_data[:total_blocks * L]
+        powers = (1 << np.arange(L - 1, -1, -1, dtype=np.uint64))
+        blocks = bits.reshape((-1, L))
+        patterns = (blocks * powers).sum(axis=1, dtype=np.uint64).astype(np.int64, copy=False)
 
-        # Initialization: process first Q blocks
+        T = np.zeros(1 << L, dtype=np.int64)
+
         for i in range(Q):
-            block = binary_data[i * L:(i + 1) * L]
-            pattern = int(''.join(map(str, block)), 2)
-            T[pattern] = i + 1
+            T[patterns[i]] = i + 1
 
-        # Test: process remaining K blocks
         sum_log = 0.0
         for i in range(Q, Q + K):
-            block = binary_data[i * L:(i + 1) * L]
-            pattern = int(''.join(map(str, block)), 2)
-
-            if pattern in T:
-                distance = i + 1 - T[pattern]
-            else:
-                distance = i + 1
-
+            pattern = patterns[i]
+            last = T[pattern]
+            distance = (i + 1 - last) if last else (i + 1)
             sum_log += np.log2(distance)
             T[pattern] = i + 1
 
@@ -945,7 +1256,19 @@ class NISTTests:
 
         p_value = spc.erfc(np.abs(fn - exp_val) / (np.sqrt(2) * sigma))
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'n': int(n),
+                'L': int(L),
+                'Q': int(Q),
+                'K': int(K),
+                'fn': float(fn),
+                'expected_value': float(exp_val),
+                'sigma': float(sigma)
+            }
+        }
 
     @staticmethod
     def approximate_entropy_test(binary_data, m=10):
@@ -982,17 +1305,21 @@ class NISTTests:
         augmented = np.concatenate([binary_data, binary_data[:m]])
 
         def calculate_phi(m_val):
-            # Count overlapping patterns
-            pattern_counts = {}
-            for i in range(n):
-                pattern = tuple(augmented[i:i + m_val])
-                pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
+            if m_val <= 0:
+                return np.nan
 
-            # Calculate phi
-            phi = 0.0
-            for count in pattern_counts.values():
-                if count > 0:
-                    phi += count * np.log(count / n)
+            powers = (1 << np.arange(m_val - 1, -1, -1, dtype=np.uint64))
+            stride = augmented.strides[0]
+            windows = np.lib.stride_tricks.as_strided(
+                augmented,
+                shape=(n, m_val),
+                strides=(stride, stride),
+                writeable=False
+            )
+            patterns = (windows * powers).sum(axis=1, dtype=np.uint64).astype(np.int64, copy=False)
+            counts = np.bincount(patterns, minlength=1 << m_val)
+            nonzero = counts[counts > 0]
+            phi = np.sum(nonzero * np.log(nonzero / n))
             return phi / n
 
         phi_m = calculate_phi(m)
@@ -1003,7 +1330,15 @@ class NISTTests:
 
         p_value = spc.gammaincc(2 ** (m - 1), chi_squared / 2)
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'm': int(m),
+                'apen': float(apen),
+                'chi_squared': float(chi_squared)
+            }
+        }
 
     @staticmethod
     def random_excursions_test(binary_data):
@@ -1045,41 +1380,39 @@ class NISTTests:
 
         if num_cycles < 500:
             return {
-                'p_values': [0.0] * 8,
-                'passed': False,
+                'p_values': [np.nan] * 8,
+                'passed': None,
                 'num_cycles': num_cycles,
-                'testable': False
+                'testable': False,
+                'computational_information': {
+                    'num_cycles': np.nan,
+                    'testable': np.nan,
+                }
             }
 
         states = [-4, -3, -2, -1, 1, 2, 3, 4]
         p_values = []
 
         for x_val in states:
-            # Count visits to state x_val in each cycle
-            v = np.zeros(6)  # v[k] = number of cycles with exactly k visits
+            positions = np.where(cumsum == x_val)[0]
+            if positions.size == 0:
+                visits = np.zeros(num_cycles, dtype=np.int64)
+            else:
+                idx = np.searchsorted(positions, zero_crossings)
+                visits = np.diff(idx)
 
-            for i in range(num_cycles):
-                cycle = cumsum[zero_crossings[i]:zero_crossings[i + 1] + 1]
-                visits = np.sum(cycle == x_val)
+            visits = np.clip(visits, 0, 5)
+            v = np.bincount(visits, minlength=6).astype(float)
 
-                if visits < 5:
-                    v[visits] += 1
-                else:
-                    v[5] += 1
-
-            # Theoretical probabilities
+            # Theoretical probabilities (match sts-2.1.2-modified table)
             pi_values = {
-                -4: [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000],
-                -3: [0.0000, 0.0000, 0.0001, 0.0001, 0.0002, 0.0002],
-                -2: [0.0000, 0.0002, 0.0011, 0.0031, 0.0060, 0.0057],
-                -1: [0.0000, 0.0170, 0.0492, 0.0800, 0.0954, 0.0786],
-                1: [0.0000, 0.0170, 0.0492, 0.0800, 0.0954, 0.0786],
-                2: [0.0000, 0.0002, 0.0011, 0.0031, 0.0060, 0.0057],
-                3: [0.0000, 0.0000, 0.0001, 0.0001, 0.0002, 0.0002],
-                4: [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]
+                1: [0.5, 0.25, 0.125, 0.0625, 0.03125, 0.03125],
+                2: [0.75, 0.0625, 0.046875, 0.03515625, 0.0263671875, 0.0791015625],
+                3: [0.8333333333, 0.02777777778, 0.02314814815, 0.01929012346, 0.01607510288, 0.0803755143],
+                4: [0.875, 0.015625, 0.013671875, 0.01196289063, 0.01046752930, 0.0732727051]
             }
 
-            pi = np.array(pi_values[x_val])
+            pi = np.array(pi_values[abs(x_val)])
 
             # Calculate chi-squared
             chi_squared = 0.0
@@ -1097,7 +1430,11 @@ class NISTTests:
             'p_values': p_values,
             'passed': passed,
             'num_cycles': num_cycles,
-            'testable': True
+            'testable': True,
+            'computational_information': {
+                'num_cycles': int(num_cycles),
+                'testable': True
+            }
         }
 
     @staticmethod
@@ -1127,22 +1464,26 @@ class NISTTests:
         """
         binary_data = NISTTests._ensure_binary_array(binary_data)
         n = len(binary_data)
-        # Convert to +1 and -1 (use float to avoid uint8 overflow)
-        x = 2.0 * binary_data - 1.0
+        # Convert to +1 and -1 (avoid uint8 overflow)
+        x = binary_data.astype(np.int64) * 2 - 1
 
-        # Calculate cumulative sum
-        cumsum = np.concatenate(([0], np.cumsum(x), [0]))
+        # Calculate cumulative sum (NIST STS style)
+        s_k = np.cumsum(x, dtype=np.int64)
+        num_cycles = int(np.count_nonzero(s_k == 0))
+        if s_k[-1] != 0:
+            num_cycles += 1
 
-        # Find cycles (returns to zero)
-        zero_crossings = np.where(cumsum == 0)[0]
-        num_cycles = len(zero_crossings) - 1
-
-        if num_cycles < 500:
+        constraint = max(0.005 * math.sqrt(n), 500)
+        if num_cycles < constraint:
             return {
-                'p_values': [0.0] * 18,
-                'passed': False,
+                'p_values': [np.nan] * 18,
+                'passed': None,
                 'num_cycles': num_cycles,
-                'testable': False
+                'testable': False,
+                'computational_information': {
+                    'num_cycles': np.nan,
+                    'testable': np.nan,
+                }
             }
 
         states = list(range(-9, 0)) + list(range(1, 10))
@@ -1150,7 +1491,7 @@ class NISTTests:
 
         for x_val in states:
             # Count total occurrences of state x_val
-            count = np.sum(cumsum == x_val)
+            count = int(np.sum(s_k == x_val))
 
             # Calculate p-value
             p_value = spc.erfc(np.abs(count - num_cycles) / np.sqrt(2 * num_cycles * (4 * abs(x_val) - 2)))
@@ -1163,7 +1504,11 @@ class NISTTests:
             'p_values': p_values,
             'passed': passed,
             'num_cycles': num_cycles,
-            'testable': True
+            'testable': True,
+            'computational_information': {
+                'num_cycles': int(num_cycles),
+                'testable': True
+            }
         }
 
     @staticmethod
@@ -1197,21 +1542,40 @@ class NISTTests:
         binary_data = NISTTests._ensure_binary_array(binary_data)
         n = len(binary_data)
 
+        if m < 2:
+            return {
+                'p_value1': np.nan,
+                'p_value2': np.nan,
+                'passed': False,
+                'computational_information': {
+                    'n': int(n),
+                    'm': int(m),
+                    'psi_m': np.nan,
+                    'psi_m_minus_1': np.nan,
+                    'psi_m_minus_2': np.nan,
+                    'delta1': np.nan,
+                    'delta2': np.nan
+                }
+            }
+
         # Augment the sequence
         augmented = np.concatenate([binary_data, binary_data[:m - 1]])
 
         def calculate_psi_squared(m_val):
-            # Count overlapping patterns
-            pattern_counts = {}
-            for i in range(n):
-                pattern = tuple(augmented[i:i + m_val])
-                pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
+            if m_val <= 0:
+                return np.nan
 
-            # Calculate psi_squared
-            psi_squared = 0.0
-            for count in pattern_counts.values():
-                psi_squared += count ** 2
-            psi_squared = (psi_squared * (2 ** m_val) / n) - n
+            powers = (1 << np.arange(m_val - 1, -1, -1, dtype=np.uint64))
+            stride = augmented.strides[0]
+            windows = np.lib.stride_tricks.as_strided(
+                augmented,
+                shape=(n, m_val),
+                strides=(stride, stride),
+                writeable=False
+            )
+            patterns = (windows * powers).sum(axis=1, dtype=np.uint64).astype(np.int64, copy=False)
+            counts = np.bincount(patterns, minlength=1 << m_val)
+            psi_squared = (np.square(counts).sum() * (2 ** m_val) / n) - n
             return psi_squared
 
         psi_m = calculate_psi_squared(m)
@@ -1226,7 +1590,20 @@ class NISTTests:
 
         passed = p_value1 >= 0.01 and p_value2 >= 0.01
 
-        return {'p_value1': p_value1, 'p_value2': p_value2, 'passed': passed}
+        return {
+            'p_value1': p_value1,
+            'p_value2': p_value2,
+            'passed': passed,
+            'computational_information': {
+                'n': int(n),
+                'm': int(m),
+                'psi_m': float(psi_m),
+                'psi_m_minus_1': float(psi_m_minus_1),
+                'psi_m_minus_2': float(psi_m_minus_2),
+                'delta1': float(delta1),
+                'delta2': float(delta2)
+            }
+        }
 
     @staticmethod
     def linear_complexity_test(binary_data, block_size=500):
@@ -1260,31 +1637,57 @@ class NISTTests:
         num_blocks = n // block_size
 
         if num_blocks < 1:
-            return {'p_value': 0.0, 'passed': False}
+            discarded_bits = int(n)
+            return {
+                'p_value': np.nan,
+                'passed': None,
+                'computational_information': {
+                    'block_size': np.nan,
+                    'num_blocks': np.nan,
+                    'mu': np.nan,
+                    'chi_squared': np.nan,
+                    't_values': [],
+                    'M': int(block_size),
+                    'N': int(num_blocks),
+                    'frequency': [0, 0, 0, 0, 0, 0, 0],
+                    'discarded_bits': discarded_bits,
+                    'chi_square': np.nan,
+                    'p_value': np.nan,
+                }
+            }
 
         def berlekamp_massey(sequence):
-            """Compute the linear complexity using Berlekamp-Massey algorithm."""
+            """Compute linear complexity using a bitset-optimized Berlekamp-Massey algorithm."""
             n_seq = len(sequence)
-            c = np.zeros(n_seq, dtype=int)
-            b = np.zeros(n_seq, dtype=int)
-            c[0] = 1
-            b[0] = 1
-            l, m, i = 0, -1, 0
+            if n_seq == 0:
+                return 0
 
-            while i < n_seq:
-                d = sequence[i]
-                for j in range(1, l + 1):
-                    d ^= c[j] & sequence[i - j]
+            popcount = int.bit_count if hasattr(int, "bit_count") else lambda x: bin(x).count("1")
 
-                if d == 1:
-                    t = c.copy()
-                    for j in range(n_seq - i + m):
-                        c[j + i - m] ^= b[j]
-                    if l <= i / 2:
+            c = 1  # connection polynomial
+            b = 1  # copy of previous c
+            l = 0
+            m = -1
+
+            window = 0  # bit 0 holds s[N-1], bit 1 holds s[N-2], ...
+            max_mask = (1 << n_seq) - 1
+
+            for i in range(n_seq):
+                if l:
+                    d = sequence[i] ^ (popcount((c >> 1) & window) & 1)
+                else:
+                    d = sequence[i]
+
+                if d:
+                    t = c
+                    c ^= b << (i - m)
+                    if l <= i // 2:
                         l = i + 1 - l
                         m = i
                         b = t
-                i += 1
+
+                window = ((window << 1) | sequence[i]) & max_mask
+
             return l
 
         # Expected mean
@@ -1295,7 +1698,7 @@ class NISTTests:
 
         for i in range(num_blocks):
             block = binary_data[i * block_size:(i + 1) * block_size]
-            lc = berlekamp_massey(block)
+            lc = berlekamp_massey(block.tolist())
 
             # Calculate T statistic
             t = (-1) ** block_size * (lc - mu) + 2 / 9
@@ -1317,7 +1720,7 @@ class NISTTests:
                 t_values[6] += 1
 
         # Theoretical probabilities
-        pi_values = [0.010417, 0.03125, 0.125, 0.5, 0.25, 0.0625, 0.020833]
+        pi_values = [0.01047, 0.03125, 0.125, 0.5, 0.25, 0.0625, 0.020833]
 
         # Calculate chi-squared
         chi_squared = 0.0
@@ -1325,8 +1728,25 @@ class NISTTests:
             chi_squared += (t_values[i] - num_blocks * pi_values[i]) ** 2 / (num_blocks * pi_values[i])
 
         p_value = spc.gammaincc(6 / 2, chi_squared / 2)
+        discarded_bits = int(n - num_blocks * block_size)
 
-        return {'p_value': p_value, 'passed': p_value >= 0.01}
+        return {
+            'p_value': p_value,
+            'passed': p_value >= 0.01,
+            'computational_information': {
+                'block_size': int(block_size),
+                'num_blocks': int(num_blocks),
+                'mu': float(mu),
+                'chi_squared': float(chi_squared),
+                't_values': t_values.tolist(),
+                'M': int(block_size),
+                'N': int(num_blocks),
+                'frequency': t_values.tolist(),
+                'discarded_bits': discarded_bits,
+                'chi_square': float(chi_squared),
+                'p_value': float(p_value),
+            }
+        }
 
     @staticmethod
     def uniformity_test(p_values):
@@ -1512,7 +1932,13 @@ class NISTTests:
             for seq in sequences:
                 try:
                     result = test_method(seq)
-                    if isinstance(result, list):
+                    if (test_name == 'serial' and isinstance(result, dict)
+                            and 'p_value1' in result and 'p_value2' in result):
+                        test_results.append([
+                            {'p_value': result['p_value1'], 'passed': result['p_value1'] >= alpha},
+                            {'p_value': result['p_value2'], 'passed': result['p_value2'] >= alpha},
+                        ])
+                    elif isinstance(result, list):
                         # Multiple results (e.g., cumulative sums, serial)
                         test_results.append(result)
                     else:
@@ -1923,6 +2349,26 @@ class NISTTests:
             # Binary format: read as bytes, unpack bits
             with open(file_path, 'rb') as f:
                 byte_data = f.read()
+
+            bytes_per_sequence = (bit_length + 7) // 8
+            padded_bytes_per_sequence = ((bit_length + 31) // 32) * 4
+            expected_bytes = bytes_per_sequence * num_sequences
+            padded_expected_bytes = padded_bytes_per_sequence * num_sequences
+
+            if len(byte_data) < expected_bytes:
+                raise ValueError(f"File contains {len(byte_data) * 8} bits, but {total_bits} bits required "
+                               f"({bit_length} bits/sequence × {num_sequences} sequences)")
+
+            sequences = []
+            if (padded_bytes_per_sequence > bytes_per_sequence and
+                    len(byte_data) == padded_expected_bytes):
+                for i in range(num_sequences):
+                    start = i * padded_bytes_per_sequence
+                    end = start + padded_bytes_per_sequence
+                    chunk = byte_data[start:end]
+                    bits = np.unpackbits(np.frombuffer(chunk, dtype=np.uint8))
+                    sequences.append(bits[:bit_length])
+            else:
                 # Unpack to bits
                 full_binary = np.unpackbits(np.frombuffer(byte_data, dtype=np.uint8))
                 if len(full_binary) < total_bits:
@@ -1930,13 +2376,18 @@ class NISTTests:
                                    f"({bit_length} bits/sequence × {num_sequences} sequences)")
                 # Take only what we need
                 full_binary = full_binary[:total_bits]
-        
-        # Split into sequences
-        sequences = []
-        for i in range(num_sequences):
-            start_idx = i * bit_length
-            end_idx = start_idx + bit_length
-            sequences.append(full_binary[start_idx:end_idx])
+                for i in range(num_sequences):
+                    start_idx = i * bit_length
+                    end_idx = start_idx + bit_length
+                    sequences.append(full_binary[start_idx:end_idx])
+
+        if input_format == 'ascii':
+            # Split into sequences for ASCII format
+            sequences = []
+            for i in range(num_sequences):
+                start_idx = i * bit_length
+                end_idx = start_idx + bit_length
+                sequences.append(full_binary[start_idx:end_idx])
         
         # Run tests with specified parameters
         results = NISTTests.run_all_tests(
