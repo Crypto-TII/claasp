@@ -148,6 +148,33 @@ class Rotate(Component):
 
         return cp_declarations, cp_constraints
 
+    def cp_continuous_differential_propagation_constraints(self, model):
+
+        output_id_link = self.id
+        input_len = self.output_bit_size
+        rot_val = self.description[1]
+
+        cp_declarations = []
+        cp_constraints = []
+
+        cp_declarations.append(
+            f"array[0..{input_len - 1}] of var -1.0..1.0: x1_{output_id_link};"
+        )
+        cp_declarations.append(
+            f"array[0..{input_len - 1}] of var -1.0..1.0: {output_id_link};"
+        )
+
+        if rot_val > 0:
+            cp_constraints.append(
+                f"constraint {output_id_link} = continuous_RRot(x1_{output_id_link}, {rot_val}, {output_id_link});"
+            )
+        else:
+            cp_constraints.append(
+                f"constraint {output_id_link} = continuous_LRot(x1_{output_id_link}, {abs(rot_val)}, {output_id_link});"
+            )
+
+        return cp_declarations, cp_constraints
+        
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_constraints()
 
