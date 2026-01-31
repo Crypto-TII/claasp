@@ -1,7 +1,10 @@
 def get_continuous_operations():
     """
-    Retorna el código MiniZinc necesario para la propagación de correlaciones continuas.
-    Reemplaza al archivo continuous_operations.mzn.
+    Returns the MiniZinc code required for continuous correlation propagation.
+    This implementation follows the continuous approximation model for ARX
+    operations introduced in:
+    "Fully Automated Differential-Linear Attacks against ARX Ciphers"
+    https://eprint.iacr.org/2023/181
     """
     return """
     float: lower = -1.0;

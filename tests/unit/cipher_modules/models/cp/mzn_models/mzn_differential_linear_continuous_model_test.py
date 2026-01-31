@@ -315,37 +315,115 @@ def test_full_search_continuous_propagation_only():
     
     input_left = [-1.0, -1.0, -1.0,  1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
     input_right = [-1.0,  1.0, -1.0,  1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-
+    key = [-1.0] * 64
     fixed_inputs = [
-        {"component_id": "rot_0_0", "bit_positions": list(range(16)), "bit_values": input_left},
-        {"component_id": "rot_0_3", "bit_positions": list(range(16)), "bit_values": input_right}
-    ]    
+        {
+            "component_id": "plaintext",
+            "bit_positions": list(range(0, 16)),
+            "bit_values": input_left
+        },
+        {
+            "component_id": "plaintext",
+            "bit_positions": list(range(16, 32)),
+            "bit_values": input_right
+        },
+        {
+            "component_id": "key",
+            "bit_positions": list(range(64)),
+            "bit_values": key
+        }
+    ]   
     
-    speck_patch = {
-        "x2_modadd_0_1": "x1_rot_0_3"
-    }
-
+    
     result = model.find_continuous_correlations(
-        fixed_values=fixed_inputs, 
-        exclude_components=["xor_0_2"],
-        custom_connections=speck_patch, 
+        fixed_values=fixed_inputs,
         solver_name="scip"
     )
 
-    print("\n--- TRAIL RESULT ---")
     assert result["status"] == "SATISFIED"
     
-    values = result["component_values"]
-    out_left = values["modadd_0_1"]["value"]
-    out_right = values["xor_0_4"]["value"]
+    values = result["components_values"] 
+    cipher_out = values["cipher_output_0_6"]["value"]
 
-    print(f"ModAdd Out: {out_left}")
-    print(f"XOR Out:    {out_right}")
+    expected_cipher = [
+        0.0, 0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
+        -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
+        0.0, -0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
+        -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0
+    ]
 
-    expected_left = [-0.0, 0.5, -0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75, -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-    expected_right = [0.0, -0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75, -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0]
+    for i in range(32):
+        assert abs(cipher_out[i] - expected_cipher[i]) < 1e-4
 
-    for i in range(16):
-        assert abs(out_left[i] - expected_left[i]) < 1e-4
-        assert abs(out_right[i] - expected_right[i]) < 1e-4
 
+def test_full_search_continuous_propagation_two_rounds():
+    cipher = SpeckBlockCipher(
+        block_bit_size=32,
+        key_bit_size=64,
+        number_of_rounds=2
+    )
+    model = MznDifferentialLinearContinuousModel(cipher)
+
+    input_left = [
+        -1.0, -1.0, -1.0,  1.0,
+        -1.0, -1.0, -1.0, -1.0,
+        -1.0, -1.0, -1.0, -1.0,
+        -1.0, -1.0, -1.0, -1.0
+    ]
+
+    input_right = [
+        -1.0,  1.0, -1.0,  1.0,
+        -1.0, -1.0, -1.0, -1.0,
+        -1.0, -1.0, -1.0, -1.0,
+        -1.0, -1.0, -1.0, -1.0
+    ]
+
+    key = [-1.0] * 64
+
+    fixed_inputs = [
+        {
+            "component_id": "plaintext",
+            "bit_positions": list(range(0, 16)),
+            "bit_values": input_left
+        },
+        {
+            "component_id": "plaintext",
+            "bit_positions": list(range(16, 32)),
+            "bit_values": input_right
+        },
+        {
+            "component_id": "key",
+            "bit_positions": list(range(64)),
+            "bit_values": key
+        }
+    ]
+
+    result = model.find_continuous_correlations(
+        fixed_values=fixed_inputs,
+        solver_name="scip"
+    )
+
+    assert result["status"] == "SATISFIED"
+    
+    values = result["components_values"]
+    cipher_out = values["cipher_output_1_12"]["value"]
+    cipher_intermediate_out = values["intermediate_output_0_6"]["value"]
+
+
+    expected_intermediate_cipher = [
+        0.0, 0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
+        -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
+        0.0, -0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
+        -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0
+    ]
+
+    expected_output_cipher = [
+        0.0, 0.125904, 0.0, 0.849684, -0.730319, -0.521594, -0.163504, 0.0,
+        -0.00340, -0.0, -0.877274, -0.785400, -0.631694, -0.382812, 0.0, 0.5,
+        0.0, -0.123896, 0.0, 0.796585, -0.639005, -0.391206, -0.081797, 0.0, 0.003400,
+        0.0, -0.877274, -0.785400, -0.631695, 0.382810, 0.0, 0.25
+    ]
+
+    for i in range(32):
+        assert abs(cipher_out[i] - expected_output_cipher[i]) < 1e-4
+        assert abs(cipher_intermediate_out[i] - expected_intermediate_cipher[i]) < 1e-4
