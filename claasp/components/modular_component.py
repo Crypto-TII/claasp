@@ -144,6 +144,25 @@ class Modular(Component):
         result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
         return result
 
+    def cp_continuous_differential_propagation_constraints(self, model):
+        
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        input_len = self.output_bit_size
+
+        cp_declarations = []
+        cp_constraints = []
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: x1_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: x2_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: {output_id_link};")
+
+        cp_constraints.append(
+            f"constraint {output_id_link} = continuous_modadd(x1_{output_id_link}, x2_{output_id_link}, {output_id_link});"
+        )
+
+        return cp_declarations, cp_constraints
+        
     def cp_deterministic_truncated_xor_differential_constraints(self):
         """
         Return lists of variables and constraints for Modular Addition/Substraction in CP deterministic truncated XOR differential model.

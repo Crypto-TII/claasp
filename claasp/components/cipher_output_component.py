@@ -251,6 +251,35 @@ class CipherOutput(Component):
             code.append(f'  intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())')
         return code
 
+    def cp_continuous_differential_propagation_constraints(self, model):
+        component_id = self.id
+        ninputs = self.input_bit_size
+        num_links = len(self.input_id_links)
+        
+        cp_declarations = []
+        cp_constraints = []
+        
+        for i in range(num_links):
+            link_size = len(self.input_bit_positions[i])
+            cp_declarations.append(
+                f"array[0..{link_size - 1}] of var -1.0..1.0: x{i+1}_{component_id};"
+            )
+        
+        cp_declarations.append(
+            f"array[0..{ninputs - 1}] of var -1.0..1.0: {component_id};"
+        )
+        
+        output_idx = 0
+        for i in range(num_links):
+            link_size = len(self.input_bit_positions[i])
+            for j in range(link_size):
+                cp_constraints.append(
+                    f"constraint {component_id}[{output_idx}] = x{i+1}_{component_id}[{j}];"
+                )
+                output_idx += 1
+        
+        return cp_declarations, cp_constraints
+
     def get_byte_based_vectorized_python_code(self, params):
         return [
             f"  {self.id} = {params}[0]",
