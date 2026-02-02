@@ -258,21 +258,19 @@ WORKDIR /opt
 ENV PATH="/opt/ParKissat-RS-master/:${PATH}"
 
 # Installing Glucose
-RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1.tgz || \
-    wget https://fosszone.csd.auth.gr/sagemath/spkg/upstream/glucose/glucose-syrup-4.1.tgz
+RUN git clone https://github.com/audemard/glucose.git glucose-syrup \
+    && cd glucose-syrup \
+    && git checkout 674dbba75b47864a332ba797bec80dcaca0a4857
 
-RUN tar -xf glucose-syrup-4.1.tgz \
-    && rm glucose-syrup-4.1.tgz
-
-RUN cd glucose-syrup-4.1/simp \
+RUN cd glucose-syrup/simp \
     && make
 
-RUN cd glucose-syrup-4.1/parallel \
+RUN cd glucose-syrup/parallel \
     && make
 
 WORKDIR /opt
 
-ENV PATH="/opt/glucose-syrup-4.1/simp:/opt/glucose-syrup-4.1/parallel:${PATH}"
+ENV PATH="/opt/glucose-syrup/simp:/opt/glucose-syrup/parallel:${PATH}"
 
 # Installing MathSat
 RUN wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
