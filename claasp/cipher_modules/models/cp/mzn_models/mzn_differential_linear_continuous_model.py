@@ -13,14 +13,11 @@ class MznDifferentialLinearContinuousModel(MznModel):
     def fix_variables_value_constraints(self, fixed_variables=[]):
         constraints = []
         for entry in fixed_variables:
-            comp_id = entry.get("component_id")
+            component_id = entry.get("component_id")
             positions = entry.get("bit_positions", [])
             values = entry.get("bit_values") if "bit_values" in entry else entry.get("value")
-            
-            if not comp_id or values is None:
-                continue
 
-            array_name = comp_id if comp_id in self._cipher.inputs else f"x1_{comp_id}"
+            array_name = component_id if component_id in self._cipher.inputs else f"x1_{component_id}"
             constraints.extend([
                 f"constraint {array_name}[{pos}] = {val};" 
                 for pos, val in zip(positions, values)
@@ -99,49 +96,49 @@ class MznDifferentialLinearContinuousModel(MznModel):
         if result.status not in [Status.SATISFIED, Status.OPTIMAL_SOLUTION]:
             return parsed
         
-        for comp_id in sorted(self.added_component_ids):
+        for component_id in sorted(self.added_component_ids):
             try:
-                if comp_id in self._cipher.inputs:
-                    val = result[comp_id]
+                if component_id in self._cipher.inputs:
+                    val = result[component_id]
                     if val is not None:
-                        parsed["components_values"][comp_id] = {
+                        parsed["components_values"][component_id] = {
                             "value": self._format_continuous_value(val),
                             "weight": 0
                         }
                 
-                elif comp_id.startswith(("intermediate_output_", "cipher_output_")):
-                    output_val = result[comp_id]
+                elif component_id.startswith(("intermediate_output_", "cipher_output_")):
+                    output_val = result[component_id]
                     if output_val is not None:
-                        if comp_id.startswith("cipher_output_"):
-                            parsed["components_values"][comp_id] = {
+                        if component_id.startswith("cipher_output_"):
+                            parsed["components_values"][component_id] = {
                                 "value": self._format_continuous_value(output_val),
                                 "weight": 0
                             }
-                        elif comp_id.startswith("intermediate_output_") and self._cipher.number_of_rounds > 1:
+                        elif component_id.startswith("intermediate_output_") and self._cipher.number_of_rounds > 1:
                             formatted = self._format_continuous_value(output_val)
                             if len(formatted) == self._cipher.output_bit_size:
-                                parsed["components_values"][comp_id] = {
+                                parsed["components_values"][component_id] = {
                                     "value": formatted,
                                     "weight": 0
                                 }
                 
-                elif comp_id.startswith(("rot_", "modadd_", "xor_")):
+                elif component_id.startswith(("rot_", "modadd_", "xor_")):
                     input_vars = []
                     for prefix in ["x1_", "x2_"]:
                         try:
-                            input_vars.extend(result[f"{prefix}{comp_id}"])
+                            input_vars.extend(result[f"{prefix}{component_id}"])
                         except (KeyError, AttributeError):
                             pass
                     
                     if input_vars:
-                        parsed["components_values"][f"{comp_id}_i"] = {
+                        parsed["components_values"][f"{component_id}_i"] = {
                             "value": self._format_continuous_value(input_vars),
                             "weight": 0
                         }
                     
-                    output_val = result[comp_id]
+                    output_val = result[component_id]
                     if output_val is not None:
-                        parsed["components_values"][f"{comp_id}_o"] = {
+                        parsed["components_values"][f"{component_id}_o"] = {
                             "value": self._format_continuous_value(output_val),
                             "weight": 0
                         }

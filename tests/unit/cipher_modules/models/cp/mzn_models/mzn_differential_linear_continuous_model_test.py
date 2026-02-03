@@ -311,25 +311,30 @@ def test_full_search_continuous_propagation_only():
         block_bit_size=32,
         key_bit_size=64,
         number_of_rounds=1)
+    
+    plaintext_size = cipher.inputs_bit_size[0] 
+    key_size = cipher.inputs_bit_size[1]
+
     model = MznDifferentialLinearContinuousModel(cipher)
     
     input_left = [-1.0, -1.0, -1.0,  1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
     input_right = [-1.0,  1.0, -1.0,  1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-    key = [-1.0] * 64
+
+    key = [-1.0] * key_size
     fixed_inputs = [
         {
             "component_id": "plaintext",
-            "bit_positions": list(range(0, 16)),
+            "bit_positions": list(range(0, plaintext_size//2)),
             "bit_values": input_left
         },
         {
             "component_id": "plaintext",
-            "bit_positions": list(range(16, 32)),
+            "bit_positions": list(range(plaintext_size//2, plaintext_size)),
             "bit_values": input_right
         },
         {
             "component_id": "key",
-            "bit_positions": list(range(64)),
+            "bit_positions": list(range(key_size)),
             "bit_values": key
         }
     ]   
@@ -341,7 +346,6 @@ def test_full_search_continuous_propagation_only():
     )
 
     assert result["status"] == "SATISFIED"
-    
     values = result["components_values"] 
     cipher_out = values["cipher_output_0_6"]["value"]
 
@@ -362,6 +366,10 @@ def test_full_search_continuous_propagation_two_rounds():
         key_bit_size=64,
         number_of_rounds=2
     )
+
+    plaintext_size = cipher.inputs_bit_size[0] 
+    key_size = cipher.inputs_bit_size[1]
+
     model = MznDifferentialLinearContinuousModel(cipher)
 
     input_left = [
@@ -378,25 +386,25 @@ def test_full_search_continuous_propagation_two_rounds():
         -1.0, -1.0, -1.0, -1.0
     ]
 
-    key = [-1.0] * 64
+    key = [-1.0] * key_size
 
     fixed_inputs = [
         {
             "component_id": "plaintext",
-            "bit_positions": list(range(0, 16)),
+            "bit_positions": list(range(0, plaintext_size//2)),
             "bit_values": input_left
         },
         {
             "component_id": "plaintext",
-            "bit_positions": list(range(16, 32)),
+            "bit_positions": list(range(plaintext_size//2, plaintext_size)),
             "bit_values": input_right
         },
         {
             "component_id": "key",
-            "bit_positions": list(range(64)),
+            "bit_positions": list(range(key_size)),
             "bit_values": key
         }
-    ]
+    ] 
 
     result = model.find_continuous_correlations(
         fixed_values=fixed_inputs,
@@ -404,7 +412,6 @@ def test_full_search_continuous_propagation_two_rounds():
     )
 
     assert result["status"] == "SATISFIED"
-    
     values = result["components_values"]
     cipher_out = values["cipher_output_1_12"]["value"]
     cipher_intermediate_out = values["intermediate_output_0_6"]["value"]
