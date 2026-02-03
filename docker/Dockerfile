@@ -50,16 +50,17 @@ RUN set -eux; \
         wget -q https://packages.gurobi.com/10.0/gurobi10.0.0_armlinux64.tar.gz; \
         tar -xzf gurobi10.0.0_armlinux64.tar.gz; \
         rm gurobi10.0.0_armlinux64.tar.gz; \
-        export GUROBI_HOME="/opt/gurobi1000/armlinux64"; \
+        ln -sfn /opt/gurobi1000/armlinux64 /opt/gurobi; \
     else \
         wget -q https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz; \
         tar -xzf gurobi10.0.0_linux64.tar.gz; \
         rm gurobi10.0.0_linux64.tar.gz; \
-        export GUROBI_HOME="/opt/gurobi1000/linux64"; \
+        ln -sfn /opt/gurobi1000/linux64 /opt/gurobi; \
     fi
 
-ENV PATH="${PATH}:${GUROBI_HOME}/bin"
-ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
+ENV GUROBI_HOME=/opt/gurobi
+ENV PATH="/opt/gurobi/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/gurobi/lib:${LD_LIBRARY_PATH}"
 
 WORKDIR /opt
 
