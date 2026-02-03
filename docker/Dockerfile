@@ -3,6 +3,7 @@ FROM ubuntu:22.04 AS claasp-base
 ARG DEBIAN_FRONTEND=noninteractive
 ARG COPY_CLAASP_LIBRARY=false
 ARG INSTALL_CLAASP_LIBRARY=false
+ARG TARGETARCH
 
 # Install dependencies with apt-get
 RUN apt-get -q update
@@ -43,9 +44,17 @@ COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
 WORKDIR /opt
 
-RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz \
-    && tar -xf gurobi10.0.0_linux64.tar.gz \
-    && rm gurobi10.0.0_linux64.tar.gz
+RUN set -eux; \
+    cd /opt; \
+    if [ "$TARGETARCH" = "arm64" ]; then \
+        wget -q https://packages.gurobi.com/10.0/gurobi10.0.0_armlinux64.tar.gz; \
+        tar -xzf gurobi10.0.0_armlinux64.tar.gz; \
+        rm gurobi10.0.0_armlinux64.tar.gz; \
+    else \
+        wget -q https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz; \
+        tar -xzf gurobi10.0.0_linux64.tar.gz; \
+        rm gurobi10.0.0_linux64.tar.gz; \
+    fi
 
 ENV GUROBI_HOME="/opt/gurobi1000/linux64"
 ENV PATH="${PATH}:${GUROBI_HOME}/bin"
