@@ -121,6 +121,12 @@
         Neural Training Pipeline with Automated Finding of Good Input
         Differences* : In IACR Transactions on Symmetric Cryptology 2023
 
+.. [BGGMP2023]
+        Bellini E., Gerault D., Grados J., Makarim R. H., Peyrin T. : 
+        *Fully Automated Differential-Linear Attacks against ARX Ciphers* : In
+        Cryptology ePrint Archive, (2023), 181 : 
+        https://eprint.iacr.org/2023/181.pdf
+
 .. [BCC+2010]
         Bouillaguet C., Chen H-C., Cheng H-C, Chou T., Niederhagen R., Shamir
         A., Yang B. Y. : *Fast exhaustive search for polynomial systems in F2*

@@ -307,6 +307,10 @@ def test_generic_cp_full_round_pipeline():
         assert abs(out_right[i] - expected_right[i]) < 1e-4
 
 def test_full_search_continuous_propagation_only():
+    """
+    The expected values correspond to the continuous correlations of the
+    differential-linear part reported in Table 4 from [BGGMP2023]_.
+    """
     cipher = SpeckBlockCipher(
         block_bit_size=32,
         key_bit_size=64,
@@ -356,11 +360,17 @@ def test_full_search_continuous_propagation_only():
         -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0
     ]
 
-    for i in range(32):
-        assert abs(cipher_out[i] - expected_cipher[i]) < 1e-4
+    tol_error = 1e-4
+
+    for i in range(plaintext_size):
+        assert abs(cipher_out[i] - expected_cipher[i]) < tol_error
 
 
 def test_full_search_continuous_propagation_two_rounds():
+    """
+    The expected values correspond to the continuous correlations of the
+    differential-linear part reported in Table 4 from [BGGMP2023]_.
+    """
     cipher = SpeckBlockCipher(
         block_bit_size=32,
         key_bit_size=64,
@@ -431,6 +441,8 @@ def test_full_search_continuous_propagation_two_rounds():
         0.0, -0.877274, -0.785400, -0.631695, 0.382810, 0.0, 0.25
     ]
 
-    for i in range(32):
-        assert abs(cipher_out[i] - expected_output_cipher[i]) < 1e-4
-        assert abs(cipher_intermediate_out[i] - expected_intermediate_cipher[i]) < 1e-4
+    tol_error = 1e-4
+
+    for i in range(plaintext_size):
+        assert abs(cipher_out[i] - expected_output_cipher[i]) < tol_error
+        assert abs(cipher_intermediate_out[i] - expected_intermediate_cipher[i]) < tol_error
