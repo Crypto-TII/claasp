@@ -758,10 +758,14 @@ class MznModel:
             "impossible_xor_differential",
         ):
             truncated = True
+            mzn_model = self._model_constraints
+        else:
+            mzn_model = self._variables_list + self._model_constraints
+
         solutions = []
         if solve_external:
             command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
-            model = "\n".join(self._model_constraints) + "\n"
+            model = "\n".join(mzn_model)
             start = time.time()
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             end = time.time()
@@ -769,8 +773,7 @@ class MznModel:
             if solver_process.returncode >= 0:
                 solver_output = solver_process.stdout.splitlines()
         else:
-            constraints = self._model_constraints
-            mzn_model_string = "\n".join(constraints)
+            mzn_model_string = "\n".join(mzn_model)
             solver_name_mzn = Solver.lookup(solver_name)
             bit_mzn_model = Model()
             bit_mzn_model.add_string(mzn_model_string)
