@@ -83,19 +83,28 @@ class NISTStatisticalTests:
 
         EXAMPLES::
 
+            sage: import numpy as np
             sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
             sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
-            sage: cipher = SimonBlockCipher(number_of_rounds=3)
+            sage: np.random.seed(0)
+            sage: cipher = SimonBlockCipher(number_of_rounds=5)
             sage: tester = NISTStatisticalTests(cipher)
-            sage: result = tester.nist_statistical_tests(  # doctest: +SKIP
-            ....:     test_type='random',
-            ....:     bits_in_one_sequence=2048,
+            sage: result = tester.nist_statistical_tests(
+            ....:     test_type='avalanche',
+            ....:     bits_in_one_sequence=1024,
             ....:     number_of_sequences=2,
-            ....:     round_start=1,
-            ....:     round_end=1,
+            ....:     round_start=0,
+            ....:     round_end=5,
+            ....:     statistical_test_option_list='100000000000000',
             ....: )
-            sage: sorted(result.keys())  # doctest: +SKIP
+            Finished.
+            sage: sorted(result.keys())
             ['input_parameters', 'test_results']
+            sage: freq_round0 = result['test_results'][0]['randomness_test'][0]
+            sage: freq_round0['test_name']
+            'Frequency'
+            sage: abs(freq_round0['p-value'] - 0.03517353946698481) < 1e-12
+            True
         """
         time_date = 'date:' + 'time:'.join(str(datetime.now()).split(' '))
         nist_test = {
