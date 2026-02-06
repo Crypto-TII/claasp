@@ -144,6 +144,7 @@ RUN cd /opt/sts-2.1.2/sts-2.1.2 \
     && ln -s /usr/local/bin/sts-2.1.2/assess /usr/local/bin/niststs \
     && rm /opt/sts-2_1_2.zip
 
+
 # Installing Minizinc
 RUN wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.9.4/MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz \
     && pwd && tar -xf MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz 

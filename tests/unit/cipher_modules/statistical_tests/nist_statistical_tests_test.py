@@ -4,8 +4,7 @@ Unit tests for NIST Statistical Tests module.
 Test Coverage:
 --------------
 1. Core functionality tests:
-   - test_run_nist_statistical_tests_tool: Tests Python-based NIST test execution
-   - test_parse_report: Tests parsing of NIST report files
+    - test_run_nist_statistical_tests_tool: Tests Python-based NIST test execution
 
 2. Visualization tests:
    - test_generate_chart_round: Tests chart generation for single round
@@ -28,9 +27,6 @@ import pytest
 import numpy as np
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
-
-REPORT_EXAMPLE_TXT = 'claasp/cipher_modules/statistical_tests/finalAnalysisReportExample.txt'
-
 
 @pytest.fixture(scope="function", autouse=True)
 def cleanup_test_reports():
@@ -80,14 +76,6 @@ def test_run_nist_statistical_tests_tool():
         assert False, "Should have raised ValueError"
     except ValueError as e:
         assert "Insufficient data" in str(e)
-
-
-def test_parse_report():
-    dictio = NISTStatisticalTests._parse_report(REPORT_EXAMPLE_TXT)
-
-    assert dictio['number_of_sequences_threshold'] == [{'total': 10, 'passed': 8}, {'total': 8, 'passed': 7}]
-    assert dictio['randomness_test'][0]['test_id'] == 1
-    assert dictio['randomness_test'][0]['passed'] is False
 
 
 def test_generate_chart_round():
@@ -285,25 +273,6 @@ def test_run_cumsum_both_modes():
     assert len(results) == 2
     assert 'p_value' in results[0]
     assert 'p_value' in results[1]
-
-
-def test_parse_report_with_dict():
-    """Test _parse_report when passed a dictionary (pass-through)."""
-    test_dict = {
-        'passed_tests': 5,
-        'randomness_test': [],
-        'number_of_sequences_threshold': []
-    }
-    result = NISTStatisticalTests._parse_report(test_dict)
-    assert result == test_dict
-
-
-def test_parse_report_missing_file():
-    """Test _parse_report with non-existent file."""
-    result = NISTStatisticalTests._parse_report('nonexistent_file.txt')
-    assert isinstance(result, dict)
-    assert result['passed_tests'] == 0
-    assert result['randomness_test'] == []
 
 
 def test_invalid_test_type():
