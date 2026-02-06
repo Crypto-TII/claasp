@@ -48,6 +48,18 @@ TEST_ID_TABLE = {
 
 
 class NISTStatisticalTests:
+    """
+    Wrapper for running NIST STS tests on cipher-generated datasets.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+        sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
+        sage: cipher = SimonBlockCipher(number_of_rounds=3)
+        sage: tester = NISTStatisticalTests(cipher)
+        sage: tester.cipher is cipher
+        True
+    """
     def __init__(self, cipher):
         cipher.sort_cipher()
         self.cipher = cipher
@@ -66,6 +78,25 @@ class NISTStatisticalTests:
         nist_report_folder_prefix="nist_statistics_report",
         statistical_test_option_list=15 * '1',
     ):
+        """
+        Run NIST STS tests for a dataset generated from the cipher.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
+            sage: cipher = SimonBlockCipher(number_of_rounds=3)
+            sage: tester = NISTStatisticalTests(cipher)
+            sage: result = tester.nist_statistical_tests(  # doctest: +SKIP
+            ....:     test_type='random',
+            ....:     bits_in_one_sequence=2048,
+            ....:     number_of_sequences=2,
+            ....:     round_start=1,
+            ....:     round_end=1,
+            ....: )
+            sage: sorted(result.keys())  # doctest: +SKIP
+            ['input_parameters', 'test_results']
+        """
         time_date = 'date:' + 'time:'.join(str(datetime.now()).split(' '))
         nist_test = {
             'input_parameters': {
