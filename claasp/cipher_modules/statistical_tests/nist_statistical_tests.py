@@ -103,8 +103,8 @@ class NISTStatisticalTests:
             sage: freq_round0 = result['test_results'][0]['randomness_test'][0]
             sage: freq_round0['test_name']
             'Frequency'
-            sage: abs(freq_round0['p-value'] - 0.03517353946698481) < 1e-12
-            True
+            sage: freq_round0['p-value']
+            0.03517353946698481
         """
         time_date = 'date:' + 'time:'.join(str(datetime.now()).split(' '))
         nist_test = {
