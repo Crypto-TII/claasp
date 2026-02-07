@@ -90,6 +90,7 @@ class NISTStatisticalTests:
             sage: cipher = SimonBlockCipher(number_of_rounds=5)
             sage: tester = NISTStatisticalTests(cipher)
             sage: import shutil
+            sage: import io, contextlib
             sage: if shutil.which('niststs') is None:
             ....:     result = {
             ....:         'input_parameters': None,
@@ -98,14 +99,16 @@ class NISTStatisticalTests:
             ....:         ],
             ....:     }
             ....: else:
-            ....:     result = tester.nist_statistical_tests(
-            ....:         test_type='avalanche',
-            ....:         bits_in_one_sequence=1024,
-            ....:         number_of_sequences=2,
-            ....:         round_start=0,
-            ....:         round_end=5,
-            ....:         statistical_test_option_list='100000000000000',
-            ....:     )
+            ....:     buf = io.StringIO()
+            ....:     with contextlib.redirect_stdout(buf):
+            ....:         result = tester.nist_statistical_tests(
+            ....:             test_type='avalanche',
+            ....:             bits_in_one_sequence=1024,
+            ....:             number_of_sequences=2,
+            ....:             round_start=0,
+            ....:             round_end=5,
+            ....:             statistical_test_option_list='100000000000000',
+            ....:         )
             sage: sorted(result.keys())
             ['input_parameters', 'test_results']
             sage: freq_round0 = result['test_results'][0]['randomness_test'][0]
