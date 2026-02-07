@@ -64,6 +64,7 @@ class NISTStatisticalTests:
         cipher.sort_cipher()
         self.cipher = cipher
         self.data_generator = DatasetGenerator(cipher)
+        self.verbose = False
         str_of_inputs_bit_size = list(map(str, cipher.inputs_bit_size))
         self._cipher_primitive = cipher.id + "_" + "_".join(str_of_inputs_bit_size)
 
@@ -77,6 +78,7 @@ class NISTStatisticalTests:
         round_end=0,
         nist_report_folder_prefix="nist_statistics_report",
         statistical_test_option_list=15 * '1',
+        verbose=False,
     ):
         """
         Run NIST STS tests for a dataset generated from the cipher.
@@ -130,6 +132,7 @@ class NISTStatisticalTests:
             'test_results': None,
         }
 
+        self.verbose = verbose
         dataset_generate_time = time.time()
         self.folder_prefix = os.getcwd() + '/test_reports/' + nist_report_folder_prefix
 
@@ -517,7 +520,8 @@ class NISTStatisticalTests:
 
     @staticmethod
     def _generate_chart_all(report_dict_list, report_folder="", show_graph=False):
-        print("Drawing chart for all rounds is in progress.")
+        if self.verbose:
+            print("Drawing chart for all rounds is in progress.")
         x = [i + 1 for i in range(report_dict_list[0]["round"], report_dict_list[-1]["round"] + 1)]
         y = [report_dict_list[i]["passed_tests"] for i in range(len(report_dict_list))]
 
@@ -551,7 +555,8 @@ class NISTStatisticalTests:
             plt.show()
             plt.clf()
             plt.close()
-        print('Drawing chart for all rounds is in finished.')
+        if self.verbose:
+            print('Drawing chart for all rounds is in finished.')
 
     def _create_report_folder(self, time_date, statistical_test_option_list):
         self.report_folder = os.path.join(
@@ -592,7 +597,8 @@ class NISTStatisticalTests:
             sts_report_dict['rounds'] = self.cipher.number_of_rounds
             sts_report_dicts.append(sts_report_dict)
 
-        print('Finished.')
+        if self.verbose:
+            print('Finished.')
         return sts_report_dicts
 
     def _generate_chart_for_all_rounds(self, flag_chart, sts_report_dicts):
