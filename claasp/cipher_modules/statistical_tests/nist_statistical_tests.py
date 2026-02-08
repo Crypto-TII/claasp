@@ -284,6 +284,8 @@ class NISTStatisticalTests:
         nist_test['input_parameters']['bits_in_one_sequence'] = bits_in_one_sequence
         nist_test['input_parameters']['number_of_sequences'] = number_of_sequences
 
+        print('Finished.')
+
         return nist_test
 
     @staticmethod
@@ -517,8 +519,6 @@ class NISTStatisticalTests:
 
     @staticmethod
     def _generate_chart_all(report_dict_list, report_folder="", show_graph=False):
-        if self.verbose:
-            print("Drawing chart for all rounds is in progress.")
         x = [i + 1 for i in range(report_dict_list[0]["round"], report_dict_list[-1]["round"] + 1)]
         y = [report_dict_list[i]["passed_tests"] for i in range(len(report_dict_list))]
 
@@ -552,8 +552,6 @@ class NISTStatisticalTests:
             plt.show()
             plt.clf()
             plt.close()
-        if self.verbose:
-            print('Drawing chart for all rounds is in finished.')
 
     def _create_report_folder(self, time_date, statistical_test_option_list):
         self.report_folder = os.path.join(
@@ -594,8 +592,6 @@ class NISTStatisticalTests:
             sts_report_dict['rounds'] = self.cipher.number_of_rounds
             sts_report_dicts.append(sts_report_dict)
 
-        if self.verbose:
-            print('Finished.')
         return sts_report_dicts
 
     def _generate_chart_for_all_rounds(self, flag_chart, sts_report_dicts):
