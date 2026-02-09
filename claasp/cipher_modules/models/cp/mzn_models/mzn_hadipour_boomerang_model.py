@@ -22,6 +22,9 @@ from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import ge
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_lbct_predicates import get_lbct_operations
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_ubct_predicates import get_ubct_operations
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_ebct_predicates import get_ebct_operations
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ubct_predicate import get_evaluation_ubct_operations
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_lbct_predicate import get_evaluation_lbct_operations
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import get_approx_logarithm_operation
 
 from copy import deepcopy
 
@@ -30,7 +33,6 @@ import math
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import update_and_or_ddt_valid_probabilities
 from sage.crypto.sbox import SBox
 ####################
-
 
 class MznHadipourBoomerangModel(MznModel):
     def __init__(self, cipher, boomerang_structure):
@@ -154,7 +156,7 @@ class MznHadipourBoomerangModel(MznModel):
         just_lower_keys = ['lower_' + key for key in lower_keys if key not in middle_keys] ## non linear layer id just in E1
         
         valid_probabilities = valid_probabilities_lower | valid_probabilities_upper
-        total_declatation_of_p = f'array[0..{len(just_upper_keys) + len(just_lower_keys) + len(middle_keys)}] of var {valid_probabilities}: p;'
+        total_declatation_of_p = f'array[0..{len(just_upper_keys) + len(just_lower_keys) + len(middle_keys)}-1] of var int: p;'
         self._cp_xor_differential_constraints.append(total_declatation_of_p)
 
         count_index_for_assign_p_with_upper_lower_middle_p = 0
@@ -162,7 +164,7 @@ class MznHadipourBoomerangModel(MznModel):
         #### i have to split in two, one for lower and one for upper
         cp_declarations_weight_upper = 'int: upper_weight = 0;'
         if prob_count_upper > 0:
-            new_declaration_upper = f'array[0..{prob_count_upper}] of var {valid_probabilities_upper}: upper_p;'
+            new_declaration_upper = f'array[0..{prob_count_upper}-1] of var {valid_probabilities_upper}: upper_p;'
             self._cp_xor_differential_constraints.append(new_declaration_upper)
             if self.top_part_number_of_rounds > 0:
                 cp_declarations_weight_upper = 'var int: upper_weight ='
@@ -178,7 +180,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         cp_declarations_weight_lower = 'int: lower_weight = 0;'
         if prob_count_lower > 0:
-            new_declaration_lower = f'array[0..{prob_count_lower}] of var {valid_probabilities_lower}: lower_p;'
+            new_declaration_lower = f'array[0..{prob_count_lower}-1] of var {valid_probabilities_lower}: lower_p;'
             self._cp_xor_differential_constraints.append(new_declaration_lower)
             if self.bottom_part_number_of_rounds > 0:
                 cp_declarations_weight_lower = 'var int: lower_weight ='
@@ -194,7 +196,7 @@ class MznHadipourBoomerangModel(MznModel):
         self._cp_xor_differential_constraints.append(cp_declarations_weight_lower)
 
         
-        new_declaration_middle = f'array[0..{len(middle_keys)}] of var {valid_probabilities}: middle_p;'
+        new_declaration_middle = f'array[0..{len(middle_keys)}-1] of var 0..3200: middle_p;'
         self._cp_xor_differential_constraints.append(new_declaration_middle)
 
         self.count_middle_p = 0
@@ -204,11 +206,11 @@ class MznHadipourBoomerangModel(MznModel):
         
         # declaration of a vector to count the common active bits in lower and upper
         # (to write better)
-        for middle_non_linear_transition_ids in middle_keys:
-            round = int(middle_non_linear_transition_ids.split('_')[1])           
-            middle_non_linear_transition_ids_up = 'upper_' + middle_non_linear_transition_ids
-            branch_size = self.cipher.get_component_from_id(middle_non_linear_transition_ids_up).output_bit_size
-            self._model_constraints.extend([f'array[0..{branch_size}] of var 0..1: common_middle_active_bits_{round};'])
+        # for middle_non_linear_transition_ids in middle_keys:
+        #     round = int(middle_non_linear_transition_ids.split('_')[1])           
+        #     middle_non_linear_transition_ids_up = 'upper_' + middle_non_linear_transition_ids
+        #     branch_size = self.cipher.get_component_from_id(middle_non_linear_transition_ids_up).output_bit_size
+        #     self._model_constraints.extend([f'array[0..{branch_size}] of var 0..1: common_middle_active_bits_{round};'])
         
 
         if self.middle_part_number_of_rounds == 1:
@@ -226,6 +228,7 @@ class MznHadipourBoomerangModel(MznModel):
             round = int(middle_non_linear_transition_ids.split('_')[1]) 
             deltaL, deltaR, nablaL, nablaR, deltaLL, _, branch_size = self.addSwitch(middle_non_linear_transition_ids, round)
             self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size))
+            self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size, self.count_middle_p-1))
 
             middle_non_linear_transition_ids = middle_keys.pop()
             # print(middle_non_linear_transition_ids)
@@ -233,6 +236,8 @@ class MznHadipourBoomerangModel(MznModel):
             round = int(middle_non_linear_transition_ids.split('_')[1]) 
             deltaL, deltaR, nablaL, nablaR, _, nablaLL, branch_size = self.addSwitch(middle_non_linear_transition_ids, round)
             self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
+            ## TODO: removed LBCT evaluation for debug
+            self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size, self.count_middle_p-1))
 
             if len(middle_keys) > 0:        
                 for middle_non_linear_transition_ids in middle_keys:
@@ -268,11 +273,11 @@ class MznHadipourBoomerangModel(MznModel):
         # if both the element are active then we propagate with a certain probability 
         # I set the diffution of the middle probability bit a bit, i.e we count the active bit if both
         # the lower and upper bit are active then we count the probability of the middle
-        for i in range(branch_size):
-            middle_constrain_bit = f'constraint if ({deltaLL}[{i}] > 0) /\\ ({nablaLL}[{i}] > 0) then common_middle_active_bits_{round}[{i}]>0 endif;'
-            self._cp_xor_differential_constraints.append(middle_constrain_bit)
-        middle_constrain = f'constraint middle_p[{self.count_middle_p}] = ({branch_size}-sum(common_middle_active_bits_{round}))*100;'
-        self._cp_xor_differential_constraints.append(middle_constrain)
+        # for i in range(branch_size):
+        #     middle_constrain_bit = f'constraint if ({deltaLL}[{i}] > 0) /\\ ({nablaLL}[{i}] > 0) then common_middle_active_bits_{round}[{i}]>0 endif;'
+        #     self._cp_xor_differential_constraints.append(middle_constrain_bit)
+        # middle_constrain = f'constraint middle_p[{self.count_middle_p}] = ({branch_size}-sum(common_middle_active_bits_{round}))*100;'
+        # self._cp_xor_differential_constraints.append(middle_constrain)
 
         # deltaLL_element = '('
         # nablaLL_element = '('
@@ -355,27 +360,32 @@ class MznHadipourBoomerangModel(MznModel):
         return cp_constraints
     
     def get_word_operation_xor_differential_constraints(self, component, new_constraint, milp_modadd = False):
+        print(self.component_and_probability)
+        print(component.id)
         if 'AND' in component.description[0] or (('MODADD' in component.description[0] or 'MODSUB' in component.description[0]) and not milp_modadd):
             new_constraint = new_constraint + f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ '
-            if 'upper' in component.id:
-                new_constraint = new_constraint + '\"upper probability = \"++ show('
-                for i in range(len(self.component_and_probability[component.id])):
-                    new_constraint = new_constraint + f'upper_p[{self.component_and_probability[component.id][i]}]/100+'
+            id_without_prefix = component.id.removeprefix('upper_').removeprefix('lower_')
+            if 'upper' in component.id and any(id_without_prefix in k for k in self.component_and_probability.keys()):
                 id_middle = 'middle_' + component.id.removeprefix('upper_')
                 if id_middle in self.component_and_probability:
-                    new_constraint = new_constraint[:-1] + ') ++ \"\\n\" ++ \"middle probability = \"++ show('
-                    for i in range(len(self.component_and_probability[component.id])):
-                        new_constraint = new_constraint + f'middle_p[{self.component_and_probability[id_middle][i]}]/100+'
-            elif 'lower' in component.id:
-                new_constraint = new_constraint + '\"lower probability = \"++ show('
-                for i in range(len(self.component_and_probability[component.id])):
-                    new_constraint = new_constraint + f'lower_p[{self.component_and_probability[component.id][i]}]/100+'
-                    id_middle = 'middle_' + component.id.removeprefix('lower_')
+                    new_constraint = new_constraint + '\"middle probability = \"++ show('
+                    new_constraint = new_constraint + f'middle_p[{self.component_and_probability[id_middle][0]}]/100+'
+                else:
+                    new_constraint = new_constraint + '\"upper probability = \"++ show('
+                    new_constraint = new_constraint + f'upper_p[{self.component_and_probability[component.id][0]}]/100+'
+                new_constraint = new_constraint[:-1] + ') ++ \"\\n\" ++'
+                
+            elif 'lower' in component.id and any(id_without_prefix in k for k in self.component_and_probability.keys()):
+                id_middle = 'middle_' + component.id.removeprefix('lower_')
                 if id_middle in self.component_and_probability:
-                    new_constraint = new_constraint[:-1] + ') ++ \"\\n\" ++ \"middle probability = \"++ show('
-                    for i in range(len(self.component_and_probability[component.id])):
-                        new_constraint = new_constraint + f'middle_p[{self.component_and_probability[id_middle][i]}]/100+' 
-            new_constraint = new_constraint[:-1] + ') ++ \"\\n\" ++'
+                    new_constraint = new_constraint + '\"middle probability = \"++ show('
+                    new_constraint = new_constraint + f'middle_p[{self.component_and_probability[id_middle][0]}]/100+' 
+                else: 
+                    new_constraint = new_constraint + '\"lower probability = \"++ show('
+                    new_constraint = new_constraint + f'lower_p[{self.component_and_probability[component.id][0]}]/100+'
+                
+                new_constraint = new_constraint[:-1] + ') ++ \"\\n\" ++'
+            self.component_and_probability = {k: v for k, v in self.component_and_probability.items() if id_without_prefix not in k}
 
         else:
             new_constraint = new_constraint + f'\"{component.id} = \"++ ' \
@@ -448,6 +458,34 @@ class MznHadipourBoomerangModel(MznModel):
         return constraint
     
     @staticmethod
+    def evaluation_lbct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, nabla_left_left_component_id, branch_size, index):
+        # variables = []
+        # branch_size = self.output_bit_size
+        delta_left_vars = [f'{delta_left_component_id}[{i}]' for i in range(branch_size)]
+        delta_right_vars = [f'{delta_right_component_id}[{ i}]' for i in range(branch_size)]
+        nabla_left_vars = [f'{nabla_left_component_id}[{i}]' for i in range(branch_size)]
+        nabla_right_vars = [f'{nabla_right_component_id}[{i}]' for i in range(branch_size)]
+        nabla_left_left_vars = [f'{nabla_left_left_component_id}[{i}]' for i in range(branch_size)]
+
+        delta_left_str = ",".join(delta_left_vars)
+        delta_right_str = ",".join(delta_right_vars)
+        nabla_left_str = ",".join(nabla_left_vars)
+        nabla_right_str = ",".join(nabla_right_vars)
+        nabla_left_left_str = ",".join(nabla_left_left_vars)
+
+        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
+        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
+        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
+        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
+        nabla_left_left = f'array1d(0..{branch_size}-1, [{nabla_left_left_str}])'
+
+        constraint = [
+            f"constraint lbct_compute({delta_left}, {delta_right}, "
+            f"{nabla_left}, {nabla_right}, {nabla_left_left}, {branch_size}, middle_p[{index}]);\n"
+        ]
+        return constraint
+    
+    @staticmethod
     def lbct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, nabla_left_left_component_id, branch_size):
         # variables = []
         # branch_size = self.output_bit_size
@@ -475,6 +513,34 @@ class MznHadipourBoomerangModel(MznModel):
         constraint = [
             f"constraint onlyLargeSwitch_LBCT_enum({delta_left}, {delta_right}, "
             f"{nabla_left}, {nabla_right}, {nabla_left_left}, {halfNum}, {branch_size}) = true;\n"
+        ]
+        return constraint
+    
+    @staticmethod
+    def evaluation_ubct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, delta_left_left_component_id, branch_size, index):
+        # variables = []
+        # branch_size = self.output_bit_size
+        delta_left_vars = [f'{delta_left_component_id}[{i}]' for i in range(branch_size)]
+        delta_right_vars = [f'{delta_right_component_id}[{i}]' for i in range(branch_size)]
+        nabla_left_vars = [f'{nabla_left_component_id}[{i}]' for i in range(branch_size)]
+        nabla_right_vars = [f'{nabla_right_component_id}[{i}]' for i in range(branch_size)]
+        delta_left_left_vars = [f'{delta_left_left_component_id}[{i}]' for i in range(branch_size)]
+        
+        delta_left_str = ",".join(delta_left_vars)
+        delta_right_str = ",".join(delta_right_vars)
+        nabla_left_str = ",".join(nabla_left_vars)
+        nabla_right_str = ",".join(nabla_right_vars)
+        delta_left_left_str = ",".join(delta_left_left_vars)
+
+        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
+        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
+        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
+        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
+        delta_left_left = f'array1d(0..{branch_size}-1, [{delta_left_left_str}])'
+
+        constraint = [
+            f"constraint ubct_compute({delta_left}, {delta_right}, "
+            f"{nabla_left}, {nabla_right}, {delta_left_left}, {branch_size}, middle_p[{index}]);\n"
         ]
         return constraint
     
@@ -579,6 +645,9 @@ class MznHadipourBoomerangModel(MznModel):
         else:
             self._model_constraints.extend([get_lbct_operations()])
             self._model_constraints.extend([get_ubct_operations()])
+            self._model_constraints.extend([get_evaluation_ubct_operations()])
+            self._model_constraints.extend([get_evaluation_lbct_operations()])
+            self._model_constraints.extend([get_approx_logarithm_operation()])
             if self.middle_part_number_of_rounds > 2:
                 self._model_constraints.extend([get_ebct_operations()])
 
@@ -586,7 +655,7 @@ class MznHadipourBoomerangModel(MznModel):
         # add constrain to have same output of sat aided
         # speck 32-64 1-2-1 rounds
         ## replicated solution in SAT CODE
-        # ## L0_up,R0_up = [2800, 0010]
+        ## L0_up,R0_up = [2800, 0010]
         # input_plaintext_left = "0010100000000000"
         # input_plaintext_right = "0000000000010000"
         # ## L4_lo,R4_lo = [8102, 8108]
@@ -594,11 +663,11 @@ class MznHadipourBoomerangModel(MznModel):
         # outpu_cihertext_right = "1000000100001000"
 
         ## L1_up,R1_up = [8000, 8000]
-        input_plaintext_left = "1000000000000000"
-        input_plaintext_right = "1000000000000000"
-        ## L3_lo,R3_lo = [0000, 8000]
-        outpu_cihertext_left = "0000000000000000" 
-        outpu_cihertext_right = "1000000000000000"
+        # input_plaintext_left = "1000000000000000"
+        # input_plaintext_right = "1000000000000000"
+        # ## L3_lo,R3_lo = [0000, 8000]
+        # outpu_cihertext_left = "0000000000000000" 
+        # outpu_cihertext_right = "1000000000000000"
         ## L2_up,R2_up = [8300, 8302]
         ## L2_lo,R2_lo = [0070, 2000]
         #Sat-aided-resut
@@ -615,23 +684,33 @@ class MznHadipourBoomerangModel(MznModel):
         # nabla_1 -> (L2_lo,R2_lo) 0b0000000001110000 | 0b0010000000000000 |
         # nabla_2 -> (L3_lo,R3_lo) 0b0000000000000000 | 0b1000000000000000 |
 
-        input_bits_left = list(input_plaintext_left)
-        input_bits_right = list(input_plaintext_right)
-        output_bits_left = list(outpu_cihertext_left)
-        output_bits_right = list(outpu_cihertext_right)
-        for inputs in self.cipher.inputs:
-            if 'upper_plain' in inputs:
-                name_input_plain = inputs
-            if 'lower_cipher' in inputs:
-                name_output_cipher = inputs
-        for i in range(16):
-            self._model_constraints.extend([f"constraint {name_input_plain}[{i}] = {input_bits_left[i]};"])
-        for i in range(16):
-            self._model_constraints.extend([f"constraint {name_input_plain}[{16+i}] = {input_bits_right[i]};"])
-        for i in range(16):
-            self._model_constraints.extend([f"constraint {name_output_cipher}[{i}] = {output_bits_left[i]};"])
-        for i in range(16):
-            self._model_constraints.extend([f"constraint {name_output_cipher}[{16+i}] = {output_bits_right[i]};"])
+        # input_bits_left = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0] 
+        # input_bits_right = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # output_bits_left = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # output_bits_right = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+        # for inputs in self.cipher.inputs:
+        #     if 'upper_plain' in inputs:
+        #         name_input_plain = inputs
+        #     if 'lower_cipher' in inputs:
+        #         name_output_cipher = inputs
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint {name_input_plain}[{i}] = {input_bits_left[i]};"])
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint {name_input_plain}[{16+i}] = {input_bits_right[i]};"])
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint {name_output_cipher}[{i}] = {output_bits_left[i]};"])
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint {name_output_cipher}[{16+i}] = {output_bits_right[i]};"])
+
+        # insert 
+        ## L1_up,R1_up = [8000, 8000]
+        # output_intermediate_0_6 = list("10000000000000001000000000000000")
+        # for i in range(32):
+        #     self._model_constraints.extend([f"constraint upper_intermediate_output_0_6[{i}] = {output_intermediate_0_6[i]};"])
+        # # ## L3_lo,R3_lo = [0000, 8000]
+        # output_intermediate_2_12 = list("00000000000000001000000000000000") 
+        # for i in range(32):
+        #     self._model_constraints.extend([f"constraint lower_intermediate_output_2_12[{i}] = {output_intermediate_2_12[i]};"])
 
         # middle_keys = [key for key in self.component_and_probability if 'middle' in key]
         # middle_keys = sorted(middle_keys, key=lambda x: int(x.split('_')[2]))
@@ -730,6 +809,84 @@ class MznHadipourBoomerangModel(MznModel):
         #     if variable.startswith('array[0..15] of var 0..1: pre_upper_modadd_0_1_'):
         #         print(variable)
         # # print("variables = ", self._variables_list)
+
+
+        # #### Constraint for the input of the ubct
+        # ## first attempt dL = 0000
+        # dL = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_upper_modadd_1_7_0[{i}] = {dL[i]};"])
+        # # TOO MUCH TIME
+        # ## second attempt dR = 0020
+        # dR = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_upper_modadd_1_7_1[{i}] = {dR[i]};"])
+        # ## NOW FOUND A SOLUTION BUT UBCT = 32 -> TOO HIGH
+        # ## third attempt nL = 2400
+        # nL = [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_lower_modadd_1_7_0[{i}] = {nL[i]};"])
+        # ## FOUND A SOLUTION BUT WITH LOWER WEIGHT HIGHER THAN BEFORE
+        # ## fourth attempt nR = 0208
+        # nR = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_lower_modadd_1_7_1[{i}] = {nR[i]};"])
+        # ## AGAIN NO SOLUTION NOW
+
+
+        # #### SOLUTION FOUND WITHOUT EVALUATION OF LBCT
+        # #### Second attempt: Constraint for the input of the ubct
+        # ## first attempt dL = 8000
+        # dL = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_upper_modadd_1_7_0[{i}] = {dL[i]};"])
+        # # NO SOLUTION FOUND -> UNSAT
+        # ## second attempt dR = 0000
+        # dR = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_upper_modadd_1_7_1[{i}] = {dR[i]};"])
+        # ## NOW FOUND A SOLUTION BUT UBCT = 36 -> TO HIGH
+        # ## third attempt nL = 0000
+        # nL = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_lower_modadd_1_7_0[{i}] = {nL[i]};"])
+        # ## FOUND A SOLUTION BUT WITH WEIGHT HIGHER THAN BEFORE -> 38
+        # ## fourth attempt nR = 2000
+        # nR = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_lower_modadd_1_7_1[{i}] = {nR[i]};"])
+        # ## THE BEST SOLUTION WITH THESE 4 CONDITIONS -> TOTAL WEIGHT -> 8
+
+        #### ATTEMPT WITH LBCT EVALUATION -> UNSAT
+        #### Second attempt: Constraint for the input of the LBCT
+        ## first attempt dL = 0100
+        dL = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+        for i in range(16):
+            self._model_constraints.extend([f"constraint pre_upper_modadd_2_7_0[{i}] = {dL[i]};"])
+        # NO SOLUTION FOUND -> UNSAT
+        ## second attempt dR = 8000
+        dR = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for i in range(16):
+            self._model_constraints.extend([f"constraint pre_upper_modadd_2_7_1[{i}] = {dR[i]};"])
+        ## NO SOLUTION FOUND -> UNSAT
+        ## third attempt nL = 8000
+        nL = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for i in range(16):
+            self._model_constraints.extend([f"constraint pre_lower_modadd_2_7_0[{i}] = {nL[i]};"])
+        ## NO SOLUTION FOUND -> UNSAT
+        ## fourth attempt nR = 8000
+        nR = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for i in range(16):
+            self._model_constraints.extend([f"constraint pre_lower_modadd_2_7_1[{i}] = {nR[i]};"])
+        ## THE BEST SOLUTION WITH THESE 4 CONDITIONS -> TOTAL WEIGHT -> 8
+        ## I AM NOT UNDERSTANDING...... HOW IS IT POSSIBLE THAT IF I ADD CONSTRAINT THEN IT BECOMES SAT......
+        ##### TODO: TRY TO FIX A THRESHOLD FOR THE PROBABILITY TO AVOID NUMERICAL MISTAKES FROM GUROBI
+        ##### TODO: TRY TO DIVIDE THE INITIAL SETTING OF DP_LBCT AND DP_UBCT WITH 2^30 TO HAVE LOW VALUE
+#     Warning: Model contains large matrix coefficient range
+#     Warning: Model contains large rhs
+#     Warning: Model contains large bounds
+#          Consider reformulating model or setting NumericFocus parameter
+#          to avoid numerical issues.
         
         # import ipdb;
         # ipdb.set_trace()

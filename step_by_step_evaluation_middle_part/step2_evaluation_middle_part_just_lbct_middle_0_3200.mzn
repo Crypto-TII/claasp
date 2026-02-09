@@ -896,8 +896,6 @@ constraint lower_rot_3_6[14] = lower_modadd_3_7[5];
 constraint lower_rot_3_6[15] = lower_modadd_3_7[6];
 constraint sum(upper_plaintext)>0;
 constraint sum(lower_cipher_output_3_12)>0;
-array[0..16] of var 0..1: common_middle_active_bits_1;
-array[0..16] of var 0..1: common_middle_active_bits_2;
 constraint onlyLargeSwitch_UBCT_enum(array1d(0..16-1, [pre_upper_modadd_1_7_0[15],pre_upper_modadd_1_7_0[14],pre_upper_modadd_1_7_0[13],pre_upper_modadd_1_7_0[12],pre_upper_modadd_1_7_0[11],pre_upper_modadd_1_7_0[10],pre_upper_modadd_1_7_0[9],pre_upper_modadd_1_7_0[8],pre_upper_modadd_1_7_0[7],pre_upper_modadd_1_7_0[6],pre_upper_modadd_1_7_0[5],pre_upper_modadd_1_7_0[4],pre_upper_modadd_1_7_0[3],pre_upper_modadd_1_7_0[2],pre_upper_modadd_1_7_0[1],pre_upper_modadd_1_7_0[0]]), array1d(0..16-1, [pre_upper_modadd_1_7_1[15],pre_upper_modadd_1_7_1[14],pre_upper_modadd_1_7_1[13],pre_upper_modadd_1_7_1[12],pre_upper_modadd_1_7_1[11],pre_upper_modadd_1_7_1[10],pre_upper_modadd_1_7_1[9],pre_upper_modadd_1_7_1[8],pre_upper_modadd_1_7_1[7],pre_upper_modadd_1_7_1[6],pre_upper_modadd_1_7_1[5],pre_upper_modadd_1_7_1[4],pre_upper_modadd_1_7_1[3],pre_upper_modadd_1_7_1[2],pre_upper_modadd_1_7_1[1],pre_upper_modadd_1_7_1[0]]), array1d(0..16-1, [pre_lower_modadd_1_7_0[15],pre_lower_modadd_1_7_0[14],pre_lower_modadd_1_7_0[13],pre_lower_modadd_1_7_0[12],pre_lower_modadd_1_7_0[11],pre_lower_modadd_1_7_0[10],pre_lower_modadd_1_7_0[9],pre_lower_modadd_1_7_0[8],pre_lower_modadd_1_7_0[7],pre_lower_modadd_1_7_0[6],pre_lower_modadd_1_7_0[5],pre_lower_modadd_1_7_0[4],pre_lower_modadd_1_7_0[3],pre_lower_modadd_1_7_0[2],pre_lower_modadd_1_7_0[1],pre_lower_modadd_1_7_0[0]]), array1d(0..16-1, [pre_lower_modadd_1_7_1[15],pre_lower_modadd_1_7_1[14],pre_lower_modadd_1_7_1[13],pre_lower_modadd_1_7_1[12],pre_lower_modadd_1_7_1[11],pre_lower_modadd_1_7_1[10],pre_lower_modadd_1_7_1[9],pre_lower_modadd_1_7_1[8],pre_lower_modadd_1_7_1[7],pre_lower_modadd_1_7_1[6],pre_lower_modadd_1_7_1[5],pre_lower_modadd_1_7_1[4],pre_lower_modadd_1_7_1[3],pre_lower_modadd_1_7_1[2],pre_lower_modadd_1_7_1[1],pre_lower_modadd_1_7_1[0]]), array1d(0..16-1, [upper_modadd_1_7[15],upper_modadd_1_7[14],upper_modadd_1_7[13],upper_modadd_1_7[12],upper_modadd_1_7[11],upper_modadd_1_7[10],upper_modadd_1_7[9],upper_modadd_1_7[8],upper_modadd_1_7[7],upper_modadd_1_7[6],upper_modadd_1_7[5],upper_modadd_1_7[4],upper_modadd_1_7[3],upper_modadd_1_7[2],upper_modadd_1_7[1],upper_modadd_1_7[0]]), 32, 16) = true;
 
 constraint onlyLargeSwitch_LBCT_enum(array1d(0..16-1, [pre_upper_modadd_2_7_0[15],pre_upper_modadd_2_7_0[14],pre_upper_modadd_2_7_0[13],pre_upper_modadd_2_7_0[12],pre_upper_modadd_2_7_0[11],pre_upper_modadd_2_7_0[10],pre_upper_modadd_2_7_0[9],pre_upper_modadd_2_7_0[8],pre_upper_modadd_2_7_0[7],pre_upper_modadd_2_7_0[6],pre_upper_modadd_2_7_0[5],pre_upper_modadd_2_7_0[4],pre_upper_modadd_2_7_0[3],pre_upper_modadd_2_7_0[2],pre_upper_modadd_2_7_0[1],pre_upper_modadd_2_7_0[0]]), array1d(0..16-1, [pre_upper_modadd_2_7_1[15],pre_upper_modadd_2_7_1[14],pre_upper_modadd_2_7_1[13],pre_upper_modadd_2_7_1[12],pre_upper_modadd_2_7_1[11],pre_upper_modadd_2_7_1[10],pre_upper_modadd_2_7_1[9],pre_upper_modadd_2_7_1[8],pre_upper_modadd_2_7_1[7],pre_upper_modadd_2_7_1[6],pre_upper_modadd_2_7_1[5],pre_upper_modadd_2_7_1[4],pre_upper_modadd_2_7_1[3],pre_upper_modadd_2_7_1[2],pre_upper_modadd_2_7_1[1],pre_upper_modadd_2_7_1[0]]), array1d(0..16-1, [pre_lower_modadd_2_7_0[15],pre_lower_modadd_2_7_0[14],pre_lower_modadd_2_7_0[13],pre_lower_modadd_2_7_0[12],pre_lower_modadd_2_7_0[11],pre_lower_modadd_2_7_0[10],pre_lower_modadd_2_7_0[9],pre_lower_modadd_2_7_0[8],pre_lower_modadd_2_7_0[7],pre_lower_modadd_2_7_0[6],pre_lower_modadd_2_7_0[5],pre_lower_modadd_2_7_0[4],pre_lower_modadd_2_7_0[3],pre_lower_modadd_2_7_0[2],pre_lower_modadd_2_7_0[1],pre_lower_modadd_2_7_0[0]]), array1d(0..16-1, [pre_lower_modadd_2_7_1[15],pre_lower_modadd_2_7_1[14],pre_lower_modadd_2_7_1[13],pre_lower_modadd_2_7_1[12],pre_lower_modadd_2_7_1[11],pre_lower_modadd_2_7_1[10],pre_lower_modadd_2_7_1[9],pre_lower_modadd_2_7_1[8],pre_lower_modadd_2_7_1[7],pre_lower_modadd_2_7_1[6],pre_lower_modadd_2_7_1[5],pre_lower_modadd_2_7_1[4],pre_lower_modadd_2_7_1[3],pre_lower_modadd_2_7_1[2],pre_lower_modadd_2_7_1[1],pre_lower_modadd_2_7_1[0]]), array1d(0..16-1, [lower_modadd_2_7[15],lower_modadd_2_7[14],lower_modadd_2_7[13],lower_modadd_2_7[12],lower_modadd_2_7[11],lower_modadd_2_7[10],lower_modadd_2_7[9],lower_modadd_2_7[8],lower_modadd_2_7[7],lower_modadd_2_7[6],lower_modadd_2_7[5],lower_modadd_2_7[4],lower_modadd_2_7[3],lower_modadd_2_7[2],lower_modadd_2_7[1],lower_modadd_2_7[0]]), 32, 16) = true;
@@ -946,30 +944,23 @@ array[0..15] of var 0..1: lower_xor_3_10;
 array[0..15] of var 0..1: lower_rot_3_9;
 array[0..15] of var 0..1: lower_modadd_3_7;
 array[0..15] of var 0..1: lower_rot_3_6;
-
-%%%%% modified stuff
-array[0..4] of var 0..3200: p;
-%%%%%
-
-array[0..3] of var {0, 900, 200, 1100, 400, 1300, 600, 1500, 800, 100, 1000, 300, 1200, 500, 1400, 700}: upper_p;
+array[0..4-1] of var int: p;
+array[0..3-1] of var {0, 900, 200, 1100, 400, 1300, 600, 1500, 800, 100, 1000, 300, 1200, 500, 1400, 700}: upper_p;
 constraint p[0] = upper_p[0];
 var int: upper_weight = upper_p[0];
-array[0..3] of var {0, 900, 200, 1100, 400, 1300, 600, 1500, 800, 100, 1000, 300, 1200, 500, 1400, 700}: lower_p;
+array[0..3-1] of var {0, 900, 200, 1100, 400, 1300, 600, 1500, 800, 100, 1000, 300, 1200, 500, 1400, 700}: lower_p;
 constraint p[1] = lower_p[2];
 var int: lower_weight = lower_p[2];
-
-%%%% modified stuff
-array[0..1] of var 0..3200: middle_p;
+array[0..2-1] of var 0..3200: middle_p;
 constraint p[2] = middle_p[0];
-constraint ubct_compute(pre_upper_modadd_1_7_0, pre_upper_modadd_1_7_1, pre_lower_modadd_1_7_0, pre_lower_modadd_1_7_1, upper_modadd_1_7, 16-1, middle_p[0]);
 
+%% evaluation middle non-linear layer for the lbct
 constraint p[3] = middle_p[1];
-constraint lbct_compute(pre_upper_modadd_2_7_0, pre_upper_modadd_2_7_1, pre_lower_modadd_2_7_0, pre_lower_modadd_2_7_1, lower_modadd_2_7, 16-1, middle_p[1]);
+constraint lbct_compute(array1d(0..16-1, [pre_upper_modadd_2_7_0[0],pre_upper_modadd_2_7_0[1],pre_upper_modadd_2_7_0[2],pre_upper_modadd_2_7_0[3],pre_upper_modadd_2_7_0[4],pre_upper_modadd_2_7_0[5],pre_upper_modadd_2_7_0[6],pre_upper_modadd_2_7_0[7],pre_upper_modadd_2_7_0[8],pre_upper_modadd_2_7_0[9],pre_upper_modadd_2_7_0[10],pre_upper_modadd_2_7_0[11],pre_upper_modadd_2_7_0[12],pre_upper_modadd_2_7_0[13],pre_upper_modadd_2_7_0[14],pre_upper_modadd_2_7_0[15]]), array1d(0..16-1, [pre_upper_modadd_2_7_1[0],pre_upper_modadd_2_7_1[1],pre_upper_modadd_2_7_1[2],pre_upper_modadd_2_7_1[3],pre_upper_modadd_2_7_1[4],pre_upper_modadd_2_7_1[5],pre_upper_modadd_2_7_1[6],pre_upper_modadd_2_7_1[7],pre_upper_modadd_2_7_1[8],pre_upper_modadd_2_7_1[9],pre_upper_modadd_2_7_1[10],pre_upper_modadd_2_7_1[11],pre_upper_modadd_2_7_1[12],pre_upper_modadd_2_7_1[13],pre_upper_modadd_2_7_1[14],pre_upper_modadd_2_7_1[15]]), array1d(0..16-1, [pre_lower_modadd_2_7_0[0],pre_lower_modadd_2_7_0[1],pre_lower_modadd_2_7_0[2],pre_lower_modadd_2_7_0[3],pre_lower_modadd_2_7_0[4],pre_lower_modadd_2_7_0[5],pre_lower_modadd_2_7_0[6],pre_lower_modadd_2_7_0[7],pre_lower_modadd_2_7_0[8],pre_lower_modadd_2_7_0[9],pre_lower_modadd_2_7_0[10],pre_lower_modadd_2_7_0[11],pre_lower_modadd_2_7_0[12],pre_lower_modadd_2_7_0[13],pre_lower_modadd_2_7_0[14],pre_lower_modadd_2_7_0[15]]), array1d(0..16-1, [pre_lower_modadd_2_7_1[0],pre_lower_modadd_2_7_1[1],pre_lower_modadd_2_7_1[2],pre_lower_modadd_2_7_1[3],pre_lower_modadd_2_7_1[4],pre_lower_modadd_2_7_1[5],pre_lower_modadd_2_7_1[6],pre_lower_modadd_2_7_1[7],pre_lower_modadd_2_7_1[8],pre_lower_modadd_2_7_1[9],pre_lower_modadd_2_7_1[10],pre_lower_modadd_2_7_1[11],pre_lower_modadd_2_7_1[12],pre_lower_modadd_2_7_1[13],pre_lower_modadd_2_7_1[14],pre_lower_modadd_2_7_1[15]]), array1d(0..16-1, [lower_modadd_2_7[0],lower_modadd_2_7[1],lower_modadd_2_7[2],lower_modadd_2_7[3],lower_modadd_2_7[4],lower_modadd_2_7[5],lower_modadd_2_7[6],lower_modadd_2_7[7],lower_modadd_2_7[8],lower_modadd_2_7[9],lower_modadd_2_7[10],lower_modadd_2_7[11],lower_modadd_2_7[12],lower_modadd_2_7[13],lower_modadd_2_7[14],lower_modadd_2_7[15]]), 16-1, middle_p[1]);
 
-%%%%%%
-var float: middle_weight = sum(middle_p);
 
-var float: weight = (2 * upper_weight) + (2 * lower_weight) + middle_weight;
+var int: middle_weight = sum(middle_p);
+var int: weight = (2 * upper_weight) + (2 * lower_weight) + middle_weight;
 constraint sum(upper_key) = 0;
 constraint sum(upper_xor_1_5) = 0;
 constraint sum(upper_xor_2_5) = 0;
@@ -978,7 +969,7 @@ constraint sum(lower_xor_3_5) = 0;
 constraint sum(lower_xor_2_5) = 0;
 constraint sum(lower_xor_1_5) = 0;
 solve:: int_search(p, smallest, indomain_min, complete) minimize weight;
-output["upper_plaintext = "++ show(upper_plaintext) ++ "\n" ++"upper_key = "++ show(upper_key) ++ "\n" ++"upper_xor_1_5 = "++ show(upper_xor_1_5) ++ "\n" ++"upper_xor_2_5 = "++ show(upper_xor_2_5) ++ "\n" ++"lower_cipher_output_3_12 = "++ show(lower_cipher_output_3_12) ++ "\n" ++"lower_key = "++ show(lower_key) ++ "\n" ++"lower_xor_3_5 = "++ show(lower_xor_3_5) ++ "\n" ++"lower_xor_2_5 = "++ show(lower_xor_2_5) ++ "\n" ++"lower_xor_1_5 = "++ show(lower_xor_1_5) ++ "\n" ++"upper_rot_0_0 = "++ show(upper_rot_0_0)++ "\n" ++"upper_modadd_0_1 = "++ show(upper_modadd_0_1)++ "\n" ++ "upper probability = "++ show(upper_p[0]/100) ++ "\n" ++"upper_xor_0_2 = "++ show(upper_xor_0_2)++ "\n" ++"upper_rot_0_3 = "++ show(upper_rot_0_3)++ "\n" ++"upper_xor_0_4 = "++ show(upper_xor_0_4)++ "\n" ++"upper_intermediate_output_0_6 = "++ show(upper_intermediate_output_0_6)++ "\n" ++"upper_rot_1_6 = "++ show(upper_rot_1_6)++ "\n" ++"upper_modadd_1_7 = "++ show(upper_modadd_1_7)++ "\n" ++ "upper probability = "++ show(upper_p[1]/100) ++ "\n" ++ "middle probability = "++ show(middle_p[0]/100) ++ "\n" ++"upper_xor_1_8 = "++ show(upper_xor_1_8)++ "\n" ++"upper_rot_1_9 = "++ show(upper_rot_1_9)++ "\n" ++"upper_xor_1_10 = "++ show(upper_xor_1_10)++ "\n" ++"upper_intermediate_output_1_12 = "++ show(upper_intermediate_output_1_12)++ "\n" ++"lower_xor_1_8 = "++ show(lower_xor_1_8)++ "\n" ++"lower_xor_1_10 = "++ show(lower_xor_1_10)++ "\n" ++"lower_rot_1_9 = "++ show(lower_rot_1_9)++ "\n" ++"lower_modadd_1_7 = "++ show(lower_modadd_1_7)++ "\n" ++ "lower probability = "++ show(lower_p[0]/100) ++ "\n" ++ "middle probability = "++ show(middle_p[0]/100) ++ "\n" ++"lower_rot_1_6 = "++ show(lower_rot_1_6)++ "\n" ++"lower_intermediate_output_1_12 = "++ show(lower_intermediate_output_1_12)++ "\n" ++"upper_rot_2_6 = "++ show(upper_rot_2_6)++ "\n" ++"upper_modadd_2_7 = "++ show(upper_modadd_2_7)++ "\n" ++ "upper probability = "++ show(upper_p[2]/100) ++ "\n" ++ "middle probability = "++ show(middle_p[1]/100) ++ "\n" ++"upper_xor_2_8 = "++ show(upper_xor_2_8)++ "\n" ++"upper_rot_2_9 = "++ show(upper_rot_2_9)++ "\n" ++"upper_xor_2_10 = "++ show(upper_xor_2_10)++ "\n" ++"upper_intermediate_output_2_12 = "++ show(upper_intermediate_output_2_12)++ "\n" ++"lower_xor_2_8 = "++ show(lower_xor_2_8)++ "\n" ++"lower_xor_2_10 = "++ show(lower_xor_2_10)++ "\n" ++"lower_rot_2_9 = "++ show(lower_rot_2_9)++ "\n" ++"lower_modadd_2_7 = "++ show(lower_modadd_2_7)++ "\n" ++ "lower probability = "++ show(lower_p[1]/100) ++ "\n" ++ "middle probability = "++ show(middle_p[1]/100) ++ "\n" ++"lower_rot_2_6 = "++ show(lower_rot_2_6)++ "\n" ++"lower_intermediate_output_2_12 = "++ show(lower_intermediate_output_2_12)++ "\n" ++"lower_xor_3_8 = "++ show(lower_xor_3_8)++ "\n" ++"lower_xor_3_10 = "++ show(lower_xor_3_10)++ "\n" ++"lower_rot_3_9 = "++ show(lower_rot_3_9)++ "\n" ++"lower_modadd_3_7 = "++ show(lower_modadd_3_7)++ "\n" ++ "lower probability = "++ show(lower_p[2]/100) ++ "\n" ++"lower_rot_3_6 = "++ show(lower_rot_3_6)++ "\n" ++"Upper weight = " ++ show(upper_weight/100) ++ "\n" ++"Lower weight = " ++ show(lower_weight/100) ++ "\n" ++"Middle weight = " ++ show(-floor(log2(-middle_weight))*100+3200) ++ "\n" ++"Trail weight = " ++ show((upper_weight/100+lower_weight/100-floor(log2(-middle_weight))*100+3200))];
+output["upper_plaintext = "++ show(upper_plaintext) ++ "\n" ++"upper_key = "++ show(upper_key) ++ "\n" ++"upper_xor_1_5 = "++ show(upper_xor_1_5) ++ "\n" ++"upper_xor_2_5 = "++ show(upper_xor_2_5) ++ "\n" ++"lower_cipher_output_3_12 = "++ show(lower_cipher_output_3_12) ++ "\n" ++"lower_key = "++ show(lower_key) ++ "\n" ++"lower_xor_3_5 = "++ show(lower_xor_3_5) ++ "\n" ++"lower_xor_2_5 = "++ show(lower_xor_2_5) ++ "\n" ++"lower_xor_1_5 = "++ show(lower_xor_1_5) ++ "\n" ++"upper_rot_0_0 = "++ show(upper_rot_0_0)++ "\n" ++"upper_modadd_0_1 = "++ show(upper_modadd_0_1)++ "\n" ++ "upper probability = "++ show(upper_p[0]/100) ++ "\n" ++"upper_xor_0_2 = "++ show(upper_xor_0_2)++ "\n" ++"upper_rot_0_3 = "++ show(upper_rot_0_3)++ "\n" ++"upper_xor_0_4 = "++ show(upper_xor_0_4)++ "\n" ++"upper_intermediate_output_0_6 = "++ show(upper_intermediate_output_0_6)++ "\n" ++"upper_rot_1_6 = "++ show(upper_rot_1_6)++ "\n" ++"upper_modadd_1_7 = "++ show(upper_modadd_1_7)++ "\n" ++ "upper probability = "++ show(upper_p[1]/100) ++ "\n" ++ "middle probability = "++ show(middle_p[0]/100) ++ "\n" ++"upper_xor_1_8 = "++ show(upper_xor_1_8)++ "\n" ++"upper_rot_1_9 = "++ show(upper_rot_1_9)++ "\n" ++"upper_xor_1_10 = "++ show(upper_xor_1_10)++ "\n" ++"upper_intermediate_output_1_12 = "++ show(upper_intermediate_output_1_12)++ "\n" ++"lower_xor_1_8 = "++ show(lower_xor_1_8)++ "\n" ++"lower_xor_1_10 = "++ show(lower_xor_1_10)++ "\n" ++"lower_rot_1_9 = "++ show(lower_rot_1_9)++ "\n" ++"lower_modadd_1_7 = "++ show(lower_modadd_1_7)++ "\n" ++ "lower probability = "++ show(lower_p[0]/100) ++ "\n" ++ "middle probability = "++ show(middle_p[0]/100) ++ "\n" ++"lower_rot_1_6 = "++ show(lower_rot_1_6)++ "\n" ++"lower_intermediate_output_1_12 = "++ show(lower_intermediate_output_1_12)++ "\n" ++"upper_rot_2_6 = "++ show(upper_rot_2_6)++ "\n" ++"upper_modadd_2_7 = "++ show(upper_modadd_2_7)++ "\n" ++ "upper probability = "++ show(upper_p[2]/100) ++ "\n" ++ "middle probability = "++ show(middle_p[1]/100) ++ "\n" ++"upper_xor_2_8 = "++ show(upper_xor_2_8)++ "\n" ++"upper_rot_2_9 = "++ show(upper_rot_2_9)++ "\n" ++"upper_xor_2_10 = "++ show(upper_xor_2_10)++ "\n" ++"upper_intermediate_output_2_12 = "++ show(upper_intermediate_output_2_12)++ "\n" ++"lower_xor_2_8 = "++ show(lower_xor_2_8)++ "\n" ++"lower_xor_2_10 = "++ show(lower_xor_2_10)++ "\n" ++"lower_rot_2_9 = "++ show(lower_rot_2_9)++ "\n" ++"lower_modadd_2_7 = "++ show(lower_modadd_2_7)++ "\n" ++ "lower probability = "++ show(lower_p[1]/100) ++ "\n" ++ "middle probability = "++ show(middle_p[1]/100) ++ "\n" ++"lower_rot_2_6 = "++ show(lower_rot_2_6)++ "\n" ++"lower_intermediate_output_2_12 = "++ show(lower_intermediate_output_2_12)++ "\n" ++"lower_xor_3_8 = "++ show(lower_xor_3_8)++ "\n" ++"lower_xor_3_10 = "++ show(lower_xor_3_10)++ "\n" ++"lower_rot_3_9 = "++ show(lower_rot_3_9)++ "\n" ++"lower_modadd_3_7 = "++ show(lower_modadd_3_7)++ "\n" ++ "lower probability = "++ show(lower_p[2]/100) ++ "\n" ++"lower_rot_3_6 = "++ show(lower_rot_3_6)++ "\n" ++"Upper weight = " ++ show(upper_weight/100) ++ "\n" ++"Lower weight = " ++ show(lower_weight/100) ++ "\n" ++"Middle weight = " ++ show(middle_weight/100) ++ "\n" ++"Trail weight = " ++ show(weight/100)];
 
     include "table.mzn";
     int: num_workers_lbct = 8;
@@ -1624,279 +1615,6 @@ output["upper_plaintext = "++ show(upper_plaintext) ++ "\n" ++"upper_key = "++ s
             array[0..num_cols_last_table_ubct-1] of var bool: isValid
         ) =  table(isValid, last_table_ubct);  
     
-constraint upper_plaintext[0] = 1;
-constraint upper_plaintext[1] = 0;
-constraint upper_plaintext[2] = 0;
-constraint upper_plaintext[3] = 0;
-constraint upper_plaintext[4] = 0;
-constraint upper_plaintext[5] = 0;
-constraint upper_plaintext[6] = 0;
-constraint upper_plaintext[7] = 0;
-constraint upper_plaintext[8] = 0;
-constraint upper_plaintext[9] = 0;
-constraint upper_plaintext[10] = 0;
-constraint upper_plaintext[11] = 0;
-constraint upper_plaintext[12] = 0;
-constraint upper_plaintext[13] = 0;
-constraint upper_plaintext[14] = 0;
-constraint upper_plaintext[15] = 0;
-constraint upper_plaintext[16] = 1;
-constraint upper_plaintext[17] = 0;
-constraint upper_plaintext[18] = 0;
-constraint upper_plaintext[19] = 0;
-constraint upper_plaintext[20] = 0;
-constraint upper_plaintext[21] = 0;
-constraint upper_plaintext[22] = 0;
-constraint upper_plaintext[23] = 0;
-constraint upper_plaintext[24] = 0;
-constraint upper_plaintext[25] = 0;
-constraint upper_plaintext[26] = 0;
-constraint upper_plaintext[27] = 0;
-constraint upper_plaintext[28] = 0;
-constraint upper_plaintext[29] = 0;
-constraint upper_plaintext[30] = 0;
-constraint upper_plaintext[31] = 0;
-constraint lower_cipher_output_3_12[0] = 0;
-constraint lower_cipher_output_3_12[1] = 0;
-constraint lower_cipher_output_3_12[2] = 0;
-constraint lower_cipher_output_3_12[3] = 0;
-constraint lower_cipher_output_3_12[4] = 0;
-constraint lower_cipher_output_3_12[5] = 0;
-constraint lower_cipher_output_3_12[6] = 0;
-constraint lower_cipher_output_3_12[7] = 0;
-constraint lower_cipher_output_3_12[8] = 0;
-constraint lower_cipher_output_3_12[9] = 0;
-constraint lower_cipher_output_3_12[10] = 0;
-constraint lower_cipher_output_3_12[11] = 0;
-constraint lower_cipher_output_3_12[12] = 0;
-constraint lower_cipher_output_3_12[13] = 0;
-constraint lower_cipher_output_3_12[14] = 0;
-constraint lower_cipher_output_3_12[15] = 0;
-constraint lower_cipher_output_3_12[16] = 1;
-constraint lower_cipher_output_3_12[17] = 0;
-constraint lower_cipher_output_3_12[18] = 0;
-constraint lower_cipher_output_3_12[19] = 0;
-constraint lower_cipher_output_3_12[20] = 0;
-constraint lower_cipher_output_3_12[21] = 0;
-constraint lower_cipher_output_3_12[22] = 0;
-constraint lower_cipher_output_3_12[23] = 0;
-constraint lower_cipher_output_3_12[24] = 0;
-constraint lower_cipher_output_3_12[25] = 0;
-constraint lower_cipher_output_3_12[26] = 0;
-constraint lower_cipher_output_3_12[27] = 0;
-constraint lower_cipher_output_3_12[28] = 0;
-constraint lower_cipher_output_3_12[29] = 0;
-constraint lower_cipher_output_3_12[30] = 0;
-constraint lower_cipher_output_3_12[31] = 0;
-
-array[0..31, 0..3, 0..3] of 0..4: tables_ubct = array3d(0..31, 0..3, 0..3, 
-[
- 4, 0, 2, 0,
- 0, 0, 0, 0,
- 0, 0, 2, 0,
- 0, 0, 0, 0,
-
- 0, 2, 0, 2,
- 0, 2, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 2,
-
- 0, 2, 0, 0,
- 0, 2, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
-
- 2, 0, 0, 0,
- 2, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
-
- 2, 0, 2, 0,
- 0, 0, 0, 0,
- 2, 0, 2, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 2, 0, 0,
- 0, 2, 0, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 0, 2, 0,
- 0, 0, 2, 0,
- 0, 0, 0, 0,
-
- 2, 0, 2, 0,
- 0, 0, 0, 0,
- 2, 0, 2, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 2,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 2,
-
- 2, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 2, 0, 0, 0,
-
- 2, 0, 0, 0,
- 0, 0, 0, 0,
- 2, 0, 4, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 2, 0, 0,
- 0, 2, 0, 2,
- 0, 0, 0, 2,
-
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 2,
- 0, 0, 0, 2,
-
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 2, 0,
- 0, 0, 2, 0,
-
- 0, 2, 0, 0,
- 0, 2, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
-
- 2, 0, 0, 0,
- 2, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
-
- 2, 0, 0, 0,
- 2, 0, 2, 0,
- 0, 0, 2, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 4, 0, 2,
- 0, 0, 0, 0,
- 0, 0, 0, 2,
-
- 0, 0, 0, 2,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 2,
-
- 2, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 2, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 2, 0, 2,
- 0, 0, 0, 0,
- 0, 2, 0, 2,
-
- 0, 0, 0, 0,
- 0, 2, 0, 0,
- 0, 2, 0, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 0, 2, 0,
- 0, 0, 2, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 0,
-
- 0, 0, 0, 0,
- 0, 2, 0, 2,
- 0, 0, 0, 0,
- 0, 2, 0, 2,
-
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 0, 2,
- 0, 0, 0, 2,
-
- 0, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 2, 0,
- 0, 0, 2, 0,
-
- 2, 0, 0, 0,
- 0, 0, 0, 0,
- 0, 0, 2, 0,
- 2, 0, 2, 0,
-
- 0, 0, 0, 0,
- 0, 2, 0, 0,
- 0, 0, 0, 0,
- 0, 2, 0, 4]);
- 
-array[0..3,0..1] of 0..1: valid_state_ubct = array2d(0..3,0..1,
- [ 0,0,
-   1,0,
-   1,1,
-   0,1
-]);
-
-predicate ubct_compute(
-    array[0..16-1] of var 0..1: dL,
-    array[0..16-1] of var 0..1: dR,
-    array[0..16-1] of var 0..1: nL,
-    array[0..16-1] of var 0..1: nR,
-    array[0..16-1] of var 0..1: dLL,
-    int: nbit,
-    var int: ubct_prob
-) =
-let {
-    array[1..nbit-1,0..3] of var int: dp_ubct;
-    array[1..nbit-1] of var 0..31: tmp0;
-    var int: ubct_value;
-} in
-(
-    tmp0[1] = dLL[nbit-1]*16 + nR[nbit-1]*8 + nL[nbit-1]*4 + dR[nbit-1]*2 + dL[nbit-1]*1 /\
-
-    dp_ubct[1,0] = tables_ubct[tmp0[1],0,0] /\
-    dp_ubct[1,1] = tables_ubct[tmp0[1],1,0] /\
-    dp_ubct[1,2] = tables_ubct[tmp0[1],2,0] /\
-    dp_ubct[1,3] = tables_ubct[tmp0[1],3,0] /\
-
-    forall(i in 2..nbit-1)(
-        tmp0[i] = dLL[nbit-i]*16 + nR[nbit-i]*8 + nL[nbit-i]*4 + dR[nbit-i]*2 + dL[nbit-i]*1 /\
-        forall(j in 0..3)(
-            dp_ubct[i,j] = sum(k in 0..3)(dp_ubct[i-1,k] * tables_ubct[tmp0[i],j,k])
-        )
-    ) /\
-
-    ubct_value =
-        -4 * sum(state in 0..3)(
-            if (valid_state_ubct[state,0] + valid_state_ubct[state,1]
-                + dLL[1] + nR[1] + nL[1]) mod 2 = 0
-            then dp_ubct[nbit-1,state]
-            else 0 endif
-        ) /\
-%       ubct_prob = ubct_value
-      ubct_prob = ((floor(-log2(ubct_value)) + 32) * 100)
-);
 
 array[0..31, 0..7, 0..7] of 0..4: tables_lbct = array3d(0..31, 0..7, 0..7, 
 [
@@ -2238,7 +1956,7 @@ predicate lbct_compute(
     array[0..16-1] of var 0..1: nR,
     array[0..16-1] of var 0..1: nLL,
     int: nbit,
-    var int: lbct_prob
+    var 0..3200: lbct_minus_log_2
 ) =
 let {
     array[1..nbit-1,0..7] of var int: dp_lbct;
@@ -2266,7 +1984,7 @@ let {
     /\
 
     lbct_value =
-        -4 * sum(state in 0..7)(
+            sum(state in 0..7)(
             if (valid_state_lbct[state,0]
               + valid_state_lbct[state,1]
               + nLL[1] + nR[1] + nL[1]) mod 2 = 0
@@ -2275,6 +1993,30 @@ let {
             endif
         )
     /\
-%     lbct_prob = lbct_value
-      lbct_prob = ((floor(-log2(lbct_value)) + 32) * 100)
+    approx_prob_log(lbct_value/2^(30),lbct_minus_log_2)
+);
+
+predicate approx_prob_log(
+  var float: prob,
+  var 0..3200: minus_log2_prob
+) = (
+  minus_log2_prob = if prob <= 0.001021453702391378 then
+                          floor((-19931.57001201849*prob+29.89737278555626)*100)
+                    elseif prob <= 0.004151650554233785 /\ prob > 0.001021453702391378 then
+                          floor((-584.962260272084*prob+10.13570866882117)*100)
+                    elseif prob <= 0.01359667098324998 /\ prob > 0.004151650554233785 then
+                          floor((-192.6450521799878*prob+8.506944714410169)*100)
+                    elseif prob <= 0.05399137458004444 /\ prob > 0.01359667098324998 then
+                           floor((-50.62607129324977*prob+6.575959357916722)*100)
+                    elseif prob <= 0.1420480516058986 /\ prob > 0.05399137458004444 then
+                           floor((-11.87410019056137*prob+4.483687170396419)*100)
+                    elseif prob <= 0.2463455066216964 /\ prob > 0.1420480516058986 then
+                           floor((-8.613130253286352*prob+4.020472744461092)*100)
+                    elseif prob <= 0.595815289564374 /\ prob > 0.2463455066216964 then
+                           floor((-3.761918786389538*prob+2.825398597919413)*100)
+                    elseif prob <= 0.998000001 /\ prob > 0.595815289564374 then
+                          floor((-1.444862453710759*prob+1.44486100812744)*100)
+                    else
+                          0
+                    endif
 );

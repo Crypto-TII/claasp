@@ -1,3 +1,30 @@
+% equation 6 of the paper
+predicate approx_prob_log(
+  var float: prob,
+  var 0..3200: minus_log2_prob
+) = (
+  minus_log2_prob = if prob <= 0.001021453702391378 then
+                          floor((-19931.57001201849*prob+29.89737278555626)*100)
+                    elseif prob <= 0.004151650554233785 /\ prob > 0.001021453702391378 then
+                          floor((-584.962260272084*prob+10.13570866882117)*100)
+                    elseif prob <= 0.01359667098324998 /\ prob > 0.004151650554233785 then
+                          floor((-192.6450521799878*prob+8.506944714410169)*100)
+                    elseif prob <= 0.05399137458004444 /\ prob > 0.01359667098324998 then
+                           floor((-50.62607129324977*prob+6.575959357916722)*100)
+                    elseif prob <= 0.1420480516058986 /\ prob > 0.05399137458004444 then
+                           floor((-11.87410019056137*prob+4.483687170396419)*100)
+                    elseif prob <= 0.2463455066216964 /\ prob > 0.1420480516058986 then
+                           floor((-8.613130253286352*prob+4.020472744461092)*100)
+                    elseif prob <= 0.595815289564374 /\ prob > 0.2463455066216964 then
+                           floor((-3.761918786389538*prob+2.825398597919413)*100)
+                    elseif prob <= 0.998000001 /\ prob > 0.595815289564374 then
+                          floor((-1.444862453710759*prob+1.44486100812744)*100)
+                    else
+                          0
+                    endif
+);
+
+
 array[0..31, 0..7, 0..7] of 0..4: tables_lbct = array3d(0..31, 0..7, 0..7, 
 [
  4, 0, 0, 0, 0, 2, 2, 0,
@@ -319,31 +346,6 @@ array[0..31, 0..7, 0..7] of 0..4: tables_lbct = array3d(0..31, 0..7, 0..7,
  0, 0, 0, 0, 0, 0, 0, 0,
  0, 0, 0, 0, 0, 0, 0, 0]);
  
- predicate approx_prob_log(
-  var float: prob,
-  var int: minus_log2_prob
-) = (
-  minus_log2_prob = if prob <= 0.001021453702391378 then
-                          floor((-19931.57001201849*prob+29.89737278555626)*100)
-                    elseif prob <= 0.004151650554233785 /\ prob > 0.001021453702391378 then
-                          floor((-584.962260272084*prob+10.13570866882117)*100)
-                    elseif prob <= 0.01359667098324998 /\ prob > 0.004151650554233785 then
-                          floor((-192.6450521799878*prob+8.506944714410169)*100)
-                    elseif prob <= 0.05399137458004444 /\ prob > 0.01359667098324998 then
-                           floor((-50.62607129324977*prob+6.575959357916722)*100)
-                    elseif prob <= 0.1420480516058986 /\ prob > 0.05399137458004444 then
-                           floor((-11.87410019056137*prob+4.483687170396419)*100)
-                    elseif prob <= 0.2463455066216964 /\ prob > 0.1420480516058986 then
-                           floor((-8.613130253286352*prob+4.020472744461092)*100)
-                    elseif prob <= 0.595815289564374 /\ prob > 0.2463455066216964 then
-                           floor((-3.761918786389538*prob+2.825398597919413)*100)
-                    elseif prob <= 0.998000001 /\ prob > 0.595815289564374 then
-                          floor((-1.444862453710759*prob+1.44486100812744)*100)
-                    else
-                          0
-                    endif
-);
- 
 array[0..7,0..1] of 0..1: valid_state_lbct = array2d(0..7,0..1,
 [
 0,0,%lsb is the first one, msb the last one
@@ -359,23 +361,11 @@ array[0..7,0..1] of 0..1: valid_state_lbct = array2d(0..7,0..1,
  
 int: nbit = 16;
 
-% array[0..15] of var 0..1: dL = array1d(0..16-1, [0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0]);
-% array[0..15] of var 0..1: dR = array1d(0..16-1, [1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0]);
-% array[0..15] of var 0..1: nL = array1d(0..16-1, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
-% array[0..15] of var 0..1: nR = array1d(0..16-1, [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0]);
-% array[0..15] of var 0..1: nLL = array1d(0..16-1, [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0]);
-
-% array[0..15] of var 0..1: dL = array1d(0..16-1,  [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-% array[0..15] of var 0..1: dR = array1d(0..16-1,  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0]);
-% array[0..15] of var 0..1: nL = array1d(0..16-1,  [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]);
-% array[0..15] of var 0..1: nR = array1d(0..16-1,  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]);
-% array[0..15] of var 0..1: nLL = array1d(0..16-1, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0]);
-
-array[0..15] of var 0..1: dL = array1d(0..16-1,  [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]);
-array[0..15] of var 0..1: dR = array1d(0..16-1,  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-array[0..15] of var 0..1: nL = array1d(0..16-1,  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-array[0..15] of var 0..1: nR = array1d(0..16-1,  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-array[0..15] of var 0..1: nLL = array1d(0..16-1, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+array[0..15] of var 0..1: dL = array1d(0..16-1, [0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0]);
+array[0..15] of var 0..1: dR = array1d(0..16-1, [1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0]);
+array[0..15] of var 0..1: nL = array1d(0..16-1, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+array[0..15] of var 0..1: nR = array1d(0..16-1, [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+array[0..15] of var 0..1: nLL = array1d(0..16-1, [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0]);
 
 predicate lbct_entry(
     array[0..nbit-1] of var 0..1: dL,
@@ -383,13 +373,14 @@ predicate lbct_entry(
     array[0..nbit-1] of var 0..1: nL,
     array[0..nbit-1] of var 0..1: nR,
     array[0..nbit-1] of var 0..1: nLL,
-    var int: lbct_approximated_prob,
-    var int: lbct_prob
+    var 0..3200: lbct_minus_log_2,
+    var int: lbct_value,
+%     var float: lbct_prob
 ) =
 let {
     array[1..nbit-1,0..7] of var int: dp_lbct;
     array[1..nbit-1] of var 0..31: tmp0;
-    var int: lbct_value;
+%     var int: lbct_value;
 } in
 (
     tmp0[1] = nLL[nbit-1]*16 + nR[nbit-1]*8 + nL[nbit-1]*4 + dR[nbit-1]*2 + dL[nbit-1]
@@ -412,7 +403,7 @@ let {
     /\
 
     lbct_value =
-        4 * sum(state in 0..7)(
+            sum(state in 0..7)(
             if (valid_state_lbct[state,0]
               + valid_state_lbct[state,1]
               + nLL[1] + nR[1] + nL[1]) mod 2 = 0
@@ -421,14 +412,17 @@ let {
             endif
         )
     /\
-    approx_prob_log(lbct_value/2^32, lbct_approximated_prob)
-    /\
-    lbct_prob = floor((-log2(lbct_value) + 32) * 100)
+%     lbct_minus_log_2 = floor((-log2(lbct_value))+30)*100
+%     lbct_minus_log_2 = floor((-log2(lbct_value)))
+%   lbct_prob = lbct_value/2^(32) /\
+    approx_prob_log(lbct_value/2^(30),lbct_minus_log_2)
 );
-var int: lbct_prob;
-var int: lbct_approximated_prob;
-constraint lbct_entry(dL, dR, nL, nR, nLL, lbct_approximated_prob, lbct_prob);
+var 0..3200: lbct_minus_log_2;
+var int: lbct_value;
+% var float: lbct_prob;
+constraint lbct_entry(dL, dR, nL, nR, nLL, lbct_minus_log_2, lbct_value);
 
 output[
-      "-log_2(lbct_entry/2^32)*100 = \(lbct_prob)" ++ "\n" ++ "approx of -log_2(lbct_entry/2^32)*100 = \(lbct_approximated_prob)"
+%       "lbct_value = \(lbct_value)\n" ++ "lbct_prob = lbct_value/2^32 = \(lbct_prob)\n"++ "-log_2(lbct_value) = \(lbct_minus_log_2)"
+"lbct_value = \(lbct_value)\n" ++ "-log_2(lbct_value) = \(lbct_minus_log_2)"
       ];
