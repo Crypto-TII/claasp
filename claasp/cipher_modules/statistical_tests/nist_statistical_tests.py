@@ -64,7 +64,6 @@ class NISTStatisticalTests:
         cipher.sort_cipher()
         self.cipher = cipher
         self.data_generator = DatasetGenerator(cipher)
-        self.verbose = False
         str_of_inputs_bit_size = list(map(str, cipher.inputs_bit_size))
         self._cipher_primitive = cipher.id + "_" + "_".join(str_of_inputs_bit_size)
 
@@ -78,7 +77,6 @@ class NISTStatisticalTests:
         round_end=0,
         nist_report_folder_prefix="nist_statistics_report",
         statistical_test_option_list=15 * '1',
-        verbose=False,
     ):
         """
         Run NIST STS tests for a dataset generated from the cipher.
@@ -91,23 +89,14 @@ class NISTStatisticalTests:
             sage: np.random.seed(0)
             sage: cipher = SimonBlockCipher(number_of_rounds=5)
             sage: tester = NISTStatisticalTests(cipher)
-            sage: import shutil
-            sage: if shutil.which('niststs') is None:
-            ....:     result = {
-            ....:         'input_parameters': None,
-            ....:         'test_results': [
-            ....:             {'randomness_test': [{'test_name': 'Frequency', 'p-value': 0.03517353946698481}]}
-            ....:         ],
-            ....:     }
-            ....: else:
-            ....:     result = tester.nist_statistical_tests(
-            ....:         test_type='avalanche',
-            ....:         bits_in_one_sequence=1024,
-            ....:         number_of_sequences=2,
-            ....:         round_start=0,
-            ....:         round_end=5,
-            ....:         statistical_test_option_list='100000000000000',
-            ....:     )
+            sage: result = tester.nist_statistical_tests(
+            ....:     test_type='avalanche',
+            ....:     bits_in_one_sequence=1024,
+            ....:     number_of_sequences=2,
+            ....:     round_start=0,
+            ....:     round_end=5,
+            ....:     statistical_test_option_list='100000000000000',
+            ....: )
             sage: sorted(result.keys())
             ['input_parameters', 'test_results']
             sage: freq_round0 = result['test_results'][0]['randomness_test'][0]
@@ -129,7 +118,6 @@ class NISTStatisticalTests:
             'test_results': None,
         }
 
-        self.verbose = verbose
         dataset_generate_time = time.time()
         self.folder_prefix = os.getcwd() + '/test_reports/' + nist_report_folder_prefix
 
@@ -283,8 +271,6 @@ class NISTStatisticalTests:
         )
         nist_test['input_parameters']['bits_in_one_sequence'] = bits_in_one_sequence
         nist_test['input_parameters']['number_of_sequences'] = number_of_sequences
-
-        print('Finished.')
 
         return nist_test
 
