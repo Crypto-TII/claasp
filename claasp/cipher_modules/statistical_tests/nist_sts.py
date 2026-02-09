@@ -29,7 +29,7 @@ Reference:
 
 EXAMPLES::
 
-    sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+    sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
     sage: import numpy as np
     sage: np.random.seed(42)
     sage: random_bytes = np.random.randint(0, 256, size=1000, dtype=np.uint8)
@@ -72,63 +72,10 @@ higher-quality random sources to avoid false failures.
 
 import numpy as np
 import math
-import os
-import re
-import sys
 from typing import Any, Dict, List, Optional
 from scipy import special as spc
 from scipy.stats import chi2, norm
 from scipy.fft import fft
-
-
-__doctest_global_setup__ = """
-from sys import modules as _modules
-_mod = _modules.get('claasp.cipher_modules.statistical_tests.nist_sts') or _modules.get(__name__)
-if _mod is not None:
-    NISTTests = _mod.NISTTests
-"""
-
-
-_CWD_ROOT = os.path.abspath(os.getcwd())
-_CWD_PACKAGE_ROOT = os.path.join(_CWD_ROOT, "claasp")
-if os.path.isdir(os.path.join(_CWD_PACKAGE_ROOT, "claasp")) and _CWD_PACKAGE_ROOT not in sys.path:
-    sys.path.insert(0, _CWD_PACKAGE_ROOT)
-
-_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-if _REPO_ROOT not in sys.path:
-    sys.path.insert(0, _REPO_ROOT)
-
-try:
-    import types
-
-    package_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    stats_root = os.path.join(package_root, "cipher_modules", "statistical_tests")
-    cipher_root = os.path.join(package_root, "cipher_modules")
-
-    if "claasp" not in sys.modules:
-        claasp_pkg = types.ModuleType("claasp")
-        claasp_pkg.__path__ = [package_root]
-        sys.modules["claasp"] = claasp_pkg
-
-    if "claasp.cipher_modules" not in sys.modules:
-        cipher_pkg = types.ModuleType("claasp.cipher_modules")
-        cipher_pkg.__path__ = [cipher_root]
-        sys.modules["claasp.cipher_modules"] = cipher_pkg
-        setattr(sys.modules["claasp"], "cipher_modules", cipher_pkg)
-
-    if "claasp.cipher_modules.statistical_tests" not in sys.modules:
-        stats_pkg = types.ModuleType("claasp.cipher_modules.statistical_tests")
-        stats_pkg.__path__ = [stats_root]
-        sys.modules["claasp.cipher_modules.statistical_tests"] = stats_pkg
-        setattr(sys.modules["claasp.cipher_modules"], "statistical_tests", stats_pkg)
-
-    if "claasp.cipher_modules.statistical_tests.nist_sts" not in sys.modules:
-        sys.modules["claasp.cipher_modules.statistical_tests.nist_sts"] = sys.modules[__name__]
-    if "nist_sts" not in sys.modules:
-        sys.modules["nist_sts"] = sys.modules[__name__]
-    setattr(sys.modules["claasp.cipher_modules.statistical_tests"], "nist_sts", sys.modules[__name__])
-except Exception:
-    pass
 
 
 class NISTTests:
@@ -151,13 +98,11 @@ class NISTTests:
         from pathlib import Path
 
         candidates = []
-        seen = set()
-
         current = Path(__file__).resolve()
-        local_template = current.parent / "nist_sts_templates" / f"template{m}"
-        if local_template not in seen:
-            candidates.append(local_template)
-            seen.add(local_template)
+        for parent in current.parents:
+            candidates.append(parent / "sts-2.1.2-modified" / "templates" / f"template{m}")
+        candidates.append(Path("/opt") / "sts-2.1.2-modified" / "templates" / f"template{m}")
+        candidates.append(Path.cwd() / "sts-2.1.2-modified" / "templates" / f"template{m}")
 
         for path in candidates:
             if path.exists():
@@ -200,7 +145,7 @@ class NISTTests:
         
         EXAMPLES::
         
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: # From packed bytes
             sage: binary = NISTTests._ensure_binary_array(b'\xA5')
@@ -259,7 +204,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 1000, dtype=np.uint8)
             sage: result = NISTTests.frequency_test(binary_data)
@@ -302,7 +247,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 1000, dtype=np.uint8)
             sage: result = NISTTests.block_frequency_test(binary_data)
@@ -362,7 +307,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 1000, dtype=np.uint8)
             sage: result = NISTTests.cumulative_sums_test(binary_data)
@@ -429,7 +374,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 1000, dtype=np.uint8)
             sage: result = NISTTests.runs_test(binary_data)
@@ -490,7 +435,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 1000, dtype=np.uint8)
             sage: result = NISTTests.longest_run_test(binary_data)
@@ -590,7 +535,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 10000, dtype=np.uint8)
             sage: result = NISTTests.rank_test(binary_data)
@@ -722,7 +667,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 1000, dtype=np.uint8)
             sage: result = NISTTests.dft_test(binary_data)
@@ -784,7 +729,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 10000, dtype=np.uint8)
             sage: result = NISTTests.non_overlapping_template_test(binary_data)
@@ -988,7 +933,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 10000, dtype=np.uint8)
             sage: result = NISTTests.overlapping_template_test(binary_data)
@@ -1117,7 +1062,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 100000, dtype=np.uint8)
             sage: result = NISTTests.universal_test(binary_data)
@@ -1243,7 +1188,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 1000, dtype=np.uint8)
             sage: result = NISTTests.approximate_entropy_test(binary_data, m=2)
@@ -1311,7 +1256,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 10000, dtype=np.uint8)
             sage: result = NISTTests.random_excursions_test(binary_data)
@@ -1407,7 +1352,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 10000, dtype=np.uint8)
             sage: result = NISTTests.random_excursions_variant_test(binary_data)
@@ -1484,7 +1429,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 1000, dtype=np.uint8)
             sage: result = NISTTests.serial_test(binary_data, m=2)
@@ -1579,7 +1524,7 @@ class NISTTests:
 
         EXAMPLES::
 
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: binary_data = np.array([1, 0, 1, 1, 0, 1, 0, 1] * 10000, dtype=np.uint8)
             sage: result = NISTTests.linear_complexity_test(binary_data)
@@ -1726,7 +1671,7 @@ class NISTTests:
         
         EXAMPLES::
         
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: # Uniformly distributed p-values should pass
             sage: uniform_pvalues = np.linspace(0.05, 0.95, 100)
@@ -1832,7 +1777,7 @@ class NISTTests:
         
         EXAMPLES::
         
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: # Generate a few short random sequences
             sage: sequences = [np.random.randint(0, 2, 1000, dtype=np.uint8) for _ in range(3)]
@@ -2118,7 +2063,7 @@ class NISTTests:
         
         EXAMPLES::
         
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: sequences = [np.random.randint(0, 2, 10000, dtype=np.uint8) for _ in range(10)]
             sage: results = NISTTests.run_all_tests(sequences, test_names=['frequency'])
@@ -2319,7 +2264,7 @@ class NISTTests:
         
         EXAMPLES::
         
-            sage: import os, sys; sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), 'claasp'))); from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
+            sage: from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
             sage: import numpy as np
             sage: import tempfile
             sage: import os
@@ -2639,8 +2584,16 @@ _COMP_INFO_KEY_MAP = {
 
 def _normalize_key(text: str) -> str:
     text = text.strip().lower()
-    text = re.sub(r"[^a-z0-9]+", "_", text)
-    return text.strip("_")
+    normalized = []
+    last_sep = False
+    for ch in text:
+        if ch.isalnum():
+            normalized.append(ch)
+            last_sep = False
+        elif not last_sep:
+            normalized.append("_")
+            last_sep = True
+    return "".join(normalized).strip("_")
 
 
 def _parse_value(val: str) -> Any:
@@ -2653,22 +2606,169 @@ def _parse_value(val: str) -> Any:
         return val
 
 
+def _parse_number_token(text: str) -> Optional[float]:
+    text = text.strip()
+    if not text:
+        return None
+    token = ""
+    for ch in text:
+        if ch in "0123456789+-eE.":
+            token += ch
+        else:
+            break
+    if not token or token in {"+", "-", "."}:
+        return None
+    try:
+        return float(token)
+    except ValueError:
+        return None
+
+
+def _parse_int_token(text: str) -> Optional[int]:
+    text = text.strip()
+    if not text:
+        return None
+    token = ""
+    for ch in text:
+        if ch in "0123456789+-":
+            token += ch
+        else:
+            break
+    if not token or token in {"+", "-"}:
+        return None
+    try:
+        return int(token)
+    except ValueError:
+        return None
+
+
+def _parse_int_after_phrase(line_lower: str, phrase: str) -> Optional[int]:
+    idx = line_lower.find(phrase)
+    if idx == -1:
+        return None
+    after = line_lower[idx + len(phrase):]
+    eq_idx = after.find("=")
+    if eq_idx != -1:
+        after = after[eq_idx + 1:]
+    return _parse_int_token(after)
+
+
+def _parse_float_after_phrase(line_lower: str, phrase: str) -> Optional[float]:
+    idx = line_lower.find(phrase)
+    if idx == -1:
+        return None
+    after = line_lower[idx + len(phrase):]
+    eq_idx = after.find("=")
+    if eq_idx != -1:
+        after = after[eq_idx + 1:]
+    return _parse_number_token(after)
+
+
+def _parse_int_before_phrase(line_lower: str, phrase: str) -> Optional[int]:
+    idx = line_lower.find(phrase)
+    if idx == -1:
+        return None
+    before = line_lower[:idx].strip()
+    if not before:
+        return None
+    for token in reversed(before.split()):
+        value = _parse_int_token(token)
+        if value is not None:
+            return value
+    return None
+
+
+def _parse_comp_info_line(line: str) -> Optional[tuple]:
+    if not line.startswith("("):
+        return None
+    close_idx = line.find(")")
+    eq_idx = line.find("=")
+    if close_idx == -1 or eq_idx == -1 or close_idx > eq_idx:
+        return None
+    key = line[close_idx + 1:eq_idx].strip()
+    if not key:
+        return None
+    value = _parse_value(line[eq_idx + 1:].strip())
+    return key, value
+
+
+def _parse_header_info(line: str) -> Optional[Dict[str, Any]]:
+    tokens = line.replace("=", " = ").split()
+    mapping: Dict[str, str] = {}
+    i = 0
+    while i + 2 < len(tokens):
+        key = tokens[i]
+        if tokens[i + 1] == "=":
+            mapping[key] = tokens[i + 2]
+            i += 3
+        else:
+            i += 1
+    required = {"LAMBDA", "M", "N", "m", "n"}
+    if not required.issubset(mapping.keys()):
+        return None
+    try:
+        return {
+            "LAMBDA": float(mapping["LAMBDA"]),
+            "M": int(mapping["M"]),
+            "N": int(mapping["N"]),
+            "m": int(mapping["m"]),
+            "n": int(mapping["n"]),
+        }
+    except ValueError:
+        return None
+
+
+def _is_pvalue_label_prefix(line_lower: str, value_idx: int) -> bool:
+    j = value_idx - 1
+    while j >= 0 and line_lower[j] in "-_ ":
+        j -= 1
+    return j >= 0 and line_lower[j] == "p"
+
+
+def _parse_pvalue_label(line: str) -> Optional[str]:
+    line_lower = line.lower()
+    value_idx = line_lower.find("value")
+    if value_idx == -1 or not _is_pvalue_label_prefix(line_lower, value_idx):
+        return None
+    digits = ""
+    for ch in line_lower[value_idx + len("value"):]:
+        if ch.isdigit():
+            digits += ch
+        else:
+            break
+    if digits:
+        return f"p_value{digits}"
+    return None
+
+
+def _parse_pvalue_from_line(line: str) -> Optional[float]:
+    line_lower = line.lower()
+    value_idx = line_lower.find("value")
+    if value_idx == -1 or not _is_pvalue_label_prefix(line_lower, value_idx):
+        return None
+    eq_idx = line_lower.find("=", value_idx + len("value"))
+    if eq_idx == -1:
+        return None
+    return _parse_number_token(line_lower[eq_idx + 1:])
+
+
 def _extract_label(line: str, default_label: str = None) -> str:
-    pval_match = re.search(r"p[\-_ ]?value(\d+)", line, re.IGNORECASE)
-    if pval_match:
-        return f"p_value{pval_match.group(1)}"
+    pvalue_label = _parse_pvalue_label(line)
+    if pvalue_label:
+        return pvalue_label
 
-    state_match = re.search(r"state\s*=?\s*([-+]?\d+)", line, re.IGNORECASE)
-    if state_match:
-        return state_match.group(1)
+    line_lower = line.lower()
+    state_value = _parse_int_after_phrase(line_lower, "state")
+    if state_value is not None:
+        return str(state_value)
 
-    template_match = re.search(r"template\s*=?\s*(\d+)", line, re.IGNORECASE)
-    if template_match:
-        return f"template_{template_match.group(1)}"
+    template_value = _parse_int_after_phrase(line_lower, "template")
+    if template_value is not None:
+        return f"template_{template_value}"
 
-    if re.search(r"forward", line, re.IGNORECASE):
+    if "forward" in line_lower:
         return "forward"
-    if re.search(r"backward", line, re.IGNORECASE):
+    if "backward" in line_lower:
         return "backward"
 
     return default_label
@@ -2679,8 +2779,6 @@ def _parse_cumulative_sums_stats(path: str, alpha: float = 0.01, direction: str 
     current_seq = -1
     current_dir = None
     in_comp_info = False
-    pval_pattern = re.compile(r"p[\-_ ]?value\s*=\s*([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)", re.IGNORECASE)
-    comp_pattern = re.compile(r"\([a-z]\)\s*(.+?)\s*=\s*([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)")
     by_seq: Dict[int, Dict[str, Dict[str, Any]]] = {}
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
@@ -2708,17 +2806,18 @@ def _parse_cumulative_sums_stats(path: str, alpha: float = 0.01, direction: str 
                 continue
 
             if in_comp_info and current_dir is not None:
-                match = comp_pattern.search(line)
-                if match:
-                    key = _normalize_key(match.group(1))
+                comp_info = _parse_comp_info_line(line)
+                if comp_info:
+                    key, value = comp_info
+                    key = _normalize_key(key)
                     key = _COMP_INFO_KEY_MAP.get(key, key)
-                    by_seq[current_seq][current_dir][key] = _parse_value(match.group(2))
+                    by_seq[current_seq][current_dir][key] = value
                     continue
 
             if current_dir is not None:
-                match = pval_pattern.search(line)
-                if match:
-                    by_seq[current_seq][current_dir]["p_value"] = float(match.group(1))
+                p_value = _parse_pvalue_from_line(line)
+                if p_value is not None:
+                    by_seq[current_seq][current_dir]["p_value"] = float(p_value)
                     continue
 
     directions = [direction] if direction in {"forward", "backward"} else ["forward", "backward"]
@@ -2743,24 +2842,11 @@ def _parse_cumulative_sums_stats(path: str, alpha: float = 0.01, direction: str 
     return results
 
 
-try:
-    import builtins
-
-    if not hasattr(builtins, "NISTTests"):
-        builtins.NISTTests = NISTTests
-except Exception:
-    pass
-
-
 def _parse_linear_complexity_stats(path: str, alpha: float = 0.01) -> List[Dict]:
     results: List[Dict] = []
     current_m = None
     current_n = None
     discarded_bits = None
-    table_pattern = re.compile(
-        r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?|nan|-nan)\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?|nan|-nan)",
-        re.IGNORECASE,
-    )
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         for raw in f:
@@ -2768,48 +2854,47 @@ def _parse_linear_complexity_stats(path: str, alpha: float = 0.01) -> List[Dict]
             if not line:
                 continue
 
-            m_match = re.search(r"M\s*\(substring length\)\s*=\s*(\d+)", line, re.IGNORECASE)
-            if m_match:
-                current_m = int(m_match.group(1))
+            line_lower = line.lower()
+            m_value = _parse_int_after_phrase(line_lower, "m (substring length)")
+            if m_value is not None:
+                current_m = m_value
                 continue
 
-            n_match = re.search(r"N\s*\(number of substrings\)\s*=\s*(\d+)", line, re.IGNORECASE)
-            if n_match:
-                current_n = int(n_match.group(1))
+            n_value = _parse_int_after_phrase(line_lower, "n (number of substrings)")
+            if n_value is not None:
+                current_n = n_value
                 continue
 
-            discarded_match = re.search(r"(\d+)\s+bits\s+were\s+discarded", line, re.IGNORECASE)
-            if discarded_match:
-                discarded_bits = int(discarded_match.group(1))
+            discarded_value = _parse_int_before_phrase(line_lower, "bits were discarded")
+            if discarded_value is not None:
+                discarded_bits = discarded_value
                 continue
 
-            table_match = table_pattern.match(line)
-            if table_match:
-                frequency = [int(table_match.group(i)) for i in range(1, 8)]
+            parts = line.split()
+            if len(parts) >= 9:
                 try:
-                    chi_square = float(table_match.group(8))
+                    frequency = [int(parts[i]) for i in range(7)]
+                    chi_square = float(parts[7]) if parts[7].lower() not in {"nan", "-nan"} else float("nan")
+                    p_value = float(parts[8]) if parts[8].lower() not in {"nan", "-nan"} else float("nan")
                 except ValueError:
-                    chi_square = float("nan")
-                try:
-                    p_value = float(table_match.group(9))
-                except ValueError:
-                    p_value = float("nan")
-
-                comp_info = {
-                    "M": current_m,
-                    "N": current_n,
-                    "frequency": frequency,
-                    "discarded_bits": discarded_bits if discarded_bits is not None else 0,
-                    "chi_square": chi_square,
-                    "p_value": p_value,
-                }
-                results.append({
-                    "p_value": p_value,
-                    "passed": p_value >= alpha,
-                    "computational_information": comp_info,
-                    "sequence_index": len(results),
-                    "label": "main",
-                })
+                    frequency = None
+                if frequency is not None:
+                    comp_info = {
+                        "M": current_m,
+                        "N": current_n,
+                        "frequency": frequency,
+                        "discarded_bits": discarded_bits if discarded_bits is not None else 0,
+                        "chi_square": chi_square,
+                        "p_value": p_value,
+                    }
+                    results.append({
+                        "p_value": p_value,
+                        "passed": p_value >= alpha,
+                        "computational_information": comp_info,
+                        "sequence_index": len(results),
+                        "label": "main",
+                    })
+                    continue
 
     return results
 
@@ -2818,19 +2903,6 @@ def _parse_non_overlapping_template_stats(path: str, alpha: float = 0.01) -> Lis
     results: List[Dict] = []
     current_seq = -1
     header_info: Dict[str, Any] = {}
-
-    header_pattern = re.compile(
-        r"LAMBDA\s*=\s*([0-9]*\.?[0-9]+)\s+M\s*=\s*(\d+)\s+N\s*=\s*(\d+)\s+m\s*=\s*(\d+)\s+n\s*=\s*(\d+)",
-        re.IGNORECASE,
-    )
-    row_pattern = re.compile(
-        r"^(?P<template>[01]+)\s+"
-        r"(?P<w>(?:\d+\s+){7}\d+)\s+"
-        r"(?P<chi2>[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s+"
-        r"(?P<pvalue>[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s+"
-        r"(?P<assignment>SUCCESS|FAILURE)\s+"
-        r"(?P<index>\d+)"
-    )
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         for raw in f:
@@ -2843,24 +2915,24 @@ def _parse_non_overlapping_template_stats(path: str, alpha: float = 0.01) -> Lis
                 header_info = {}
                 continue
 
-            header_match = header_pattern.search(line)
-            if header_match:
-                header_info = {
-                    "LAMBDA": float(header_match.group(1)),
-                    "M": int(header_match.group(2)),
-                    "N": int(header_match.group(3)),
-                    "m": int(header_match.group(4)),
-                    "n": int(header_match.group(5)),
-                }
+            header = _parse_header_info(line)
+            if header:
+                header_info = header
                 continue
 
-            row_match = row_pattern.match(line)
-            if row_match:
-                w_values = [int(x) for x in row_match.group("w").split()]
-                chi_squared = float(row_match.group("chi2"))
-                p_value = float(row_match.group("pvalue"))
-                index = int(row_match.group("index"))
-                template = row_match.group("template")
+            parts = line.split()
+            if len(parts) >= 13 and all(ch in "01" for ch in parts[0]):
+                try:
+                    w_values = [int(x) for x in parts[1:9]]
+                    chi_squared = float(parts[9])
+                    p_value = float(parts[10])
+                    assignment = parts[11]
+                    index = int(parts[12])
+                except ValueError:
+                    continue
+                if assignment not in {"SUCCESS", "FAILURE"}:
+                    continue
+                template = parts[0]
 
                 comp_info = {
                     **header_info,
@@ -2917,7 +2989,7 @@ def _stats_indicates_not_applicable(path: str) -> bool:
 
 
 def _normalize_test_name(name: str) -> str:
-    normalized = re.sub(r"[^a-z0-9]+", "", name.lower())
+    normalized = "".join(ch for ch in name.lower() if ch.isalnum())
     if normalized in {"dft", "fft", "fouriertransform"}:
         return "fft"
     if normalized.startswith("cumulativesums"):
@@ -2937,21 +3009,35 @@ def _normalize_test_name(name: str) -> str:
 
 def parse_final_analysis_report(path: str) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
-    row_pattern = re.compile(
-        r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+"
-        r"([0-9]*\.?[0-9]+(?:[eE][-+]?\d+)?|----)\s*\*?\s+"
-        r"(\d+/\d+|------)\s*\*?\s+(.+)$"
-    )
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         for raw in f:
             line = raw.strip()
-            match = row_pattern.match(line)
-            if not match:
+            if not line:
                 continue
-            counts = [int(match.group(i)) for i in range(1, 11)]
-            p_value_raw = match.group(11)
-            proportion_raw = match.group(12)
-            test_name = match.group(13).strip()
+            parts = line.split()
+            if len(parts) < 12:
+                continue
+            try:
+                counts = [int(x) for x in parts[:10]]
+            except ValueError:
+                continue
+
+            idx = 10
+            if idx >= len(parts):
+                continue
+            p_value_raw = parts[idx]
+            idx += 1
+            if idx < len(parts) and parts[idx] == "*":
+                idx += 1
+            if idx >= len(parts):
+                continue
+            proportion_raw = parts[idx]
+            idx += 1
+            if idx < len(parts) and parts[idx] == "*":
+                idx += 1
+            test_name = " ".join(parts[idx:]).strip()
+            if not test_name:
+                continue
 
             uniformity_defined = p_value_raw != "----"
             if uniformity_defined:
@@ -2962,10 +3048,12 @@ def parse_final_analysis_report(path: str) -> List[Dict[str, Any]]:
             if proportion_raw == "------":
                 passed = 0
                 total = 0
-            else:
+            elif "/" in proportion_raw:
                 passed_str, total_str = proportion_raw.split("/", 1)
                 passed = int(passed_str)
                 total = int(total_str)
+            else:
+                continue
 
             rows.append({
                 "test_name": test_name,
@@ -2991,17 +3079,16 @@ def parse_nist_stats(path: str, test_config: Dict[str, Any], alpha: float = 0.01
     results: List[Dict] = []
     comp_info: Dict[str, Any] = {}
     in_comp_info = False
-    pval_pattern = re.compile(r"p[\-_ ]?value\d*\s*=\s*([0-9]*\.?[0-9]+(?:[eE][-+]?\d+)?)", re.IGNORECASE)
-    comp_pattern = re.compile(r"\([a-z]\)\s*(.+?)\s*=\s*([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)")
     table_parser = test_config.get("table_parser")
 
     per_sequence = test_config.get("per_sequence")
     if per_sequence is None:
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             for raw in f:
-                match = re.search(r"number of templates\s*=\s*(\d+)", raw, re.IGNORECASE)
-                if match:
-                    per_sequence = int(match.group(1))
+                line_lower = raw.lower()
+                value = _parse_int_after_phrase(line_lower, "number of templates")
+                if value is not None:
+                    per_sequence = value
                     break
     if per_sequence is None:
         per_sequence = 1
@@ -3019,20 +3106,22 @@ def parse_nist_stats(path: str, test_config: Dict[str, Any], alpha: float = 0.01
             if in_comp_info and line.startswith("-"):
                 continue
             if in_comp_info:
-                discarded_match = re.search(r"(\d+)\s+bits\s+were\s+discarded", line, re.IGNORECASE)
-                if discarded_match:
-                    comp_info["discarded_bits"] = int(discarded_match.group(1))
+                line_lower = line.lower()
+                discarded_value = _parse_int_before_phrase(line_lower, "bits were discarded")
+                if discarded_value is not None:
+                    comp_info["discarded_bits"] = discarded_value
                     continue
-                match = comp_pattern.search(line)
-                if match:
-                    key = _normalize_key(match.group(1))
+                comp_info_item = _parse_comp_info_line(line)
+                if comp_info_item:
+                    key, value = comp_info_item
+                    key = _normalize_key(key)
                     key = _COMP_INFO_KEY_MAP.get(key, key)
-                    comp_info[key] = _parse_value(match.group(2))
+                    comp_info[key] = value
                     continue
 
-            match = pval_pattern.search(line)
-            if match:
-                p_value = float(match.group(1))
+            p_value = _parse_pvalue_from_line(line)
+            if p_value is not None:
+                p_value = float(p_value)
                 label = _extract_label(line)
                 sequence_index = p_index // per_sequence
                 sub_index = p_index % per_sequence
@@ -3057,14 +3146,10 @@ def parse_nist_stats(path: str, test_config: Dict[str, Any], alpha: float = 0.01
                 continue
 
             if table_parser == "linear_complexity":
-                table_match = re.match(
-                    r"^\s*(\d+\s+){6}\d+\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?|nan|-nan)\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?|nan|-nan)",
-                    line,
-                    re.IGNORECASE,
-                )
-                if table_match:
+                parts = line.split()
+                if len(parts) >= 9:
                     try:
-                        p_value = float(table_match.group(3))
+                        p_value = float(parts[8]) if parts[8].lower() not in {"nan", "-nan"} else float("nan")
                     except ValueError:
                         p_value = float("nan")
                     sequence_index = p_index // per_sequence
@@ -3081,21 +3166,16 @@ def parse_nist_stats(path: str, test_config: Dict[str, Any], alpha: float = 0.01
                     continue
 
             if table_parser == "overlapping_template":
-                table_match = re.match(
-                    r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?|nan|-nan)\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?|nan|-nan)\s+\w+",
-                    line,
-                    re.IGNORECASE,
-                )
-                if table_match:
-                    freq = [int(table_match.group(i)) for i in range(1, 7)]
+                parts = line.split()
+                if len(parts) >= 9:
                     try:
-                        chi_squared = float(table_match.group(7))
+                        freq = [int(parts[i]) for i in range(6)]
+                        chi_squared = float(parts[6]) if parts[6].lower() not in {"nan", "-nan"} else float("nan")
+                        p_value = float(parts[7]) if parts[7].lower() not in {"nan", "-nan"} else float("nan")
                     except ValueError:
-                        chi_squared = float("nan")
-                    try:
-                        p_value = float(table_match.group(8))
-                    except ValueError:
-                        p_value = float("nan")
+                        freq = None
+                    if freq is None:
+                        continue
                     comp_info = {
                         **(comp_info or {}),
                         "FREQUENCY_0_1_2_3_4_>=5": freq,
