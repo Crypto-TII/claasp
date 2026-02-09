@@ -198,6 +198,55 @@ class Modular(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return declarations, constraints, and metadata for modular addition/subtraction in the CP
+        semi-deterministic truncated XOR differential model.
+        """
+
+        output_id_link = self.id
+        num_add = self.description[1]
+        all_inputs = []
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
+
+        if num_add != 2:
+            raise NotImplementedError(
+                "CP semi-deterministic truncated XOR differential is only implemented for binary modular operations"
+            )
+
+        input_len = len(all_inputs) // num_add
+        cp_declarations = []
+        cp_constraints = []
+
+        for i in range(num_add):
+            cp_declarations.append(f"array[0..{input_len - 1}] of var 0..2: pre_{output_id_link}_{i};")
+            cp_constraints.extend(
+                [f"constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};" for j in range(input_len)]
+            )
+
+        delta_carry = f"delta_carry_{output_id_link}"
+        costs = f"costs_{output_id_link}"
+        probability_var = f"probability_{output_id_link}"
+        pivot_var = f"p_{output_id_link}"
+
+        cp_declarations.extend(
+            [
+                f"array[0..{input_len - 1}] of var 0..2: {delta_carry};",
+                f"array[0..{input_len - 1}] of var {{100, 41, 19, 9, 4, 0}}: {costs};",
+                f"var 0..{input_len - 1}: {pivot_var};",
+                f"var int: {probability_var};",
+            ]
+        )
+
+        cp_constraints.append(
+            f"constraint counter_based_modadd_semideterministic(pre_{output_id_link}_0, pre_{output_id_link}_1, {output_id_link}, {delta_carry}, {pivot_var}, {costs}, {input_len}, {probability_var});"
+        )
+
+        metadata = {"probability_var": probability_var}
+
+        return cp_declarations, cp_constraints, metadata
+
     def cp_twoterms_xor_differential_probability(
         self, input_1, input_2, out, input_length, cp_constraints, cp_declarations, c, model
     ):

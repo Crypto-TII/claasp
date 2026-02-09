@@ -111,6 +111,9 @@ class CipherOutput(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_constraints()
+
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists declarations and constraints for OUTPUT component (both

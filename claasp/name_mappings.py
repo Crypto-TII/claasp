@@ -34,6 +34,8 @@ CIPHER = "cipher"
 XOR_DIFFERENTIAL = "xor_differential"
 XOR_LINEAR = "xor_linear"
 DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL = "deterministic_truncated_xor_differential"
+SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL = "semi_deterministic_truncated_xor_differential"
+SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION = "semi_deterministic_truncated_xor_differential_one_solution"
 IMPOSSIBLE_XOR_DIFFERENTIAL = "impossible_xor_differential"
 BOOMERANG_XOR_DIFFERENTIAL = "boomerang_xor_differential"
 

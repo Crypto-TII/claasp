@@ -115,4 +115,49 @@ predicate modular_addition_word(array[int] of var 0..2: a, array[int] of var 0..
 
 %Hamming weight of an array
 function var 0..512: Ham_weight(array[int] of var int: x) = sum(i in index_set(x))(x[i] != 0);
+
+
+function array[int] of var 0..2: TRUNCATED_XOR(array[int] of var 0..2: a, array[int] of var 0..2: b, array[int] of var 0..2: c)=
+  let { int: n = length(a) } in
+  array1d(0..n-1, [if a[j]<2 /\ b[j]<2 /\ c[j]<2 then sum([a[j], b[j], c[j]]) mod 2 else 2 endif| j in 0..n-1]);
+
+function array[int] of var 0..2: TRUNCATED_XOR(array[int] of var 0..2: a, array[int] of var 0..2: b)=
+  let { int: n = length(a) } in
+  array1d(0..n-1, [if a[j]<2 /\ b[j]<2 then sum([a[j], b[j]]) mod 2 else 2 endif| j in 0..n-1]);
+
+predicate counter_based_modadd_semideterministic(array[int] of var 0..2: a, array[int] of var 0..2: b, array[int] of var 0..2:c, array[int] of var 0..2:delta_carry, var int: p, array[int] of var {100, 41, 19, 9, 4, 0}: costs, int: windows_size, var int: probability) = ( 
+  let { 
+  int: n = length(a);
+  array [0..n-1] of var 0..windows_size: run_length;
+  } in
+  c =  TRUNCATED_XOR(a,b,delta_carry) /\\
+  delta_carry[n-1] = 0 /\\
+  run_length[n-1] = 0 /\\
+  forall(i in 0..n-2) (
+      if a[i+1] + b[i+1] = 0 /\\ delta_carry[i+1] = 2 then run_length[i] = run_length[i+1] + 1
+      else run_length[i] = 0
+      endif 
+  ) /\\  
+  forall(i in 0..n-2) (
+      % CASE 1: deterministic transitions
+      if a[i+1] = 0 /\\ b[i+1] = 0 /\\ c[i+1] = 0 then delta_carry[i] = 0 /\\ costs[i] = 0
+  elseif a[i+1] = 1 /\\ b[i+1] = 1 /\\ c[i+1] = 1 then delta_carry[i] = 1 /\\ costs[i] = 0
+      % CASE 2: we either pay to set the carry or have it unknown
+  else
+      % CASE 2A: Not paying
+      (delta_carry[i] = 2 /\\ costs[i] = 0) \\/
+      % CASE 2B: Paying, run_length = 0
+      (run_length[i] = 0 /\\ costs[i] = 100 /\\ delta_carry[i] = 0) \\/
+      (run_length[i] = 0 /\\ costs[i] = 100 /\\ delta_carry[i] = 1) \\/
+      % CASE 2C: Paying, run_length > 0, transition to 0
+          % (d, log) pairs: [(1, 41), (2, 19), (3, 9), (4, 4), (5, 2), (6, 1), (7, 0), (8, 0), (9, 0), (10, 0)]
+      (run_length[i] = 1 /\\ costs[i] = 41 /\\ delta_carry[i] = 0) \\/
+      (run_length[i] = 2 /\\ costs[i] = 19 /\\ delta_carry[i] = 0) \\/
+      (run_length[i] = 3 /\\ costs[i] = 9  /\\ delta_carry[i] = 0) \\/
+      (run_length[i] = 4 /\\ costs[i] = 4  /\\ delta_carry[i] = 0) \\/
+      (run_length[i] > 4 /\\ costs[i] = 0  /\\ delta_carry[i] = 0) 
+  endif 
+  )/\\
+  probability = sum(costs)
+  );
 """
