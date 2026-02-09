@@ -2,6 +2,7 @@ import math
 import os
 import sys
 from io import StringIO
+import pickle
 
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -128,6 +129,16 @@ def test_differential_checker_permutation():
     assert abs(probability_weight) < 2
 
 
+# def test_differential_truncated_checker_permutation():
+#     cipher = ChachaPermutation(number_of_rounds=3)
+#     input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
+#     output_difference = '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????????????????????????????????????????????????????????????????????1000000000000000????????????????????100000000000????????????????????????10000000????????????????????????????????????10000000????????????????????????????????????????????????1000000000000000????????????????????1000000000000000000010000000000010000000000000000000000000000000000000000000????????????????????????????????00000000000000001000000000000000'
+
+#     probability_weight = differential_truncated_checker_permutation(
+#         cipher, input_difference, output_difference, 1 << 12, 512, seed=42
+#     )
+#     assert abs(probability_weight) < 2
+
 def test_differential_truncated_checker_permutation():
     cipher = ChachaPermutation(number_of_rounds=3)
     input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
@@ -138,25 +149,12 @@ def test_differential_truncated_checker_permutation():
     )
     assert abs(probability_weight) < 2
 
-def test_differential_truncated_checker_permutation():
-    cipher = ChachaPermutation(number_of_rounds=3)
-    input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
-    output_difference = '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????????????????????????????????????????????????????????????????????1000000000000000????????????????????100000000000????????????????????????10000000????????????????????????????????????10000000????????????????????????????????????????????????1000000000000000????????????????????1000000000000000000010000000000010000000000000000000000000000000000000000000????????????????????????????????00000000000000001000000000000000'
 
-    probability_weight = differential_truncated_checker_permutation(
-        cipher, input_difference, output_difference, 1 << 12, 512, seed=42
-    )
-    assert abs(probability_weight) < 2
-
-
-def test_differential_truncated_checker_permutation_input_and_output_truncated():
-    chachaPermutation = ChachaPermutation(number_of_rounds=5, start_round=("even", "top"))
-    chachaPermutation_inv = chachaPermutation.cipher_inverse()
-    # TODO: 
+def test_differential_truncated_checker_permutation_input_and_output_truncated_inv():
     # - check the following backward truncated differential. 
     # - this backward distinguisher covers 2.5 rounds of ChaCha (5 half rounds).
     # - this backward distinguisher starts at the 7.5 round of ChaCha and ends at the 5th round of ChaCha. 
-    # - this distinguihser was found using MiniZinc semi-deterministic model (check correctness again). You can add more distinguishers to increase confidence.
+    # - this distinguisher was found using MiniZinc semi-deterministic model. You can add more distinguishers to increase confidence.
     # ================================================Distinguisher X_backward_0===================================================
     # Theoretical cost:  1.47
     # Input_diff for (X_backward_0)
@@ -170,20 +168,45 @@ def test_differential_truncated_checker_permutation_input_and_output_truncated()
     # 22222222222222222222222222222222 | 22222222222222222222222222222222 | 22222222222222220100222222222220 | 22222222222222222222222222222222
     # 22222222222222222222222222222222 | 22222222222222222222222222222222 | 22222222222222222222222222222221 | 22222222222222222222222222222222
     
-    input_trunc_diff = "" #TODO: add input trunc diff 
-    output_trunc_diff = "" #TODO: add output trunc diff
+    input_trunc_diff = "".join((
+        f"20220000022001201120202222222200201002022022112222000112002220020000202020202100000000002220002020020120010110001010100011010000",
+        f"22222222222222222222222222222222222222222222222222222222222222220222222222221022222222222022222222200000000022222221222222222222",
+        f"22222222222222200000000022222221222222222222222222222222222222220000222222221000000000000000000022222122222202222222222210222222",
+        f"22201210121022202022222121200020102220112101220002000000010210011010100011010000002012211001100010000200222000000000000000000000"
+    ))
+    output_trunc_diff = "".join((
+        f"22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222022222222222222222222222222222222",
+        f"22222222222222222222222222222222222222222222222222222222222222222222222222220222222222220222222022222222222222222222222222222222",
+        f"22222222222222222222222222222222222222222222222222222222222222222222222222222222010022222222222022222222222222222222222222222222",
+        f"22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222122222222222222222222222222222222"
+    ))
     number_of_samples = 1 << 12
     state_size = 512
-    # prob = differential_truncated_checker_permutation_input_and_output_truncated(
-    #     chachaPermutation_inv,
-    #     input_trunc_diff, 
-    #     output_trunc_diff,
-    #     number_of_samples,
-    #     state_size,
-    #     seed=None,
-    # )
-    #print(prob)
-    #import ipdb; ipdb.set_trace()
+    chachaPermutation = ChachaPermutation(number_of_rounds=5, start_round=("even", "top"))
+    inv_pickle_path = "tests/unit/cipher_modules/models/chacha_permutation_inv_5_rounds.pkl"
+    # first check if path exists, if not compute the inverse and save it to a pickle file for faster loading in the future.
+    if not os.path.isfile(inv_pickle_path):
+        chachaPermutation_inv = chachaPermutation.cipher_inverse()
+        with open(inv_pickle_path, "wb") as f:
+            pickle.dump(chachaPermutation_inv, f)
+    else:
+        import ipdb; ipdb.set_trace()
+        with open(inv_pickle_path, "rb") as f:
+            chachaPermutation_inv = pickle.load(f)
+
+    chachaPermutation_inv = chachaPermutation.cipher_inverse()
+    prob = differential_truncated_checker_permutation_input_and_output_truncated(
+        chachaPermutation_inv,
+        input_trunc_diff,
+        output_trunc_diff,
+        number_of_samples,
+        state_size,
+        seed=42,  # Use same seed as pattern generation
+    )
+    assert math.isfinite(prob)
+    observed_probability = 2 ** prob
+    assert math.isclose(observed_probability, 1 / 512, rel_tol=3)
+    print(f"ChaCha truncated differential: log2(prob) = {prob:.3f}, prob = {observed_probability:.6f}")
 
 
 def test_differential_truncated_checker_salsa_permutation_input_fixed_and_output_truncated():
@@ -303,8 +326,6 @@ def test_differential_truncated_checker_salsa_permutation_input_and_output_trunc
         return ''.join(pattern)
 
     output_trunc_diff = build_truncated_pattern(crowley_constraints, 512)
-    print(output_trunc_diff)
-    
     number_of_samples = 1 << 15
     state_size = 512
     prob = differential_truncated_checker_permutation_input_and_output_truncated(
@@ -313,7 +334,7 @@ def test_differential_truncated_checker_salsa_permutation_input_and_output_trunc
         output_trunc_diff,
         number_of_samples,
         state_size,
-        seed=43,  # Use same seed as pattern generation
+        seed=43,
     )
     assert math.isfinite(prob)
     observed_probability = 2 ** prob
