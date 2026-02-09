@@ -16,7 +16,7 @@ Test Coverage:
    - test_run_random_nist_statistics_test: Random dataset
    - test_run_low_density_nist_statistics_test: Low density dataset
    - test_run_high_density_nist_statistics_test: High density dataset
-   - test_run_CBC_nist_statistics_test: CBC dataset (skipped - too slow)
+   - test_run_CBC_nist_statistics_test: CBC dataset (with small parameters)
 """
 
 import os
@@ -129,106 +129,111 @@ def test_generate_chart_all():
 
 def test_run_avalanche_nist_statistics_test():
     """Test avalanche NIST statistics - OPTIMIZED for speed."""
-    tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    # Use smaller parameters: 10KB bits (1250 bytes), 10 sequences instead of 1MB/384
-    tests.nist_statistical_tests('avalanche', 
-                                 bits_in_one_sequence=10000,
-                                 number_of_sequences=10,
-                                 statistical_test_option_list='1'+14 * '0')
-    sys.stdout = old_stdout
-    return_str = result.getvalue()
-    assert return_str.find('Finished.') == len(return_str) - 10
+    tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=10))
+    # Use smaller parameters: 10KB bits (1250 bytes), 10 sequences instead of default 1MB/384, enough for Frequency test only
+    result = tests.nist_statistical_tests('avalanche', 
+                                          bits_in_one_sequence=10000,
+                                          number_of_sequences=10,
+                                          statistical_test_option_list='1'+14 * '0')
+    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert result['input_parameters']['test_type'] == 'avalanche'
+    assert result['input_parameters']['bits_in_one_sequence'] == 10000
+    assert result['input_parameters']['number_of_sequences'] == 10
+    freq_round0 = result['test_results'][0]['randomness_test'][0]
+    assert freq_round0['test_name'] == 'Frequency'
+    assert isinstance(freq_round0['p-value'], float)
+    assert isinstance(freq_round0['passed'], bool)
 
 def test_run_correlation_nist_statistics_test():
     """Test correlation NIST statistics - OPTIMIZED for speed."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
     # Use smaller parameters: 10KB bits, 10 sequences instead of 1MB/128
-    tests.nist_statistical_tests('correlation',
-                                 bits_in_one_sequence=10000,
-                                 number_of_sequences=10,
-                                 statistical_test_option_list='1'+14 * '0')
-    sys.stdout = old_stdout
-    return_str = result.getvalue()
-    assert return_str.find('Finished.') == len(return_str) - 10
+    result = tests.nist_statistical_tests('correlation',
+                                          bits_in_one_sequence=10000,
+                                          number_of_sequences=10,
+                                          statistical_test_option_list='1'+14 * '0')
+    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert result['input_parameters']['test_type'] == 'correlation'
+    assert result['input_parameters']['bits_in_one_sequence'] == 10000
+    assert result['input_parameters']['number_of_sequences'] == 10
+    freq_round0 = result['test_results'][0]['randomness_test'][0]
+    assert freq_round0['test_name'] == 'Frequency'
+    assert isinstance(freq_round0['p-value'], float)
+    assert isinstance(freq_round0['passed'], bool)
 
 @pytest.mark.skip("Takes too long")
-def test_run_CBC_nist_statistics_test():
+def test_run_cbc_nist_statistics_test():
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    tests.nist_statistical_tests('cbc',  statistical_test_option_list='1'+14 * '0')
-    sys.stdout = old_stdout
-    return_str = result.getvalue()
-    assert return_str.find('Finished.') == len(return_str) - 10
-
-
-def test_run_random_nist_statistics_test():
-    """Test random NIST statistics - OPTIMIZED for speed."""
-    tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    # Use smaller parameters: 10KB bits, 10 sequences
-    tests.nist_statistical_tests('random',
-                                 bits_in_one_sequence=10000,
-                                 number_of_sequences=10,
-                                 statistical_test_option_list='1'+14 * '0')
-    sys.stdout = old_stdout
-    return_str = result.getvalue()
-    assert return_str.find('Finished.') == len(return_str) - 10
-
-def test_run_low_density_nist_statistics_test():
-    """Test low density NIST statistics - OPTIMIZED for speed."""
-    tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    # Use smaller parameters: 10KB bits, 10 sequences
-    tests.nist_statistical_tests('low_density',
-                                 bits_in_one_sequence=10000,
-                                 number_of_sequences=10,
-                                 statistical_test_option_list='1'+14 * '0')
-    sys.stdout = old_stdout
-    return_str = result.getvalue()
-    assert return_str.find('Finished.') == len(return_str) - 10
-
-def test_run_high_density_nist_statistics_test():
-    """Test high density NIST statistics - OPTIMIZED for speed."""
-    tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    # Use smaller parameters: 10KB bits, 10 sequences
-    tests.nist_statistical_tests('high_density',
-                                 bits_in_one_sequence=10000,
-                                 number_of_sequences=10,
-                                 statistical_test_option_list='1'+14 * '0')
-    sys.stdout = old_stdout
-    return_str = result.getvalue()
-    assert return_str.find('Finished.') == len(return_str) - 10
-
+    result = tests.nist_statistical_tests('cbc',  statistical_test_option_list='1'+14 * '0')
+    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert result['input_parameters']['test_type'] == 'cbc'
 
 def test_run_cbc_nist_statistics_test_small():
     """Test CBC NIST statistics with small parameters."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    tests.nist_statistical_tests('cbc',
-                                 bits_in_one_sequence=10000,
-                                 number_of_sequences=10,
-                                 statistical_test_option_list='1'+14 * '0')
-    sys.stdout = old_stdout
-    return_str = result.getvalue()
-    assert return_str.find('Finished.') == len(return_str) - 10
+    result = tests.nist_statistical_tests('cbc',
+                                          bits_in_one_sequence=1024,
+                                          number_of_sequences=10,
+                                          statistical_test_option_list='1'+14 * '0')
+    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert result['input_parameters']['test_type'] == 'cbc'
+    assert result['input_parameters']['bits_in_one_sequence'] == 1024
+    assert result['input_parameters']['number_of_sequences'] == 10
+    freq_round0 = result['test_results'][0]['randomness_test'][0]
+    assert freq_round0['test_name'] == 'Frequency'
+    assert isinstance(freq_round0['p-value'], float)
+    assert isinstance(freq_round0['passed'], bool)
 
+def test_run_random_nist_statistics_test():
+    """Test random NIST statistics - OPTIMIZED for speed."""
+    tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
+    # Use smaller parameters: 10KB bits, 10 sequences
+    result = tests.nist_statistical_tests('random',
+                                          bits_in_one_sequence=10000,
+                                          number_of_sequences=10,
+                                          statistical_test_option_list='1'+14 * '0')
+    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert result['input_parameters']['test_type'] == 'random'
+    assert result['input_parameters']['bits_in_one_sequence'] == 10000
+    assert result['input_parameters']['number_of_sequences'] == 10
+    freq_round0 = result['test_results'][0]['randomness_test'][0]
+    assert freq_round0['test_name'] == 'Frequency'
+    assert isinstance(freq_round0['p-value'], float)
+    assert isinstance(freq_round0['passed'], bool)
+
+def test_run_low_density_nist_statistics_test():
+    """Test low density NIST statistics - OPTIMIZED for speed."""
+    tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
+    # Use smaller parameters: 10KB bits, 10 sequences
+    result = tests.nist_statistical_tests('low_density',
+                                          bits_in_one_sequence=10000,
+                                          number_of_sequences=10,
+                                          statistical_test_option_list='1'+14 * '0')
+    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert result['input_parameters']['test_type'] == 'low_density'
+    assert result['input_parameters']['bits_in_one_sequence'] == 10000
+    assert result['input_parameters']['number_of_sequences'] == 10
+    freq_round0 = result['test_results'][0]['randomness_test'][0]
+    assert freq_round0['test_name'] == 'Frequency'
+    assert isinstance(freq_round0['p-value'], float)
+    assert isinstance(freq_round0['passed'], bool)
+
+def test_run_high_density_nist_statistics_test():
+    """Test high density NIST statistics - OPTIMIZED for speed."""
+    tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
+    # Use smaller parameters: 10KB bits, 10 sequences
+    result = tests.nist_statistical_tests('high_density',
+                                          bits_in_one_sequence=10000,
+                                          number_of_sequences=10,
+                                          statistical_test_option_list='1'+14 * '0')
+    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert result['input_parameters']['test_type'] == 'high_density'
+    assert result['input_parameters']['bits_in_one_sequence'] == 10000
+    assert result['input_parameters']['number_of_sequences'] == 10
+    freq_round0 = result['test_results'][0]['randomness_test'][0]
+    assert freq_round0['test_name'] == 'Frequency'
+    assert isinstance(freq_round0['p-value'], float)
+    assert isinstance(freq_round0['passed'], bool)
 
 def test_convert_to_binary_array():
     """Test the _convert_to_binary_array method."""
