@@ -3009,6 +3009,15 @@ def _normalize_test_name(name: str) -> str:
 
 def parse_final_analysis_report(path: str) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
+    def _next_value(parts: List[str], start: int) -> Optional[tuple]:
+        idx = start
+        while idx < len(parts):
+            token = parts[idx].strip("*")
+            if token:
+                return token, idx + 1
+            idx += 1
+        return None
+
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         for raw in f:
             line = raw.strip()
@@ -3023,18 +3032,15 @@ def parse_final_analysis_report(path: str) -> List[Dict[str, Any]]:
                 continue
 
             idx = 10
-            if idx >= len(parts):
+            next_value = _next_value(parts, idx)
+            if next_value is None:
                 continue
-            p_value_raw = parts[idx]
-            idx += 1
-            if idx < len(parts) and parts[idx] == "*":
-                idx += 1
-            if idx >= len(parts):
+            p_value_raw, idx = next_value
+
+            next_value = _next_value(parts, idx)
+            if next_value is None:
                 continue
-            proportion_raw = parts[idx]
-            idx += 1
-            if idx < len(parts) and parts[idx] == "*":
-                idx += 1
+            proportion_raw, idx = next_value
             test_name = " ".join(parts[idx:]).strip()
             if not test_name:
                 continue
