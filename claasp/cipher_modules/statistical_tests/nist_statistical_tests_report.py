@@ -16,10 +16,11 @@
 # ****************************************************************************
 
 
+import math
 import os
 from datetime import datetime
 
-from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
+import matplotlib.pyplot as plt
 
 
 class NISTStatisticalTestsReport:
@@ -81,9 +82,82 @@ class NISTStatisticalTestsReport:
             dataset_dir = os.path.join(output_dir, self._safe_dir_name(data_type))
             os.makedirs(dataset_dir, exist_ok=True)
             for report in reports:
-                NISTStatisticalTests._generate_chart_round(report, dataset_dir, show_graph=False)
-            NISTStatisticalTests._generate_chart_all(reports, dataset_dir, show_graph=False)
+                self._generate_chart_round(report, dataset_dir, show_graph=False)
+            self._generate_chart_all(reports, dataset_dir, show_graph=False)
         return output_dir
+
+    @staticmethod
+    def _generate_chart_round(report_dict, output_dir='', show_graph=False):
+        if len(report_dict['randomness_test']) == 1:
+            return
+        print(f'Drawing round {report_dict["round"]} is in progress.')
+        x = [test['test_id'] for test in report_dict['randomness_test']]
+        y = [test['passed_proportion'] for test in report_dict['randomness_test']]
+
+        plt.clf()
+        for i in range(len(report_dict["number_of_sequences_threshold"])):
+            rate = report_dict["number_of_sequences_threshold"][i]["passed"] / \
+                   report_dict["number_of_sequences_threshold"][i]["total"]
+            if i == 0:
+                plt.hlines(rate, 0, 159, color="olive", linestyle="dashed")
+                plt.hlines(rate, 186, 188, color="olive", linestyle="dashed")
+            elif i == 1:
+                plt.hlines(rate, 160, 185, color="olive", linestyle="dashed")
+
+        plt.scatter(x, y, color="cadetblue")
+        plt.title(
+            f'{report_dict["cipher_name"]}:{report_dict["data_type"]}, Round " {report_dict["round"]+1}|{report_dict["rounds"]}')
+        plt.xlabel('Test ID')
+        plt.ylabel('Passing Rate')
+
+        if show_graph == False:
+            if output_dir == '':
+                output_dir = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]+1}.png'
+                plt.savefig(output_dir)
+            else:
+                plt.savefig(
+                    output_dir + '/' + f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]+1}.png')
+        else:
+            plt.show()
+            plt.clf()
+            plt.close()
+        print(f'Drawing round {report_dict["round"]} is finished.')
+
+    @staticmethod
+    def _generate_chart_all(report_dict_list, report_folder="", show_graph=False):
+        x = [i + 1 for i in range(report_dict_list[0]["round"], report_dict_list[-1]["round"] + 1)]
+        y = [report_dict_list[i]["passed_tests"] for i in range(len(report_dict_list))]
+
+        random_round = -1
+        for r in range(report_dict_list[0]["rounds"]):
+            if report_dict_list[r]["passed_tests"] > len(report_dict_list[0]['randomness_test']) * 0.98:
+                random_round = report_dict_list[r]["round"]
+                break
+
+        plt.clf()
+        plt.scatter(x, y, color="cadetblue")
+        plt.hlines(len(report_dict_list[0]['randomness_test']) * 0.98, 1, report_dict_list[0]["rounds"],
+                   color="darkorange", linestyle="dotted", linewidth=2,
+                   label=str(math.ceil(len(report_dict_list[0]['randomness_test']) * 0.98)))
+        plt.plot(x, y, 'o--', color='olive', alpha=0.4)
+        if random_round > -1:
+            plt.title(
+                f'{report_dict_list[0]["cipher_name"]}: {report_dict_list[0]["data_type"]}, Random at {random_round+1}|{report_dict_list[0]["rounds"]}')
+        else:
+            plt.title(f'{report_dict_list[0]["cipher_name"]}: {report_dict_list[0]["data_type"]}')
+        plt.xlabel('Round')
+        plt.ylabel('Tests passed')
+        plt.xticks([i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2) + 1)],
+                   [i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2 + 1))])
+        plt.yticks(list(range(math.ceil(len(report_dict_list[0]['randomness_test']) * 0.98))))
+        chart_filename = f'nist_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
+
+        if show_graph == False:
+            plt.savefig(os.path.join(report_folder, chart_filename))
+        else:
+            plt.show()
+            plt.clf()
+            plt.close()
 
     def _resolve_output_dir(self):
         if self.output_dir:

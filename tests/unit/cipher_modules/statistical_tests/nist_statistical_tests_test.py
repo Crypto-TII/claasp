@@ -6,11 +6,7 @@ Test Coverage:
 1. Core functionality tests:
     - test_run_nist_statistical_tests_tool: Tests Python-based NIST test execution
 
-2. Visualization tests:
-   - test_generate_chart_round: Tests chart generation for single round
-   - test_generate_chart_all: Tests chart generation for all rounds
-
-3. Dataset type tests:
+2. Dataset type tests:
    - test_run_avalanche_nist_statistics_test: Avalanche dataset
    - test_run_correlation_nist_statistics_test: Correlation dataset
    - test_run_random_nist_statistics_test: Random dataset
@@ -28,15 +24,14 @@ import numpy as np
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
 
+
 @pytest.fixture(scope="function", autouse=True)
 def cleanup_test_reports():
     """Fixture to clean up test_reports folder and chart PNG files after each test."""
-    yield  # Run the test
-    # Cleanup after test
+    yield
     if os.path.exists('test_reports'):
         shutil.rmtree('test_reports')
-    
-    # Remove any generated chart PNG files
+
     import glob
     for png_file in glob.glob('nist_*_toy_cipher*.png'):
         try:
@@ -46,8 +41,6 @@ def cleanup_test_reports():
 
 
 def test_run_nist_statistical_tests_tool():
-    # Test with Python implementation
-    # Test with binary data (input_file_format=0)
     binary_data = np.random.randint(0, 2, 100000, dtype=np.uint8)
     result = NISTStatisticalTests._run_nist_statistical_tests_tool(
         binary_data, 10000, 10, 0, statistical_test_option_list='1' + 14 * '0')
@@ -57,18 +50,16 @@ def test_run_nist_statistical_tests_tool():
     assert 'passed_tests' in result
     assert 'number_of_sequences_threshold' in result
     assert len(result['randomness_test']) > 0
-    assert result['randomness_test'][0]['total_seqs'] == 10  # Should have 10 sequences
+    assert result['randomness_test'][0]['total_seqs'] == 10
     assert result['randomness_test'][0]['passed_seqs'] <= 10
-    
-    # Test with byte data (input_file_format=1)
-    byte_data = np.random.randint(0, 256, 12500, dtype=np.uint8)  # 12500 bytes = 100000 bits
+
+    byte_data = np.random.randint(0, 256, 12500, dtype=np.uint8)
     result_bytes = NISTStatisticalTests._run_nist_statistical_tests_tool(
         byte_data, 10000, 10, 1, statistical_test_option_list='1' + 14 * '0')
-    
+
     assert isinstance(result_bytes, dict)
     assert result_bytes['randomness_test'][0]['total_seqs'] == 10
-    
-    # Test error case - insufficient data
+
     try:
         small_data = np.random.randint(0, 2, 5000, dtype=np.uint8)
         NISTStatisticalTests._run_nist_statistical_tests_tool(
@@ -78,64 +69,13 @@ def test_run_nist_statistical_tests_tool():
         assert "Insufficient data" in str(e)
 
 
-def test_generate_chart_round():
-    """Test chart generation for a single round - uses cached parsed report."""
-    # Use a minimal dict instead of parsing the full report file
-    dictio = {
-        'data_type': 'random',
-        'cipher_name': 'toy_cipher',
-        'round': 1,
-        'rounds': 1,
-        'number_of_sequences_threshold': [{'total': 10, 'passed': 8}],
-        'randomness_test': [
-            {'test_id': 1, 'passed': True, 'p-value': 0.5, 'passed_proportion': 0.8},
-            {'test_id': 2, 'passed': False, 'p-value': 0.01, 'passed_proportion': 0.5}
-        ]
-    }
-
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    NISTStatisticalTests._generate_chart_round(dictio)
-    sys.stdout = old_stdout
-
-    assert result.getvalue() == \
-           'Drawing round 1 is in progress.\n' \
-           'Drawing round 1 is finished.\n'
-
-
-def test_generate_chart_all():
-    """Test chart generation for all rounds - uses minimal dict."""
-    # Use a minimal dict instead of parsing the full report file
-    dictio = {
-        'data_type': 'random',
-        'cipher_name': 'toy_cipher',
-        'round': 1,
-        'rounds': 1,
-        'passed_tests': 10,
-        'randomness_test': [
-            {'test_id': i, 'passed': True, 'p-value': 0.5, 'passed_proportion': 0.8}
-            for i in range(1, 16)
-        ]
-    }
-    dict_list = [dictio]
-
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    NISTStatisticalTests._generate_chart_all(dict_list)
-    sys.stdout = old_stdout
-
-
 def test_run_avalanche_nist_statistics_test():
-    """Test avalanche NIST statistics - OPTIMIZED for speed."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=10))
-    # Use smaller parameters: 10KB bits (1250 bytes), 10 sequences instead of default 1MB/384, enough for Frequency test only
-    result = tests.nist_statistical_tests('avalanche', 
+    result = tests.nist_statistical_tests('avalanche',
                                           bits_in_one_sequence=10000,
                                           number_of_sequences=10,
                                           statistical_test_option_list='1'+14 * '0')
-    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert sorted(result.keys()) == ['execution_times', 'input_parameters', 'test_results']
     assert result['input_parameters']['test_type'] == 'avalanche'
     assert result['input_parameters']['bits_in_one_sequence'] == 10000
     assert result['input_parameters']['number_of_sequences'] == 10
@@ -144,15 +84,14 @@ def test_run_avalanche_nist_statistics_test():
     assert isinstance(freq_round0['p-value'], float)
     assert isinstance(freq_round0['passed'], bool)
 
+
 def test_run_correlation_nist_statistics_test():
-    """Test correlation NIST statistics - OPTIMIZED for speed."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    # Use smaller parameters: 10KB bits, 10 sequences instead of 1MB/128
     result = tests.nist_statistical_tests('correlation',
                                           bits_in_one_sequence=10000,
                                           number_of_sequences=10,
                                           statistical_test_option_list='1'+14 * '0')
-    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert sorted(result.keys()) == ['execution_times', 'input_parameters', 'test_results']
     assert result['input_parameters']['test_type'] == 'correlation'
     assert result['input_parameters']['bits_in_one_sequence'] == 10000
     assert result['input_parameters']['number_of_sequences'] == 10
@@ -161,21 +100,22 @@ def test_run_correlation_nist_statistics_test():
     assert isinstance(freq_round0['p-value'], float)
     assert isinstance(freq_round0['passed'], bool)
 
+
 @pytest.mark.skip("Takes too long")
 def test_run_cbc_nist_statistics_test():
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
     result = tests.nist_statistical_tests('cbc',  statistical_test_option_list='1'+14 * '0')
-    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert sorted(result.keys()) == ['execution_times', 'input_parameters', 'test_results']
     assert result['input_parameters']['test_type'] == 'cbc'
 
+
 def test_run_cbc_nist_statistics_test_small():
-    """Test CBC NIST statistics with small parameters."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
     result = tests.nist_statistical_tests('cbc',
                                           bits_in_one_sequence=1024,
                                           number_of_sequences=10,
                                           statistical_test_option_list='1'+14 * '0')
-    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert sorted(result.keys()) == ['execution_times', 'input_parameters', 'test_results']
     assert result['input_parameters']['test_type'] == 'cbc'
     assert result['input_parameters']['bits_in_one_sequence'] == 1024
     assert result['input_parameters']['number_of_sequences'] == 10
@@ -184,15 +124,14 @@ def test_run_cbc_nist_statistics_test_small():
     assert isinstance(freq_round0['p-value'], float)
     assert isinstance(freq_round0['passed'], bool)
 
+
 def test_run_random_nist_statistics_test():
-    """Test random NIST statistics - OPTIMIZED for speed."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    # Use smaller parameters: 10KB bits, 10 sequences
     result = tests.nist_statistical_tests('random',
                                           bits_in_one_sequence=10000,
                                           number_of_sequences=10,
                                           statistical_test_option_list='1'+14 * '0')
-    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert sorted(result.keys()) == ['execution_times', 'input_parameters', 'test_results']
     assert result['input_parameters']['test_type'] == 'random'
     assert result['input_parameters']['bits_in_one_sequence'] == 10000
     assert result['input_parameters']['number_of_sequences'] == 10
@@ -201,15 +140,14 @@ def test_run_random_nist_statistics_test():
     assert isinstance(freq_round0['p-value'], float)
     assert isinstance(freq_round0['passed'], bool)
 
+
 def test_run_low_density_nist_statistics_test():
-    """Test low density NIST statistics - OPTIMIZED for speed."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    # Use smaller parameters: 10KB bits, 10 sequences
     result = tests.nist_statistical_tests('low_density',
                                           bits_in_one_sequence=10000,
                                           number_of_sequences=10,
                                           statistical_test_option_list='1'+14 * '0')
-    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert sorted(result.keys()) == ['execution_times', 'input_parameters', 'test_results']
     assert result['input_parameters']['test_type'] == 'low_density'
     assert result['input_parameters']['bits_in_one_sequence'] == 10000
     assert result['input_parameters']['number_of_sequences'] == 10
@@ -218,15 +156,14 @@ def test_run_low_density_nist_statistics_test():
     assert isinstance(freq_round0['p-value'], float)
     assert isinstance(freq_round0['passed'], bool)
 
+
 def test_run_high_density_nist_statistics_test():
-    """Test high density NIST statistics - OPTIMIZED for speed."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    # Use smaller parameters: 10KB bits, 10 sequences
     result = tests.nist_statistical_tests('high_density',
                                           bits_in_one_sequence=10000,
                                           number_of_sequences=10,
                                           statistical_test_option_list='1'+14 * '0')
-    assert sorted(result.keys()) == ['input_parameters', 'test_results']
+    assert sorted(result.keys()) == ['execution_times', 'input_parameters', 'test_results']
     assert result['input_parameters']['test_type'] == 'high_density'
     assert result['input_parameters']['bits_in_one_sequence'] == 10000
     assert result['input_parameters']['number_of_sequences'] == 10
@@ -235,43 +172,36 @@ def test_run_high_density_nist_statistics_test():
     assert isinstance(freq_round0['p-value'], float)
     assert isinstance(freq_round0['passed'], bool)
 
+
 def test_convert_to_binary_array():
-    """Test the _convert_to_binary_array method."""
-    # Test with bytes
     data = b'\xA5\x5A'
     result = NISTStatisticalTests._convert_to_binary_array(data)
     assert isinstance(result, np.ndarray)
-    assert len(result) == 16  # 2 bytes = 16 bits
-    
-    # Test with bytearray
+    assert len(result) == 16
+
     data = bytearray([0xFF, 0x00])
     result = NISTStatisticalTests._convert_to_binary_array(data)
     assert len(result) == 16
 
 
 def test_format_test_result():
-    """Test the _format_test_result method."""
-    # Test with p_value
     test_result = {'passed': True, 'p_value': 0.5}
     formatted = NISTStatisticalTests._format_test_result('Frequency', test_result, 1, 10)
     assert formatted['test_id'] == 1
     assert formatted['test_name'] == 'Frequency'
     assert formatted['passed'] is True
     assert formatted['p-value'] == 0.5
-    
-    # Test with p_value1
+
     test_result = {'passed': True, 'p_value1': 0.3}
     formatted = NISTStatisticalTests._format_test_result('Serial', test_result, 186, 10)
     assert formatted['p-value'] == 0.3
-    
-    # Test with p_values (array)
+
     test_result = {'passed': True, 'p_values': [0.1, 0.2, 0.3]}
     formatted = NISTStatisticalTests._format_test_result('RandomExcursions', test_result, 160, 10)
     assert 0 <= formatted['p-value'] <= 1
 
 
 def test_run_cumsum_both_modes():
-    """Test the _run_cumsum_both_modes method."""
     binary_data = np.random.randint(0, 2, 1000, dtype=np.uint8)
     results = NISTStatisticalTests._run_cumsum_both_modes(binary_data)
     assert isinstance(results, list)
@@ -281,74 +211,39 @@ def test_run_cumsum_both_modes():
 
 
 def test_invalid_test_type():
-    """Test with invalid test_type to trigger error paths."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    
-    # This should return None due to invalid test type
+
     nist_result = tests.nist_statistical_tests('invalid_type',
                                                bits_in_one_sequence=10000,
                                                number_of_sequences=10)
     sys.stdout = old_stdout
-    # Should print error message and return None or handle gracefully
     assert nist_result is None or 'test_results' not in nist_result
 
 
 def test_multiple_statistical_tests():
-    """Test running multiple statistical tests simultaneously."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=1))
-    
-    # Run with multiple tests enabled
+
     result = tests.nist_statistical_tests('random',
                                           bits_in_one_sequence=10000,
                                           number_of_sequences=10,
                                           statistical_test_option_list='1111000000000000')
-    
     assert result is not None
     assert 'test_results' in result
     assert len(result['test_results']) > 0
 
 
 def test_multiple_rounds():
-    """Test with multiple rounds."""
     tests = NISTStatisticalTests(SimonBlockCipher(number_of_rounds=3))
-    
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    
+
     nist_result = tests.nist_statistical_tests('random',
                                                bits_in_one_sequence=10000,
                                                number_of_sequences=10,
                                                round_start=0,
                                                round_end=2,
                                                statistical_test_option_list='1'+14*'0')
-    sys.stdout = old_stdout
-    
     assert nist_result is not None
     assert 'test_results' in nist_result
-    assert len(nist_result['test_results']) == 2  # rounds 0 and 1
-
-
-def test_generate_chart_with_single_test():
-    """Test chart generation with single test (edge case)."""
-    dictio = {
-        'data_type': 'random',
-        'cipher_name': 'toy_cipher',
-        'round': 0,
-        'rounds': 1,
-        'number_of_sequences_threshold': [{'total': 10, 'passed': 8}],
-        'randomness_test': [{'test_id': 1, 'passed': True, 'p-value': 0.5, 'passed_proportion': 0.8}]
-    }
-    
-    old_stdout = sys.stdout
-    result = StringIO()
-    sys.stdout = result
-    NISTStatisticalTests._generate_chart_round(dictio)
-    sys.stdout = old_stdout
-    
-    # Should handle single test gracefully
-    output = result.getvalue()
-    assert 'Drawing round 0 is in progress' in output or len(dictio['randomness_test']) == 1
+    assert len(nist_result['test_results']) == 2

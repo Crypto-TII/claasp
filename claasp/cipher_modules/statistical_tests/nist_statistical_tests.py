@@ -16,12 +16,10 @@
 # ****************************************************************************
 
 
-import os
 import math
 import time
-from datetime import timedelta, datetime
+from datetime import datetime
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType
@@ -49,7 +47,17 @@ TEST_ID_TABLE = {
 
 class NISTStatisticalTests:
     """
-    Wrapper for running NIST STS tests on cipher-generated datasets.
+    Run NIST STS-style tests on cipher-generated datasets and return structured JSON.
+
+    INPUT:
+
+    - ``cipher`` -- **cipher**; cipher instance used to generate datasets.
+
+    OUTPUT:
+
+    - A dictionary containing ``input_parameters``, ``execution_times``, and ``test_results``.
+      Each entry in ``test_results`` is a per-round report with ``randomness_test`` entries
+      for each statistical test.
 
     EXAMPLES::
 
@@ -79,7 +87,26 @@ class NISTStatisticalTests:
         statistical_test_option_list=15 * '1',
     ):
         """
-        Run NIST STS tests for a dataset generated from the cipher.
+                Run NIST STS tests for a dataset generated from the cipher.
+
+                INPUT:
+
+                - ``test_type`` -- **str**; one of ``avalanche``, ``correlation``, ``cbc``,
+                    ``random``, ``low_density``, ``high_density``.
+                - ``bits_in_one_sequence`` -- **int** or ``'default'``; number of bits per sequence.
+                - ``number_of_sequences`` -- **int** or ``'default'``; number of sequences.
+                - ``input_index`` -- **int**; which cipher input to use.
+                - ``round_start`` -- **int**; first round index (inclusive).
+                - ``round_end`` -- **int**; last round index (exclusive). ``0`` means all rounds.
+                - ``nist_report_folder_prefix`` -- **str**; preserved in ``input_parameters`` for traceability.
+                - ``statistical_test_option_list`` -- **str**; 15-bit mask selecting tests.
+
+                OUTPUT:
+
+                - A dictionary with ``input_parameters``, ``execution_times`` and ``test_results``.
+                    ``execution_times`` includes dataset generation time and per-round execution times.
+                    ``test_results`` is a list of per-round reports; each report includes
+                    ``randomness_test`` entries with per-test p-values and pass/fail status.
 
         EXAMPLES::
 
@@ -98,7 +125,7 @@ class NISTStatisticalTests:
             ....:     statistical_test_option_list='100000000000000',
             ....: )
             sage: sorted(result.keys())
-            ['input_parameters', 'test_results']
+            ['execution_times', 'input_parameters', 'test_results']
             sage: freq_round0 = result['test_results'][0]['randomness_test'][0]
             sage: freq_round0['test_name']
             'Frequency'
@@ -114,12 +141,17 @@ class NISTStatisticalTests:
                 'round_start': round_start,
                 'round_end': round_end,
                 'input': self.cipher.inputs[input_index],
+                'report_folder_prefix': nist_report_folder_prefix,
+            },
+            'execution_times': {
+                'dataset_generation_seconds': 0.0,
+                'rounds_seconds': {},
+                'total_seconds': 0.0,
             },
             'test_results': None,
         }
 
         dataset_generate_time = time.time()
-        self.folder_prefix = os.getcwd() + '/test_reports/' + nist_report_folder_prefix
 
         if round_end == 0:
             round_end = self.cipher.number_of_rounds
@@ -139,8 +171,6 @@ class NISTStatisticalTests:
             self.number_of_samples_in_one_sequence = number_of_samples_in_one_sequence
             self.number_of_samples = self.number_of_samples_in_one_sequence * (self.number_of_sequences + 1)
             self.bits_in_one_sequence = sample_size * self.number_of_samples_in_one_sequence
-            self._create_report_folder(time_date, statistical_test_option_list)
-
             dataset = self.data_generator.generate_avalanche_dataset(
                 input_index=self.input_index,
                 number_of_samples=self.number_of_samples,
@@ -158,8 +188,6 @@ class NISTStatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = number_of_blocks_in_one_sample * self.cipher.output_bit_size
-            self._create_report_folder(time_date, statistical_test_option_list)
-
             dataset = self.data_generator.generate_correlation_dataset(
                 input_index=self.input_index,
                 number_of_samples=self.number_of_samples,
@@ -178,8 +206,6 @@ class NISTStatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = number_of_blocks_in_one_sample * self.cipher.output_bit_size
-            self._create_report_folder(time_date, statistical_test_option_list)
-
             dataset = self.data_generator.generate_cbc_dataset(
                 input_index=self.input_index,
                 number_of_samples=self.number_of_samples,
@@ -198,8 +224,6 @@ class NISTStatisticalTests:
             self.number_of_sequences = number_of_sequences
             self.number_of_samples = self.number_of_sequences + 1
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-            self._create_report_folder(time_date, statistical_test_option_list)
-
             dataset = self.data_generator.generate_random_dataset(
                 input_index=self.input_index,
                 number_of_samples=self.number_of_samples,
@@ -221,8 +245,6 @@ class NISTStatisticalTests:
             ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
             self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-            self._create_report_folder(time_date, statistical_test_option_list)
-
             dataset = self.data_generator.generate_low_density_dataset(
                 input_index=self.input_index,
                 number_of_samples=self.number_of_samples,
@@ -244,8 +266,6 @@ class NISTStatisticalTests:
             ratio = min(1, (number_of_blocks_in_one_sample - 1 - n) / math.comb(n, 2))
             self.number_of_blocks_in_one_sample = int(1 + n + math.ceil(math.comb(n, 2) * ratio))
             self.bits_in_one_sequence = self.number_of_blocks_in_one_sample * self.cipher.output_bit_size
-            self._create_report_folder(time_date, statistical_test_option_list)
-
             dataset = self.data_generator.generate_high_density_dataset(
                 input_index=self.input_index,
                 number_of_samples=self.number_of_samples,
@@ -260,7 +280,7 @@ class NISTStatisticalTests:
         dataset_generate_time = time.time() - dataset_generate_time
         if not dataset:
             return
-        self._write_execution_time(f'Compute {self.dataset_type.value}', dataset_generate_time)
+        nist_test['execution_times']['dataset_generation_seconds'] = dataset_generate_time
 
         nist_test['test_results'] = self._generate_nist_dicts(
             time_date=time_date,
@@ -268,9 +288,14 @@ class NISTStatisticalTests:
             round_start=round_start,
             round_end=round_end,
             statistical_test_option_list=statistical_test_option_list,
+            execution_times=nist_test['execution_times'],
         )
         nist_test['input_parameters']['bits_in_one_sequence'] = bits_in_one_sequence
         nist_test['input_parameters']['number_of_sequences'] = number_of_sequences
+        nist_test['execution_times']['total_seconds'] = (
+            nist_test['execution_times']['dataset_generation_seconds']
+            + sum(nist_test['execution_times']['rounds_seconds'].values())
+        )
 
         return nist_test
 
@@ -466,97 +491,15 @@ class NISTStatisticalTests:
             NISTTests.cumulative_sums_test(binary_data, mode=1),
         ]
 
-    @staticmethod
-    def _generate_chart_round(report_dict, output_dir='', show_graph=False):
-        if len(report_dict['randomness_test']) == 1:
-            return
-        print(f'Drawing round {report_dict["round"]} is in progress.')
-        x = [test['test_id'] for test in report_dict['randomness_test']]
-        y = [test['passed_proportion'] for test in report_dict['randomness_test']]
-
-        plt.clf()
-        for i in range(len(report_dict["number_of_sequences_threshold"])):
-            rate = report_dict["number_of_sequences_threshold"][i]["passed"] / \
-                   report_dict["number_of_sequences_threshold"][i]["total"]
-            if i == 0:
-                plt.hlines(rate, 0, 159, color="olive", linestyle="dashed")
-                plt.hlines(rate, 186, 188, color="olive", linestyle="dashed")
-            elif i == 1:
-                plt.hlines(rate, 160, 185, color="olive", linestyle="dashed")
-
-        plt.scatter(x, y, color="cadetblue")
-        plt.title(
-            f'{report_dict["cipher_name"]}:{report_dict["data_type"]}, Round " {report_dict["round"]+1}|{report_dict["rounds"]}')
-        plt.xlabel('Test ID')
-        plt.ylabel('Passing Rate')
-
-        if show_graph == False:
-            if output_dir == '':
-                output_dir = f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]+1}.png'
-                plt.savefig(output_dir)
-            else:
-                plt.savefig(
-                    output_dir + '/' + f'nist_{report_dict["data_type"]}_{report_dict["cipher_name"]}_round_{report_dict["round"]+1}.png')
-        else:
-            plt.show()
-            plt.clf()
-            plt.close()
-        print(f'Drawing round {report_dict["round"]} is finished.')
-
-    @staticmethod
-    def _generate_chart_all(report_dict_list, report_folder="", show_graph=False):
-        x = [i + 1 for i in range(report_dict_list[0]["round"], report_dict_list[-1]["round"] + 1)]
-        y = [report_dict_list[i]["passed_tests"] for i in range(len(report_dict_list))]
-
-        random_round = -1
-        for r in range(report_dict_list[0]["rounds"]):
-            if report_dict_list[r]["passed_tests"] > len(report_dict_list[0]['randomness_test']) * 0.98:
-                random_round = report_dict_list[r]["round"]
-                break
-
-        plt.clf()
-        plt.scatter(x, y, color="cadetblue")
-        plt.hlines(len(report_dict_list[0]['randomness_test']) * 0.98, 1, report_dict_list[0]["rounds"],
-                   color="darkorange", linestyle="dotted", linewidth=2,
-                   label=str(math.ceil(len(report_dict_list[0]['randomness_test']) * 0.98)))
-        plt.plot(x, y, 'o--', color='olive', alpha=0.4)
-        if random_round > -1:
-            plt.title(
-                f'{report_dict_list[0]["cipher_name"]}: {report_dict_list[0]["data_type"]}, Random at {random_round+1}|{report_dict_list[0]["rounds"]}')
-        else:
-            plt.title(f'{report_dict_list[0]["cipher_name"]}: {report_dict_list[0]["data_type"]}')
-        plt.xlabel('Round')
-        plt.ylabel('Tests passed')
-        plt.xticks([i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2) + 1)],
-                   [i * 2 + 1 for i in range(int(report_dict_list[0]["rounds"] / 2 + 1))])
-        plt.yticks(list(range(math.ceil(len(report_dict_list[0]['randomness_test']) * 0.98))))
-        chart_filename = f'nist_{report_dict_list[0]["data_type"]}_{report_dict_list[0]["cipher_name"]}.png'
-
-        if show_graph == False:
-            plt.savefig(os.path.join(report_folder, chart_filename))
-        else:
-            plt.show()
-            plt.clf()
-            plt.close()
-
-    def _create_report_folder(self, time_date, statistical_test_option_list):
-        self.report_folder = os.path.join(
-            self.folder_prefix,
-            f'{self._cipher_primitive}_{self.dataset_type.name}_index{self.input_index}_{self.number_of_sequences}lines_{self.bits_in_one_sequence}bits_{statistical_test_option_list}test_option_list_{time_date}time',
-        )
-        try:
-            os.makedirs(self.report_folder)
-        except OSError:
-            pass
-
-    def _write_execution_time(self, execution_description, execution_time):
-        try:
-            with open(os.path.join(self.report_folder, 'execution_time.txt'), 'a') as f_out:
-                f_out.write(f'{execution_description}: {timedelta(seconds=execution_time)}\n')
-        except Exception as e:
-            print(f'Error: {e.strerror}')
-
-    def _generate_nist_dicts(self, time_date, dataset, round_start, round_end, statistical_test_option_list=15 * '1'):
+    def _generate_nist_dicts(
+        self,
+        time_date,
+        dataset,
+        round_start,
+        round_end,
+        statistical_test_option_list=15 * '1',
+        execution_times=None,
+    ):
         sts_report_dicts = []
 
         for round_number in range(round_start, round_end):
@@ -570,7 +513,8 @@ class NISTStatisticalTests:
                 statistical_test_option_list=statistical_test_option_list,
             )
             sts_execution_time = time.time() - sts_execution_time
-            self._write_execution_time(f'Compute round {round_number}', sts_execution_time)
+            if execution_times is not None:
+                execution_times['rounds_seconds'][round_number] = sts_execution_time
 
             sts_report_dict['data_type'] = f'{self.cipher.inputs[self.input_index]}_{self.dataset_type.value}'
             sts_report_dict['cipher_name'] = f'{self.cipher.id}'
@@ -580,9 +524,3 @@ class NISTStatisticalTests:
 
         return sts_report_dicts
 
-    def _generate_chart_for_all_rounds(self, flag_chart, sts_report_dicts):
-        if flag_chart:
-            try:
-                self._generate_chart_all(sts_report_dicts, self.report_folder)
-            except OSError:
-                print('Error in generating all round chart.')
