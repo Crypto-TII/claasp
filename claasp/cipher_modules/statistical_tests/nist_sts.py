@@ -97,16 +97,10 @@ class NISTTests:
     def _find_template_file(m):
         from pathlib import Path
 
-        candidates = []
-        current = Path(__file__).resolve()
-        for parent in current.parents:
-            candidates.append(parent / "sts-2.1.2-modified" / "templates" / f"template{m}")
-        candidates.append(Path("/opt") / "sts-2.1.2-modified" / "templates" / f"template{m}")
-        candidates.append(Path.cwd() / "sts-2.1.2-modified" / "templates" / f"template{m}")
-
-        for path in candidates:
-            if path.exists():
-                return path
+        template_dir = Path(__file__).resolve().parent / "nist_sts_templates"
+        template_path = template_dir / f"template{m}"
+        if template_path.exists():
+            return template_path
         return None
 
     @staticmethod
