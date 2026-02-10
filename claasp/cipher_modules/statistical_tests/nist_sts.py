@@ -94,6 +94,190 @@ class NISTTests:
     _TEMPLATE_CACHE = {}
 
     @staticmethod
+    def _normalize_test_option_list(tests, strict=False):
+        """
+        Validate and normalize the 15-character test-selection mask.
+
+        INPUT:
+
+        - ``tests`` -- **str**; string of '0' and '1'. Should be 15 characters for strict mode, but can be shorter (padded with '0') or longer (truncated) if strict=False.
+        - ``strict`` -- **bool**; when ``True``, require exactly 15 characters.
+
+        OUTPUT:
+
+        - **str**; validated test mask (exactly 15 characters).
+        """
+        if tests is None:
+            return "111111111111111"
+        option = str(tests)
+        if any(ch not in "01" for ch in option):
+            raise ValueError("tests parameter must contain only '0' or '1' characters")
+        if strict:
+            if len(option) != 15:
+                raise ValueError("tests parameter must be exactly 15 characters (e.g., '111111111111111')")
+            return option
+        if len(option) < 15:
+            return option.ljust(15, "0")
+        return option[:15]
+
+    @staticmethod
+    def _build_report_row(test_entry, test_id, display_name):
+        """
+        Build a report-row dict from a run_all_tests test entry.
+
+        INPUT:
+
+        - ``test_entry`` -- **dict**; entry from ``results['tests']``.
+        - ``test_id`` -- **int**; numeric identifier used in report output.
+        - ``display_name`` -- **str**; NIST-style test name for reporting.
+
+        OUTPUT:
+
+        - **dict**; row with report fields used by higher-level wrappers.
+        """
+        row = {
+            'test_id': test_id,
+            'test_name': display_name,
+            'passed': bool(test_entry.get('passed', False)),
+            'p-value': float(test_entry.get('uniformity_p_value', 0.0))
+            if test_entry.get('uniformity_p_value') is not None else 0.0,
+            'passed_seqs': int(test_entry.get('passed_sequences', 0)),
+            'total_seqs': int(test_entry.get('total_sequences', 0)),
+            'passed_proportion': float(test_entry.get('proportion', 0.0)),
+        }
+        for i in range(10):
+            row[f'C{i+1}'] = '0'
+        return row
+
+    @staticmethod
+    def _test_name_map():
+        """Return the canonical test name ordering used by the option mask."""
+        return [
+            'frequency',
+            'block_frequency',
+            'cumulative_sums',
+            'runs',
+            'longest_run',
+            'rank',
+            'dft',
+            'non_overlapping_template',
+            'overlapping_template',
+            'universal',
+            'approximate_entropy',
+            'random_excursions',
+            'random_excursions_variant',
+            'serial',
+            'linear_complexity',
+        ]
+
+    @staticmethod
+    def _format_test_name(raw_name):
+        """Map a raw test name to the NIST STS display name."""
+        if raw_name.startswith('random_excursions_variant_'):
+            return 'RandomExcursionsVariant'
+        if raw_name.startswith('random_excursions_'):
+            return 'RandomExcursions'
+        if raw_name.startswith('cumulative_sums_'):
+            return 'CumulativeSums'
+        if raw_name.startswith('serial_'):
+            return 'Serial'
+        if raw_name.startswith('non_overlapping_template_'):
+            return 'NonOverlappingTemplate'
+
+        mapping = {
+            'frequency': 'Frequency',
+            'block_frequency': 'BlockFrequency',
+            'cumulative_sums': 'CumulativeSums',
+            'runs': 'Runs',
+            'longest_run': 'LongestRun',
+            'rank': 'Rank',
+            'dft': 'FFT',
+            'non_overlapping_template': 'NonOverlappingTemplate',
+            'overlapping_template': 'OverlappingTemplate',
+            'universal': 'Universal',
+            'approximate_entropy': 'ApproximateEntropy',
+            'random_excursions': 'RandomExcursions',
+            'random_excursions_variant': 'RandomExcursionsVariant',
+            'serial': 'Serial',
+            'linear_complexity': 'LinearComplexity',
+        }
+        return mapping.get(raw_name, raw_name)
+
+    @staticmethod
+    def _build_report_from_results(results, test_id_table):
+        """
+        Build a report-style dict from NIST STS JSON results.
+
+        INPUT:
+
+        - ``results`` -- **dict**; output from ``NISTTests.run_all_tests``.
+        - ``test_id_table`` -- **dict**; mapping from display names to test IDs.
+
+        OUTPUT:
+
+        - **dict**; a report-like structure that mirrors the NIST final report.
+        """
+        test_list = []
+        counts_by_base = {}
+        for test in results.get('tests', []):
+            raw_name = test.get('test_name', '')
+            base_name = NISTTests._format_test_name(raw_name)
+            counts_by_base.setdefault(base_name, 0)
+            test_id = test_id_table.get(base_name, 0) + counts_by_base[base_name]
+            counts_by_base[base_name] += 1
+            test_list.append(NISTTests._build_report_row(test, test_id, base_name))
+
+        passed_tests = sum(1 for test in test_list if test['passed'])
+
+        n = results.get('num_sequences', 0) or 0
+        alpha = results.get('alpha', 0.01)
+        thresholds = []
+        if n > 0:
+            p_hat = 1.0 - alpha
+            threshold = int((p_hat - 3.0 * math.sqrt((p_hat * alpha) / n)) * n)
+            thresholds.append({'total': n, 'passed': threshold})
+
+        re_sample = None
+        for test in results.get('tests', []):
+            if 'random_excursions' in test.get('test_name', '') and test.get('total_sequences', 0) > 0:
+                re_sample = int(test.get('total_sequences', 0))
+                break
+        if re_sample:
+            p_hat = 1.0 - alpha
+            threshold = int((p_hat - 3.0 * math.sqrt((p_hat * alpha) / re_sample)) * re_sample)
+            thresholds.append({'total': re_sample, 'passed': threshold})
+
+        return {
+            'passed_tests': passed_tests,
+            'number_of_sequences_threshold': thresholds,
+            'randomness_test': test_list,
+        }
+
+    @staticmethod
+    def _format_test_result(test_name, result, test_id, total_seqs):
+        """Format a single test result into the report schema."""
+        formatted = {
+            'test_id': test_id,
+            'test_name': test_name,
+            'passed': result.get('passed', False),
+        }
+        if 'p_value' in result:
+            formatted['p-value'] = result['p_value']
+        elif 'p_value1' in result:
+            formatted['p-value'] = result['p_value1']
+        elif 'p_values' in result:
+            formatted['p-value'] = float(np.mean(result['p_values']))
+        else:
+            formatted['p-value'] = 0.0
+
+        formatted['passed_seqs'] = 1 if result.get('passed', False) else 0
+        formatted['total_seqs'] = 1
+        formatted['passed_proportion'] = 1.0 if result.get('passed', False) else 0.0
+        for i in range(10):
+            formatted[f'C{i+1}'] = '0'
+        return formatted
+
+    @staticmethod
     def _find_template_file(m):
         from pathlib import Path
 
@@ -1741,24 +1925,24 @@ class NISTTests:
         
         INPUT:
         
-        - ``sequences`` -- **list of numpy arrays**; list of binary sequences to test
-        - ``test_names`` -- **list** (optional); names of tests to run. If None, runs all tests.
-          Valid names: 'frequency', 'block_frequency', 'cumulative_sums', 'runs', 'longest_run',
-          'rank', 'dft', 'non_overlapping_template', 'overlapping_template', 'universal',
-          'approximate_entropy', 'random_excursions', 'random_excursions_variant', 
-          'serial', 'linear_complexity'
-        - ``alpha`` -- **float** (default: 0.01); significance level for individual test pass/fail
-        - ``block_frequency_block_size`` -- **integer** (default: 128); block size for Block Frequency Test
-        - ``non_overlapping_template_block_size`` -- **integer** (default: 968); block size for Non-overlapping Template Test
-        - ``overlapping_template_block_size`` -- **integer** (default: 1032); block size for Overlapping Template Test
-        - ``approximate_entropy_block_size`` -- **integer** (default: 10); m parameter for Approximate Entropy Test
-        - ``serial_block_size`` -- **integer** (default: 16); m parameter for Serial Test
-        - ``linear_complexity_block_size`` -- **integer** (default: 500); block size for Linear Complexity Test
+            - ``sequences`` -- **list of numpy arrays**; list of binary sequences to test
+            - ``test_names`` -- **list** (optional); names of tests to run. If None, runs all tests.
+            Valid names: 'frequency', 'block_frequency', 'cumulative_sums', 'runs', 'longest_run',
+            'rank', 'dft', 'non_overlapping_template', 'overlapping_template', 'universal',
+            'approximate_entropy', 'random_excursions', 'random_excursions_variant', 
+            'serial', 'linear_complexity'
+            - ``alpha`` -- **float** (default: 0.01); significance level for individual test pass/fail
+            - ``block_frequency_block_size`` -- **integer** (default: 128); block size for Block Frequency Test
+            - ``non_overlapping_template_block_size`` -- **integer** (default: 968); block size for Non-overlapping Template Test
+            - ``overlapping_template_block_size`` -- **integer** (default: 1032); block size for Overlapping Template Test
+            - ``approximate_entropy_block_size`` -- **integer** (default: 10); m parameter for Approximate Entropy Test
+            - ``serial_block_size`` -- **integer** (default: 16); m parameter for Serial Test
+            - ``linear_complexity_block_size`` -- **integer** (default: 500); block size for Linear Complexity Test
         
         OUTPUT:
         
-                - **dict**; dictionary with test results in NIST-STS format:
-          - For each test, includes:
+            - **dict**; dictionary with test results in NIST-STS format:
+            - For each test, includes:
             - 'test_name': Name of the test
             - 'p_values': List of p-values from all sequences
             - 'bin_counts': C1-C10 counts for uniformity test
@@ -2378,8 +2562,7 @@ class NISTTests:
         import numpy as np
         
         # Validate tests string
-        if len(tests) != 15:
-            raise ValueError("tests parameter must be exactly 15 characters (e.g., '111111111111111')")
+        tests = NISTTests._normalize_test_option_list(tests, strict=True)
         
         # Map test positions to test names
         test_map = [
@@ -2576,6 +2759,7 @@ _COMP_INFO_KEY_MAP = {
 }
 
 
+# Parsing utilities for tokenizing and normalizing NIST STS output.
 def _normalize_key(text: str) -> str:
     text = text.strip().lower()
     normalized = []
@@ -2768,6 +2952,7 @@ def _extract_label(line: str, default_label: str = None) -> str:
     return default_label
 
 
+# Parsers for specific NIST STS stats outputs (cumulative sums, linear complexity, templates).
 def _parse_cumulative_sums_stats(path: str, alpha: float = 0.01, direction: str = None) -> List[Dict]:
     results: List[Dict] = []
     current_seq = -1
@@ -2946,128 +3131,6 @@ def _parse_non_overlapping_template_stats(path: str, alpha: float = 0.01) -> Lis
                 })
 
     return results
-
-
-def _detect_nist_skip_reason(path: str) -> str:
-    try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            content = f.read().lower()
-    except OSError:
-        return "stats.txt not readable"
-
-    if "error:" in content or "unable to allocate" in content:
-        return "test error in NIST output"
-    if "not applicable" in content:
-        return "test not applicable for this dataset"
-    if "aborted" in content:
-        return "test aborted by NIST STS"
-    if "nan" in content and "p-value" in content:
-        return "p-value undefined in NIST output"
-    return "no p-values found in stats.txt"
-
-
-def _stats_indicates_not_applicable(path: str) -> bool:
-    try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            content = f.read().lower()
-    except OSError:
-        return True
-
-    if "number of substrings" in content and "= 0" in content:
-        return True
-    if "error:" in content or "unable to allocate" in content:
-        return True
-    if "p-value" in content and "nan" in content:
-        return True
-    return False
-
-
-def _normalize_test_name(name: str) -> str:
-    normalized = "".join(ch for ch in name.lower() if ch.isalnum())
-    if normalized in {"dft", "fft", "fouriertransform"}:
-        return "fft"
-    if normalized.startswith("cumulativesums"):
-        return "cumulativesums"
-    if normalized.startswith("nonoverlappingtemplate"):
-        return "nonoverlappingtemplate"
-    if normalized.startswith("overlappingtemplate"):
-        return "overlappingtemplate"
-    if normalized.startswith("randomexcursionsvariant"):
-        return "randomexcursionsvariant"
-    if normalized.startswith("randomexcursions"):
-        return "randomexcursions"
-    if normalized.startswith("serial"):
-        return "serial"
-    return normalized
-
-
-def parse_final_analysis_report(path: str) -> List[Dict[str, Any]]:
-    rows: List[Dict[str, Any]] = []
-    def _next_value(parts: List[str], start: int) -> Optional[tuple]:
-        idx = start
-        while idx < len(parts):
-            token = parts[idx].strip("*")
-            if token:
-                return token, idx + 1
-            idx += 1
-        return None
-
-    with open(path, "r", encoding="utf-8", errors="ignore") as f:
-        for raw in f:
-            line = raw.strip()
-            if not line:
-                continue
-            parts = line.split()
-            if len(parts) < 12:
-                continue
-            try:
-                counts = [int(x) for x in parts[:10]]
-            except ValueError:
-                continue
-
-            idx = 10
-            next_value = _next_value(parts, idx)
-            if next_value is None:
-                continue
-            p_value_raw, idx = next_value
-
-            next_value = _next_value(parts, idx)
-            if next_value is None:
-                continue
-            proportion_raw, idx = next_value
-            test_name = " ".join(parts[idx:]).strip()
-            if not test_name:
-                continue
-
-            uniformity_defined = p_value_raw != "----"
-            if uniformity_defined:
-                p_value = float(p_value_raw)
-            else:
-                p_value = float("nan")
-
-            if proportion_raw == "------":
-                passed = 0
-                total = 0
-            elif "/" in proportion_raw:
-                passed_str, total_str = proportion_raw.split("/", 1)
-                passed = int(passed_str)
-                total = int(total_str)
-            else:
-                continue
-
-            rows.append({
-                "test_name": test_name,
-                "normalized_name": _normalize_test_name(test_name),
-                "bin_counts": counts,
-                "uniformity_p_value": p_value,
-                "uniformity_defined": uniformity_defined,
-                "passed_sequences": passed,
-                "total_sequences": total,
-                "proportion": (passed / total) if total else 0.0,
-            })
-    return rows
-
-
 def parse_nist_stats(path: str, test_config: Dict[str, Any], alpha: float = 0.01) -> List[Dict]:
     if test_config.get("table_parser") == "non_overlapping_template":
         return _parse_non_overlapping_template_stats(path, alpha)
@@ -3210,4 +3273,127 @@ def parse_nist_stats(path: str, test_config: Dict[str, Any], alpha: float = 0.01
                 record["computational_information"] = by_seq[seq_index]
 
     return results
+
+
+# Diagnostics for identifying missing or not-applicable stats output.
+def _detect_nist_skip_reason(path: str) -> str:
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read().lower()
+    except OSError:
+        return "stats.txt not readable"
+
+    if "error:" in content or "unable to allocate" in content:
+        return "test error in NIST output"
+    if "not applicable" in content:
+        return "test not applicable for this dataset"
+    if "aborted" in content:
+        return "test aborted by NIST STS"
+    if "nan" in content and "p-value" in content:
+        return "p-value undefined in NIST output"
+    return "no p-values found in stats.txt"
+
+
+def _stats_indicates_not_applicable(path: str) -> bool:
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read().lower()
+    except OSError:
+        return True
+
+    if "number of substrings" in content and "= 0" in content:
+        return True
+    if "error:" in content or "unable to allocate" in content:
+        return True
+    if "p-value" in content and "nan" in content:
+        return True
+    return False
+
+
+# Report-name normalization for matching final analysis entries to test ids.
+def _normalize_test_name(name: str) -> str:
+    normalized = "".join(ch for ch in name.lower() if ch.isalnum())
+    if normalized in {"dft", "fft", "fouriertransform"}:
+        return "fft"
+    if normalized.startswith("cumulativesums"):
+        return "cumulativesums"
+    if normalized.startswith("nonoverlappingtemplate"):
+        return "nonoverlappingtemplate"
+    if normalized.startswith("overlappingtemplate"):
+        return "overlappingtemplate"
+    if normalized.startswith("randomexcursionsvariant"):
+        return "randomexcursionsvariant"
+    if normalized.startswith("randomexcursions"):
+        return "randomexcursions"
+    if normalized.startswith("serial"):
+        return "serial"
+    return normalized
+
+
+# Parsers for NIST final report formats.
+def parse_final_analysis_report(path: str) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    def _next_value(parts: List[str], start: int) -> Optional[tuple]:
+        idx = start
+        while idx < len(parts):
+            token = parts[idx].strip("*")
+            if token:
+                return token, idx + 1
+            idx += 1
+        return None
+
+    with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        for raw in f:
+            line = raw.strip()
+            if not line:
+                continue
+            parts = line.split()
+            if len(parts) < 12:
+                continue
+            try:
+                counts = [int(x) for x in parts[:10]]
+            except ValueError:
+                continue
+
+            idx = 10
+            next_value = _next_value(parts, idx)
+            if next_value is None:
+                continue
+            p_value_raw, idx = next_value
+
+            next_value = _next_value(parts, idx)
+            if next_value is None:
+                continue
+            proportion_raw, idx = next_value
+            test_name = " ".join(parts[idx:]).strip()
+            if not test_name:
+                continue
+
+            uniformity_defined = p_value_raw != "----"
+            if uniformity_defined:
+                p_value = float(p_value_raw)
+            else:
+                p_value = float("nan")
+
+            if proportion_raw == "------":
+                passed = 0
+                total = 0
+            elif "/" in proportion_raw:
+                passed_str, total_str = proportion_raw.split("/", 1)
+                passed = int(passed_str)
+                total = int(total_str)
+            else:
+                continue
+
+            rows.append({
+                "test_name": test_name,
+                "normalized_name": _normalize_test_name(test_name),
+                "bin_counts": counts,
+                "uniformity_p_value": p_value,
+                "uniformity_defined": uniformity_defined,
+                "passed_sequences": passed,
+                "total_sequences": total,
+                "proportion": (passed / total) if total else 0.0,
+            })
+    return rows
 

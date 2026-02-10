@@ -173,17 +173,6 @@ def test_run_high_density_nist_statistics_test():
     assert isinstance(freq_round0['passed'], bool)
 
 
-def test_convert_to_binary_array():
-    data = b'\xA5\x5A'
-    result = NISTStatisticalTests._convert_to_binary_array(data)
-    assert isinstance(result, np.ndarray)
-    assert len(result) == 16
-
-    data = bytearray([0xFF, 0x00])
-    result = NISTStatisticalTests._convert_to_binary_array(data)
-    assert len(result) == 16
-
-
 def test_format_test_result():
     test_result = {'passed': True, 'p_value': 0.5}
     formatted = NISTStatisticalTests._format_test_result('Frequency', test_result, 1, 10)

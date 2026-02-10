@@ -26,6 +26,7 @@ from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGen
 from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
 
 
+# NIST STS final report IDs; used to label rows and offset template variants.
 TEST_ID_TABLE = {
     'Frequency': 1,
     'BlockFrequency': 2,
@@ -69,6 +70,13 @@ class NISTStatisticalTests:
         True
     """
     def __init__(self, cipher):
+        """
+        Initialize the tester and its dataset generator.
+
+        INPUT:
+
+        - ``cipher`` -- **cipher**; cipher instance used to generate datasets.
+        """
         cipher.sort_cipher()
         self.cipher = cipher
         self.data_generator = DatasetGenerator(cipher)
@@ -87,26 +95,26 @@ class NISTStatisticalTests:
         statistical_test_option_list=15 * '1',
     ):
         """
-                Run NIST STS tests for a dataset generated from the cipher.
+        Run NIST STS tests for a dataset generated from the cipher.
 
-                INPUT:
+        INPUT:
 
-                - ``test_type`` -- **str**; one of ``avalanche``, ``correlation``, ``cbc``,
-                    ``random``, ``low_density``, ``high_density``.
-                - ``bits_in_one_sequence`` -- **int** or ``'default'``; number of bits per sequence.
-                - ``number_of_sequences`` -- **int** or ``'default'``; number of sequences.
-                - ``input_index`` -- **int**; which cipher input to use.
-                - ``round_start`` -- **int**; first round index (inclusive).
-                - ``round_end`` -- **int**; last round index (exclusive). ``0`` means all rounds.
-                - ``nist_report_folder_prefix`` -- **str**; preserved in ``input_parameters`` for traceability.
-                - ``statistical_test_option_list`` -- **str**; 15-bit mask selecting tests.
+        - ``test_type`` -- **str**; one of ``avalanche``, ``correlation``, ``cbc``,
+            ``random``, ``low_density``, ``high_density``.
+        - ``bits_in_one_sequence`` -- **int** or ``'default'``; number of bits per sequence.
+        - ``number_of_sequences`` -- **int** or ``'default'``; number of sequences.
+        - ``input_index`` -- **int**; which cipher input to use.
+        - ``round_start`` -- **int**; first round index (inclusive).
+        - ``round_end`` -- **int**; last round index (exclusive). ``0`` means all rounds.
+        - ``nist_report_folder_prefix`` -- **str**; preserved in ``input_parameters`` for traceability.
+        - ``statistical_test_option_list`` -- **str**; 15-bit mask selecting tests.
 
-                OUTPUT:
+        OUTPUT:
 
-                - A dictionary with ``input_parameters``, ``execution_times`` and ``test_results``.
-                    ``execution_times`` includes dataset generation time and per-round execution times.
-                    ``test_results`` is a list of per-round reports; each report includes
-                    ``randomness_test`` entries with per-test p-values and pass/fail status.
+        - A dictionary with ``input_parameters``, ``execution_times`` and ``test_results``.
+            ``execution_times`` includes dataset generation time and per-round execution times.
+            ``test_results`` is a list of per-round reports; each report includes
+            ``randomness_test`` entries with per-test p-values and pass/fail status.
 
         EXAMPLES::
 
@@ -300,115 +308,9 @@ class NISTStatisticalTests:
         return nist_test
 
     @staticmethod
-    def _normalize_test_option_list(statistical_test_option_list):
-        if statistical_test_option_list is None:
-            return 15 * '1'
-        option = str(statistical_test_option_list)
-        if len(option) < 15:
-            option = option.ljust(15, '0')
-        return option[:15]
-
-    @staticmethod
-    def _test_name_map():
-        return [
-            'frequency',
-            'block_frequency',
-            'cumulative_sums',
-            'runs',
-            'longest_run',
-            'rank',
-            'dft',
-            'non_overlapping_template',
-            'overlapping_template',
-            'universal',
-            'approximate_entropy',
-            'random_excursions',
-            'random_excursions_variant',
-            'serial',
-            'linear_complexity',
-        ]
-
-    @staticmethod
-    def _format_test_name(raw_name):
-        if raw_name.startswith('random_excursions_variant_'):
-            return 'RandomExcursionsVariant'
-        if raw_name.startswith('random_excursions_'):
-            return 'RandomExcursions'
-        if raw_name.startswith('cumulative_sums_'):
-            return 'CumulativeSums'
-        if raw_name.startswith('serial_'):
-            return 'Serial'
-        if raw_name.startswith('non_overlapping_template_'):
-            return 'NonOverlappingTemplate'
-
-        mapping = {
-            'frequency': 'Frequency',
-            'block_frequency': 'BlockFrequency',
-            'cumulative_sums': 'CumulativeSums',
-            'runs': 'Runs',
-            'longest_run': 'LongestRun',
-            'rank': 'Rank',
-            'dft': 'FFT',
-            'non_overlapping_template': 'NonOverlappingTemplate',
-            'overlapping_template': 'OverlappingTemplate',
-            'universal': 'Universal',
-            'approximate_entropy': 'ApproximateEntropy',
-            'random_excursions': 'RandomExcursions',
-            'random_excursions_variant': 'RandomExcursionsVariant',
-            'serial': 'Serial',
-            'linear_complexity': 'LinearComplexity',
-        }
-        return mapping.get(raw_name, raw_name)
-
-    @staticmethod
     def _build_report_from_results(results):
-        test_list = []
-        counts_by_base = {}
-        for test in results.get('tests', []):
-            raw_name = test.get('test_name', '')
-            base_name = NISTStatisticalTests._format_test_name(raw_name)
-            counts_by_base.setdefault(base_name, 0)
-            test_id = TEST_ID_TABLE.get(base_name, 0) + counts_by_base[base_name]
-            counts_by_base[base_name] += 1
-
-            test_dict = {
-                'test_id': test_id,
-                'test_name': base_name,
-                'passed': bool(test.get('passed', False)),
-                'p-value': float(test.get('uniformity_p_value', 0.0)) if test.get('uniformity_p_value') is not None else 0.0,
-                'passed_seqs': int(test.get('passed_sequences', 0)),
-                'total_seqs': int(test.get('total_sequences', 0)),
-                'passed_proportion': float(test.get('proportion', 0.0)),
-            }
-            for i in range(10):
-                test_dict[f'C{i+1}'] = '0'
-            test_list.append(test_dict)
-
-        passed_tests = sum(1 for test in test_list if test['passed'])
-
-        n = results.get('num_sequences', 0) or 0
-        alpha = results.get('alpha', 0.01)
-        thresholds = []
-        if n > 0:
-            p_hat = 1.0 - alpha
-            threshold = int((p_hat - 3.0 * math.sqrt((p_hat * alpha) / n)) * n)
-            thresholds.append({'total': n, 'passed': threshold})
-
-        re_sample = None
-        for test in results.get('tests', []):
-            if 'random_excursions' in test.get('test_name', '') and test.get('total_sequences', 0) > 0:
-                re_sample = int(test.get('total_sequences', 0))
-                break
-        if re_sample:
-            p_hat = 1.0 - alpha
-            threshold = int((p_hat - 3.0 * math.sqrt((p_hat * alpha) / re_sample)) * re_sample)
-            thresholds.append({'total': re_sample, 'passed': threshold})
-
-        return {
-            'passed_tests': passed_tests,
-            'number_of_sequences_threshold': thresholds,
-            'randomness_test': test_list,
-        }
+        """Build a report-style dict from NIST STS JSON results."""
+        return NISTTests._build_report_from_results(results, TEST_ID_TABLE)
 
     @staticmethod
     def _run_nist_statistical_tests_tool(
@@ -418,8 +320,19 @@ class NISTStatisticalTests:
         input_file_format=1,
         statistical_test_option_list=15 * '1',
     ):
-        option = NISTStatisticalTests._normalize_test_option_list(statistical_test_option_list)
-        test_names = [name for flag, name in zip(option, NISTStatisticalTests._test_name_map()) if flag == '1']
+        """
+        Run the NIST STS tests on packed or unpacked binary data.
+
+        INPUT:
+
+        - ``input_file`` -- **bytes|bytearray|list|np.ndarray**; binary input.
+        - ``bit_stream_length`` -- **int**; number of bits per sequence.
+        - ``number_of_bit_streams`` -- **int**; number of sequences to test.
+        - ``input_file_format`` -- **int**; ``0`` for unpacked bits, ``1`` for packed bytes.
+        - ``statistical_test_option_list`` -- **str**; 15-bit mask selecting tests.
+        """
+        option = NISTTests._normalize_test_option_list(statistical_test_option_list)
+        test_names = [name for flag, name in zip(option, NISTTests._test_name_map()) if flag == '1']
 
         if input_file_format == 0:
             binary = np.array(input_file, dtype=np.uint8).flatten()
@@ -452,40 +365,13 @@ class NISTStatisticalTests:
         return NISTStatisticalTests._build_report_from_results(results)
 
     @staticmethod
-    def _convert_to_binary_array(data):
-        if isinstance(data, np.ndarray):
-            return data.astype(np.uint8)
-        if isinstance(data, (bytes, bytearray)):
-            return np.unpackbits(np.frombuffer(data, dtype=np.uint8))
-        if isinstance(data, list):
-            return np.array(data, dtype=np.uint8)
-        raise ValueError("Unsupported input type for binary conversion")
-
-    @staticmethod
     def _format_test_result(test_name, result, test_id, total_seqs):
-        formatted = {
-            'test_id': test_id,
-            'test_name': test_name,
-            'passed': result.get('passed', False),
-        }
-        if 'p_value' in result:
-            formatted['p-value'] = result['p_value']
-        elif 'p_value1' in result:
-            formatted['p-value'] = result['p_value1']
-        elif 'p_values' in result:
-            formatted['p-value'] = float(np.mean(result['p_values']))
-        else:
-            formatted['p-value'] = 0.0
-
-        formatted['passed_seqs'] = 1 if result.get('passed', False) else 0
-        formatted['total_seqs'] = 1
-        formatted['passed_proportion'] = 1.0 if result.get('passed', False) else 0.0
-        for i in range(10):
-            formatted[f'C{i+1}'] = '0'
-        return formatted
+        """Format a single test result into the report schema."""
+        return NISTTests._format_test_result(test_name, result, test_id, total_seqs)
 
     @staticmethod
     def _run_cumsum_both_modes(binary_data):
+        """Run cumulative sums in forward and backward modes."""
         return [
             NISTTests.cumulative_sums_test(binary_data, mode=0),
             NISTTests.cumulative_sums_test(binary_data, mode=1),
@@ -500,6 +386,7 @@ class NISTStatisticalTests:
         statistical_test_option_list=15 * '1',
         execution_times=None,
     ):
+        """Run the NIST STS tests per round and return report dictionaries."""
         sts_report_dicts = []
 
         for round_number in range(round_start, round_end):
