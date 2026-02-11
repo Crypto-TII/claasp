@@ -190,7 +190,6 @@ def test_differential_truncated_checker_permutation_input_and_output_truncated_i
         with open(inv_pickle_path, "wb") as f:
             pickle.dump(chachaPermutation_inv, f)
     else:
-        import ipdb; ipdb.set_trace()
         with open(inv_pickle_path, "rb") as f:
             chachaPermutation_inv = pickle.load(f)
 
@@ -210,11 +209,13 @@ def test_differential_truncated_checker_permutation_input_and_output_truncated_i
 
 
 def test_differential_truncated_checker_salsa_permutation_input_fixed_and_output_truncated():
-    # Test Crowley's truncated differential for 2 rounds
-    # Crowley's "2 rounds" = 2 × (columnround + transpose)
-    # CLAASP: 2 half-rounds = 1 classical Salsa round (columnround OR rowround)
-    # CLAASP: 4 half-rounds = 2 classical rounds = 1 double-round (columnround + rowround)
-    # Crowley 2×R = 1 Salsa double-round = 4 CLAASP half-rounds
+    """
+    Test Crowley's truncated differential for 2 rounds [Cro2005]_.
+    Crowley's "2 rounds" = 2 × (columnround + transpose)
+    CLAASP: 2 half-rounds = 1 classical Salsa round (columnround OR rowround)
+    CLAASP: 4 half-rounds = 2 classical rounds = 1 double-round (columnround + rowround)
+    Crowley 2×R = 1 Salsa double-round = 4 CLAASP half-rounds
+    """
     salsaPermutation = SalsaPermutation(number_of_rounds=4)
     input_trunc_diff = int("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 2)
     crowley_constraints = {
@@ -258,11 +259,13 @@ def test_differential_truncated_checker_salsa_permutation_input_fixed_and_output
 
 
 def test_differential_truncated_checker_salsa_permutation_input_and_output_truncated():
-    # Test Crowley's truncated differential for 2 rounds (starting from round 1)
-    # Crowley's "2 rounds" = 2 × (columnround + transpose)
-    # CLAASP: 2 half-rounds = 1 classical Salsa round (columnround OR rowround)
-    # CLAASP: 4 half-rounds = 2 classical rounds = 1 double-round (columnround + rowround)
-    # Crowley 2×R = 1 Salsa double-round = 4 CLAASP half-rounds
+    """
+    Test Crowley's truncated differential for 2 rounds (starting from round 1) [Cro2005]_.
+    Crowley's "2 rounds" = 2 × (columnround + transpose)
+    CLAASP: 2 half-rounds = 1 classical Salsa round (columnround OR rowround)
+    CLAASP: 4 half-rounds = 2 classical rounds = 1 double-round (columnround + rowround)
+    Crowley 2×R = 1 Salsa double-round = 4 CLAASP half-rounds
+    """
     salsaPermutation = SalsaPermutation(number_of_rounds=2, start_round=("even", "top"))
     input_trunc_diff = "0000000000000000000000000000000000000000001000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????????????????????????????????00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000"
     crowley_constraints = {
@@ -305,11 +308,13 @@ def test_differential_truncated_checker_salsa_permutation_input_and_output_trunc
 
 
 def test_differential_truncated_checker_salsa_permutation_input_and_output_truncated_2_rounds():
-    # Test Crowley's truncated differential for 2 rounds (starting from round 1)
-    # Crowley's "2 rounds" = 2 × (columnround + transpose)
-    # CLAASP: 2 half-rounds = 1 classical Salsa round (columnround OR rowround)
-    # CLAASP: 4 half-rounds = 2 classical rounds = 1 double-round (columnround + rowround)
-    # Crowley 2×R = 1 Salsa double-round = 4 CLAASP half-rounds
+    """
+    Test Crowley's truncated differential for 2 rounds (starting from round 1) [Cro2005]_.
+    Crowley's "2 rounds" = 2 × (columnround + transpose)
+    CLAASP: 2 half-rounds = 1 classical Salsa round (columnround OR rowround)
+    CLAASP: 4 half-rounds = 2 classical rounds = 1 double-round (columnround + rowround)
+    Crowley 2×R = 1 Salsa double-round = 4 CLAASP half-rounds
+    """
     salsaPermutation = SalsaPermutation(number_of_rounds=4, start_round=("even", "top"))
     input_trunc_diff = "0000000000000000000000000000000000000000001000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000????????????????????????????????00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000"
     crowley_constraints = {
