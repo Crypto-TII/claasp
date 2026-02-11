@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+      - develop
+  pull_request:
+    branches:
+      - develop
 
 jobs:
   build-image:
@@ -16,6 +20,19 @@ jobs:
       with:
         persist-credentials: false
         fetch-depth: 0
+
+    - name: Compute image tag
+      id: tag
+      shell: bash
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          echo "tag=latest" >> "$GITHUB_OUTPUT"
+        elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          echo "tag=develop" >> "$GITHUB_OUTPUT"
+        else
+          SHA="${{ github.event.pull_request.head.sha }}"
+          echo "tag=${SHA:0:7}" >> "$GITHUB_OUTPUT"
+        fi
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -34,7 +51,7 @@ jobs:
         file: ./docker/Dockerfile
         push: true
         platforms: linux/amd64
-        tags: tiicrc/claasp-base:latest
+        tags: tiicrc/claasp-base:${{ steps.tag.outputs.tag }}
         target: claasp-base
         cache-from: type=gha,scope=claasp-base
         cache-to: type=gha,scope=claasp-base,mode=max
@@ -47,7 +64,7 @@ jobs:
         file: ./docker/Dockerfile
         push: true
         platforms: linux/arm64
-        tags: tiicrc/claasp-m1-base:latest
+        tags: tiicrc/claasp-m1-base:${{ steps.tag.outputs.tag }}
         target: claasp-base
         cache-from: type=gha,scope=claasp-base-m1
         cache-to: type=gha,scope=claasp-base-m1,mode=max

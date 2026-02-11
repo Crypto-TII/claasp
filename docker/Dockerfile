@@ -3,6 +3,7 @@ FROM ubuntu:22.04 AS claasp-base
 ARG DEBIAN_FRONTEND=noninteractive
 ARG COPY_CLAASP_LIBRARY=false
 ARG INSTALL_CLAASP_LIBRARY=false
+ARG TARGETARCH
 
 # Install dependencies with apt-get
 RUN apt-get -q update
@@ -43,13 +44,23 @@ COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
 WORKDIR /opt
 
-RUN wget https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz \
-    && tar -xf gurobi10.0.0_linux64.tar.gz \
-    && rm gurobi10.0.0_linux64.tar.gz
+RUN set -eux; \
+    cd /opt; \
+    if [ "$TARGETARCH" = "arm64" ]; then \
+        wget -q https://packages.gurobi.com/10.0/gurobi10.0.0_armlinux64.tar.gz; \
+        tar -xzf gurobi10.0.0_armlinux64.tar.gz; \
+        rm gurobi10.0.0_armlinux64.tar.gz; \
+        ln -sfn /opt/gurobi1000/armlinux64 /opt/gurobi; \
+    else \
+        wget -q https://packages.gurobi.com/10.0/gurobi10.0.0_linux64.tar.gz; \
+        tar -xzf gurobi10.0.0_linux64.tar.gz; \
+        rm gurobi10.0.0_linux64.tar.gz; \
+        ln -sfn /opt/gurobi1000/linux64 /opt/gurobi; \
+    fi
 
-ENV GUROBI_HOME="/opt/gurobi1000/linux64"
-ENV PATH="${PATH}:${GUROBI_HOME}/bin"
-ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
+ENV GUROBI_HOME=/opt/gurobi
+ENV PATH="/opt/gurobi/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/gurobi/lib:${LD_LIBRARY_PATH}"
 
 WORKDIR /opt
 
@@ -258,21 +269,19 @@ WORKDIR /opt
 ENV PATH="/opt/ParKissat-RS-master/:${PATH}"
 
 # Installing Glucose
-RUN wget https://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup-4.1.tgz || \
-    wget https://fosszone.csd.auth.gr/sagemath/spkg/upstream/glucose/glucose-syrup-4.1.tgz
+RUN git clone https://github.com/audemard/glucose.git glucose-syrup \
+    && cd glucose-syrup \
+    && git checkout 674dbba75b47864a332ba797bec80dcaca0a4857
 
-RUN tar -xf glucose-syrup-4.1.tgz \
-    && rm glucose-syrup-4.1.tgz
-
-RUN cd glucose-syrup-4.1/simp \
+RUN cd glucose-syrup/simp \
     && make
 
-RUN cd glucose-syrup-4.1/parallel \
+RUN cd glucose-syrup/parallel \
     && make
 
 WORKDIR /opt
 
-ENV PATH="/opt/glucose-syrup-4.1/simp:/opt/glucose-syrup-4.1/parallel:${PATH}"
+ENV PATH="/opt/glucose-syrup/simp:/opt/glucose-syrup/parallel:${PATH}"
 
 # Installing MathSat
 RUN wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
