@@ -21,7 +21,7 @@ def test_build_impossible_xor_differential_trail_with_extensions_model():
         intermediate_components=False,
     )
 
-    assert len(mzn.model_constraints) == 1764
+    assert len(mzn.model_constraints) + len(mzn.model_variables) == 1764
     assert mzn.model_constraints[99] == "array[0..31] of var 0..2: inverse_plaintext;"
     assert mzn.model_constraints[3] == "array[0..63] of var 0..2: key;"
     assert mzn.model_constraints[39] == "array[0..31] of var 0..2: cipher_output_5_12;"
@@ -35,7 +35,7 @@ def test_build_impossible_xor_differential_trail_model():
         number_of_rounds=5, fixed_variables=fixed_variables, middle_round=3
     )
 
-    assert len(mzn.model_constraints) == 1661
+    assert len(mzn.model_constraints) + len(mzn.model_variables) == 1661
     assert mzn.model_constraints[2] == "array[0..31] of var 0..2: plaintext;"
     assert mzn.model_constraints[3] == "array[0..63] of var 0..2: key;"
     assert mzn.model_constraints[4] == "array[0..31] of var 0..2: inverse_cipher_output_4_12;"

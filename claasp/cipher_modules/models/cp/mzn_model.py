@@ -758,9 +758,8 @@ class MznModel:
             "impossible_xor_differential",
         ):
             truncated = True
-            mzn_model = self._model_constraints
-        else:
-            mzn_model = self._variables_list + self._model_constraints
+        
+        mzn_model = self._variables_list + self._model_constraints
 
         solutions = []
         if solve_external:
@@ -1066,3 +1065,27 @@ class MznModel:
         if not self._model_constraints:
             raise ValueError("No model generated")
         return self._model_constraints
+
+    @property
+    def model_variables(self):
+        """
+        Return the variables of the model specified by ``model_type``.
+
+        INPUT:
+
+        - ``model_type`` -- **string**; the model to retrieve
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: speck = SpeckBlockCipher(number_of_rounds=4)
+            sage: cp = MznModel(speck)
+            sage: cp.model_variables()
+            Traceback (most recent call last):
+            ...
+            ValueError: No model generated
+        """
+        if not self._variables_list:
+            raise ValueError("No model generated")
+        return self._variables_list
