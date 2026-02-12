@@ -1036,32 +1036,6 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
     return input_diff_samples.T
 
 
-def _truncated_string_to_flipmask_matrix(trunc_str, num_samples, state_size, rng):
-    if len(trunc_str) != state_size:
-        raise ValueError("truncated difference length must equal state_size")
-    if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
-    trunc_str = trunc_str.replace('?', '2')
-
-    num_bytes = state_size // 8
-    mask = np.zeros((num_bytes, num_samples), dtype=np.uint8)
-
-    for pos, ch in enumerate(trunc_str):
-        byte_index = pos // 8
-        bit_index = 7 - (pos % 8)
-
-        if ch == '1':
-            mask[byte_index, :] |= (1 << bit_index)
-        elif ch == '0':
-            pass
-        elif ch == '2':
-            flips = rng.integers(0, 2, size=(num_samples,), dtype=np.uint8)
-            mask[byte_index, :] |= (flips << bit_index)
-        else:
-            raise ValueError("Truncated string must contain only '0','1','2' or '?'.")
-    return mask
-
-
 def differential_truncated_checker_permutation_input_and_output_truncated(
     cipher,
     input_trunc_diff,      
@@ -1090,7 +1064,7 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
     num_bytes = state_size // 8
 
     plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
-    input_mask = _truncated_string_to_flipmask_matrix(input_trunc_diff, number_of_samples, state_size, rng)
+    input_mask = _sample_truncated_difference_from_string(input_trunc_diff, number_of_samples, state_size, rng)
     plaintext_data2 = plaintext_data1 ^ input_mask
 
     ciphertext1 = cipher.evaluate_vectorized([plaintext_data1])[0]
