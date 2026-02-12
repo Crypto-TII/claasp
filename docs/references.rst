@@ -205,6 +205,10 @@
         Transactions on Symmetric Cryptology, Vol 2017, Issue 4, pre-print :
         https://eprint.iacr.org/2018/161.pdf
 
+.. [Cro2005]
+        Crowley P. : *Truncated differential cryptanalysis of five rounds of
+        Salsa20* : IACR 2005 : http://eprint.iacr.org/2005/375
+
 .. [CZZ2023]
         Cao, W., Zhang, W., Zhou, C. : *New Automatic Search Tool for Searching
         for Impossible Differentials Using Undisturbed Bits* In: Deng, Y.,
