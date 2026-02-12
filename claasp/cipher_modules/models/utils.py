@@ -912,8 +912,7 @@ def differential_truncated_checker_single_key(
     bit_positions = _extract_bit_positions_msb(output_difference)
     known_bits = _extract_bits_msb(diff_ciphertext.T, bit_positions)
 
-    inv_output_diff = output_difference[::-1]
-    filled_bits = [int(bit) for bit in inv_output_diff if bit in ("0", "1")]
+    filled_bits = [int(bit) for bit in output_difference if bit in ("0", "1")]
 
     total = 0
     for i in range(len(known_bits[0])):
