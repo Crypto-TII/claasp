@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 from claasp.cipher_modules.models.cp.mzn_models.mzn_boomerang_model_arx_optimized import MznBoomerangModelARXOptimized
-from claasp.cipher_modules.models.cp.solvers import XOR
+from claasp.cipher_modules.models.cp.solvers import CPSAT
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.name_mappings import BOOMERANG_XOR_DIFFERENTIAL
@@ -186,9 +186,9 @@ def test_build_boomerang_model_speck_single_key():
     ]
 
     mzn_bct_model.create_boomerang_model(fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher)
-    result = mzn_bct_model.solve_for_ARX(solver_name=XOR)
+    result = mzn_bct_model.solve_for_ARX(solver_name=CPSAT)
     total_weight = MznBoomerangModelARXOptimized._get_total_weight(result)
-    parsed_result = mzn_bct_model.bct_parse_result(result, XOR, total_weight, BOOMERANG_XOR_DIFFERENTIAL)
+    parsed_result = mzn_bct_model.bct_parse_result(result, CPSAT, total_weight, BOOMERANG_XOR_DIFFERENTIAL)
     filename = "."
     mzn_bct_model.write_minizinc_model_to_file(filename)
 
@@ -291,9 +291,9 @@ def test_build_boomerang_model_chacha():
     ]
 
     mzn_bct_model.create_boomerang_model(fixed_variables_for_top_cipher, fixed_variables_for_bottom_cipher)
-    result = mzn_bct_model.solve_for_ARX(solver_name=XOR)
+    result = mzn_bct_model.solve_for_ARX(solver_name=CPSAT)
     total_weight = MznBoomerangModelARXOptimized._get_total_weight(result)
-    parsed_result = mzn_bct_model.bct_parse_result(result, XOR, total_weight, BOOMERANG_XOR_DIFFERENTIAL)
+    parsed_result = mzn_bct_model.bct_parse_result(result, CPSAT, total_weight, BOOMERANG_XOR_DIFFERENTIAL)
     filename = "."
     mzn_bct_model.write_minizinc_model_to_file(filename)
 

@@ -575,6 +575,66 @@ def MODSUB(input, number_of_inputs, modulus, verbosity=False):
     return output
 
 
+def idea_modmul(input, number_of_inputs, modulus, verbosity=False):
+    """
+    Computes modular multiplication (a * b) mod modulus with 0 ↔ 2^n mapping.
+    
+    For modulus 2^n + 1 (e.g., IDEA cipher uses 2^16 + 1):
+    - Input value 0 is treated as 2^n before multiplication
+    - Output value 2^n is represented as 0 after reduction
+
+    INPUT:
+
+    - ``input`` -- **BitArray object**; BitArray
+    - ``number_of_inputs`` -- **integer**; specify in how many parts must the input be split (should be 2)
+    - ``modulus`` -- **integer**; the modulus for multiplication
+    - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+    
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.generic_functions import idea_modmul
+        sage: from bitstring import BitArray
+        sage: # Standard modular multiplication
+        sage: input_bits = BitArray(uint=int(3), length=int(16)) + BitArray(uint=int(5), length=int(16))
+        sage: result = idea_modmul(input_bits, 2, 65537)
+        sage: result.uint
+        15
+        sage: # 0 * 0 with modulus 2^16+1: (2^16 * 2^16) mod (2^16 + 1) = 1
+        sage: input_zero = BitArray(uint=int(0), length=int(16)) + BitArray(uint=int(0), length=int(16))
+        sage: result_zero = idea_modmul(input_zero, 2, 65537)
+        sage: result_zero.uint
+        1
+    """
+    block_len = input.len // number_of_inputs
+    
+    # Extract the two operands
+    val1 = input[0:block_len].uint
+    val2 = input[block_len:2*block_len].uint
+    
+    # Input mapping: 0 -> 2^n
+    max_val = 2 ** block_len
+    if val1 == 0:
+        val1 = max_val
+    if val2 == 0:
+        val2 = max_val
+    
+    # Perform multiplication modulo modulus
+    output = (val1 * val2) % modulus
+    
+    # Output mapping: 2^n -> 0
+    if output == max_val:
+        output = 0
+    
+    output = BitArray(uint=int(output), length=block_len)
+    if verbosity:
+        print("idea_modmul:")
+        print(number_of_inputs_expression.format(number_of_inputs))
+        print(input_expression.format(input.bin))
+        print(output_expression.format(output.bin))
+
+    return output
+
+
 def ROTATE(input, rotation_amount, verbosity=False):
     """
     If rotation_amount is negative rotation happens to the left, to the right otherwise.

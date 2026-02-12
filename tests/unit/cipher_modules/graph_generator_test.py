@@ -1,6 +1,6 @@
 from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
 from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_descendants_subgraph
 
 
@@ -90,7 +90,7 @@ e1_graph_edges = [
 
 
 def test_split_cipher_graph_into_top_bottom():
-    chacha = ChachaPermutation(number_of_rounds=4)
+    chacha = ChachaPermutation(number_of_rounds=4, round_mode=ROUND_MODE_HALF)
 
     e0_graph_nodes = ['modadd_0_0', 'xor_0_1', 'rot_0_2', 'modadd_0_3', 'xor_0_4', 'rot_0_5', 'modadd_0_6', 'xor_0_7',
                       'rot_0_8', 'modadd_0_9', 'xor_0_10', 'rot_0_11', 'modadd_0_12', 'xor_0_13', 'rot_0_14',

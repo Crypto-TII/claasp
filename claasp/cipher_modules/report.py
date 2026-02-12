@@ -905,7 +905,7 @@ class Report:
                 sage: speck = SpeckBlockCipher(number_of_rounds=5)
                 sage: avalanche_test_results = AvalancheTests(speck).avalanche_tests()
                 sage: report = Report(avalanche_test_results)
-                sage: report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output', fixed_input_difference='average') # random
+                sage: report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output', fixed_input_difference='average') # doctest: +SKIP
 
         """
         time = '_date:' + 'time:'.join(str(datetime.now()).split(' '))

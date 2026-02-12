@@ -11,7 +11,7 @@ from claasp.cipher_modules.models.utils import (
 )
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
 from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, SATISFIABLE
 
 
@@ -105,7 +105,7 @@ def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
 
 def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     """Test for finding a differential-linear trail with fixed weight for 3 rounds of ChaCha permutation."""
-    chacha = ChachaPermutation(number_of_rounds=6)
+    chacha = ChachaPermutation(number_of_rounds=6, round_mode=ROUND_MODE_HALF)
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -224,7 +224,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
 
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation."""
-    chacha = ChachaPermutation(number_of_rounds=8)
+    chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -272,7 +272,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
 
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation."""
-    chacha = ChachaPermutation(number_of_rounds=8)
+    chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -322,7 +322,7 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation.
     This test is using in the middle part the semi-deterministic model.
     """
-    chacha = ChachaPermutation(number_of_rounds=8)
+    chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
     top_part_components = []
     middle_part_components = []
     bottom_part_components = []
@@ -408,7 +408,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation.
     This test is using in the middle part the semi-deterministic model.
     """
-    chacha = ChachaPermutation(number_of_rounds=8)
+    chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
     # import ipdb; ipdb.set_trace()
     top_part_components = []
     middle_part_components = []
@@ -464,12 +464,13 @@ def test_diff_lin_chacha():
     """
     input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
     output_mask = 0x00010000000100010000000100030003000000800000008000000000000001800000000000000001000000010000000201000101010000000000010103000101
-    number_of_samples = 2**12
+    output_mask_as_string = bin(output_mask)[2:].zfill(512)
+    number_of_samples = 2**13
     number_of_rounds = 6
     state_size = 512
-    chacha = ChachaPermutation(number_of_rounds=number_of_rounds)
+    chacha = ChachaPermutation(number_of_rounds=number_of_rounds, round_mode=ROUND_MODE_HALF)
     corr = differential_linear_checker_for_permutation(
-        chacha, input_difference, output_mask, number_of_samples, state_size
+        chacha, input_difference, output_mask_as_string, number_of_samples, state_size
     )
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 3
@@ -481,12 +482,13 @@ def test_diff_lin_chacha_8():
     """
     input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000
     output_mask = 0x00000001000000000000000101010181000080800000000000000000000800800000100000000101000000010000000000000000000000010100000100000101
+    output_mask_as_string = bin(output_mask)[2:].zfill(512)
     number_of_samples = 2**10
     number_of_rounds = 8
     state_size = 512
-    chacha = ChachaPermutation(number_of_rounds=number_of_rounds)
+    chacha = ChachaPermutation(number_of_rounds=number_of_rounds, round_mode=ROUND_MODE_HALF)
     corr = differential_linear_checker_for_permutation(
-        chacha, input_difference, output_mask, number_of_samples, state_size
+        chacha, input_difference, output_mask_as_string, number_of_samples, state_size
     )
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 8
@@ -498,6 +500,7 @@ def test_diff_lin_speck():
     """
     input_difference = 0x02110A04
     output_mask = 0x02000201
+    output_mask_as_string = bin(output_mask)[2:].zfill(32)
     number_of_samples = 2**15
     number_of_rounds = 6
     fixed_key = 0x0
@@ -505,7 +508,7 @@ def test_diff_lin_speck():
     block_size = speck.inputs_bit_size[0]
     key_size = speck.inputs_bit_size[1]
     corr = differential_linear_checker_for_block_cipher_single_key(
-        speck, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=42
+        speck, input_difference, output_mask_as_string, number_of_samples, block_size, key_size, fixed_key, seed=42
     )
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) <= 8
@@ -517,6 +520,7 @@ def test_diff_lin_aradi():
     """
     input_difference = 0x00000000000080000000000000008000
     output_mask = 0x90900120800000011010002000000000
+    output_mask_as_string = bin(output_mask)[2:].zfill(128)
     number_of_samples = 2**12
     number_of_rounds = 4
     fixed_key = 0x90900120800000011010002000000000
@@ -524,7 +528,7 @@ def test_diff_lin_aradi():
     block_size = speck.inputs_bit_size[0]
     key_size = speck.inputs_bit_size[1]
     corr = differential_linear_checker_for_block_cipher_single_key(
-        speck, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=42
+        speck, input_difference, output_mask_as_string, number_of_samples, block_size, key_size, fixed_key, seed=42
     )
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 8

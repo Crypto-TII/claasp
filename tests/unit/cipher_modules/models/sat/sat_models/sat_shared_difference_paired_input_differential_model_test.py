@@ -7,12 +7,12 @@ from claasp.cipher_modules.models.utils import (
     shared_difference_paired_input_differential_checker_permutation,
     integer_to_bit_list,
 )
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
 from claasp.name_mappings import INPUT_PLAINTEXT, SATISFIABLE
 
 
 def test_sat_shared_difference_paired_input_differential_model_on_chacha_permutation():
-    chacha1 = ChachaPermutation(number_of_rounds=1)
+    chacha1 = ChachaPermutation(number_of_rounds=1, round_mode=ROUND_MODE_HALF)
     sat_model = SharedDifferencePairedInputDifferentialModel(chacha1)
 
     fixed_variables = [
