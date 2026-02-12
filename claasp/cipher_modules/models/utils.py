@@ -765,57 +765,14 @@ def get_related_key_scenario_format_for_fixed_values(_cipher):
     return fixed_variables
 
 
-def _extract_bits(columns, positions):
-    """Extracts bits from columns at specified positions using vectorization."""
-    bit_size = columns.shape[0] * 8
-    positions = np.array(positions)
-    byte_indices = (bit_size - positions - 1) // 8
-    bit_indices = positions % 8
-    if np.any(byte_indices < 0) or np.any(byte_indices >= columns.shape[0]):
-        raise IndexError("Byte index out of range.")
-    bytes_at_positions = columns[byte_indices][:, :]
-    bits = (bytes_at_positions >> bit_indices[:, np.newaxis]) & 1
-
-    return bits
-
-
 def _number_to_n_bit_binary_string(number, n_bits):
     """Converts a number to an n-bit binary string with leading zero padding."""
     return format(number, f"0{n_bits}b")
 
 
-def _extract_bit_positions(hex_number, state_size):
-    """Extracts bit positions from a hex state_size-number."""
-    binary_str = _number_to_n_bit_binary_string(hex_number, state_size)
-    binary_str = binary_str[::-1]
-    positions = [i for i, bit in enumerate(binary_str) if bit == "1"]
-    return positions
-
-
-def extract_bit_positions(binary_str):
-    """Extracts bit positions from a binary+unknows string."""
-    binary_str = binary_str[::-1]
-    positions = [i for i, bit in enumerate(binary_str) if bit in ("0", "1")]
-    return positions
-
 def _extract_bit_positions_msb(binary_str, bits_to_consider=("0", "1")):
     """Return positions (MSB first) of all determined bits in a pattern string."""
     return [index for index, bit in enumerate(binary_str) if bit in bits_to_consider]
-
-def extract_bits(columns, positions):
-    """Extracts the bits from columns at the specified positions."""
-    num_positions = len(positions)
-    num_columns = columns.shape[1]
-    bit_size = columns.shape[0] * 8
-
-    result = np.zeros((num_positions, num_columns), dtype=np.uint8)
-
-    for i in range(num_positions):
-        for j in range(num_columns):
-            byte_index = (bit_size - positions[i] - 1) // 8
-            bit_index = (bit_size - positions[i] - 1) % 8
-            result[i, j] = 1 & (columns[:, j][byte_index] >> bit_index)
-    return result
 
 
 def _extract_bits_msb(columns, positions):
@@ -834,17 +791,11 @@ def _repeat_input_difference_msb(input_difference, num_samples, num_bytes):
     return _repeat_input_difference(input_difference, num_samples, num_bytes)
 
 
-
-
-
 def _repeat_input_difference(input_difference, num_samples, num_bytes):
     """Function to repeat the input difference for a large sample size."""
     bytes_array = np.frombuffer(input_difference.to_bytes(num_bytes, "big"), dtype=np.uint8)
     repeated_array = np.broadcast_to(bytes_array[:, np.newaxis], (num_bytes, num_samples))
     return repeated_array
-
-
-
 
 
 def differential_linear_checker_for_block_cipher_single_key(
@@ -1085,8 +1036,6 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
     return input_diff_samples.T
 
 
-
-
 def _truncated_string_to_flipmask_matrix(trunc_str, num_samples, state_size, rng):
     if len(trunc_str) != state_size:
         raise ValueError("truncated difference length must equal state_size")
@@ -1164,32 +1113,6 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
     return prob_weight
 
 
-def differential_linear_checker_for_permutation(
-    cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
-):
-    """
-    output_mask -- **integer**; a hex mask for the linear test (e.g., 0x8000000000000001 for the XOR of the MSB and LSB of a 64-bit state)
-    This method helps to verify experimentally differential-linear distinguishers for permutations using the vectorized evaluator
-    """
-    if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
-    num_bytes = int(state_size / 8)
-    rng = np.random.default_rng(seed)
-    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
-
-    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
-    plaintext2 = plaintext1 ^ input_difference_data
-    ciphertext1 = cipher.evaluate_vectorized([plaintext1])
-    ciphertext2 = cipher.evaluate_vectorized([plaintext2])
-    ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
-    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
-    ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
-    parities = np.bitwise_xor.reduce(ccc, axis=0)
-    count = np.count_nonzero(parities == 0)
-    corr = 2 * count / number_of_samples * 1.0 - 1
-    return corr
-
-
 def truncated_differential_linear_checker_permutation(
     cipher,
     input_trunc_diff,      
@@ -1233,45 +1156,3 @@ def truncated_differential_linear_checker_permutation(
     count = np.count_nonzero(parities == 0)
     corr = 2 * count / number_of_samples * 1.0 - 1
     return corr
-
-
-def differential_truncated_linear_checker_permutation_input_truncated_ouput_mask(
-    cipher,
-    input_diff_pattern,   # str over {'0','1','2','?'} of length state_size
-    output_mask,          # int mask for the linear test 
-    number_of_samples,
-    state_size,
-    seed=None,
-):
-    """
-    Experimental check of a *truncated* input difference → output linear mask.
-    - Measures P[⟨ΔC, output_mask⟩ = 0] and the corresponding correlation.
-
-    Returns:
-        prob_even (float): probability that the masked parity is even (0).
-        corr (float): correlation = 2*prob_even - 1.
-    """
-    if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
-    num_bytes = state_size // 8
-    rng = np.random.default_rng(seed)
-
-    input_difference_data = _sample_truncated_difference_from_string(
-        input_diff_pattern, number_of_samples, state_size, rng
-    )
-
-    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
-    plaintext2 = plaintext1 ^ input_difference_data
-
-    ciphertext1 = cipher.evaluate_vectorized([plaintext1])
-    ciphertext2 = cipher.evaluate_vectorized([plaintext2])
-    ciphertext3 = ciphertext1[0] ^ ciphertext2[0] 
-
-    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
-    ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)  
-    parities = np.bitwise_xor.reduce(ccc, axis=0)
-    count_even = np.count_nonzero(parities == 0)
-
-    prob_even = count_even / number_of_samples
-    corr = 2.0 * prob_even - 1.0
-    return prob_even
