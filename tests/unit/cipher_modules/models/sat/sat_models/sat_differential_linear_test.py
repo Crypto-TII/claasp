@@ -6,8 +6,8 @@ from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT
 from claasp.cipher_modules.models.utils import (
     set_fixed_variables,
     integer_to_bit_list,
-    differential_linear_checker_for_permutation,
     differential_linear_checker_for_block_cipher_single_key,
+    truncated_differential_linear_checker_permutation,
 )
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -464,13 +464,14 @@ def test_diff_lin_chacha():
     """
     input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
     output_mask = 0x00010000000100010000000100030003000000800000008000000000000001800000000000000001000000010000000201000101010000000000010103000101
+    input_difference_as_string = bin(input_difference)[2:].zfill(512)
     output_mask_as_string = bin(output_mask)[2:].zfill(512)
     number_of_samples = 2**13
     number_of_rounds = 6
     state_size = 512
     chacha = ChachaPermutation(number_of_rounds=number_of_rounds, round_mode=ROUND_MODE_HALF)
-    corr = differential_linear_checker_for_permutation(
-        chacha, input_difference, output_mask_as_string, number_of_samples, state_size
+    corr = truncated_differential_linear_checker_permutation(
+        chacha, input_difference_as_string, output_mask_as_string, number_of_samples, state_size
     )
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 3
@@ -486,9 +487,10 @@ def test_diff_lin_chacha_8():
     number_of_samples = 2**10
     number_of_rounds = 8
     state_size = 512
+    input_difference_as_string = bin(input_difference)[2:].zfill(512)
     chacha = ChachaPermutation(number_of_rounds=number_of_rounds, round_mode=ROUND_MODE_HALF)
-    corr = differential_linear_checker_for_permutation(
-        chacha, input_difference, output_mask_as_string, number_of_samples, state_size
+    corr = truncated_differential_linear_checker_permutation(
+        chacha, input_difference_as_string, output_mask_as_string, number_of_samples, state_size
     )
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 8
