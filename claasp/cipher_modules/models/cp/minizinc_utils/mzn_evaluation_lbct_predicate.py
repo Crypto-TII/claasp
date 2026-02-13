@@ -343,16 +343,16 @@ predicate lbct_compute(
     var 0..3200: lbct_minus_log_2
 ) =
 let {
-    array[1..branchSize-1,0..7] of var int: dp_lbct;
+    array[1..branchSize-1,0..7] of var float: dp_lbct;
     array[1..branchSize-1] of var 0..31: tmp0;
-    var int: lbct_value;
+    var float: lbct_value;
 } in
 (
     tmp0[1] = nLL[branchSize-1]*16 + nR[branchSize-1]*8 + nL[branchSize-1]*4 + dR[branchSize-1]*2 + dL[branchSize-1]
     /\\
 
     forall(j in 0..7)(
-        dp_lbct[1,j] = tables_lbct[tmp0[1],j,0]
+        dp_lbct[1,j] = tables_lbct[tmp0[1],j,0]/2^(30)
     )
     /\\
 
@@ -377,7 +377,7 @@ let {
             endif
         )
     /\\
-    approx_prob_log(lbct_value/2^(30),lbct_minus_log_2)
+    approx_prob_log(lbct_value,lbct_minus_log_2)
 );
     """
     return lbct_string
