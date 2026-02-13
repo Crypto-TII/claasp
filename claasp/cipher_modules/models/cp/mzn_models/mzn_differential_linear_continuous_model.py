@@ -249,7 +249,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
 
         try:
             corr = float(result["diffLin_corr"])
-            if corr != 0.0:
+            if not math.isclose(corr, 0.0, abs_tol=1e-9):
                 parsed["real_log2_exponent"] = -math.log2(abs(corr))
         except (KeyError, AttributeError, TypeError, ValueError):
             pass
